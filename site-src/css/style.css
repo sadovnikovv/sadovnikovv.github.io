@@ -758,3 +758,13 @@ p + ul, p + ol { margin-top: .2rem; }
 }
 .bar__support[open] .bar__support-arrow { transform: rotate(225deg); margin-top: .2em; }
 .header-support, .site-header details.bar__support { flex: 0 0 auto; }
+
+/* В шапке кнопка = ссылка: без стрелки и без span-оберток */
+.site-header .bar__support-arrow { display: none; }
+.site-header .bar__support-label { display: inline; }
+/* Фокус с клавиатуры: то же, что у ссылки шапки, без рамки */
+.site-header .bar__support > summary:focus-visible { outline: none; text-decoration: underline; color: var(--link); }
+/* Контейнер <details> не рисует ничего: ни рамку, ни фон, ни тень */
+.site-header details.bar__support, .sidebar details.bar__support {
+  background: none; border: 0; border-radius: 0; box-shadow: none; margin: 0; padding: 0;
+}
