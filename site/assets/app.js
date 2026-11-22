@@ -45,9 +45,15 @@
   function showError(msg) {
     var box = document.createElement('div');
     box.className = 'error-box';
-    box.innerHTML = '<p><strong>Не удалось загрузить текст книги.</strong></p>' +
-      '<p></p><p><a href="../book.html">Открыть книгу целиком</a></p>';
-    box.querySelector('p:nth-child(2)').textContent = msg;
+    var head = document.createElement('p');
+    head.innerHTML = '<strong>Не удалось загрузить текст книги.</strong>';
+    var why = document.createElement('p');
+    why.textContent = msg;
+    var link = document.createElement('p');
+    link.innerHTML = '<a href="../book.html">Открыть книгу целиком</a>';
+    box.appendChild(head);
+    box.appendChild(why);
+    box.appendChild(link);
     root.replaceChildren(box);
     document.body.classList.add('rendered');
     document.body.classList.remove('is-loading');

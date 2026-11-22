@@ -57,7 +57,21 @@ def _root_of(folder):
     return folder
 
 
-SRC = _root_of(_UP)
+# На GitHub Pages собирается только папка site/ (artifact), поэтому выход —
+# всегда site/ рядом с site-src/; книга и материалы ищутся отдельно.
+OUT = os.path.join(_UP, "site")
+def _book_root(base):
+    """base, если книга в нём, иначе первый подкаталог с книгой (Sasha_II_TUT/)."""
+    if any(n.endswith("-Claude-Code.html") for n in os.listdir(base)):
+        return base
+    for name in sorted(os.listdir(base)):
+        sub = os.path.join(base, name)
+        if os.path.isdir(sub) and any(n.endswith("-Claude-Code.html") for n in os.listdir(sub)):
+            return sub
+    raise SystemExit("Не найдена книга *-Claude-Code.html ни в %s, ни в его подпапках" % base)
+
+
+SRC = _book_root(_UP)
 
 
 def _find(folder, needle, is_dir=False):
@@ -71,7 +85,6 @@ def _find(folder, needle, is_dir=False):
 BOOK = _find(SRC, "-Claude-Code.html")
 MATERIALS = _find(SRC, "ru-materials", is_dir=True)
 MATERIALS_NAME = os.path.basename(MATERIALS)
-OUT = os.path.join(SRC, "site")
 BOOK_NAME = os.path.basename(BOOK)
 EPUB_NAME = BOOK_NAME[:-5] + ".epub"
 

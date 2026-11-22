@@ -348,3 +348,13 @@ img { max-width: 100%; height: auto; }
   pre, table, blockquote, details { break-inside: avoid; }
   h2, h3 { break-after: avoid; }
 }
+
+/* ---------- Незапубликованная глава ---------- */
+.note-redacted {
+  font-family: var(--font-sans);
+  background: var(--bg-alt);
+  border: 1px dashed var(--rule);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  color: var(--fg-soft);
+}
