@@ -32,9 +32,10 @@
     <a href="../about.html">О книге</a>
     <a href="../download/Книга-Claude-Code.epub" download>EPUB</a>
     <details class="bar__support">
-      <summary><span class="bar__support-label">Поддержать проект</span><span class="bar__support-arrow" aria-hidden="true"></span></summary>
-      <div class="bar__support-panel">
-        <p>Книга бесплатна. Поддержка добровольная - сумму выбираете вы.</p>
+      <summary><span class="bar__support-label">Поддержать автора</span><span class="bar__support-arrow" aria-hidden="true"></span></summary>
+      <div class="bar__support-panel" role="dialog" aria-label="Поддержать автора">
+        <h2 class="bar__support-title">Поддержать автора</h2>
+        <p class="bar__support-lead">Книга и EPUB доступны бесплатно. Если пособие оказалось полезным, вы можете поддержать автора любой суммой.</p>
         <iframe
           src="https://yoomoney.ru/quickpay/fundraise/widget?billNumber=1LNFDBQH1ED.261122&"
           title="ЮMoney - поддержать автора книги"
@@ -45,7 +46,8 @@
           scrolling="no"
           loading="lazy"
         ></iframe>
-        <p><a href="https://yoomoney.ru/fundraise/1LNFDBQH1ED.261122" target="_blank" rel="noopener">Открыть форму поддержки на ЮMoney</a></p>
+        <p class="bar__support-alt"><a href="https://yoomoney.ru/fundraise/1LNFDBQH1ED.261122" target="_blank" rel="noopener">Открыть форму в ЮMoney ↗</a></p>
+        <p class="bar__support-note">Замечания и предложения по книге: <a href="https://t.me/ZehVK" target="_blank" rel="noopener">@ZehVK в Telegram</a></p>
       </div>
     </details>
 </header>
@@ -201,6 +203,31 @@ document.addEventListener('keydown', function (e) {
     if (s) s.focus();
   });
 });
+// Панель поддержки - по ширине меню: от «Материалы» до конца кнопки.
+(function () {
+  function fit() {
+    document.querySelectorAll('.site-header .bar').forEach(function (bar) {
+      var support = bar.querySelector('.bar__support');
+      var panel = support && support.querySelector('.bar__support-panel');
+      if (!panel) return;
+      panel.style.removeProperty('width');
+      if (window.matchMedia('(max-width: 640px)').matches) return;
+      var summary = support.querySelector('summary').getBoundingClientRect();
+      var first = null;
+      Array.prototype.forEach.call(bar.children, function (el) {
+        if (el.tagName === 'A') first = first || el;
+      });
+      var left = first ? first.getBoundingClientRect().left : summary.left;
+      var w = Math.min(summary.right - left, document.documentElement.clientWidth - 20);
+      if (w >= 240) panel.style.width = Math.round(w) + 'px';
+    });
+  }
+  window.addEventListener('load', fit);
+  setTimeout(fit, 300);
+  window.addEventListener('resize', fit);
+  document.addEventListener('click', fit);
+  document.addEventListener('book:rendered', fit);
+})();
 </script>
 </body>
 </html>

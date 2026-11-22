@@ -705,43 +705,91 @@ p + ul, p + ol { margin-top: .2rem; }
 
 .bar__support[open] > summary::after { transform: rotate(225deg) translateY(-2px); }
 
+/* Панель: та же бумага и бумажная линейка, что у шапки и карточек сайта.
+   Плотность как у врезок книги: заголовок, строка пояснения, форма, тихая ссылка. */
 .bar__support-panel {
   position: absolute;
   z-index: 30;
-  top: calc(100% + .7rem);
+  top: calc(100% + .6rem);
   right: 0;
   box-sizing: border-box;
-  width: min(520px, calc(100vw - 2rem));
-  max-height: 78vh;
+  /* Ширина панели задаётся скриптом по ширине меню (от «Материалы» до кнопки). */
+  width: min(33rem, calc(100vw - 1.25rem));
+  max-height: min(38rem, 82vh);
   overflow: auto;
-  padding: .75rem;
+  overscroll-behavior: contain;
+  padding: 1.1rem 1.15rem 1rem;
   border: 1px solid var(--rule);
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--card);
   color: var(--fg);
+  font-family: var(--font-sans);
   font-size: .95rem;
-  line-height: 1.45;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, .16);
+  line-height: 1.5;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .14);
 }
-.bar__support-panel p { margin: 0 0 .5rem; font-size: .875rem; }
-.bar__support-panel iframe { display: block; width: 100%; height: 440px; border: 0; }
-.bar__support-panel a { color: var(--link); }
-
+.bar__support-title {
+  margin: 0 0 .35rem;
+  padding: 0;
+  border: 0;
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 1.25;
+  letter-spacing: -.005em;
+  color: var(--fg);
+}
+.bar__support-lead {
+  margin: 0 0 .9rem;
+  max-width: 34em;
+  font-size: .9rem;
+  line-height: 1.5;
+  color: var(--fg-soft);
+}
+.bar__support-panel iframe {
+  display: block;
+  width: 100%;
+  height: 440px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--bg);
+}
+.bar__support-alt {
+  margin: .8rem 0 0;
+  padding-top: .7rem;
+  border-top: 1px solid var(--rule);
+  font-size: .82rem;
+}
+.bar__support-alt a {
+  color: var(--link);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .15em;
+}
+.bar__support-alt a::after { content: none; }
+.bar__support-alt a:hover { color: var(--link); }
+.bar__support-alt a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+.bar__support > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 3px; text-decoration: underline; }
 @media (max-width: 640px) {
   .site-header .bar { flex-wrap: wrap; }
   .bar__support[open] { flex: 1 1 100%; min-width: 0; }
   .bar__support-panel {
     position: static;
-    width: 100%;
-    margin-top: .5rem;
+    inset: auto;
+    width: auto;
+    max-width: 100%;
+    margin: .5rem 0 0;
     box-shadow: none;
   }
+  .site-header .bar { overflow: hidden; }
+  .site-header .bar__support > summary { white-space: normal; }
+  .bar__support-panel iframe { height: 420px; }
 }
 
 /* В книге на одной странице: кнопка в боковой панели, панель под ней */
 .sidebar .bar__support { display: block; margin-top: .6rem; }
 .sidebar .bar__support > summary { display: flex; justify-content: space-between; width: 100%; }
-.sidebar .bar__support-panel { left: 0; right: auto; width: min(420px, calc(100vw - 2rem)); }
+.sidebar .bar__support-panel { left: 0; right: auto; width: min(31rem, calc(100vw - 1.25rem)); }
 
 /* Кнопка в шапке: текст и стрелка как у обычной ссылки, без коробки */
 .site-header .bar__support > summary::after { content: none; border: 0; }
@@ -768,3 +816,40 @@ p + ul, p + ol { margin-top: .2rem; }
 .site-header details.bar__support, .sidebar details.bar__support {
   background: none; border: 0; border-radius: 0; box-shadow: none; margin: 0; padding: 0;
 }
+/* контейнер не растягивается по содержимому: ширина по шапке */
+.site-header details.bar__support { min-width: 0; max-width: 100%; width: auto; }
+.site-header details.bar__support[open] { width: 100%; }
+
+
+
+/* Telegram в панели: строка под формой, тише запасной ссылки */
+.bar__support-note { margin: .45rem 0 0; font-size: .8rem; line-height: 1.45; color: var(--fg-soft); }
+.bar__support-note a { color: var(--fg-soft); text-decoration: underline; text-underline-offset: .15em; }
+.bar__support-note a::after { content: none; }
+.bar__support-note a:hover { color: var(--link); }
+.bar__support-note a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+@media (max-width: 640px) { .bar__support-panel { width: auto !important; max-width: 100% !important; } }
+
+/* Панель по ширине меню: базовая позиция прижата к правому краю шапки,
+   скрипт и без него даёт понятный запасной вид (не шире меню). */
+.site-header .bar { position: relative; }
+
+/* Поддержка в шапке раскрывается по ширине меню: страховка для случая,
+   когда скрипт подгонки не сработал (панель у правого края, не шире текста меню). */
+.site-header .bar__support > summary { white-space: nowrap; }
+
+/* Панель прижата к правому краю блока поддержки, а не шапки */
+.site-header .bar__support > .bar__support-panel { right: 0; left: auto; }
+
+/* Кнопка занимает только свой текст: открытая панель не растягивает её и шапку */
+.site-header .bar__support { width: fit-content; width: max-content; max-width: 100%; }
+
+/* Шапка на широком экране не переносится: open-панель не должна влиять на строку меню */
+@media (min-width: 641px) { .site-header .bar { flex-wrap: nowrap; } }
+
+/* Открытая панель не участвует в раскладке шапки: строка меню не переносится,
+   а сама панель позиционируется от кнопки. */
+.site-header .bar__support[open] { display: inline; }
+.site-header details.bar__support[open] { width: auto; }
+.site-header .bar__support[open] > .bar__support-panel { top: 1.9rem; }
+

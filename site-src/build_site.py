@@ -516,9 +516,10 @@ PAGE_TPL = """<!DOCTYPE html>
     <a href="{root}about.html">О книге</a>
     <a href="{root}download/{book_epub}" download>EPUB</a>
     <details class="bar__support">
-      <summary><span class="bar__support-label">Поддержать проект</span><span class="bar__support-arrow" aria-hidden="true"></span></summary>
-      <div class="bar__support-panel">
-        <p>Книга бесплатна. Поддержка добровольная - сумму выбираете вы.</p>
+      <summary><span class="bar__support-label">Поддержать автора</span><span class="bar__support-arrow" aria-hidden="true"></span></summary>
+      <div class="bar__support-panel" role="dialog" aria-label="Поддержать автора">
+        <h2 class="bar__support-title">Поддержать автора</h2>
+        <p class="bar__support-lead">Книга и EPUB доступны бесплатно. Если пособие оказалось полезным, вы можете поддержать автора любой суммой.</p>
         <iframe
           src="https://yoomoney.ru/quickpay/fundraise/widget?billNumber=1LNFDBQH1ED.261122&"
           title="ЮMoney - поддержать автора книги"
@@ -529,7 +530,8 @@ PAGE_TPL = """<!DOCTYPE html>
           scrolling="no"
           loading="lazy"
         ></iframe>
-        <p><a href="https://yoomoney.ru/fundraise/1LNFDBQH1ED.261122" target="_blank" rel="noopener">Открыть форму поддержки на ЮMoney</a></p>
+        <p class="bar__support-alt"><a href="https://yoomoney.ru/fundraise/1LNFDBQH1ED.261122" target="_blank" rel="noopener">Открыть форму в ЮMoney ↗</a></p>
+        <p class="bar__support-note">Замечания и предложения по книге: <a href="https://t.me/ZehVK" target="_blank" rel="noopener">@ZehVK в Telegram</a></p>
       </div>
     </details>
 </header>
@@ -567,6 +569,31 @@ document.addEventListener('keydown', function (e) {{
     if (s) s.focus();
   }});
 }});
+// Панель поддержки - по ширине меню: от «Материалы» до конца кнопки.
+(function () {{
+  function fit() {{
+    document.querySelectorAll('.site-header .bar').forEach(function (bar) {{
+      var support = bar.querySelector('.bar__support');
+      var panel = support && support.querySelector('.bar__support-panel');
+      if (!panel) return;
+      panel.style.removeProperty('width');
+      if (window.matchMedia('(max-width: 640px)').matches) return;
+      var summary = support.querySelector('summary').getBoundingClientRect();
+      var first = null;
+      Array.prototype.forEach.call(bar.children, function (el) {{
+        if (el.tagName === 'A') first = first || el;
+      }});
+      var left = first ? first.getBoundingClientRect().left : summary.left;
+      var w = Math.min(summary.right - left, document.documentElement.clientWidth - 20);
+      if (w >= 240) panel.style.width = Math.round(w) + 'px';
+    }});
+  }}
+  window.addEventListener('load', fit);
+  setTimeout(fit, 300);
+  window.addEventListener('resize', fit);
+  document.addEventListener('click', fit);
+  document.addEventListener('book:rendered', fit);
+}})();
 </script>
 </body>
 </html>
@@ -748,7 +775,9 @@ TASK_SCRIPTS = ('<script src="assets/book-app.js" defer></script>\n'
                 '<script src="assets/code-copy.js" defer></script>\n'
                 '<script src="assets/tasks.js" defer></script>\n'
                 '<script type="application/json" id="quiz-data">%s</script>\n'
-                '<script type="application/json" id="practice-quiz-data">%s</script>\n</body>')
+                '<script type="application/json" id="practice-quiz-data">%s</script>\n'
+                '<script>(function(){{function f(){{document.querySelectorAll(".site-header .bar").forEach(function(b){{var sup=b.querySelector(".bar__support"),p=sup&&sup.querySelector(".bar__support-panel");if(!p)return;var it=[].slice.call(b.children).filter(function(e){{return e.tagName==="A";}});if(!it.length){{p.style.removeProperty("width");return;}}var st=it[0].getBoundingClientRect().left,en=sup.querySelector("summary").getBoundingClientRect().right,w=Math.max(260,Math.min(en-st,document.documentElement.clientWidth-20));if(matchMedia("(max-width:640px)").matches)p.style.removeProperty("width");else p.style.width=Math.round(w)+"px";}});}}document.addEventListener("DOMContentLoaded",f);window.addEventListener("load",f);}})();</script>\n'
+            '    </body>')
 
 
 def build_book(raw):
@@ -805,9 +834,10 @@ def build_book(raw):
     # рядом с настройками чтения (сверху в HTML нет шапки сайта).
     book_support = ("""
     <details class="bar__support">
-      <summary><span class="bar__support-label">Поддержать проект</span><span class="bar__support-arrow" aria-hidden="true"></span></summary>
-      <div class="bar__support-panel">
-        <p>Книга бесплатна. Поддержка добровольная - сумму выбираете вы.</p>
+      <summary><span class="bar__support-label">Поддержать автора</span><span class="bar__support-arrow" aria-hidden="true"></span></summary>
+      <div class="bar__support-panel" role="dialog" aria-label="Поддержать автора">
+        <h2 class="bar__support-title">Поддержать автора</h2>
+        <p class="bar__support-lead">Книга и EPUB доступны бесплатно. Если пособие оказалось полезным, вы можете поддержать автора любой суммой.</p>
         <iframe
           src="https://yoomoney.ru/quickpay/fundraise/widget?billNumber=1LNFDBQH1ED.261122&"
           title="ЮMoney - поддержать автора книги"
@@ -818,7 +848,8 @@ def build_book(raw):
           scrolling="no"
           loading="lazy"
         ></iframe>
-        <p><a href="https://yoomoney.ru/fundraise/1LNFDBQH1ED.261122" target="_blank" rel="noopener">Открыть форму поддержки на ЮMoney</a></p>
+        <p class="bar__support-alt"><a href="https://yoomoney.ru/fundraise/1LNFDBQH1ED.261122" target="_blank" rel="noopener">Открыть форму в ЮMoney ↗</a></p>
+        <p class="bar__support-note">Замечания и предложения по книге: <a href="https://t.me/ZehVK" target="_blank" rel="noopener">@ZehVK в Telegram</a></p>
       </div>
     </details>
     """)
@@ -905,15 +936,22 @@ MAT_TPL = """<!DOCTYPE html>
     <a href="{site_root}materials/index.html">Материалы</a>
     <a href="{site_root}about.html">О книге</a>
     <details class="bar__support">
-      <summary><span class="bar__support-label">Поддержать проект</span><span class="bar__support-arrow" aria-hidden="true"></span></summary>
-      <div class="bar__support-panel">
-        <p>Книга бесплатна. Поддержка добровольная - сумму выбираете вы.</p>
+      <summary><span class="bar__support-label">Поддержать автора</span><span class="bar__support-arrow" aria-hidden="true"></span></summary>
+      <div class="bar__support-panel" role="dialog" aria-label="Поддержать автора">
+        <h2 class="bar__support-title">Поддержать автора</h2>
+        <p class="bar__support-lead">Книга и EPUB доступны бесплатно. Если пособие оказалось полезным, вы можете поддержать автора любой суммой.</p>
         <iframe
-          src="https://yoomoney.ru/quickpay/fundraise/widget?billNumber=1LNFDBQH1ED.261122"
+          src="https://yoomoney.ru/quickpay/fundraise/widget?billNumber=1LNFDBQH1ED.261122&"
           title="ЮMoney - поддержать автора книги"
+          width="500"
+          height="480"
+          frameborder="0"
+          allowtransparency="true"
+          scrolling="no"
           loading="lazy"
         ></iframe>
-        <p><a href="https://yoomoney.ru/fundraise/1LNFDBQH1ED.261122" target="_blank" rel="noopener">Открыть форму поддержки на ЮMoney ↗</a></p>
+        <p class="bar__support-alt"><a href="https://yoomoney.ru/fundraise/1LNFDBQH1ED.261122" target="_blank" rel="noopener">Открыть форму в ЮMoney ↗</a></p>
+        <p class="bar__support-note">Замечания и предложения по книге: <a href="https://t.me/ZehVK" target="_blank" rel="noopener">@ZehVK в Telegram</a></p>
       </div>
     </details>
   </div>
@@ -926,6 +964,7 @@ MAT_TPL = """<!DOCTYPE html>
   <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
 </footer>
 <script src="{root}assets/code-copy.js" defer></script>
+<script>(function(){{function f(){{document.querySelectorAll(".site-header .bar").forEach(function(b){{var sup=b.querySelector(".bar__support"),p=sup&&sup.querySelector(".bar__support-panel");if(!p)return;var it=[].slice.call(b.children).filter(function(e){{return e.tagName==="A";}});if(!it.length){{p.style.removeProperty("width");return;}}var st=it[0].getBoundingClientRect().left,en=sup.querySelector("summary").getBoundingClientRect().right,w=Math.max(260,Math.min(en-st,document.documentElement.clientWidth-20));if(matchMedia("(max-width:640px)").matches)p.style.removeProperty("width");else p.style.width=Math.round(w)+"px";}});}}document.addEventListener("DOMContentLoaded",f);window.addEventListener("load",f);}})();</script>
 <script>
 document.addEventListener('click', function (e) {{
   document.querySelectorAll('.bar__support[open]').forEach(function (d) {{
