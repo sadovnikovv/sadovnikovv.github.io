@@ -574,3 +574,71 @@ main a[href^="http"]:focus-visible { outline: 2px solid var(--accent); outline-o
   .code-bar { display: none; }
   main a[href^="http"]::after { content: none; }
 }
+
+/* ---------- Схемы из блоков «node/arrow»: читаются в любом размере ---------- */
+/* Это надстройка поверх авторских стилей: карточки шире, текст крупнее,
+   между строками и блоками больше воздуха. */
+.flow {
+  flex-wrap: wrap;
+  gap: .75rem !important;
+  padding: 1.4rem !important;
+  margin: 1.6rem 0 1.8rem !important;
+  border-radius: 12px !important;
+  font-size: 1rem !important;
+  row-gap: 1rem !important;
+}
+.flow .node {
+  flex: 1 1 12rem !important;
+  min-width: 0;
+  padding: 1rem 1.1rem !important;
+  border-radius: 10px !important;
+  line-height: 1.5 !important;
+  text-align: left !important;
+  box-shadow: 0 1px 0 var(--rule);
+}
+.flow .node b {
+  display: block !important;
+  font-family: var(--font-sans);
+  font-size: 1rem !important;
+  letter-spacing: -.005em;
+  margin: 0 0 .35rem !important;
+}
+.flow .node span {
+  display: block !important;
+  font-family: var(--font-sans);
+  font-size: .9rem !important;
+  line-height: 1.5 !important;
+  color: var(--fg-soft) !important;
+}
+.flow .arrow { font-size: 1.4rem !important; padding: 0 .15rem; }
+@media (min-width: 60rem) {
+  .flow:has(.node:nth-child(5)) { flex-wrap: nowrap; }
+}
+@media (max-width: 46rem) {
+  .flow { flex-direction: column !important; align-items: stretch !important; }
+  .flow .arrow { text-align: center; transform: rotate(90deg); }
+  .flow .node { flex: 1 1 auto !important; }
+}
+/* Владельцы страницы - карточки .cards и колонки .toc-inline: тоже воздух. */
+.cards { gap: 1rem !important; margin: 1.5rem 0 2rem !important; }
+.cards .card { padding: 1.1rem 1.3rem !important; line-height: 1.6 !important; }
+.cards .card h4 { margin: 0 0 .5rem !important; }
+.toc-inline { gap: .5rem 1.6rem !important; padding: 1.2rem 1.4rem !important; line-height: 1.6 !important; }
+.table-wrap th, .table-wrap td { padding: .6rem .75rem !important; line-height: 1.5 !important; }
+
+/* ---------- Лабораторные работы, врезки и подписи: больше воздуха ---------- */
+.lab { padding: 1.3rem 1.4rem !important; margin: 1.6rem 0 !important; line-height: 1.6 !important; }
+.lab-head { gap: .8rem !important; margin: 0 0 .7rem !important; padding-bottom: .6rem !important; align-items: baseline; }
+.lab-head h4 { font-size: 1.12rem !important; line-height: 1.35; }
+.lab-head .lab-no, .lab-no { font-size: .74rem !important; letter-spacing: .1em; }
+.lab dl { font-size: .98rem !important; margin: .6rem 0 0 !important; }
+.lab dt { font-size: .84rem !important; margin-top: .8rem !important; color: var(--fg-soft) !important; }
+.lab dd { margin: .25rem 0 0 !important; line-height: 1.6; }
+
+.callout { padding: 1.1rem 1.3rem 1rem !important; line-height: 1.6 !important; }
+.callout .label, .label { font-size: .75rem !important; margin-bottom: .45rem !important; letter-spacing: .1em; }
+.callout > p + p { margin-top: .65rem; }
+
+.lead-in { line-height: 1.65 !important; margin-bottom: 1.2rem !important; }
+h2 + p, h3 + p, h4 + p { margin-top: .1rem; }
+p + ul, p + ol { margin-top: .2rem; }
