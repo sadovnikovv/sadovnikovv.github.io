@@ -645,6 +645,31 @@ p + ul, p + ol { margin-top: .2rem; }
 
 /* ---------- «Поддержать проект»: кнопка в стиле меню, форма под ней ---------- */
 .bar__support { position: relative; font-family: var(--font-sans); }
+/* Кнопка = обычная ссылка шапки: без рамки, фона, отступов и своего шрифта.
+   display: contents убирает у summary коробку, остаётся текст и стрелка. */
+.site-header .bar__support > summary {
+  display: contents;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+  border-radius: 0;
+  font-family: var(--font-sans);
+  font-size: .95rem;
+  font-weight: 400;
+  color: var(--fg-soft);
+  box-shadow: none;
+}
+.site-header .bar__support > summary::-webkit-details-marker { display: none; }
+.site-header .bar__support > summary::marker { content: ""; }
+.site-header .bar__support > summary:hover,
+.site-header .bar__support[open] > summary { color: var(--link); text-decoration: underline; }
+.site-header .bar__support > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 3px;
+  color: var(--link);
+}
 .bar__support > summary {
   list-style: none;
   cursor: pointer;
@@ -717,3 +742,19 @@ p + ul, p + ol { margin-top: .2rem; }
 .sidebar .bar__support { display: block; margin-top: .6rem; }
 .sidebar .bar__support > summary { display: flex; justify-content: space-between; width: 100%; }
 .sidebar .bar__support-panel { left: 0; right: auto; width: min(420px, calc(100vw - 2rem)); }
+
+/* Кнопка в шапке: текст и стрелка как у обычной ссылки, без коробки */
+.site-header .bar__support > summary::after { content: none; border: 0; }
+.site-header .bar__support > summary { display: inline-flex; align-items: center; gap: .3rem; }
+.bar__support-arrow {
+  display: inline-block;
+  width: .32em;
+  height: .32em;
+  margin-top: -.2em;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform .15s;
+}
+.bar__support[open] .bar__support-arrow { transform: rotate(225deg); margin-top: .2em; }
+.header-support, .site-header details.bar__support { flex: 0 0 auto; }

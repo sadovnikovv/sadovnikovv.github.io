@@ -516,7 +516,7 @@ PAGE_TPL = """<!DOCTYPE html>
     <a href="{root}about.html">О книге</a>
     <a href="{root}download/{book_epub}" download>EPUB</a>
     <details class="bar__support">
-      <summary>Поддержать проект</summary>
+      <summary><span class="bar__support-label">Поддержать проект</span><span class="bar__support-arrow" aria-hidden="true"></span></summary>
       <div class="bar__support-panel">
         <p>Книга бесплатна. Поддержка добровольная - сумму выбираете вы.</p>
         <iframe
@@ -805,7 +805,7 @@ def build_book(raw):
     # рядом с настройками чтения (сверху в HTML нет шапки сайта).
     book_support = ("""
     <details class="bar__support">
-      <summary>Поддержать проект</summary>
+      <summary><span class="bar__support-label">Поддержать проект</span><span class="bar__support-arrow" aria-hidden="true"></span></summary>
       <div class="bar__support-panel">
         <p>Книга бесплатна. Поддержка добровольная - сумму выбираете вы.</p>
         <iframe
@@ -905,7 +905,7 @@ MAT_TPL = """<!DOCTYPE html>
     <a href="{site_root}materials/index.html">Материалы</a>
     <a href="{site_root}about.html">О книге</a>
     <details class="bar__support">
-      <summary>Поддержать проект</summary>
+      <summary><span class="bar__support-label">Поддержать проект</span><span class="bar__support-arrow" aria-hidden="true"></span></summary>
       <div class="bar__support-panel">
         <p>Книга бесплатна. Поддержка добровольная - сумму выбираете вы.</p>
         <iframe
