@@ -141,8 +141,15 @@
     document.querySelectorAll('main pre, #book pre, pre:not(.code-block pre)').forEach(decorate);
   }
 
+  // ВАЖНО: кнопки копирования над блоками кода удалять нельзя - это обязательная часть книги.
   document.addEventListener('DOMContentLoaded', run);
   window.addEventListener('book:rendered', run);
+  // app.js подменяет main#content после загрузки книги - это тоже рендер текста.
+  var root = document.getElementById('book');
+  if (root && 'MutationObserver' in window) {
+    new MutationObserver(run).observe(root, { childList: true });
+  }
   // Чужие скрипты (например, в materials) могут дорисовать код позже.
   window.addEventListener('load', run);
+  setTimeout(run, 400);
 })();
