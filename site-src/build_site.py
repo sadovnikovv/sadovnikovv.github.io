@@ -521,7 +521,7 @@ PAGE_TPL = """<!DOCTYPE html>
         <h2 class="bar__support-title">Поддержать автора</h2>
         <p class="bar__support-lead">Книга и EPUB доступны бесплатно. Если пособие оказалось полезным, вы можете поддержать автора любой суммой.</p>
         <iframe
-          src="https://yoomoney.ru/quickpay/fundraise/widget?billNumber=1LNFDBQH1ED.261122&"
+          src="https://yoomoney.ru/quickpay/fundraise/widget?billNumber=1LNFDBQH1ED.261122&backgroundId=0"
           title="ЮMoney - поддержать автора книги"
           width="500"
           height="480"
@@ -839,7 +839,7 @@ def build_book(raw):
         <h2 class="bar__support-title">Поддержать автора</h2>
         <p class="bar__support-lead">Книга и EPUB доступны бесплатно. Если пособие оказалось полезным, вы можете поддержать автора любой суммой.</p>
         <iframe
-          src="https://yoomoney.ru/quickpay/fundraise/widget?billNumber=1LNFDBQH1ED.261122&"
+          src="https://yoomoney.ru/quickpay/fundraise/widget?billNumber=1LNFDBQH1ED.261122&backgroundId=0"
           title="ЮMoney - поддержать автора книги"
           width="500"
           height="480"
@@ -941,7 +941,7 @@ MAT_TPL = """<!DOCTYPE html>
         <h2 class="bar__support-title">Поддержать автора</h2>
         <p class="bar__support-lead">Книга и EPUB доступны бесплатно. Если пособие оказалось полезным, вы можете поддержать автора любой суммой.</p>
         <iframe
-          src="https://yoomoney.ru/quickpay/fundraise/widget?billNumber=1LNFDBQH1ED.261122&"
+          src="https://yoomoney.ru/quickpay/fundraise/widget?billNumber=1LNFDBQH1ED.261122&backgroundId=0"
           title="ЮMoney - поддержать автора книги"
           width="500"
           height="480"
