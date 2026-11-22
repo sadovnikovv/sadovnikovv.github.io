@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Модуль 07. Hooks</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/index.html">claude-code-pro-course</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/course/index.html">course</a></nav>
+<h1 id="модуль-07-hooks">Модуль 07. Hooks <a class="h-anchor" href="#модуль-07-hooks" aria-label="Ссылка на раздел">#</a></h1>
+<p><strong>Hooks</strong> — shell-команды, которые Claude Code запускает автоматически на событиях жизненного цикла. В отличие от инструкций в CLAUDE.md (которые Claude <em>может</em> забыть), hooks выполняются <strong>всегда и детерминированно</strong>.</p>
+<blockquote>
+<p>Правило: «Claude должен помнить» → CLAUDE.md. «Это должно случаться всегда» → hook.</p>
+</blockquote>
+<h3 id="h">События <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Событие</th><th>Когда</th><th>Типичное применение</th></tr></thead><tbody><tr><td><code>PreToolUse</code></td><td>Перед вызовом инструмента</td><td>Блокировать опасные команды, защищать файлы</td></tr><tr><td><code>PostToolUse</code></td><td>После вызова инструмента</td><td>Автоформат, линт, тесты</td></tr><tr><td><code>UserPromptSubmit</code></td><td>Вы отправили промпт</td><td>Добавить контекст, фильтровать промпт</td></tr><tr><td><code>Notification</code></td><td>Claude ждёт ввода/разрешения</td><td>Десктоп-уведомление</td></tr><tr><td><code>Stop</code></td><td>Claude закончил ответ</td><td>Проверка «всё ли готово», уведомление</td></tr><tr><td><code>SubagentStop</code></td><td>Субагент закончил</td><td>Логирование</td></tr><tr><td><code>SessionStart</code></td><td>Старт/возобновление сессии</td><td>Загрузить контекст (задачи, ветка)</td></tr><tr><td><code>SessionEnd</code></td><td>Конец сессии</td><td>Очистка, логи</td></tr><tr><td><code>PreCompact</code></td><td>Перед сжатием контекста</td><td>Сохранить важное</td></tr></tbody></table></div>
+<h3 id="h-2">Формат конфигурации <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>В <code>settings.json</code> (любого уровня):</p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;PostToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Edit|Write&quot;,
+        &quot;hooks&quot;: [
+          { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;\&quot;$CLAUDE_PROJECT_DIR\&quot;/.claude/hooks/format-on-edit.sh&quot; }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<ul>
+<li><code>matcher</code> — regex по имени инструмента (<code>Bash</code>, <code>Edit|Write</code>, <code>mcp__github__.*</code>). Для событий без инструментов не нужен.</li>
+<li><code>$CLAUDE_PROJECT_DIR</code> — корень проекта.</li>
+<li>Интерактивно: <code>/hooks</code>.</li>
+</ul>
+<h3 id="вход-и-выход-hook">Вход и выход hook <a class="h-anchor" href="#вход-и-выход-hook" aria-label="Ссылка на раздел">#</a></h3>
+<p>Hook получает JSON в <strong>stdin</strong>:</p>
+<pre><code class="language-json">{
+  &quot;session_id&quot;: &quot;...&quot;,
+  &quot;hook_event_name&quot;: &quot;PreToolUse&quot;,
+  &quot;tool_name&quot;: &quot;Edit&quot;,
+  &quot;tool_input&quot;: { &quot;file_path&quot;: &quot;src/app.ts&quot;, &quot;old_string&quot;: &quot;...&quot;, &quot;new_string&quot;: &quot;...&quot; }
+}</code></pre>
+<p>Коды выхода:</p>
+<div class="table-wrap"><table><thead><tr><th>Код</th><th>Значение</th></tr></thead><tbody><tr><td><code>0</code></td><td>Успех, продолжаем</td></tr><tr><td><code>2</code></td><td><strong>Блокировка.</strong> Для <code>PreToolUse</code> — вызов отменяется, stderr передаётся Claude как объяснение. Для <code>Stop</code> — Claude продолжает работу</td></tr><tr><td>другой</td><td>Ошибка hook, показывается пользователю, выполнение продолжается</td></tr></tbody></table></div>
+<p>Для тонкого управления hook может вывести JSON в stdout (например, <code>&quot;decision&quot;: &quot;block&quot;</code> с <code>&quot;reason&quot;</code>, или <code>additionalContext</code>).</p>
+<h3 id="h-3">Рецепты <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="1-автоформат-после-правки">1. Автоформат после правки <a class="h-anchor" href="#1-автоформат-после-правки" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">#!/usr/bin/env bash
+# .claude/hooks/format-on-edit.sh
+file=$(jq -r &#x27;.tool_input.file_path // empty&#x27;)
+[ -z &quot;$file&quot; ] &amp;&amp; exit 0
+case &quot;$file&quot; in
+  *.ts|*.tsx|*.js|*.jsx|*.json|*.css|*.md) npx prettier --write &quot;$file&quot; &gt;/dev/null 2&gt;&amp;1 ;;
+  *.py) ruff format &quot;$file&quot; &gt;/dev/null 2&gt;&amp;1 ;;
+  *.go) gofmt -w &quot;$file&quot; ;;
+esac
+exit 0</code></pre>
+<h4 id="2-защита-файлов">2. Защита файлов <a class="h-anchor" href="#2-защита-файлов" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">#!/usr/bin/env bash
+# .claude/hooks/protect-files.sh — PreToolUse, matcher: Edit|Write
+file=$(jq -r &#x27;.tool_input.file_path // empty&#x27;)
+for p in &quot;.env&quot; &quot;package-lock.json&quot; &quot;.git/&quot; &quot;migrations/&quot;; do
+  if [[ &quot;$file&quot; == *&quot;$p&quot;* ]]; then
+    echo &quot;Файл $file защищён hook-ом. Не редактируй его.&quot; &gt;&amp;2
+    exit 2
+  fi
+done
+exit 0</code></pre>
+<h4 id="3-блокировка-опасных-команд">3. Блокировка опасных команд <a class="h-anchor" href="#3-блокировка-опасных-команд" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-json">{
+  &quot;matcher&quot;: &quot;Bash&quot;,
+  &quot;hooks&quot;: [{
+    &quot;type&quot;: &quot;command&quot;,
+    &quot;command&quot;: &quot;jq -r &#x27;.tool_input.command&#x27; | grep -Eq &#x27;rm -rf /|git push --force|DROP TABLE&#x27; &amp;&amp; { echo &#x27;Опасная команда заблокирована&#x27; &gt;&amp;2; exit 2; } || exit 0&quot;
+  }]
+}</code></pre>
+<h4 id="4-уведомление-когда-claude-ждет">4. Уведомление, когда Claude ждёт <a class="h-anchor" href="#4-уведомление-когда-claude-ждет" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-json">&quot;Notification&quot;: [{
+  &quot;hooks&quot;: [{ &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;notify-send &#x27;Claude Code&#x27; &#x27;Нужен ваш ввод&#x27;&quot; }]
+}]</code></pre>
+<p>macOS: <code>osascript -e &#x27;display notification &quot;Нужен ввод&quot; with title &quot;Claude Code&quot;&#x27;</code></p>
+<h4 id="5-контекст-при-старте-сессии">5. Контекст при старте сессии <a class="h-anchor" href="#5-контекст-при-старте-сессии" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-json">&quot;SessionStart&quot;: [{
+  &quot;hooks&quot;: [{ &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;echo \&quot;Ветка: $(git branch --show-current)\&quot;; gh issue list --assignee @me --limit 5&quot; }]
+}]</code></pre>
+<p>Stdout <code>SessionStart</code> добавляется в контекст Claude.</p>
+<h4 id="6-тесты-перед-завершением-stop">6. Тесты перед завершением (Stop) <a class="h-anchor" href="#6-тесты-перед-завершением-stop" aria-label="Ссылка на раздел">#</a></h4>
+<p>Hook на <code>Stop</code>, который запускает быстрые тесты и при падении возвращает <code>exit 2</code> с выводом ошибок — Claude продолжит и исправит. Следите за бесконечными циклами: проверяйте поле <code>stop_hook_active</code> во входном JSON.</p>
+<h3 id="h-4">Безопасность <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Hooks выполняют <strong>произвольные команды с вашими правами</strong>.</p>
+<ul>
+<li>Читайте hooks из чужих репозиториев перед запуском.</li>
+<li>Кавычьте переменные (<code>&quot;$file&quot;</code>), проверяйте пути на <code>..</code>.</li>
+<li>Используйте абсолютные пути / <code>$CLAUDE_PROJECT_DIR</code>.</li>
+</ul>
+<h3 id="h-5">Отладка <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><code>claude --debug</code> — подробный лог выполнения hooks.</li>
+<li>Тест вручную: <code>echo &#x27;{&quot;tool_input&quot;:{&quot;file_path&quot;:&quot;a.ts&quot;}}&#x27; | .claude/hooks/format-on-edit.sh</code></li>
+</ul>
+<h3 id="h-6">Практика <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li>Подключите <code>format-on-edit.sh</code> из starter-kit. Попросите Claude написать неотформатированный код — проверьте результат.</li>
+<li>Подключите <code>protect-files.sh</code> и попросите отредактировать <code>.env</code>.</li>
+<li>Настройте уведомление на <code>Notification</code>.</li>
+</ol>
+<p>🧪 Закрепите на практике: <a href="../labs/lab-06-hooks.md">лабораторная работа</a></p>
+<p>➡️ Далее: <a href="08-mcp.md">08. MCP</a></p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

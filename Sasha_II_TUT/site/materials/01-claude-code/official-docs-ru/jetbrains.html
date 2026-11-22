@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>JetBrains IDEs</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="jetbrains-ides">JetBrains IDEs <a class="h-anchor" href="#jetbrains-ides" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Используйте Claude Code с JetBrains IDEs, включая IntelliJ, PyCharm, WebStorm и другие</p>
+</blockquote>
+<p>Claude Code интегрируется с JetBrains IDEs через специальный плагин, предоставляя функции, такие как интерактивный просмотр различий, совместное использование контекста выделения и многое другое.</p>
+<h3 id="поддерживаемые-ide">Поддерживаемые IDE <a class="h-anchor" href="#поддерживаемые-ide" aria-label="Ссылка на раздел">#</a></h3>
+<p>Плагин Claude Code работает с большинством JetBrains IDE, включая:</p>
+<ul>
+<li>IntelliJ IDEA</li>
+<li>PyCharm</li>
+<li>Android Studio</li>
+<li>WebStorm</li>
+<li>PhpStorm</li>
+<li>GoLand</li>
+</ul>
+<h3 id="h">Функции <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong>Быстрый запуск</strong>: используйте <code>Cmd+Esc</code> (Mac) или <code>Ctrl+Esc</code> (Windows/Linux) для открытия Claude Code непосредственно из редактора, или нажмите кнопку Claude Code в интерфейсе</li>
+<li><strong>Просмотр различий</strong>: Claude Code открывает изменения кода в средстве просмотра различий IDE вместо терминала; измените это с помощью параметра <strong>Diff tool</strong> в <code>/config</code></li>
+<li><strong>Контекст выделения</strong>: текущее выделение или вкладка в IDE автоматически передаются в Claude Code. <a href="https://code.claude.com/docs/ru/permissions#read-and-edit">Правила отказа <code>Read</code></a> блокируют это совместное использование для соответствующих файлов</li>
+<li><strong>Ярлыки ссылок на файлы</strong>: используйте <code>Cmd+Option+K</code> (Mac) или <code>Alt+Ctrl+K</code> (Linux/Windows) для вставки ссылок на файлы, такие как <code>@src/auth.ts#L1-99</code></li>
+<li><strong>Совместное использование диагностики</strong>: Claude читает диагностику проверки IDE, такую как ошибки lint и синтаксиса, вызывая инструмент <a href="#the-built-in-ide-mcp-server"><code>getDiagnostics</code></a>; Claude Code не запрашивает диагностику у плагина самостоятельно после редактирования</li>
+</ul>
+<h3 id="h-2">Установка <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Плагин запускает команду <code>claude</code> в интегрированном терминале вашей IDE и подключается к ней. Он не включает собственную копию CLI, поэтому установите обе части:</p>
+<p><strong>1. Установите Claude Code CLI</strong></p>
+<p>Следуйте <a href="https://code.claude.com/docs/ru/quickstart.md">руководству по быстрому старту</a> для установки CLI, если вы еще этого не сделали. Плагин показывает уведомление &quot;Cannot launch Claude Code&quot; (Не удается запустить Claude Code), когда <code>claude</code> отсутствует в вашем PATH.</p>
+<p><strong>2. Установите плагин JetBrains</strong></p>
+<p>Установите <a href="https://plugins.jetbrains.com/plugin/27310-claude-code-beta-">плагин Claude Code</a> из JetBrains Marketplace и перезагрузите вашу IDE.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>JetBrains Marketplace — это стороннее программное обеспечение, которое Anthropic не одобряет, не поддерживает и не проверяет. Anthropic отправляет плагин Claude Code на публикацию в JetBrains Marketplace.</p>
+</blockquote>
+<p>Если <code>claude</code> установлен в месте, которое ваша IDE не может найти, установите полный путь в <a href="#general-settings">параметре Claude command</a> плагина.</p>
+<p>Claude Code работает с любой платной подпиской Claude (Pro, Max, Ultra, Team или Enterprise) или с учетной записью Claude Console, и API-ключ не требуется. Вам будет предложено <a href="https://code.claude.com/docs/ru/authentication.md#log-in-to-claude-code">войти</a> при первом запуске <code>claude</code>.</p>
+<h3 id="h-3">Использование <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="запуск-claude-code-из-вашей-ide">Запуск Claude Code из вашей IDE <a class="h-anchor" href="#запуск-claude-code-из-вашей-ide" aria-label="Ссылка на раздел">#</a></h4>
+<p>Запустите <code>claude</code> из встроенного терминала вашей IDE, и все функции интеграции будут активны.</p>
+<h4 id="h-4">Подключение из внешнего терминала <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте команду <code>/ide</code> в любом внешнем терминале для подключения Claude Code к вашей JetBrains IDE и активации всех функций:</p>
+<p>```bash theme={null}
+claude</p>
+<pre><code></code></pre>
+<p>/ide</p>
+<pre><code>
+Когда соединение установлено успешно, Claude Code подтверждает это сообщением вроде `Connected to IntelliJ IDEA.`
+
+Если вы хотите, чтобы Claude имел доступ к тем же файлам, что и ваша IDE, запустите Claude Code из того же каталога, что и корень проекта вашей IDE.
+
+## Конфигурация
+
+### Параметры Claude Code
+
+Настройте интеграцию IDE через параметры Claude Code:
+
+1. Запустите `claude`
+2. Введите команду `/config`
+3. Установите инструмент diff на `auto` для отображения различий в IDE, или `terminal` для сохранения их в терминале
+
+Запись **Diff tool** появляется в `/config` только когда Claude Code подключен к IDE, поэтому запустите `claude` из терминала JetBrains или сначала запустите [`/ide`](https://code.claude.com/docs/ru/commands) из внешнего терминала. Дополнительную информацию см. в разделе [`diffTool`](https://code.claude.com/docs/ru/settings-reference#difftool).
+
+### Параметры плагина
+
+Настройте плагин Claude Code, перейдя в **Settings → Tools → Claude Code \[Beta]**:
+
+#### Общие параметры
+
+* **Claude command**: укажите пользовательскую команду для запуска Claude, например `claude`, `/usr/local/bin/claude` или `npx @anthropic-ai/claude-code`
+* **Suppress notification for when Claude Command is not found**: пропустить уведомления об отсутствии команды Claude
+* **Enable using Option+Enter for multi-line prompts**: только на macOS. Если включено, Option+Enter вставляет новые строки в подсказки Claude Code. Отключите, если клавиша Option захватывается неожиданно. Требуется перезагрузка терминала.
+* **Enable automatic updates**: автоматически проверять и устанавливать обновления плагина, применяемые при перезагрузке
+
+&gt; [!TIP]
+&gt;
+&gt; Для пользователей WSL: установите `wsl -d Ubuntu -- bash -lic &quot;claude&quot;` в качестве команды Claude (замените `Ubuntu` на имя вашего дистрибутива WSL)
+
+#### Конфигурация клавиши ESC
+
+Если клавиша ESC не прерывает операции Claude Code в терминалах JetBrains:
+
+1. Перейдите в **Settings → Tools → Terminal**
+2. Либо:
+   * Снимите флажок &quot;Move focus to the editor with Escape&quot;, либо
+   * Нажмите &quot;Configure terminal keybindings&quot; и удалите ярлык &quot;Switch focus to Editor&quot;
+3. Примените изменения
+
+Это позволит клавише ESC правильно прерывать операции Claude Code.
+
+## Специальные конфигурации
+
+### Удаленная разработка
+
+&gt; [!WARNING]
+&gt;
+&gt; При использовании JetBrains Remote Development необходимо установить плагин на удаленном хосте через **Settings → Plugin (Host)**, а не на вашей локальной клиентской машине.
+
+### Конфигурация WSL
+
+Если вы используете Claude Code на WSL2 с JetBrains IDE и видите &quot;No available IDEs detected&quot;, причина обычно заключается в NAT-сетевом взаимодействии WSL2 или брандмауэре Windows, блокирующем соединение между WSL2 и IDE, работающей на хосте Windows. WSL1 использует сеть хоста напрямую и не подвержена этой проблеме.
+
+#### Разрешить трафик WSL2 через брандмауэр Windows
+
+Это рекомендуемое исправление, так как оно сохраняет ваш существующий режим сетевого взаимодействия WSL2.
+
+**1. Найдите ваш IP-адрес WSL2**
+
+Из вашей оболочки WSL запустите:
+</code></pre>
+<p>hostname -I</p>
+<pre><code>
+Запомните вашу подсеть: возьмите первые два сегмента адреса и следуйте им с `.0.0/16`. Например, если адрес `172.21.123.45`, ваша подсеть `172.21.0.0/16`.
+
+**2. Создайте правило брандмауэра**
+
+Откройте PowerShell от имени администратора и запустите следующее, отрегулировав диапазон IP в соответствии с вашей подсетью:
+</code></pre>
+<p>New-NetFirewallRule -DisplayName &quot;Allow WSL2 Internal Traffic&quot; -Direction Inbound -Protocol TCP -Action Allow -RemoteAddress 172.21.0.0/16 -LocalAddress 172.21.0.0/16</p>
+<pre><code>
+**3. Перезагрузите вашу IDE и Claude Code**
+
+Закройте и снова откройте оба приложения, чтобы новое правило вступило в силу.
+
+#### Переключите WSL2 на зеркальное сетевое взаимодействие
+
+Зеркальное сетевое взаимодействие требует Windows 11 22H2 или более поздней версии. Если вы используете Windows 10, используйте вместо этого правило брандмауэра выше.
+
+Добавьте это в `.wslconfig` в вашем каталоге пользователя Windows:
+</code></pre>
+<p>[wsl2]
+networkingMode=mirrored</p>
+<pre><code>
+Затем перезагрузите WSL с помощью `wsl --shutdown` из PowerShell.
+
+## Устранение неполадок
+
+### Плагин не работает
+
+Если плагин установлен, но функции Claude Code не отображаются в вашей IDE:
+
+* Убедитесь, что вы запускаете Claude Code из корневого каталога проекта
+* Проверьте, что плагин JetBrains включен в параметрах IDE
+* Полностью перезагрузите IDE (может потребоваться сделать это несколько раз)
+* Для Remote Development убедитесь, что плагин установлен на удаленном хосте
+
+### IDE не обнаружена
+
+Если команда `/ide` показывает &quot;No available IDEs detected&quot;:
+
+* Проверьте, что плагин установлен и включен
+* Полностью перезагрузите IDE
+* Если вы ожидали автоматического подключения без запуска `/ide`, проверьте, что вы запустили `claude` из встроенного терминала IDE
+* Для пользователей WSL см. [конфигурацию WSL](#wsl-configuration) выше
+
+### Команда не найдена
+
+Если нажатие на значок Claude показывает &quot;command not found&quot;:
+
+1. Проверьте, что Claude Code установлен, запустив `claude --version` в терминале
+2. Настройте путь команды Claude в параметрах плагина
+3. Для пользователей WSL используйте формат команды WSL, упомянутый в разделе конфигурации
+
+## Соображения безопасности
+
+Когда Claude Code работает в JetBrains IDE в режиме разрешения [`acceptEdits`](https://code.claude.com/docs/ru/permission-modes#auto-approve-file-edits-with-acceptedits-mode), он может быть в состоянии изменять файлы конфигурации IDE, которые могут быть автоматически выполнены вашей IDE. Это может увеличить риск запуска Claude Code в режиме `acceptEdits` и позволить обойти подсказки разрешений Claude Code для выполнения Bash.
+
+При запуске в JetBrains IDEs учитывайте:
+
+* Использование режима Manual для редактирования, потому что `acceptEdits` и режим auto оба одобряют редактирования внутри вашего рабочего каталога без запроса, кроме как в [защищённых путях](https://code.claude.com/docs/ru/permission-modes.md#protected-paths)
+* Особую осторожность, чтобы убедиться, что Claude используется только с доверенными подсказками
+* Осведомленность о том, какие файлы Claude Code имеет доступ для изменения
+
+Для проблем с установкой или входом в Claude Code вне IDE см. [Устранение неполадок установки и входа](https://code.claude.com/docs/ru/troubleshoot-install.md).
+
+### Встроенный MCP сервер IDE
+
+Когда плагин активен, он запускает локальный MCP сервер, к которому CLI подключается автоматически. Это то, как CLI открывает различия в собственном средстве просмотра различий IDE, читает вашу текущую выделенную область для упоминаний `@` и позволяет Claude читать диагностику проверки.
+
+Сервер называется `ide` и скрыт от `/mcp`, потому что нечего конфигурировать. Однако если ваша организация использует [`PreToolUse` hook](https://code.claude.com/docs/ru/hooks#pretooluse) для создания списка разрешенных MCP инструментов, вам нужно знать, что он существует.
+
+**Контекст выделения и открытого файла.** При подключении CLI включает вашу текущую выделенную область редактора и путь активного файла в качестве контекста для каждого отправляемого вами запроса. Стенограмма показывает строку `⧉ Selected N lines from &lt;file&gt;` когда это происходит.
+
+Если вы [поставите сообщение в очередь, пока Claude работает](https://code.claude.com/docs/ru/interactive-mode.md#queue-messages-while-claude-works), он сохранит выделение, которое у вас было, когда вы нажали `Enter`, независимо от того, что вы выберете впоследствии.
+
+Чтобы исключить конфиденциальный файл, такой как `.env`, добавьте [`Read` правило отказа](https://code.claude.com/docs/ru/permissions#read-and-edit) для его пути. Соответствующее правило отказа предотвращает как выделенный текст, так и уведомление об открытом файле для этого файла от достижения Claude.
+
+**Транспорт и аутентификация.** Сервер прослушивает порт, назначенный ОС, и порт не настраивается. Транспорт — это незашифрованный `ws://`; на loopback любой процесс, который может захватить трафик, также может прочитать токен из файла блокировки, поэтому TLS не добавит защиту от локального злоумышленника. Каждый запуск IDE генерирует свежий случайный токен аутентификации, записывает его в файл блокировки в `~/.claude/ide/&lt;port&gt;.lock`, и CLI должен представить его как заголовок `X-Claude-Code-Ide-Authorization` для подключения. Если установлена переменная `CLAUDE_CONFIG_DIR`, файл блокировки записывается в `$CLAUDE_CONFIG_DIR/ide/` вместо этого.
+
+**Инструменты, предоставленные модели.** Сервер размещает несколько инструментов, но только один видим модели. Остальные — это внутренний RPC, который CLI использует для своего собственного пользовательского интерфейса, такой как открытие различий и чтение выделений, и они отфильтровываются перед тем, как список инструментов достигает Claude.
+
+| Имя инструмента (как видно hooks) | Что он делает | Только для чтения |
+| - | - | - |
+| `mcp__ide__getDiagnostics` | Возвращает диагностику проверки IDE, ошибки и предупреждения, показанные в редакторе. Каждый вызов охватывает один файл: файл, который указывает Claude, или файл в вашем активном редакторе, если Claude не указывает один. | Да |
+
+Плагин JetBrains не предоставляет инструмент выполнения кода модели.
+
+**Интерфейс прослушивания.** Какой сетевой интерфейс использует сервер, контролируется параметром **Accept connections from all network interfaces** в разделе **Settings → Tools → Claude Code \[Beta] → Networking (Advanced)**. Если параметр отключен, сервер прослушивает только `127.0.0.1` и недоступен с других хостов. Если он включен, порт доступен из вашей локальной сети. Параметр существует для случаев, когда CLI не может достичь IDE через loopback, например WSL2 с сетью NAT по умолчанию или удаленная установка IDE; см. [Конфигурация WSL](#wsl-configuration) для этого сценария.
+
+&gt; [!WARNING]
+&gt;
+&gt; Включение **Accept connections from all network interfaces** делает порт MCP IDE доступным из вашей локальной сети. Подключения по-прежнему требуют токен аутентификации из файла блокировки, но поскольку транспорт — это незашифрованный `ws://`, как трафик сеанса, так и этот токен пересекают сеть в открытом виде при включении параметра. Включайте его только когда loopback действительно не может работать. Для WSL2 предпочитайте [зеркальную сеть](#switch-wsl2-to-mirrored-networking), чтобы интерфейс loopback Windows был общим с виртуальной машиной Linux и сокет мог оставаться на loopback.
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

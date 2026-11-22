@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Нулевое хранение данных</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Нулевое хранение данных <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Узнайте о нулевом хранении данных (ZDR) для Claude Code, доступном для квалифицированных учетных записей на Claude for Enterprise, включая область действия, отключенные функции и способы запроса активации.</p>
+</blockquote>
+<p>Нулевое хранение данных (ZDR) для Claude Code доступно для квалифицированных учетных записей на Claude for Enterprise. Когда ZDR включен, промпты и ответы модели, созданные во время сессий Claude Code, обрабатываются в реальном времени и не сохраняются Anthropic после возврата ответа, за исключением случаев, когда это необходимо для соответствия закону или борьбы со злоупотреблениями.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>ZDR не включен в стандартный план Claude for Enterprise и не может быть включен из настроек администратора. Он доступен для квалифицированных учетных записей и требует отдельной активации от Anthropic. Если ваша организация требует ZDR, <a href="https://www.anthropic.com/contact-sales?utm_source=claude_code\&amp;utm_medium=docs\&amp;utm_content=zero_data_retention_request">свяжитесь с отделом продаж</a> или с вашей командой учетных записей Anthropic, чтобы подтвердить соответствие требованиям.</p>
+</blockquote>
+<p>Организации Claude for Enterprise, в которых включён HIPAA, могут распространить действие соглашения о деловом партнёрстве (Business Associate Agreement, BAA) на Claude Code CLI и вкладку Code в Claude Desktop без ZDR после того, как конфигурация HIPAA будет применена к Claude Code (локальный режим) и Cowork (локальный режим). См. <a href="https://code.claude.com/docs/ru/hipaa-setup.md">Настройка Claude Code (локальный режим) для организации, готовой к HIPAA</a>. Организациям без конфигурации HIPAA по-прежнему требуется ZDR, чтобы на Claude Code распространялось соглашение BAA. Список подходящих сервисов (Eligible Services) см. в <a href="https://trust.anthropic.com/resources?s=l1wrssd9hsbi4gak0tp5a6\&amp;name=%5Banthropic%5D-hipaa-ready-offering-implementation-guide">руководстве по внедрению</a>.</p>
+<p>ZDR на Claude for Enterprise дает корпоративным клиентам возможность использовать Claude Code с нулевым хранением данных и получать доступ к административным возможностям:</p>
+<ul>
+<li>Контроль затрат на пользователя</li>
+<li>Панель управления <a href="https://code.claude.com/docs/ru/analytics.md">Analytics</a></li>
+<li><a href="https://code.claude.com/docs/ru/server-managed-settings.md">Настройки, управляемые сервером</a></li>
+<li>Журналы аудита</li>
+</ul>
+<p>ZDR для Claude Code на Claude for Enterprise применяется только к прямой платформе Anthropic. Для развёртываний Claude на Amazon Bedrock, Google Cloud&#x27;s Agent Platform или Microsoft Foundry обратитесь к политикам хранения данных этих платформ.</p>
+<h3 id="область-применения-zdr">Область применения ZDR <a class="h-anchor" href="#область-применения-zdr" aria-label="Ссылка на раздел">#</a></h3>
+<p>ZDR охватывает вывод Claude Code на Claude for Enterprise.</p>
+<blockquote>
+<p>[!WARNING]</p>
+<p>ZDR включается на основе организации. Каждая новая организация требует отдельной активации ZDR вашей командой учета Anthropic. ZDR не применяется автоматически к новым организациям, созданным в рамках одного и того же аккаунта. Свяжитесь с вашей командой учета, чтобы включить ZDR для любых новых организаций.</p>
+</blockquote>
+<h4 id="маршрутизация-трафика-claude-code-в-вашу-организацию-zdr">Маршрутизация трафика Claude Code в вашу организацию ZDR <a class="h-anchor" href="#маршрутизация-трафика-claude-code-в-вашу-организацию-zdr" aria-label="Ссылка на раздел">#</a></h4>
+<p>ZDR применяется к запросам, которые аутентифицируются в организации с включенным ZDR. Если разработчик входит в Claude Code с личным аккаунтом или с API ключом из другой организации, эти сеансы не охватываются. Чтобы требовать, чтобы входы разработчиков в claude.ai принадлежали вашей организации ZDR, разверните управляемые параметры <code>forceLoginMethod</code> и <code>forceLoginOrgUUID</code>; см. <a href="https://code.claude.com/docs/ru/authentication.md#restrict-login-to-your-organization">Ограничение входа на вашу организацию</a>, которая также объясняет, как эти ключи обрабатывают входы в Claude Console.</p>
+<h4 id="что-охватывает-zdr">Что охватывает ZDR <a class="h-anchor" href="#что-охватывает-zdr" aria-label="Ссылка на раздел">#</a></h4>
+<p>ZDR охватывает вызовы вывода модели, сделанные через Claude Code на Claude for Enterprise. Когда вы используете Claude Code в своем терминале, отправляемые вами запросы и ответы, которые генерирует Claude, не сохраняются Anthropic. Это применяется ко всем моделям, доступным вашей организации ZDR. Некоторые модели требуют хранения данных по умолчанию; см. <a href="#model-availability-under-zdr">Доступность моделей в рамках ZDR</a>.</p>
+<h4 id="что-не-охватывает-zdr">Что не охватывает ZDR <a class="h-anchor" href="#что-не-охватывает-zdr" aria-label="Ссылка на раздел">#</a></h4>
+<p>ZDR не распространяется на следующее, даже для организаций с включенным ZDR. Если в строке не указано иное, эти функции следуют <a href="https://code.claude.com/docs/ru/data-usage.md#data-retention">стандартным политикам хранения данных</a>:</p>
+<p>| Функция | Детали |
+| - | - |
+| Chat на claude.ai | Чат-беседы через веб-интерфейс Claude for Enterprise не охватываются ZDR. |
+| Cowork | Сеансы Cowork не охватываются ZDR. |
+| Артефакты | Артефакты в диалогах чата и сессиях Cowork не охватываются ZDR и хранятся до удаления, если только ваша организация не установила для них срок хранения. Артефакты недоступны в Claude Code с ZDR. |
+| Claude in Chrome | Браузерное расширение <a href="https://support.claude.com/en/articles/13065128-claude-in-chrome-admin-controls">Claude in Chrome</a> не охватывается ZDR. Оно <a href="https://code.claude.com/docs/ru/chrome.md#chrome-availability-with-hipaa-or-zero-data-retention">недоступно в Claude Code</a> с ZDR, но участники по-прежнему могут использовать его вне Claude Code, если ваша организация это разрешает. |
+| Claude Code Analytics | Не сохраняет запросы или ответы модели, но собирает метаданные производительности, такие как адреса электронной почты аккаунтов и статистику использования. Метрики вклада недоступны для организаций ZDR; <a href="https://code.claude.com/docs/ru/analytics.md">панель управления аналитикой</a> показывает только метрики использования. |
+| Управление пользователями и местами | Административные данные, такие как адреса электронной почты аккаунтов и назначения мест, сохраняются в соответствии со стандартными политиками. |
+| Интеграции третьих сторон | Данные, обработанные инструментами третьих сторон, MCP servers или другими внешними интеграциями, не охватываются ZDR. Независимо проверьте практики обработки данных этих сервисов. |</p>
+<h3 id="функции-отключенные-под-zdr">Функции, отключенные под ZDR <a class="h-anchor" href="#функции-отключенные-под-zdr" aria-label="Ссылка на раздел">#</a></h3>
+<p>Когда ZDR включен для организации Claude Code на Claude for Enterprise, определенные функции, которые требуют сохранения запросов или завершений, автоматически отключаются на уровне бэкенда:</p>
+<p>| Функция | Причина |
+| - | - |
+| <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">Cloud sessions</a>, включая те, которые запущены из <a href="https://code.claude.com/docs/ru/desktop.md#cloud-sessions">приложения Desktop</a> | Требует серверного хранилища данных сеанса, включая историю беседы с запросами и завершениями. |
+| <a href="https://support.claude.com/en/articles/17444462-set-up-and-manage-the-new-unified-claude-experience-for-your-enterprise-organization">Единый интерфейс Chat и Cowork</a> | Требует облачных сессий. |
+| <a href="https://claude.com/docs/claude-tag">Claude Tag</a> | Сохраняет память канала и стенограммы сеансов. |
+| <a href="https://code.claude.com/docs/ru/artifacts.md">Артефакты</a> в Claude Code | Требует сохранения опубликованного содержимого страницы на инфраструктуре, управляемой Anthropic. |
+| <a href="https://support.claude.com/en/articles/16923645-get-started-with-claude-docs">Claude Docs</a> | Требует сохранения содержимого документов на инфраструктуре, управляемой Anthropic. |
+| Отправка отзыва (<code>/feedback</code>, <code>/bug</code>, <code>/share</code>) | Отправка отзыва отправляет данные беседы в Anthropic. |
+| <a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a> | Сохраняет стенограмму сеанса на серверах Anthropic для синхронизации беседы между устройствами. |</p>
+<p>Эти функции блокируются на бэкенде независимо от отображения на стороне клиента. Если вы видите отключенную функцию в терминале Claude Code при запуске, попытка использовать ее возвращает ошибку, указывающую на то, что политики организации не позволяют это действие.</p>
+<p>Будущие функции также могут быть отключены, если они требуют сохранения запросов или завершений.</p>
+<h4 id="доступность-моделей-под-zdr">Доступность моделей под ZDR <a class="h-anchor" href="#доступность-моделей-под-zdr" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude Fable 5.2, Fable 5.1 и Fable 5 — это <a href="https://support.claude.com/en/articles/15425695-covered-models">Covered Models</a>, которые <a href="https://platform.claude.com/docs/en/manage-claude/api-and-data-retention#model-specific-data-retention-requirements">требуют сохранения данных</a> по умолчанию, и то, может ли организация или рабочее пространство ZDR использовать их, регулируется политиками Covered Models, а не Claude Code. Если ваша организация не может их использовать, модели либо отсутствуют в средстве выбора <code>/model</code>, либо отображаются как отключенные, и сервер отклоняет запросы для них независимо от конфигурации клиента.</p>
+<p>Другие модели остаются доступными под ZDR. Модели Fable не являются моделями по умолчанию, а псевдоним <code>best</code> разрешается в Opus.</p>
+<h3 id="h-2">Хранение данных при нарушении политики <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Даже с включенным ZDR, Anthropic может сохранять данные, если это требуется по закону или для решения нарушений политики использования. Если сеанс отмечен как нарушение политики, Anthropic может сохранить связанные входные и выходные данные на срок до 2 лет, в соответствии со стандартной политикой ZDR Anthropic.</p>
+<h3 id="запрос-zdr">Запрос ZDR <a class="h-anchor" href="#запрос-zdr" aria-label="Ссылка на раздел">#</a></h3>
+<p>Чтобы запросить ZDR для Claude Code на Claude for Enterprise, <a href="https://www.anthropic.com/contact-sales?utm_source=claude_code\&amp;utm_medium=docs\&amp;utm_content=zero_data_retention_request">свяжитесь с отделом продаж</a> или с вашей командой учета Anthropic. Ваша команда учета отправит запрос внутри компании, и Anthropic проверит и включит ZDR в вашей организации после подтверждения соответствия требованиям. Все действия по активации регистрируются в журнале аудита.</p>
+<p>Если вы в настоящее время используете ZDR для Claude Code через ключи API с оплатой по мере использования, вы можете перейти на Claude for Enterprise, чтобы получить доступ к административным функциям, сохраняя ZDR для Claude Code. Свяжитесь с вашей командой учета, чтобы координировать миграцию.</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

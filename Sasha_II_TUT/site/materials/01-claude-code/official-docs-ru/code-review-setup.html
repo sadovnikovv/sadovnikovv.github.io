@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Настройка Code Review</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="настройка-code-review">Настройка Code Review <a class="h-anchor" href="#настройка-code-review" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Включите Code Review для вашей организации Claude: подключите GitHub, установите Claude GitHub App, выберите репозитории и настройте, когда запускаются ревью</p>
+</blockquote>
+<p>Как Owner вашей организации Claude, вы включаете Code Review в разделе <a href="https://claude.ai/admin-settings/claude-code#code-review"><strong>Admin settings &gt; Claude Code</strong></a> на claude.ai. Ревью выполняются на инфраструктуре Anthropic, поэтому вам не нужно добавлять файлы workflow в свои репозитории.</p>
+<p>После настройки вы выбираете, насколько тщательными будут ревью и когда они будут запускаться в каждом репозитории. Расходы растут при более высоком уровне ревью и при более частом запуске ревью. См. <a href="https://code.claude.com/docs/ru/code-review-costs.md#pricing">Стоимость Code Review</a>.</p>
+<h3 id="что-нужно-для-включения-code-review">Что нужно для включения Code Review <a class="h-anchor" href="#что-нужно-для-включения-code-review" aria-label="Ссылка на раздел">#</a></h3>
+<p>Сначала убедитесь, что ваша организация <a href="https://code.claude.com/docs/ru/code-review.md#availability">соответствует требованиям Code Review</a>. Затем убедитесь, что у вас есть следующие права доступа или есть человек, у которого они есть:</p>
+<p>| Доступ | Для чего нужен |
+| :- | :- |
+| <a href="https://code.claude.com/docs/ru/server-managed-settings.md#access-control">Роль Owner</a> в вашей организации Claude | Каждый шаг на странице администратора |
+| Owner организации GitHub | Установка Claude GitHub App и <a href="https://code.claude.com/docs/ru/admin-setup.md#connected-github-accounts">привязка его к вашей организации Claude</a>. Если вы не являетесь owner, попросите owner установить и привязать приложение, прежде чем начинать |
+| Доступ на запись к каждому добавляемому репозиторию из учетной записи GitHub, которую вы подключаете к Claude | Добавление репозитория |</p>
+<h3 id="включение-code-review">Включение Code Review <a class="h-anchor" href="#включение-code-review" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>1. Нажмите переключатель Allow code review</strong></p>
+<p>Перейдите в раздел <strong>Code review</strong> на странице <a href="https://claude.ai/admin-settings/claude-code#code-review"><strong>Admin settings &gt; Claude Code</strong></a> и нажмите переключатель <strong>Allow code review</strong>.</p>
+<p>Если Code Review включается сразу без диалогового окна, значит, в вашей организации уже привязан Claude GitHub App или добавлены репозитории. Перейдите к разделу <a href="#add-more-repositories">Добавление репозиториев</a>, а затем вернитесь к последнему шагу.</p>
+<p><strong>2. Подключите учетную запись GitHub</strong></p>
+<p>Если открылось диалоговое окно <strong>Connect GitHub</strong>, нажмите <strong>Connect</strong>. Если ваша организация использует GitHub Enterprise Server, сначала выберите свой экземпляр в диалоговом окне. GitHub попросит вас авторизовать Claude, а затем вернет вас на страницу администратора с открытым диалоговым окном <strong>Add a repository</strong>.</p>
+<p>Если сразу открылось окно <strong>Add a repository</strong>, ваша учетная запись уже подключена, поэтому переходите к следующему шагу.</p>
+<p><strong>3. Установите Claude GitHub App</strong></p>
+<p>Если нужные репозитории отображаются в диалоговом окне <strong>Add a repository</strong> или вы находите их с помощью поиска в нем, переходите к следующему шагу. Диалоговое окно показывает репозиторий, только если у Claude GitHub App есть к нему доступ, поэтому, если их там нет, установите приложение:</p>
+<ul>
+<li>Нажмите <strong>Install GitHub App</strong>. Если в списке нет репозиториев, это кнопка в диалоговом окне. В противном случае она находится внизу меню фильтра организаций GitHub в диалоговом окне. Страница установки GitHub откроется в новой вкладке.</li>
+<li>Выберите организацию GitHub, которой принадлежат репозитории.</li>
+<li>Выберите, к каким репозиториям приложение получит доступ.</li>
+<li>Подтвердите запрашиваемые разрешения. Этот набор шире, чем требуется для ревью, и используется совместно с другими функциями Claude, такими как <a href="https://code.claude.com/docs/ru/github-actions.md">GitHub Actions</a>. См. <a href="https://code.claude.com/docs/ru/code-review.md#what-a-review-can-access">к чему имеет доступ ревью</a> и <a href="https://code.claude.com/docs/ru/github-actions.md#github-app-permissions">полный список разрешений</a>.</li>
+<li>После завершения установки вкладка вернется в Claude. Если на ней отображается кнопка <strong>Finish connecting GitHub</strong>, нажмите ее, чтобы привязать установку к вашей организации Claude.</li>
+<li>Вернитесь на вкладку страницы администратора, где список в диалоговом окне обновится.</li>
+</ul>
+<p><strong>4. Выберите репозитории</strong></p>
+<p>Выберите репозитории, для которых нужно ревью, затем нажмите <strong>Continue</strong>. Для добавления репозитория у подключенной учетной записи GitHub должен быть доступ на запись к нему. Вы можете <a href="#add-more-repositories">добавить другие репозитории</a> позже.</p>
+<p><strong>5. Нажмите Finish</strong></p>
+<p>Далее откроется диалоговое окно <strong>Code review is set up</strong>. Нажмите <strong>Finish</strong>, чтобы включить Code Review. Если вы закроете диалоговое окно другим способом, ваши репозитории останутся добавленными, но <strong>Allow code review</strong> останется выключенным, и вам нужно будет включить его с помощью переключателя.</p>
+<p>Каждый репозиторий изначально настроен на ревью после каждого push, что дает наибольшее количество ревью. Чтобы запускать их реже, <a href="#set-when-reviews-run">настройте, когда запускаются ревью</a>.</p>
+<p><strong>6. Проверьте с помощью тестового pull request</strong></p>
+<p>Откройте тестовый pull request в одном из добавленных репозиториев и не помечайте его как черновик. В течение нескольких минут появится check run с именем <strong>Claude Code Review</strong>. Если вы уже установили для репозитория режим <strong>Manual (@claude review)</strong>, оставьте комментарий <code>@claude review</code> в pull request, чтобы запустить первое ревью.</p>
+<p>Если check run не появился, см. <a href="https://code.claude.com/docs/ru/code-review-troubleshooting.md#no-check-run-appears-on-the-test-pull-request">No check run appears on the test pull request</a>.</p>
+<p>Когда ревью будет готово, отправьте своим разработчикам страницу <a href="https://code.claude.com/docs/ru/code-review-pull-requests.md">Чтение и запрос ревью в pull request</a>, где описаны уровни серьезности, команды в комментариях и то, как реагировать на найденные проблемы.</p>
+<h3 id="h">Настройка значений по умолчанию для организации <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Как Owner, вы решаете, насколько тщательными будут ревью и как часто они будут запускаться. Обе настройки находятся в разделе <strong>Code review</strong> на странице <a href="https://claude.ai/admin-settings/claude-code#code-review"><strong>Admin settings &gt; Claude Code</strong></a>.</p>
+<h4 id="h-2">Настройка уровня ревью по умолчанию <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<p>Уровень ревью определяет, насколько тщательным будет каждое ревью, и более тщательное ревью стоит дороже. Вы задаете одно значение по умолчанию для организации и можете переопределить его для отдельных репозиториев.</p>
+<p>| Уровень | Компромисс |
+| :- | :- |
+| Quick | Более легкая проверка. Самый быстрый уровень с наименьшей стоимостью |
+| Standard | Сбалансированные глубина, скорость и стоимость. Уровень по умолчанию |
+| Deep | Самая тщательная проверка. Занимает больше всего времени и стоит дороже всего |</p>
+<ul>
+<li><strong>Значение по умолчанию для организации</strong>: выберите уровень в разделе <strong>Review level</strong> и подтвердите нажатием <strong>Change level</strong>. Каждый репозиторий использует его, если вы не задали для этого репозитория собственный уровень.</li>
+<li><strong>Отдельный репозиторий</strong>: нажмите <strong>Edit</strong> в строке репозитория, затем выберите <strong>Review level</strong>. Первый вариант, <strong>Default</strong>, следует настройке организации. Уровень сохраняется сразу после выбора.</li>
+</ul>
+<p>Новый уровень применяется к ревью, которые начинаются после изменения. О других факторах, влияющих на стоимость каждого ревью, см. <a href="https://code.claude.com/docs/ru/code-review-costs.md">Стоимость и использование Code Review</a>.</p>
+<h4 id="h-3">Настройка времени запуска ревью <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>У каждого репозитория есть собственная настройка <strong>Review runs</strong>, которая определяет, когда проводится ревью его pull request.</p>
+<ul>
+<li><strong>Once after PR creation</strong>: ревью запускается, когда pull request открывается, повторно открывается или помечается как готовый к ревью</li>
+<li><strong>After every push</strong>: ревью запускается при каждом push в ветку pull request, выявляя новые проблемы по мере развития pull request и автоматически закрывая обсуждения, когда вы исправляете отмеченные проблемы</li>
+<li><strong>Manual (@claude review)</strong>: открытие pull request или push в него не запускает ревью. Оставьте комментарий <a href="https://code.claude.com/docs/ru/code-review-pull-requests#comment-commands"><code>@claude review</code></a>, чтобы запросить ревью, или <code>@claude review always</code>, чтобы также подписать pull request на ревью при последующих push.</li>
+</ul>
+<p>Режим Manual полезен для репозиториев с высокой активностью, где вы хотите включать ревью только для определенных pull request, или чтобы начинать ревью pull request только тогда, когда они готовы. Чтобы сравнить, как каждый вариант влияет на расходы, см. <a href="https://code.claude.com/docs/ru/code-review-costs.md#how-often-reviews-run">Как часто запускаются ревью</a>.</p>
+<p>Чтобы изменить настройку, нажмите <strong>Edit</strong> в строке репозитория в таблице <strong>Repositories</strong> и выберите вариант <strong>Review runs</strong>. Выбор сохраняется сразу, а в столбце <strong>Review runs</strong> таблицы он отображается в сокращенном виде: Once per PR, Every push или Manual.</p>
+<ul>
+<li><strong>Черновики и pull request из форков</strong>: какой бы вариант вы ни выбрали, <a href="https://code.claude.com/docs/ru/code-review-pull-requests.md#review-drafts-and-pull-requests-from-forks">автоматические ревью пропускают и те, и другие</a></li>
+<li><strong>Новые репозитории</strong>: репозиторий, добавленный через диалоговое окно <strong>Add a repository</strong>, изначально использует <strong>After every push</strong>. Если его организация GitHub <a href="#cover-a-whole-github-organization">охвачена целиком</a>, он вместо этого получает настройку из строки этой организации.</li>
+</ul>
+<h4 id="h-4">Включение и отключение комментариев-подсказок <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<p>Комментарий-подсказка — это короткий комментарий, который Claude публикует в pull request, когда ревью не запускается, объясняя причину и дальнейшие действия. Настройка <strong>Show tips on pull requests</strong> включена по умолчанию. Когда она включена, Claude публикует подсказку в каждом из следующих случаев, объясняя:</p>
+<ul>
+<li><strong>Репозиторий настроен на Manual</strong>: как запросить ревью с помощью комментария</li>
+<li><strong>Pull request создан из форка</strong>: что ревью может запросить мейнтейнер</li>
+<li><strong>Бот или пользователь без доступа на запись, не являющийся автором pull request, оставляет комментарий <code>@claude review</code></strong>: что ревью не было запущено и кто может его запросить</li>
+<li><strong>Организация GitHub не привязана к вашей организации Claude</strong>: что ревью приостановлены и как привязать организацию</li>
+</ul>
+<p>Отключите эту настройку, чтобы прекратить публикацию таких комментариев.</p>
+<h4 id="h-5">Что могут изменить разработчики <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<p>Чтобы изменить уровень ревью, настройку <strong>Review runs</strong> или список репозиториев, для которых проводятся ревью, разработчики обращаются к вам. В GitHub без роли Owner они могут делать следующее:</p>
+<ul>
+<li><strong>Запросить ревью</strong>: оставить комментарий <a href="https://code.claude.com/docs/ru/code-review-pull-requests#comment-commands"><code>@claude review</code></a> в pull request. Для этого нужен доступ на запись к репозиторию, и это работает для <a href="https://code.claude.com/docs/ru/code-review-pull-requests.md#review-drafts-and-pull-requests-from-forks">черновиков и pull request из форков</a>, которые автоматические ревью пропускают.</li>
+<li><strong>Подписать отдельный pull request на ревью при каждом push</strong>: оставить комментарий <code>@claude review always</code> в pull request, который не является <a href="https://code.claude.com/docs/ru/code-review-pull-requests.md#review-drafts-and-pull-requests-from-forks">черновиком или pull request из форка</a>, например в репозитории, настроенном на Manual</li>
+<li><strong>Изменить то, что помечают ревью</strong>: сделать коммит <a href="https://code.claude.com/docs/ru/code-review-customize">файлов <code>REVIEW.md</code> и <code>CLAUDE.md</code></a> в репозиторий, например чтобы добавить проверку</li>
+</ul>
+<p>Ревью, запрошенные разработчиками, <a href="https://code.claude.com/docs/ru/code-review-costs.md#pricing">оплачиваются вашей организацией</a>. Чтобы ограничить расходы Code Review за месяц, см. <a href="https://code.claude.com/docs/ru/code-review-costs.md#limit-your-spend">Ограничение расходов</a>.</p>
+<h3 id="h-6">Управление репозиториями <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<p>Вы можете добавлять репозитории по одному или охватить сразу всю организацию GitHub, а также остановить ревью там, где они вам не нужны.</p>
+<h4 id="h-7">Добавление репозиториев <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<p>Чтобы добавить репозитории после настройки, нажмите <strong>Add</strong> над таблицей <strong>Repositories</strong> в разделе <strong>Code review</strong>. Откроется диалоговое окно <strong>Add a repository</strong>. Выберите репозитории и нажмите <strong>Continue</strong>.</p>
+<ul>
+<li><strong>Репозиторий отсутствует в списке</strong>: см. <a href="https://code.claude.com/docs/ru/code-review-troubleshooting.md#a-repository-isn’t-listed-in-add-a-repository">A repository isn&#x27;t listed in Add a repository</a>.</li>
+<li><strong>Вам нужны все репозитории организации GitHub</strong>: <a href="#cover-a-whole-github-organization">охватите организацию</a> вместо того, чтобы выбирать репозитории по одному</li>
+</ul>
+<h4 id="охват-всей-организации-github">Охват всей организации GitHub <a class="h-anchor" href="#охват-всей-организации-github" aria-label="Ссылка на раздел">#</a></h4>
+<p>Чтобы включить Code Review для всех репозиториев организации GitHub, задайте <strong>Review runs</strong> в строке организации в таблице <strong>Repositories</strong>. Это охватывает все репозитории этой организации, к которым у Claude GitHub App есть доступ, включая репозитории, добавленные позже. Это может значительно увеличить расходы. Для этого необходимо выполнение всех следующих условий:</p>
+<ul>
+<li>Учетная запись GitHub, которую вы подключили к Claude, является owner этой организации GitHub.</li>
+<li>Организация находится на github.com. Экземпляры GitHub Enterprise Server и личные учетные записи GitHub не подходят.</li>
+<li>Установлен <a href="https://code.claude.com/docs/ru/code-review-costs.md#limit-your-spend">месячный лимит расходов</a> для вашей организации Claude или для Code Review.</li>
+</ul>
+<p>Чтобы охватить организацию, нажмите <strong>Edit</strong> в ее строке, выберите вариант <strong>Review runs</strong> и подтвердите. Доступны три варианта из раздела <a href="#set-when-reviews-run">Настройка времени запуска ревью</a>, а также <strong>Off</strong>.</p>
+<p>После подтверждения вступают в силу следующие изменения:</p>
+<ul>
+<li><strong>Охват</strong>: каждый репозиторий охватывается начиная со следующего pull request. Если Claude GitHub App был установлен на выбранные репозитории, а не на все, Claude проводит ревью этих репозиториев; чтобы охватить остальные, измените доступ приложения к репозиториям на GitHub.</li>
+<li><strong>Существующие настройки</strong>: каждый репозиторий в этой организации GitHub получает выбранный вами вариант, включая репозитории, которые вы настраивали по отдельности. Повторная настройка строки приводит к тому же результату. Репозитории, которые вы отключили в их собственных строках, остаются отключенными.</li>
+<li><strong>Последующие индивидуальные изменения</strong>: репозиторий, которому вы позже зададите настройку, отличающуюся от настройки его организации, помечается в таблице как <strong>Custom</strong>.</li>
+<li><strong>Уровень ревью</strong>: у строки организации нет собственного уровня ревью.</li>
+</ul>
+<h4 id="отключение-code-review-или-удаление-репозитория">Отключение Code Review или удаление репозитория <a class="h-anchor" href="#отключение-code-review-или-удаление-репозитория" aria-label="Ссылка на раздел">#</a></h4>
+<p>В разделе <strong>Code review</strong> на странице <a href="https://claude.ai/admin-settings/claude-code#code-review"><strong>Admin settings &gt; Claude Code</strong></a> выберите элемент управления, соответствующий тому, что вы хотите остановить:</p>
+<ul>
+<li><strong>Один репозиторий с сохранением его в списке</strong>: нажмите <strong>Edit</strong> в его строке и отключите <strong>Code review</strong>. В таблице репозиторий будет отображаться как Off.</li>
+<li><strong>Один репозиторий с его удалением</strong>: нажмите <strong>Edit</strong> в его строке, затем <strong>Remove repository</strong> внизу диалогового окна. Ревью в нем прекращаются, и после этого другая организация Claude может настроить этот репозиторий. Пока организация GitHub этого репозитория охвачена целиком, удалить его нельзя; вместо этого отключите его переключатель <strong>Code review</strong>.</li>
+<li><strong>Вся организация GitHub</strong>: нажмите <strong>Edit</strong> в строке организации и выберите <strong>Off</strong>. Это также отключает репозитории этой организации, которые вы добавляли по одному.</li>
+<li><strong>Все</strong>: отключите <strong>Allow code review</strong>. Новые ревью не запускаются ни в одном репозитории, а ваш список репозиториев сохраняется, чтобы вы могли снова включить функцию позже.</li>
+</ul>
+<h3 id="h-8">Связанные ресурсы <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/code-review-costs.md">Стоимость и использование Code Review</a>: как уровень ревью и время их запуска влияют на расходы, как установить лимит расходов и где просматривать использование</li>
+<li><a href="https://code.claude.com/docs/ru/code-review-pull-requests.md">Чтение и запрос ревью в pull request</a>: что разработчики видят в pull request и команды в комментариях</li>
+<li><a href="https://code.claude.com/docs/ru/code-review-customize.md">Настройка Code Review</a>: настройте то, что помечает Claude, с помощью <code>REVIEW.md</code> и <code>CLAUDE.md</code></li>
+<li><a href="https://code.claude.com/docs/ru/github-enterprise-server.md">GitHub Enterprise Server</a>: подключите самостоятельно размещенный экземпляр GitHub перед настройкой</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

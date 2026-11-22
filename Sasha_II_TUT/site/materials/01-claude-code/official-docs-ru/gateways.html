@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Запуск Claude Code через шлюз</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="запуск-claude-code-через-шлюз">Запуск Claude Code через шлюз <a class="h-anchor" href="#запуск-claude-code-через-шлюз" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Маршрутизируйте Claude Code через самостоятельно размещаемый шлюз для централизованного управления учетными данными, отслеживания использования и контроля затрат. Охватывает архитектуру, шлюз Claude apps от Anthropic и использование других продуктов шлюзов.</p>
+</blockquote>
+<p>Шлюз — это прокси, который ваша организация запускает между Claude Code и поставщиком модели. Claude Code отправляет трафик API на шлюз вместо прямого подключения к поставщику, и шлюз перенаправляет его, используя учетные данные, которые хранит ваша организация. Разработчики проходят аутентификацию на шлюзе, а не хранят учетные данные поставщика, поэтому аутентификация, отслеживание использования, бюджеты и логирование аудита происходят в одном месте, которое вы контролируете.</p>
+<p>Claude Code включает самостоятельно размещаемый шлюз, <a href="https://code.claude.com/docs/ru/claude-apps-gateway">Claude apps gateway</a>, в бинарном файле <code>claude</code>, поэтому вам не нужно принимать отдельный продукт шлюза для его запуска. Если ваша организация уже запускает <a href="https://code.claude.com/docs/ru/llm-gateway">LLM gateway</a>, Claude Code также работает с ним.</p>
+<p>На этой странице рассматривается:</p>
+<ul>
+<li><a href="#how-a-gateway-works">Как шлюз находится между Claude Code и вашим поставщиком</a></li>
+<li><a href="#choose-a-gateway">Выбор между Claude apps gateway и шлюзом, который уже запускает ваша организация</a></li>
+<li><a href="#subscriptions-and-gateways">Как шлюзы взаимодействуют с подписками claude.ai</a></li>
+<li><a href="#configure-separately-from-the-gateway">Что настраивается отдельно от шлюза</a></li>
+</ul>
+<h3 id="how-a-gateway-works">How a gateway works <a class="h-anchor" href="#how-a-gateway-works" aria-label="Ссылка на раздел">#</a></h3>
+<p>Каждый Claude Code разработчика отправляет свои запросы на адрес шлюза и проходит аутентификацию с учетными данными, выданными шлюзом.</p>
+<p>Шлюз проходит аутентификацию разработчика, применяет любые правила доступа и бюджета, которые вы настраиваете, и перенаправляет запрос вашему поставщику с учетными данными организации. Поставщиком может быть API Anthropic или <a href="https://code.claude.com/docs/ru/third-party-integrations.md">облачный поставщик</a>, такой как Amazon Bedrock, Agent Platform Google Cloud или Microsoft Foundry; конфигурация шлюза решает. С Claude apps gateway или другим шлюзом, который предоставляет одну конечную точку в формате Anthropic, изменение поставщика не требует изменений на машинах разработчиков.</p>
+<p><img src="https://mintcdn.com/claude-code/-uq-4JE0W_JO5Er5/images/llm-gateway-flow.svg?fit=max\&amp;auto=format\&amp;n=-uq-4JE0W_JO5Er5\&amp;q=85\&amp;s=1c1a8dcc0cfcc3a58652cc8e28cd3e20" alt="Диаграмма, показывающая маршрутизацию Claude Code через шлюз. В зоне машин разработчиков CLI Claude Code и расширение VS Code отправляют запросы на адрес шлюза с учетными данными для каждого разработчика. В зоне, обозначенной как ваша инфраструктура, шлюз обрабатывает аутентификацию, отслеживание использования, бюджеты и маршрутизацию, а также перенаправляет запросы с учетными данными вашей организации. В зоне поставщиков моделей сплошная стрелка указывает на поставщика, который вы настраиваете, показанного как API Anthropic, а пунктирные стрелки указывают на другие варианты поставщиков, проиллюстрированные Amazon Bedrock, Google Cloud и Microsoft Foundry в качестве примеров." loading="lazy"></p>
+<p>Задействованы два вида учетных данных:</p>
+<ul>
+<li><strong>Учетные данные разработчика</strong>: каждый разработчик держит свои собственные, выданные шлюзом. Они проходят аутентификацию на шлюзе и идентифицируют их при отслеживании использования</li>
+<li><strong>Учетные данные поставщика</strong>: шлюз хранит одни учетные данные для вашей учетной записи поставщика, используемые всем перенаправленным трафиком</li>
+</ul>
+<h3 id="choose-a-gateway">Choose a gateway <a class="h-anchor" href="#choose-a-gateway" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code работает с собственным шлюзом Anthropic или со шлюзом, который уже запускает ваша организация.</p>
+<h4 id="claude-apps-gateway">Claude apps gateway <a class="h-anchor" href="#claude-apps-gateway" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude apps gateway — это самостоятельно размещаемый шлюз Anthropic, включенный в бинарный файл <code>claude</code>. Он маршрутизирует на Amazon Bedrock, Claude Platform on AWS, Google Cloud, Microsoft Foundry или API Anthropic в качестве восходящего потока. Разработчики входят с помощью вашего корпоративного поставщика удостоверений через <code>/login</code>, шлюз обеспечивает доступ к модели и <a href="https://code.claude.com/docs/ru/managed-settings.md">управляемые параметры</a> по группе IdP, и он выдает метрики использования <a href="https://code.claude.com/docs/ru/monitoring-usage.md">OpenTelemetry Protocol (OTLP)</a> в ваш собственный стек наблюдаемости.</p>
+<p>Поскольку он создается и тестируется вместе с каждым выпуском Claude Code, он перенаправляет значения <code>anthropic-beta</code> и поля запроса, которые отправляет Claude Code. Шлюз, поддерживаемый отдельно, требует обновления <a href="https://code.claude.com/docs/ru/llm-gateway-protocol.md#forward-as-open-lists">правил перенаправления</a> по мере того, как они меняются с каждым выпуском; Claude apps gateway выпускается вместе с CLI, поэтому нет списка для поддержания в актуальном состоянии. См. <a href="https://code.claude.com/docs/ru/claude-apps-gateway#availability-and-limitations">Доступность и ограничения</a> для небольшого набора функций, которые ведут себя иначе в сессии шлюза.</p>
+<p>Вход на шлюз — это шаг браузерного SSO, и нет потока токена сервиса, поэтому конвейер CI без разработчика для одобрения входа не может пройти аутентификацию через него; настройте их непосредственно для вашего поставщика. Сеансы Agent SDK и запуски <code>claude -p</code> на машине, где разработчик вошел, используют сеанс шлюза этой машины и управляются его политиками. См. <a href="https://code.claude.com/docs/ru/claude-apps-gateway#ci-pipelines-and-remote-machines">Конвейеры CI и удаленные машины</a>.</p>
+<p>См. <a href="https://code.claude.com/docs/ru/claude-apps-gateway">Claude apps gateway</a> для его развертывания.</p>
+<h4 id="other-gateways">Other gateways <a class="h-anchor" href="#other-gateways" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если ваша организация уже запускает LLM gateway или API gateway, вы можете использовать его вместо этого. Anthropic не одобряет, не поддерживает и не проверяет другие продукты шлюзов, и не поддерживает маршрутизацию Claude Code на модели, отличные от Claude, через любой шлюз. См. <a href="https://code.claude.com/docs/ru/llm-gateway">Other LLM gateways</a> для контрольного списка развертывания администратора, что должен реализовать шлюз и как указать Claude Code на него.</p>
+<h3 id="subscriptions-and-gateways">Subscriptions and gateways <a class="h-anchor" href="#subscriptions-and-gateways" aria-label="Ссылка на раздел">#</a></h3>
+<p>Когда разработчики подключаются через шлюз с учётными данными шлюза, использование оплачивается с учётной записи поставщика вашей организации по тарифам API, а их подписки claude.ai не используются и не тарифицируются. Каждый запрос, перенаправленный с этими учётными данными, оплачивается с учётной записи, стоящей за учётными данными поставщика шлюза.</p>
+<p>Исключением является установка только <code>ANTHROPIC_BASE_URL</code>, без учетных данных шлюза. Запросы по-прежнему маршрутизируются через шлюз, но сохраненный вход claude.ai остается активным учетным данием, поэтому применяются ограничения использования и выставление счетов подписки. <a href="https://code.claude.com/docs/ru/llm-gateway#subscriptions-and-gateways">Other LLM gateways</a> охватывает эту конфигурацию и то, что шлюз должен перенаправить, чтобы это работало.</p>
+<h3 id="configure-separately-from-the-gateway">Configure separately from the gateway <a class="h-anchor" href="#configure-separately-from-the-gateway" aria-label="Ссылка на раздел">#</a></h3>
+<p>Шлюз маршрутизирует запросы API модели. Несколько вещей, которые вы можете ожидать, что он будет обрабатывать, настраиваются в другом месте:</p>
+<ul>
+<li><strong>Какая модель отвечает</strong>: выберите модель с помощью команды <code>/model</code> или <a href="https://code.claude.com/docs/ru/model-config.md#setting-your-model">переменных окружения модели</a>. Шлюз решает, куда идут запросы, а не какую модель выбирает разработчик. Claude apps gateway может ограничить выбор с помощью списка разрешений <code>availableModels</code> для каждой группы, но разработчик все равно выбирает в его пределах.</li>
+<li><strong>Другой сетевой трафик</strong>: Claude Code сам отправляет проверки версий и загрузки непосредственно в Anthropic, отдельно от пути шлюза. Вашей сети по-прежнему требуется исходящий трафик на <a href="https://code.claude.com/docs/ru/network-config.md">требуемые домены</a>, или установите <a href="https://code.claude.com/docs/ru/env-vars"><code>CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC</code></a> для отключения дополнительных потоков.</li>
+<li><strong>Телеметрия клиента</strong>: Claude Code отключает свою аналитику, связанную с Anthropic, когда сеанс входит в Claude apps gateway. Чтобы также отключить аналитику запуска перед входом, доставьте <a href="https://code.claude.com/docs/ru/managed-settings#turn-telemetry-off-for-your-organization"><code>DISABLE_TELEMETRY</code></a> в <a href="https://code.claude.com/docs/ru/claude-apps-gateway-config.md#client-side-managed-settings">управляемых параметрах на стороне клиента</a> на каждом устройстве.</li>
+<li><strong>Телеметрия клиента на других шлюзах</strong>: отправляет ли Claude Code дополнительный поток телеметрии клиента, зависит от вашего поставщика, и <a href="https://code.claude.com/docs/ru/data-usage.md#default-behaviors-by-api-provider">таблица стандартных значений телеметрии</a> охватывает каждый случай.</li>
+<li><strong>Назначения телеметрии</strong>: куда Claude Code отправляет телеметрию сеанса шлюза, зависит от того, как сеанс вошел, и <a href="https://code.claude.com/docs/ru/claude-apps-gateway#whats-enforced-on-developers">What&#x27;s enforced on developers</a> говорит, куда идут экспорты каждого вида сеанса.</li>
+<li><strong>Корпоративные HTTP прокси</strong>: Claude Code отправляет свои запросы, включая запросы к шлюзу, через прокси, указанный в <code>HTTPS_PROXY</code>. Если ваша сеть требует прокси, <a href="https://code.claude.com/docs/ru/network-config.md">настройте его</a>. Если прокси применяется к Claude apps gateway, который вы размещаете, для <a href="https://code.claude.com/docs/ru/claude-apps-gateway#prerequisites">входа</a> требуется, чтобы имя хоста прокси разрешалось в частные адреса, либо чтобы хост шлюза был указан в <code>NO_PROXY</code>.</li>
+</ul>
+<h3 id="next-steps">Next steps <a class="h-anchor" href="#next-steps" aria-label="Ссылка на раздел">#</a></h3>
+<p>Следующая страница зависит от того, кто запускает шлюз. Шлюз Anthropic запускается из бинарного файла <code>claude</code> и имеет свое собственное руководство по настройке; шлюз, который уже запускает ваша организация, имеет протокол для реализации и контрольный список развертывания администратора.</p>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/claude-apps-gateway">Claude apps gateway</a> для развертывания самостоятельно размещаемого шлюза Anthropic с входом SSO и телеметрией OTLP</li>
+<li><a href="https://code.claude.com/docs/ru/llm-gateway">Other LLM gateways</a> для того, что должен реализовать шлюз, который уже запускает ваша организация, и как указать Claude Code на него</li>
+<li><a href="https://code.claude.com/docs/ru/admin-setup.md">Set up Claude Code for your organization</a> для более широких решений развертывания, частью которых является шлюз</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

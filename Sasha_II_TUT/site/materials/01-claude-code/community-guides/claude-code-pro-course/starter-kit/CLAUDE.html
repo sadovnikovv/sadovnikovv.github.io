@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Проект: &lt;Название&gt;</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/index.html">claude-code-pro-course</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/starter-kit/index.html">starter-kit</a></nav>
+<h1 id="h">Проект: &lt;Название&gt; <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<p>&lt;!-- Шаблон. Замените примеры на реальные команды вашего проекта. Держите файл коротким (&lt; 200 строк). --&gt;</p>
+<h3 id="h-2">Обзор <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Что это: &lt;одно предложение о проекте&gt;</li>
+<li>Стек: &lt;TypeScript, Node 20, PostgreSQL, React&gt;</li>
+<li>Подробнее: @README.md</li>
+</ul>
+<h3 id="h-3">Команды <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><code>pnpm install</code> — установка зависимостей</li>
+<li><code>pnpm dev</code> — dev-сервер</li>
+<li><code>pnpm test</code> — все тесты; <code>pnpm test path/to/file.test.ts</code> — один файл (предпочтительно)</li>
+<li><code>pnpm lint</code> / <code>pnpm typecheck</code> — обязательно перед коммитом</li>
+</ul>
+<h3 id="h-4">Архитектура <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><code>src/routes/</code> → <code>src/services/</code> → <code>src/repositories/</code> — слои не перепрыгивать</li>
+<li>Общие типы — <code>src/types/</code></li>
+<li>Конфигурация — только через <code>src/config.ts</code>, не читать <code>process.env</code> напрямую</li>
+</ul>
+<h3 id="h-5">Стиль кода <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>TypeScript strict, без <code>any</code></li>
+<li>Именованные экспорты, без default export</li>
+<li>Ошибки — через классы из <code>src/errors.ts</code></li>
+</ul>
+<h3 id="workflow">Workflow <a class="h-anchor" href="#workflow" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Для задач сложнее одного файла — сначала план</li>
+<li>Сначала тест, потом реализация; после изменений запускай релевантные тесты</li>
+<li>Коммиты — Conventional Commits (<code>feat:</code>, <code>fix:</code>, <code>refactor:</code> ...)</li>
+<li>Ветки: <code>feature/&lt;кратко&gt;</code>, <code>fix/&lt;кратко&gt;</code></li>
+</ul>
+<h3 id="h-6">ВАЖНО / Никогда <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>НИКОГДА не редактируй уже применённые миграции в <code>migrations/</code></li>
+<li>Не коммить <code>.env</code> и секреты</li>
+<li>Не добавляй зависимости без явной просьбы</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

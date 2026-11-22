@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Claude Code на мобильном устройстве</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="claude-code-на-мобильном-устройстве">Claude Code на мобильном устройстве <a class="h-anchor" href="#claude-code-на-мобильном-устройстве" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Запускайте, отслеживайте и управляйте задачами Claude Code со своего телефона с помощью приложения Claude для iOS и Android.</p>
+</blockquote>
+<p>Приложение Claude для <a href="https://apps.apple.com/us/app/claude-by-anthropic/id6473753684">iOS</a> и <a href="https://play.google.com/store/apps/details?id=com.anthropic.claude">Android</a> является клиентом для сеансов Claude Code, а не местом, где выполняется код. С вашего телефона вы можете получить доступ к <a href="#start-and-monitor-cloud-sessions">облачным сеансам</a> и <a href="https://code.claude.com/docs/ru/claude-projects.md">проектам</a> в облаке, к сеансу, работающему на вашем собственном компьютере через <a href="#continue-a-local-session-with-remote-control">Remote Control</a>, или к приложению Desktop через <a href="https://code.claude.com/docs/ru/desktop.md#sessions-from-dispatch">Dispatch</a>.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Claude Code не имеет отдельного мобильного приложения: облачные сеансы и Remote Control находятся на вкладке <strong>Code</strong> в приложении Claude, а Dispatch — это задача, которой вы отправляете сообщения в приложении.</p>
+</blockquote>
+<h3 id="h">Получить приложение <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>1. Загрузите приложение Claude</strong></p>
+<p>Установите приложение Claude для <a href="https://apps.apple.com/us/app/claude-by-anthropic/id6473753684">iOS</a> или <a href="https://play.google.com/store/apps/details?id=com.anthropic.claude">Android</a>. На iPad установите то же приложение iOS.</p>
+<blockquote>
+<p>[!TIP]</p>
+<p>Запустите <code>/mobile</code> в сеансе Claude Code, чтобы отобразить QR-код для <a href="https://claude.ai/mobile">claude.ai/mobile</a>, который открывает правильный магазин приложений для вашего телефона. <code>/ios</code> и <code>/android</code> делают то же самое.</p>
+</blockquote>
+<p><strong>2. Войдите в систему</strong></p>
+<p>Войдите с той же учётной записью claude.ai и организацией, которые вы используете для Claude Code. Облачные сеансы и Remote Control требуют учётную запись claude.ai, поэтому они недоступны с ключом API Anthropic Console или от стороннего поставщика, такого как Amazon Bedrock.</p>
+<p><strong>3. Откройте вкладку Code</strong></p>
+<p>Нажмите <strong>Code</strong> в навигации приложения, чтобы получить доступ к своим сеансам, или откройте <a href="https://claude.ai/code/new">claude.ai/code/new</a> на своём телефоне, чтобы запустить новый сеанс Code в приложении. Если вы не видите вкладку Code, ваш план или организация могут не включать эти функции; см. <a href="https://code.claude.com/docs/ru/feature-availability.md#availability-by-subscription-plan">доступность по плану подписки</a>.</p>
+<h3 id="h-2">Работайте со своего телефона <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Из приложения вы можете запускать облачные сеансы, открывать проект, управлять сеансом Claude Code, работающим на вашем компьютере, или отправлять Dispatch задачу. Приложение одинаково для каждого; они отличаются тем, где происходит работа.</p>
+<p>| Функция | Что вы подключаете | Когда использовать |
+| :- | :- | :- |
+| <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">Cloud sessions</a> | Сеанс на облачной инфраструктуре, управляемой Anthropic по умолчанию | Ваш репозиторий находится на GitHub и задача должна продолжаться после того, как вы отложите телефон. См. <a href="https://code.claude.com/docs/ru/web-quickstart.md">краткое руководство веб-версии</a> для настройки. |
+| <a href="https://code.claude.com/docs/ru/claude-projects.md">Projects</a> | Беседа, в которой Claude координирует параллельные потоки работы и отчитывается | У вас есть поток связанной работы, а не одна задача, и вы хотите увидеть, какие потоки завершены или требуют вас. |
+| <a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a> | Сеанс Claude Code, работающий на вашем компьютере | Работе нужна ваша локальная файловая система, инструменты или MCP серверы. |
+| <a href="https://code.claude.com/docs/ru/desktop.md#sessions-from-dispatch">Dispatch</a> | Приложение Desktop на вашем компьютере | Вы хотите отправить задачу и позволить Dispatch решить, как её запустить. Требуется план Pro, Max или Ultra. |</p>
+<p>Если ваш компьютер будет выключен, используйте облачные сеансы или проект, которые работают в облаке и продолжают работу с закрытым ноутбуком. Remote Control и Dispatch управляют вашей собственной машиной, поэтому она должна оставаться включённой с запущенным Claude Code или приложением Desktop. Если ваша машина перейдёт в режим сна во время сеанса Remote Control, Claude Code переподключится, когда она вернётся в сеть.</p>
+<p>Для более полного сравнения см. <a href="https://code.claude.com/docs/ru/platforms.md#work-when-you-are-away-from-your-terminal">работа, когда вы находитесь вдали от терминала</a>.</p>
+<p>Облачные сеансы и Remote Control работают на вкладке <strong>Code</strong>. Для Dispatch, которому вы отправляете сообщения как задачу в приложении, см. <a href="https://code.claude.com/docs/ru/desktop.md#sessions-from-dispatch">сеансы из Dispatch</a>.</p>
+<h4 id="h-3">Запуск и мониторинг облачных сеансов <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Облачные сеансы запускают задачи на облачной инфраструктуре, управляемой Anthropic по умолчанию, поэтому сеанс продолжается после того, как вы отложите телефон. На вкладке Code выберите репозиторий и ветку, опишите задачу и отправьте её. Сеансы сохраняются на всех устройствах: задача, которую вы запустили на ноутбуке, готова к проверке со своего телефона, а задача, которую вы запустили со своего телефона, ждёт вас, когда вы вернётесь к своему столу.</p>
+<p>Откройте сеанс в приложении, чтобы проверить прогресс, ответить на вопросы Claude или направить его в новом направлении. Вы также можете попросить Claude <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md#auto-fix-pull-requests">следить за pull request</a> и исправлять сбои CI или комментарии к проверке по мере их поступления. Чтобы подключить GitHub и настроить свою среду, следуйте <a href="https://code.claude.com/docs/ru/web-quickstart.md">краткому руководству веб-версии</a>, и см. <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">Use Claude Code in the cloud</a> для всего, что могут делать облачные сеансы.</p>
+<h4 id="продолжите-локальный-сеанс-с-remote-control">Продолжите локальный сеанс с Remote Control <a class="h-anchor" href="#продолжите-локальный-сеанс-с-remote-control" aria-label="Ссылка на раздел">#</a></h4>
+<p>Remote Control подключает приложение Claude к сеансу Claude Code, работающему на вашей машине, поэтому выполнение кода и доступ к файловой системе остаются локальными, пока вы управляете сеансом со своего телефона. Запустите сеанс на вашем компьютере с помощью <code>claude remote-control</code> или запустите <code>/remote-control</code> в уже открытом сеансе. Затем отсканируйте QR-код, который может отобразить терминал, или откройте приложение Claude, нажмите <strong>Code</strong> и выберите сеанс из списка. См. <a href="https://code.claude.com/docs/ru/remote-control.md#connect-from-another-device">подключение с другого устройства</a> для каждого варианта.</p>
+<p>Когда вы добавляете вложение в приложение Claude, оно также достигает локального сеанса:</p>
+<ul>
+<li><strong>Фотографии</strong>: Claude видит прикреплённые фотографии непосредственно как часть вашего сообщения. Claude Code также сохраняет каждую фотографию в <code>~/.claude/uploads/</code> и сообщает Claude путь к сохранённому файлу, поэтому Claude может скопировать изображение в файлы, которые он создаёт.</li>
+<li><strong>Другие файлы</strong>: Claude Code загружает их на вашу машину и передаёт их Claude как ссылки на файлы <code>@</code>.</li>
+</ul>
+<p>Требования, режимы вызова и устранение неполадок см. в <a href="https://code.claude.com/docs/ru/remote-control.md">обзоре Remote Control</a>.</p>
+<h4 id="получайте-push-уведомления">Получайте push-уведомления <a class="h-anchor" href="#получайте-push-уведомления" aria-label="Ссылка на раздел">#</a></h4>
+<p>Когда Remote Control активен, Claude может отправлять push-уведомления на ваш телефон, когда долгая задача завершается или когда ему нужно решение от вас. Вы также можете попросить об уведомлении в своём промпте, например <code>notify me when the tests finish</code>. См. <a href="https://code.claude.com/docs/ru/remote-control.md#mobile-push-notifications">мобильные push-уведомления</a> для двух переключателей <code>/config</code> и устранения неполадок доставки.</p>
+<p>Dispatch отправляет своё собственное уведомление, когда сеанс Code, который он создал, завершается или требует вашего одобрения, описано в <a href="https://code.claude.com/docs/ru/desktop.md#sessions-from-dispatch">сеансах из Dispatch</a>.</p>
+<h3 id="h-4">Ограничения <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Мобильный клиент охватывает большую часть того, что нужно сеансу, с несколькими ограничениями:</p>
+<ul>
+<li><strong>Команды только для локального использования</strong>: команды, которые работают только в интерфейсе терминала, такие как <code>/plugin</code> и <code>/resume</code>, не работают из приложения. <a href="https://code.claude.com/docs/ru/remote-control.md#limitations">Ограничения Remote Control</a> перечисляют команды, которые работают с мобильного устройства, и как их поведение отличается.</li>
+<li><strong>Режимы разрешений</strong>: облачные сессии предлагают Accept edits, Plan и Auto, а сессии Remote Control предлагают Manual, Accept edits, Plan и Auto. Вы не можете выбрать Bypass permissions из приложения ни в одном случае. См. <a href="https://code.claude.com/docs/ru/permission-modes.md#switch-permission-modes">переключение режимов разрешений</a>, чтобы узнать, когда доступен Auto.</li>
+<li><strong>Планы Dispatch</strong>: Dispatch требует план Pro, Max или Ultra и недоступен для Team или Enterprise.</li>
+</ul>
+<h3 id="h-5">Связанные ресурсы <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/platforms.md">Платформы и интеграции</a>: сравните каждую поверхность, на которой работает Claude Code</li>
+<li><a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">Claude Code в веб-версии</a>: как работают облачные сеансы и как перемещать работу на терминал и с терминала</li>
+<li><a href="https://code.claude.com/docs/ru/cloud-environments.md">Настройка облачных сред</a>: уровни сетевого доступа, переменные окружения и скрипты настройки для облачных сеансов</li>
+<li><a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a>: продолжите локальный сеанс с любого устройства</li>
+<li><a href="https://code.claude.com/docs/ru/desktop.md#sessions-from-dispatch">Сеансы из Dispatch</a>: как задачи Dispatch становятся сеансами Code в приложении Desktop</li>
+<li><a href="https://code.claude.com/docs/ru/channels.md">Channels</a>: спросите Claude что-нибудь со своего телефона через Telegram, Discord или iMessage, пока работа выполняется на вашей машине</li>
+<li><a href="https://code.claude.com/docs/ru/slack.md">Claude Code в Slack</a>: делегируйте задачи кодирования из своего рабочего пространства Slack, упомянув <code>@Claude</code></li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

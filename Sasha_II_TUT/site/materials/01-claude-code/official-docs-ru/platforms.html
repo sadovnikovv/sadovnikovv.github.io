@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Платформы и интеграции</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Платформы и интеграции <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Выберите, где запустить Claude Code и что к нему подключить. Сравните CLI, Desktop, VS Code, JetBrains, веб, мобильные приложения и интеграции, такие как Chrome, Slack и CI/CD.</p>
+</blockquote>
+<p>Claude Code запускает один и тот же базовый движок везде, но каждая поверхность оптимизирована для разного способа работы. Эта страница поможет вам выбрать правильную платформу для вашего рабочего процесса и подключить инструменты, которые вы уже используете.</p>
+<h3 id="где-запустить-claude-code">Где запустить Claude Code <a class="h-anchor" href="#где-запустить-claude-code" aria-label="Ссылка на раздел">#</a></h3>
+<p>Выберите платформу в зависимости от того, как вы предпочитаете работать и где находится ваш проект.</p>
+<p>| Платформа | Лучше всего для | Что вы получаете |
+| :- | :- | :- |
+| <a href="https://code.claude.com/docs/ru/quickstart.md">CLI</a> | Рабочие процессы терминала, скриптинг, удалённые серверы | Полный набор функций, <a href="https://code.claude.com/docs/ru/headless.md">Agent SDK</a>, <a href="https://code.claude.com/docs/ru/computer-use.md">использование компьютера</a> на macOS (Pro, Max и Ultra), сторонние поставщики |
+| <a href="https://code.claude.com/docs/ru/desktop.md">Desktop</a> | Визуальный просмотр, параллельные сессии, управляемая установка | Средство просмотра различий, предпросмотр приложения, <a href="https://code.claude.com/docs/ru/desktop.md#let-claude-use-your-computer">использование компьютера</a> и <a href="https://code.claude.com/docs/ru/desktop.md#sessions-from-dispatch">Dispatch</a> на Pro, Max и Ultra |
+| <a href="https://code.claude.com/docs/ru/vs-code.md">VS Code</a> | Работа внутри VS Code без переключения на терминал | Встроенные различия, интегрированный терминал, контекст файла |
+| <a href="https://code.claude.com/docs/ru/jetbrains.md">JetBrains</a> | Работа внутри IntelliJ, PyCharm, WebStorm или других IDE JetBrains | Средство просмотра различий, совместное использование выделения, сеанс терминала |
+| <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">Web</a> | Долгосрочные задачи, которые не требуют большого управления, или работа, которая должна продолжаться, когда вы не в сети | Облако, по умолчанию управляемое Anthropic; продолжается после отключения |
+| <a href="https://code.claude.com/docs/ru/mobile.md">Mobile</a> | Запуск и мониторинг задач вдали от вашего компьютера | Облачные сессии из приложения Claude для iOS и Android, <a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a> для локальных сессий, <a href="https://code.claude.com/docs/ru/desktop.md#sessions-from-dispatch">Dispatch</a> на Desktop на Pro, Max и Ultra |</p>
+<p>CLI — это наиболее полная поверхность для работы, ориентированной на терминал: скриптинг и Agent SDK доступны только в CLI. Сторонние поставщики также работают в <a href="https://code.claude.com/docs/ru/vs-code.md#use-third-party-providers">VS Code</a> и в <a href="https://code.claude.com/docs/ru/feature-availability.md#features-available-on-every-provider">JetBrains</a>, который запускает CLI в терминале вашей IDE. Корпоративные развёртывания <a href="https://code.claude.com/docs/ru/desktop.md">Desktop</a> поддерживают Google Cloud&#x27;s Agent Platform, и Desktop поддерживает <a href="https://code.claude.com/docs/ru/llm-gateway-connect.md#desktop-app">поставщиков шлюза</a>; для Amazon Bedrock или Microsoft Foundry используйте CLI или расширение IDE, или <a href="https://claude.com/docs/third-party/claude-desktop/overview">Claude Desktop on 3P</a>, который запускает вкладку Code на этих поставщиках. Desktop и расширения IDE обменивают некоторые функции, доступные только в CLI, на визуальный просмотр и более тесную интеграцию с редактором. Веб работает в облаке, поэтому задачи продолжают выполняться после отключения. Mobile — это тонкий клиент для этих же облачных сеансов или для локального сеанса через Remote Control, и может отправлять задачи на Desktop с помощью Dispatch.</p>
+<p>Вы можете смешивать поверхности в одном проекте. Конфигурация, память проекта и MCP серверы совместно используются на локальных поверхностях.</p>
+<h3 id="h-2">Подключите ваши инструменты <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Интеграции позволяют Claude работать с сервисами вне вашей кодовой базы.</p>
+<p>| Интеграция | Что она делает | Используйте для |
+| :- | :- | :- |
+| <a href="https://code.claude.com/docs/ru/chrome.md">Chrome</a> | Управляет вашим браузером с вашими авторизованными сеансами | Тестирование веб-приложений, заполнение форм, автоматизация сайтов без API |
+| <a href="https://code.claude.com/docs/ru/github-actions.md">GitHub Actions</a> | Запускает Claude в вашем конвейере CI | Автоматические проверки PR, сортировка проблем, запланированное обслуживание |
+| <a href="https://code.claude.com/docs/ru/gitlab-ci-cd.md">GitLab CI/CD</a> | То же самое, что GitHub Actions для GitLab | Автоматизация, управляемая CI на GitLab |
+| <a href="https://code.claude.com/docs/ru/code-review.md">Code Review</a> | Автоматически проверяет каждый PR | Выявление ошибок перед проверкой человеком |
+| <a href="https://code.claude.com/docs/ru/slack.md">Slack</a> | Отвечает на упоминания <code>@Claude</code> в ваших каналах от имени вашей собственной учётной записи | Превращение отчётов об ошибках в pull requests из чата команды на планах Pro, Max и Ultra |
+| <a href="https://claude.com/docs/claude-tag">Claude Tag</a> | Запускает <code>@Claude</code> как общую идентификацию вашей организации с настроенным администратором доступом | Общий доступ команды на планах Team и Enterprise вместо сеансов Slack для каждого пользователя |</p>
+<p>Для интеграций, не указанных здесь, <a href="https://code.claude.com/docs/ru/mcp.md">MCP серверы</a> и <a href="https://code.claude.com/docs/ru/desktop.md#connect-external-tools">соединители</a> позволяют подключить почти всё: Linear, Notion, Google Drive или ваши собственные внутренние API.</p>
+<h3 id="h-3">Работайте, когда вы вдали от вашего терминала <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code предлагает несколько способов работы, когда вы находитесь не у терминала. Они отличаются тем, что запускает работу, где работает Claude, и сколько настроек вам нужно выполнить.</p>
+<p>| | Триггер | Claude работает на | Настройка | Лучше всего для |
+| :- | :- | :- | :- | :- |
+| <a href="https://code.claude.com/docs/ru/desktop.md#sessions-from-dispatch">Dispatch</a> | Отправьте задачу из мобильного приложения Claude | Ваша машина (Desktop) | <a href="https://support.claude.com/en/articles/13947068">Свяжите мобильное приложение с Desktop</a> | Делегирование работы, когда вас нет, минимальная настройка |
+| <a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a> | Управляйте запущенной сессией из <a href="https://claude.ai/code">claude.ai/code</a> или мобильного приложения Claude | Ваша машина (CLI, Desktop или VS Code) | Запустите <a href="https://code.claude.com/docs/ru/remote-control#start-a-remote-control-session"><code>claude remote-control</code> или <code>/remote-control</code></a> | Управление текущей работой с другого устройства |
+| <a href="https://code.claude.com/docs/ru/channels.md">Channels</a> | Отправляйте события из приложения чата, такого как Telegram или Discord, или с вашего собственного сервера | Ваша машина (CLI) | <a href="https://code.claude.com/docs/ru/channels.md#quickstart">Установите плагин канала</a> или <a href="https://code.claude.com/docs/ru/channels-reference.md">создайте свой</a> | Реагирование на внешние события, такие как сбои CI или сообщения в чате |
+| <a href="https://code.claude.com/docs/ru/slack.md">Slack</a> | Упомяните <code>@Claude</code> в канале команды | Облако Anthropic | <a href="https://code.claude.com/docs/ru/slack.md#setting-up-claude-code-in-slack">Установите приложение Slack</a> с включенным <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">Claude Code в веб-версии</a>, в планах Pro, Max и Ultra | PR и рецензии из чата команды |
+| <a href="https://code.claude.com/docs/ru/self-hosted-environments">Self-hosted environments</a> | Запустите <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">облачную сессию</a> и выберите окружение вашей организации | Инфраструктура вашей организации | <a href="https://code.claude.com/docs/ru/self-hosted-environments-quickstart.md">Разверните runners</a>, в планах Team и Enterprise | Облачные сессии, которые должны работать внутри вашей сети |
+| <a href="https://code.claude.com/docs/ru/scheduled-tasks.md">Scheduled tasks</a> | Установите расписание | <a href="https://code.claude.com/docs/ru/scheduled-tasks.md">CLI</a>, <a href="https://code.claude.com/docs/ru/desktop-scheduled-tasks.md">Desktop</a> или <a href="https://code.claude.com/docs/ru/routines.md">облако</a> | Выберите частоту | Повторяющаяся автоматизация, такая как ежедневные проверки |</p>
+<p>Если вы не уверены, с чего начать, <a href="https://code.claude.com/docs/ru/quickstart.md">установите CLI</a> и запустите его в каталоге проекта. Если вы предпочитаете не использовать терминал, <a href="https://code.claude.com/docs/ru/desktop-quickstart.md">Desktop</a> предоставляет вам тот же движок с графическим интерфейсом.</p>
+<h3 id="h-4">Связанные ресурсы <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-5">Платформы <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/quickstart.md">Быстрый старт CLI</a>: установка и запуск вашей первой команды в терминале</li>
+<li><a href="https://code.claude.com/docs/ru/desktop.md">Desktop</a>: визуальный просмотр различий, параллельные сеансы, использование компьютера и Dispatch</li>
+<li><a href="https://code.claude.com/docs/ru/vs-code.md">VS Code</a>: расширение Claude Code внутри вашего редактора</li>
+<li><a href="https://code.claude.com/docs/ru/jetbrains.md">JetBrains</a>: расширение для IntelliJ, PyCharm и других IDE JetBrains</li>
+<li><a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">Web</a>: облачные сеансы из вашего браузера на claude.ai/code, которые продолжают работать при отключении</li>
+<li><a href="https://code.claude.com/docs/ru/claude-projects.md">Projects</a>: один разговор, в котором Claude координирует множество облачных сеансов для выполнения работы и отправляет отчёты</li>
+<li><a href="https://code.claude.com/docs/ru/mobile.md">Mobile</a>: приложение Claude для <a href="https://apps.apple.com/us/app/claude-by-anthropic/id6473753684">iOS</a> и <a href="https://play.google.com/store/apps/details?id=com.anthropic.claude">Android</a> для запуска и мониторинга задач вдали от вашего компьютера</li>
+</ul>
+<h4 id="h-6">Интеграции <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/chrome.md">Chrome</a>: автоматизация задач браузера с вашими авторизованными сеансами</li>
+<li><a href="https://code.claude.com/docs/ru/computer-use.md">Computer use</a>: позвольте Claude открывать приложения и управлять вашим экраном на macOS</li>
+<li><a href="https://code.claude.com/docs/ru/github-actions.md">GitHub Actions</a>: запуск Claude в вашем конвейере CI</li>
+<li><a href="https://code.claude.com/docs/ru/gitlab-ci-cd.md">GitLab CI/CD</a>: то же самое для GitLab</li>
+<li><a href="https://code.claude.com/docs/ru/code-review.md">Code Review</a>: автоматическая проверка при каждом pull request</li>
+<li><a href="https://code.claude.com/docs/ru/slack.md">Slack</a>: отправка задач из чата команды и получение PR обратно в планах Pro, Max и Ultra</li>
+<li><a href="https://claude.com/docs/claude-tag">Claude Tag</a>: запуск <code>@Claude</code> как общей идентификации вашей организации в планах Team и Enterprise</li>
+</ul>
+<h4 id="h-7">Удалённый доступ <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/desktop.md#sessions-from-dispatch">Dispatch</a>: отправьте задачу со своего телефона, и она может создать сеанс Desktop</li>
+<li><a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a>: управляйте работающим сеансом со своего телефона или браузера</li>
+<li><a href="https://code.claude.com/docs/ru/channels.md">Channels</a>: отправляйте события из приложений чата или ваших собственных серверов в сеанс</li>
+<li><a href="https://code.claude.com/docs/ru/scheduled-tasks.md#compare-scheduling-options">Варианты планирования</a>: запускайте промпты по повторяющемуся расписанию</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

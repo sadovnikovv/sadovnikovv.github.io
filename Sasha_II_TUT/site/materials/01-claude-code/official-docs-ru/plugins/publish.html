@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Публикация и распространение плагина</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/plugins/index.html">plugins</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Публикация и распространение плагина <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Опубликуйте плагин Claude Code через собственный маркетплейс или маркетплейс Anthropic, с предварительным контрольным списком и информацией о том, как пользователи получают обновления.</p>
+</blockquote>
+<p>Публикация плагина Claude Code означает его размещение в маркетплейсе — каталоге JSON, который содержит список плагинов и указывает, откуда получить каждый из них, чтобы другие люди могли установить его по имени и получать ваши обновления. Вы можете запустить собственный маркетплейс или отправить свой плагин в каталог Anthropic. Чтобы поделиться плагином без публикации, отправьте людям папку плагина или файл <code>.zip</code> для самостоятельной загрузки.</p>
+<p>Эта страница предназначена для автора готового плагина, который готов поделиться им.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Следующие случаи рассматриваются на других страницах:</p>
+<ul>
+<li><strong>Ваш плагин еще не готов</strong>: начните с <a href="https://code.claude.com/docs/ru/plugins/create.md">Создание плагина</a></li>
+<li><strong>Вы поддерживаете CLI или SDK с плагином в официальном маркетплейсе</strong>: см. <a href="https://code.claude.com/docs/ru/plugins/cli-hints.md">Рекомендуйте свой плагин из вашего CLI</a></li>
+</ul>
+</blockquote>
+<p>Начните с <a href="#choose-how-to-distribute">Выбор способа распространения</a>, чтобы сравнить варианты распространения. Если вы уже знаете свой путь, перейдите к <a href="#prepare-your-plugin-for-release">Подготовка плагина к выпуску</a>, а затем следуйте разделу вашего маршрута, чтобы узнать, что сказать пользователям и как они получают ваши обновления.</p>
+<h3 id="h-2">Выбор способа распространения <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Выберите вариант распространения в зависимости от того, кому нужно установить плагин:</p>
+<p>| Маршрут | Кто может установить | Что вам нужно | Получают ли пользователи ваши обновления автоматически? |
+| :- | :- | :- | :- |
+| <a href="#share-a-plugin-without-a-marketplace">Без маркетплейса</a> | Люди, которым вы отправили папку плагина или файл <code>.zip</code> | Папка плагина | Нет. Они загружают копию, которую вы отправили |
+| <a href="#publish-through-your-own-marketplace">Собственный маркетплейс</a> | Любой, кто может получить доступ к репозиторию, который может быть приватным, который может клонировать ваша команда | Репозиторий git или другой хост с файлом <code>.claude-plugin/marketplace.json</code>, который содержит список вашего плагина | Выключено |
+| <a href="#submit-to-anthropics-directory">Маркетплейс Anthropic</a> | Люди, которые добавляют его на claude.ai или в Cowork. Он также загружается в их сеансах Claude Code через <a href="https://code.claude.com/docs/ru/plugins/loading.md#synced-plugins">синхронизацию учётной записи</a> | Репозиторий GitHub, содержащий плагин, и платный план claude.ai для отправки | Да, после публикации отправленной вами версии |</p>
+<p>Автоматическое обновление — это параметр маркетплейса на стороне пользователя, который получает новые версии в фоновом режиме.</p>
+<h3 id="h-3">Подготовка плагина к выпуску <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Имя, версия, валидация и установка из маркетплейса определяют, будет ли выпуск работать для людей, которые его установят. Проверьте их перед первым выпуском и снова перед каждым последующим.</p>
+<p><strong>1. Выберите постоянное имя</strong></p>
+<p>Пользователи устанавливают, включают и настраивают ваш плагин по <code>name@marketplace</code>, поэтому переименованный плагин — это другой плагин для каждой существующей установки. Выберите имя в формате kebab-case, например <code>deploy-helper</code>, потому что <code>claude plugin validate</code> предупреждает о других формах, и рассматривайте его как постоянное. Установите <code>displayName</code> в <code>plugin.json</code> для метки, которую видят пользователи.</p>
+<p><strong>2. Решите, как вы будете версионировать</strong></p>
+<p>Если вы установите <code>version</code> в <code>plugin.json</code> и позже отправите коммиты без его изменения, <code>claude plugin update</code> выведет <code>&lt;name&gt; is already at the latest version (1.0.0).</code> и пользователи сохранят старую копию. Либо увеличивайте <code>version</code> при каждом выпуске, либо опустите его в маркетплейсе, размещенном на git, чтобы Claude Code использовал SHA коммита вместо этого. См. <a href="https://code.claude.com/docs/ru/plugins/loading.md#versions-and-updates">Версии и обновления</a>.</p>
+<p><strong>3. Валидация</strong></p>
+<p>В вашей оболочке выполните <code>claude plugin validate --strict ./your-plugin</code>. Чистый запуск выводит <code>✔ Validation passed</code>.</p>
+<ul>
+<li><strong>В CI</strong>: сохраняйте <code>--strict</code>, который также завершает запуск с кодом выхода 1 при предупреждениях, таких как неизвестное поле манифеста или отсутствующий <code>version</code>. Удалите <code>--strict</code>, если вы выбрали опустить <code>version</code> на предыдущем шаге.</li>
+<li><strong>Пути</strong>: валидация сообщает пути компонентов, которые не начинаются с <code>./</code>. Внутри команд hook и конфигов MCP сервера ссылайтесь на файлы как <code>${CLAUDE_PLUGIN_ROOT}/...</code>. См. <a href="https://code.claude.com/docs/ru/plugins/manifest-reference.md#path-rules">правила пути</a>.</li>
+</ul>
+<p><strong>4. Установите его из локального маркетплейса</strong></p>
+<p>В вашей оболочке добавьте локальный маркетплейс, который содержит список плагина с помощью <code>claude plugin marketplace add ./path-to-marketplace</code>, установите плагин из него и запустите сеанс, чтобы подтвердить, что он загружается.</p>
+<ul>
+<li>Для наименьшего маркетплейса, который работает, см. <a href="https://code.claude.com/docs/ru/plugins/create-marketplace.md">Создание маркетплейса</a>.</li>
+<li>Чтобы узнать, загружает ли установка ваш исходный каталог или кэшированную копию, см. <a href="https://code.claude.com/docs/ru/plugins/loading.md#in-place-and-copied-plugins">Плагины на месте и скопированные плагины</a>.</li>
+</ul>
+<p><strong>5. Заполните метаданные, которые видят пользователи</strong></p>
+<p>Установите <code>description</code>, <code>author</code>, <code>homepage</code> и <code>repository</code> в <code>plugin.json</code> и добавьте <code>README.md</code> в корень плагина. <code>homepage</code> должен анализироваться как URL. Какие значения принимает каждое поле, см. в <a href="https://code.claude.com/docs/ru/plugins/manifest-reference.md#fields">справочнике манифеста</a>.</p>
+<p><strong>6. Запустите свой набор eval</strong></p>
+<p>Если у вас есть набор eval, запустите <code>claude plugin eval</code> в вашей оболочке. Он запускает тестовые случаи плагина и оценивает результаты, что выявляет регрессии при изменении плагина. См. <a href="https://code.claude.com/docs/ru/plugin-evals.md">Тестирование плагинов с помощью eval</a>.</p>
+<h3 id="h-4">Поделитесь плагином без маркетплейса <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Если плагин находится в репозитории git, люди могут клонировать его и загрузить checkout, или запустить Claude Code из своей оболочки с <code>--plugin-url</code>, указывающим на файл <code>.zip</code>, который вы прикрепляете к выпуску. Чтобы получить вашу следующую версию, они вытягивают или загружают снова. Если он не находится в репозитории, отправьте им каталог или файл <code>.zip</code> из него. Они загружают его одним из двух способов:</p>
+<ul>
+<li><strong>Для одного сеанса</strong>: они запускают Claude Code из своей оболочки с <code>claude --plugin-dir ./deploy-helper</code>, где путь — это клон, распакованная папка или сам файл <code>.zip</code>. См. <a href="https://code.claude.com/docs/ru/plugins/cli-reference.md#flags-that-load-a-plugin-for-one-session">Флаги, которые загружают плагин для одного сеанса</a>.</li>
+<li><strong>Для каждой сессии</strong>: они перемещают каталог плагина с его <code>.claude-plugin/plugin.json</code> в <code>~/.claude/skills/</code>. С этого момента Claude Code загружает его при запуске, если только их администратор не <a href="https://code.claude.com/docs/ru/plugins/loading.md#skills-directory-plugins-blocked-by-managed-settings">заблокировал плагины из каталога скиллов</a>.</li>
+</ul>
+<p>Добавление <code>.claude-plugin/marketplace.json</code> в тот же репозиторий — это то, что позволяет людям устанавливать по имени и обновляться с помощью команды; см. <a href="#publish-through-your-own-marketplace">Публикация через собственный маркетплейс</a>.</p>
+<h4 id="h-5">Отправьте плагин со своим собственным инструментом <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если вы поддерживаете CLI или SDK, опубликуйте плагин в маркетплейсе и попросите ваш установщик или сообщение после установки запустить или вывести две команды, которые нужны пользователю: <code>claude plugin marketplace add &lt;source&gt;</code>, затем <code>claude plugin install &lt;name&gt;@&lt;marketplace&gt;</code>. Для обнаружения в сеансе, когда кто-то использует ваш инструмент, см. <a href="https://code.claude.com/docs/ru/plugins/cli-hints.md">Рекомендуйте свой плагин из вашего CLI</a>.</p>
+<h3 id="h-6">Публикация через собственный маркетплейс <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<p>Ваш собственный маркетплейс — это файл <code>.claude-plugin/marketplace.json</code>, который содержит список вашего плагина, добавленный в репозиторий git. После того как файл находится в репозитории, плагин опубликован, без формы отправки. Вы можете сохранить файл в собственном репозитории плагина или в отдельном.</p>
+<h4 id="h-7">Добавьте файл маркетплейса в ваш репозиторий <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<p>Чтобы опубликовать из собственного репозитория плагина, сохраните файл маркетплейса рядом с <code>plugin.json</code> в <code>.claude-plugin/</code>, с одной записью, чей <code>source</code> — это <code>&quot;./&quot;</code>, корень репозитория. Дайте записи то же <code>name</code>, что и <code>plugin.json</code>, согласно <a href="https://code.claude.com/docs/ru/plugins/create-marketplace.md#keep-the-entry-name-and-the-manifest-name-the-same">Сохраняйте имя записи и имя манифеста одинаковыми</a>:</p>
+<p>```json .claude-plugin/marketplace.json theme={null}
+{
+  &quot;name&quot;: &quot;your-marketplace&quot;,
+  &quot;owner&quot;: { &quot;name&quot;: &quot;Your Name&quot; },
+  &quot;plugins&quot;: [
+    { &quot;name&quot;: &quot;deploy-helper&quot;, &quot;source&quot;: &quot;./&quot; }
+  ]
+}</p>
+<pre><code>
+Замените `your-marketplace` именем, которое другие авторы вряд ли выберут, потому что у пользователя [не может быть двух маркетплейсов с одинаковым именем](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#marketplace-file). В вашей оболочке запустите `claude plugin validate .` в репозитории перед отправкой. О том, что проверяет этот запуск, см. [Проверка каталога](https://code.claude.com/docs/ru/plugins/cli-reference.md#validate-a-directory).
+
+[Создание маркетплейса](https://code.claude.com/docs/ru/plugins/create-marketplace.md) охватывает макет с несколькими плагинами в одном репозитории.
+
+### Контролируйте, кто может установить
+
+Любой, кто может клонировать репозиторий, может установить из него, поэтому если репозиторий приватный, маркетплейс также приватный. Для хостов, отличных от репозитория git, см. [Размещение маркетплейса](https://code.claude.com/docs/ru/plugins/host-marketplace.md). Чтобы охватить всех в компании, включая людей, которые не используют git, см. [Развертывание для всей компании](https://code.claude.com/docs/ru/plugins/host-marketplace.md#roll-out-to-a-whole-company).
+
+### Скажите пользователям, как установить
+
+Скажите своим пользователям добавить маркетплейс, а затем установить плагин из своей оболочки, заменив источник и имена на ваши:
+
+* Добавьте маркетплейс один раз: `claude plugin marketplace add your-org/your-marketplace`, где аргумент — это сокращение GitHub `owner/repo`, URL или путь
+* Установите плагин: `claude plugin install deploy-helper@your-marketplace`
+* Или сделайте оба из сеанса: `/plugin install deploy-helper --marketplace your-org/your-marketplace`. Требуется Claude Code v2.1.275 или позже. См. [Добавьте маркетплейс и установите в одной команде](https://code.claude.com/docs/ru/plugins/install.md#add-a-marketplace-and-install-in-one-command)
+* Или сделайте оба действия из оболочки одной командой: `claude plugin install deploy-helper --marketplace your-org/your-marketplace`. Требуется Claude Code v2.1.292 или позже
+
+### Отправьте обновления пользователям
+
+Пользователи получают выпуск, когда они его запрашивают или когда для вашего маркетплейса включено автоматическое обновление:
+
+* **По запросу**: `claude plugin update deploy-helper@your-marketplace` в оболочке пользователя обновляет маркетплейс и устанавливает новую копию, когда версия вашего плагина изменилась
+* **Автоматическое обновление**: по умолчанию отключено для вашего маркетплейса. См. [Включите автоматическое обновление](https://code.claude.com/docs/ru/plugins/host-marketplace.md#turn-on-auto-update). После включения он делает то же самое, что `claude plugin update` с задержкой после запуска сеанса
+
+[Установка плагинов](https://code.claude.com/docs/ru/plugins/install.md) охватывает команды на стороне пользователя, а [когда запускается автоматическое обновление](https://code.claude.com/docs/ru/plugins/loading.md#when-auto-update-runs) охватывает время.
+
+## Отправить в справочник Anthropic
+
+[Справочник Anthropic](https://claude.ai/directory) — это каталог, который люди просматривают на claude.ai и в Cowork для добавления плагинов и коннекторов. Одно объявление там достигает людей на claude.ai, в Cowork и в Claude Code. Вы отправляете из портала разработчика на [claude.ai/directory/manage](https://claude.ai/directory/manage), а раздел [Отправить плагин](https://claude.com/docs/plugins/submit#submit-a-plugin) на claude.com проведёт вас по порталу.
+
+Официальный маркетплейс Anthropic, `claude-plugins-official`, не принимает отправки через портал справочника. Если вы работаете с контактом партнёра Anthropic, попросите у них информацию об объявлении в официальном маркетплейсе.
+
+Чтобы отправить плагин:
+
+**1. Убедитесь, что вы можете отправлять**
+
+Отправка требует платный план claude.ai. На Pro, Max и Ultra вы отправляете со своего собственного аккаунта. На Team и Enterprise владелец может отправлять, а на Enterprise владелец также может предоставить разрешение **Directory** другим членам через пользовательскую роль в разделе **Organization settings &gt; Roles**. См. [Подтвердите, что вы можете отправлять в справочник](https://claude.com/docs/directory/publish#confirm-you-can-submit-to-the-directory).
+
+**2. Проверьте плагин локально**
+
+Запустите `claude plugin validate ./your-plugin --strict` в вашей оболочке. Замените `./your-plugin` на путь к каталогу вашего плагина. Команда перехватывает ошибки манифеста локально; [plugin validate](https://code.claude.com/docs/ru/plugins/cli-reference.md#plugin-validate) перечисляет, какие файлы читает каждый запуск. Портал применяет дополнительные правила справочника, которые CLI не проверяет, поэтому чистый локальный запуск не гарантирует чистую валидацию портала.
+
+[Контрольный список перед отправкой плагина](https://claude.com/docs/plugins/pre-submission-checklist#run-the-checks-before-you-submit) на claude.com содержит проверки, которые нужно запустить и исправить перед отправкой.
+
+**3. Проверьте, что загружается где**
+
+Некоторые компоненты плагина предназначены только для Claude Code и не загружаются на claude.ai или в Cowork. [Таблица поддержки компонентов](https://claude.com/docs/plugins/platform-support#compare-component-support-by-app) перечисляет каждый компонент по приложениям, поэтому вы знаете, что получат пользователи вне Claude Code.
+
+**4. Отправьте через портал разработчика**
+
+Откройте портал разработчика на [claude.ai/directory/manage](https://claude.ai/directory/manage) и следуйте инструкциям раздела [Отправить плагин](https://claude.com/docs/plugins/submit#submit-a-plugin) на claude.com.
+
+Остальная часть процесса задокументирована на claude.com:
+
+* [Подготовка к проверке](https://claude.com/docs/directory/publish#prepare-for-review): что происходит с каждой версией перед её публикацией
+* [Обновление опубликованного плагина](https://claude.com/docs/plugins/submit#update-a-published-plugin): как новая версия доходит до людей, у которых установлен ваш плагин
+* [Отправьте свой плагин, а свой MCP-сервер — как коннектор](https://claude.com/docs/directory/publish#submit-your-plugin-and-your-mcp-server-as-a-connector): что вы можете отправить
+* [Переместить более раннюю отправку на портал разработчика](https://claude.com/docs/directory/publish#move-an-earlier-submission-to-the-developer-portal): что делать, если вы отправили плагин через одну из более ранних форм отправки, до того как портал существовал
+
+### Как перечисленный плагин достигает пользователей Claude Code
+
+Человек, который устанавливает ваш плагин из справочника на claude.ai, имеет его на своём аккаунте, и Claude Code загружает его как `&lt;name&gt;@synced`. [Плагины, синхронизированные с claude.ai](https://code.claude.com/docs/ru/plugins/loading.md#synced-plugins) охватывает то, что они видят и как они его отключают.
+
+## Отправка обновлений, переименований и удалений
+
+### Выпустите новую версию
+
+Если вы публикуете через собственный маркетплейс и ваш `plugin.json` устанавливает `version`, увеличьте его и отправьте. Пользователи, которые запускают `claude plugin update` или имеют включенное автоматическое обновление, получают новую версию, как описано в разделе [Отправка обновлений пользователям](#ship-updates-to-users). Для справки по каталогу см. [Обновление опубликованного плагина](https://claude.com/docs/plugins/submit#update-a-published-plugin).
+
+### Отметьте выпуск
+
+Отметьте выпуск в git, когда другие плагины объявляют диапазон версий на вашем, потому что эти диапазоны разрешаются против тегов.
+
+Чтобы отметить, запустите `claude plugin tag` в вашей оболочке из каталога плагина. Он создает тег `{name}--v{version}`. Добавьте `--push`, чтобы отправить тег на `origin`. [Справочник `plugin tag`](https://code.claude.com/docs/ru/plugins/cli-reference#plugin-tag) содержит список его флагов.
+
+### Переименуйте или удалите плагин
+
+Никогда не изменяйте `name` опубликованного плагина. После переименования пользователи, которые уже установили его, теряют плагин, потому что их установка записана под старым именем. Запись `renames` в файле маркетплейса переносит их вместо этого. Измените `displayName`, когда вы хотите другую метку.
+
+Если переименование неизбежно, используйте карту `renames` файла маркетплейса, чтобы существующие установки переносились вместо сбоя с [`Plugin &quot;&lt;name&gt;&quot; not found in marketplace`](https://code.claude.com/docs/ru/plugins/troubleshooting#plugin-not-found-in-marketplace). Чтобы удалить плагин из маркетплейса или получить полные детали `renames`, см. [Переименуйте или удалите плагин](https://code.claude.com/docs/ru/plugins/host-marketplace.md#rename-or-remove-a-plugin) на странице размещения. [Справочник маркетплейса](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#top-level-fields) содержит поле.
+
+## Объявите зависимости
+
+Если ваш плагин нуждается в другом плагине из того же маркетплейса для включения, перечислите его в массиве `dependencies` в `plugin.json`. Каждая запись — это простое имя или объект с диапазоном semver `version`. Когда пользователь устанавливает ваш плагин, Claude Code также устанавливает и включает зависимость.
+
+[Зависимости плагинов](https://code.claude.com/docs/ru/plugins/dependencies.md) охватывает синтаксис диапазона, кросс-маркетплейс зависимости и как пользователи удаляют зависимости, которые им больше не нужны.
+
+## Следующие шаги
+
+* [Размещение и поддержка маркетплейса](https://code.claude.com/docs/ru/plugins/host-marketplace.md): выпускайте новые версии и держите пользователей в курсе
+* [Зависимости плагинов](https://code.claude.com/docs/ru/plugins/dependencies.md): объявляйте и версионируйте плагины, на которые полагается ваш
+* [Рекомендуйте свой плагин из вашего CLI](https://code.claude.com/docs/ru/plugins/cli-hints.md): подсказывайте пользователям Claude Code вашего CLI установить плагин
+* [Измеряйте стоимость и использование плагина](https://code.claude.com/docs/ru/plugins/measure.md): посмотрите, что стоит ваш плагин в контексте и используют ли его люди
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

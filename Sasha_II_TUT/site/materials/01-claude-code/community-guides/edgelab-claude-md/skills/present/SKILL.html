@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Present -- HTML Document Generator</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../../materials/index.html">Материалы</a> / <a href="../../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../../materials/01-claude-code/community-guides/edgelab-claude-md/index.html">edgelab-claude-md</a> / <a href="../../../../../../materials/01-claude-code/community-guides/edgelab-claude-md/skills/index.html">skills</a> / <a href="../../../../../../materials/01-claude-code/community-guides/edgelab-claude-md/skills/present/index.html">present</a></nav>
+<hr>
+<p>name: present
+description: &quot;Generate beautifully formatted standalone HTML documents with clean minimal design. Triggers: /present, &#x27;make a presentation&#x27;, &#x27;visualize&#x27;, &#x27;format as HTML&#x27;, &#x27;create a document&#x27;. Accepts any content (lesson, report, comparison, roadmap, dashboard) and produces a single HTML file with light/dark theme toggle. Zero external dependencies.&quot;</p>
+<hr>
+<h1 id="present-html-document-generator">Present -- HTML Document Generator <a class="h-anchor" href="#present-html-document-generator" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="when-to-use">When to use <a class="h-anchor" href="#when-to-use" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>User writes <code>/present</code> or asks to format something nicely</li>
+<li>Data visualization, lesson, report, plan, or comparison needed</li>
+<li>Request for an HTML file viewable in a browser</li>
+</ul>
+<h3 id="process">Process <a class="h-anchor" href="#process" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li><strong>Determine content type</strong> -- lesson, report, comparison, roadmap, dashboard</li>
+<li><strong>Gather content</strong> -- from conversation, files, APIs, or generate</li>
+<li><strong>Create HTML</strong> following the design system below</li>
+<li><strong>Save</strong> as <code>./present-{topic}.html</code> (current directory, kebab-case topic)</li>
+</ol>
+<h3 id="design-system-notion-inspired">Design System (Notion-inspired) <a class="h-anchor" href="#design-system-notion-inspired" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="color-tokens">Color Tokens <a class="h-anchor" href="#color-tokens" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Light theme (default):</strong></p>
+<pre><code>--bg: #ffffff
+--text: #37352f
+--text-muted: #787774
+--card-bg: #f7f6f3
+--card-border: rgba(55,53,47,0.09)
+--accent: #2eaadc
+--accent-dim: rgba(46,170,220,0.1)
+--code-bg: #f7f6f3
+--divider: rgba(55,53,47,0.09)
+--error: #eb5757
+--error-dim: rgba(235,87,87,0.1)
+--success: #0f7b6c
+--shadow: 0 1px 3px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.04)</code></pre>
+<p><strong>Dark theme:</strong></p>
+<pre><code>--bg: #191919
+--text: #e6e6e5
+--text-muted: #999999
+--card-bg: #252525
+--card-border: rgba(255,255,255,0.08)
+--accent: #529cca
+--accent-dim: rgba(82,156,202,0.15)
+--code-bg: #252525
+--divider: rgba(255,255,255,0.08)
+--error: #eb5757
+--error-dim: rgba(235,87,87,0.15)
+--success: #4dab9a
+--shadow: 0 1px 3px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.04)</code></pre>
+<h4 id="fonts-system-stack-zero-external-dependencies">Fonts (system stack, zero external dependencies) <a class="h-anchor" href="#fonts-system-stack-zero-external-dependencies" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Headings: <code>-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial, sans-serif</code> -- weight 600-700</li>
+<li>Body: same stack -- weight 400</li>
+<li>Code: <code>&quot;SFMono-Regular&quot;, Menlo, Consolas, &quot;Liberation Mono&quot;, monospace</code></li>
+</ul>
+<h4 id="components">Components <a class="h-anchor" href="#components" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Header (doc-header)</strong></p>
+<ul>
+<li>badge: uppercase, accent-dim bg, accent text, border-radius: 100px</li>
+<li>title: system font, 2rem, font-weight 700</li>
+<li>subtitle: 1rem, muted color</li>
+</ul>
+<p><strong>Table of Contents (toc)</strong></p>
+<ul>
+<li>card-bg background, card-border, border-radius: 0.75rem</li>
+<li>Numbered list: accent-colored numbers, font-weight 600</li>
+<li>Hover: subtle background shift</li>
+</ul>
+<p><strong>Section (section)</strong></p>
+<ul>
+<li>Title: 1.5rem, weight 600, numbered with accent color, bottom divider</li>
+<li>Body: 0.9375rem, line-height 1.7</li>
+</ul>
+<p><strong>Card (card)</strong></p>
+<ul>
+<li>card-bg, card-border, border-radius: 0.75rem, padding: 1.25rem</li>
+<li>Light mode: subtle box-shadow</li>
+<li>card-title: weight 600</li>
+</ul>
+<p><strong>Code (pre &gt; code)</strong></p>
+<ul>
+<li>code-bg, card-border, border-radius: 0.5rem</li>
+<li><strong>MANDATORY:</strong> <code>white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;</code> (prevents horizontal scroll on mobile)</li>
+<li>font-size: 0.8125rem, line-height: 1.6</li>
+</ul>
+<p><strong>Tables (table)</strong></p>
+<ul>
+<li>th: accent color, uppercase, letter-spacing 0.05em, weight 600</li>
+<li>td: muted color, first td -- primary text color, weight 500</li>
+<li>Rows: bottom divider</li>
+</ul>
+<p><strong>Callout (callout)</strong></p>
+<ul>
+<li>accent-dim bg, border-left: 3px solid accent</li>
+<li>Label: accent, uppercase, 0.75rem, weight 600</li>
+</ul>
+<p><strong>Key Point (key-point)</strong></p>
+<ul>
+<li>card-bg, accent border, border-radius: 0.75rem</li>
+<li>Label: accent, uppercase, bold</li>
+</ul>
+<p><strong>Error Box (error-box)</strong></p>
+<ul>
+<li>error-dim bg, error border (subtle)</li>
+<li>Title: error color, weight 600</li>
+</ul>
+<p><strong>Summary Card (summary-card)</strong></p>
+<ul>
+<li>accent-dim bg, accent border, border-radius: 0.75rem</li>
+<li>Title: weight 700</li>
+</ul>
+<p><strong>Metric Card (metric-card) -- for reports/dashboards</strong></p>
+<ul>
+<li>card-bg, border, border-radius: 0.75rem</li>
+<li>metric-value: 2rem, weight 700, accent color</li>
+<li>metric-label: muted, uppercase, 0.75rem</li>
+</ul>
+<p><strong>Theme Toggle (theme-toggle)</strong></p>
+<ul>
+<li>Fixed top-right corner, 40x40px button</li>
+<li>Sun icon (light mode) / Moon icon (dark mode) -- pure CSS/SVG, no deps</li>
+<li>Respects <code>prefers-color-scheme</code> on first load</li>
+<li>Persists choice in <code>localStorage</code></li>
+<li>Smooth transition: <code>transition: background 0.3s, color 0.3s, border-color 0.3s</code></li>
+</ul>
+<h4 id="responsive">Responsive <a class="h-anchor" href="#responsive" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-css">@media (max-width: 640px) {
+  .container { padding: 1rem 1rem 3rem; }
+  .doc-title { font-size: 1.5rem; }
+  .section-title { font-size: 1.25rem; }
+  pre { padding: 0.75rem; font-size: 0.75rem; }
+  table { font-size: 0.8125rem; }
+  th, td { padding: 0.5rem; }
+  .metric-grid { grid-template-columns: 1fr; }
+}</code></pre>
+<h4 id="html-skeleton">HTML Skeleton <a class="h-anchor" href="#html-skeleton" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;{title}&lt;/title&gt;
+&lt;!-- CSS variables for both themes, styles, theme toggle JS --&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;button class=&quot;theme-toggle&quot; aria-label=&quot;Toggle theme&quot;&gt;...&lt;/button&gt;
+&lt;div class=&quot;container&quot;&gt;
+  &lt;div class=&quot;doc-header&quot;&gt;
+    &lt;div class=&quot;doc-badge&quot;&gt;{badge}&lt;/div&gt;
+    &lt;h1 class=&quot;doc-title&quot;&gt;{title}&lt;/h1&gt;
+    &lt;p class=&quot;doc-subtitle&quot;&gt;{subtitle}&lt;/p&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;toc&quot;&gt;...&lt;/div&gt;
+  &lt;!-- sections --&gt;
+&lt;/div&gt;
+&lt;script&gt;/* theme toggle logic */&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+<h4 id="theme-toggle-js-pattern">Theme Toggle JS Pattern <a class="h-anchor" href="#theme-toggle-js-pattern" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-javascript">(function() {
+  const toggle = document.querySelector(&#x27;.theme-toggle&#x27;);
+  const html = document.documentElement;
+  const stored = localStorage.getItem(&#x27;present-theme&#x27;);
+  const prefersDark = window.matchMedia(&#x27;(prefers-color-scheme: dark)&#x27;).matches;
+  const theme = stored || (prefersDark ? &#x27;dark&#x27; : &#x27;light&#x27;);
+  html.setAttribute(&#x27;data-theme&#x27;, theme);
+
+  toggle.addEventListener(&#x27;click&#x27;, function() {
+    const current = html.getAttribute(&#x27;data-theme&#x27;);
+    const next = current === &#x27;dark&#x27; ? &#x27;light&#x27; : &#x27;dark&#x27;;
+    html.setAttribute(&#x27;data-theme&#x27;, next);
+    localStorage.setItem(&#x27;present-theme&#x27;, next);
+  });
+})();</code></pre>
+<h3 id="content-types">Content Types <a class="h-anchor" href="#content-types" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="lesson">Lesson <a class="h-anchor" href="#lesson" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Badge: &quot;Lesson -- {topic}&quot;</li>
+<li>TOC with numbered sections</li>
+<li>Sections with code blocks, tables, callouts, key-points</li>
+<li>Practice/exercises near the end, summary table</li>
+</ul>
+<h4 id="report">Report <a class="h-anchor" href="#report" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Badge: &quot;Report -- {date}&quot;</li>
+<li>Key metrics in metric-card grid (2-4 columns)</li>
+<li>Data tables</li>
+<li>Summary in summary-card</li>
+</ul>
+<h4 id="comparison">Comparison <a class="h-anchor" href="#comparison" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Badge: &quot;Comparison&quot;</li>
+<li>Comparison table (th: parameter, columns: options)</li>
+<li>Pros/cons in cards</li>
+<li>Verdict in summary-card</li>
+</ul>
+<h4 id="roadmap">Roadmap <a class="h-anchor" href="#roadmap" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Badge: &quot;Roadmap&quot; or &quot;Plan&quot;</li>
+<li>Phases as numbered sections</li>
+<li>Timeline visualization (CSS)</li>
+<li>Statuses: done (success), in progress (accent), planned (muted)</li>
+</ul>
+<h4 id="dashboard">Dashboard <a class="h-anchor" href="#dashboard" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Badge: &quot;Dashboard -- {topic}&quot;</li>
+<li>Metrics in grid cards</li>
+<li>Data tables</li>
+<li>Trends as text descriptions or inline charts</li>
+</ul>
+<h3 id="rules">Rules <a class="h-anchor" href="#rules" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong>Standalone HTML:</strong> single file, zero external dependencies (no Google Fonts, no CDN)</li>
+<li><strong>HTML escaping:</strong> all user-supplied text MUST be HTML-escaped before insertion (<code>&lt;</code> -&gt; <code>&amp;lt;</code>, <code>&gt;</code> -&gt; <code>&amp;gt;</code>, <code>&amp;</code> -&gt; <code>&amp;amp;</code>, <code>&quot;</code> -&gt; <code>&amp;quot;</code>). Never insert raw user strings into HTML attributes or script contexts</li>
+<li><strong>Mobile-first:</strong> responsive, max-width container</li>
+<li><strong>pre/code blocks:</strong> ALWAYS <code>white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;</code></li>
+<li><strong>Content language:</strong> match user&#x27;s language (the template/skill is in English, content adapts)</li>
+<li><strong>Theme toggle:</strong> always present, top-right corner</li>
+<li><strong>Default theme:</strong> respect <code>prefers-color-scheme</code>, fallback to light</li>
+<li><strong>Transitions:</strong> smooth 0.3s on theme change for bg, color, border</li>
+<li><strong>Save path:</strong> <code>./present-{topic}.html</code> -- relative, agent decides full path</li>
+<li><strong>Reference templates:</strong> <code>assets/template-lesson.html</code>, <code>assets/template-report.html</code></li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

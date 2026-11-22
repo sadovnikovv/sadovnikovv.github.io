@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Позвольте Claude использовать ваш компьютер из CLI</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="позвольте-claude-использовать-ваш-компьютер-из-cli">Позвольте Claude использовать ваш компьютер из CLI <a class="h-anchor" href="#позвольте-claude-использовать-ваш-компьютер-из-cli" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Включите computer use в Claude Code CLI, чтобы Claude мог открывать приложения, кликать, печатать и видеть ваш экран на macOS. Тестируйте нативные приложения, отлаживайте визуальные проблемы и автоматизируйте инструменты только с GUI без необходимости покидать терминал.</p>
+</blockquote>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Computer use — это research preview на macOS, который требует план Pro, Max или Ultra. Он недоступен для планов Team или Enterprise. Требуется интерактивная сессия, поэтому он недоступен в неинтерактивном режиме с флагом <code>-p</code>.</p>
+</blockquote>
+<p>Computer use позволяет Claude открывать приложения, управлять вашим экраном и работать на вашей машине так же, как вы. Из CLI Claude может скомпилировать приложение Swift, запустить его, кликнуть по каждой кнопке и сделать снимок экрана результата, всё в одном разговоре, где он писал код.</p>
+<p>На этой странице рассказывается о том, как работает computer use в CLI. Для приложения Desktop на macOS или Windows см. <a href="https://code.claude.com/docs/ru/desktop.md#let-claude-use-your-computer">computer use в Desktop</a>.</p>
+<h3 id="что-вы-можете-делать-с-computer-use">Что вы можете делать с computer use <a class="h-anchor" href="#что-вы-можете-делать-с-computer-use" aria-label="Ссылка на раздел">#</a></h3>
+<p>Computer use справляется с задачами, требующими GUI: всё, что вам обычно приходится делать вручную, покидая терминал.</p>
+<ul>
+<li><strong>Создание и проверка нативных приложений</strong>: попросите Claude создать приложение меню macOS. Claude пишет Swift, компилирует его, запускает приложение и кликает по каждому элементу управления, чтобы проверить, что всё работает, прежде чем вы его откроете.</li>
+<li><strong>Сквозное тестирование UI</strong>: укажите Claude на локальное приложение Electron и скажите «протестируй поток адаптации». Claude открывает приложение, кликает по регистрации и делает снимки экрана каждого шага. Никакой конфигурации Playwright, никакого тестового каркаса.</li>
+<li><strong>Отладка визуальных и проблем с макетом</strong>: скажите Claude «модальное окно обрезается на маленьких окнах». Claude изменяет размер окна, воспроизводит ошибку, делает снимок экрана, исправляет CSS и проверяет исправление. Claude видит то же, что видите вы.</li>
+<li><strong>Управление инструментами только с GUI</strong>: взаимодействуйте с инструментами дизайна, панелями управления оборудованием, iOS Simulator или собственными приложениями, у которых нет CLI или API.</li>
+</ul>
+<h3 id="когда-применяется-computer-use">Когда применяется computer use <a class="h-anchor" href="#когда-применяется-computer-use" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude имеет несколько способов взаимодействия с приложением или сервисом. Computer use — самый широкий и медленный, поэтому Claude сначала пытается использовать наиболее точный инструмент:</p>
+<ul>
+<li>Если у вас есть <a href="https://code.claude.com/docs/ru/mcp.md">MCP server</a> для сервиса, Claude использует его.</li>
+<li>Если задача — это команда shell, Claude использует Bash.</li>
+<li>Если задача — это работа в браузере и у вас настроен <a href="https://code.claude.com/docs/ru/chrome.md">Claude в Chrome</a>, Claude использует это.</li>
+<li>Если ничего из вышеперечисленного не применимо, Claude использует computer use.</li>
+</ul>
+<p>Управление экраном зарезервировано для вещей, которые ничто другое не может достичь: нативные приложения, симуляторы и инструменты без API.</p>
+<h3 id="включение-computer-use">Включение computer use <a class="h-anchor" href="#включение-computer-use" aria-label="Ссылка на раздел">#</a></h3>
+<p>Computer use доступен как встроенный MCP server под названием <code>computer-use</code>. По умолчанию он отключен, пока вы его не включите.</p>
+<p><strong>1. Откройте меню MCP</strong></p>
+<p>В интерактивном сеансе Claude Code запустите:</p>
+<p>```text theme={null}
+/mcp</p>
+<pre><code>
+Найдите `computer-use` в списке серверов. Он показывается как отключённый.
+
+**2. Включите сервер**
+
+Выберите `computer-use` и выберите **Enable**. Параметр сохраняется для каждого проекта, поэтому вам нужно сделать это только один раз для каждого проекта, где вы хотите использовать computer use.
+
+**3. Предоставьте разрешения macOS**
+
+В первый раз, когда Claude попытается использовать ваш компьютер, вы увидите приглашение предоставить два разрешения macOS:
+
+* **Accessibility**: позволяет Claude кликать, печатать и прокручивать
+* **Screen Recording**: позволяет Claude видеть, что находится на вашем экране
+
+Приглашение включает ссылки для открытия соответствующей панели System Settings. Предоставьте оба разрешения, затем выберите **Try again** в приглашении. macOS может потребовать перезагрузку Claude Code после предоставления разрешения Screen Recording.
+
+После настройки попросите Claude сделать что-то, что требует GUI:
+</code></pre>
+<p>Build the app target, launch it, and click through each tab to make
+sure nothing crashes. Screenshot any error states you find.</p>
+<pre><code>
+## Одобрение приложений для каждого сеанса
+
+Включение сервера `computer-use` не предоставляет Claude доступ к каждому приложению на вашей машине. В первый раз, когда Claude нужно конкретное приложение в сеансе, в вашем терминале появляется приглашение, показывающее:
+
+* Какие приложения Claude хочет контролировать
+* Любые дополнительные запрашиваемые разрешения, такие как доступ к буферу обмена
+* Сколько других приложений будет скрыто, пока Claude работает
+
+Выберите **Allow for this session** или **Deny**. Одобрения действуют для текущего сеанса. Вы можете одобрить несколько приложений одновременно, когда Claude запрашивает их вместе.
+
+Приложения с широким охватом показывают дополнительное предупреждение в приглашении, чтобы вы знали, что предоставляет одобрение:
+
+| Предупреждение | Применяется к |
+| :- | :- |
+| Equivalent to shell access | Terminal, iTerm, VS Code, Warp и другие терминалы и IDE |
+| Can read or write any file | Finder |
+| Can change system settings | System Settings |
+
+Эти приложения не блокируются. Предупреждение позволяет вам решить, оправдывает ли задача такой уровень доступа.
+
+Одобрите Finder, чтобы позволить Claude щёлкать по рабочему столу, Dock или окну Finder.
+
+Уровень управления Claude также варьируется в зависимости от категории приложения: браузеры и торговые платформы доступны только для просмотра, терминалы и IDE доступны только для клика, а всё остальное получает полный контроль. См. [app permissions в Desktop](https://code.claude.com/docs/ru/desktop.md#app-permissions) для полного разбора уровней.
+
+## Как Claude работает на вашем экране
+
+Понимание потока помогает вам предвидеть, что будет делать Claude и как вмешаться.
+
+### Один сеанс за раз
+
+Только один сеанс за раз может использовать ваш компьютер. Сеанс получает блокировку на уровне машины при первом действии computer use и освобождает её при выходе из сеанса, а не при завершении задачи. Попытка computer use второго сеанса завершается с ошибкой, в которой указывается сеанс, удерживающий блокировку. Сначала выйдите из этого сеанса.
+
+### Приложения скрыты, пока Claude работает
+
+Когда Claude начинает управлять вашим экраном, другие видимые приложения скрываются, чтобы Claude взаимодействовал только с одобренными приложениями. Окно вашего терминала остаётся видимым и исключается из снимков экрана, поэтому вы можете наблюдать сеанс, и Claude никогда не видит свой собственный вывод.
+
+Когда Claude завершает ход, скрытые приложения автоматически восстанавливаются.
+
+### Снимки экрана автоматически уменьшаются в масштабе
+
+Claude Code уменьшает масштаб каждого снимка экрана перед отправкой его модели. Вам не нужно снижать разрешение дисплея или изменять размер окон на Retina или других дисплеях с высоким разрешением. MacBook Pro 16 дюймов с нативным разрешением Retina захватывает 3456×2234 и уменьшает масштаб примерно до 1372×887, сохраняя соотношение сторон.
+
+Нет параметра для изменения целевого размера. Если текст или элементы управления на экране слишком малы для Claude, чтобы прочитать после уменьшения масштаба, увеличьте их размер в приложении, а не меняйте разрешение дисплея.
+
+### Остановитесь в любой момент
+
+Первый раз, когда Claude использует ваш компьютер в каждом ходе, появляется уведомление macOS: &quot;Claude is using your computer · press Esc to stop.&quot; Нажмите `Esc` в любом месте, чтобы немедленно прервать текущее действие, или нажмите `Ctrl+C` в терминале. В любом случае Claude останавливается, показывает ваши приложения и возвращает вам управление. Сеанс сохраняет [блокировку computer use](#one-session-at-a-time) до выхода из него.
+
+Второе уведомление появляется, когда Claude закончит.
+
+## Безопасность и граница доверия
+
+&gt; [!WARNING]
+&gt;
+&gt; В отличие от [sandboxed Bash tool](https://code.claude.com/docs/ru/sandboxing.md), computer use работает на вашем реальном рабочем столе с доступом к приложениям, которые вы одобрили. Claude проверяет каждое действие и отмечает потенциальные prompt injection из содержимого на экране, но граница доверия отличается. См. [computer use safety guide](https://support.claude.com/en/articles/14128542) для лучших практик.
+
+Встроенные защиты снижают риск без необходимости конфигурации:
+
+* **Одобрение для каждого приложения**: Claude может управлять только приложениями, которые вы одобрили в текущем сеансе.
+* **Предупреждения-дозорные**: приложения, которые предоставляют доступ к shell, файловой системе или параметрам системы, отмечаются перед одобрением.
+* **Терминал исключён из снимков экрана**: Claude никогда не видит окно вашего терминала, поэтому приглашения на экране в вашем сеансе не могут вернуться в модель.
+* **Глобальный выход**: клавиша `Esc` прерывает computer use откуда угодно, и нажатие клавиши потребляется, поэтому prompt injection не может использовать его для закрытия диалогов.
+* **Файл блокировки**: только один сеанс может управлять вашей машиной одновременно.
+
+## Примеры рабочих процессов
+
+Эти примеры показывают распространённые способы объединения computer use с задачами кодирования.
+
+### Проверка нативной сборки
+
+После внесения изменений в приложение macOS или iOS попросите Claude скомпилировать и проверить в одном проходе:
+</code></pre>
+<p>Build the MenuBarStats target, launch it, open the preferences window,
+and verify the interval slider updates the label. Screenshot the
+preferences window when you&#x27;re done.</p>
+<pre><code>
+Claude запускает `xcodebuild`, запускает приложение, взаимодействует с UI и сообщает, что он находит.
+
+### Воспроизведение ошибки макета
+
+Когда визуальная ошибка появляется только при определённых размерах окна, позвольте Claude найти её:
+</code></pre>
+<p>The settings modal clips its footer on narrow windows. Resize the app
+window down until you can reproduce it, screenshot the clipped state,
+then check the CSS for the modal container.</p>
+<pre><code>
+Claude изменяет размер окна, захватывает сломанное состояние и читает соответствующие таблицы стилей.
+
+### Тестирование потока симулятора
+
+Управляйте iOS Simulator без написания XCTest:
+</code></pre>
+<p>Open the iOS Simulator, launch the app, tap through the onboarding
+screens, and tell me if any screen takes more than a second to load.</p>
+<pre><code>
+Claude управляет симулятором так же, как вы бы это делали с мышью. Этот поток применяется к CLI; в приложении Desktop тот же запрос открывает [панель iOS Simulator](https://code.claude.com/docs/ru/desktop-ios-simulator.md) вместо управления экраном.
+
+## Различия с приложением Desktop
+
+Поверхности CLI и Desktop используют один и тот же механизм computer use, с несколькими различиями:
+
+| Функция | Desktop | CLI |
+| :- | :- | :- |
+| Платформы | macOS и Windows | только macOS |
+| Включение | Переключатель в [Settings](https://code.claude.com/docs/ru/desktop.md#enable-computer-use) | Включите `computer-use` в `/mcp` |
+| Список запрещённых приложений | Настраивается в Settings | Пока недоступно |
+| Auto-unhide toggle | Опционально | Всегда включено |
+| Dispatch integration | Сеансы, запущенные через Dispatch, могут использовать computer use | Не применимо |
+
+## Troubleshooting
+
+### &quot;Computer use is in use by another Claude session&quot;
+
+Другой сеанс Claude Code удерживает блокировку, которую он сохраняет до выхода. Выйдите из этого сеанса. Если другой сеанс упал, блокировка освобождается автоматически, когда Claude обнаруживает, что процесс больше не работает.
+
+### Приглашение разрешений macOS продолжает появляться
+
+macOS иногда требует перезагрузку запрашивающего процесса после предоставления Screen Recording. Полностью закройте Claude Code и начните новый сеанс. Если приглашение сохраняется, откройте **System Settings &gt; Privacy &amp; Security &gt; Screen Recording** и подтвердите, что ваше приложение терминала указано и включено.
+
+### `computer-use` не появляется в `/mcp`
+
+Сервер появляется только на подходящих установках. Проверьте, что:
+
+* Вы на macOS. Computer use в CLI недоступен на Linux или Windows. На Windows используйте [computer use в Desktop](https://code.claude.com/docs/ru/desktop.md#let-claude-use-your-computer) вместо этого.
+* Вы на плане Pro, Max или Ultra. Запустите `/status` для подтверждения вашей подписки.
+* Вы аутентифицированы через claude.ai. Computer use недоступен с поставщиками третьих сторон, такими как Amazon Bedrock, Google Cloud&#x27;s Agent Platform или Microsoft Foundry. Если вы получаете доступ к Claude исключительно через поставщика третьей стороны, вам нужна отдельная учётная запись claude.ai для использования этой функции.
+* Вы в интерактивном сеансе. Computer use недоступен в неинтерактивном режиме с флагом `-p`.
+
+## See also
+
+* [Computer use в Desktop](https://code.claude.com/docs/ru/desktop.md#let-claude-use-your-computer): та же возможность с графической страницей параметров
+* [Claude в Chrome](https://code.claude.com/docs/ru/chrome.md): автоматизация браузера для веб-задач
+* [MCP](https://code.claude.com/docs/ru/mcp.md): подключите Claude к структурированным инструментам и API
+* [Sandboxing](https://code.claude.com/docs/ru/sandboxing.md): как инструмент Bash Claude изолирует доступ к файловой системе и сети
+* [Computer use safety guide](https://support.claude.com/en/articles/14128542): лучшие практики для безопасного использования computer use
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

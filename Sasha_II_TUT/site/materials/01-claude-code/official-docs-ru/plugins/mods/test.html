@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Тестирование мода</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../../materials/01-claude-code/official-docs-ru/plugins/index.html">plugins</a> / <a href="../../../../../materials/01-claude-code/official-docs-ru/plugins/mods/index.html">mods</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Тестирование мода <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Напишите автоматизированные тесты для мода Claude Code, которые вызывают события, подменяют ответы Claude Code и нажимают кнопки, без сессии, входа или сети.</p>
+</blockquote>
+<p>Вы можете написать автоматизированные тесты для мода и запустить их из оболочки с помощью <a href="https://code.claude.com/docs/ru/plugins/mods/reference#commands"><code>claude plugin test</code></a>. Тест вызывает события, которые обрабатывают ваши хуки, и проверяет, что сделали хуки, чтобы вы поймали проблему до того, как она попадёт в сессию. Первый пример тестирует мод из раздела <a href="https://code.claude.com/docs/ru/plugins/mods/create.md">Создание мода</a>.</p>
+<h3 id="h-2">Напишите тест <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Тест загружает ваш мод, отправляет события через его hooks так, как это делал бы Claude Code, и проверяет, что сделали hooks, без сеанса, входа или сети. Вы запускаете тесты из своей оболочки с помощью <code>claude plugin test</code>, и каждый файл теста импортирует набор для тестирования, библиотеку тестирования в модуле <code>claude-code/testing</code>.</p>
+<p>Дайте каждому файлу теста имя, заканчивающееся на <code>.test.ts</code>, например <code>first-mod.test.ts</code>, и сохраните его где угодно в директории плагина. Каждый файл теста должен содержать по крайней мере один <code>test()</code>, иначе запуск завершится с ошибкой <code>declares no test(): nothing ran</code>. Файл теста может импортировать собственные файлы вашего мода и вспомогательные файлы <code>.ts</code> соседних уровней, поэтому вы можете модульно тестировать простые функции, такие как правила игры, без набора.</p>
+<p>Этот тест выполняет два вызова инструментов, запускает команду <code>/tally</code> из <a href="https://code.claude.com/docs/ru/plugins/mods/create.md">Create a mod</a> и проверяет, что ответ учитывает оба. Его первая строка — это <a href="#stub-what-claude-code-would-answer">stub</a>, который отвечает на вызовы инструментов вместо Claude Code. Сохраните его как <code>first-mod/tests/first-mod.test.ts</code>:</p>
+<p>```typescript first-mod/tests/first-mod.test.ts theme={null}
+import { expect, test } from &#x27;claude-code/testing&#x27;</p>
+<p>test(&#x27;/tally reports the tool calls the mod has seen&#x27;, async ($, on) =&gt; {
+  // Answer each tool call in Claude Code&#x27;s place, so no tool runs
+  on(&#x27;tool.call&#x27;, () =&gt; ({ result: &#x27;ok&#x27; }))</p>
+<p>// Fire two tool calls, which the mod&#x27;s tool.call hook counts
+  await $.tool.call({ tool: &#x27;Bash&#x27;, command: &#x27;ls&#x27; })
+  await $.tool.call({ tool: &#x27;Read&#x27;, file_path: &#x27;README.md&#x27; })</p>
+<p>// Run /tally and check the text its hook returns
+  const answer = await $.command.run({ command: &#x27;tally&#x27;, args: &#x27;&#x27; })
+  expect(answer.text).toBe(&#x27;Claude has made 2 tool calls since this mod loaded&#x27;)
+})</p>
+<pre><code>
+В вашей оболочке запустите тесты из директории `first-mod`:
+</code></pre>
+<p>claude plugin test</p>
+<pre><code>
+Вывод называет каждый тест и прошёл ли он, с временем выполнения, которое варьируется от запуска к запуску:
+</code></pre>
+<p>tests/first-mod.test.ts:
+(pass) /tally reports the tool calls the mod has seen [22.87ms]</p>
+<p>1 pass
+ 0 fail
+Ran 1 test across 1 file. [0.19s]</p>
+<pre><code>
+Каждый `$.tool.call` прошёл через hook [`tool.call`](https://code.claude.com/docs/ru/plugins/mods/reference#tools) вашего мода, который добавил один к его счётчику и передал вызов дальше stub. Никакой `ls` не запустился и никакой файл не был прочитан. `$.command.run` затем перешёл к hook [`command.run`](https://code.claude.com/docs/ru/plugins/mods/reference#commands-and-configuration) вашего мода, и `answer` — это объект, который вернул этот hook.
+
+Команда выходит со статусом 1, когда тест не пройден, поэтому она работает в CI. Если ваши собственные моды не могут загружаться в оболочке, которая её запускает, она выводит строку, начинающуюся с `claude plugin test: hooks modules are turned off` с причиной и выходит со статусом 1.
+
+### Stub что Claude Code ответит бы
+
+В тесте не запускаются модель, хранилище или инструмент, поэтому везде, где ваш мод ожидает ответ от Claude Code, тест предоставляет ответ с помощью stub. Функция теста получает два аргумента для этого:
+
+* **`$`**: собственный `$` теста, который действует как Claude Code. Это не [mods API](https://code.claude.com/docs/ru/plugins/mods/reference.md#mods-api-methods), который получает хук. Каждый из его методов вызывает событие с тем же именем, отправляет его через хуки вашего мода и разрешается в результат: `$.tool.call({ tool: &#x27;Bash&#x27;, command: &#x27;ls&#x27; })` вызывает `tool.call`. `$.command.run`, `$.prompt.submit`, `$.session.start` и `$.turn.complete` работают так же, а `$.classic.Stop` и другие методы `$.classic` вызывают [событие хука настроек](https://code.claude.com/docs/ru/plugins/mods/events.md#hook-the-settings-hook-events). Тест не может напрямую вызвать метод mods API, такой как `ui.close`. Вызовите его через ваш мод, например нажав кнопку, которая закрывает панель.
+* **`on`**: вызовите её для регистрации stub, которые являются hooks, отвечающими в место Claude Code. Назовите stub для вызова mods API без `$.`, поэтому stub, зарегистрированный как `store.get`, отвечает на `$.store.get` вашего мода. Когда ваш мод вызывает [`$.model.complete`](https://code.claude.com/docs/ru/plugins/mods/api#call-a-model) или [`$.store.get`](https://code.claude.com/docs/ru/plugins/mods/interface#keep-state), stub предоставляет ответ.
+
+Этот пример stub вызова модели. Hook принадлежит моду с именем `grader` и обрабатывает команду `/grade`, которая отправляет предложение модели и сообщает, начинается ли ответ с `PASS`. Файл содержит только hook под тестом, поэтому моду также нужны `plugin.json` и `hooks.json`, как в [Create a mod](https://code.claude.com/docs/ru/plugins/mods/create.md#write-a-mod-yourself). Чтобы ввести `/grade` в сеансе, моду также нужно [зарегистрировать команду](https://code.claude.com/docs/ru/plugins/mods/api.md#add-a-command):
+</code></pre>
+<p>export function register(on) {
+  on(&#x27;command.run&#x27;, { command: &#x27;grade&#x27; }, async ($, e) =&gt; {
+    // e.args is the text typed after /grade
+    const reply = await $.model.complete({
+      model: &#x27;haiku&#x27;,
+      system: &#x27;Grade the sentence. Start your reply with PASS or FAIL.&#x27;,
+      prompt: e.args,
+    })
+    const passed = reply.isAnswered &amp;&amp; reply.text.startsWith(&#x27;PASS&#x27;)
+    return { text: passed ? &#x27;Passed&#x27; : &#x27;Try again&#x27; }
+  })
+}</p>
+<pre><code>
+Этот тест stub вызова модели для проверки того, что делает hook с проходящим ответом:
+</code></pre>
+<p>import { expect, test } from &#x27;claude-code/testing&#x27;</p>
+<p>test(&#x27;a passing grade is reported&#x27;, async ($, on) =&gt; {
+  // Answer the mod&#x27;s $.model.complete call with a fixed reply, so no model runs
+  on(&#x27;model.complete&#x27;, () =&gt; ({
+    value: {
+      isAnswered: true,
+      text: &#x27;PASS\nNice sentence.&#x27;,
+      usage: { input_tokens: 10, output_tokens: 5, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 },
+    },
+  }))</p>
+<p>// Run /grade, which makes the mod call the model
+  const answer = await $.command.run({ command: &#x27;grade&#x27;, args: &#x27;The cat sat on the mat.&#x27; })
+  expect(answer.text).toBe(&#x27;Passed&#x27;)
+})</p>
+<pre><code>
+Тест проходит, потому что `reply` hook — это объект под `value`, чей `text` начинается с `PASS`. Чтобы проверить другую ветвь, добавьте второй тест, чей stub возвращает `text`, начинающийся с `FAIL`, и ожидайте `Try again`.
+
+Stub для вызова mods API возвращает объект с полем `value`, которое содержит то, во что разрешается вызов в вашем моде: `{ value: 7 }` заставляет `$.store.get` разрешиться в `7`. Stub для одного из событий Claude Code, такого как [`turn.step`](https://code.claude.com/docs/ru/plugins/mods/reference#turns) или `tool.call`, возвращает собственный результат этого события, такой как `{ result: &#x27;ok&#x27; }`. `$.session.send` и `$.prompt.fill` также принимают результат своего события, как показано в таблице. [Look up what a stub returns](#look-up-what-a-stub-returns) показывает, какую форму принимает каждое распространённое имя. Следующие ошибки означают, что stub неправильный или отсутствует. Вывод непройденного теста включает блок с заголовком `the engine reported:`, и каждая ошибка появляется там:
+
+* `returned neither { value } nor { deny }`: stub для вызова mods API вернул простое значение, из-за чего тест не проходит
+* `no implementation for` с последующим именем: ваш мод сделал этот вызов и никакой stub не отвечает на него
+
+Набор также экспортирует готовые mock для часов, хранилища, переменных окружения и строк, добавляемых в диалог:
+
+* **`mock.clock(on)`**: отвечает на [`$.clock`](https://code.claude.com/docs/ru/plugins/mods/api#run-work-in-the-background) и возвращает mock часов, которые ваш тест продвигает, поэтому тест таймера не ждёт.
+* **`mock.store(on, { count: 7 })`**: отвечает на `$.store` из хранилища, которое начинается с этих записей. Он ничего не возвращает, поэтому чтобы проверить, что сохранил ваш мод, напишите два `store` stub сами, как это делает [drawing test](#test-a-drawing).
+* **`mock.env(on, { CI: &#x27;true&#x27; })`**: отвечает на `$.env.get` из этих переменных.
+* **`mock.session(on)`**: возвращает mock сессии, чей метод `appended()` перечисляет строки, добавленные вашим модом с помощью [`$.session.append`](https://code.claude.com/docs/ru/plugins/mods/reference#session), начиная с самых старых; требуется Claude Code v2.1.293 или новее.
+
+### Следуйте правилам набора для тестирования
+
+* **Зарегистрируйте каждый stub перед первым вызовом теста на `$`.** Вызов `on` после этого выбрасывает ошибку, такую как `on(&quot;ui.render&quot;) after the test first called $`.
+
+* **[`session.start`](https://code.claude.com/docs/ru/plugins/mods/reference#session) не запускается сам по себе.** Каждый тест начинается со свежезагруженного модуля, ни один из хуков которого ещё не вызван, поэтому переменные уровня модуля содержат свои начальные значения. Если хук зависит от того, что настраивает `session.start`, сначала вызовите это событие:
+</code></pre>
+<p>// Answer the event after your hook passes it on with next(e)
+  on(&#x27;session.start&#x27;, () =&gt; ({ cwd: &#x27;/work&#x27; }))
+  // Answer the $.command.register call your hook makes
+  on(&#x27;command.register&#x27;, () =&gt; ({ value: undefined }))
+  // Fire the event, which runs your session.start hook
+  await $.session.start({ surface: &#x27;terminal&#x27;, isInteractive: true, cwd: &#x27;/work&#x27; })</p>
+<pre><code>
+  Второй stub отвечает на вызов `$.command.register`, который делает hook `session.start`, такой как [tutorial&#x27;s](https://code.claude.com/docs/ru/plugins/mods/create.md#write-a-mod-yourself). Без него этот вызов отклоняется с `no implementation for command.register` и набор пропускает ваш hook, поэтому ничего после вызова в hook не запускается. Тест не завершается неудачей в этой точке. Пропущенный hook указан под `the engine reported:` только если позже проверка завершится неудачей.
+
+* **Зарегистрируйте stub для `ui.render`, чтобы выбрать, что возвращает `next(e)`.** Когда ваш хук [`ui.render`](https://code.claude.com/docs/ru/plugins/mods/reference#interface) возвращает `next(e)`, например чтобы ничего не рисовать, пока Claude неактивен, [монтирование](#test-a-drawing) проходит успешно и без stub. Чтобы `next(e)` возвращал выбранный вами элемент, зарегистрируйте stub, который возвращает его как простые данные:
+</code></pre>
+<p>// Stands for what Claude Code would draw at the site
+  on(&#x27;ui.render&#x27;, () =&gt; ({ type: &#x27;Text&#x27;, props: {}, children: [&#x27;drawn by Claude Code&#x27;] }))</p>
+<pre><code>
+  Там, где место [может отрисовать этот элемент](https://code.claude.com/docs/ru/plugins/mods/interface.md#change-what-claude-code-already-draws), `ui.find({ type: &#x27;Text&#x27; })` возвращает его, когда ваш хук вернул `next(e)`. В v2.1.323 или новее для полосы (band) передайте имя вашего мода вторым аргументом в `on`, как в `{ plugin: &#x27;my-mod&#x27; }`. Без него stub не отвечает на ваш `next(e)`. До v2.1.321 монтирование завершается неудачей с `no implementation for ui.render`, если только вы не зарегистрируете stub.
+
+* **Stub для `turn.step` — это асинхронный генератор**, и тест читает поток до конца, чтобы получить результат:
+</code></pre>
+<p>on(&#x27;turn.step&#x27;, async function* ($, e) {
+    // Each yield is one piece of the model&#x27;s streamed reply
+    yield { kind: &#x27;text&#x27;, index: 0, text: &#x27;ok&#x27; }
+    // The return value is the result of the whole request
+    return { turnId: e.turnId, index: e.index, answer: &#x27;ok&#x27;, toolUses: [], stopReason: &#x27;end_turn&#x27;, usage: null }
+  })</p>
+<p>// Fire one request to the model, which runs your turn.step hook
+  const stream = $.turn.step({ turnId: &#x27;t&#x27;, index: 0, model: &#x27;claude-test&#x27;, messageCount: 1 })
+  // Read every piece until the stream says it&#x27;s done
+  let step = await stream.next()
+  while (step.done !== true) step = await stream.next()
+  const result = step.value</p>
+<pre><code>
+  Когда цикл заканчивается, `result` — это объект, который вернул stub, после того как ваш hook `turn.step` имел возможность его изменить. Здесь `result.answer` — это `&#x27;ok&#x27;`.
+
+* **Выполняйте вызов инструмента, передавая имя инструмента и аргументы как поля**, например `await $.tool.call({ tool: &#x27;Bash&#x27;, command: &#x27;ls&#x27; })`, и зарегистрируйте stub `tool.call`, который возвращает `{ result }`.
+
+### Посмотрите, что возвращает stub
+
+Каждый вызов mods API, который ваш мод делает в тесте, нуждается в stub, который отвечает вместо Claude Code, кроме нескольких, на которые набор отвечает сам: вызовы [`$.ui.invalidate`](https://code.claude.com/docs/ru/plugins/mods/interface#redraw-when-something-changes), [`$.state`](https://code.claude.com/docs/ru/plugins/mods/interface#keep-state) и `$.session.append`. Для вызовов `$.clock` используйте `mock.clock(on)`, иначе `$.clock.now()` вашего мода завершится неудачей с `no implementation for clock.now`.
+
+Эта таблица перечисляет те, которые моды используют чаще всего. Первый столбец — это вызов, который делает ваш мод, или событие, которое он передаёт с `next(e)`. Второй — это функция для передачи `on` под этим именем, поэтому строка `$.store.get` становится `on(&#x27;store.get&#x27;, ($, e) =&gt; ({ value: saved.get(e.key) }))`. `&#x27;...&#x27;` в stub отмечает текст для вас, чтобы заполнить:
+
+| Ваш мод вызывает или передаёт | Stub |
+| :- | :- |
+| `$.command.register`, `$.tool.register`, `$.ui.toast`, `$.ui.log`, `$.ui.status`, `$.ui.close`, `$.store.set` | `() =&gt; ({ value: undefined })`. Для `ui.toast` и `ui.log` текст — это `e.text`. |
+| `$.store.get` | `($, e) =&gt; ({ value: saved.get(e.key) })` |
+| `$.fs.read` | `($, e) =&gt; ({ value: e.path.endsWith(&#x27;notes.md&#x27;) ? &#x27;# Notes&#x27; : &#x27;&#x27; })`. `e.path` приходит как абсолютный путь, поэтому сравнивайте с `endsWith`. |
+| `$.ui.open` | `() =&gt; ({ value: { isPlaced: true } })` |
+| `$.ui.ask` | Stub `tool.call`, потому что вопрос достигает его как вызов инструмента `AskUserQuestion`: `($, e) =&gt; ({ result: { answers: { [e.questions[0].question]: &#x27;Run it&#x27; } } })`. Сначала проверьте `e.tool`, если ваш мод передаёт другие tool call. |
+| `$.model.complete` | `() =&gt; ({ value: { isAnswered: true, text: &#x27;...&#x27;, usage } })` |
+| `$.process.run` | `($, e) =&gt; ({ value: { exitCode: 0, stdout: &#x27;...&#x27;, stderr: &#x27;&#x27; } })`. `e.argv` — это список аргументов и `e.init` содержит `cwd` и `timeoutMs`. |
+| Любой вызов mods API, который должен завершиться неудачей | `() =&gt; ({ deny: &#x27;the reason&#x27; })`, что делает вызов отклонённым в вашем моде. Stub, который выбрасывает, пропускается вместо этого. |
+| `session.start` | `() =&gt; ({ cwd: &#x27;/work&#x27; })` |
+| `turn.start` | `($, e) =&gt; ({ turnId: e.turnId })` |
+| `tool.call` | `() =&gt; ({ result: &#x27;...&#x27; })` |
+| `turn.complete` | `() =&gt; ({ text: &#x27;&#x27; })`. Вызывайте его с помощью `$.turn.complete({ turnId, answer, durationMs, isAborted: false, usage: null })`. |
+| `prompt.submit` | `($, e) =&gt; ({ text: e.text })` |
+| `prompt.fill` | `() =&gt; ({ isFilled: true })` |
+| `$.prompt.read` | `() =&gt; ({ value: { text: &#x27;...&#x27;, cursor: 0 } })` |
+| `$.ui.copy` | `() =&gt; ({ value: { isCopied: true } })` |
+| `$.ui.notify` | `() =&gt; ({ value: { isSent: true, channel: &#x27;terminal_bell&#x27; } })`. Текст — это `e.text`, а заголовок — `e.title`. |
+| `$.session.messages` | `() =&gt; ({ value: [{ role: &#x27;assistant&#x27;, text: &#x27;...&#x27;, toolUses: [] }] })` |
+| `$.session.id`, `$.agent.list` | `() =&gt; ({ value: &#x27;abc123&#x27; })`, `() =&gt; ({ value: [] })` |
+| `session.send` | `() =&gt; ({ isDelivered: true })`. `e.to` приходит как строка даже когда ваш мод передал `{ sessionId }`. |
+| `session.receive` | `($, e) =&gt; ({ text: e.text })`. Вызывайте его с помощью `$.session.receive({ origin: { kind: &#x27;peer-send-message&#x27; }, text })`. |
+| `ui.render` | `() =&gt; ({ type: &#x27;Text&#x27;, props: {}, children: [&#x27;...&#x27;] })`. Для полосы (band) см. matcher в разделе [Следуйте правилам набора для тестирования](#follow-the-test-kit’s-rules). |
+
+### Проверьте результат с помощью `expect`
+
+У `expect` есть собственный набор утверждений, например `toEqual` и `toHaveLength`, которые ставятся после проверяемого значения, как в `expect(answer.text).toBe(&#x27;ok&#x27;)`. Полный список можно найти, поискав `type Matchers` в файле `claude-code/index.d.ts` среди [типов для вашей сборки](https://code.claude.com/docs/ru/plugins/mods/create.md#get-the-types-for-your-build). Поставьте `.not` перед утверждением, чтобы проверить обратное. Чтобы проверить, с чем завершается промис, поставьте `.resolves` или `.rejects` сразу после `expect(...)` и используйте `await` для этой строки, как в `await expect(promise).rejects.toThrow()`.
+
+Когда `expect` не выполняется внутри stub или хука, который вы передали в `on` как обычную функцию, а не как асинхронный генератор, тест не проходит. Движок пропускает этот хук, а вывод ошибки называет его, например `in the test&#x27;s store.set hook`.
+
+## Тестируйте таймер
+
+Мод, который запускает работу на таймере, нуждается в clock, который тест контролирует, поэтому тест может продвигать время вперёд вместо ожидания. `const clock = mock.clock(on)` возвращает mock clock, который начинается с `0` и движется только когда ваш тест его движет. Чтобы начать в другое время, передайте его в миллисекундах, как в `mock.clock(on, { now: 5000 })`. Clock имеет эти методы:
+
+| Метод | Что он делает |
+| :- | :- |
+| `await clock.advance(1000)` | Продвигает время вперёд на столько миллисекунд и запускает каждый таймер, который наступает |
+| `await clock.set(5000)` | Продвигает время вперёд до этого значения, как `advance` |
+| `clock.now()` | Возвращает время, которое разрешает `$.clock.now()` вашего мода |
+| `await clock.settle()` | Запускает таймеры, которые уже наступили, такие как цепь нулевой задержки `$.clock.after` вызовов, без продвижения времени |
+| `await clock.sleep(2000)` | Внутри stub, делает этот stub ответом только после того, как тест продвинулся так далеко, что это то, как вы имитируете медленную модель или процесс |
+
+Этот hook принадлежит моду с именем `countdown` и обрабатывает команду `/countdown`, которая принимает количество секунд, запускает таймер `$.clock.every` в одну секунду и показывает toast на нуле. Как с `grader`, файл содержит только тестируемый hook и не регистрирует команду:
+</code></pre>
+<p>export function register(on) {
+  on(&#x27;command.run&#x27;, { command: &#x27;countdown&#x27; }, async ($, e) =&gt; {
+    // e.args is the text typed after /countdown
+    let left = Number(e.args)
+    const timer = $.clock.every(1000, () =&gt; {
+      left -= 1
+      if (left === 0) {
+        timer.cancel()
+        $.ui.toast(&#x27;Time is up&#x27;)
+      }
+    })
+    // Print nothing in the transcript
+    return {}
+  })
+}</p>
+<pre><code>
+Этот тест запускает `/countdown 3` и движет mock clock, поэтому он проверяет три секунды поведения без ожидания трёх секунд:
+</code></pre>
+<p>import { expect, mock, test } from &#x27;claude-code/testing&#x27;</p>
+<p>test(&#x27;the countdown ends with a toast&#x27;, async ($, on) =&gt; {
+  // Answer every $.clock call from a clock the test controls
+  const clock = mock.clock(on)
+  // Collect the text of each toast the mod shows
+  const toasts: string[] = []
+  on(&#x27;ui.toast&#x27;, ($, e) =&gt; {
+    toasts.push(e.text)
+    return { value: undefined }
+  })</p>
+<p>await $.command.run({ command: &#x27;countdown&#x27;, args: &#x27;3&#x27; })
+  // After two seconds the timer has fired twice, and no toast is due
+  await clock.advance(2000)
+  expect(toasts).toEqual([])
+  // The third second brings the count to zero
+  await clock.advance(1000)
+  expect(toasts).toEqual([&#x27;Time is up&#x27;])
+})</p>
+<pre><code>
+Первый `expect` показывает, что toast не приходит рано, и второй показывает, что он приходит один раз. Каждый `advance` разрешается после того, как таймеры, которые наступили, запустились, поэтому проверка на следующей строке видит их эффект.
+
+## Тестируйте рисунок
+
+Тест может нарисовать один из [render sites](https://code.claude.com/docs/ru/plugins/mods/reference.md#render-sites) вашего мода, затем нажать, ввести текст в и найти элементы, которые он нарисовал. `$.ui.mount` рисует сайт через hook `ui.render` вашего мода и возвращает handle с методом для каждого из них. Чтобы охватить несколько приложений в одном тесте, установите `surface` на приложение для рисования. Этот тест открывает панель из [Build a pane with tabs](https://code.claude.com/docs/ru/plugins/mods/interface.md#build-a-pane-with-tabs), переключает вкладки, нажимает кнопку и проверяет счётчик в терминале и приложении Desktop:
+</code></pre>
+<p>import { expect, test } from &#x27;claude-code/testing&#x27;</p>
+<p>// What Claude Code passes to a ui.render hook for this pane, apart from the app
+const PANE = {
+  plugin: &#x27;hello-tabs&#x27;,
+  component: &#x27;Pane&#x27;,
+  requestId: &#x27;hello-tabs&#x27;,
+  viewport: { columns: 100, rows: 30 },
+  props: {
+    title: &#x27;Hello tabs&#x27;,
+    isFocused: true,
+    bodyColumns: 60,
+    placement: &#x27;inline&#x27;,
+    scroll: { offset: 0, bodyRows: 10 },
+    view: {},
+  },
+} as const</p>
+<p>test(&#x27;the second tab counts presses and saves the count&#x27;, async ($, on) =&gt; {
+  // Stub $.store with a Map, so the test can read what the mod saved
+  const saved = new Map&lt;string, unknown&gt;()
+  on(&#x27;store.get&#x27;, ($, e) =&gt; ({ value: saved.get(e.key) }))
+  on(&#x27;store.set&#x27;, ($, e) =&gt; {
+    saved.set(e.key, e.value)
+    return { value: undefined }
+  })</p>
+<p>// Draw the pane once for each app
+  for (const surface of [&#x27;terminal&#x27;, &#x27;desktop&#x27;] as const) {
+    const ui = await $.ui.mount({ ...PANE, surface })
+    // Press the buttons by the key the mod gave them
+    await ui.press({ key: &#x27;tab-two&#x27; })
+    await ui.press({ key: &#x27;more&#x27; })
+    // The second tab&#x27;s count line is in the drawing
+    expect(await ui.find({ type: &#x27;Text&#x27;, text: /^Count: \d+$/ })).toBeDefined()
+    await ui.unmount()
+  }</p>
+<p>// One press in each app makes two
+  expect(saved.get(&#x27;count&#x27;)).toBe(2)
+})</p>
+<pre><code>
+В вашей оболочке запустите `claude plugin test` из директории `hello-tabs`. Тест проходит, когда оба приложения рисуют строку счётчика и мод сохранил `2`. Счётчик переносится из первого приложения во второе, потому что оба mount используют один и тот же загруженный модуль.
+
+Handle, который возвращает `$.ui.mount`, имеет эти методы, которые адресуют элементы по `key`, который вы им дали:
+
+| Метод | Что он делает |
+| :- | :- |
+| `press({ key: &#x27;more&#x27; })` | Нажимает `Button` с этим key |
+| `input({ key: &#x27;new-note&#x27;, text: &#x27;buy milk&#x27; })` | Вводит текст в `Input` с этим key и нажимает Enter. Добавьте `kind: &#x27;change&#x27;` для ввода без отправки. Для поля с `rows` текст может содержать `\n`. |
+| `select({ key: &#x27;size&#x27;, value: &#x27;large&#x27; })` | Выбирает опцию с этим значением в `Select` с этим key |
+| `keepsBeneath()` | В тесте без заглушки `ui.render` разрешается в `true`, когда рисунок включает то, что вернул `next(e)`, и в `false`, когда ваш хук это опустил. В тесте, который регистрирует такую заглушку, используйте `find`, чтобы найти то, что нарисовала заглушка. Требуется Claude Code v2.1.321 или новее. |
+| `find({ key: &#x27;more&#x27; })` или `find({ type: &#x27;Text&#x27;, text: &#x27;Count: 2&#x27; })` | Возвращает первый совпадающий элемент как `{ type, props, children }` или `undefined`. `text` может быть строкой или регулярным выражением. |
+| `unmount()` | Удаляет рисунок |
+
+Каждый метод разрешается после того, как ваш обработчик завершился, поэтому вы можете проверить результат на следующей строке. Установите `props` на то, что Claude Code передал бы для этого сайта. Таблица [render sites](https://code.claude.com/docs/ru/plugins/mods/reference.md#render-sites) перечисляет props каждого сайта, и [типы для вашей сборки](https://code.claude.com/docs/ru/plugins/mods/create.md#get-the-types-for-your-build) имеют их типы.
+
+Чтобы обнаружить [дерево элементов](https://code.claude.com/docs/ru/plugins/mods/interface.md#build-a-tree-from-elements), которое недопустимо для приложения, указанного в `surface`, проверьте с помощью `find` наличие элемента, который добавляет ваш хук. Тест не проверяет, как приложение отрисовывает дерево, поэтому также посмотрите новый макет в реальной сессии.
+
+### Тестируйте рисунок после `/clear`
+
+Каждый тест начинается с каждого значения `$.state` на его значении по умолчанию, что то, как `/clear` их оставляет. Чтобы тестировать, что делает ваш мод дальше, пропустите `session.start`, вызовите `classic.SessionStart` с `source: &#x27;clear&#x27;` и проверьте, что рисует ваш мод.
+
+Этот тест проверяет модуль из [Load a saved value again after `/clear`](https://code.claude.com/docs/ru/plugins/mods/interface#load-a-saved-value-again-after-clear). Добавьте его в файл из [Test a drawing](#test-a-drawing), где определён `PANE`. Первый тест этого файла ожидает, что кнопка сохранит счётчик, как кнопка в [Save from more than one session](https://code.claude.com/docs/ru/plugins/mods/interface.md#save-from-more-than-one-session):
+</code></pre>
+<p>test(&#x27;the saved count comes back after /clear&#x27;, async ($, on) =&gt; {
+  // The store already holds a count of 7
+  on(&#x27;store.get&#x27;, () =&gt; ({ value: 7 }))
+  // Answer the event after your hook passes it on with next(e)
+  on(&#x27;classic.SessionStart&#x27;, () =&gt; ({}))</p>
+<p>// Fire the event that follows /clear, which runs your hook
+  await $.classic.SessionStart({ source: &#x27;clear&#x27; })</p>
+<p>const ui = await $.ui.mount({ ...PANE, surface: &#x27;terminal&#x27; })
+  await ui.press({ key: &#x27;tab-two&#x27; })
+  // The pane shows the stored count, not the default of 0
+  expect(await ui.find({ type: &#x27;Text&#x27;, text: &#x27;Count: 7&#x27; })).toBeDefined()
+})</p>
+<pre><code>
+Тест проходит, когда ваш hook `classic.SessionStart` скопировал сохранённый `7` в `$.state` перед тем, как панель нарисовалась. Без этого hook в вашем модуле, панель рисует `Count: 0`, `find` возвращает `undefined` и тест завершается неудачей на `toBeDefined`.
+
+## Тестируйте мод политики
+
+Мод, который ваша организация перечисляет в [`prependPlugins`](https://code.claude.com/docs/ru/plugins/mods/admin), может отказать другому моду перед его загрузкой. Чтобы тестировать один, установите уровень вашего мода и дайте тесту второй мод для вашего, чтобы допустить или отказать:
+
+* **`tier`**: вызовите его один раз в верхней части файла теста, как в `tier(&#x27;prepend&#x27;)`, чтобы загрузить ваш мод как `prepend`, `append` или `builtin`, его место в [порядке запуска модов](https://code.claude.com/docs/ru/plugins/mods/events.md#the-order-mods-run-in). Без него ваш мод загружается как `user`.
+* **`plugins`**: передайте `test` объект опций перед телом теста. Его массив `plugins` содержит моды, которые вы пишете встроенными, каждый с `name` и функцией `register`. Чтобы загрузить один где-то кроме `user`, добавьте `tier` к нему.
+
+Этот файл теста первым загружает [мод политики со страницы администратора](https://code.claude.com/docs/ru/plugins/mods/admin.md#enforce-a-policy-with-a-mod-of-your-own). Он проверяет, что мод политики останавливает мод, который запускает процесс, и допускает тот, который не запускает:
+</code></pre>
+<p>import { expect, test, tier } from &#x27;claude-code/testing&#x27;</p>
+<p>// Load the mod under test ahead of every other mod
+tier(&#x27;prepend&#x27;)</p>
+<p>// A second mod whose code calls $.process.run, which the policy blocks
+const runner = {
+  name: &#x27;runner&#x27;,
+  register(on) {
+    on(&#x27;tool.call&#x27;, async ($, e, next) =&gt; {
+      await $.process.run([&#x27;ls&#x27;])
+      return { result: &#x27;runner answered&#x27; }
+    })
+  },
+}</p>
+<p>// A second mod that calls nothing the policy blocks
+const reader = {
+  name: &#x27;reader&#x27;,
+  register(on) {
+    on(&#x27;tool.call&#x27;, async ($, e, next) =&gt; {
+      return { result: &#x27;reader answered&#x27; }
+    })
+  },
+}</p>
+<p>test(&#x27;refuses a mod that starts a process&#x27;, { plugins: [runner] }, async ($, on) =&gt; {
+  on(&#x27;tool.call&#x27;, () =&gt; ({ result: &#x27;claude code answered&#x27; }))
+  let message = &#x27;&#x27;
+  try {
+    // The first call on $ loads the mods, so the refusal is thrown here
+    await $.tool.call({ tool: &#x27;Bash&#x27;, command: &#x27;ls&#x27; })
+  } catch (error) {
+    message = error.message
+  }
+  // &quot;hooks module left out&quot; on v2.1.326 or later, &quot;refused&quot; on earlier versions
+  expect(message).toMatch(/^runner: (hooks module left out|refused) by acme-guard/)
+})</p>
+<p>test(&#x27;admits a mod that starts no process&#x27;, { plugins: [reader] }, async ($, on) =&gt; {
+  on(&#x27;tool.call&#x27;, () =&gt; ({ result: &#x27;claude code answered&#x27; }))
+  const out = await $.tool.call({ tool: &#x27;Bash&#x27;, command: &#x27;ls&#x27; })
+  // The answer comes from reader, which shows that it loaded
+  expect(out).toEqual({ result: &#x27;reader answered&#x27; })
+})</p>
+<pre><code>
+В вашей оболочке запустите `claude plugin test` из директории `acme-guard`. Оба теста проходят с policy mod, как показано на странице admin.
+
+Kit загружает каждый мод при первом вызове теста на `$`. Когда ваш мод останавливает один из них, этот вызов выбрасывает исключение, и в сообщении названы оба мода. Во втором тесте ничего не остановлено, поэтому `reader` отвечает на вызов инструмента до того, как он достигнет заглушки.
+
+## Следующие шаги
+
+* [Troubleshoot a mod](https://code.claude.com/docs/ru/plugins/mods/troubleshoot.md): узнайте, почему мод ничего не делает в сеансе
+* [Mods reference](https://code.claude.com/docs/ru/plugins/mods/reference.md): каждое событие input и result для написания stubs
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

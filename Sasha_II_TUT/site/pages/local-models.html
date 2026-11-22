@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ru" data-book-src="../book.html">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Глава 6E — Claude Code для инженера</title>
+<meta name="description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
+<link rel="canonical" href="https://sadovnikovv.github.io/pages/">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:site_name" content="Claude Code для инженера">
+<meta property="og:title" content="Глава 6E — Claude Code для инженера">
+<meta property="og:description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
+<meta property="og:url" content="https://sadovnikovv.github.io/pages/">
+<meta property="og:image" content="https://sadovnikovv.github.io/assets/favicon.svg">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="../assets/fonts/serif-regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/sans-regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="alternate" type="text/html" href="../book.html#local-models">
+<meta name="page-index" content="12">
+</head>
+<body>
+<a class="skip-link" href="#book">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../index.html">Claude Code для инженера</a></strong>
+    <a href="../materials/index.html">Материалы</a>
+    <a href="../about.html">О книге</a>
+    <a href="../download/Книга-Claude-Code.epub" download>EPUB</a>
+  </div>
+</header>
+<div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+<main class="wrap" id="book">
+<section class="chapter"><h2 id="local-models"><span class="chapter">Глава 6E</span>Локальные модели</h2>
+
+<p class="lead-in">Локальная модель работает на вашем компьютере. Это даёт приватность и независимость, но требует железа и терпимости к качеству ниже топового облака.</p>
+
+<h3>6E.1. Плюсы и минусы</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Плюсы</th><th>Минусы</th></tr></thead>
+  <tbody>
+    <tr><td>Данные не покидают машину</td><td>Нужна мощная видеокарта или много ОЗУ</td></tr>
+    <tr><td>Нет оплаты за токены</td><td>Качество обычно ниже топовых облачных моделей</td></tr>
+    <tr><td>Работает без интернета</td><td>Модели и обновления нужно скачивать вручную</td></tr>
+    <tr><td>Можно дообучать и настраивать</td><td>Дообучение требует данных и навыков</td></tr>
+    <tr><td>Нет зависимости от провайдера и цензуры</td><td>Ответственность за безопасность — на вас</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>6E.2. Программы для запуска</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Программа</th><th>Что это</th><th>Кому подходит</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Ollama</strong></td><td>Простой запуск моделей, OpenAI-совместимый API</td><td>Начало, автоматизация</td></tr>
+    <tr><td><strong>LM Studio</strong></td><td>Графический интерфейс, каталог моделей</td><td>Тем, кто не любит терминал</td></tr>
+    <tr><td><strong>llama.cpp</strong></td><td>Эффективный движок на C/C++, GGUF</td><td>Максимальный контроль, CPU/GPU</td></tr>
+    <tr><td><strong>vLLM</strong></td><td>Серверный инференс высокой пропускной способности</td><td>Несколько пользователей, API</td></tr>
+    <tr><td><strong>SGLang</strong></td><td>Быстрый сервер, длинный контекст</td><td>Продакшн-нагрузки</td></tr>
+    <tr><td><strong>text-generation-webui</strong></td><td>Веб-интерфейс, много бэкендов</td><td>Эксперименты</td></tr>
+    <tr><td><strong>Jan, GPT4All</strong></td><td>Простые настольные клиенты</td><td>Быстрый старт</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>6E.3. Сколько нужно железа</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Модель</th><th>INT4</th><th>INT8/FP16</th><th>Реалистичное железо</th></tr></thead>
+  <tbody>
+    <tr><td>3–4B</td><td>2–3 ГБ</td><td>6–8 ГБ</td><td>Ноутбук, 8–16 ГБ ОЗУ</td></tr>
+    <tr><td>7–8B</td><td>4–5 ГБ</td><td>14–16 ГБ</td><td>RTX 3060 12 ГБ, 16–32 ГБ ОЗУ</td></tr>
+    <tr><td>13–14B</td><td>7–9 ГБ</td><td>26–28 ГБ</td><td>RTX 4070/4080 16 ГБ, 32 ГБ ОЗУ</td></tr>
+    <tr><td>30–32B</td><td>16–20 ГБ</td><td>60–64 ГБ</td><td>RTX 4090 24 ГБ, 64 ГБ ОЗУ</td></tr>
+    <tr><td>70B</td><td>35–40 ГБ</td><td>140 ГБ</td><td>2×24 ГБ, 64–128 ГБ ОЗУ, Mac Studio</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Для CPU-only скорость будет низкой; для комфортной работы нужна GPU с достаточной VRAM. Apple Silicon с объединённой памятью удобен для больших моделей, но скорость зависит от чипа.</p>
+
+<h3>6E.4. Какие модели запускать</h3>
+
+<ul>
+  <li><strong>Qwen2.5/3 Coder</strong> — код, разные размеры, хорошая мультиязычность.</li>
+  <li><strong>Llama 3.1/3.3/4</strong> — общая линейка, много готовых квантов.</li>
+  <li><strong>Mistral Small</strong> — эффективные модели среднего размера.</li>
+  <li><strong>Gemma 3, Phi-4</strong> — малые модели для ноутбуков.</li>
+  <li><strong>DeepSeek-R1 Distill</strong> — reasoning в локальном исполнении, но качество ниже полной R1.</li>
+  <li><strong>CodeLlama, StarCoder</strong> — код, но поколение старше.</li>
+</ul>
+
+<h3>6E.5. Подключение к Claude Code через OmniRoute</h3>
+
+<p>Ollama предоставляет OpenAI-совместимый endpoint <code>http://localhost:11434/v1</code>. OmniRoute может подключить его как провайдера, а Claude Code продолжит работать через Anthropic-совместимый интерфейс OmniRoute. Схема:</p>
+
+<div class="flow" role="img" aria-label="Claude Code через OmniRoute к локальной Ollama">
+  <div class="node"><b>Claude Code</b><span>Anthropic API</span></div>
+  <div class="arrow">→</div>
+  <div class="node"><b>OmniRoute</b><span>localhost:20128</span></div>
+  <div class="arrow">→</div>
+  <div class="node"><b>Ollama</b><span>localhost:11434</span></div>
+  <div class="arrow">→</div>
+  <div class="node"><b>Локальная модель</b><span>GPU / CPU</span></div>
+</div>
+
+<pre><code>ollama pull qwen2.5-coder:7b
+ollama run qwen2.5-coder:7b
+ollama serve</code></pre>
+
+<p>В панели OmniRoute добавьте провайдера Ollama с адресом <code>http://localhost:11434</code>. Точные шаги зависят от версии; см. <code>PROVIDERS-GUIDE.md</code> в папке OmniRoute.</p>
+
+<h3>6E.6. Чего ожидать по качеству</h3>
+
+<p>Локальная 7–8B модель уровня 2024–2025 годов примерно соответствует старому облачному середняку: хорошо для шаблонов, простого кода, пересказа; слабее в сложных рассуждениях, длинном контексте и редких языках. 30–70B модели заметно лучше, но требуют железа. Квантование INT4 экономит память, но может ухудшить код и математику.</p>
+
+<div class="callout">
+  <span class="label">Стратегия</span>
+  <p>Гибрид: конфиденциальные данные и черновая рутина — локально; сложные задачи — облако. OmniRoute позволяет переключаться, не меняя Claude Code.</p>
+</div>
+
+<!-- ============================================================ -->
+
+</section>
+</main>
+<footer class="site-footer">
+  <nav class="chapter-nav" aria-label="Навигация по главам">
+    <span><a data-rel="prev" href="../pages/model-landscape.html">← Глава 6D</a></span>
+    <a data-rel="toc" href="../index.html">Оглавление</a>
+    <span><a data-rel="next" href="../pages/tokens-compression.html">Глава 6F →</a></span>
+  </nav>
+  <p>Источник — <a href="../book.html">книга одним файлом</a>,
+  <a href="../download/Книга-Claude-Code.epub">EPUB</a>.</p>
+</footer>
+<script type="application/json" id="page-list">[{"title":"Глава 0 История этой книги","short":"Глава 0","url":"pages/history.html"},{"title":"Глава 1 Как читать эту книгу","short":"Глава 1","url":"pages/how-to-read.html"},{"title":"Глава 2 Ваш стенд: Claude Code → OmniRoute → DeepSeek","short":"Глава 2","url":"pages/stand.html"},{"title":"Глава 3 Что такое ИИ","short":"Глава 3","url":"pages/what-is-ai.html"},{"title":"Глава 4 Как работает языковая модель","short":"Глава 4","url":"pages/how-llm-works.html"},{"title":"Глава 5 Промпт как техническое задание","short":"Глава 5","url":"pages/prompt.html"},{"title":"Глава 6 Что такое агент","short":"Глава 6","url":"pages/agent.html"},{"title":"Глава 6A История нейронных сетей","short":"Глава 6A","url":"pages/history-nn.html"},{"title":"Глава 6B Анатомия трансформера","short":"Глава 6B","url":"pages/transformer-anatomy.html"},{"title":"Глава 6C Веса, биты и точность","short":"Глава 6C","url":"pages/weights-bits.html"},{"title":"Глава 6D Ландшафт моделей 2026","short":"Глава 6D","url":"pages/model-landscape.html"},{"title":"Глава 6E Локальные модели","short":"Глава 6E","url":"pages/local-models.html"},{"title":"Глава 6F Токены, контекст и сжатие","short":"Глава 6F","url":"pages/tokens-compression.html"},{"title":"Глава 6G Железо и вычислительность","short":"Глава 6G","url":"pages/hardware.html"},{"title":"Глава 6H Агенты и их экосистема","short":"Глава 6H","url":"pages/agents-ecosystem.html"},{"title":"Глава 6I Оптимизация: что пишут на Хабре и Пикабу","short":"Глава 6I","url":"pages/optimization-posts.html"},{"title":"Глава 6J Вопросы и ответы","short":"Глава 6J","url":"pages/faq.html"},{"title":"Глава 6K (не публикуется)","short":"Глава 6K (не публикуется)","url":"pages/deepseek-billing.html"},{"title":"Глава 7 Установка и первый запуск","short":"Глава 7","url":"pages/install.html"},{"title":"Глава 7A (не публикуется)","short":"Глава 7A (не публикуется)","url":"pages/migration.html"},{"title":"Глава 7B (не публикуется)","short":"Глава 7B (не публикуется)","url":"pages/new-pc.html"},{"title":"Глава 8 Интерфейс и команды","short":"Глава 8","url":"pages/interface.html"},{"title":"Глава 9 Память и CLAUDE.md","short":"Глава 9","url":"pages/memory.html"},{"title":"Глава 9A Память, обучение и превращение в скилл","short":"Глава 9A","url":"pages/memory-training.html"},{"title":"Глава 10 Разрешения и безопасность","short":"Глава 10","url":"pages/permissions.html"},{"title":"Глава 11 Контекст, стоимость, сессии","short":"Глава 11","url":"pages/context-cost.html"},{"title":"Глава 12 Расширения: skills, субагенты, hooks, MCP","short":"Глава 12","url":"pages/extensions.html"},{"title":"Глава 13 Принцип интеграции","short":"Глава 13","url":"pages/integration-principle.html"},{"title":"Глава 14 Схемотехника и симуляция","short":"Глава 14","url":"pages/circuit.html"},{"title":"Глава 15 EDA и трассировка плат","short":"Глава 15","url":"pages/pcb.html"},{"title":"Глава 16 Микроконтроллеры","short":"Глава 16","url":"pages/mcu.html"},{"title":"Глава 17 Отладка и измерения","short":"Глава 17","url":"pages/debug.html"},{"title":"Глава 18 Машиностроение и CAD","short":"Глава 18","url":"pages/cad.html"},{"title":"Глава 19 Документация и traceability","short":"Глава 19","url":"pages/docs.html"},{"title":"Глава 20 Карта связок","short":"Глава 20","url":"pages/integration-map.html"},{"title":"Глава 21 Десять заданий","short":"Глава 21","url":"pages/labs.html"},{"title":"Глава 22 Итоговый проект: термостат лабораторной печи","short":"Глава 22","url":"pages/capstone.html"},{"title":"Глава 23 Как проверять ИИ","short":"Глава 23","url":"pages/verify.html"},{"title":"Глава 24 Команды и флаги","short":"Глава 24","url":"pages/commands.html"},{"title":"Глава 25 Переменные, файлы, настройки","short":"Глава 25","url":"pages/files-settings.html"},{"title":"Глава 26 Шаблоны промптов","short":"Глава 26","url":"pages/prompt-templates.html"},{"title":"Глава 27 Диагностика","short":"Глава 27","url":"pages/troubleshooting.html"},{"title":"Глава 28 Файлы и папки","short":"Глава 28","url":"pages/library.html"},{"title":"Глава 29 Литература","short":"Глава 29","url":"pages/literature.html"},{"title":"Глава 29A Открытая хрестоматия","short":"Глава 29A","url":"pages/open-books.html"},{"title":"Глава 30 План на восемь недель","short":"Глава 30","url":"pages/plan.html"},{"title":"Глава 31 Словарь","short":"Глава 31","url":"pages/glossary.html"},{"title":"Глава 32 Источники","short":"Глава 32","url":"pages/sources.html"}]</script>
+<script src="../assets/app.js" defer></script>
+</body>
+</html>

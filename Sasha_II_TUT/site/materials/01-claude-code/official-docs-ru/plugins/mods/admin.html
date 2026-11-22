@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Управление модами для вашей организации</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../../materials/01-claude-code/official-docs-ru/plugins/index.html">plugins</a> / <a href="../../../../../materials/01-claude-code/official-docs-ru/plugins/mods/index.html">mods</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Управление модами для вашей организации <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Контролируйте Claude Code mods с помощью управляемых параметров: остановите установленные пользователем моды, разрешите только свои, просмотрите возможности мода и обеспечьте политику с помощью собственного мода.</p>
+</blockquote>
+<p><a href="https://code.claude.com/docs/ru/plugins/mods/overview.md">Мод</a> — это плагин, который выполняет код внутри Claude Code с разрешениями пользователя, который его установил. Моды не изолированы в песочнице. Через <a href="https://code.claude.com/docs/ru/managed-settings.md">управляемые параметры</a> вы решаете, будут ли моды работать на машинах ваших пользователей, какие именно и в каком порядке. Вы также можете установить собственный мод, который отслеживает или отказывает в том, что делают другие моды.</p>
+<p>Эта страница предназначена для человека, который развертывает управляемые настройки для Claude Code, будь то в виде файла, через MDM или из консоли администратора claude.ai. Моды включены по умолчанию в Claude Code v2.1.286 и более поздних версиях. Начните с раздела, который соответствует тому, что вы хотите сделать:</p>
+<ul>
+<li><strong>Исключить собственные моды пользователей, с модами вашей организации или без них</strong>: <a href="#stop-user-installed-mods-from-loading">Остановить загрузку установленных пользователем модов</a></li>
+<li><strong>Узнать, что получат ваши пользователи, если вы ничего не измените</strong>: <a href="#know-what-happens-by-default">Узнать, что происходит по умолчанию</a></li>
+<li><strong>Оставить моды включенными с другими ограничениями</strong>: <a href="#choose-how-much-to-allow">Выбрать, сколько разрешить</a></li>
+</ul>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Эти случаи рассматриваются на других страницах:</p>
+<ul>
+<li><strong>Вы раньше не развертывали управляемые параметры</strong>: начните с <a href="https://code.claude.com/docs/ru/managed-settings.md">Развертывание управляемых параметров</a></li>
+<li><strong>Вы хотите контролировать, какие плагины могут устанавливать пользователи</strong>: см. <a href="https://code.claude.com/docs/ru/plugins/org.md">Управление плагинами для вашей организации</a></li>
+</ul>
+</blockquote>
+<h3 id="h-2">Остановить загрузку установленных пользователем модов <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Чтобы ни один мод, который приносят ваши пользователи, не запускал свои хуки, установите параметр <code>allowManagedModsOnly</code> для <a href="#know-what-happens-by-default">встроенного стража</a> — мода политики, который Claude Code загружает перед каждым модом, установленным пользователем. Параметр задаётся в управляемых настройках в <code>pluginConfigs</code> с ключом <code>cc-plugin-sec-default@builtin</code>:</p>
+<p>```json managed-settings.json theme={null}
+{
+  &quot;pluginConfigs&quot;: {
+    &quot;cc-plugin-sec-default@builtin&quot;: {
+      &quot;options&quot;: {
+        &quot;allowManagedModsOnly&quot;: true
+      }
+    }
+  }
+}</p>
+<pre><code>
+Когда параметр установлен в управляемых настройках:
+
+* **Ни один мод, который приносит пользователь, не запускает свои хуки**: это касается мода в плагине, установленном пользователем, мода, загруженного с помощью `--plugin-dir`, и мода, [который Claude написал во время сессии](https://code.claude.com/docs/ru/plugins/mods/create.md#ask-claude-for-a-mod)
+* **Моды вашей организации по-прежнему работают**: мод, который [считается модом вашей организации](#install-your-organizations-mods), не проверяется. Все остальные моды считаются модами пользователя и отклоняются. Это включает мод, который ваша организация включает для своих участников на claude.ai. Если ни один мод не считается вашим, ни один установленный мод не запускает свои хуки.
+* **Пользователи не могут это отменить**: страж читает параметр только из управляемых настроек, поэтому та же запись в файле настроек пользователя, проекта или локальных настроек или в файле, переданном с помощью `--settings`, ничего не меняет
+* **Файл или политика MDM охватывают каждого поставщика**: когда вы доставляете параметр в виде файла или через MDM, он работает одинаково на Amazon Bedrock, Google Cloud&#x27;s Agent Platform и Microsoft Foundry. Для доставки из консоли администратора claude.ai см. [Доступность платформы](https://code.claude.com/docs/ru/server-managed-settings.md#platform-availability)
+* **Другие настройки пользователей продолжают работать**: их [хуки в файлах настроек](https://code.claude.com/docs/ru/hooks.md) и в `hooks/hooks.json` плагинов, строки состояния и `/goal` не затрагиваются
+* **Встроенные моды продолжают работать**: у каждого из модов, встроенных в Claude Code, таких как поддержка `AGENTS.md`, есть [свой собственный переключатель](https://code.claude.com/docs/ru/plugins/mods/overview.md#mods-built-into-claude-code)
+
+Чтобы проверить параметр на машине пользователя, запустите там Claude Code с `--plugin-dir` и путём к каталогу, который содержит мод, например `claude --plugin-dir ./first-mod`. Хуки мода не запускаются, а транскрипт и отладочный лог содержат [сообщение стража](https://code.claude.com/docs/ru/plugins/mods/troubleshoot.md#messages-from-the-built-in-guard), в котором указаны мод и `allowManagedModsOnly`. Если сообщения нет, см. [Проверить, что политика действует](https://code.claude.com/docs/ru/managed-settings.md#check-that-a-policy-is-in-force) и [правила, которые определяют, вступает ли параметр в силу](#set-options-on-the-built-in-guard).
+
+Если вы установили `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS` в `0` во время раннего доступа, замените его этим параметром. Claude Code v2.1.287 и более поздние версии игнорируют переменную при любом значении, поэтому `0` в ней оставляет моды включёнными.
+
+## Узнать, что происходит по умолчанию
+
+Без собственных параметров модов вот что получают ваши пользователи:
+
+* **Моды включены.** Пользователь может установить плагин, содержащий мод из любого маркетплейса, который разрешают ваши параметры плагинов, или загрузить его из каталога с помощью `--plugin-dir`.
+* **Встроенный страж запускается первым.** Claude Code загружает встроенный мод с именем `sec-default@builtin` перед каждым модом, установленным пользователем. Пользователи не могут его отключить. `/plugin` и отладочный лог указывают его как `cc-plugin-sec-default`. Страж загружается, когда верно одно из следующих условий:
+
+  * На машине есть управляемые настройки или файл [`managed-mcp.json`](https://code.claude.com/docs/ru/managed-mcp#deploy-managed-mcp-json)
+  * Сессия использует [учётные данные `/login`](https://code.claude.com/docs/ru/authentication#authentication-precedence) для плана Team или Enterprise
+
+  Пользователь с API-ключом или работающий через Amazon Bedrock, Google Cloud&#x27;s Agent Platform или Microsoft Foundry получает стража только на машине с управляемыми настройками или `managed-mcp.json`. Сессия, работающая на долгоживущем [`CLAUDE_CODE_OAUTH_TOKEN`](https://code.claude.com/docs/ru/authentication#generate-a-long-lived-token), тоже не считается таким входом, даже если на машине сохранён вход с планом Team или Enterprise.
+* **Страж защищает то, чем вы управляете.** Мод пользователя не может изменить то, что получают или решают ваши управляемые хуки, системный промпт, а также ваш управляемый `CLAUDE.md` и другие управляемые инструкции. Он также не может изменить то, что любой мод читает как настройки, или инструменты и описания ваших управляемых MCP-серверов после их подключения.
+* **В v2.1.323 и новее мод пользователя может помешать подключению управляемого MCP-сервера.** В сессии этого пользователя `/mcp` показывает сервер как удерживаемый этим модом. Чтобы это предотвратить, [запретите загрузку модов, установленных пользователями](#stop-user-installed-mods-from-loading).
+* **За пределами того, чем вы управляете, мод пользователя действует от имени этого пользователя.** Мод сохраняет разрешения этого пользователя: он по-прежнему может читать и записывать файлы, запускать процессы и выполнять сетевые запросы. Он также может переписывать вызовы инструментов и промпты, отклонять вызов инструмента, добавлять или удалять инструменты и рисовать в интерфейсе.
+* **Правила разрешений и хуки `PreToolUse` имеют приоритет над модом пользователя.** Когда страж загружен, по умолчанию мод пользователя не может одобрить вызов, который отклоняет правило `deny` или для которого правило `ask` запрашивает подтверждение, независимо от того, в каком файле настроек находится правило. Мод также не может одобрить вызов, заблокированный любым хуком `PreToolUse`.
+
+  Правила разрешений и хуки `PreToolUse` применяются к вызовам инструментов Claude, а не к [вызовам `$.fs` и `$.process`](https://code.claude.com/docs/ru/plugins/mods/api#reach-files-processes-and-the-network) мода. При запрещённом `Read(.env)` мод всё ещё может прочитать этот файл с помощью `$.fs.read` или запустить программу, которая это сделает. Чтобы ограничить собственные вызовы `$.fs` и `$.process` мода, [запретите загрузку мода](#stop-user-installed-mods-from-loading) или обработайте их в [моде политики](#enforce-a-policy-with-a-mod-of-your-own).
+* **Мод пользователя всё ещё может пропускать некоторые запросы разрешения.** В [авторежиме](https://code.claude.com/docs/ru/permission-modes.md#eliminate-prompts-with-auto-mode) вызов, одобренный модом, выполняется без проверки классификатора, если только страж не загружен и сессия не запущена с [`--permission-prompt-tool`](https://code.claude.com/docs/ru/cli-reference#cli-flags) или [обратным вызовом `canUseTool`](https://code.claude.com/docs/ru/agent-sdk/user-input#handle-tool-approval-requests) Agent SDK. В этом случае классификатор сначала проверяет вызов. О запросах разрешения, которые подтверждение мода не пропускает, см. [Расширение разрешений с помощью хуков](https://code.claude.com/docs/ru/permissions.md#precedence-among-rules-hooks-and-mods).
+
+Исходный код защиты является общедоступным в [каталоге `mods/sec-default` репозитория Claude Code](https://github.com/anthropics/claude-code/tree/main/mods/sec-default).
+
+### Узнать, какие элементы управления по-прежнему применяются
+
+Моды не заменяют элементы управления, которые у вас уже есть:
+
+* **Хуки настроек продолжают работать.** Хуки команд, HTTP, промптов и агентов в файлах настроек и в `hooks/hooks.json` плагинов работают как раньше, наряду с модами.
+* **Правила отказа имеют приоритет, где загружается защита.** Мод пользователя не может одобрить вызов, который правило `deny` отказывает, если вы не установите [`allowModsToOverrideDenyRules`](#set-options-on-the-built-in-guard).
+* **Управляемые хуки запускаются первыми.** Хук `PreToolUse` в управляемых настройках запускается перед хуком [`tool.call`](https://code.claude.com/docs/ru/plugins/mods/reference#tools) любого мода, и когда этот управляемый хук блокирует вызов инструмента, ни один хук `tool.call` мода для этого вызова не запускается. Если вызов продолжается и мод переписывает его, ваши управляемые хуки запускаются снова на переписанном вызове, поэтому по умолчанию они всё ещё могут его заблокировать.
+
+  Хуки `PreToolUse` из других файлов настроек и из плагинов запускаются после последнего мода. Если мод сам отвечает на вызов инструмента, инструмент не запускается, как и эти хуки. См. [Порядок, в котором работают моды](https://code.claude.com/docs/ru/plugins/mods/events.md#the-order-mods-run-in).
+* **Сетевая политика охватывает `$.http.fetch`.**
+
+  * **Политика вашей организации не разрешает WebFetch**: Claude Code также отклоняет каждый запрос `$.http.fetch` любого мода. См. [Доступность WebFetch](https://code.claude.com/docs/ru/tools-reference.md#webfetch-availability).
+  * **Вы отключаете инструмент WebFetch с помощью [`CLAUDE_CODE_DISABLE_WEB_FETCH`](https://code.claude.com/docs/ru/env-vars#variables) или [правила deny](https://code.claude.com/docs/ru/permissions.md#tool-specific-permission-rules) для `WebFetch` в управляемых настройках или любом другом файле настроек**: моды по-прежнему могут выполнять запросы `$.http.fetch`.
+
+    Чтобы остановить их для каждого мода, который устанавливают ваши пользователи, [запретите загрузку модов, установленных пользователями](#stop-user-installed-mods-from-loading), или добавьте хук на `http.fetch` в [моде политики](#enforce-a-policy-with-a-mod-of-your-own) и отклоняйте запросы от модов пользователей. Дайте этому хуку [обработчик `.catch`](https://code.claude.com/docs/ru/plugins/mods/events#handle-a-hook-that-fails), который тоже отклоняет запрос, потому что Claude Code пропускает хук, завершившийся с ошибкой, и тогда запрос выполняется. Если вы только [ограничите, какие плагины могут устанавливать пользователи](https://code.claude.com/docs/ru/plugins/org.md#restrict-what-users-can-install), загрузится меньше модов, но разрешённые вами по-прежнему смогут выполнять эти запросы.
+  * **Вы установили [`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`](https://code.claude.com/docs/ru/env-vars)**: мод, который устанавливаете вы или ваши пользователи, по-прежнему может выполнять эти запросы. Переменная останавливает только [моды, встроенные в Claude Code](https://code.claude.com/docs/ru/plugins/mods/overview.md#mods-built-into-claude-code), а также любой запрос `$.http.fetch`, который несёт учётные данные Anthropic сессии. До v2.1.288 переменная останавливала каждый запрос `$.http.fetch` любого мода.
+
+  Ничто из этого не охватывает программу, которую мод запускает с помощью `$.process.run`: она выходит в сеть с собственным доступом пользователя.
+* **Элементы управления плагинами охватывают моды.** Мод — это плагин, поэтому [параметры, которые ограничивают то, что пользователи могут установить](https://code.claude.com/docs/ru/plugins/org.md#restrict-what-users-can-install), такие как `strictKnownMarketplaces`, определяют, может ли он быть установлен вообще.
+* **Моды не могут изменить запрос разрешения.** Мод может переделать большую часть интерфейса Claude Code, но не запрос разрешения, поэтому он не может изменить то, что показывает запрос. Мод все еще может одобрить или отказать в вызове инструмента перед появлением запроса, как описано в [Узнать, что происходит по умолчанию](#know-what-happens-by-default).
+* **Запросы доверия идут первыми.** В интерактивном сеансе в каталоге, который пользователь еще не доверил, ни один мод не загружается, пока они не ответят на запрос доверия.
+* **`--safe-mode` отключает установленные моды, включая ваши.** Запустите сеанс с `claude --safe-mode`, чтобы проверить, вызвал ли мод проблему.
+
+Ни один из этих элементов управления не изолирует мод в песочнице. Мод, который вы разрешаете, работает как пользователь, с доступом пользователя к файлам, процессам и сети.
+
+### Узнать, какие хуки мода пользователя не запускаются
+
+Там, где загружается [встроенный страж](#know-what-happens-by-default), хук, который мод пользователя регистрирует на одно из этих событий, никогда не запускается, и `/plugin` сообщает об этом пользователю в примечании. В строках [`session.append`](https://code.claude.com/docs/ru/plugins/mods/reference#session) `door` — это тип сохраняемой строки, которым отфильтрован хук.
+
+| Хук на | Что представляет собой событие |
+| :- | :- |
+| [`classic.&lt;Event&gt;`](https://code.claude.com/docs/ru/plugins/mods/events#hook-the-settings-hook-events), например `classic.Stop` | [Событие хука настроек](https://code.claude.com/docs/ru/hooks.md#hook-events) |
+| [`prompt.compose`](https://code.claude.com/docs/ru/plugins/mods/reference#prompts-and-what-claude-reads) | Список разделов системного промпта |
+| `prompt.section` | Один раздел системного промпта |
+| `prompt.context` | Контекст, отправляемый с первым сообщением диалога |
+| `prompt.attachment` | Сообщение, которое Claude Code добавляет для Claude, например напоминание |
+| `skill.prompt` | Текст скилла при его раскрытии для Claude |
+| `attribution.text` | Текст атрибуции коммита или pull request |
+| [`session.compact`](https://code.claude.com/docs/ru/plugins/mods/reference#session) | Сжатие контекста диалога |
+| `settings.read` | Чтение настроек, например вызов `$.settings.read` мода |
+| `session.append{door=attachment}` | Сохраняемая строка для сообщения, которое Claude Code добавляет для Claude |
+| `session.append{door=hook-context}` | Сохраняемая строка для контекста от хука настроек |
+| `session.append{door=compaction}` | Сохраняемые строки для сводки и границы сжатия контекста |
+
+Страж также пропускает хуки пользователя в некоторых других случаях, например для описаний инструментов вашей организации в [`tool.describe`](https://code.claude.com/docs/ru/plugins/mods/reference#tools) и для сохраняемой строки с текстом скилла. Для них `/plugin` не показывает примечания. Если хук на другое событие ничего не делает, см. [Выяснить, почему мод ничего не делает](https://code.claude.com/docs/ru/plugins/mods/troubleshoot.md#find-out-why-a-mod-does-nothing).
+
+Примечание отображается в сведениях о плагине и на вкладке **Errors** в `/plugin`. Для него требуется Claude Code v2.1.299 или новее. В нём каждый хук из таблицы указан так, как его зарегистрировал мод, как в этом примере:
+</code></pre>
+<p>Its hooks on classic.Stop, prompt.section do not run here: where an organization manages Claude Code, these events pass over the plugins you install
+Only a plugin that counts as your organization&#x27;s own runs hooks on these events. An administrator sets that up in managed settings</p>
+<pre><code>
+Чтобы эти хуки запускались, измените управляемые настройки одним из двух способов:
+
+* **Запускать мод как мод вашей организации**: [установите мод так, чтобы он считался вашим](#install-your-organizations-mods). Тогда его хуки на эти события запускаются, а страж остаётся загруженным для всех остальных модов. Мод включается для всех, кто получает эти настройки. Если вы указываете его в `prependPlugins`, оставьте `sec-default@builtin` в списке.
+* **Удалить стража**: не включайте `sec-default@builtin` в `prependPlugins`. Достаточно пустого списка `&quot;prependPlugins&quot;: []`. Вы теряете весь страж, а не только эти события. Тогда мод пользователя может делать то, [от чего его иначе удерживает страж](#know-what-happens-by-default), и [параметры стража](#set-options-on-the-built-in-guard) не применяются.
+
+Если вы передаёте список без стража через [настройки, управляемые сервером](https://code.claude.com/docs/ru/server-managed-settings.md#fetch-and-caching-behavior), страж остаётся загруженным, пока сервер не подтвердит настройки для сессии. Чтобы проверить любое из изменений на машине с v2.1.299 или новее, откройте `/plugin` в сессии на ней и убедитесь, что примечание исчезло.
+
+Хук `session.append` без фильтра `door` по-прежнему запускается и не получает примечания, но сохраняемые строки из таблицы до него не доходят.
+
+## Решить, оставить ли моды включенными
+
+Мод может делать больше, чем другие части плагина, потому что он работает внутри Claude Code. Он видит каждый запрос и вызов инструмента, может их изменять и может разрешить или отказать в вызове инструмента перед появлением запроса разрешения.
+
+То, что пользователь может загрузить как мод, зависит от элементов управления плагинами, которые у вас уже есть:
+
+| Ваши элементы управления плагинами сегодня | Что пользователь может загрузить как мод |
+| :- | :- |
+| Нет | Мод из любого маркетплейса, из любого каталога с `--plugin-dir` или который Claude пишет во время сеанса |
+| Список разрешений маркетплейса | Мод из маркетплейсов, которые вы разрешаете, или из любого каталога с `--plugin-dir`. Мод, который Claude пишет во время сеанса, загружается только когда список разрешений [включает `skills-dir`](https://code.claude.com/docs/ru/plugins/org#keep-skills-directory-plugins-loading). |
+| Список разрешений маркетплейса и `disableSideloadFlags` | Мод из маркетплейсов, которые вы разрешаете |
+
+[Управление плагинами для вашей организации](https://code.claude.com/docs/ru/plugins/org.md) перечисляет способы загрузки плагина и настройку, которая управляет каждым из них.
+
+Чтобы проверить моды в маркетплейсе перед тем, как ваши пользователи их установят, см. [Просмотреть возможности мода](#review-what-a-mod-can-do). Чтобы исключить моды пользователей, пока вы это делаете, см. [Остановить загрузку установленных пользователем модов](#stop-user-installed-mods-from-loading).
+
+### Просмотреть возможности мода
+
+Вы можете увидеть, что может делать мод, не запуская его. В вашей оболочке запустите `claude plugin validate` в каталоге плагина:
+</code></pre>
+<p>claude plugin validate ./some-mod</p>
+<pre><code>
+Строки `hooks:` и `calls:` в выводе описывают код мода:
+</code></pre>
+<p>❯ ./register.js hooks: session.start, tool.call, ui.render{component=Pane} (default matcher key: plugin)
+  ❯ ./register.js calls: $.fs.read, $.http.fetch, $.store.set, $.ui.open</p>
+<pre><code>
+* **`hooks:`**: события, которые получает мод. Пометка `default matcher key: plugin` означает, что хук перед ней [пропускает элементы управления и отрисовку других модов](https://code.claude.com/docs/ru/plugins/mods/events.md#hook-other-mods-drawings-and-controls).
+* **`calls:`**: методы API модов, которые вызывает его код
+
+[API модов](https://code.claude.com/docs/ru/plugins/mods/api.md), обозначаемый `$` в коде мода, — это способ, которым мод получает доступ к файлам, процессам и сети. Claude Code отказывается загружать мод, который использует API модов способом, который эта команда не может прочитать.
+
+Не одобряйте мод, который не проходит эту команду, потому что некоторые ошибки не препятствуют его загрузке. Запускайте команду в Claude Code v2.1.323 или новее, где длинный список продолжается на следующих строках с той же меткой, и прочитайте каждую строку `hooks:` и `calls:`. В строках `calls:` обращайте внимание на следующее:
+
+| Вызов | Что это означает |
+| :- | :- |
+| `$.fs.read`, `$.fs.write` | Читает или пишет файлы в любом месте, где может пользователь |
+| `$.process.run`, `$.process.spawn` | Запускает программы как пользователь |
+| `$.http.fetch` | Делает сетевые запросы |
+| `$.env.get`, `$.settings.read` | Читает переменные окружения и параметры, которые могут содержать ключи API. Строка `env reads:` в выводе называет каждую переменную. |
+| `$.env.set` | Устанавливает переменную окружения для Claude Code и для каждой команды и MCP сервера, который он запускает впоследствии, что может изменить то, что эти программы запускают. Строка `env writes:` называет каждую переменную. |
+| `$.mcp.call` | Вызывает инструмент на подключенном MCP-сервере без запроса разрешения. Claude Code отклоняет вызов при наличии правила запрета или управляемого правила ask. Он также отклоняет вызов инструмента, помеченного [`requiresUserInteraction`](https://code.claude.com/docs/ru/mcp#require-approval-for-a-specific-tool), или инструмента, который ваша организация [установила в `ask`](https://code.claude.com/docs/ru/mcp#organization-controls-on-connector-tools), если эта настройка распространяется на Claude Code. |
+| `$.model.complete` | Использует план пользователя или ключ API для вызовов модели |
+| `$.prompt.submit` | Отправляет запрос и может отправить его как собственные слова пользователя |
+| `$.session.send` | Отправляет сообщение, которое читает Claude другой сессии, субагента или [участника команды](https://code.claude.com/docs/ru/agent-teams.md) |
+
+В строке `hooks:`, [`tool.call`](https://code.claude.com/docs/ru/plugins/mods/reference#tools) и [`prompt.submit`](https://code.claude.com/docs/ru/plugins/mods/reference#prompts-and-what-claude-reads) означают, что мод видит каждый вызов инструмента и каждый промпт и может их изменять. [`session.append`](https://code.claude.com/docs/ru/plugins/mods/reference#session) означает, что мод может переписать каждую строку диалога перед ее сохранением, за исключением [строк, которые пропускает защита](#hooks-the-guard-passes-over). [`ui.render{component=AskUserQuestion}`](https://code.claude.com/docs/ru/plugins/mods/interface#change-what-claude-code-already-draws) означает, что мод может переделать диалоговое окно, которое Claude использует для вопроса пользователю. `tool.check` означает, что мод может одобрить или отказать в вызове инструмента перед появлением запроса разрешения. [Узнать, что происходит по умолчанию](#know-what-happens-by-default) перечисляет, какие из ваших правил и хуков имеют приоритет над его ответом.
+
+## Выбрать, сколько разрешить
+
+Политики модов варьируются от полного отсутствия установленных модов до любого мода, который выбирает пользователь, при этом ваш собственный мод проверяет остальные, и каждая из них — это несколько управляемых настроек. Найдите нужную политику в первом столбце и задайте то, что указано во втором столбце. В разделе [Развертывание управляемых настроек](https://code.claude.com/docs/ru/managed-settings.md) описано, где находятся управляемые настройки.
+
+| Что вы хотите | Настройки |
+| :- | :- |
+| Не выполняется ни один установленный мод, хуки настроек не затронуты | Задайте [`allowManagedModsOnly`](#set-options-on-the-built-in-guard) и не развертывайте собственных модов |
+| Нет установленных модов и вообще нет хуков, включая ваши управляемые хуки | Установите `disableAllHooks` в `true` |
+| Только моды вашей организации | Задайте [параметр стража `allowManagedModsOnly`](#stop-user-installed-mods-from-loading) и [установите ваши моды](#install-your-organizations-mods), чтобы они считались вашими |
+| Любой мод из маркетплейсов, которые вы одобряете | Сохраните ваши [ограничения маркетплейсов](https://code.claude.com/docs/ru/plugins/org.md#restrict-what-users-can-install) и установите `disableSideloadFlags` в `true` |
+| Любой мод, при этом ваш собственный мод проверяет остальные | [Установите ваш мод](#install-your-organizations-mods) и перечислите его вместе с `sec-default@builtin` в `prependPlugins` |
+
+Что делает каждая настройка:
+
+* **`allowManagedModsOnly`**: параметр встроенного стража. Claude Code отклоняет собственные моды пользователей, поэтому ни один из их хуков не выполняется. Хуки настроек пользователей, строки состояния и `/goal` продолжают работать. В разделе [Остановить загрузку установленных пользователем модов](#stop-user-installed-mods-from-loading) перечислено, что он охватывает.
+* **`allowManagedHooksOnly`**: более широкая настройка. Загружаются только [моды вашей организации](#install-your-organizations-mods) и моды, встроенные в Claude Code. Мод, который пользователь установил сам, не загружается. Настройка также блокирует хуки в собственных файлах настроек пользователей. Прочитайте [Что выполняется при `allowManagedHooksOnly`](https://code.claude.com/docs/ru/settings-reference#what-runs-under-allowmanagedhooksonly), прежде чем задавать её.
+* **`disableAllHooks`**: самая широкая настройка. В управляемых настройках она останавливает моды в каждом установленном плагине, включая ваши, и отключает все хуки в файлах настроек, поэтому хук `PreToolUse` в ваших управляемых настройках больше ничего не блокирует. Пользовательские строки состояния и `/goal` также перестают работать. Прочитайте [`disableAllHooks`](https://code.claude.com/docs/ru/settings-reference#disableallhooks), прежде чем задавать её.
+* **`disableSideloadFlags`**: отклоняет `--plugin-dir` и `--plugin-url` при запуске и не позволяет загружаться модам, которые Claude пишет во время сессии. Настройка также отклоняет `--agents` и `--mcp-config`. Прочитайте [`disableSideloadFlags`](https://code.claude.com/docs/ru/settings-reference#disablesideloadflags), прежде чем задавать её.
+
+Моды, встроенные в Claude Code, такие как поддержка `AGENTS.md`, не затрагиваются этими настройками. У каждого из них есть [свой собственный переключатель](https://code.claude.com/docs/ru/plugins/mods/overview.md#mods-built-into-claude-code).
+
+Пользователь, чей мод был отклонён или не загрузился, найдёт причину в своём логе отладки. В разделе [Сообщения об отказе](https://code.claude.com/docs/ru/plugins/mods/troubleshoot.md#refusal-messages) перечислены строки для `allowManagedHooksOnly` и `disableAllHooks`, а в разделе [Сообщения от встроенного стража](https://code.claude.com/docs/ru/plugins/mods/troubleshoot.md#messages-from-the-built-in-guard) приведена строка для `allowManagedModsOnly`.
+
+### Разрешить только моды вашей организации
+
+Чтобы запускать моды вашей организации и блокировать моды, которые приносят пользователи, разверните настройки из строки **Только моды вашей организации** [таблицы политик](#choose-how-much-to-allow), а также `disableSideloadFlags`. С этим полным `managed-settings.json` Claude Code отклоняет собственные моды пользователей, поэтому ни один из их хуков не выполняется, а ваш мод политики запускается раньше других модов:
+</code></pre>
+<p>{
+  &quot;extraKnownMarketplaces&quot;: {
+    &quot;acme-tools&quot;: {
+      &quot;source&quot;: { &quot;source&quot;: &quot;directory&quot;, &quot;path&quot;: &quot;/opt/acme/claude-plugins&quot; }
+    }
+  },
+  &quot;enabledPlugins&quot;: { &quot;acme-guard@acme-tools&quot;: true },
+  &quot;prependPlugins&quot;: [&quot;acme-guard@acme-tools&quot;, &quot;sec-default@builtin&quot;],
+  &quot;pluginConfigs&quot;: {
+    &quot;cc-plugin-sec-default@builtin&quot;: {
+      &quot;options&quot;: { &quot;allowManagedModsOnly&quot;: true }
+    }
+  },
+  &quot;disableSideloadFlags&quot;: true
+}</p>
+<pre><code>
+Каждая группа ключей выполняет одну задачу:
+
+* **`extraKnownMarketplaces`, `enabledPlugins` и `prependPlugins`**: устанавливают ваш мод так, чтобы он считался вашим, и запускают его первым, а стража — после него. В разделе [Установить моды вашей организации и задать порядок](#install-your-organizations-mods) описан каталог, на который указывают эти ключи.
+* **`pluginConfigs`**: задаёт параметр стража `allowManagedModsOnly`, поэтому Claude Code отклоняет собственные моды пользователей. Их хуки настроек, строки состояния и `/goal` продолжают работать.
+* **`disableSideloadFlags`**: см. [`disableSideloadFlags`](https://code.claude.com/docs/ru/settings-reference#disablesideloadflags), чтобы узнать, какие флаги она отклоняет при запуске
+
+Чтобы проверить политику на тестовой машине, запустите в оболочке сессию с `claude --debug` и прочитайте лог отладки:
+
+* **Ваш мод**: его строка `hooks module` содержит `tier prepend`
+* **Мод, установленный пользователем**: есть строка `refused by cc-plugin-sec-default: mods are limited to your organization&#x27;s by policy (allowManagedModsOnly)`. Более ранняя строка сообщает, что модуль хуков этого мода `loaded`, поэтому ищите именно отказ.
+* **Каталог плагина**: `claude --plugin-dir ./any-mod` завершается с сообщением, которое начинается с `--plugin-dir is disabled by your organization&#x27;s managed settings (disableSideloadFlags)`
+
+Чтобы также ограничить, какие маркетплейсы могут добавлять пользователи, объедините этот файл с вашими [ограничениями маркетплейсов](https://code.claude.com/docs/ru/plugins/org.md#restrict-what-users-can-install).
+
+### Применить ваши средства управления плагинами к модам
+
+Мод — это плагин, поэтому способы [управления плагинами для вашей организации](https://code.claude.com/docs/ru/plugins/org.md) применимы и к плагину, содержащему мод:
+
+* **Узнать, какие плагины загружаются на ваших машинах**: [Аудит и проверка](https://code.claude.com/docs/ru/plugins/org.md#audit-and-review)
+* **Решить, когда проверенный вами плагин может обновляться**: [Задать политику обновлений](https://code.claude.com/docs/ru/plugins/org.md#set-update-policy)
+* **Назначить одной группе другую политику, например для пилота**: [Планирование того, что управляемые настройки не могут обеспечить](https://code.claude.com/docs/ru/plugins/org.md#plan-for-what-managed-settings-can’t-enforce)
+* **Проверить, какие приложения и виды сессий применяют ключи плагинов**: [Когда каждый интерфейс применяет ключи плагинов](https://code.claude.com/docs/ru/plugins/org.md#when-each-surface-applies-the-plugin-keys)
+* **Настроить CI и контейнеры**: [Подготовка контейнеров и CI](https://code.claude.com/docs/ru/plugins/org.md#seed-containers-and-ci)
+* **Предложить моды, которые могут устанавливать ваши пользователи**: [Размещение маркетплейса](https://code.claude.com/docs/ru/plugins/host-marketplace.md). Мод, который Claude Code копирует из источника GitHub, git, URL или npm, считается модом пользователя, если только вы не [установите его как мод вашей организации](#install-your-organizations-mods).
+
+### Задать параметры встроенного стража
+
+Встроенный страж принимает параметры. Задайте их в управляемых настройках в `pluginConfigs` под ключом `cc-plugin-sec-default@builtin`, как это сделано в примере в разделе [Остановить загрузку установленных пользователем модов](#stop-user-installed-mods-from-loading).
+
+В таблице показано, что получают ваши пользователи, когда каждый параметр не задан и когда он установлен в `true`:
+
+| Параметр | Не задан | `true` |
+| :- | :- | :- |
+| `allowManagedModsOnly` | Собственные моды пользователей выполняются | Только [моды вашей организации](#install-your-organizations-mods) и моды, встроенные в Claude Code, выполняют свои хуки. Claude Code отклоняет все остальные моды, включая мод, установленный пользователем или указанный с помощью `--plugin-dir`. |
+| `allowModsToOverrideDenyRules` | Правила запрета имеют приоритет над модами пользователей | Мод пользователя, который одобряет вызовы инструментов, может одобрить вызов в обход большинства [результатов, которые по умолчанию остаются в силе](https://code.claude.com/docs/ru/permissions.md#precedence-among-rules-hooks-and-mods), включая правило `deny` |
+
+Эти правила определяют, вступает ли параметр в силу:
+
+* **Здесь id имеет только одну форму**: Claude Code читает параметры только под `cc-plugin-sec-default@builtin`. `prependPlugins` также принимает `sec-default@builtin`, а `pluginConfigs` — нет.
+* **Учитываются только управляемые настройки**: та же запись в файле настроек пользователя, проекта или локальных настроек либо в файле, переданном с помощью `--settings`, не задаёт параметр и не ослабляет его
+* **Страж должен загружаться**: если вы задаёте `prependPlugins`, [укажите стража в списке](#install-your-organizations-mods). Там, где страж не загружается, не применяется ни один из параметров.
+* **При сбое страж отказывает**: если страж не может прочитать управляемые настройки, он отклоняет все моды пользователей при загрузке. Если он не может проверить правила запрета для вызова, который одобрил мод пользователя, он отклоняет этот вызов.
+
+[Сообщения от встроенного стража](https://code.claude.com/docs/ru/plugins/mods/troubleshoot.md#messages-from-the-built-in-guard) — это то, что видят ваши пользователи, когда применяется любой из параметров.
+
+## Развертывание собственных модов вашей организации
+
+Вы можете развертывать собственные моды для каждого пользователя, выбирать, где они выполняются относительно модов пользователей, и использовать один из них для обеспечения политики.
+
+### Установка модов вашей организации и установка порядка
+
+Моды вашей организации загружаются там, где не загружаются моды пользователей, и могут выполняться перед ними, поэтому Claude Code должен иметь возможность определить, что мод поступил от вас.
+
+Чтобы мод из удалённого маркетплейса, например из репозитория GitHub, считался вашим в v2.1.324 или более поздней версии, выполните в управляемых настройках все следующие действия:
+
+* Установите плагин мода в `true` в `enabledPlugins`
+* Объявите маркетплейс в `extraKnownMarketplaces`. Чтобы контролировать, когда меняется код мода, [закрепите маркетплейс и запись мода](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#fields-by-type).
+* Укажите идентификатор мода, например `acme-guard@acme-tools`, в [`prependPlugins`](https://code.claude.com/docs/ru/settings-reference#prependplugins) или [`appendPlugins`](https://code.claude.com/docs/ru/settings-reference#appendplugins). При использовании `prependPlugins` также укажите `sec-default@builtin`, чтобы сохранить встроенного стража.
+
+Мод в каталоге на машине пользователя считается вашим только в том случае, если все следующие условия верны:
+
+* Управляемый `enabledPlugins` устанавливает плагин мода в `true`
+* Управляемые настройки называют [маркетплейс](https://code.claude.com/docs/ru/plugins/create-marketplace.md) плагина как каталог на машине пользователя по абсолютному пути. Запись `extraKnownMarketplaces` делает это и также регистрирует маркетплейс для пользователя.
+* Маркетплейс указывает плагин по относительному пути, поэтому Claude Code [загружает его на месте](https://code.claude.com/docs/ru/plugins/loading.md#in-place-and-copied-plugins) из этого каталога
+
+Чтобы выполнить эти условия, скопируйте каталог маркетплейса на одинаковый путь на каждой машине с помощью управления устройствами. Сделайте каталог и каждый каталог выше него доступными для записи только администратором, как и файл управляемых настроек. Любой, кто может писать туда, может переписать ваш мод. Управляемые настройки, которые вы доставляете из консоли администратора claude.ai, могут содержать ключи, но они не могут поместить каталог на машину.
+
+Каталог содержит манифест маркетплейса и плагин:
+</code></pre>
+<p>/opt/acme/claude-plugins/
+├── .claude-plugin/
+│   └── marketplace.json
+└── plugins/
+    └── acme-guard/
+        ├── .claude-plugin/
+        │   └── plugin.json
+        └── hooks/
+            ├── hooks.json
+            └── register.js</p>
+<pre><code>
+Манифест указывает плагин по его пути относительно этого каталога:
+</code></pre>
+<p>{
+  &quot;name&quot;: &quot;acme-tools&quot;,
+  &quot;owner&quot;: { &quot;name&quot;: &quot;Acme&quot; },
+  &quot;plugins&quot;: [
+    { &quot;name&quot;: &quot;acme-guard&quot;, &quot;source&quot;: &quot;./plugins/acme-guard&quot;, &quot;description&quot;: &quot;Acme policy mod&quot; }
+  ]
+}</p>
+<pre><code>
+Установленный плагин, который не соответствует ни одному из этих наборов условий, считается плагином пользователя, даже если управляемый `enabledPlugins` его включает. Его мод выполняется среди модов пользователей, `prependPlugins` и `appendPlugins` его пропускают, `allowManagedModsOnly` отказывает ему, а `allowManagedHooksOnly` не дает ему загрузиться. Если управляемые настройки его включают, в логе отладки пользователя есть строка, которая начинается с идентификатора плагина и `is enabled by managed settings, but`.
+
+Claude Code вызывает событие каждый раз, когда он собирается действовать, например запустить инструмент, и передает его каждому моду по очереди. Мод, который соответствует условиям для каталога, [выполняется перед модами пользователей](https://code.claude.com/docs/ru/plugins/mods/events.md#the-order-mods-run-in), даже если вы его нигде не указываете. Чтобы задать его место, укажите его идентификатор в одной из двух настроек. Идентификатор — это имя плагина, `@` и имя маркетплейса, например `acme-guard@acme-tools`.
+
+* **`prependPlugins`**: ваш мод видит событие раньше любого мода пользователя, а результат события — после них. Он может изменить событие, отказать в нем или пропустить моды пользователей. В v2.1.323 или более поздней версии проверьте, что ваши хуки по-прежнему [достигают элементов управления и отрисовок других модов](https://code.claude.com/docs/ru/plugins/mods/events.md#hook-other-mods-drawings-and-controls).
+* **`appendPlugins`**: ваш мод выполняется после каждого мода пользователя, поэтому он видит только события, которые эти моды передают, в форме, в которой они их передают
+
+Этот пример объявляет маркетплейс `acme-tools` в `/opt/acme/claude-plugins`, включает `acme-guard` из него и запускает этот мод первым, со встроенным стражем после него:
+</code></pre>
+<p>{
+  &quot;extraKnownMarketplaces&quot;: {
+    &quot;acme-tools&quot;: {
+      &quot;source&quot;: { &quot;source&quot;: &quot;directory&quot;, &quot;path&quot;: &quot;/opt/acme/claude-plugins&quot; }
+    }
+  },
+  &quot;enabledPlugins&quot;: { &quot;acme-guard@acme-tools&quot;: true },
+  &quot;prependPlugins&quot;: [&quot;acme-guard@acme-tools&quot;, &quot;sec-default@builtin&quot;]
+}</p>
+<pre><code>
+Каждый ключ выполняет одну работу:
+
+* **`extraKnownMarketplaces`**: называет каталог, который содержит маркетплейс `acme-tools`. `path` — это абсолютный путь каталога, который содержит `.claude-plugin/marketplace.json`.
+* **`enabledPlugins`**: включает `acme-guard` для каждого пользователя, который получает эти управляемые настройки
+* **`prependPlugins`**: ставит `acme-guard` первым и встроенного стража вторым, оба впереди любого мода, который устанавливает пользователь. Claude Code следует порядку, который вы указываете.
+
+Чтобы подтвердить, что машина пользователя получила настройки, см. [Проверка того, что политика действует](https://code.claude.com/docs/ru/managed-settings.md#check-that-a-policy-is-in-force).
+
+Чтобы подтвердить, где выполняется мод, запустите сессию на этой машине с `claude --debug` и найдите в [логе отладки](https://code.claude.com/docs/ru/plugins/mods/troubleshoot.md#read-the-debug-log) идентификатор мода:
+
+* **`hooks module acme-guard@acme-tools loaded`, с `tier prepend`**: мод считается принадлежащим вашей организации и выполняется первым
+* **Та же строка с `tier user`**: Claude Code рассматривает его как мод пользователя. Вторая строка, `prependPlugins names acme-guard@acme-tools, which is not an enabled managed plugin with a hooks module; skipped`, говорит, что список его пропустил.
+
+Эти правила определяют, какие идентификаторы в двух списках вступают в силу:
+
+* **Список заменяет значение по умолчанию**: когда вы задаете `prependPlugins` в управляемых настройках, укажите в нем `sec-default@builtin`, чтобы сохранить встроенного стража. Страж встроен и не требует записи `enabledPlugins`.
+* **Ваши собственные идентификаторы должны считаться вашими**: в управляемых настройках Claude Code пропускает идентификатор, чей плагин не соответствует условиям для мода организации
+* **Репозитории не могут задавать ни один из списков**: Claude Code игнорирует оба в файле настроек репозитория, поэтому задавайте их в управляемых настройках.
+* **Пользователь может задать их, чтобы упорядочить свои моды**: в `~/.claude/settings.json`, только на машине без управляемых настроек или файла `managed-mcp.json` и только если учётные данные сессии получены не через `/login` Team или Enterprise. В любом другом месте Claude Code игнорирует оба ключа в пользовательских настройках. Список там не добавляет и не удаляет встроенного стража.
+
+### Обеспечение политики с помощью собственного мода
+
+Чтобы не допустить загрузку любого мода пользователя, вам не нужен собственный мод. Установите [`allowManagedModsOnly`](#stop-user-installed-mods-from-loading). Напишите мод политики, когда вы хотите допустить некоторые моды пользователей и отказать другим или чтобы записывать, что делают моды.
+
+Каждый раз, когда другой мод собирается загрузиться, ваш мод получает список, который печатает `claude plugin validate`, в событии с именем [`plugin.register`](https://code.claude.com/docs/ru/plugins/mods/reference#other-mods). Мод в `prependPlugins` может прочитать этот список и отказать в загрузке мода. Он также может [обработать любой вызов API модов по имени](https://code.claude.com/docs/ru/plugins/mods/api.md#reach-files-processes-and-the-network), чтобы записать этот вызов или отказать в нем для каждого другого мода. Имя — это метод без `$.`, поэтому хук на `fs.write` видит каждый вызов `$.fs.write`.
+
+&gt; [!NOTE]
+&gt;
+&gt; В v2.1.323 или более поздней версии хуку `ui.focus` нужен более широкий matcher, чтобы получать вызовы `$.ui.focus` других модов. См. [Хуки на отрисовки и элементы управления других модов](https://code.claude.com/docs/ru/plugins/mods/events.md#hook-other-mods-drawings-and-controls).
+
+Этот мод политики останавливает любой мод пользователя, чей собственный код вызывает `$.process.run` или `$.process.spawn`, и позволяет остальной части плагина пользователя загрузиться. Он также ведет журнал аудита, записывая каждый вызов инструмента и каждый файл, который мод записывает, в лог отладки. Поскольку он выполняется первым, лог записывает то, что было запрошено, перед тем как любой мод пользователя это изменит. Сохраните его как `acme-guard/hooks/register.js`:
+</code></pre>
+<p>// The methods no user&#x27;s mod may call, each spelled namespace.method
+const BLOCKED_CALLS = [&#x27;process.run&#x27;, &#x27;process.spawn&#x27;]</p>
+<p>export function register(on) {
+  // Runs each time another mod is about to load
+  on(&#x27;plugin.register&#x27;, async ($, e, next) =&gt; {
+    // Keep the calls in that mod&#x27;s code that are on the blocked list
+    const blocked = e.uses.calls.filter((call) =&gt; BLOCKED_CALLS.includes(call))
+    if (e.tier === &#x27;user&#x27; &amp;&amp; blocked.length &gt; 0) {
+      // v2.1.326 or later: leave out the hooks module and load the rest of the plugin
+      if (e.provides) return next({ ...e, provides: { ...e.provides, modules: [] } })
+      // Earlier versions: refuse leaves out the hooks module, and the text is the reason
+      return { refuse: &#x27;Acme policy: mods may not call &#x27; + blocked.join(&#x27;, &#x27;) }
+    }
+    // Let every other mod load
+    return next(e)
+  })</p>
+<p>// Record each tool call, then let it go ahead unchanged
+  on(&#x27;tool.call&#x27;, async ($, e, next) =&gt; {
+    $.ui.log(&#x27;audit tool.call &#x27; + e.tool, { to: &#x27;debug&#x27; })
+    return next(e)
+  })</p>
+<p>// Record which mod wrote a file, then the path, quoted because the mod chose it
+  on(&#x27;fs.write&#x27;, async ($, e, next) =&gt; {
+    $.ui.log(&#x27;audit fs.write by &#x27; + next.origin.plugin + &#x27; &#x27; + JSON.stringify(e.path), { to: &#x27;debug&#x27; })
+    return next(e)
+  })
+}</p>
+<pre><code>
+Файл регистрирует три хука:
+
+* **`plugin.register`**: решает, загружается ли другой мод. Он останавливает мод пользователя, который вызывает заблокированный метод, и передает каждый другой мод дальше.
+* **`tool.call`**: записывает строку, такую как `audit tool.call Bash`, в лог отладки для каждого вызова инструмента и ничего не изменяет
+* **`fs.write`**: записывает строку, такую как `audit fs.write by reader &quot;/tmp/notes.md&quot;`, для каждого вызова `$.fs.write`, который делает другой мод, и ничего не изменяет. Имя мода идет первым, а путь заключен в кавычки, поэтому путь, который выбирает мод, не может выдать себя за другое поле строки.
+
+Хук `plugin.register` читает три поля события:
+
+* **`e.tier`**: где будет выполняться мод, один из `prepend`, `user`, `append` или `builtin`. Каждый мод, который устанавливает человек, — это `user`.
+* **`e.uses.calls`**: методы API модов, которые вызывает мод, каждый записан как `namespace.method`, например `process.run`, без `$.`, который печатает `claude plugin validate`
+* **`e.provides`**: части плагина по видам, например `modules`. Чтобы загрузить всё, кроме [модуля хуков](https://code.claude.com/docs/ru/plugins/mods/create.md#write-a-mod-yourself), передайте в `next` событие с опустошённым `provides.modules`. Требуется Claude Code v2.1.326 или более поздней версии.
+
+Когда пользователь устанавливает мод, который вызывает `$.process.run`, мод не загружается, и в его логе отладки есть строка, которая содержит `hooks module left out by acme-guard`. Эта строка также попадает в транскрипт в [сессии, которая выполняет горячую перезагрузку каталога плагина](https://code.claude.com/docs/ru/plugins/mods/troubleshoot.md#find-out-why-a-mod-does-nothing). До v2.1.326 вместо этого ищите `refused by acme-guard:` и вашу причину.
+
+&gt; [!NOTE]
+&gt;
+&gt; Когда вы возвращаете `{ refuse }` в v2.1.326 или более поздней версии, весь плагин не загружается, включая его MCP-серверы и хуки в его `hooks/hooks.json`. Если вы написали мод политики для более ранней версии, добавьте строку `if (e.provides)` из примера перед каждым отказом, который должен останавливать только мод. Об обработчике `.catch` см. [Отказ в загрузке модов при сбое вашей проверки](#refuse-mods-when-your-check-fails).
+
+Чтобы заблокировать вызов без отказа всему моду, верните `{ deny: &#x27;your reason&#x27; }` из хука на имя этого вызова, после того как [проверите, кто сделал вызов](https://code.claude.com/docs/ru/plugins/mods/reference.md#mods-api-calls).
+
+Чтобы отправить строки аудита куда-то, кроме лога отладки, вызовите `$.http.fetch` из тех же хуков.
+
+Сессия может выполняться без вашего мода. Если рабочий поток, который запускает установленные моды, [падает три раза](https://code.claude.com/docs/ru/plugins/mods/troubleshoot.md#mods-that-run-in-the-hooks-worker-are-off-for-this-session), Claude Code выгружает каждый мод, который не встроен, включая ваш, пока пользователь не запустит `/reload-plugins` или не начнет новую сессию. А пользователь, который запускает Claude Code с `--safe-mode`, работает без установленных модов, включая ваш.
+
+[Создание мода](https://code.claude.com/docs/ru/plugins/mods/create.md) описывает файлы, которые нужны моду. [Тестирование мода политики](https://code.claude.com/docs/ru/plugins/mods/test.md#test-a-mod-that-judges-other-mods) содержит файл теста для этого мода политики.
+
+#### Отказ в загрузке модов при сбое вашей проверки
+
+Если ваш хук `plugin.register` выбросит исключение или превысит лимит времени, Claude Code пропускает хук, поэтому при сбое проверка остается открытой (fail open), и мод, который она проверяла, загружается. Чтобы при выбросе исключения проверкой закрывать доступ (fail closed), переместите проверку в именованную функцию и добавьте обработчик `.catch`. Эта версия файла показывает только хук `plugin.register`, поэтому сохраните два хука аудита из первой версии в `register`:
+</code></pre>
+<p>const BLOCKED_CALLS = [&#x27;process.run&#x27;, &#x27;process.spawn&#x27;]</p>
+<p>// The same check as before, moved into a function of its own
+async function checkMod($, e, next) {
+  const blocked = e.uses.calls.filter((call) =&gt; BLOCKED_CALLS.includes(call))
+  if (e.tier === &#x27;user&#x27; &amp;&amp; blocked.length &gt; 0) {
+    if (e.provides) return next({ ...e, provides: { ...e.provides, modules: [] } })
+    return { refuse: &#x27;Acme policy: mods may not call &#x27; + blocked.join(&#x27;, &#x27;) }
+  }
+  return next(e)
+}</p>
+<p>export function register(on) {
+  // The handler runs when checkMod throws
+  on(&#x27;plugin.register&#x27;, checkMod).catch(async ($, e, next) =&gt; {
+    // Let your organization&#x27;s mods and built-in mods load
+    if (e.tier !== &#x27;user&#x27;) return next(e)
+    // Stop the unchecked mod, not its whole plugin
+    if (e.provides &amp;&amp; !next.called) return next({ ...e, provides: { ...e.provides, modules: [] } })
+    return { refuse: &#x27;Acme policy check failed, so this mod was not loaded&#x27; }
+  })
+}</p>
+<pre><code>
+С обработчиком на месте мод пользователя не загружается, когда проверка выбрасывает исключение. Если проверка выбрасывает исключение после вызова `next`, обработчик переходит к `refuse`. Не полагайтесь на обработчик для проверки, которая превышает свой лимит времени.
+
+Обработчик передает каждый мод вне уровня `user` в `next(e)`, поэтому неудачная проверка не останавливает моды, которые указывает ваша организация. [Обработка хука, завершившегося сбоем](https://code.claude.com/docs/ru/plugins/mods/events.md#handle-a-hook-that-fails) описывает `.catch` для других событий.
+
+## Следующие шаги
+
+* [Безопасность плагинов](https://code.claude.com/docs/ru/plugins/security.md): что может делать любой плагин на машине пользователя и как просмотреть один перед его установкой
+* [Обзор модов](https://code.claude.com/docs/ru/plugins/mods/overview.md): что такое мод и как он сравнивается с hooks, skills и MCP серверами
+* [Порядок, в котором работают моды](https://code.claude.com/docs/ru/plugins/mods/events.md#the-order-mods-run-in): как `prependPlugins` и `appendPlugins` подходят к модам пользователей
+* [Параметры и переменные окружения](https://code.claude.com/docs/ru/plugins/mods/reference.md#settings-and-environment-variables): каждый параметр, названный на этой странице, в одной таблице
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

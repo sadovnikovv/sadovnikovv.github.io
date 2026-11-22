@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Стартер-кит byArto для Claude Code</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../materials/01-claude-code/community-guides/claude-starter-kit/index.html">claude-starter-kit</a></nav>
+<h1 id="стартер-кит-byarto-для-claude-code">Стартер-кит byArto для Claude Code <a class="h-anchor" href="#стартер-кит-byarto-для-claude-code" aria-label="Ссылка на раздел">#</a></h1>
+<p>8 моих команд для Claude Code на русском. Ставятся один раз и работают во всех проектах.</p>
+<h3 id="h">Установка <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>В Claude Code выполнить по очереди:</p>
+<pre><code>/plugin marketplace add byArto/claude-starter-kit
+/plugin install byarto@byarto-kit</code></pre>
+<p>Команды вызываются с префиксом, например: <code>/byarto:plan сделать страницу с отзывами</code>.</p>
+<h3 id="h-2">Команды <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Команда</th><th>Что делает</th></tr></thead><tbody><tr><td><code>/byarto:start</code></td><td>Создаёт CLAUDE.md по шаблону</td></tr><tr><td><code>/byarto:plan</code></td><td>Задаёт вопросы и предлагает план, ничего не меняет до «ок»</td></tr><tr><td><code>/byarto:fix</code></td><td>Находит причину ошибки, чинит минимальной правкой и проверяет</td></tr><tr><td><code>/byarto:explain</code></td><td>Объясняет код или последние изменения простыми словами</td></tr><tr><td><code>/byarto:design</code></td><td>Делает интерфейс «сочным» и проверяет его на телефоне</td></tr><tr><td><code>/byarto:check</code></td><td>Строгое ревью: баги, безопасность, лишняя сложность</td></tr><tr><td><code>/byarto:save</code></td><td>Проверяет проект, делает git-коммит и заметку в NOTES.md</td></tr><tr><td><code>/byarto:ship</code></td><td>Готовит выкладку: сборка, переменные окружения, инструкция</td></tr></tbody></table></div>
+<p>Команды запускаешь только ты — сам Claude их не вызывает. Ревью называется <code>check</code>, а не <code>review</code>: у Claude Code уже есть встроенный <code>/review</code>.</p>
+<h3 id="h-3">Без плагина <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Скопируй папки из <code>plugins/byarto/skills/</code> в <code>~/.claude/skills/</code>. Тогда команды будут без префикса: <code>/plan</code>, <code>/fix</code> и так далее.</p>
+<pre><code class="language-bash">git clone https://github.com/byArto/claude-starter-kit.git
+mkdir -p ~/.claude/skills
+cp -R claude-starter-kit/plugins/byarto/skills/* ~/.claude/skills/</code></pre>
+<p>Шаблон CLAUDE.md лежит отдельно в <a href="templates/CLAUDE.md"><code>templates/CLAUDE.md</code></a> — его можно скопировать в проект и без команд.</p>
+<h3 id="h-4">Откуда это <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>🎁 Полный стартер-пак по Claude Code — гайд из 7 шагов, 12 промптов и шпаргалки — в моём Telegram-боте: <a href="https://t.me/byartoai_bot?start=pack__github">@byartoai_bot</a></li>
+<li>📢 Канал <a href="https://t.me/byarto1">@byarto1</a> — разборы новых фич Claude и дневник моей MMO RPG</li>
+<li>📸 Instagram <a href="https://www.instagram.com/by.arto/">@by.arto</a></li>
+</ul>
+<h3 id="h-5">Лицензия <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<p><a href="LICENSE">MIT</a></p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

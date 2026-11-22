@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Управление сеансами</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Управление сеансами <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Назовите, возобновите, создавайте ветви и переключайтесь между диалогами Claude Code. Охватывает <code>--continue</code>, <code>--resume</code>, <code>--from-pr</code>, средство выбора <code>/resume</code>, именование сеансов, экспорт стенограмм и место хранения стенограмм.</p>
+</blockquote>
+<p><a href="https://code.claude.com/docs/ru/glossary.md#session">Сессия</a> — это сохранённый диалог, привязанный к каталогу проекта. Claude Code сохраняет его локально по мере работы, поэтому вы можете возобновить работу с того же места, создать ветку для попытки другого подхода или переключаться между задачами.</p>
+<p><a href="https://code.claude.com/docs/ru/desktop.md#work-in-parallel-with-sessions">Настольное приложение</a>, <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">Claude Code в веб-версии</a> и <a href="https://code.claude.com/docs/ru/vs-code.md#resume-past-conversations">расширение VS Code</a> каждое ведёт собственную историю сеансов, а настольное приложение также может <a href="https://code.claude.com/docs/ru/desktop.md#coming-from-the-cli">возобновить сеанс CLI</a>. На этой странице рассматривается CLI.</p>
+<h3 id="h-2">Возобновление сессии <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Сессии непрерывно сохраняются в <a href="#export-and-locate-session-data">локальные файлы транскриптов</a> по мере работы, поэтому вы можете вернуться к одной из них после выхода или запуска <code>/clear</code>. Используйте эти точки входа:</p>
+<p>| Команда | Что она делает |
+| :- | :- |
+| <code>claude --continue</code> | Повторно открывает самую последнюю сессию в текущем каталоге |
+| <code>claude --resume</code> | Открывает <a href="#use-the-session-picker">средство выбора сессий</a> |
+| <code>claude --resume &lt;name&gt;</code> | Возобновляет именованную сессию напрямую |
+| <code>claude --resume &lt;session-id&gt;</code> | Возобновляет <a href="#resume-by-session-id-or-name">сессию с этим ID</a> |
+| <code>claude --resume &lt;transcript-path&gt;</code> | Возобновляет сессию, сохранённую в файле <a href="#where-transcripts-are-stored">транскрипта</a> <code>.jsonl</code> по этому абсолютному пути |
+| <code>claude --from-pr &lt;number&gt;</code> | Открывает средство выбора сессий, отфильтрованное по сессиям, связанным с этим pull request |
+| <code>/resume</code> | Переключается на другую сессию из активной сессии |</p>
+<h4 id="h-3">Возобновление выполняющейся фоновой сессии <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Когда диалог, который вы возобновляете с помощью <code>claude --resume</code> или <code>/resume</code>, принадлежит <a href="https://code.claude.com/docs/ru/agent-view.md">фоновой сессии</a>, которая всё ещё выполняется, Claude Code открывает саму выполняющуюся сессию. Если в командной строке указан <code>--bg</code>, возобновление вместо этого становится <a href="https://code.claude.com/docs/ru/agent-view.md#from-your-shell">фоновой отправкой</a>. До версии 2.1.285 Claude Code отказывал и предлагал открыть сессию с помощью <code>claude attach &lt;id&gt;</code> или сначала остановить её с помощью <code>claude stop &lt;id&gt;</code>.</p>
+<ul>
+<li><strong>Из вашей оболочки</strong>: <code>claude --resume &lt;session&gt;</code> запускает <a href="https://code.claude.com/docs/ru/agent-view#attach-to-a-session"><code>claude attach</code></a> для этой сессии в том же терминале вместо самостоятельной загрузки транскрипта. Промпт, который вы передаёте в командной строке, как в <code>claude --resume &lt;session&gt; &quot;check the tests too&quot;</code>, сначала отправляется в сессию как её следующий ход, и Claude Code выводит <code>Sent your prompt to the background session (&lt;id&gt;); opening it…</code> перед подключением. <code>claude -p --resume &lt;session&gt; &quot;prompt&quot;</code>, введённый в терминале, делает то же самое, поэтому <code>-p</code> не делает этот запуск неинтерактивным.</li>
+</ul>
+<p>Claude Code не открывает сессию, если командная строка содержит что-либо из следующего:</p>
+<ul>
+<li>Ввод или вывод через конвейер или перенаправление</li>
+<li>Флаги, которые настраивают сессию, такие как <code>--permission-mode</code>, <code>--model</code> или <code>--settings</code></li>
+<li>Флаги, которые читают вывод, такие как <code>--output-format json</code> или <code>--json-schema</code></li>
+<li>Флаги, которые ограничивают или перематывают запуск, такие как <code>--max-turns</code> или <code>--max-budget-usd</code></li>
+</ul>
+<p>В любом из этих случаев, или когда <a href="https://code.claude.com/docs/ru/agent-view.md#turn-off-agent-view">представление агентов отключено</a>, Claude Code ничего не отправляет и завершается со статусом 1, выводя сообщение о том, что сессия выполняется в фоне, вместе с командой <code>claude attach &lt;id&gt;</code>, которая её открывает, или предлагая найти её в <code>claude agents</code>, если не удаётся определить ID. Добавьте <code>--fork-session</code>, чтобы вместо этого возобновить копию диалога. Чтобы продолжить сам диалог в собственной сессии с применением ваших флагов, запустите <code>claude stop &lt;id&gt;</code>, а затем повторите команду.</p>
+<p>Промпт, начинающийся с <code>/</code> или <code>!</code>, не отправляется, как и любой промпт, пока сессия ожидает вашего ответа на вопрос. В обоих случаях Claude Code не открывает сессию, а сообщение содержит <code>Your prompt was not sent to it</code> с указанием причины.</p>
+<ul>
+<li><strong>Изнутри сессии</strong>: <code>/resume</code> перемещает ваш текущий диалог в фон и подключает этот терминал к выполняющейся сессии, выводя <code>Opening &quot;&lt;title&gt;&quot;, running in the background (&lt;id&gt;)</code>. Нажмите <code>←</code> в пустом промпте, чтобы вернуться к представлению агентов, где также отображается покинутый вами диалог. Когда текущий диалог нельзя переместить в фон, например потому что вы уже подключены к фоновой сессии или сохранение сессий отключено, <code>/resume</code> выводит команду <code>claude attach</code>, которую нужно запустить вместо этого.</li>
+</ul>
+<h4 id="h-4">Что восстанавливает возобновлённая сессия <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<p>Когда Claude Code загружает диалог из его транскрипта, возобновлённая сессия восстанавливает диалог вместе с сохранённым в нём состоянием:</p>
+<ul>
+<li>История диалога: сообщения, вызовы инструментов и результаты. Если к сессии применялось <a href="https://code.claude.com/docs/ru/context-window.md#what-survives-compaction">сжатие контекста</a>, диалог открывается на строке <code>Conversation compacted</code>. Claude продолжает работу со сводкой последнего сжатия, сообщениями, которые это сжатие оставило без сводки, и всеми последующими сообщениями. Сообщения, включённые в сводку последнего сжатия, повторно не загружаются.</li>
+<li>Прерванные вызовы инструментов: инструмент, который всё ещё выполнялся, когда предыдущий процесс завершился, например при сбое, не запускается повторно при возобновлении.</li>
+<li>Модель: при использовании <code>claude --resume</code> или <code>--continue</code> сессия продолжается на модели, которую она использовала, за исключением случаев, описанных в разделе <a href="https://code.claude.com/docs/ru/model-config.md#which-model-a-resumed-session-uses">Какую модель использует возобновлённая сессия</a>.</li>
+<li>Агент: сессия, запущенная с помощью <a href="https://code.claude.com/docs/ru/sub-agents#invoke-subagents-explicitly"><code>--agent</code></a> или настройки <code>agent</code>, продолжается как этот агент, сохраняя его ограничения инструментов и модель. Передайте <code>--agent</code> при возобновлении, чтобы выбрать другого агента; о системном промпте в обоих случаях см. <a href="https://code.claude.com/docs/ru/cli-reference.md#system-prompt-flags-in-resumed-conversations">Флаги системного промпта в возобновлённых диалогах</a>. Claude Code ищет агента в двух местах: в исходном каталоге сессии, при условии что вы <a href="https://code.claude.com/docs/ru/permissions.md#project-allow-rules-and-workspace-trust">доверяете этому рабочему пространству</a>, а затем в каталоге, из которого вы возобновляете сессию, поэтому агент уровня проекта загружается и при возобновлении из другого каталога. Если Claude Code не находит агента ни в одном из этих мест, сессия возобновляется с инструментами по умолчанию и показывает <a href="https://code.claude.com/docs/ru/errors.md#session-agent-no-longer-available">предупреждение с именем агента</a>.</li>
+<li>Режим разрешений: если вы возобновляете сессию из терминала с помощью <code>claude --continue</code>, <code>claude --resume &lt;session-id&gt;</code> или <code>claude --resume &lt;name&gt;</code>, когда имя соответствует одной сессии, без <code>-p</code>, Claude Code восстанавливает режим разрешений, в котором находилась сессия, за исключением случаев, описанных в разделе <a href="#permission-mode-on-resume">режим разрешений при возобновлении</a>, который также охватывает средство выбора сессий, <code>/resume</code> и возобновление с помощью <code>claude -p</code>. Передайте <code>--permission-mode</code> или <code>--dangerously-skip-permissions</code>, чтобы переопределить восстановленный режим.</li>
+<li>Активная цель: <a href="https://code.claude.com/docs/ru/goal.md#resume-with-an-active-goal">цель</a>, которая всё ещё была активна при завершении сессии, переносится; её счётчик ходов, таймер и базовый уровень расхода токенов сбрасываются.</li>
+<li>Запланированные задачи уровня сессии: <a href="https://code.claude.com/docs/ru/scheduled-tasks.md#limitations">задачи, срок которых не истёк</a>, восстанавливаются. Фоновые задачи Bash и задачи мониторинга не восстанавливаются.</li>
+<li>Фоновая работа: <a href="https://code.claude.com/docs/ru/sub-agents.md#run-subagents-in-foreground-or-background">фоновый субагент</a>, фоновая команда Bash или <a href="https://code.claude.com/docs/ru/workflows.md">workflow</a>, завершившиеся вместе с предыдущим процессом, отображаются в возобновлённом транскрипте как примечание о том, что они не завершились. Claude Code не начинает ход по этим примечаниям; Claude читает их вместе с вашим следующим промптом.</li>
+</ul>
+<h5 id="h-5">Флаги, которые нужно передать снова при возобновлении <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h5>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Не повторяйте флаги запуска, когда вы повторно открываете <a href="https://code.claude.com/docs/ru/agent-view.md#what-persists-across-restarts">фоновую сессию</a>, пока она выполняется, или когда вы возобновляете её по полному ID сессии с <code>--bg</code> после её остановки. В обоих случаях сессия сохраняет свои флаги.</p>
+</blockquote>
+<p>Для любого другого <code>claude --continue</code> или <code>claude --resume</code> снова передайте <a href="https://code.claude.com/docs/ru/cli-reference.md#cli-flags">флаги</a>, например перечисленные ниже, поскольку Claude Code их не восстанавливает:</p>
+<ul>
+<li><strong>MCP-серверы</strong>: <code>--mcp-config</code></li>
+<li><strong>Плагины</strong>: <code>--plugin-dir</code></li>
+<li><strong>Каталоги</strong>: <code>--add-dir</code>, как в <code>claude --continue --add-dir ../shared</code>. Используйте <code>--add-dir</code> и для каталогов, которые вы добавили с помощью <code>/add-dir</code>.</li>
+<li><strong>Дополнительные настройки</strong>: <code>--settings</code></li>
+<li><strong>Резервные модели</strong>: <code>--fallback-model</code></li>
+</ul>
+<p>О <code>--system-prompt</code> и <code>--append-system-prompt</code> см. <a href="https://code.claude.com/docs/ru/cli-reference.md#system-prompt-flags-in-resumed-conversations">Флаги системного промпта в возобновлённых диалогах</a>.</p>
+<h5 id="h-6">Режим разрешений при возобновлении <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h5>
+<p>Режим разрешений, в котором Claude Code запускает возобновлённую сессию, зависит от способа возобновления. Описанные ниже случаи применяются, когда Claude Code загружает диалог из его транскрипта; когда вы вместо этого <a href="#resume-a-running-background-session">открываете фоновую сессию, которая всё ещё выполняется</a>, эта сессия сохраняет свой текущий режим разрешений.</p>
+<ul>
+<li>Терминал: <code>claude --continue</code>, <code>claude --resume &lt;session-id&gt;</code> или <code>claude --resume &lt;name&gt;</code>, когда имя соответствует одной сессии, без <code>-p</code>. Claude Code восстанавливает режим разрешений, в котором находилась сессия, за исключением случаев, указанных в таблице. Передайте <code>--permission-mode</code> или <code>--dangerously-skip-permissions</code>, чтобы переопределить восстановленный режим.</li>
+<li>Неинтерактивный: <code>claude -p --resume</code> или <code>claude -p --continue</code>. Claude Code запускает выполнение в том режиме разрешений, в котором запустился бы новый запуск <code>claude -p</code>, за исключением того, что сессия, завершившаяся в режиме планирования, возобновляется в режиме планирования при <a href="#resume-in-plan-mode-with-p">условиях ниже</a>.</li>
+<li>VS Code: панель диалога расширения. Таблица охватывает только диалог, завершившийся в режиме планирования; об остальных случаях см. <a href="https://code.claude.com/docs/ru/vs-code.md#resume-past-conversations">возобновление прошлых диалогов</a>.</li>
+<li>Средство выбора сессий при запуске: сессия, которую вы выбираете в <a href="#use-the-session-picker">средстве выбора сессий</a>, независимо от того, открыли ли вы его с помощью одного <code>claude --resume</code>, <code>claude --from-pr</code> или имени, соответствующего нескольким сессиям. Claude Code запускает сессию в том режиме разрешений, в котором запустил бы новую сессию из той же командной строки, за исключением того, что сессия, завершившаяся в режиме планирования, возобновляется в режиме планирования. Если вы передаёте <code>--permission-mode</code>, <code>--dangerously-skip-permissions</code> или <code>--fork-session</code>, Claude Code не восстанавливает режим планирования. Никакой другой сохранённый режим разрешений не восстанавливается.</li>
+<li><code>/resume</code> внутри сессии, с аргументом или без: диалог, на который вы переключаетесь, продолжается в режиме разрешений вашей текущей сессии, за исключением того, что диалог, завершившийся в режиме планирования, возобновляется в режиме планирования, даже если вы запустили Claude Code с <code>--permission-mode</code> или <code>--dangerously-skip-permissions</code>. Если этот диалог уже открывался ранее в текущем запуске Claude Code, например диалог, с которого вы начали, или диалог, который вы покинули с помощью <code>/clear</code> или <code>/resume</code>, он вместо этого продолжается в вашем текущем режиме разрешений.</li>
+</ul>
+<p>Если <a href="https://code.claude.com/docs/ru/permissions.md#manage-permissions">правило запрета</a> удаляет инструмент <a href="https://code.claude.com/docs/ru/tools-reference"><code>ExitPlanMode</code></a> или включён параметр <a href="https://code.claude.com/docs/ru/settings-reference#permissions-denyinsteadofprompting"><code>permissions.denyInsteadOfPrompting</code></a>, Claude не может представить план на утверждение, поэтому Claude Code не восстанавливает режим планирования. Сессия запускается в том режиме разрешений, в котором запустилась бы новая сессия из той же командной строки. При использовании <code>/resume</code> диалог продолжается в вашем текущем режиме разрешений.</p>
+<p>Для восстановления режима планирования в неинтерактивном пути и в VS Code требуется Claude Code v2.1.246 или более поздней версии. В каждой строке указаны режим разрешений, в котором завершилась сессия, путь возобновления (терминал, неинтерактивный или VS Code) и режим разрешений, в котором Claude Code запускает возобновлённую сессию.</p>
+<p>| Сессия завершилась в | Как вы возобновляете | Режим разрешений после возобновления |
+| :- | :- | :- |
+| <code>bypassPermissions</code> | Терминал | Режим разрешений, в котором запустилась бы новая сессия. Чтобы снова <a href="https://code.claude.com/docs/ru/permission-modes.md#skip-all-checks-with-bypasspermissions-mode">обходить разрешения</a>, включите этот режим при запуске с помощью одного из его флагов запуска или <code>permissions.defaultMode: &quot;bypassPermissions&quot;</code> в <a href="https://code.claude.com/docs/ru/settings-reference#permissions-defaultmode">пользовательских настройках, <code>--settings</code> или управляемых настройках</a> |
+| <code>plan</code> | Терминал | Режим планирования. С <code>--fork-session</code> — режим разрешений, в котором запустилась бы новая сессия |
+| <code>plan</code> | Терминал, когда правило запрета удаляет <code>ExitPlanMode</code> или включён <code>permissions.denyInsteadOfPrompting</code> | Режим разрешений, в котором запустилась бы новая сессия |
+| <code>auto</code> | Терминал | <code>auto</code>, только если ваша учётная запись всё ещё соответствует <a href="https://code.claude.com/docs/ru/permission-modes.md#eliminate-prompts-with-auto-mode">требованиям авторежима</a> |
+| Manual | Терминал | Manual, если новая сессия запустилась бы в авторежиме согласно <a href="https://code.claude.com/docs/ru/permission-modes.md#which-mode-a-session-starts-in">встроенному значению по умолчанию</a>. Когда <a href="https://code.claude.com/docs/ru/permission-modes.md#which-mode-a-session-starts-in">вступает в силу</a> <code>defaultMode</code> из файла настроек, Claude Code вместо этого запускает возобновлённую сессию в этом режиме |
+| <code>plan</code> | Неинтерактивный, при <a href="#resume-in-plan-mode-with-p">условиях ниже</a> | Режим планирования |
+| Любой режим | Неинтерактивный, в любом другом случае | Режим разрешений, в котором запустился бы новый запуск <code>claude -p</code> |
+| <code>plan</code> | VS Code | Режим планирования, с <a href="https://code.claude.com/docs/ru/vs-code.md#resume-past-conversations">исключениями, описанными на странице VS Code</a> |</p>
+<h6 id="возобновление-в-режиме-планирования-с-p">Возобновление в режиме планирования с <code>-p</code> <a class="h-anchor" href="#возобновление-в-режиме-планирования-с-p" aria-label="Ссылка на раздел">#</a></h6>
+<p>Запуск <code>claude -p --resume</code> или <code>claude -p --continue</code> возобновляется в режиме планирования, только если выполняются все следующие условия:</p>
+<ul>
+<li>Вы передаёте <a href="https://code.claude.com/docs/ru/cli-reference#cli-flags"><code>--permission-prompt-tool</code></a> и не передаёте <a href="https://code.claude.com/docs/ru/headless#turn-off-permission-prompts-in-unattended-runs"><code>--permission-prompts none</code></a>, чтобы Claude Code мог представить план на утверждение</li>
+<li>Параметр <a href="https://code.claude.com/docs/ru/settings-reference#permissions-denyinsteadofprompting"><code>permissions.denyInsteadOfPrompting</code></a> не включён</li>
+<li>Вы не передаёте <code>--permission-mode</code> или <code>--dangerously-skip-permissions</code></li>
+<li>Вы не передаёте <code>--fork-session</code></li>
+<li>Запуск выполняется не через <a href="https://code.claude.com/docs/ru/channels.md">каналы</a></li>
+<li>Ни одно <a href="https://code.claude.com/docs/ru/permissions.md#manage-permissions">правило запрета</a> не удаляет инструмент <code>ExitPlanMode</code></li>
+</ul>
+<h4 id="диалоговое-окно-resume-this-conversation">Диалоговое окно «Resume this conversation?» <a class="h-anchor" href="#диалоговое-окно-resume-this-conversation" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если при возобновлении сессии вы видите диалоговое окно «Resume this conversation?», его оценка показывает долю вашего 5-часового лимита использования, которую израсходует один только сохранённый диалог. Оценка не учитывает то, что вы уже использовали.</p>
+<p>На планах Pro, Max и Ultra это диалоговое окно может появиться, когда вы возобновляете длинный диалог <a href="https://code.claude.com/docs/ru/prompt-caching.md#resuming-a-session">после длительного перерыва</a> или на другой модели. Расчётный расход происходит, когда вы отправляете первое сообщение после <strong>Resume</strong>, а не в момент выбора этого варианта. Выбирайте в зависимости от того, нужен ли вашей следующей задаче сохранённый диалог:</p>
+<ul>
+<li><strong>Resume</strong>: продолжить работу в сохранённом диалоге.</li>
+<li><strong>Start a new conversation</strong>: переключиться на работу, которой не нужен сохранённый диалог. Чтобы позже снова открыть его, выполните <a href="#use-the-session-picker"><code>/resume</code></a> в промпте. Оценка не применяется к вашему первому сообщению в новом диалоге. Если в этом варианте указано, что Claude может найти этот диалог, вы всё равно можете ссылаться на предыдущую работу в новом диалоге.</li>
+</ul>
+<h4 id="h-7">Где средство выбора сессий ищет сессии <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude Code хранит сессии для каждого каталога проекта. По умолчанию средство выбора сессий показывает:</p>
+<ul>
+<li>Сессии из текущего worktree, включая <a href="https://code.claude.com/docs/ru/agent-view.md">фоновые сессии</a>, которые отмечены в списке как <code>bg</code></li>
+<li>Сессии, запущенные в других местах, которые добавили текущий каталог с помощью <code>/add-dir</code></li>
+</ul>
+<p>Используйте <code>Ctrl+W</code>, чтобы расширить список на все worktrees репозитория, или <code>Ctrl+A</code>, чтобы расширить его на все проекты на этой машине.</p>
+<h5 id="loop-p-agent-sdk-и-фоновые-сессии"><code>/loop</code>, <code>-p</code>, Agent SDK и фоновые сессии <a class="h-anchor" href="#loop-p-agent-sdk-и-фоновые-сессии" aria-label="Ссылка на раздел">#</a></h5>
+<p>Сессии, первым промптом которых была команда <a href="https://code.claude.com/docs/ru/scheduled-tasks#run-a-prompt-repeatedly-with-%2Floop"><code>/loop</code></a>, не отображаются в средстве выбора, и <code>claude --continue</code> также их пропускает. Запуск <code>/loop</code> позже в диалоге не скрывает сессию.</p>
+<p>Claude Code исключает сессии, созданные с помощью <a href="https://code.claude.com/docs/ru/headless"><code>claude -p</code></a> или <a href="https://code.claude.com/docs/ru/agent-sdk/overview.md">Agent SDK</a>, из средства выбора сессий и из <code>claude --continue</code>. Вы всё равно можете возобновить такую сессию, передав её ID в <code>claude --resume &lt;session-id&gt;</code>. Когда вы запускаете <a href="https://code.claude.com/docs/ru/headless#continue-conversations"><code>claude -p --continue</code></a>, Claude Code учитывает сессии <code>-p</code>, SDK и <code>/loop</code>.</p>
+<p><code>claude --continue</code> открывает <a href="https://code.claude.com/docs/ru/agent-view.md">фоновую сессию</a>, которая завершилась, но не ту, которая всё ещё выполняется; для открытия завершённых фоновых сессий требуется Claude Code v2.1.257 или более поздней версии. Если ваш самый последний диалог — это тот, который вы <a href="https://code.claude.com/docs/ru/agent-view.md#send-the-session-to-the-background">переместили в фон</a>, и он всё ещё там выполняется, Claude Code завершается с сообщением <code>Your most recent conversation is running in the background</code> и ID этой сессии. Подключитесь к сессии из <a href="https://code.claude.com/docs/ru/agent-view#attach-to-a-session"><code>claude agents</code></a> или запустите <code>claude --resume</code>, чтобы выбрать другую.</p>
+<h5 id="сессии-в-других-worktrees-и-проектах">Сессии в других worktrees и проектах <a class="h-anchor" href="#сессии-в-других-worktrees-и-проектах" aria-label="Ссылка на раздел">#</a></h5>
+<p>Когда вы выбираете сессию из другого worktree того же репозитория, Claude Code возобновляет её на месте; если собственный worktree сессии больше не существует, Claude Code <a href="https://code.claude.com/docs/ru/worktrees.md#resume-a-worktree-session">возобновляет её в вашем текущем каталоге</a>. Когда вы выбираете сессию из несвязанного проекта, Claude Code вместо этого копирует в буфер обмена команду <code>cd</code> и команду возобновления. Если каталог этого проекта больше не существует, Claude Code возобновляет сессию в вашем текущем каталоге, а не копирует команду <code>cd</code>, которая завершилась бы ошибкой.</p>
+<p>Перемещение сессии с помощью <a href="https://code.claude.com/docs/ru/commands"><code>/cd</code></a> переносит её в хранилище проекта нового каталога, поэтому впоследствии она появляется в средстве выбора этого каталога.</p>
+<h5 id="возобновление-по-id-сессии-или-имени">Возобновление по ID сессии или имени <a class="h-anchor" href="#возобновление-по-id-сессии-или-имени" aria-label="Ссылка на раздел">#</a></h5>
+<p>Вы можете запустить <code>claude --resume &lt;session-id&gt;</code> из любого каталога, поэтому можно возобновить сессию, которая началась в другом месте или была перемещена с помощью <a href="https://code.claude.com/docs/ru/commands"><code>/cd</code></a>. Claude Code ищет ID в следующем порядке:</p>
+<ol>
+<li>Каталог текущего проекта и его git worktrees</li>
+<li>Все остальные проекты на этой машине</li>
+</ol>
+<p>Поиск по проектам находит ID только тогда, когда ровно один другой проект содержит транскрипт с сообщениями для него, поэтому вручную скопированный дубликат приводит к тому, что Claude Code сообщает об отсутствии сессии, а не возобновляет произвольную копию. Если ни одна сохранённая сессия не соответствует ID, Claude Code сообщает <code>No conversation found with session ID: &lt;session-id&gt;</code>.</p>
+<p>Возобновление по имени выполняет поиск в текущем репозитории и его worktrees. Обе формы ищут точное совпадение и возобновляют сессию напрямую, даже если она находится в другом worktree:</p>
+<p>| Команда | Точное совпадение | Неоднозначное имя |
+| :- | :- | :- |
+| <code>claude --resume &lt;name&gt;</code> | Возобновляет напрямую | Открывает средство выбора сессий с именем, предварительно заполненным в качестве поискового запроса |
+| <code>/resume &lt;name&gt;</code> | Возобновляет напрямую | Сообщает об ошибке; запустите <code>/resume</code> без аргумента, чтобы открыть средство выбора сессий |</p>
+<h3 id="h-8">Назовите ваши сессии <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h3>
+<p>Дайте сессиям описательные имена, чтобы их было легко найти в средстве выбора сессий и возобновить по имени. Это особенно важно, когда вы работаете над несколькими задачами параллельно.</p>
+<p>| Когда | Как установить имя |
+| :- | :- |
+| При запуске | <code>claude -n auth-refactor</code> |
+| Во время сессии | <code>/rename auth-refactor</code>. Имя также отображается на панели подсказок |
+| Из средства выбора сессий | Выделите сессию и нажмите <code>Ctrl+R</code> |
+| При принятии плана | Принятие плана в <a href="https://code.claude.com/docs/ru/permission-modes.md#analyze-before-you-edit-with-plan-mode">режиме плана</a> дает сессии сгенерированное название на основе плана, если вы еще не назвали её |
+| Из claude.ai или приложения Claude | Переименуйте <a href="https://code.claude.com/docs/ru/remote-control.md#connect-from-another-device">сессию удаленного управления</a>; Claude Code применяет то же имя в CLI. Требуется Claude Code v2.1.221 или позже |
+| Из приложения для рабочего стола | Переименуйте сессию в <a href="https://code.claude.com/docs/ru/desktop.md#organize-and-find-sessions">приложении для рабочего стола</a> |</p>
+<p>После того как вы назовете сессию через маршрут CLI или из claude.ai, вернитесь к ней с помощью <code>claude --resume &lt;name&gt;</code> или <code>/resume &lt;name&gt;</code>; сессия приложения для рабочего стола возобновляется в <a href="https://code.claude.com/docs/ru/desktop.md#work-in-parallel-with-sessions">приложении для рабочего стола</a>. Смотрите <a href="#resume-a-session">Возобновить сессию</a>, чтобы узнать, как разрешение имен работает в worktrees.</p>
+<p>Сессии, которые вы не назвали, все еще получают два ярлыка, которые назначает Claude Code. Только сгенерированное название работает как дескриптор возобновления:</p>
+<ul>
+<li>Имя отображения по умолчанию: интерактивные сессии, которые вы никогда не назвали, все еще получают имя отображения по умолчанию при запуске. Значение по умолчанию объединяет имя рабочего каталога с двухсимвольным суффиксом, например <code>my-app-3f</code>, и идентифицирует сессию в списках запущенных сессий, таких как <a href="https://code.claude.com/docs/ru/agent-view.md">представление агента</a> и вывод <code>claude agents --json</code>. Значение по умолчанию не является дескриптором возобновления. Если вы передадите его в <code>claude --resume</code> или <code>/resume</code>, Claude Code не найдет сессию.</li>
+<li>Сгенерированное название: если вы не назовете сессию, Claude Code генерирует для неё название сессии. Название — это краткое резюме вашей первой подсказки, написанное фоновым запросом к небольшой/быстрой модели, обычно модели класса Haiku. Запуск <code>claude -p</code>, который вы запускаете непосредственно из оболочки или скрипта, не получает его.</li>
+</ul>
+<p>Если вы установите <a href="https://code.claude.com/docs/ru/env-vars#variables"><code>CLAUDE_CODE_DISABLE_TERMINAL_TITLE</code></a> в значение <code>1</code>, сессии в терминале и в Agent SDK не получают это название.</p>
+<p>Принятие плана заменяет сгенерированное название на название на основе плана. Вы можете передать любое из названий в <code>claude --resume</code> или <code>/resume</code>, и Claude Code разрешит его так же, как имя, которое вы установили.</p>
+<h3 id="h-9">Использование средства выбора сеансов <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h3>
+<p>Запустите <code>/resume</code> внутри сеанса или <code>claude --resume</code> без аргументов, чтобы открыть интерактивное средство выбора сеансов. Используйте эти сочетания клавиш для навигации, поиска и расширения списка:</p>
+<p>| Сочетание клавиш | Действие |
+| :- | :- |
+| <code>↑</code> / <code>↓</code> или <code>k</code> / <code>j</code> | Навигация между сессиями |
+| <code>→</code> / <code>←</code> | Развёртывание или свёртывание сгруппированных сеансов |
+| <code>Enter</code> | Возобновление выделенного сеанса |
+| <code>1</code>–<code>9</code> | Возобновление сессии на соответствующей позиции в списке |
+| <code>Space</code> | Предпросмотр содержимого сеанса. <code>Ctrl+V</code> также работает на терминалах, которые не захватывают его как вставку |
+| <code>Ctrl+R</code> | Переименование выделенного сеанса |
+| <code>/</code> или любой печатный символ, кроме <code>Space</code>, <code>j</code>, <code>k</code> или цифры | Вход в режим поиска и фильтрация сессий. Вставьте URL pull или merge request GitHub, GitHub Enterprise, GitLab или Bitbucket, чтобы найти сессию, которая его создала |
+| <code>Ctrl+A</code> | Показать сеансы из всех проектов на этой машине. Нажмите снова, чтобы вернуться к текущему репозиторию |
+| <code>Ctrl+W</code> | Показать сеансы из всех worktrees текущего репозитория. Нажмите снова, чтобы вернуться к текущему worktree. Отображается только в репозиториях с несколькими worktrees |
+| <code>Ctrl+B</code> | Фильтр к сеансам из текущей ветви git. Нажмите снова, чтобы показать все ветви |
+| <code>Esc</code> | Выход из средства выбора сеансов или режима поиска |</p>
+<p>Каждая строка показывает имя сессии, если оно установлено, в противном случае сгенерированное ИИ название сессии, сводку диалога или первый промпт, а также время с момента последней активности, ветку git и размер файла.</p>
+<p>Сеансы, созданные с помощью <code>/branch</code> или <code>--fork-session</code>, получают свои собственные идентификаторы сеансов и отображаются как отдельные строки. Когда средство выбора находит более одной записи для одного и того же сеанса, оно группирует их под одной строкой. Нажмите <code>→</code> для развёртывания группы.</p>
+<p>Если Claude Code не может загрузить выбранный вами сеанс из средства выбора <code>claude --resume</code>, он выводит <a href="https://code.claude.com/docs/ru/errors#failed-to-resume-the-conversation"><code>Failed to resume the conversation</code></a> с командой для повтора, а затем завершает работу с кодом 1. Из средства выбора <code>/resume</code> внутри сеанса Claude Code сообщает об ошибке, и ваш текущий диалог продолжает работать.</p>
+<h3 id="h-10">Создание ветви сеанса <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h3>
+<p>Создание ветви создаёт копию диалога до сих пор и переключает вас в неё, оставляя оригинал нетронутым. Используйте это, чтобы попробовать другой подход без потери пути, на котором вы были.</p>
+<p>Из активного сеанса запустите <code>/branch</code> с необязательным именем:</p>
+<p>```text theme={null}
+/branch try-streaming-approach</p>
+<pre><code>
+Если вы опустите имя, Claude Code назовёт новую ветку по первому промпту в диалоге.
+
+Из командной строки объедините `--continue` или `--resume` с `--fork-session`:
+</code></pre>
+<p>claude --continue --fork-session</p>
+<pre><code>
+Подтверждение `/branch` выводит два ID сеанса: новую ветвь, в которой вы находитесь, и оригинал. Оригинал остаётся неизменным на диске и остаётся в средстве выбора сеансов; вернитесь к нему с помощью `/resume &lt;original-name&gt;` или передав его ID в `/resume`.
+
+`/branch` копирует стенограмму и переключает запущенный процесс Claude Code на запись в неё. Это различие определяет, что наследует ветвь:
+
+| Состояние | После `/branch` |
+| :- | :- |
+| История диалога | Скопирована в ветвь до момента, когда вы запустили `/branch` |
+| Разрешения &quot;Allow for this session&quot; | Перенесены; ветвь работает в том же процессе, поэтому ваши существующие разрешения по-прежнему применяются. Если вы разветвляетесь в отдельный процесс с помощью `--fork-session`, новый процесс запускается без них, и вы повторно одобряете их там |
+| Выполняющиеся [фоновые подагенты](https://code.claude.com/docs/ru/sub-agents.md#run-subagents-in-foreground-or-background) и [фоновые команды Bash](https://code.claude.com/docs/ru/interactive-mode.md#background-bash-commands) | Продолжают работать. Их вывод появляется в новой ветви, в которую вы переключились, а не в исходном сеансе |
+| Соединение [Remote Control](https://code.claude.com/docs/ru/remote-control.md) | Остаётся подключённым. Телефон или браузер, подключённый к сеансу, следует за вами в ветвь и продолжает получать там новые сообщения |
+
+Если вы одновременно возобновите одну и ту же сессию в двух терминалах или в двух запусках `claude -p`, оба будут записывать в один транскрипт. Когда вы позже возобновите эту сессию, сообщения от одного из них могут отсутствовать. Чтобы сохранить оба диалога, добавьте `--fork-session` к каждой команде `claude`. О перемотке на основе чекпоинтов в рамках одной сессии см. [Чекпоинты](https://code.claude.com/docs/ru/checkpointing.md).
+
+## Управление контекстом в сеансе
+
+Эти команды управляют тем, что находится в окне контекста, не покидая сеанс:
+
+* **`/clear`**: начать заново с пустым контекстом. Claude Code сохраняет предыдущую сессию; возобновите её с помощью `/resume`, или, в том же процессе Claude Code, из [записи предыдущей сессии в меню перемотки](https://code.claude.com/docs/ru/checkpointing.md#rewind-past-a-cleared-conversation). Без аргумента новая сессия сохраняет имя, которое вы установили с помощью `--name` или `/rename`, но не название сессии, сгенерированное ИИ. Чтобы вместо этого назвать сессию, которую вы покидаете, передайте имя, как в `/clear release-prep`; новая сессия затем начинается без имени
+* **`/compact [instructions]`**: заменить историю сводкой, опционально сосредоточенной на том, что вы указали
+* **`/context`**: показать, что в настоящее время потребляет контекст
+
+О том, как сжатие контекста взаимодействует с CLAUDE.md, скиллами и правилами, см. [руководство по контекстному окну](https://code.claude.com/docs/ru/context-window.md). Стратегии о том, когда очищать, а когда сжимать контекст, см. в разделе [Лучшие практики](https://code.claude.com/docs/ru/best-practices.md#keep-cost-and-context-down).
+
+## Экспорт и поиск данных сеанса
+
+Запустите `/export`, чтобы открыть меню, которое позволяет скопировать текущий диалог в буфер обмена или сохранить его как простой текстовый файл с сообщениями и выводом инструментов, отображаемыми как читаемый текст. Передайте имя файла для прямой записи в этот файл.
+
+### Доступ к диалогам из скриптов
+
+`/export` создает отформатированную стенограмму для чтения человеком. Интерфейсы ниже создают структурированные данные для анализа скриптом: результат JSON из запуска, путь к файлу стенограммы сеанса или живой поток событий. Выбирайте в зависимости от того, что запускает скрипт:
+
+* **Запустить Claude один раз и захватить результат**: вызовите `claude -p` с [`--output-format json` или `stream-json`](https://code.claude.com/docs/ru/headless#get-structured-output), чтобы захватить результат, ID сеанса, использование и стоимость неинтерактивного запуска как структурированный JSON.
+* **Задать вопрос существующему сеансу**: передайте ID сеанса в [`claude -p --resume`](https://code.claude.com/docs/ru/headless#continue-conversations), чтобы отправить дополнительный запрос, например запрос на резюме, и захватить структурированный ответ.
+* **Реагировать на события сеанса**: прочитайте поле `transcript_path`, которое получают [hooks](https://code.claude.com/docs/ru/hooks.md#common-input-fields) и [команды строки состояния](https://code.claude.com/docs/ru/statusline.md#available-data) в качестве входных данных. Hook `SessionEnd` может архивировать стенограмму при завершении сеанса.
+* **Встроить Claude в приложение TypeScript или Python**: используйте [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md) для получения каждого сообщения программным способом.
+
+Пример ниже использует второй интерфейс. Он отправляет дополнительный запрос существующему сеансу и читает ответ с помощью `jq`:
+</code></pre>
+<p>claude -p --resume &lt;session-id&gt; --output-format json &quot;summarize what we changed&quot; | jq -r &#x27;.result&#x27;</p>
+<pre><code>
+### Где хранятся стенограммы
+
+По умолчанию Claude Code хранит стенограммы как JSONL в `~/.claude/projects/&lt;project&gt;/&lt;session-id&gt;.jsonl`, где `&lt;project&gt;` — это путь вашего рабочего каталога с заменой не буквенно-цифровых символов на `-`. Для рабочего каталога, преобразованное имя которого превышает 200 символов, Claude Code усекает имя до 200 символов и добавляет хеш полного пути, чтобы имя каталога оставалось в пределах ограничений файловой системы.
+
+Каждая строка — это объект JSON: сообщение, использование инструмента или его результат, запись о запросе, который Claude Code отправил модели, или запись метаданных. Формат записи является внутренним для Claude Code и изменяется между версиями, поэтому скрипты, которые анализируют эти файлы напрямую, могут сломаться при любом выпуске. Чтобы работать с данными сессии, используйте `/export` или [интерфейсы скриптов](#access-conversations-from-scripts) вместо этого.
+
+Местоположение, сохранение и поведение записи настраиваются:
+
+| Для | Установить | Где |
+| - | - | - |
+| Переместить хранилище с `~/.claude` | [`CLAUDE_CONFIG_DIR`](https://code.claude.com/docs/ru/env-vars) | Переменная окружения |
+| [Назвать каталог `&lt;project&gt;` самостоятельно](#name-the-project-directory-yourself) | [`CLAUDE_CODE_PROJECT_DIR_NAME`](https://code.claude.com/docs/ru/env-vars) | Переменная окружения |
+| Изменить 30-дневный срок хранения | [`cleanupPeriodDays`](https://code.claude.com/docs/ru/settings-reference#cleanupperioddays) | `settings.json` |
+| Установить ограничение по возрасту для [стенограмм Claude Desktop и Cowork](https://code.claude.com/docs/ru/claude-directory.md#cleaned-up-automatically) | [`desktopSessionCleanupPeriodDays`](https://code.claude.com/docs/ru/settings-reference#desktopsessioncleanupperioddays) | Пользовательские параметры, управляемые параметры или `--settings` |
+| Ограничить рост размера файла транскрипта сессии `-p` или Agent SDK | [`CLAUDE_CODE_TRANSCRIPT_LOCAL_GC`](https://code.claude.com/docs/ru/env-vars) | Переменная окружения |
+| Подавить запись стенограмм во всех режимах | [`CLAUDE_CODE_SKIP_PROMPT_HISTORY`](https://code.claude.com/docs/ru/env-vars) | Переменная окружения |
+| Подавить запись для одного неинтерактивного запуска | [`--no-session-persistence`](https://code.claude.com/docs/ru/cli-reference) | Флаг CLI с `claude -p` |
+
+### Удалить данные сеанса
+
+Транскрипты удаляются в соответствии с [правилами очистки сохранения](https://code.claude.com/docs/ru/claude-directory.md#cleaned-up-automatically). Чтобы удалить транскрипты проекта и связанное состояние раньше, запустите [`claude purge`](https://code.claude.com/docs/ru/claude-directory#clear-local-data). Если вы удалите [фоновую сессию](https://code.claude.com/docs/ru/agent-view.md) с помощью [`claude rm &lt;id&gt;`](https://code.claude.com/docs/ru/agent-view#what-deleting-a-session-removes), ее транскрипт остается на диске и остается доступным через `claude --resume`.
+
+### Назвать каталог проекта самостоятельно
+
+По умолчанию Claude Code получает имя `&lt;project&gt;` из полного пути рабочего каталога. Чтобы выбрать имя самостоятельно, установите `CLAUDE_CODE_PROJECT_DIR_NAME` вместе с `CLAUDE_CONFIG_DIR`. Claude Code затем хранит стенограммы этого сеанса и [автоматическую память](https://code.claude.com/docs/ru/memory.md#auto-memory) под вашим именем. Это подходит для хоста, который встраивает Claude Code и дает каждому сеансу свой собственный каталог конфигурации. Требуется Claude Code v2.1.234 или позже.
+
+Например, этот запуск хранит данные арендатора A в `/srv/tenant-a` и называет его каталог проекта `work`:
+</code></pre>
+<p>CLAUDE_CONFIG_DIR=/srv/tenant-a CLAUDE_CODE_PROJECT_DIR_NAME=work claude</p>
+<pre><code>
+Claude Code записывает стенограммы сеанса в `/srv/tenant-a/projects/work/` и его автоматическую память в `/srv/tenant-a/projects/work/memory/`, независимо от того, какой рабочий каталог используется.
+
+При установке применяются три правила:
+
+* **Установите `CLAUDE_CONFIG_DIR` также**: имя не зависит от рабочего каталога, поэтому при использовании по умолчанию `~/.claude` оно объединит стенограммы и автоматическую память каждого проекта в один каталог. Claude Code игнорирует `CLAUDE_CODE_PROJECT_DIR_NAME`, когда `CLAUDE_CONFIG_DIR` не установлен.
+* **Используйте 1-64 буквы, цифры, дефисы или подчеркивания**: не используйте имя устройства Windows, такое как `con`. Claude Code игнорирует любое другое значение и использует полученное имя.
+* **Установите его в окружении оболочки, которая запускает `claude`**: Claude Code читает его один раз при запуске из этого окружения, поэтому блок `env` в файле параметров не может его установить.
+
+После того как вы назвали каталог проекта каталога конфигурации, продолжайте запускать с этим именем. Если вы запустите Claude Code с тем же `CLAUDE_CONFIG_DIR`, но без `CLAUDE_CODE_PROJECT_DIR_NAME`, он снова прочитает и запишет полученный каталог. Сеансы, хранящиеся под вашим именем, остаются на диске: нажмите `Ctrl+A` в [средстве выбора сеанса](#use-the-session-picker), чтобы перечислить сеансы из каждого каталога проекта под этим каталогом конфигурации, включая закрепленный, и в любом случае [`claude --resume &lt;session-id&gt;`](#resume-a-session) находит сеанс, хранящийся под любым именем.
+
+## См. также
+
+На этих страницах рассматриваются связанные механики сеансов и параллелизма:
+
+* [Worktrees](https://code.claude.com/docs/ru/worktrees.md): запуск изолированных параллельных сеансов на отдельных ветвях
+* [Checkpointing](https://code.claude.com/docs/ru/checkpointing.md): перемотка кода и диалога к более ранней точке
+* [Context window](https://code.claude.com/docs/ru/context-window.md): что заполняет контекст и что выживает при уплотнении
+* [Non-interactive mode](https://code.claude.com/docs/ru/headless.md): поведение сеанса в `claude -p`
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Развертывание Claude apps gateway на Google Cloud</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="развертывание-claude-apps-gateway-на-google-cloud">Развертывание Claude apps gateway на Google Cloud <a class="h-anchor" href="#развертывание-claude-apps-gateway-на-google-cloud" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Практический пример запуска Claude apps gateway на Google Cloud: Cloud Run или GKE, Cloud SQL для PostgreSQL, Secret Manager и аутентификация через сервисный аккаунт для Agent Platform Google Cloud.</p>
+</blockquote>
+<blockquote>
+<p>[!NOTE]</p>
+<p>На этой странице описан один из способов запуска Claude apps gateway на Google Cloud. Конфигурация является рабочим примером для инфраструктуры, управляемой клиентом, а не поддерживаемым развертыванием для производства; используйте её, чтобы понять, как компоненты работают вместе, прежде чем адаптировать её к своей среде. Требования, независимые от платформы, см. в <a href="https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md">руководстве по развертыванию</a>.</p>
+</blockquote>
+<p>Этот пример развертывает Claude apps gateway на Google Cloud с использованием Agent Platform Google Cloud в качестве вышестоящего поставщика моделей, используя либо Cloud Run, либо GKE для вычислений. Google Workspace используется в качестве примера поставщика идентификации (IdP), но работает любой поставщик, совместимый с OpenID Connect (OIDC); изменяется только блок <code>oidc</code>. Подробности для каждого IdP см. в разделе <a href="https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#identity-provider-setup">Настройка поставщика идентификации</a>.</p>
+<h3 id="h">Что вы создадите <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p><img src="https://mintcdn.com/claude-code/-uq-4JE0W_JO5Er5/images/claude-gateway-gcp-architecture.svg?fit=max\&amp;auto=format\&amp;n=-uq-4JE0W_JO5Er5\&amp;q=85\&amp;s=cb705151c69128ac0da235852d5600ab" alt="Диаграмма Claude apps gateway на Google Cloud: клиенты Claude Code подключаются по HTTPS к шлюзу (Cloud Run или GKE), который работает внутри VPC рядом с приватной базой данных Cloud SQL для состояния сеанса. Шлюз выполняет вход пользователей через OIDC для Google Workspace, читает конфигурацию и секреты из Secret Manager, перенаправляет запросы моделей в Agent Platform и извлекает свой образ из Artifact Registry при развертывании." loading="lazy"></p>
+<p>Развёртывание включает:</p>
+<ul>
+<li>Сервис <strong>Cloud Run</strong> или развертывание <strong>GKE</strong>, запускающие контейнер шлюза</li>
+<li>Репозиторий <strong>Artifact Registry</strong> для образа шлюза</li>
+<li>Экземпляр <strong>Cloud SQL для PostgreSQL</strong>, только с приватным IP, для <a href="https://code.claude.com/docs/ru/claude-apps-gateway-config.md#store">хранилища</a> шлюза</li>
+<li>Секреты <strong>Secret Manager</strong> для <code>gateway.yaml</code>, ключа подписи JWT, секрета клиента OIDC и URL Postgres</li>
+<li><strong>Сервисный аккаунт</strong> с <code>roles/aiplatform.user</code>, подключённый непосредственно на Cloud Run или привязанный через Workload Identity на GKE</li>
+<li><strong>HTTPS-фронтенд</strong>, который вы предоставляете сами: внутренний Application Load Balancer перед Cloud Run, под который в этом пошаговом руководстве настраивается шлюз, но который здесь не создаётся, или внутренний <strong>GKE Ingress</strong> класса <code>gce-internal</code> на GKE</li>
+</ul>
+<h3 id="h-2">Предварительные требования <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Проект GCP с включённым биллингом и разрешением на создание указанных выше ресурсов</li>
+<li>CLI <code>gcloud</code>, аутентифицированный с помощью <code>gcloud auth login</code>, и Docker, установленный локально</li>
+<li>Для трека GKE: <code>kubectl</code> и кластер GKE на VPC, созданный в пошаговом руководстве ниже</li>
+<li>Доступ к необходимым моделям Claude в Model Garden в регионе, который их публикует</li>
+<li>Веб-приложение OAuth 2.0 Google Workspace с URI перенаправления <code>https://&lt;gateway-host&gt;/oauth/callback</code>; см. <a href="https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#identity-provider-setup">Настройка поставщика идентификации</a></li>
+<li>TLS имя хоста для шлюза, обычно внутреннее имя DNS, указывающее на балансировщик нагрузки</li>
+</ul>
+<p>Установите проект и регион один раз:</p>
+<p>```bash theme={null}
+export PROJECT_ID=&lt;your-project&gt;
+export REGION=us-east5   # a region where the Claude models you need are published in Model Garden
+gcloud config set project &quot;$PROJECT_ID&quot;</p>
+<pre><code>
+## Развертывание шлюза
+
+Приведённые ниже шаги подготавливают полное развертывание с помощью команд `gcloud`.
+
+**1. Включение API**
+
+Включите API сервисов, которые использует пошаговое руководство:
+</code></pre>
+<p>gcloud services enable \
+  aiplatform.googleapis.com \
+  artifactregistry.googleapis.com \
+  sqladmin.googleapis.com \
+  secretmanager.googleapis.com \
+  iamcredentials.googleapis.com \
+  iam.googleapis.com \
+  compute.googleapis.com \
+  servicenetworking.googleapis.com \
+  run.googleapis.com \
+  container.googleapis.com</p>
+<pre><code>
+Необходимые API зависят от пути развертывания:
+
+* `compute` и `servicenetworking`: требуются для пути приватного IP Cloud SQL
+* `run`: только Cloud Run
+* `container`: только GKE
+
+**2. Создание сервисного аккаунта и предоставление IAM**
+
+Шлюз работает как выделенный сервисный аккаунт с разрешением на вызов Agent Platform. Он достигает Cloud SQL через VPC с пользователем пароля, поэтому роль Cloud SQL IAM не требуется:
+</code></pre>
+<p>gcloud iam service-accounts create claude-gateway --display-name=&quot;Claude apps gateway&quot;
+SA=&quot;claude-gateway@${PROJECT_ID}.iam.gserviceaccount.com&quot;</p>
+<p>gcloud projects add-iam-policy-binding &quot;$PROJECT_ID&quot; \
+  --member=&quot;serviceAccount:${SA}&quot; --role=&quot;roles/aiplatform.user&quot; --condition=None</p>
+<pre><code>
+Затем включите модели Claude для проекта в Model Garden; модели публикуются в определённых регионах, поэтому проверьте каждую карточку модели.
+
+**3. Построение и отправка образа в Artifact Registry**
+
+Постройте образ в соответствии с [требованиями к образу контейнера](https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#container-image), используя двоичный файл `linux-x64` glibc, и отправьте его:
+</code></pre>
+<p>gcloud artifacts repositories create claude-gateway \
+  --repository-format=docker --location=&quot;$REGION&quot;
+gcloud auth configure-docker &quot;${REGION}-docker.pkg.dev&quot; --quiet</p>
+<h1 id="cloud-run-requires-linux-amd64-provenance-false-avoids-a-buildx-oci">Cloud Run requires linux/amd64. --provenance=false avoids a buildx OCI <a class="h-anchor" href="#cloud-run-requires-linux-amd64-provenance-false-avoids-a-buildx-oci" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="image-index-that-cloud-run-rejects">image index that Cloud Run rejects. <a class="h-anchor" href="#image-index-that-cloud-run-rejects" aria-label="Ссылка на раздел">#</a></h1>
+<p>docker build --platform=linux/amd64 --provenance=false \
+  -t &quot;${REGION}-docker.pkg.dev/${PROJECT_ID}/claude-gateway/gateway:&lt;version&gt;&quot; .
+docker push &quot;${REGION}-docker.pkg.dev/${PROJECT_ID}/claude-gateway/gateway:&lt;version&gt;&quot;</p>
+<pre><code>
+**4. Подготовка Cloud SQL для PostgreSQL**
+
+Создайте экземпляр на VPC через Private Services Access, чтобы он не имел публичного IP; это также удовлетворяет проектам, где применяется `constraints/sql.restrictPublicIp`:
+</code></pre>
+<p>VPC=cc-gateway-vpc
+gcloud compute networks create &quot;$VPC&quot; --subnet-mode=custom
+gcloud compute networks subnets create cc-gateway-subnet \
+  --network=&quot;$VPC&quot; --region=&quot;$REGION&quot; --range=10.0.0.0/24</p>
+<h1 id="private-services-access-one-time-per-vpc">Private Services Access: one-time per VPC <a class="h-anchor" href="#private-services-access-one-time-per-vpc" aria-label="Ссылка на раздел">#</a></h1>
+<p>gcloud compute addresses create &quot;google-managed-services-${VPC}&quot; \
+  --global --purpose=VPC_PEERING --prefix-length=16 --network=&quot;$VPC&quot;
+gcloud services vpc-peerings connect \
+  --service=servicenetworking.googleapis.com \
+  --ranges=&quot;google-managed-services-${VPC}&quot; --network=&quot;$VPC&quot;</p>
+<p>gcloud sql instances create claude-gateway-db \
+  --database-version=POSTGRES_16 --tier=db-g1-small --region=&quot;$REGION&quot; \
+  --network=&quot;projects/${PROJECT_ID}/global/networks/${VPC}&quot; --no-assign-ip
+gcloud sql databases create claude_gateway --instance=claude-gateway-db
+PGPASS=&quot;$(openssl rand -hex 24)&quot;
+gcloud sql users create gateway --instance=claude-gateway-db --password=&quot;$PGPASS&quot;</p>
+<p>PRIVATE_IP=&quot;$(gcloud sql instances describe claude-gateway-db \
+  --format=&#x27;value(ipAddresses[0].ipAddress)&#x27;)&quot;
+GATEWAY_POSTGRES_URL=&quot;postgres://gateway:${PGPASS}@${PRIVATE_IP}:5432/claude_gateway?sslmode=require&quot;</p>
+<pre><code>
+Среда выполнения Cloud Run или GKE должна находиться на этом VPC или маршрутизироваться в него.
+
+**5. Написание gateway.yaml**
+
+Блок `upstreams` указывает на Agent Platform с `auth: {}`, поэтому шлюз аутентифицируется через Application Default Credentials из сервисного аккаунта среды выполнения. Полное описание каждого поля см. в [справочнике конфигурации](https://code.claude.com/docs/ru/claude-apps-gateway-config.md).
+
+Два поля `listen` описывают то, что находится перед шлюзом:
+
+* `public_url`: внешний источник `https://`, обязательный для любой привязки, отличной от loopback; см. [справочник `listen`](https://code.claude.com/docs/ru/claude-apps-gateway-config#listen). Шлюз строит `redirect_uri` IdP и документ обнаружения только из этого значения, никогда из заголовков `X-Forwarded-*`.
+* `trusted_proxies`: диапазоны источников переднего конца. Шлюз соблюдает `X-Forwarded-For` только когда TCP-пир находится в этом списке, затем проходит по цепи мимо доверенных переходов, поэтому ограничения частоты запросов на вход по IP и события аудита записывают IP-адреса разработчиков вместо адреса балансировщика нагрузки.
+
+Установите `trusted_proxies` в соответствии с вашим передним концом. Внешний GKE Ingress класса `gce` не указан: он подготавливает адрес публичного правила переадресации, который проверка [приватной сети](https://code.claude.com/docs/ru/claude-apps-gateway#prerequisites) `/login` отклоняет.
+
+| Передний конец | `trusted_proxies` |
+| - | - |
+| Cloud Run, достигнутый напрямую, без балансировщика нагрузки | `[169.254.0.0/16]` |
+| Internal Application Load Balancer перед Cloud Run | `169.254.0.0/16` плюс CIDR вашей подсети только для прокси |
+| GKE внутренний Ingress, класс `gce-internal` | CIDR вашей подсети только для прокси |
+
+Пример ниже использует значения внутреннего балансировщика нагрузки перед Cloud Run.
+</code></pre>
+<p>listen:
+  host: 0.0.0.0
+  port: 8080
+  public_url: https://claude-gateway.internal.example.com
+  trusted_proxies: [169.254.0.0/16, &lt;your-proxy-only-subnet-cidr&gt;]</p>
+<p>oidc:
+  issuer: https://accounts.google.com
+  client_id: &lt;your-oauth-client-id&gt;
+  client_secret: ${OIDC_CLIENT_SECRET}           # GKE: ${file:/secrets/oidc-client-secret}
+  allowed_email_domains: [example.com]
+  # Google ignores offline_access; these yield refresh tokens:
+  scopes: [openid, profile, email]
+  extra_auth_params: { access_type: offline, prompt: consent }</p>
+<p>session:
+  jwt_secret: ${GATEWAY_JWT_SECRET}              # GKE: ${file:/secrets/jwt-secret}</p>
+<p>store:
+  postgres_url: ${GATEWAY_POSTGRES_URL}          # GKE: ${file:/secrets/postgres-url}
+  # readiness_grace_seconds: 300                 # keep passing the readiness probe</p>
+<h1 id="through-a-cloud-sql-failover">through a Cloud SQL failover <a class="h-anchor" href="#through-a-cloud-sql-failover" aria-label="Ссылка на раздел">#</a></h1>
+<p>upstreams:</p>
+<ul>
+<li>provider: vertex region: &lt;your-region&gt;                        # must match $REGION project_id: &lt;your-project&gt; auth: {} # ADC via the runtime service account</li>
+</ul>
+<pre><code>
+&gt; [!NOTE]
+&gt;
+&gt; Google id\_tokens не содержат претензию `groups`. Для использования политик на основе групп в [`managed.policies`](https://code.claude.com/docs/ru/claude-apps-gateway-config#managed) с Google Workspace в качестве IdP настройте [`oidc.google_groups`](https://code.claude.com/docs/ru/claude-apps-gateway-config#oidc), которая ищет группы каждого пользователя через Admin SDK Directory API, используя сервисный аккаунт с делегированием на уровне домена. Без этого вместо этого сопоставляйте по `email_domain`.
+
+**6. Сохранение секретов в Secret Manager**
+
+Создайте четыре секрета и предоставьте `roles/secretmanager.secretAccessor` сервисному аккаунту `claude-gateway`:
+
+| Секрет | Источник |
+| - | - |
+| `gateway-jwt-secret` | `openssl rand -base64 32` |
+| `gateway-oidc-client-secret` | Google Cloud Console → OAuth client |
+| `gateway-postgres-url` | `$GATEWAY_POSTGRES_URL` из шага Cloud SQL |
+| `gateway-config` | полный `gateway.yaml` из предыдущего шага |
+
+Способ доставки секретов в контейнер отличается в зависимости от трека:
+
+* На GKE они монтируются как файлы через драйвер Secret Manager CSI, и `gateway.yaml` ссылается на `${file:/secrets/...}`.
+* На Cloud Run, который не может монтировать несколько секретов в один каталог, `gateway.yaml` монтируется как файл, а остальные три внедряются как переменные окружения, поэтому `gateway.yaml` ссылается на `${GATEWAY_JWT_SECRET}`, `${OIDC_CLIENT_SECRET}` и `${GATEWAY_POSTGRES_URL}` вместо этого.
+
+**7. Развертывание**
+
+&gt; [tab] Cloud Run
+&gt;
+&gt; Команда ниже развертывает для производства за внутренним балансировщиком нагрузки.
+&gt;
+&gt; ```bash theme={null}
+&gt; gcloud run deploy claude-gateway \
+&gt;   --image=&quot;${REGION}-docker.pkg.dev/${PROJECT_ID}/claude-gateway/gateway:&lt;version&gt;&quot; \
+&gt;   --region=&quot;$REGION&quot; \
+&gt;   --service-account=&quot;claude-gateway@${PROJECT_ID}.iam.gserviceaccount.com&quot; \
+&gt;   --min-instances=1 \
+&gt;   --max-instances=8 \
+&gt;   --timeout=3600 \
+&gt;   --ingress=internal \
+&gt;   --network=&quot;$VPC&quot; --subnet=cc-gateway-subnet --vpc-egress=private-ranges-only \
+&gt;   --set-secrets=/etc/claude/gateway.yaml=gateway-config:latest,GATEWAY_JWT_SECRET=gateway-jwt-secret:latest,OIDC_CLIENT_SECRET=gateway-oidc-client-secret:latest,GATEWAY_POSTGRES_URL=gateway-postgres-url:latest \
+&gt;   --no-invoker-iam-check
+&gt; ```
+&gt;
+&gt; Прямой исход VPC через `--network`, `--subnet` и `--vpc-egress=private-ranges-only` позволяет сервису достичь приватного IP Cloud SQL напрямую. Публичный исход к эндпоинтам Agent Platform в Google Cloud и `accounts.google.com` идёт непосредственно в интернет, а не через VPC, поэтому Cloud NAT не требуется.
+&gt;
+&gt; &gt; [!NOTE]
+&gt; &gt;
+&gt; &gt; Каждый экземпляр удерживает до [`store.max_connections`](https://code.claude.com/docs/ru/claude-apps-gateway-config#store) подключений к Postgres, по умолчанию пять. С помощью раздела [Определение размера пула подключений](https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#size-the-connection-pool) сверьте значение `--max-instances=8` с числом подключений, которые ваша база данных оставляет для шлюза, и учтите дополнительные экземпляры, которые запускает последовательное обновление.
+&gt;
+&gt; Проверка IAM вызывающего должна быть открыта или отключена. Шлюз запускает свой собственный OIDC, и его клиенты не несут токен GCP, поэтому проверка вызывающего Cloud Run должна допускать неаутентифицированные запросы. Аутентификация запроса OIDC шлюза происходит после того, как он достигает контейнера, с `allowed_email_domains`, ограничивающим, какие домены могут входить.
+&gt;
+&gt; Два флага допускают неаутентифицированные запросы:
+&gt;
+&gt; * `--no-invoker-iam-check`: отключает проверку без привязки `allUsers` для управления и работает в рамках Domain Restricted Sharing
+&gt; * `--allow-unauthenticated`: предоставляет `allUsers` роль `run.invoker`; используйте, если ваша организация не позволяет `--no-invoker-iam-check`
+&gt;
+&gt; Ограничение входа через `--ingress` — это отдельный, независимый слой от проверки вызывающего; держите его установленным, чтобы ограничить сервис вашей корпоративной сетью.
+&gt;
+&gt; По умолчанию URL Cloud Run `*.run.app` разрешается на публичный адрес, который проверка [приватной сети](https://code.claude.com/docs/ru/claude-apps-gateway#prerequisites) `/login` отклоняет. Две топологии дают разработчикам приватно разрешаемое имя хоста, и Cloud Run не подготавливает ни одну для вас:
+&gt;
+&gt; * **Internal Application Load Balancer** — топология, которую предполагает `gateway.yaml` на этой странице: подготовьте внутренний Application Load Balancer перед сервисом с внутренним именем DNS и сертификатом и установите `listen.public_url` на это имя хоста. Настройка входа `internal` уже допускает трафик от внутренних Application Load Balancer; `internal-and-cloud-load-balancing` дополнительно допускает внешние Application Load Balancer, чьи публичные адреса отклоняет проверка приватной сети `/login`, поэтому ни одной топологии на этой странице этот вариант не нужен.
+&gt; * **Внутренний вход только без балансировщика нагрузки**: оставьте команду развёртывания как есть и оставьте `listen.public_url` как URL `*.run.app`, значение по умолчанию в [эталонных активах](#terraform-reference) ниже. Чтобы `*.run.app` разрешался приватно, ваша команда сети должна уже работать с эндпоинтом Private Service Connect для Google APIs, приватной зоной Cloud DNS, разрешающей `*.run.app` в него, и маршрутизацией из локальной инфраструктуры к этому эндпоинту.
+&gt;
+&gt; [Руководство Google по приватной сети для Cloud Run](https://cloud.google.com/run/docs/securing/private-networking) охватывает инфраструктуру, которая требуется обоим вариантам. Проверьте вход после того, как шлюз обслуживает приватное имя хоста; до этого подтвердите загрузку контейнера из его журналов в Cloud Run.
+&gt;
+&gt; Обновите URI перенаправления авторизации клиента OAuth на `&lt;public_url&gt;/oauth/callback` перед первым входом. Переразверните после изменения `public_url`, потому что шлюз строит свой публичный источник только из этого параметра и игнорирует `X-Forwarded-Host` и `X-Forwarded-Proto`. `X-Forwarded-For` соблюдается для IP-адресов клиентов только когда установлен `listen.trusted_proxies`.
+
+&gt; [tab] GKE
+&gt;
+&gt; Кластер должен находиться на `$VPC`, созданном на шаге Cloud SQL, чтобы поды могли достичь приватного IP базы данных; одного пиринга VPC недостаточно, потому что приватный IP Cloud SQL сам по себе является пиринговой сетью, и пиринг не является транзитивным. Чтобы создать новый кластер на этом VPC, передайте `--network=&quot;$VPC&quot; --subnetwork=cc-gateway-subnet` в `gcloud container clusters create`.
+&gt;
+&gt; Включите Workload Identity на кластере и его пулах узлов, затем привяжите сервисный аккаунт Google к сервисному аккаунту Kubernetes, чтобы поды наследовали его учётные данные:
+&gt;
+&gt; ```bash theme={null}
+&gt; gcloud container clusters update &lt;cluster&gt; --region=&quot;$REGION&quot; \
+&gt;   --workload-pool=&quot;${PROJECT_ID}.svc.id.goog&quot;
+&gt; # On a Standard cluster, existing node pools also need GKE_METADATA;
+&gt; # Autopilot enables this by default.
+&gt; gcloud container node-pools update &lt;pool&gt; --cluster=&lt;cluster&gt; \
+&gt;   --region=&quot;$REGION&quot; --workload-metadata=GKE_METADATA
+&gt;
+&gt; kubectl create namespace claude-gateway
+&gt; kubectl create serviceaccount gateway -n claude-gateway
+&gt;
+&gt; gcloud iam service-accounts add-iam-policy-binding \
+&gt;   &quot;claude-gateway@${PROJECT_ID}.iam.gserviceaccount.com&quot; \
+&gt;   --role roles/iam.workloadIdentityUser \
+&gt;   --member &quot;serviceAccount:${PROJECT_ID}.svc.id.goog[claude-gateway/gateway]&quot;
+&gt;
+&gt; kubectl annotate serviceaccount gateway -n claude-gateway \
+&gt;   iam.gke.io/gcp-service-account=&quot;claude-gateway@${PROJECT_ID}.iam.gserviceaccount.com&quot;
+&gt; ```
+&gt;
+&gt; Развертывайте шлюз как стандартное развертывание плюс сервис и внутренний Ingress, класс `gce-internal`, как описано в [развертывании Kubernetes](https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#kubernetes), с:
+&gt;
+&gt; * `serviceAccountName: gateway`
+&gt; * драйвер Secret Manager CSI, монтирующий секреты в `/secrets`
+&gt; * зонд готовности, указывающий на `GET /readyz`
+&gt;
+&gt; Присоедините BackendConfig с повышенным `timeoutSec` к сервису шлюза: сервис бэкенда балансировщика нагрузки за GKE Ingress по умолчанию имеет тайм-аут 30 секунд, который отсекает длинные потоковые ответы.
+&gt;
+&gt; Не применяйте исходящую NetworkPolicy, которая блокирует `169.254.169.254` на кластере Workload Identity; под должен достичь сервера метаданных для учётных данных. Встроенная [защита SSRF](https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#threat-model-summary) шлюза — это защита там.
+&gt;
+&gt; Шлюз регистрирует предупреждение при загрузке о том, что конечная точка метаданных доступна и предлагает применить исходящую NetworkPolicy. При Workload Identity это предупреждение ожидается, потому что под нуждается в конечной точке.
+
+**8. Отправка URL шлюза на машины разработчиков**
+
+Шлюз теперь работает, но разработчики не могут достичь его из `/login` до тех пор, пока URL шлюза не будет на их машинах. Разверните полный [фрагмент управляемых настроек](https://code.claude.com/docs/ru/claude-apps-gateway#set-the-gateway-url) с `forceLoginMethod`, `forceLoginGatewayUrl` и включением `parentSettingsBehavior: &quot;merge&quot;` на каждом устройстве через MDM. В средстве выбора входа нет опции шлюза, которую разработчик мог бы выбрать вручную.
+
+## Справочник Terraform
+
+[Эталонные активы развертывания](https://github.com/anthropics/claude-code/tree/main/examples/gateway/gcp) автоматизируют трек Cloud Run на этой странице; активы конфигурации и образа применяются к обоим трекам:
+
+* `setup.sh`: идемпотентный подготовщик `gcloud`, который проходит полный путь Cloud Run, от включения API до первого развертывания
+* `terraform/`: то же развертывание как инфраструктура как код, для развертывания на зелёном поле: целевое применение для создания репозитория Artifact Registry, затем построение и отправка образа, затем полное применение
+* `gateway.yaml.example` и `Dockerfile` для образа среды выполнения distroless
+
+Артефакты по умолчанию используют входящий трафик Cloud Run `internal`, что соответствует команде развёртывания на этой странице; эта настройка работает как с внутренним Application Load Balancer перед сервисом, так и без него, причём артефакты сами балансировщик нагрузки не создают. Артефакты также по умолчанию используют слой вызывающего как предоставление `allUsers` `run.invoker` вместо `--no-invoker-iam-check`, обратное пошаговому руководству этой страницы; оба работают, и выбор зависит от ограничений политики вашей организации.
+
+Активы предоставляются как рабочие примеры, а не как поддерживаемый артефакт для производства; проверьте и адаптируйте их к своей среде.
+
+## Troubleshooting
+
+Для ошибок загрузки и входа шлюза см. независимую от платформы [таблицу troubleshooting](https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#troubleshooting). Записи ниже относятся к Google Cloud.
+
+| Симптом | Причина | Исправление |
+| - | - | - |
+| Cloud Run возвращает `403 Forbidden` перед достижением контейнера | Проверка IAM вызывающего всё ещё включена | Развертывайте с `--no-invoker-iam-check` или предоставьте `allUsers` роль `run.invoker` с `--allow-unauthenticated` |
+| `--no-invoker-iam-check` отклонён с `invoker_iam_disabled is not currently available` | Заблокировано `constraints/run.managed.requireInvokerIam` | Используйте `--allow-unauthenticated`. Если Domain Restricted Sharing через `constraints/iam.allowedPolicyMemberDomains` также блокирует это, используйте трек GKE, который предоставляет шлюз на уровне сети без привязки `allUsers`. |
+| `Container manifest type … must support amd64/linux` при развертывании | Образ был построен на хосте, отличном от amd64, или buildx выдал индекс образа OCI | Постройте с `--platform=linux/amd64 --provenance=false` |
+| Загрузка шлюза завершается с ошибкой таймаута подключения Postgres на Cloud Run | Сервис не подключён к VPC или Cloud SQL не имеет приватного IP на этом VPC | Развертывайте с `--network` и `--subnet` для прямого исхода VPC и создавайте экземпляр Cloud SQL с `--no-assign-ip` и `--network`, указывающим на тот же VPC |
+| Запросы Agent Platform возвращают `403 PERMISSION_DENIED` | Среда выполнения не использует сервисный аккаунт `claude-gateway` или модель не включена в Model Garden для проекта | Установите `--service-account` на Cloud Run или привяжите Workload Identity на GKE и включите каждую модель Claude в Model Garden для целевого региона |
+| Потоковые ответы обрезаны после фиксированной продолжительности | Тайм-аут запроса переднего конца: сервис бэкенда балансировщика нагрузки за GKE Ingress по умолчанию имеет 30 секунд, а Cloud Run — 300 секунд | Присоедините BackendConfig с повышенным `timeoutSec` на GKE или развертывайте с `--timeout=3600` на Cloud Run |
+
+## Следующие шаги
+
+* [Справочник конфигурации](https://code.claude.com/docs/ru/claude-apps-gateway-config.md): каждый параметр `gateway.yaml`, включая `managed.policies` и `telemetry`
+* [Развертывание и операции](https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md): настройка IdP, проверки здоровья, ротация секрета JWT, обновления и модель безопасности
+* [Режим нагрузочного тестирования](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#load_test_mode): нагрузочное тестирование шлюза без обращения к поставщику модели
+* [Обзор Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway): быстрый старт и подключение разработчиков
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

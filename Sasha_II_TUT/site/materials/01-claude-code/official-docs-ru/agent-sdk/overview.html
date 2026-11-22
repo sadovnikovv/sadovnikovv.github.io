@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Обзор Agent SDK</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/agent-sdk/index.html">agent-sdk</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="обзор-agent-sdk">Обзор Agent SDK <a class="h-anchor" href="#обзор-agent-sdk" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Создавайте производственные AI-агентов с Claude Code как библиотеку</p>
+</blockquote>
+<p>Агент — это приложение, которое выполняет задачу, планируя собственные шаги и вызывая инструменты, которые читают файлы, запускают команды или редактируют код. Agent SDK предоставляет вам те же инструменты, <a href="https://code.claude.com/docs/ru/agent-sdk/agent-loop.md">цикл агента</a> и управление контекстом, которые питают Claude Code, программируемые на Python и TypeScript.</p>
+<h3 id="сравнение-agent-sdk-с-другими-инструментами-claude">Сравнение Agent SDK с другими инструментами Claude <a class="h-anchor" href="#сравнение-agent-sdk-с-другими-инструментами-claude" aria-label="Ссылка на раздел">#</a></h3>
+<p>Agent SDK, CLI, Client SDK и Managed Agents отличаются тем, кто запускает агента, что входит в комплект и как вы его используете. Найдите строку, которая соответствует тому, как вы хотите создавать и запускать свой агент.</p>
+<p>| Что вы хотите | Используйте | Что вы получаете |
+| - | - | - |
+| Встроить агента Claude Code в собственное приложение Python или TypeScript, в процессе, который вы контролируете | <strong>Agent SDK</strong> | Библиотека, которая запускает бинарный файл Claude Code, с <a href="#capabilities">возможностями</a> Claude Code, такими как встроенные инструменты, разрешения, сессии и hooks. |
+| Выполнять интерактивную разработку или запускать одноразовые задачи из терминала | <a href="https://code.claude.com/docs/ru/overview.md"><strong>Claude Code CLI</strong></a> | Интерфейс терминала, созданный для ежедневного интерактивного использования. |
+| Вызывать Claude API непосредственно из собственного кода | <a href="https://platform.claude.com/docs/en/cli-sdks-libraries/overview"><strong>Client SDK</strong></a> | Прямой доступ к Claude API из любого из языков Client SDK. Вы сами пишете цикл инструментов или позволяете бета-версии <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-runner">tool runner</a> Client SDK управлять им. |
+| Разместить агента в Anthropic, настроенного через Claude API | <a href="https://platform.claude.com/docs/en/managed-agents/overview"><strong>Managed Agents</strong></a> | Размещённая оболочка агента, которая запускает цикл агента, с сессиями в управляемой Anthropic облачной песочнице или <a href="https://platform.claude.com/docs/en/managed-agents/self-hosted-sandboxes">самостоятельно размещённой песочнице</a> на вашей собственной инфраструктуре. Используйте её из <a href="https://platform.claude.com/docs/en/managed-agents/quickstart#install-the-sdk">SDK для вашего языка</a>, CLI <code>ant</code> или REST API. |</p>
+<p>Чтобы запустить тот же цикл агента из языка, отличного от Python или TypeScript, <a href="https://code.claude.com/docs/ru/headless.md">запустите CLI как подпроцесс</a> с флагом <code>-p</code> и <code>--output-format json</code>.</p>
+<h3 id="h">Возможности <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Эти возможности Claude Code доступны в SDK:</p>
+<p>| Возможность | Что она делает | Узнайте больше |
+| - | - | - |
+| Встроенные инструменты | Читать, писать, редактировать файлы, запускать команды и искать в веб-сети | <a href="https://code.claude.com/docs/ru/tools-reference.md">Справочник инструментов</a> |
+| Hooks | Запускать пользовательский код в ключевых точках жизненного цикла агента | <a href="https://code.claude.com/docs/ru/agent-sdk/hooks.md">Hooks</a> |
+| Subagents | Создавать специализированных агентов для сосредоточенных подзадач | <a href="https://code.claude.com/docs/ru/agent-sdk/subagents.md">Subagents</a> |
+| MCP | Подключать внешние инструменты и источники данных через Model Context Protocol | <a href="https://code.claude.com/docs/ru/agent-sdk/mcp.md">MCP</a> |
+| Permissions | Контролировать, какие инструменты запускаются автоматически, какие требуют одобрения | <a href="https://code.claude.com/docs/ru/agent-sdk/permissions.md">Permissions</a> |
+| Sessions | Сохранять контекст между обменами, возобновлять или разветвлять позже | <a href="https://code.claude.com/docs/ru/agent-sdk/sessions.md">Sessions</a> |
+| Skills, commands, и memory | Загружать автоматически из <code>.claude/</code> вашего проекта и из <code>~/.claude/</code>, как в Claude Code | <a href="https://code.claude.com/docs/ru/agent-sdk/skills.md">Skills</a>, <a href="https://code.claude.com/docs/ru/agent-sdk/skills.md#commands-in-agent-sdk-sessions">Commands</a>, <a href="https://code.claude.com/docs/ru/agent-sdk/modifying-system-prompts.md">Memory</a>, <a href="https://code.claude.com/docs/ru/agent-sdk/claude-code-features.md">Загрузка конфигурации</a> |
+| Plugins | Упаковывать skills, агентов, hooks и MCP серверы, и загружать их по локальному пути | <a href="https://code.claude.com/docs/ru/agent-sdk/plugins.md">Plugins</a> |</p>
+<h3 id="h-2">Начало работы <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Следуйте <a href="https://code.claude.com/docs/ru/agent-sdk/quickstart.md">Quickstart</a>, чтобы установить SDK, установить ваш API ключ и создать вашего первого агента, который находит и исправляет ошибки в существующем коде.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Если не было предварительного одобрения, Anthropic не разрешает сторонним разработчикам предлагать вход через claude.ai или ограничения скорости для своих продуктов, включая агентов, созданных на основе Claude Agent SDK. Вместо этого используйте методы аутентификации по API ключу, описанные в <a href="https://code.claude.com/docs/ru/agent-sdk/quickstart.md">Quickstart</a>.</p>
+</blockquote>
+<h3 id="h-3">Журнал изменений <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Просмотрите полный журнал изменений для обновлений SDK, исправлений ошибок и новых функций:</p>
+<ul>
+<li><strong>TypeScript SDK</strong>: <a href="https://github.com/anthropics/claude-agent-sdk-typescript/blob/main/CHANGELOG.md">просмотреть CHANGELOG.md</a></li>
+<li><strong>Python SDK</strong>: <a href="https://github.com/anthropics/claude-agent-sdk-python/blob/main/CHANGELOG.md">просмотреть CHANGELOG.md</a></li>
+</ul>
+<h3 id="h-4">Сообщение об ошибках <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Если вы столкнулись с ошибками или проблемами с Agent SDK:</p>
+<ul>
+<li><strong>TypeScript SDK</strong>: <a href="https://github.com/anthropics/claude-agent-sdk-typescript/issues">сообщить об ошибках на GitHub</a></li>
+<li><strong>Python SDK</strong>: <a href="https://github.com/anthropics/claude-agent-sdk-python/issues">сообщить об ошибках на GitHub</a></li>
+</ul>
+<h3 id="h-5">Рекомендации по брендингу <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<p>Для партнеров, интегрирующих Claude Agent SDK, использование брендинга Claude является необязательным. При ссылке на Claude в вашем продукте:</p>
+<p><strong>Разрешено:</strong></p>
+<ul>
+<li>&quot;Claude Agent&quot;, предпочтительно для раскрывающихся меню</li>
+<li>&quot;Claude&quot;, когда находится в меню, уже помеченном как &quot;Agents&quot;</li>
+<li>&quot;\{YourAgentName} Powered by Claude&quot;, если у вас есть существующее имя агента</li>
+</ul>
+<p><strong>Не разрешено:</strong></p>
+<ul>
+<li>&quot;Claude Code&quot; или &quot;Claude Code Agent&quot;</li>
+<li>ASCII-арт с брендингом Claude Code или визуальные элементы, которые имитируют Claude Code</li>
+</ul>
+<p>Ваш продукт должен сохранять свой собственный брендинг и не должен выглядеть как Claude Code или любой продукт Anthropic. Для вопросов о соответствии брендингу свяжитесь с командой Anthropic <a href="https://www.anthropic.com/contact-sales">sales team</a>.</p>
+<h3 id="h-6">Лицензия и условия <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<p>Использование Claude Agent SDK регулируется <a href="https://www.anthropic.com/legal/commercial-terms">Коммерческими условиями обслуживания Anthropic</a>, включая случаи, когда вы используете его для питания продуктов и услуг, которые вы предоставляете своим собственным клиентам и конечным пользователям, за исключением случаев, когда конкретный компонент или зависимость покрыты другой лицензией, как указано в файле LICENSE этого компонента.</p>
+<h3 id="h-7">Следующие шаги <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h3>
+<p>Эти ресурсы содержат более глубокие технические детали и примеры проектов для разработки с помощью Agent SDK.</p>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/agent-sdk/quickstart.md">Быстрый старт</a>: создайте своего первого агента, который находит и исправляет ошибки</li>
+<li><a href="https://code.claude.com/docs/ru/agent-sdk/migration-guide.md">Руководство по миграции</a>: перейдите с пакетов Claude Code SDK на Agent SDK</li>
+<li><a href="https://code.claude.com/docs/ru/agent-sdk/agent-loop.md">Цикл агента</a>: как Claude планирует, вызывает инструменты и решает, когда задача завершена</li>
+<li><a href="https://github.com/anthropics/claude-agent-sdk-demos">Примеры агентов</a>: демонстрационные приложения для локальной разработки</li>
+<li><a href="https://code.claude.com/docs/ru/agent-sdk/typescript.md">TypeScript SDK</a>: полная справка API TypeScript и примеры</li>
+<li><a href="https://code.claude.com/docs/ru/agent-sdk/python.md">Python SDK</a>: полная справка API Python и примеры</li>
+<li><a href="https://claude.com/blog/a-harness-for-every-task-dynamic-workflows-in-claude-code">Дизайн агентского каркаса</a>: как команда Claude Code использует динамические рабочие процессы для одновременной организации множества подагентов</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

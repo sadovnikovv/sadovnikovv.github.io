@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Documentation Plugin</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../../materials/index.html">Материалы</a> / <a href="../../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/07-plugins/index.html">07-plugins</a> / <a href="../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/07-plugins/documentation/index.html">documentation</a></nav>
+<p>&lt;picture&gt;
+  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;../../resources/logos/claude-howto-logo-dark.svg&quot;&gt;
+  &lt;img alt=&quot;Claude How To&quot; src=&quot;../../resources/logos/claude-howto-logo.svg&quot;&gt;
+&lt;/picture&gt;</p>
+<h1 id="documentation-plugin">Documentation Plugin <a class="h-anchor" href="#documentation-plugin" aria-label="Ссылка на раздел">#</a></h1>
+<p>Comprehensive documentation generation and maintenance for your project.</p>
+<h3 id="features">Features <a class="h-anchor" href="#features" aria-label="Ссылка на раздел">#</a></h3>
+<p>✅ API documentation generation
+✅ README creation and updates
+✅ Documentation synchronization
+✅ Code comment improvements
+✅ Example generation</p>
+<h3 id="installation">Installation <a class="h-anchor" href="#installation" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-bash">/plugin install documentation</code></pre>
+<h3 id="what-s-included">What&#x27;s Included <a class="h-anchor" href="#what-s-included" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="slash-commands">Slash Commands <a class="h-anchor" href="#slash-commands" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><code>/generate-api-docs</code> - Generate API documentation</li>
+<li><code>/generate-readme</code> - Create or update README</li>
+<li><code>/sync-docs</code> - Sync docs with code changes</li>
+<li><code>/validate-docs</code> - Validate documentation</li>
+</ul>
+<h4 id="subagents">Subagents <a class="h-anchor" href="#subagents" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><code>api-documenter</code> - API documentation specialist</li>
+<li><code>code-commentator</code> - Code comment improvements</li>
+<li><code>example-generator</code> - Code example creation</li>
+</ul>
+<h4 id="templates">Templates <a class="h-anchor" href="#templates" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><code>api-endpoint.md</code> - API endpoint documentation template</li>
+<li><code>function-docs.md</code> - Function documentation template</li>
+<li><code>adr-template.md</code> - Architecture Decision Record template</li>
+</ul>
+<h4 id="mcp-servers">MCP Servers <a class="h-anchor" href="#mcp-servers" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>GitHub integration for documentation syncing</li>
+</ul>
+<h3 id="usage">Usage <a class="h-anchor" href="#usage" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="generate-api-documentation">Generate API Documentation <a class="h-anchor" href="#generate-api-documentation" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>/generate-api-docs</code></pre>
+<h4 id="create-readme">Create README <a class="h-anchor" href="#create-readme" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>/generate-readme</code></pre>
+<h4 id="sync-documentation">Sync Documentation <a class="h-anchor" href="#sync-documentation" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>/sync-docs</code></pre>
+<h4 id="validate-documentation">Validate Documentation <a class="h-anchor" href="#validate-documentation" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>/validate-docs</code></pre>
+<h3 id="requirements">Requirements <a class="h-anchor" href="#requirements" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Claude Code 1.0+</li>
+<li>GitHub access (optional)</li>
+</ul>
+<h3 id="example-workflow">Example Workflow <a class="h-anchor" href="#example-workflow" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>User: /generate-api-docs
+
+Claude:
+1. Scans all API endpoints in /src/api/
+2. Delegates to api-documenter subagent
+3. Extracts function signatures and JSDoc
+4. Organizes by module/endpoint
+5. Uses api-endpoint.md template
+6. Generates comprehensive markdown docs
+7. Includes curl, JavaScript, and Python examples
+
+Result:
+✅ API documentation generated
+📄 Files created:
+   - docs/api/users.md
+   - docs/api/auth.md
+   - docs/api/products.md
+📊 Coverage: 23/23 endpoints documented</code></pre>
+<h3 id="templates-usage">Templates Usage <a class="h-anchor" href="#templates-usage" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="api-endpoint-template">API Endpoint Template <a class="h-anchor" href="#api-endpoint-template" aria-label="Ссылка на раздел">#</a></h4>
+<p>Use for documenting REST API endpoints with full examples.</p>
+<h4 id="function-documentation-template">Function Documentation Template <a class="h-anchor" href="#function-documentation-template" aria-label="Ссылка на раздел">#</a></h4>
+<p>Use for documenting individual functions/methods.</p>
+<h4 id="adr-template">ADR Template <a class="h-anchor" href="#adr-template" aria-label="Ссылка на раздел">#</a></h4>
+<p>Use for documenting architectural decisions.</p>
+<h3 id="configuration">Configuration <a class="h-anchor" href="#configuration" aria-label="Ссылка на раздел">#</a></h3>
+<p>Set up GitHub token for documentation syncing:</p>
+<pre><code class="language-bash">export GITHUB_TOKEN=&quot;your_github_token&quot;</code></pre>
+<h3 id="best-practices">Best Practices <a class="h-anchor" href="#best-practices" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Keep documentation close to code</li>
+<li>Update docs with code changes</li>
+<li>Include practical examples</li>
+<li>Validate regularly</li>
+<li>Use templates for consistency</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

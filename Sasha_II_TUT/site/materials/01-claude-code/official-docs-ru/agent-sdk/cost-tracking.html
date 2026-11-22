@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Отслеживание затрат и использования</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/agent-sdk/index.html">agent-sdk</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Отслеживание затрат и использования <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Узнайте, как отслеживать использование токенов, оценивать затраты и настраивать кэширование подсказок с помощью Claude Agent SDK.</p>
+</blockquote>
+<p>Claude Agent SDK предоставляет подробную информацию об использовании токенов для каждого взаимодействия с Claude. Это руководство объясняет, как правильно отслеживать использование и понимать отчеты о затратах, особенно при работе с параллельным использованием инструментов и многошаговыми диалогами.</p>
+<p>Полную документацию API см. в <a href="https://code.claude.com/docs/ru/agent-sdk/typescript.md">справочнике TypeScript SDK</a> и <a href="https://code.claude.com/docs/ru/agent-sdk/python.md">справочнике Python SDK</a>.</p>
+<blockquote>
+<p>[!WARNING]</p>
+<p>Поля <code>total_cost_usd</code> и <code>costUSD</code> являются оценками на стороне клиента, а не авторитетными данными для выставления счетов. SDK вычисляет их локально из таблицы цен, встроенной во время сборки, если только не действует таблица <a href="https://code.claude.com/docs/ru/settings-reference#modelpricing"><code>modelPricing</code></a>. Они могут отличаться от того, что вам фактически выставляется счет, когда:</p>
+<ul>
+<li>изменяются цены</li>
+<li>установленная версия SDK не распознает модель</li>
+<li>применяются правила выставления счетов, которые клиент не может смоделировать</li>
+</ul>
+<p>Одно правило выставления счетов, которое моделирует SDK, — это <a href="https://platform.claude.com/docs/en/about-claude/pricing#data-residency-pricing">ценообразование на основе местоположения данных</a>. Когда <code>usage</code> ответа сообщает <code>inference_geo: &quot;us&quot;</code>, SDK умножает цену списка токенов этого ответа на 1,1. Плата за запрос, такая как веб-поиск, не умножается. Требуется TypeScript Agent SDK версии 0.3.239 или более поздней, либо Python Agent SDK версии 0.2.144 или более поздней.</p>
+<p>Используйте эти поля для получения информации о разработке и приблизительного бюджетирования. Авторитетные данные биллинга см. в разделе <a href="https://code.claude.com/docs/ru/costs.md#manage-costs-for-your-organization">Управление затратами для вашей организации</a>. Не выставляйте счета конечным пользователям и не принимайте финансовые решения на основе этих полей.</p>
+</blockquote>
+<h3 id="h-2">Понимание использования токенов <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>TypeScript и Python SDK предоставляют одни и те же данные об использовании с разными названиями полей:</p>
+<ul>
+<li><strong>TypeScript</strong> предоставляет разбивку токенов по шагам для каждого сообщения ассистента (<code>message.message.id</code>, <code>message.message.usage</code>), стоимость для каждой модели через <code>modelUsage</code> в результирующем сообщении и совокупный итог в результирующем сообщении.</li>
+<li><strong>Python</strong> предоставляет разбивку токенов по шагам для каждого сообщения ассистента как <code>message.usage</code> и <code>message.message_id</code>, стоимость для каждой модели через <code>model_usage</code> в результирующем сообщении и совокупный итог в результирующем сообщении как <code>total_cost_usd</code>.</li>
+</ul>
+<p>Оба SDK используют одну и ту же базовую модель расчета стоимости и предоставляют одинаковую детализацию. Разница заключается в названии полей и в том, где вложено использование по шагам.</p>
+<p>Отслеживание стоимости зависит от понимания того, как SDK определяет область действия данных об использовании:</p>
+<ul>
+<li><strong>Вызов <code>query()</code>:</strong> одно вызывание функции <code>query()</code> SDK. Один вызов может включать несколько шагов: Claude отвечает, использует инструменты, получает результаты и отвечает снова. Каждый вызов создает одно сообщение <a href="https://code.claude.com/docs/ru/agent-sdk/typescript#sdkresultmessage"><code>result</code></a> в конце, за исключением <a href="https://code.claude.com/docs/ru/agent-sdk/streaming-vs-single-mode.md">режима потоковой передачи входных данных</a>, где один вызов <code>query()</code> содержит несколько ходов пользователя и каждый ход выдает свое собственное сообщение <code>result</code>.</li>
+<li><strong>Шаг:</strong> один цикл запроса/ответа в рамках вызова <code>query()</code>. Каждый шаг создает сообщения ассистента с использованием токенов.</li>
+<li><strong>Сеанс:</strong> серия вызовов <code>query()</code>, связанных идентификатором сеанса через опцию <code>resume</code>. Результаты возобновленного вызова сообщают об общих расходах сеанса, а не только о расходах этого вызова. См. <a href="#accumulate-costs-across-multiple-calls">Накопление затрат при нескольких вызовах</a> для получения информации о том, как переносятся итоги.</li>
+</ul>
+<p>На следующей диаграмме показан поток сообщений от одного вызова <code>query()</code> с использованием токенов, указанным на каждом шаге и совокупной оценкой в конце:</p>
+<p><img src="https://mintcdn.com/claude-code/ikqp3_70mqIahteV/images/agent-sdk/message-usage-flow.svg?fit=max\&amp;auto=format\&amp;n=ikqp3_70mqIahteV\&amp;q=85\&amp;s=68497aee338e01cc745323af7aea378e" alt="Диаграмма, показывающая запрос, создающий два шага сообщений. Шаг 1 имеет четыре сообщения ассистента с одинаковым ID и использованием (считать один раз), Шаг 2 имеет одно сообщение ассистента с новым ID, и финальное результирующее сообщение показывает предполагаемый total\_cost\_usd." loading="lazy"></p>
+<p><strong>1. Каждый шаг создает сообщения ассистента</strong></p>
+<p>Когда Claude отвечает, он отправляет одно или несколько сообщений ассистента. В TypeScript каждое сообщение ассистента содержит вложенный <code>BetaMessage</code> (доступный через <code>message.message</code>) с <code>id</code> и объектом <a href="https://platform.claude.com/docs/en/api/messages"><code>usage</code></a> с подсчетом токенов (<code>input_tokens</code>, <code>output_tokens</code>). В Python класс данных <code>AssistantMessage</code> предоставляет одни и те же данные непосредственно через <code>message.usage</code> и <code>message.message_id</code>. Когда Claude использует несколько инструментов в одном ходе, все сообщения в этом ходе имеют одинаковый ID, поэтому дедублируйте по ID, чтобы избежать двойного подсчета.</p>
+<p><strong>2. Результирующее сообщение предоставляет совокупную оценку</strong></p>
+<p>Когда вызов <code>query()</code> завершается, SDK выдает результирующее сообщение с <code>total_cost_usd</code> и совокупным <code>usage</code>, типизированное как <a href="https://code.claude.com/docs/ru/agent-sdk/typescript#sdkresultmessage"><code>SDKResultMessage</code></a> в TypeScript и <a href="https://code.claude.com/docs/ru/agent-sdk/python#resultmessage"><code>ResultMessage</code></a> в Python. Если вам нужна только предполагаемая сумма, вы можете игнорировать использование по шагам и прочитать это единственное значение.</p>
+<p>Если вы делаете несколько независимых вызовов <code>query()</code>, каждый результат отражает только стоимость этого отдельного вызова. Вызов, который возобновляет сеанс, также учитывает более ранние расходы сеанса.</p>
+<p>В режиме потоковой передачи входных данных каждый ход выдает свое собственное результирующее сообщение. См. <a href="#track-costs-in-streaming-input-mode">Отслеживание затрат в режиме потоковой передачи входных данных</a> для получения информации о том, как читать итоги вызовов в этом режиме.</p>
+<h3 id="h-3">Отслеживание затрат в режиме потоковой передачи входных данных <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>В <a href="https://code.claude.com/docs/ru/agent-sdk/streaming-vs-single-mode.md">режиме потоковой передачи входных данных</a> один вызов <code>query()</code> содержит несколько ходов пользователя, и каждый ход выдает собственное сообщение результата. Поля результата различаются по области действия:</p>
+<ul>
+<li><strong><code>usage</code></strong>: охватывает только этот ход и в его пределах только основной цикл агента, а не какие-либо подагенты, которые он запустил.</li>
+<li><strong><code>total_cost_usd</code> и <code>modelUsage</code>, или <code>model_usage</code> в Python</strong>: содержат текущий итог для всего вызова на данный момент, плюс любые расходы, восстановленные при возобновлении вызовом сеанса.</li>
+</ul>
+<p>В вызове, где ваше приложение никогда не отправляет <code>/clear</code>, <code>/reset</code> или <code>/new</code>, прочитайте последний результат для итогов вызова, а не суммируйте результаты.</p>
+<p>Текущие итоги начинаются заново каждый раз, когда ваше приложение отправляет одну из этих трех команд, и внутри вызова <code>query()</code> ничто другое их не сбрасывает. Три результата имеют значение для вашего учета:</p>
+<ul>
+<li><strong>Собственный результат хода <code>/clear</code></strong>: охватывает только то, что было запущено с момента сброса, и содержит новый <code>session_id</code>.</li>
+<li><strong>Каждый последующий результат</strong>: продолжает отсчет с этого сброса.</li>
+<li><strong>Последний результат перед каждым <code>/clear</code></strong>: содержит итог для ходов с момента предыдущего сброса.</li>
+</ul>
+<p>Чтобы получить итог всего вызова, добавьте последний результат перед каждым <code>/clear</code> к финальному результату вызова. Все остальные результаты, включая собственный результат хода <code>/clear</code>, заменяются более поздним.</p>
+<p>В TypeScript SDK также выдает <a href="https://code.claude.com/docs/ru/agent-sdk/typescript#sdkconversationresetmessage"><code>SDKConversationResetMessage</code></a> при каждом сбросе, поэтому вы можете обнаружить сбросы из потока. В Python SDK аналогично выдает <code>ConversationResetMessage</code>. До версии Python SDK v0.2.137 итератор Python отбрасывал это сообщение, поэтому в этих версиях считайте сбросы самостоятельно из ходов <code>/clear</code>, которые отправляет ваше приложение.</p>
+<p><code>maxBudgetUsd</code> (TypeScript) или <code>max_budget_usd</code> (Python) считает только расходы самого вызова: итоги, восстановленные из возобновленного сеанса, не учитываются в нем, и <code>/clear</code> начинает бюджет заново.</p>
+<h3 id="h-4">Получить общую стоимость запроса <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Результирующее сообщение, типизированное как <a href="https://code.claude.com/docs/ru/agent-sdk/typescript#sdkresultmessage"><code>SDKResultMessage</code></a> в TypeScript и <a href="https://code.claude.com/docs/ru/agent-sdk/python#resultmessage"><code>ResultMessage</code></a> в Python, отмечает конец цикла агента для вызова <code>query()</code>. Оно включает <code>total_cost_usd</code>, совокупную предполагаемую стоимость всех шагов в этом вызове. Вызов, который возобновляет сеанс, также учитывает более ранние расходы сеанса. При чтении значения применяются два предостережения:</p>
+<ul>
+<li>В Python это поле типизировано как опциональное, поэтому проверьте, что оно не равно <code>None</code> перед его чтением.</li>
+<li>Результаты успеха и ошибки оба содержат его, хотя финальный результат <a href="#recover-totals-after-a-session-crash">сбоя сеанса</a> может содержать его обнуленным.</li>
+</ul>
+<p>В режиме потоковой передачи входных данных читайте итоги вызовов, как описано в разделе <a href="#track-costs-in-streaming-input-mode">Отслеживание затрат в режиме потоковой передачи входных данных</a>.</p>
+<p>Три поля на уровне результата отличаются тем, что они считают, когда агент порождает <a href="https://code.claude.com/docs/ru/agent-sdk/subagents.md">подагентов</a>. Используйте <code>modelUsage</code> или <code>model_usage</code> в Python для учета токенов всего дерева; поле <code>usage</code> недосчитывает, как только происходит вложение.</p>
+<p>| Поле | Активность подагента |
+| - | - |
+| <code>usage</code> | Исключено. Считает только цикл агента верхнего уровня, поэтому токены, потребленные внутри подагентов, не добавляются |
+| <code>total_cost_usd</code> | Включено. Считает запросы подагентов наряду с циклом верхнего уровня |
+| <code>modelUsage</code> / <code>model_usage</code> | Включено. Считает запросы подагентов наряду с циклом верхнего уровня, разбитые по моделям |</p>
+<p>В <a href="https://code.claude.com/docs/ru/agent-sdk/streaming-vs-single-mode.md#choose-single-shot-or-streaming-input">режиме ввода одного сообщения</a> Claude Code перед отправкой результата ждет фоновых субагентов, которые все еще работают в конце финального хода. Ожидание длится вплоть до лимита, описанного в <a href="https://code.claude.com/docs/ru/headless.md#background-tasks-at-exit">фоновых задачах при выходе</a>. <code>total_cost_usd</code>, <code>duration_api_ms</code> и <code>modelUsage</code> результата, или <code>model_usage</code> в Python, включают работу, выполненную во время этого ожидания.</p>
+<p>Следующие примеры перебирают поток сообщений из вызова <code>query()</code> и выводят общую стоимость, когда приходит сообщение <code>result</code>:</p>
+<p>```typescript TypeScript theme={null}
+import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>try {
+  for await (const message of query({ prompt: &quot;Summarize this project&quot; })) {
+    if (message.type === &quot;result&quot;) {
+      console.log(<code>Total cost: $${message.total_cost_usd}</code>);
+    }
+  }
+} catch (error) {
+  // A single-shot query() throws after yielding an error result. If the
+  // failure was an error result, it still carried total_cost_usd and the
+  // branch above has already run; connection or process failures yield
+  // no result message.
+  console.error(<code>Session ended with an error: ${error}</code>);
+}</p>
+<pre><code></code></pre>
+<p>from claude_agent_sdk import query, ResultMessage
+import asyncio</p>
+<p>async def main():
+    try:
+        async for message in query(prompt=&quot;Summarize this project&quot;):
+            if isinstance(message, ResultMessage):
+                print(f&quot;Total cost: ${message.total_cost_usd or 0}&quot;)
+    except Exception as error:
+        # A single-shot query() raises after yielding an error result. If the
+        # failure was an error result, the branch above has already run;
+        # connection or process failures yield no result message.
+        print(f&quot;Session ended with an error: {error}&quot;)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+Чтобы ограничить, сколько подагенты могут добавить к `total_cost_usd`, установите [лимиты глубины, параллелизма и расходов](https://code.claude.com/docs/ru/agent-sdk/subagents.md#cap-subagent-depth-concurrency-and-spend) на запросе.
+
+## Отслеживание использования на каждом шаге и для каждой модели
+
+Примеры в этом разделе используют имена полей TypeScript. В Python эквивалентные поля — это [`AssistantMessage.usage`](https://code.claude.com/docs/ru/agent-sdk/python#assistantmessage) и `AssistantMessage.message_id` для использования на каждом шаге, а также [`ResultMessage.model_usage`](https://code.claude.com/docs/ru/agent-sdk/python#resultmessage) для разбивки по моделям.
+
+### Отслеживание использования на каждом шаге
+
+Каждое сообщение ассистента содержит вложенный `BetaMessage` (доступный через `message.message`) с `id` и объектом `usage` с подсчётом токенов. Когда Claude использует инструменты параллельно, несколько сообщений имеют одинаковый `id` с идентичными данными использования. Отслеживайте, какие ID вы уже подсчитали, и пропускайте дубликаты, чтобы избежать завышенных итогов.
+
+&gt; [!WARNING]
+&gt;
+&gt; Дедублицированные значения на каждом шаге точны для входных и кэшированных токенов. Per-step `output_tokens` — это заполнитель, поэтому [читайте выходные токены из сообщения результата](#read-output-tokens-from-the-result-message).
+
+Следующий пример накапливает входные токены на всех шагах, подсчитывая каждый уникальный ID сообщения основного цикла только один раз и пропуская сообщения подагентов, а также читает выходной итог из сообщения результата, который охватывает основной цикл:
+</code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>const seenIds = new Set&lt;string&gt;();
+let totalInputTokens = 0;
+let resultOutputTokens = 0;</p>
+<p>try {
+  for await (const message of query({ prompt: &quot;Summarize this project&quot; })) {
+    if (message.type === &quot;assistant&quot; &amp;&amp; !message.parent_tool_use_id) {
+      const msgId = message.message.id;</p>
+<p>// Parallel tool calls share the same ID, only count once
+      if (!seenIds.has(msgId)) {
+        seenIds.add(msgId);
+        totalInputTokens += message.message.usage.input_tokens;
+      }
+    }
+    if (message.type === &quot;result&quot;) {
+      // Per-step output_tokens is a placeholder; the result message
+      // carries the accumulated output total.
+      resultOutputTokens = message.usage.output_tokens;
+    }
+  }
+} catch (error) {
+  // A single-shot query() throws after yielding an error result, so the
+  // input total below still reflects the steps that ran before the failure.
+  console.error(<code>Session ended with an error: ${error}</code>);
+}</p>
+<p>console.log(<code>Steps: ${seenIds.size}</code>);
+console.log(<code>Input tokens: ${totalInputTokens}</code>);
+console.log(<code>Output tokens: ${resultOutputTokens}</code>);</p>
+<pre><code>
+### Разбивка использования по моделям
+
+Сообщение результата включает [`modelUsage`](https://code.claude.com/docs/ru/agent-sdk/typescript#modelusage), карту имён моделей на подсчёты токенов для каждой модели и стоимость. Это полезно, когда вы запускаете несколько моделей (например, Haiku для подагентов и Opus для основного агента) и хотите увидеть, куда идут токены.
+
+Поле `costBasis` каждой записи указывает, какая таблица цен определила цену последнего запроса этой модели: `list` для цены списка, `managed` для таблицы [`modelPricing`](https://code.claude.com/docs/ru/settings-reference#modelpricing), или `unknown`, когда ни одна из них не совпала с ID модели. Это поле требует Claude Code версии 2.1.246 или позже.
+
+Следующий пример запускает запрос и выводит разбивку стоимости и токенов для каждой используемой модели:
+</code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>try {
+  for await (const message of query({ prompt: &quot;Summarize this project&quot; })) {
+    if (message.type !== &quot;result&quot;) continue;</p>
+<p>for (const [modelName, usage] of Object.entries(message.modelUsage)) {
+      console.log(<code>${modelName}: $${usage.costUSD.toFixed(4)}</code>);
+      console.log(<code>  Input tokens: ${usage.inputTokens}</code>);
+      console.log(<code>  Output tokens: ${usage.outputTokens}</code>);
+      console.log(<code>  Cache read: ${usage.cacheReadInputTokens}</code>);
+      console.log(<code>  Cache creation: ${usage.cacheCreationInputTokens}</code>);
+    }
+  }
+} catch (error) {
+  // A single-shot query() throws after yielding an error result. If the
+  // failure was an error result, the per-model breakdown above has already
+  // printed; connection or process failures yield no result message.
+  console.error(<code>Session ended with an error: ${error}</code>);
+}</p>
+<pre><code>
+## Накопление затрат при нескольких вызовах
+
+Каждый вызов `query()` возвращает `total_cost_usd` в своих результатах. Способ объединения значений зависит от того, используют ли вызовы один сеанс:
+
+* **Независимые вызовы без опции `resume` или `continue`**: каждый результат охватывает только свой собственный вызов, поэтому складывайте итоги самостоятельно, как это делается в примерах ниже.
+* **Вызовы, которые возобновляют один и тот же сеанс**: Claude Code сохраняет итоги сеанса в его [транскрипт](https://code.claude.com/docs/ru/sessions.md#where-transcripts-are-stored) при нормальном завершении процесса и восстанавливает их, когда последующий вызов возобновляет или разветвляет сеанс. Каждый результат уже включает более ранние расходы сеанса. Прочитайте последний результат для получения общей суммы сеанса; суммирование результатов приводит к двойному подсчёту восстановленных расходов. До версии 2.1.277 сеанс, который вы возобновили через SDK или `claude -p`, начинал свои итоги с нуля, поэтому результаты каждого вызова охватывали только этот вызов.
+
+В любом случае объединённая сумма по-прежнему является [оценкой на стороне клиента](#estimates-not-billing).
+
+В режиме потоковой передачи входных данных прочитайте общую сумму каждого вызова, как описано в разделе [Отслеживание затрат в режиме потоковой передачи входных данных](#track-costs-in-streaming-input-mode). Для вызова, который завершился сбоем, см. раздел [Восстановление итогов после сбоя сеанса](#recover-totals-after-a-session-crash).
+
+В следующих примерах выполняются два вызова `query()` последовательно, каждый `total_cost_usd` вызова добавляется к текущему итогу, и выводятся как стоимость для каждого вызова, так и общая стоимость:
+</code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>// Track cumulative cost across multiple query() calls
+let totalSpend = 0;</p>
+<p>const prompts = [
+  &quot;Read the files in src/ and summarize the architecture&quot;,
+  &quot;List all exported functions in src/auth.ts&quot;
+];</p>
+<p>for (const prompt of prompts) {
+  try {
+    for await (const message of query({ prompt })) {
+      if (message.type === &quot;result&quot;) {
+        totalSpend += message.total_cost_usd;
+        console.log(<code>This call: $${message.total_cost_usd}</code>);
+      }
+    }
+  } catch (error) {
+    // A single-shot query() throws after yielding an error result. If the
+    // failure was an error result, this call&#x27;s cost was already counted;
+    // connection or process failures yield no result message. Continue
+    // with the next prompt.
+    console.error(<code>Call failed: ${error}</code>);
+  }
+}</p>
+<p>console.log(<code>Total spend: $${totalSpend.toFixed(4)}</code>);</p>
+<pre><code></code></pre>
+<p>from claude_agent_sdk import query, ResultMessage
+import asyncio</p>
+<p>async def main():
+    # Track cumulative cost across multiple query() calls
+    total_spend = 0.0</p>
+<p>prompts = [
+        &quot;Read the files in src/ and summarize the architecture&quot;,
+        &quot;List all exported functions in src/auth.ts&quot;,
+    ]</p>
+<p>for prompt in prompts:
+        try:
+            async for message in query(prompt=prompt):
+                if isinstance(message, ResultMessage):
+                    cost = message.total_cost_usd or 0
+                    total_spend += cost
+                    print(f&quot;This call: ${cost}&quot;)
+        except Exception as error:
+            # A single-shot query() raises after yielding an error result. If
+            # the failure was an error result, this call&#x27;s cost was already
+            # counted; connection or process failures yield no result message.
+            # Continue with the next prompt.
+            print(f&quot;Call failed: {error}&quot;)</p>
+<p>print(f&quot;Total spend: ${total_spend:.4f}&quot;)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+## Обработка ошибок, кеширование и подсчет выходных токенов
+
+Для точного отслеживания затрат учитывайте количество выходных токенов-заполнителей в сообщениях ассистента, токены, потребленные неудачным разговором, и цены на токены кеша.
+
+### Чтение выходных токенов из результирующего сообщения
+
+Claude Code создает каждое сообщение ассистента на основе использования, которое API сообщил при начале ответа, поэтому `output_tokens` сообщения — это только количество, которое API сообщил в `message_start`, до того как был сгенерирован ответ. Один ответ API может создать несколько сообщений ассистента, и каждое из них содержит этот же заполнитель.
+
+API сообщает реальное количество выходных данных в конце ответа, и Claude Code добавляет его в результирующее сообщение. Читайте выходные токены из `usage` результата или из `modelUsage` для разбивки по моделям.
+
+### Отслеживание затрат при неудачных разговорах
+
+Оба результирующих сообщения об успехе и ошибке включают `usage` и `total_cost_usd`; в Python оба поля типизированы как необязательные, поэтому проверьте, что они не равны `None` перед их чтением.
+
+Если разговор прерывается на полпути, вы все равно потребили токены до момента сбоя. Читайте данные о затратах из каждого результирующего сообщения, независимо от того, является ли его `subtype` `success` или одним из подтипов ошибок. На некоторых результатах ошибок `usage` сообщает меньше, чем потратил вызов:
+
+* **`error_during_execution` после [сбоя сеанса](#recover-totals-after-a-session-crash)**: каждое поле затрат может быть обнулено.
+* **`error_max_budget_usd`**: `usage` исключает ответ, который превысил бюджет, в то время как `total_cost_usd` и `modelUsage` включают его.
+
+Где у вас есть выбор, учитывайте данные из `total_cost_usd` или `modelUsage` вместо `usage`.
+
+### Восстановление итогов после сбоя сеанса
+
+Когда процесс Claude Code падает, он выдает финальный результат `error_during_execution` и выходит как в режиме одноразового ввода, так и в режиме потокового ввода. Этот результат может содержать обнуленные `usage`, `total_cost_usd` и `modelUsage`, поэтому восстановите итоги вызова из того, что пришло до него. Шаг 1 восстанавливает полные итоги всякий раз, когда существует более ранний результат; резервный вариант на шаге 2 восстанавливает только входные токены и токены кеша основного цикла.
+
+1. Используйте результат хода перед сбоем. В режиме потокового ввода он содержит текущий итог, описанный в разделе [Отслеживание затрат в режиме потоковой передачи входных данных](#track-costs-in-streaming-input-mode). Перейдите к шагу 2, если этот результат не может вам помочь:
+   * Вызов был одноразовым, поэтому более ранний результат не существует.
+   * Сбой произошел на первом ходу.
+   * Ход перед сбоем был самим `/clear`, поэтому его результат охватывает только сброс.
+2. Вместо этого суммируйте `usage` в сообщениях ассистента, считая каждый ответ API один раз, как это делает пример [Отслеживание использования на каждом шаге](#track-per-step-usage). В режиме одноразового ввода суммируйте все из них; в режиме потокового ввода суммируйте те, которые пришли после последнего результата. Это дает вам входные токены и токены кеша основного цикла. Использование подагента таким образом не восстанавливается, как и выходные токены и стоимость в USD, потому что [`output_tokens` на каждом шаге — это заполнитель](#read-output-tokens-from-the-result-message).
+
+### Отслеживание токенов кеша
+
+Agent SDK автоматически использует [prompt caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching) для снижения затрат на повторяющееся содержимое. Вам не нужно самостоятельно настраивать кеширование. Объект использования включает два дополнительных поля для отслеживания кеша:
+
+* `cache_creation_input_tokens`: токены, используемые для создания новых записей кеша (взимаются по более высокой ставке, чем стандартные входные токены).
+* `cache_read_input_tokens`: токены, прочитанные из существующих записей кеша (взимаются по сниженной ставке).
+
+Отслеживайте их отдельно от `input_tokens`, чтобы понять экономию кеша. В TypeScript эти поля типизированы на объекте [`Usage`](https://code.claude.com/docs/ru/agent-sdk/typescript#usage). В Python они появляются как ключи в словаре [`ResultMessage.usage`](https://code.claude.com/docs/ru/agent-sdk/python#resultmessage) (например, `message.usage.get(&quot;cache_read_input_tokens&quot;, 0)`).
+
+### Расширение TTL кеша подсказок до одного часа
+
+Ваши собственные ходы попадают в [основной сегмент TTL разговора](https://code.claude.com/docs/ru/prompt-caching.md#which-ttl-each-request-gets), вместе с помощниками, которые Claude Code запускает встроенными с ними. Запросы, которые Claude Code делает вне этого разговора, такие как [подагенты](https://code.claude.com/docs/ru/agent-sdk/subagents.md), имеют [отдельное управление TTL](https://code.claude.com/docs/ru/prompt-caching.md#choose-the-ttl-yourself).
+
+Записи кеша для ваших собственных ходов используют TTL по умолчанию 5 минут, когда вы аутентифицируетесь с помощью ключа API или запускаете на Amazon Bedrock, платформе агентов Google Cloud, Microsoft Foundry или [Claude Platform on AWS](https://code.claude.com/docs/ru/claude-platform-on-aws.md). Если ваша рабочая нагрузка запускает много коротких сеансов с одной и той же системной подсказкой и контекстом с промежутками более 5 минут между ними, кеш истекает между сеансами и каждый новый сеанс платит полную входную цену.
+
+Чтобы запросить TTL в 1 час при записи кеша, установите переменную окружения [`ENABLE_PROMPT_CACHING_1H`](https://code.claude.com/docs/ru/env-vars). Вы можете экспортировать ее в окружение вашей оболочки или контейнера или передать ее через `options.env`.
+
+Следующий пример включает TTL в 1 час для агента, работающего на Amazon Bedrock. Поскольку он устанавливает `CLAUDE_CODE_USE_BEDROCK`, он требует рабочих учетных данных AWS для [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md); без них запрос не выполняется.
+</code></pre>
+<p>from claude_agent_sdk import ClaudeAgentOptions, query
+import asyncio</p>
+<p>async def main():
+    options = ClaudeAgentOptions(
+        env={
+            &quot;CLAUDE_CODE_USE_BEDROCK&quot;: &quot;1&quot;,
+            &quot;ENABLE_PROMPT_CACHING_1H&quot;: &quot;1&quot;,
+        },
+    )</p>
+<p>async for message in query(prompt=&quot;Summarize this project&quot;, options=options):
+        print(message)</p>
+<p>asyncio.run(main())</p>
+<pre><code></code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>const options = {
+  env: {
+    ...process.env,
+    CLAUDE_CODE_USE_BEDROCK: &quot;1&quot;,
+    ENABLE_PROMPT_CACHING_1H: &quot;1&quot;,
+  },
+};</p>
+<p>for await (const message of query({ prompt: &quot;Summarize this project&quot;, options })) {
+  console.log(message);
+}</p>
+<pre><code>
+Записи кеша с TTL в 1 час взимаются по более высокой ставке, чем записи на 5 минут, поэтому включение этого обменивает более высокую стоимость записи на больше чтений из кеша. Подробности см. в [ценах на prompt caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching). На подписке Claude в рамках включенного использования вашего плана вы получаете TTL в 1 час на своих собственных ходах и на некоторых вспомогательных запросах, которые Claude Code делает рядом с ними, без установки этой переменной, и Claude Code снижает эти ходы до TTL в 5 минут, как только вы начинаете использовать [кредиты использования](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans).
+
+`ENABLE_PROMPT_CACHING_1H` запрашивает TTL в 1 час для каждого запроса в обоих сегментах. Чтобы выбрать TTL для каждого сегмента отдельно, используйте эти элементы управления вместо этого. Каждый принимает `5m` или `1h` и имеет приоритет над `ENABLE_PROMPT_CACHING_1H`:
+
+* Основной разговор: переменная окружения [`CLAUDE_CODE_PROMPT_CACHE_TTL`](https://code.claude.com/docs/ru/env-vars) или параметр [`promptCacheTtl`](https://code.claude.com/docs/ru/settings-reference#promptcachettl)
+* Все остальное: переменная окружения `CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL` или параметр [`subagentPromptCacheTtl`](https://code.claude.com/docs/ru/settings-reference#subagentpromptcachettl)
+
+Установка `promptCacheTtl` на `1h` сохраняет кеш в 1 час на основном разговоре, пока вы используете кредиты использования. Для полного порядка приоритета см. [выбор TTL самостоятельно](https://code.claude.com/docs/ru/prompt-caching.md#choose-the-ttl-yourself).
+
+## Связанная документация
+
+* [Справочник TypeScript SDK](https://code.claude.com/docs/ru/agent-sdk/typescript.md) - Полная документация API
+* [Обзор SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md) - Начало работы с SDK
+* [Разрешения SDK](https://code.claude.com/docs/ru/agent-sdk/permissions.md) - Управление разрешениями инструментов
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

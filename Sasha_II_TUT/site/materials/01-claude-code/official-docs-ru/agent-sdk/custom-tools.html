@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Предоставьте Claude пользовательские инструменты</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/agent-sdk/index.html">agent-sdk</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="предоставьте-claude-пользовательские-инструменты">Предоставьте Claude пользовательские инструменты <a class="h-anchor" href="#предоставьте-claude-пользовательские-инструменты" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Определите пользовательские инструменты с помощью встроенного MCP-сервера Agent SDK, чтобы Claude мог вызывать ваши функции, обращаться к вашим API и выполнять операции, специфичные для вашей области.</p>
+</blockquote>
+<p>Пользовательские инструменты расширяют Agent SDK, позволяя вам определять собственные функции, которые Claude может вызывать во время разговора. Используя встроенный MCP-сервер SDK, вы можете предоставить Claude доступ к базам данных, внешним API, логике, специфичной для вашей области, или любым другим возможностям, которые требует ваше приложение.</p>
+<h3 id="h">Краткая справка <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>| Если вы хотите... | Сделайте это |
+| :- | :- |
+| Определить инструмент | Используйте <a href="https://code.claude.com/docs/ru/agent-sdk/python#tool"><code>@tool</code></a> (Python) или <a href="https://code.claude.com/docs/ru/agent-sdk/typescript#tool"><code>tool()</code></a> (TypeScript) с именем, описанием, схемой и обработчиком. См. <a href="#create-a-custom-tool">Создание пользовательского инструмента</a>. |
+| Сделать параметр необязательным | Объявите его необязательным в схеме и примените значение по умолчанию в обработчике. См. <a href="#make-a-parameter-optional">Как сделать параметр необязательным</a>. |
+| Зарегистрировать инструмент с Claude | Оберните в <code>create_sdk_mcp_server</code> / <code>createSdkMcpServer</code> и передайте в <code>mcpServers</code> в <code>query()</code>. См. <a href="#call-a-custom-tool">Вызов пользовательского инструмента</a>. |
+| Предварительно одобрить инструмент | Добавьте в разрешённые инструменты. См. <a href="#configure-allowed-tools">Настройка разрешённых инструментов</a>. |
+| Требовать подтверждения для вызовов инструмента или заблокировать инструмент | В TypeScript SDK добавьте <code>permission_policy</code> для инструмента в объект конфигурации, который возвращает <code>createSdkMcpServer()</code>. См. <a href="#require-approval-for-specific-tools">Требование подтверждения для определённых инструментов</a>. |
+| Удалить встроенный инструмент из контекста Claude | Передайте массив <code>tools</code>, содержащий только встроенные инструменты, которые вы хотите. См. <a href="#configure-allowed-tools">Настройка разрешённых инструментов</a>. |
+| Позволить Claude вызывать инструменты параллельно | Установите <code>readOnlyHint: true</code> на инструментах без побочных эффектов. См. <a href="#add-tool-annotations">Добавление аннотаций инструментов</a>. |
+| Контролировать сообщение об ошибке, которое читает Claude | Верните <code>isError: true</code> для составления сообщения вместо выброса необработанного исключения. См. <a href="#handle-errors">Обработка ошибок</a>. |
+| Вернуть изображения или файлы | Используйте блоки <code>image</code> или <code>resource</code> в массиве содержимого. См. <a href="#return-images-and-resources">Возврат изображений и ресурсов</a>. |
+| Вернуть результат в формате машиночитаемого JSON | Установите <code>structuredContent</code> на результат. См. <a href="#return-structured-data">Возврат структурированных данных</a>. |
+| Масштабировать до множества инструментов | Используйте <a href="https://code.claude.com/docs/ru/agent-sdk/tool-search.md">поиск инструментов</a> для загрузки инструментов по требованию. |</p>
+<h3 id="h-2">Создание пользовательского инструмента <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Инструмент определяется четырьмя частями, передаваемыми в качестве аргументов вспомогательной функции <a href="https://code.claude.com/docs/ru/agent-sdk/typescript#tool"><code>tool()</code></a> в TypeScript или декоратору <a href="https://code.claude.com/docs/ru/agent-sdk/python#tool"><code>@tool</code></a> в Python:</p>
+<ul>
+<li><strong>Name:</strong> уникальный идентификатор, который Claude использует для вызова инструмента.</li>
+<li><strong>Description:</strong> описание того, что делает инструмент. Claude читает это, чтобы решить, когда его вызывать.</li>
+<li><strong>Input schema:</strong> аргументы, которые принимает инструмент; объявляются по-разному в зависимости от языка:</li>
+<li><strong>TypeScript</strong>: <a href="https://zod.dev/">Zod schema</a>. <code>args</code> обработчика получают свои типы из неё. Вызовите <code>.describe()</code> для поля, чтобы задать ему описание, которое видит Claude.</li>
+<li><strong>Python</strong>: словарь, отображающий имена на типы, например <code>{&quot;latitude&quot;: float}</code>, который SDK преобразует в JSON Schema для вас. Оберните тип в <code>Annotated</code>, например <code>{&quot;latitude&quot;: Annotated[float, &quot;Latitude coordinate&quot;]}</code>, чтобы задать полю описание, которое видит Claude. Декоратор также принимает полный словарь <a href="https://json-schema.org/understanding-json-schema/about">JSON Schema</a> непосредственно, когда вам нужны перечисления, диапазоны, необязательные поля или вложенные объекты.</li>
+<li><strong>Handler:</strong> асинхронная функция, которая запускается, когда Claude вызывает инструмент. Она получает проверенные аргументы и должна возвращать объект с:</li>
+<li><code>content</code> (обязательно): массив блоков результатов, каждый с <code>type</code> равным <code>&quot;text&quot;</code>, <code>&quot;image&quot;</code>, <code>&quot;audio&quot;</code>, <code>&quot;resource&quot;</code> или <code>&quot;resource_link&quot;</code>. Смотрите <a href="#return-images-and-resources">Return images and resources</a> для блоков, отличных от текста.</li>
+<li><code>structuredContent</code> (необязательно): объект JSON, содержащий результат как машиночитаемые данные, возвращаемые вместе с <code>content</code>. Смотрите <a href="#return-structured-data">Return structured data</a>.</li>
+<li><code>isError</code> (необязательно): установите значение <code>true</code>, чтобы сигнализировать об ошибке инструмента, чтобы Claude мог на неё реагировать. Смотрите <a href="#handle-errors">Handle errors</a>.</li>
+</ul>
+<p>После определения инструмента оберните его в сервер с помощью <a href="https://code.claude.com/docs/ru/agent-sdk/typescript#createsdkmcpserver"><code>createSdkMcpServer</code></a> (TypeScript) или <a href="https://code.claude.com/docs/ru/agent-sdk/python#create_sdk_mcp_server"><code>create_sdk_mcp_server</code></a> (Python). Сервер работает внутри процесса вашего приложения, а не как отдельный процесс.</p>
+<p>Примеры на Python на этой странице, выполняющие HTTP-запросы, используют <a href="https://www.python-httpx.org/">httpx</a>. Добавьте его с помощью менеджера пакетов, который использует ваш проект:</p>
+<blockquote>
+<p>[tab] Python (uv)</p>
+<p>```bash theme={null}
+uv add httpx</p>
+<pre><code></code></pre>
+</blockquote>
+<blockquote>
+<p>[tab] Python (pip)</p>
+<p>```bash theme={null}
+pip install httpx</p>
+<pre><code></code></pre>
+</blockquote>
+<h4 id="пример-инструмента-weather">Пример инструмента Weather <a class="h-anchor" href="#пример-инструмента-weather" aria-label="Ссылка на раздел">#</a></h4>
+<p>Этот пример определяет инструмент <code>get_temperature</code> и оборачивает его в MCP-сервер, не передавая сервер в <code>query</code>. Чтобы запустить инструмент, смотрите <a href="#call-a-custom-tool">Call a custom tool</a>.</p>
+<p>```python Python theme={null}
+from typing import Annotated, Any
+import httpx
+from claude_agent_sdk import tool, create_sdk_mcp_server</p>
+<h1 id="define-a-tool-name-description-input-schema-handler">Define a tool: name, description, input schema, handler <a class="h-anchor" href="#define-a-tool-name-description-input-schema-handler" aria-label="Ссылка на раздел">#</a></h1>
+<p>@tool(
+    &quot;get_temperature&quot;,
+    &quot;Get the current temperature at a location&quot;,
+    {
+        &quot;latitude&quot;: Annotated[float, &quot;Latitude coordinate&quot;],
+        &quot;longitude&quot;: Annotated[float, &quot;Longitude coordinate&quot;],
+    },
+)
+async def get_temperature(args: dict[str, Any]) -&gt; dict[str, Any]:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            &quot;https://api.open-meteo.com/v1/forecast&quot;,
+            params={
+                &quot;latitude&quot;: args[&quot;latitude&quot;],
+                &quot;longitude&quot;: args[&quot;longitude&quot;],
+                &quot;current&quot;: &quot;temperature_2m&quot;,
+                &quot;temperature_unit&quot;: &quot;fahrenheit&quot;,
+            },
+        )
+        data = response.json()</p>
+<p># Return a content array - Claude sees this as the tool result
+    return {
+        &quot;content&quot;: [
+            {
+                &quot;type&quot;: &quot;text&quot;,
+                &quot;text&quot;: f&quot;Temperature: {data[&#x27;current&#x27;][&#x27;temperature_2m&#x27;]}°F&quot;,
+            }
+        ]
+    }</p>
+<h1 id="wrap-the-tool-in-an-in-process-mcp-server">Wrap the tool in an in-process MCP server <a class="h-anchor" href="#wrap-the-tool-in-an-in-process-mcp-server" aria-label="Ссылка на раздел">#</a></h1>
+<p>weather_server = create_sdk_mcp_server(
+    name=&quot;weather&quot;,
+    version=&quot;1.0.0&quot;,
+    tools=[get_temperature],
+)</p>
+<pre><code></code></pre>
+<p>import { tool, createSdkMcpServer } from &quot;@anthropic-ai/claude-agent-sdk&quot;;
+import { z } from &quot;zod&quot;;</p>
+<p>// Define a tool: name, description, input schema, handler
+const getTemperature = tool(
+  &quot;get_temperature&quot;,
+  &quot;Get the current temperature at a location&quot;,
+  {
+    latitude: z.number().describe(&quot;Latitude coordinate&quot;), // .describe() adds a field description Claude sees
+    longitude: z.number().describe(&quot;Longitude coordinate&quot;)
+  },
+  async (args) =&gt; {
+    // args is typed from the schema: { latitude: number; longitude: number }
+    const response = await fetch(
+      <code>https://api.open-meteo.com/v1/forecast?latitude=${args.latitude}&amp;longitude=${args.longitude}&amp;current=temperature_2m&amp;temperature_unit=fahrenheit</code>
+    );
+    const data: any = await response.json();</p>
+<p>// Return a content array - Claude sees this as the tool result
+    return {
+      content: [{ type: &quot;text&quot;, text: <code>Temperature: ${data.current.temperature_2m}°F</code> }]
+    };
+  }
+);</p>
+<p>// Wrap the tool in an in-process MCP server
+const weatherServer = createSdkMcpServer({
+  name: &quot;weather&quot;,
+  version: &quot;1.0.0&quot;,
+  tools: [getTemperature]
+});</p>
+<pre><code>
+Смотрите справку [`tool()`](https://code.claude.com/docs/ru/agent-sdk/typescript#tool) TypeScript или справку [`@tool`](https://code.claude.com/docs/ru/agent-sdk/python#tool) Python для полных деталей параметров, включая форматы входных JSON Schema и структуру возвращаемого значения.
+
+### Как сделать параметр необязательным
+
+Чтобы сделать параметр необязательным, объявите его необязательным в схеме и примените значение по умолчанию в обработчике:
+
+* **TypeScript**: добавьте `.optional()` к полю Zod.
+* **Python**: словарная схема требует наличия каждого ключа. Используйте форму JSON Schema, не включайте параметр в `required` и читайте его с помощью `args.get()`. Для типизированной схемы с необязательными ключами смотрите [TypedDict class](https://code.claude.com/docs/ru/agent-sdk/python.md#input-schema-options).
+
+[Инструмент `get_precipitation_chance`](#add-more-tools) показывает оба паттерна.
+
+### Вызов пользовательского инструмента
+
+Чтобы вызвать пользовательский инструмент, выполните следующие шаги:
+
+1. Передайте созданный вами MCP-сервер в `query` через опцию `mcpServers`.
+2. Перечислите [полностью квалифицированное имя](https://code.claude.com/docs/ru/agent-sdk/mcp.md#tool-naming-convention) инструмента в `allowedTools`, чтобы [заранее одобрить](https://code.claude.com/docs/ru/agent-sdk/permissions.md#allow-and-deny-rules) его вызовы. Это имя имеет вид `mcp__{server_name}__{tool_name}`, где `{server_name}` — это ключ, который вы задаёте серверу в `mcpServers`. Если ключ содержит такие символы, как `.` или пробелы, замените их на `_`, когда записываете `{server_name}`.
+
+Эти фрагменты повторно используют `weatherServer` из [примера инструмента Weather](#weather-tool-example), чтобы спросить Claude о погоде в определённом месте.
+</code></pre>
+<p>import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage</p>
+<p>async def main():
+    options = ClaudeAgentOptions(
+        mcp_servers={&quot;weather&quot;: weather_server},
+        allowed_tools=[&quot;mcp__weather__get_temperature&quot;],
+    )</p>
+<p>async for message in query(
+        prompt=&quot;What&#x27;s the temperature in San Francisco?&quot;,
+        options=options,
+    ):
+        # ResultMessage is the final message after all tool calls complete
+        if isinstance(message, ResultMessage) and message.subtype == &quot;success&quot;:
+            print(message.result)</p>
+<p>asyncio.run(main())</p>
+<pre><code></code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>for await (const message of query({
+  prompt: &quot;What&#x27;s the temperature in San Francisco?&quot;,
+  options: {
+    mcpServers: { weather: weatherServer },
+    allowedTools: [&quot;mcp__weather__get_temperature&quot;]
+  }
+})) {
+  // &quot;result&quot; is the final message after all tool calls complete
+  if (message.type === &quot;result&quot; &amp;&amp; message.subtype === &quot;success&quot;) {
+    console.log(message.result);
+  }
+}</p>
+<pre><code>
+Объедините этот фрагмент с определениями инструмента и сервера из [примера инструмента Weather](#weather-tool-example) в одном файле, `weather.py` или `weather.ts`, затем запустите его из терминала:
+
+&gt; [tab] TypeScript
+&gt;
+&gt; ```bash theme={null}
+&gt; npx tsx weather.ts
+&gt; ```
+
+&gt; [tab] Python (uv)
+&gt;
+&gt; ```bash theme={null}
+&gt; uv run weather.py
+&gt; ```
+
+&gt; [tab] Python (pip)
+&gt;
+&gt; Активируйте виртуальное окружение, в котором вы установили SDK, затем выполните:
+&gt;
+&gt; ```bash theme={null}
+&gt; python weather.py
+&gt; ```
+
+Claude вызывает `get_temperature`, и скрипт выводит однострочный ответ с текущей температурой в Сан-Франциско.
+
+### Добавление дополнительных инструментов
+
+Сервер содержит столько инструментов, сколько вы перечислите в его массиве `tools`. Если на сервере более одного инструмента, вы можете перечислить каждый в `allowedTools` отдельно или использовать подстановочный знак `mcp__weather__*`, чтобы охватить каждый инструмент, который сервер предоставляет.
+
+Пример ниже определяет второй инструмент, `get_precipitation_chance`, и заменяет определение `weatherServer` из [примера инструмента Weather](#weather-tool-example) на то, которое перечисляет оба инструмента в массиве.
+</code></pre>
+<h1 id="define-a-second-tool-for-the-same-server">Define a second tool for the same server <a class="h-anchor" href="#define-a-second-tool-for-the-same-server" aria-label="Ссылка на раздел">#</a></h1>
+<p>@tool(
+    &quot;get_precipitation_chance&quot;,
+    &quot;Get the hourly precipitation probability for a location&quot;,
+    {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+            &quot;latitude&quot;: {&quot;type&quot;: &quot;number&quot;},
+            &quot;longitude&quot;: {&quot;type&quot;: &quot;number&quot;},
+            &quot;hours&quot;: {
+                &quot;type&quot;: &quot;integer&quot;,
+                &quot;minimum&quot;: 1,
+                &quot;maximum&quot;: 24,
+                &quot;description&quot;: &quot;How many hours of forecast to return&quot;,
+            },
+        },
+        # &#x27;hours&#x27; is left out of required, so Claude can omit it
+        &quot;required&quot;: [&quot;latitude&quot;, &quot;longitude&quot;],
+    },
+)
+async def get_precipitation_chance(args: dict[str, Any]) -&gt; dict[str, Any]:
+    # &#x27;hours&#x27; isn&#x27;t in required - read it with .get() to fall back to a default
+    hours = args.get(&quot;hours&quot;, 12)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            &quot;https://api.open-meteo.com/v1/forecast&quot;,
+            params={
+                &quot;latitude&quot;: args[&quot;latitude&quot;],
+                &quot;longitude&quot;: args[&quot;longitude&quot;],
+                &quot;hourly&quot;: &quot;precipitation_probability&quot;,
+                &quot;forecast_days&quot;: 1,
+            },
+        )
+        data = response.json()
+    chances = data[&quot;hourly&quot;][&quot;precipitation_probability&quot;][:hours]</p>
+<p>return {
+        &quot;content&quot;: [
+            {
+                &quot;type&quot;: &quot;text&quot;,
+                &quot;text&quot;: f&quot;Next {hours} hours: {&#x27;%, &#x27;.join(map(str, chances))}%&quot;,
+            }
+        ]
+    }</p>
+<h1 id="rebuild-the-server-with-both-tools-in-the-array">Rebuild the server with both tools in the array <a class="h-anchor" href="#rebuild-the-server-with-both-tools-in-the-array" aria-label="Ссылка на раздел">#</a></h1>
+<p>weather_server = create_sdk_mcp_server(
+    name=&quot;weather&quot;,
+    version=&quot;1.0.0&quot;,
+    tools=[get_temperature, get_precipitation_chance],
+)</p>
+<pre><code></code></pre>
+<p>// Define a second tool for the same server
+const getPrecipitationChance = tool(
+  &quot;get_precipitation_chance&quot;,
+  &quot;Get the hourly precipitation probability for a location&quot;,
+  {
+    latitude: z.number(),
+    longitude: z.number(),
+    hours: z
+      .number()
+      .int()
+      .min(1)
+      .max(24)
+      .optional() // .optional() lets Claude omit the parameter
+      .describe(&quot;How many hours of forecast to return&quot;)
+  },
+  async (args) =&gt; {
+    const hours = args.hours ?? 12; // Apply the default in the handler
+    const response = await fetch(
+      <code>https://api.open-meteo.com/v1/forecast?latitude=${args.latitude}&amp;longitude=${args.longitude}&amp;hourly=precipitation_probability&amp;forecast_days=1</code>
+    );
+    const data: any = await response.json();
+    const chances = data.hourly.precipitation_probability.slice(0, hours);</p>
+<p>return {
+      content: [{ type: &quot;text&quot;, text: <code>Next ${hours} hours: ${chances.join(&quot;%, &quot;)}%</code> }]
+    };
+  }
+);</p>
+<p>// Rebuild the server with both tools in the array
+const weatherServer = createSdkMcpServer({
+  name: &quot;weather&quot;,
+  version: &quot;1.0.0&quot;,
+  tools: [getTemperature, getPrecipitationChance]
+});</p>
+<pre><code>
+[Tool search](https://code.claude.com/docs/ru/agent-sdk/tool-search.md) включен по умолчанию и откладывает SDK MCP инструменты: Claude видит имя каждого инструмента в компактном списке и загружает его полную схему по требованию. С отключённым поиском инструментов каждый инструмент в этом массиве потребляет пространство контекстного окна на каждом ходу. В TypeScript передайте `alwaysLoad: true` в аргументе `extras` функции [`tool()`](https://code.claude.com/docs/ru/agent-sdk/typescript#tool) или в опциях [`createSdkMcpServer()`](https://code.claude.com/docs/ru/agent-sdk/typescript#createsdkmcpserver), чтобы сохранить полную схему инструмента в начальном приглашении.
+
+### Добавление аннотаций инструмента
+
+[Tool annotations](https://modelcontextprotocol.io/docs/concepts/tools#tool-annotations) — это необязательные метаданные, описывающие поведение инструмента. Передайте их в качестве пятого аргумента вспомогательной функции `tool()` в TypeScript или через аргумент ключевого слова `annotations` для декоратора `@tool` в Python. Все поля подсказок являются логическими значениями.
+
+| Field | Default | Meaning |
+| :- | :- | :- |
+| `readOnlyHint` | `false` | Инструмент не изменяет свою среду. Контролирует, может ли инструмент вызываться параллельно с другими инструментами только для чтения. |
+| `destructiveHint` | `true` | Инструмент может выполнять деструктивные обновления. Явно установите значение `true` для любого инструмента, который вы [помечаете как `always_ask`](#require-approval-for-specific-tools). |
+| `idempotentHint` | `false` | Повторные вызовы с одинаковыми аргументами не имеют дополнительного эффекта. |
+| `openWorldHint` | `true` | Инструмент достигает систем вне вашего процесса. |
+
+Аннотации — это метаданные, а не принуждение. Инструмент, отмеченный как `readOnlyHint: true`, всё ещё может писать на диск, если это то, что делает обработчик. Держите аннотацию точной для обработчика.
+
+Этот пример добавляет `readOnlyHint` к инструменту `get_temperature` из [примера инструмента Weather](#weather-tool-example).
+</code></pre>
+<p>from claude_agent_sdk import tool, ToolAnnotations</p>
+<p>@tool(
+    &quot;get_temperature&quot;,
+    &quot;Get the current temperature at a location&quot;,
+    {&quot;latitude&quot;: float, &quot;longitude&quot;: float},
+    annotations=ToolAnnotations(
+        readOnlyHint=True
+    ),  # Lets Claude batch this with other read-only calls
+)
+async def get_temperature(args):
+    return {&quot;content&quot;: [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: &quot;...&quot;}]}</p>
+<pre><code></code></pre>
+<p>import { tool } from &quot;@anthropic-ai/claude-agent-sdk&quot;;
+import { z } from &quot;zod&quot;;</p>
+<p>tool(
+  &quot;get_temperature&quot;,
+  &quot;Get the current temperature at a location&quot;,
+  { latitude: z.number(), longitude: z.number() },
+  async (args) =&gt; ({ content: [{ type: &quot;text&quot;, text: <code>...</code> }] }),
+  { annotations: { readOnlyHint: true } } // Lets Claude batch this with other read-only calls
+);</p>
+<pre><code>
+Смотрите `ToolAnnotations` в справке [TypeScript](https://code.claude.com/docs/ru/agent-sdk/typescript.md#toolannotations) или [Python](https://code.claude.com/docs/ru/agent-sdk/python.md#toolannotations).
+
+## Управление доступом к инструментам
+
+[Пример инструмента weather](#weather-tool-example) зарегистрировал сервер и перечислил инструменты в `allowedTools`. В этом разделе рассматривается, как ограничить доступ, когда у вас есть несколько инструментов или вы хотите ограничить встроенные инструменты. Информацию о том, как конструируются имена инструментов, см. в разделе [Вызов пользовательского инструмента](#call-a-custom-tool).
+
+### Настройка разрешённых инструментов
+
+С помощью опций `tools`, `allowedTools` и `disallowedTools` вы управляете двумя уровнями:
+
+* **Доступность**: появляется ли инструмент в контексте Claude. Чтобы изменить её, используйте опцию `tools` или укажите простое имя встроенного инструмента, например `&quot;Bash&quot;`, в `disallowedTools`.
+* **Разрешение**: одобряет ли Claude Code вызов, когда Claude его выполняет. Чтобы изменить его, используйте `allowedTools` или правило `disallowedTools` с областью действия, например `&quot;Bash(rm *)&quot;`.
+
+| Опция | Уровень | Эффект |
+| :- | :- | :- |
+| `tools: [&quot;Read&quot;, &quot;Grep&quot;]` | Доступность | Только перечисленные встроенные инструменты находятся в контексте Claude. Неперечисленные встроенные инструменты удаляются. Инструменты MCP не затрагиваются. |
+| `tools: []` | Доступность | Все встроенные инструменты удаляются. Claude может использовать только ваши инструменты MCP. |
+| разрешённые инструменты | Разрешение | Перечисленные инструменты одобрены заранее, за исключением [вызовов, которые не одобряет ни одно правило разрешения](https://code.claude.com/docs/ru/agent-sdk/permissions.md#calls-an-allow-rule-never-approves). Вызовы инструментов, не включённых в список, проходят через [поток разрешений](https://code.claude.com/docs/ru/agent-sdk/permissions.md). |
+| запрещённые инструменты | Оба | Простое имя встроенного инструмента, такое как `&quot;Bash&quot;`, удаляет инструмент из контекста Claude. Правило с областью действия, такое как `&quot;Bash(rm *)&quot;`, оставляет инструмент в контексте и отклоняет вызовы, которые совпадают с ним [как написано](https://code.claude.com/docs/ru/permissions.md#bash-rule-limits). |
+
+Чтобы удалить встроенный инструмент из контекста Claude, опустите его из `tools` или перечислите его простое имя в `disallowedTools` (TypeScript) или `disallowed_tools` (Python). Полный порядок оценки см. в разделе [Настройка разрешений](https://code.claude.com/docs/ru/agent-sdk/permissions.md#how-permissions-are-evaluated).
+
+### Требование подтверждения для определённых инструментов
+
+Установите для `permission_policy` инструмента значение `always_ask`, и `allowedTools` перестанет одобрять вызовы этого инструмента, поэтому они смогут доходить до вашего обратного вызова [`canUseTool`](https://code.claude.com/docs/ru/agent-sdk/user-input), даже если инструмент указан в списке. Вместо этого установите `always_deny`, чтобы [заблокировать инструмент](https://code.claude.com/docs/ru/agent-sdk/typescript.md#permission-policy-values). Это поле доступно только в TypeScript и требует Agent SDK v0.3.301 или более поздней версии.
+
+Поместите запись политики в массив `tools` объекта конфигурации, который возвращает `createSdkMcpServer()`, а не в опцию `tools`, которую вы передаёте в эту функцию. Этот пример разворачивает `weatherServer` из [примера инструмента weather](#weather-tool-example) и добавляет массив `tools`, назначающий `get_temperature` политику `always_ask`:
+</code></pre>
+<p>options: {
+  mcpServers: {
+    weather: {
+      ...weatherServer,
+      tools: [{ name: &quot;get_temperature&quot;, permission_policy: &quot;always_ask&quot; as const }]
+    }
+  },
+  allowedTools: [&quot;mcp__weather__get_temperature&quot;],
+  permissionMode: &quot;default&quot;,
+  canUseTool: async (toolName, input) =&gt; {
+    console.log(<code>Approval requested for ${toolName}</code>);
+    return { behavior: &quot;allow&quot;, updatedInput: input };
+  }
+}</p>
+<pre><code>
+Чтобы опробовать политику, замените `options` в скрипте из раздела [Вызов пользовательского инструмента](#call-a-custom-tool) на `options` из этого примера, а затем запустите скрипт из терминала. Скрипт выведет `Approval requested for mcp__weather__get_temperature`, а затем ответ Claude о температуре. Полный скрипт см. в [справочнике по TypeScript](https://code.claude.com/docs/ru/agent-sdk/typescript.md#mcpsdkserverconfigwithinstance).
+
+Если вы используете [режим разрешений](https://code.claude.com/docs/ru/agent-sdk/permissions.md#permission-modes) `auto` или `plan`, установите `destructiveHint: true` в [аннотациях](#add-tool-annotations) инструмента, чтобы вызовы инструмента по-прежнему доходили до вашего обратного вызова. В противном случае [классификатор авторежима](https://code.claude.com/docs/ru/permission-modes.md#eliminate-prompts-with-auto-mode) может одобрить некоторые вызовы `always_ask` при [условиях, перечисленных в справочнике по TypeScript](https://code.claude.com/docs/ru/agent-sdk/typescript.md#permission-modes-that-can-approve-an-always_ask-call), и одобренный им вызов не дойдёт до вашего обратного вызова. Устанавливайте эту подсказку явно, поскольку неустановленный `destructiveHint` для вызовов `always_ask` считается равным `false`, а не принимает значение `true` по умолчанию.
+
+## Обработка ошибок
+
+Ошибка обработчика не останавливает цикл агента. MCP-сервер SDK в процессе перехватывает необработанные исключения и возвращает их как результаты ошибок, поэтому то, как вы сообщаете об ошибке, определяет, что читает Claude, а не то, завершится ли запрос неудачей:
+
+| Что происходит | Результат |
+| :- | :- |
+| Обработчик выбрасывает необработанное исключение | MCP-сервер преобразует его в результат ошибки, содержащий исходное сообщение об исключении. Claude видит это сообщение, и цикл агента продолжается. |
+| Обработчик перехватывает ошибку и возвращает `isError: true` (TS) / `&quot;is_error&quot;: True` (Python) | Claude видит сообщение, которое вы составили. Вы можете добавить контекст, которого не хватает исходному исключению, например какой запрос не удался или что попробовать вместо этого. |
+
+В обоих случаях Claude может повторить попытку, попробовать другой инструмент или объяснить сбой. Перехватывайте ошибки самостоятельно, когда исходное сообщение об исключении недостаточно для того, чтобы Claude мог действовать.
+
+Приведённый ниже пример перехватывает два вида сбоев внутри обработчика и составляет сообщение об ошибке, которое читает Claude. Статус HTTP, отличный от 200, перехватывается из ответа и возвращается как результат ошибки. Ошибка сети или неверный JSON перехватываются окружающим блоком `try/except` (Python) или `try/catch` (TypeScript) и также возвращаются как результат ошибки. В обоих случаях Claude получает сообщение, которое описывает сбой вместо простой строки исключения.
+</code></pre>
+<p>import json
+import httpx
+from typing import Any
+from claude_agent_sdk import tool</p>
+<p>@tool(
+    &quot;fetch_data&quot;,
+    &quot;Fetch data from an API&quot;,
+    {&quot;endpoint&quot;: str},  # Simple schema
+)
+async def fetch_data(args: dict[str, Any]) -&gt; dict[str, Any]:
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(args[&quot;endpoint&quot;])
+            if response.status_code != 200:
+                # Return the failure as a tool result so Claude can react to it.
+                # is_error marks this as a failed call rather than odd-looking data.
+                return {
+                    &quot;content&quot;: [
+                        {
+                            &quot;type&quot;: &quot;text&quot;,
+                            &quot;text&quot;: f&quot;API error: {response.status_code} {response.reason_phrase}&quot;,
+                        }
+                    ],
+                    &quot;is_error&quot;: True,
+                }</p>
+<p>data = response.json()
+            return {&quot;content&quot;: [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: json.dumps(data, indent=2)}]}
+    except Exception as e:
+        # Composes the message Claude reads. An uncaught exception would
+        # reach Claude as the raw str(e) with no context.
+        return {
+            &quot;content&quot;: [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: f&quot;Failed to fetch data: {str(e)}&quot;}],
+            &quot;is_error&quot;: True,
+        }</p>
+<pre><code></code></pre>
+<p>import { tool } from &quot;@anthropic-ai/claude-agent-sdk&quot;;
+import { z } from &quot;zod&quot;;</p>
+<p>tool(
+  &quot;fetch_data&quot;,
+  &quot;Fetch data from an API&quot;,
+  {
+    endpoint: z.string().url().describe(&quot;API endpoint URL&quot;)
+  },
+  async (args) =&gt; {
+    try {
+      const response = await fetch(args.endpoint);</p>
+<p>if (!response.ok) {
+        // Return the failure as a tool result so Claude can react to it.
+        // isError marks this as a failed call rather than odd-looking data.
+        return {
+          content: [
+            {
+              type: &quot;text&quot;,
+              text: <code>API error: ${response.status} ${response.statusText}</code>
+            }
+          ],
+          isError: true
+        };
+      }</p>
+<p>const data = await response.json();
+      return {
+        content: [
+          {
+            type: &quot;text&quot;,
+            text: JSON.stringify(data, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      // Composes the message Claude reads. An uncaught throw would
+      // reach Claude as the raw error message with no context.
+      return {
+        content: [
+          {
+            type: &quot;text&quot;,
+            text: <code>Failed to fetch data: ${error instanceof Error ? error.message : String(error)}</code>
+          }
+        ],
+        isError: true
+      };
+    }
+  }
+);</p>
+<pre><code>
+## Возврат изображений и ресурсов
+
+Массив `content` в результате инструмента принимает блоки `text`, `image`, `audio`, `resource` и `resource_link`. Вы можете смешивать их в одном ответе. В TypeScript SDK сохраняет аудиоблоки на диск, и Claude получает текстовый блок с сохранённым путём файла; в Python SDK удаляет аудиоблоки из результата инструмента и регистрирует предупреждение.
+
+Claude получает каждый блок ссылки на ресурс как текстовый блок, содержащий имя ссылки, URI и описание. В TypeScript ваше приложение также получает сами ссылки как [`resourceLinks`](https://code.claude.com/docs/ru/agent-sdk/typescript#sdkmcpresourcelink) в `tool_use_result` сообщения пользователя; в Python SDK преобразует их в текст перед тем, как CLI увидит результат, поэтому ключ Python [`resourceLinks`](https://code.claude.com/docs/ru/agent-sdk/python#usermessage) никогда не создаётся для встроенных инструментов.
+
+### Изображения
+
+Блок изображения содержит байты изображения встроенными, закодированными в base64. Поля URL нет. Чтобы вернуть изображение, которое находится по URL, получите его в обработчике, прочитайте байты ответа и закодируйте их в base64 перед возвратом. Изображение PNG, JPEG, GIF или WebP поступает в Claude как визуальный ввод; изображение любого другого типа сохраняется на диск, и Claude получает его путь к файлу в виде текста.
+
+| Поле | Тип | Примечания |
+| :- | :- | :- |
+| `type` | `&quot;image&quot;` | |
+| `data` | `string` | Байты в кодировке Base64. Только raw base64, без префикса `data:image/...;base64,` |
+| `mimeType` | `string` | Обязательно. Например `image/png`, `image/jpeg`, `image/webp`, `image/gif` |
+</code></pre>
+<p>import base64
+import httpx
+from claude_agent_sdk import tool</p>
+<h1 id="define-a-tool-that-fetches-an-image-from-a-url-and-returns-it-to-claude">Define a tool that fetches an image from a URL and returns it to Claude <a class="h-anchor" href="#define-a-tool-that-fetches-an-image-from-a-url-and-returns-it-to-claude" aria-label="Ссылка на раздел">#</a></h1>
+<p>@tool(&quot;fetch_image&quot;, &quot;Fetch an image from a URL and return it to Claude&quot;, {&quot;url&quot;: str})
+async def fetch_image(args):
+    async with httpx.AsyncClient() as client:  # Fetch the image bytes
+        response = await client.get(args[&quot;url&quot;])</p>
+<p>return {
+        &quot;content&quot;: [
+            {
+                &quot;type&quot;: &quot;image&quot;,
+                &quot;data&quot;: base64.b64encode(response.content).decode(
+                    &quot;ascii&quot;
+                ),  # Base64-encode the raw bytes
+                &quot;mimeType&quot;: response.headers.get(
+                    &quot;content-type&quot;, &quot;image/png&quot;
+                ),  # Read MIME type from the response
+            }
+        ]
+    }</p>
+<pre><code></code></pre>
+<p>import { tool } from &quot;@anthropic-ai/claude-agent-sdk&quot;;
+import { z } from &quot;zod&quot;;</p>
+<p>tool(
+  &quot;fetch_image&quot;,
+  &quot;Fetch an image from a URL and return it to Claude&quot;,
+  {
+    url: z.string().url()
+  },
+  async (args) =&gt; {
+    const response = await fetch(args.url); // Fetch the image bytes
+    const buffer = Buffer.from(await response.arrayBuffer()); // Read into a Buffer for base64 encoding
+    const mimeType = response.headers.get(&quot;content-type&quot;) ?? &quot;image/png&quot;;</p>
+<p>return {
+      content: [
+        {
+          type: &quot;image&quot;,
+          data: buffer.toString(&quot;base64&quot;), // Base64-encode the raw bytes
+          mimeType
+        }
+      ]
+    };
+  }
+);</p>
+<pre><code>
+### Ресурсы
+
+Блок ресурса встраивает фрагмент содержимого, идентифицируемый URI. Фактическое содержимое находится в поле `text` или `blob` блока. Используйте это, когда ваш инструмент создаёт сгенерированный файл или запись из внешней системы.
+
+| Поле | Тип | Примечания |
+| :- | :- | :- |
+| `type` | `&quot;resource&quot;` | |
+| `resource.uri` | `string` | Идентификатор содержимого. Любая схема URI |
+| `resource.text` | `string` | Содержимое, если это текст. Укажите это или `blob`, но не оба |
+| `resource.blob` | `string` | Содержимое в кодировке base64, если это двоичные данные. Только TypeScript: Python SDK удаляет двоичные ресурсы из результата инструмента и регистрирует предупреждение |
+| `resource.mimeType` | `string` | Необязательно |
+
+Этот пример показывает блок ресурса, возвращаемый из обработчика инструмента. SDK не читает из URI примера `file:///tmp/report.md`.
+</code></pre>
+<p>return {
+  content: [
+    {
+      type: &quot;resource&quot;,
+      resource: {
+        uri: &quot;file:///tmp/report.md&quot;, // Label for Claude to reference, not a path the SDK reads
+        mimeType: &quot;text/markdown&quot;,
+        text: &quot;# Report\n...&quot; // The actual content, inline
+      }
+    }
+  ]
+};</p>
+<pre><code></code></pre>
+<p>return {
+    &quot;content&quot;: [
+        {
+            &quot;type&quot;: &quot;resource&quot;,
+            &quot;resource&quot;: {
+                &quot;uri&quot;: &quot;file:///tmp/report.md&quot;,  # Not a path the SDK reads
+                &quot;mimeType&quot;: &quot;text/markdown&quot;,
+                &quot;text&quot;: &quot;# Report\n...&quot;,  # The actual content, inline
+            },
+        }
+    ]
+}</p>
+<pre><code>
+Эти формы блоков происходят из типа MCP `CallToolResult`. Полное определение см. в [спецификации MCP](https://modelcontextprotocol.io/specification/2025-06-18/server/tools#tool-result).
+
+## Возврат структурированных данных
+
+`structuredContent` — это необязательный объект JSON в результате, отдельный от массива `content`. Используйте его для возврата необработанных значений, которые Claude может читать как точные поля вместо их анализа из текстовой строки или изображения. Для обработчиков на Python см. раздел [Структурированное содержимое в Python](#structured-content-in-python).
+
+Когда обработчик TypeScript `tool()` устанавливает `structuredContent`, Claude получает JSON плюс блоки изображений и ресурсов из `content`, а текстовые блоки в `content` до Claude не доходят. Пример ниже отображает диаграмму как блок изображения и возвращает точки данных за ней в `structuredContent` из того же обработчика. В фрагменте `chartPngBuffer` — это `Buffer`, содержащий отрендеренные байты PNG.
+</code></pre>
+<p>return {
+  content: [
+    {
+      type: &quot;image&quot;,
+      data: chartPngBuffer.toString(&quot;base64&quot;),
+      mimeType: &quot;image/png&quot;
+    }
+  ],
+  structuredContent: {
+    series: &quot;temperature_2m&quot;,
+    unit: &quot;fahrenheit&quot;,
+    points: [62.1, 63.4, 65.0, 64.2]
+  }
+};</p>
+<pre><code>
+&gt; [!NOTE]
+&gt;
+&gt; Декоратор Python `@tool` передает только `content` и `is_error` из словаря возврата обработчика. Чтобы вернуть `structuredContent` из Python, запустите [автономный MCP сервер](https://code.claude.com/docs/ru/agent-sdk/mcp.md) вместо встроенного SDK сервера.
+
+## Пример: конвертер единиц
+
+Этот инструмент преобразует значения между единицами длины, температуры и веса. Пользователь может попросить &quot;конвертировать 100 километров в мили&quot; или &quot;сколько это 72°F в Цельсиях&quot;, и Claude выбирает правильный тип единиц и единицы из запроса.
+
+Это демонстрирует два паттерна:
+
+* **Enum schemas:** `unit_type` ограничен фиксированным набором значений. В TypeScript используйте `z.enum()`. В Python словарь schema не поддерживает enums, поэтому требуется полный JSON Schema словарь.
+* **Обработка неподдерживаемого ввода:** когда пара преобразования не найдена, обработчик возвращает `isError: true`, чтобы Claude мог сообщить пользователю, что пошло не так, вместо того чтобы рассматривать сбой как нормальный результат.
+</code></pre>
+<p>from typing import Any
+from claude_agent_sdk import tool, create_sdk_mcp_server</p>
+<h1 id="z-enum-в-typescript-становится-ограничением-enum-в-json-schema">z.enum() в TypeScript становится ограничением &quot;enum&quot; в JSON Schema. <a class="h-anchor" href="#z-enum-в-typescript-становится-ограничением-enum-в-json-schema" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="словарь-schema-не-имеет-эквивалента-поэтому-требуется-полный-json-schema">Словарь schema не имеет эквивалента, поэтому требуется полный JSON Schema. <a class="h-anchor" href="#словарь-schema-не-имеет-эквивалента-поэтому-требуется-полный-json-schema" aria-label="Ссылка на раздел">#</a></h1>
+<p>@tool(
+    &quot;convert_units&quot;,
+    &quot;Convert a value from one unit to another&quot;,
+    {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+            &quot;unit_type&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;enum&quot;: [&quot;length&quot;, &quot;temperature&quot;, &quot;weight&quot;],
+                &quot;description&quot;: &quot;Category of unit&quot;,
+            },
+            &quot;from_unit&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;description&quot;: &quot;Unit to convert from, e.g. kilometers, fahrenheit, pounds&quot;,
+            },
+            &quot;to_unit&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;Unit to convert to&quot;},
+            &quot;value&quot;: {&quot;type&quot;: &quot;number&quot;, &quot;description&quot;: &quot;Value to convert&quot;},
+        },
+        &quot;required&quot;: [&quot;unit_type&quot;, &quot;from_unit&quot;, &quot;to_unit&quot;, &quot;value&quot;],
+    },
+)
+async def convert_units(args: dict[str, Any]) -&gt; dict[str, Any]:
+    conversions = {
+        &quot;length&quot;: {
+            &quot;kilometers_to_miles&quot;: lambda v: v * 0.621371,
+            &quot;miles_to_kilometers&quot;: lambda v: v * 1.60934,
+            &quot;meters_to_feet&quot;: lambda v: v * 3.28084,
+            &quot;feet_to_meters&quot;: lambda v: v * 0.3048,
+        },
+        &quot;temperature&quot;: {
+            &quot;celsius_to_fahrenheit&quot;: lambda v: (v * 9) / 5 + 32,
+            &quot;fahrenheit_to_celsius&quot;: lambda v: (v - 32) * 5 / 9,
+            &quot;celsius_to_kelvin&quot;: lambda v: v + 273.15,
+            &quot;kelvin_to_celsius&quot;: lambda v: v - 273.15,
+        },
+        &quot;weight&quot;: {
+            &quot;kilograms_to_pounds&quot;: lambda v: v * 2.20462,
+            &quot;pounds_to_kilograms&quot;: lambda v: v * 0.453592,
+            &quot;grams_to_ounces&quot;: lambda v: v * 0.035274,
+            &quot;ounces_to_grams&quot;: lambda v: v * 28.3495,
+        },
+    }</p>
+<p>key = f&quot;{args[&#x27;from_unit&#x27;]}_to_{args[&#x27;to_unit&#x27;]}&quot;
+    fn = conversions.get(args[&quot;unit_type&quot;], {}).get(key)</p>
+<p>if not fn:
+        return {
+            &quot;content&quot;: [
+                {
+                    &quot;type&quot;: &quot;text&quot;,
+                    &quot;text&quot;: f&quot;Unsupported conversion: {args[&#x27;from_unit&#x27;]} to {args[&#x27;to_unit&#x27;]}&quot;,
+                }
+            ],
+            &quot;is_error&quot;: True,
+        }</p>
+<p>result = fn(args[&quot;value&quot;])
+    return {
+        &quot;content&quot;: [
+            {
+                &quot;type&quot;: &quot;text&quot;,
+                &quot;text&quot;: f&quot;{args[&#x27;value&#x27;]} {args[&#x27;from_unit&#x27;]} = {result:.4f} {args[&#x27;to_unit&#x27;]}&quot;,
+            }
+        ]
+    }</p>
+<p>converter_server = create_sdk_mcp_server(
+    name=&quot;converter&quot;,
+    version=&quot;1.0.0&quot;,
+    tools=[convert_units],
+)</p>
+<pre><code></code></pre>
+<p>import { tool, createSdkMcpServer } from &quot;@anthropic-ai/claude-agent-sdk&quot;;
+import { z } from &quot;zod&quot;;</p>
+<p>const convert = tool(
+  &quot;convert_units&quot;,
+  &quot;Convert a value from one unit to another&quot;,
+  {
+    unit_type: z.enum([&quot;length&quot;, &quot;temperature&quot;, &quot;weight&quot;]).describe(&quot;Category of unit&quot;),
+    from_unit: z
+      .string()
+      .describe(&quot;Unit to convert from, e.g. kilometers, fahrenheit, pounds&quot;),
+    to_unit: z.string().describe(&quot;Unit to convert to&quot;),
+    value: z.number().describe(&quot;Value to convert&quot;)
+  },
+  async (args) =&gt; {
+    type Conversions = Record&lt;string, Record&lt;string, (v: number) =&gt; number&gt;&gt;;</p>
+<p>const conversions: Conversions = {
+      length: {
+        kilometers_to_miles: (v) =&gt; v * 0.621371,
+        miles_to_kilometers: (v) =&gt; v * 1.60934,
+        meters_to_feet: (v) =&gt; v * 3.28084,
+        feet_to_meters: (v) =&gt; v * 0.3048
+      },
+      temperature: {
+        celsius_to_fahrenheit: (v) =&gt; (v * 9) / 5 + 32,
+        fahrenheit_to_celsius: (v) =&gt; ((v - 32) * 5) / 9,
+        celsius_to_kelvin: (v) =&gt; v + 273.15,
+        kelvin_to_celsius: (v) =&gt; v - 273.15
+      },
+      weight: {
+        kilograms_to_pounds: (v) =&gt; v * 2.20462,
+        pounds_to_kilograms: (v) =&gt; v * 0.453592,
+        grams_to_ounces: (v) =&gt; v * 0.035274,
+        ounces_to_grams: (v) =&gt; v * 28.3495
+      }
+    };</p>
+<p>const key = <code>${args.from_unit}_to_${args.to_unit}</code>;
+    const fn = conversions[args.unit_type]?.[key];</p>
+<p>if (!fn) {
+      return {
+        content: [
+          {
+            type: &quot;text&quot;,
+            text: <code>Unsupported conversion: ${args.from_unit} to ${args.to_unit}</code>
+          }
+        ],
+        isError: true
+      };
+    }</p>
+<p>const result = fn(args.value);
+    return {
+      content: [
+        {
+          type: &quot;text&quot;,
+          text: <code>${args.value} ${args.from_unit} = ${result.toFixed(4)} ${args.to_unit}</code>
+        }
+      ]
+    };
+  }
+);</p>
+<p>const converterServer = createSdkMcpServer({
+  name: &quot;converter&quot;,
+  version: &quot;1.0.0&quot;,
+  tools: [convert]
+});</p>
+<pre><code>
+После определения сервера передайте его в `query` так же, как в примере с погодой. Этот пример отправляет три разных запроса в цикле, чтобы показать, как один и тот же инструмент обрабатывает разные типы единиц. Для каждого ответа он проверяет объекты `AssistantMessage` (которые содержат вызовы инструментов, которые Claude сделал во время этого хода) и выводит каждый `ToolUseBlock` перед выводом финального текста `ResultMessage`. Это позволяет вам увидеть, когда Claude использует инструмент, а когда отвечает из собственных знаний.
+
+Поскольку [tool search](https://code.claude.com/docs/ru/agent-sdk/tool-search.md) включен по умолчанию, вывод также может включать вызов `ToolSearch`, когда Claude загружает отложенную schema инструмента.
+</code></pre>
+<p>import asyncio
+from claude_agent_sdk import (
+    query,
+    ClaudeAgentOptions,
+    ResultMessage,
+    AssistantMessage,
+    ToolUseBlock,
+)</p>
+<p>async def main():
+    options = ClaudeAgentOptions(
+        mcp_servers={&quot;converter&quot;: converter_server},
+        allowed_tools=[&quot;mcp__converter__convert_units&quot;],
+    )</p>
+<p>prompts = [
+        &quot;Convert 100 kilometers to miles.&quot;,
+        &quot;What is 72°F in Celsius?&quot;,
+        &quot;How many pounds is 5 kilograms?&quot;,
+    ]</p>
+<p>for prompt in prompts:
+        try:
+            async for message in query(prompt=prompt, options=options):
+                if isinstance(message, AssistantMessage):
+                    for block in message.content:
+                        if isinstance(block, ToolUseBlock):
+                            print(f&quot;[tool call] {block.name}({block.input})&quot;)
+                elif isinstance(message, ResultMessage) and message.subtype == &quot;success&quot;:
+                    print(f&quot;Q: {prompt}\nA: {message.result}\n&quot;)
+        except Exception as error:
+            # A single-shot query() raises after yielding an error result. Only success
+            # results are printed above, so handle the failure here and continue with
+            # the next prompt.
+            print(f&quot;Call failed: {error}&quot;)</p>
+<p>asyncio.run(main())</p>
+<pre><code></code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>const prompts = [
+  &quot;Convert 100 kilometers to miles.&quot;,
+  &quot;What is 72°F in Celsius?&quot;,
+  &quot;How many pounds is 5 kilograms?&quot;
+];</p>
+<p>for (const prompt of prompts) {
+  try {
+    for await (const message of query({
+      prompt,
+      options: {
+        mcpServers: { converter: converterServer },
+        allowedTools: [&quot;mcp__converter__convert_units&quot;]
+      }
+    })) {
+      if (message.type === &quot;assistant&quot;) {
+        for (const block of message.message.content) {
+          if (block.type === &quot;tool_use&quot;) {
+            console.log(<code>[tool call] ${block.name}</code>, block.input);
+          }
+        }
+      } else if (message.type === &quot;result&quot; &amp;&amp; message.subtype === &quot;success&quot;) {
+        console.log(<code>Q: ${prompt}\nA: ${message.result}\n</code>);
+      }
+    }
+  } catch (error) {
+    // A single-shot query() throws after yielding an error result. Only success
+    // results are logged above, so handle the failure here and continue with
+    // the next prompt.
+    console.error(<code>Call failed: ${error}</code>);
+  }
+}</p>
+<pre><code>
+## Следующие шаги
+
+Вы можете комбинировать паттерны на этой странице на одном сервере: один сервер может содержать инструмент базы данных, инструмент шлюза API и средство визуализации изображений рядом друг с другом.
+
+Отсюда:
+
+* Если ваш сервер вырастет до десятков инструментов, см. [поиск инструментов](https://code.claude.com/docs/ru/agent-sdk/tool-search.md) для отложенной загрузки их до момента, когда Claude их потребует.
+* Для подключения к внешним MCP серверам (файловая система, GitHub, Slack) вместо создания собственных, см. [Подключение MCP серверов](https://code.claude.com/docs/ru/agent-sdk/mcp.md).
+* Для управления тем, какие инструменты запускаются автоматически в сравнении с требующими одобрения, см. [Настройка разрешений](https://code.claude.com/docs/ru/agent-sdk/permissions.md).
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Устранение неполадок плагинов</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/plugins/index.html">plugins</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Устранение неполадок плагинов <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Исправьте ошибки плагинов в Claude Code. Найдите точное сообщение об ошибке, сгруппированное по этапам от запуска /plugin до установки и политики организации.</p>
+</blockquote>
+<p>На этой странице перечислены сообщения об ошибках и симптомы для плагинов Claude Code и для маркетплейсов — каталогов, из которых Claude Code устанавливает плагины. Каждая запись содержит причину, одно решение и то, что вы видите после применения исправления.</p>
+<p>Если сообщение содержит имя плагина или маркетплейса, запись показывает заполнитель, такой как <code>&lt;name&gt;</code>.</p>
+<p>Используйте эту страницу, устанавливаете ли вы плагины, создаёте их, размещаете маркетплейс или администрируете плагины для организации.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Эти случаи рассматриваются на других страницах:</p>
+<ul>
+<li><strong>Почему области действия, кэш и приоритет ведут себя так, как они себя ведут</strong>: прочитайте <a href="https://code.claude.com/docs/ru/plugins/loading.md">Справочник по загрузке плагинов</a></li>
+<li><strong>Поиск флага, поля или команды</strong>: используйте <a href="https://code.claude.com/docs/ru/plugins/cli-reference.md">справочник команд плагинов</a>, <a href="https://code.claude.com/docs/ru/plugins/manifest-reference.md">справочник манифеста</a> или <a href="https://code.claude.com/docs/ru/plugins/marketplace-reference.md">справочник маркетплейса</a></li>
+<li><strong>Сообщение <code>hooks module not loaded</code> или <code>hooks module did not load</code></strong>: плагин является <a href="https://code.claude.com/docs/ru/plugins/mods/overview.md">модом</a>, поэтому прочитайте <a href="https://code.claude.com/docs/ru/plugins/mods/troubleshoot.md#the-mod-doesn’t-load">Мод не загружается</a></li>
+</ul>
+</blockquote>
+<p>Найдите точное сообщение, которое вы видели. Каждое сообщение указано под этапом, который его создаёт, что не всегда совпадает с командой, которую вы запустили. Например, установка может завершиться ошибкой, потому что маркетплейс отсутствует, поэтому это сообщение находится в разделе <a href="#add-a-marketplace">Добавить маркетплейс</a>.</p>
+<h3 id="найдите-где-запускается-plugin">Найдите, где запускается <code>/plugin</code> <a class="h-anchor" href="#найдите-где-запускается-plugin" aria-label="Ссылка на раздел">#</a></h3>
+<p><code>/plugin</code> — это команда, которую вы вводите в работающем сеансе терминала Claude Code, и она открывает интерактивную панель. Записи в этом разделе охватывают места, где вы можете её ввести, но она не может запуститься, и написания команд, которые не существуют.</p>
+<h4 id="plugin-isn-t-available-in-this-environment"><code>/plugin isn&#x27;t available in this environment</code> <a class="h-anchor" href="#plugin-isn-t-available-in-this-environment" aria-label="Ссылка на раздел">#</a></h4>
+<p>Вы ввели <code>/plugin</code> где-то вне сеанса терминала Claude Code, и Claude ответил этой строкой вместо открытия чего-либо.</p>
+<p>Вы получаете этот ответ в сеансе, у которого нет терминала для отрисовки панели <code>/plugin</code>: <a href="https://code.claude.com/docs/ru/headless.md">неинтерактивный режим</a> с <code>claude -p</code>, Agent SDK, вкладка Code в приложении Claude для рабочего стола, панель расширения VS Code и браузер на claude.ai/code.</p>
+<p>В панели расширения VS Code только строка <code>/plugin</code> с чем-то после неё, такая как <code>/plugin install &lt;plugin&gt;@&lt;marketplace&gt;</code>, получает этот ответ. <code>/plugin</code> или <code>/plugins</code>, введённые отдельно, открывают диалог <strong>Управление плагинами</strong>.</p>
+<p>Установите плагин с поверхности, на которой вы находитесь:</p>
+<ul>
+<li><strong>Приложение Claude для рабочего стола, локальная или SSH-сессия</strong>: используйте вкладку <strong>Desktop app</strong> в разделе <a href="https://code.claude.com/docs/ru/plugins/install.md#install-a-plugin">Установить плагин</a></li>
+<li><strong>Расширение VS Code</strong>: используйте вкладку <strong>VS Code</strong> в разделе <a href="https://code.claude.com/docs/ru/plugins/install.md#install-a-plugin">Установить плагин</a></li>
+<li><strong>Claude Code в веб-браузере или облачный сеанс рабочего стола</strong>: облачный сеанс не имеет браузера плагинов. См. вкладку <strong>Cloud session</strong> в разделе <a href="https://code.claude.com/docs/ru/plugins/install.md#install-a-plugin">Установить плагин</a>, чтобы узнать, что загружает облачный сеанс</li>
+<li><strong>Терминал, к которому у вас есть доступ</strong>: запустите <code>claude</code> и введите <code>/plugin</code> там, или запустите <code>claude plugin install &lt;plugin&gt;@&lt;marketplace&gt;</code> в вашей оболочке без запуска сеанса</li>
+</ul>
+<p>Когда установка терминала работает, <code>/plugin</code> выводит сводку установки, которая начинается с <code>✓ Installed &lt;plugin&gt;.</code> и <code>claude plugin install</code> выводит <code>Successfully installed plugin: &lt;plugin&gt;@&lt;marketplace&gt;</code>.</p>
+<h4 id="zsh-no-such-file-or-directory-plugin"><code>zsh: no such file or directory: /plugin</code> <a class="h-anchor" href="#zsh-no-such-file-or-directory-plugin" aria-label="Ссылка на раздел">#</a></h4>
+<p>Вы ввели <code>/plugin ...</code> в приглашение оболочки, и оболочка сообщила, что файла с именем <code>/plugin</code> не существует. Bash сообщает <code>bash: /plugin: No such file or directory</code>.</p>
+<p><code>/plugin</code> — это команда, которую вы вводите в сеансе Claude Code, а не в приглашение оболочки. Запустите сеанс и введите ту же команду там:</p>
+<p>```shell theme={null}
+claude</p>
+<pre><code>
+Затем в приглашении Claude Code:
+</code></pre>
+<p>/plugin install &lt;plugin&gt;@&lt;marketplace&gt;</p>
+<pre><code>
+Успешная установка выводит сводку, которая начинается с `✓ Installed &lt;plugin&gt;.` Если сама установка затем не пройдёт, её сообщение находится в разделе [Добавить маркетплейс](#add-a-marketplace) или [Установить плагин](#install-a-plugin).
+
+Чтобы установить из оболочки без запуска сеанса, запустите `claude plugin install &lt;plugin&gt;@&lt;marketplace&gt;`.
+
+### `The term &#x27;/plugin&#x27; is not recognized as the name of a cmdlet`
+
+Вы ввели `/plugin ...` в приглашение PowerShell, и `/plugin` — это команда Claude Code, а не программа. Bash и Zsh сообщают [свою форму этой ошибки](#zsh-no-such-file-or-directory-plugin).
+
+Используйте вместо этого одно из следующих:
+
+* Запустите `claude`, затем введите `/plugin` в приглашение Claude Code
+* Запустите `claude plugin install &lt;plugin&gt;@&lt;marketplace&gt;` в PowerShell без запуска сеанса
+
+### `claude: command not found` после `claude plugin ...`
+
+Вы запустили `claude plugin install ...` в вашей оболочке, и оболочка вообще не смогла найти `claude`. На Windows сообщение: `&#x27;claude&#x27; is not recognized as the name of a cmdlet` или `&#x27;claude&#x27; is not recognized as an internal or external command`.
+
+Причина не в команде плагина. Следуйте инструкциям в разделе [Проверьте ваш PATH](https://code.claude.com/docs/ru/troubleshoot-install.md#verify-your-path), затем повторите попытку выполнить команду плагина.
+
+### `Unknown command` и написания команд, которые не существуют
+
+Вы ввели команду плагина, которую видели где-то, и получили `Unknown command: /&lt;name&gt;` в сеансе, или `error: unknown command &#x27;&lt;name&gt;&#x27;` или `error: unknown option &#x27;&lt;flag&gt;&#x27;` из двоичного файла `claude` в вашей оболочке.
+
+Используются несколько написаний команд, которых в Claude Code нет. Таблица ниже сопоставляет каждое с реальной командой. [Справочник команд плагинов](https://code.claude.com/docs/ru/plugins/cli-reference.md) перечисляет подкоманды и их флаги.
+
+| Вы ввели | Что говорит Claude Code | Используйте вместо этого |
+| :- | :- | :- |
+| `claude plugin add &lt;source&gt;` | `error: unknown command &#x27;add&#x27;` | `claude plugin marketplace add &lt;source&gt;` для добавления маркетплейса или `claude plugin install &lt;plugin&gt;@&lt;marketplace&gt;` для установки плагина |
+| `claude plugin install &lt;plugin&gt; --project` | `error: unknown option &#x27;--project&#x27;` | `claude plugin install &lt;plugin&gt;@&lt;marketplace&gt; --scope project` |
+| `/install &lt;plugin&gt;` | `Unknown command: /install` | `/plugin install &lt;plugin&gt;@&lt;marketplace&gt;` |
+| `/plugin add &lt;source&gt;` | Панель `/plugin` открывается на вкладке **Discover** | `/plugin marketplace add &lt;source&gt;` |
+| `marketplace.anthropic.com` как источник | `Invalid marketplace source format. Try: owner/repo, https://..., or ./path` | `anthropics/claude-plugins-official` для официального маркетплейса |
+
+Эти написания выглядят неправильно, но работают:
+
+* `claude plugins` — это псевдоним `claude plugin`
+* `claude plugin remove` — это псевдоним `claude plugin uninstall`
+* `/plugins` и `/marketplace` в сеансе открывают ту же панель, что и `/plugin`
+
+## Добавить маркетплейс
+
+Маркетплейс — это каталог, который вы добавляете в Claude Code из репозитория git, URL или локального пути. Эти записи охватывают сообщения, которые вы получаете, когда добавление не удаётся или более позднее обновление не удаётся.
+
+### `Marketplace &quot;claude-plugins-official&quot; not found`
+
+Вы запустили `/plugin install &lt;plugin&gt;@claude-plugins-official` в сеансе, и Claude Code сообщил, что у него нет маркетплейса с таким именем.
+
+Официальный маркетплейс ещё не зарегистрирован на этой машине. Claude Code обычно регистрирует его самостоятельно при первом запуске интерактивного сеанса терминала. Он ещё не запустился, если вы использовали Claude Code только через расширение VS Code, и он пропускает или откладывает этот шаг:
+
+* Когда политика блокирует источник
+* Когда установлена переменная `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`
+* После неудачной попытки, которая ждёт повтора
+
+Команды оболочки `claude plugin` никогда не регистрируют его для вас.
+
+Добавьте его, затем повторите установку:
+</code></pre>
+<p>/plugin marketplace add anthropics/claude-plugins-official</p>
+<pre><code>
+Claude Code выводит `Successfully added marketplace: claude-plugins-official`, и `/plugin marketplace list` показывает маркетплейс с его источником.
+
+Для любого другого имени маркетплейса в этом сообщении см. [`Marketplace &quot;&lt;name&gt;&quot; not found`](#marketplace-not-found).
+
+Та же строка также появляется на вкладке **Errors** в `/plugin`, списке сбоев загрузки панели, когда плагин, указанный в ваших параметрах, называет маркетплейс, который вы не добавили.
+
+### `Marketplace &quot;&lt;name&gt;&quot; not found`
+
+Вы запустили `/plugin install` в сеансе, и Claude Code сообщил, что у него нет маркетплейса с таким именем. Две формы команды приводят к этому сообщению:
+
+* **`/plugin install &lt;plugin&gt;@&lt;name&gt;`**: строка установки, часто отправленная вам кем-то, называет маркетплейс, который вы не добавили. Остальная часть этой записи охватывает поиск и добавление его.
+* **`/plugin install &lt;source&gt;` с путём, URL или `owner/repo`**: эта форма сообщает сообщение вместо установки, даже для источника, который вы уже добавили. Чтобы установить из источника в одной команде, см. [Добавить маркетплейс и установить в одной команде](https://code.claude.com/docs/ru/plugins/install.md#add-a-marketplace-and-install-in-one-command).
+
+Если имя начинается с `claudeai-`, маркетплейс размещён на claude.ai, и вы добавляете его по имени из вашей оболочки с помощью `claude plugin marketplace add --claudeai &lt;name&gt;`. См. [Добавить маркетплейс с claude.ai](https://code.claude.com/docs/ru/plugins/install.md#add-from-claude-ai).
+
+Для любого другого имени строка установки называет маркетплейс, но не говорит, где он размещён, и Claude Code не имеет индекса для поиска имени маркетплейса. Попросите у того, кто отправил строку, источник маркетплейса, который является GitHub `owner/repo`, URL git или путём. Затем [добавьте маркетплейс](https://code.claude.com/docs/ru/plugins/install.md#add-a-marketplace) и запустите строку установки снова.
+
+Маркетплейс, который кто-то вам отправляет, является сторонним, поэтому [просмотрите плагин перед его установкой](https://code.claude.com/docs/ru/plugins/security.md#review-a-plugin-before-you-install).
+
+Если вы уже добавили маркетплейс, проверьте написание в `/plugin marketplace list`.
+
+### `Invalid marketplace source format`
+
+Вы запустили `/plugin marketplace add &lt;source&gt;`, `claude plugin marketplace add &lt;source&gt;` или `claude plugin install &lt;plugin&gt; --marketplace &lt;source&gt;`, и Claude Code ответил `Invalid marketplace source format. Try: owner/repo, https://..., or ./path`.
+
+Claude Code принимает источник в одной из этих форм:
+
+* Сокращение GitHub `owner/repo`
+* URL `https://` или `http://`
+* SSH URL `user@host:path`
+* Локальный путь, начинающийся с `./`, `../`, `/` или `~`
+
+Простое имя, такое как `claude-plugins-official`, не соответствует ни одному из них. Также не соответствует простое имя хоста, такое как `marketplace.anthropic.com`.
+
+Переведите источник в одну из принятых форм:
+</code></pre>
+<p>/plugin marketplace add anthropics/claude-plugins-official</p>
+<pre><code>
+Claude Code выводит `Successfully added marketplace: &lt;name&gt;`, когда добавление работает.
+
+### `&#x27;&lt;source&gt;&#x27; is not a valid GitHub owner/repo shorthand`
+
+Вы передали источник с косой чертой, который не является `owner/repo`, такой как `github.com/owner/repo` или путь `gitlab.example.com/group/project`. Claude Code отказал ему с этим сообщением и списком принятых форм.
+
+Сокращение `owner/repo` предназначено только для GitHub и должно следовать правилам именования GitHub, поэтому имя хоста или дополнительный сегмент пути не работает. Передайте источник в форме, которая соответствует тому, где размещён маркетплейс:
+
+* **Репозиторий на любом хосте**: полный URL клонирования
+* **Размещённый `marketplace.json`**: его URL `https://`
+* **Локальная копия**: `./path` или абсолютный путь
+
+Например, чтобы добавить официальный маркетплейс по его URL клонирования, в сеансе:
+</code></pre>
+<p>/plugin marketplace add https://github.com/anthropics/claude-plugins-official.git</p>
+<pre><code>
+Успешное добавление выводит `Successfully added marketplace: &lt;name&gt;`.
+
+### `Invalid git URL`
+
+Вы добавили маркетплейс, установили плагин или запустили обновление с адреса git, и команда не удалась с `Invalid git URL` в сообщении.
+
+Claude Code проверяет каждый адрес git перед запуском git. Он отказывает адресу, чей протокол он не поддерживает. Он также отказывает адресу, который git может прочитать как именование другого сервера или папки, чем тот, который показывает адрес.
+
+Текст после адреса называет, что изменить. Переведите адрес так, как говорит сообщение, и запустите команду снова.
+
+Отказ, который вместо этого говорит `is blocked by enterprise policy`, исходит из параметров вашей организации. См. [Источник маркетплейса заблокирован корпоративной политикой](#marketplace-source-is-blocked-by-enterprise-policy).
+
+### `Path does not exist: &lt;path&gt;`
+
+Вы передали локальный путь в `marketplace add`, и ничего не существует по этому пути. Относительный путь разрешается относительно вашего текущего каталога.
+
+Проверьте разрешённый путь в сообщении. Затем запустите команду из каталога, с которого начинается относительный путь, или передайте абсолютный путь к каталогу маркетплейса. Успешное добавление выводит `Successfully added marketplace: &lt;name&gt;`.
+
+Claude Code принимает каталог, содержащий `.claude-plugin/marketplace.json`, или путь к файлу `.json`. Путь к любому другому файлу не работает с `File path must point to a .json file (marketplace.json)`.
+
+### `Marketplace file not found at &lt;path&gt;/.claude-plugin/marketplace.json`
+
+Claude Code клонировал или загрузил маркетплейс, но не нашёл `marketplace.json` по ожидаемому пути внутри него. Команда добавления сообщает об этом как `Failed to add marketplace: Marketplace file not found at ...`.
+
+Расположение по умолчанию — `.claude-plugin/marketplace.json` в корне репозитория, и [справочник маркетплейса](https://code.claude.com/docs/ru/plugins/marketplace-reference.md) перечисляет принятые расположения.
+
+Исправление отличается для владельца и для всех остальных:
+
+* **Вы владеете маркетплейсом**: поместите файл в это расположение и повторно добавьте маркетплейс
+* **Кто-то другой размещает его**: попросите у владельца точный источник, который они публикуют
+
+### `Cannot add marketplace &quot;&lt;name&gt;&quot;: Claude Code cannot install plugins from a marketplace with this name`
+
+Вы добавили маркетплейс, и [`name`](https://code.claude.com/docs/ru/plugins/marketplace-reference#top-level-fields) в его `marketplace.json` недопустимо в качестве части после `@` в [идентификаторе плагина](https://code.claude.com/docs/ru/plugins/loading.md#find-where-a-plugin-came-from), таком как `my-plugin@my-marketplace`. Claude Code отклоняет добавление и ничего не регистрирует.
+
+Остальная часть сообщения формулирует правило для имени. В этом примере `_internal` нарушает правило, так как начинается с `_`:
+</code></pre>
+<p>Cannot add marketplace &quot;_internal&quot;: Claude Code cannot install plugins from a marketplace with this name. Each part of a plugin id (plugin@marketplace) may use only the letters a-z and A-Z, digits, &quot;.&quot;, &quot;_&quot; and &quot;-&quot;, and must start with a letter or digit. The name is set by &quot;name&quot; in the marketplace&#x27;s marketplace.json; ask its maintainer to change it.</p>
+<pre><code>
+Дайте маркетплейсу имя, соответствующее этому правилу, затем добавьте его снова:
+
+* **Вы владеете маркетплейсом**: измените `name` в `marketplace.json`, например на `internal-tools`
+* **Кто-то другой размещает его**: попросите владельца изменить имя
+
+До v2.1.295 Claude Code сообщал о добавлении в этом примере как об успешном.
+
+### `Cannot add marketplace &quot;&lt;name&gt;&quot;: Claude Code reserves this name and cannot register a marketplace under it`
+
+Вы добавили маркетплейс, и [`name`](https://code.claude.com/docs/ru/plugins/marketplace-reference#top-level-fields) в его `marketplace.json` — одно из имён членов, которые есть у каждого объекта JavaScript, например `constructor`, `toString` или `valueOf`. Claude Code резервирует эти имена, поэтому отклоняет добавление и ничего не регистрирует. Они перечислены в разделе [Зарезервированные имена](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#reserved-names).
+
+В этом примере маркетплейс называется `constructor`:
+</code></pre>
+<p>Cannot add marketplace &quot;constructor&quot;: Claude Code reserves this name and cannot register a marketplace under it. The name is set by &quot;name&quot; in the marketplace&#x27;s marketplace.json; ask its maintainer to change it.</p>
+<pre><code>
+Если файл настроек объявляет маркетплейс в [`extraKnownMarketplaces`](https://code.claude.com/docs/ru/settings-reference#extraknownmarketplaces), попытка Claude Code добавить его при запуске завершается ошибкой таким же образом, и сообщение появляется на вкладке **Errors** в `/plugin`.
+
+Дайте маркетплейсу другое имя, затем добавьте его снова:
+
+* **Вы владеете маркетплейсом**: измените `name` в `marketplace.json`
+* **Кто-то другой размещает его**: попросите владельца изменить имя
+
+До v2.1.296 добавление такого маркетплейса завершалось внутренней ошибкой вместо этого сообщения.
+
+### `SSH authentication failed` или `HTTPS authentication failed`
+
+Вы добавили или обновили маркетплейс из репозитория git, и клонирование не удалось с `Failed to clone marketplace repository:`, за которым следует одна из этих строк.
+
+Сначала проверьте сам репозиторий: неправильный `owner/repo`, репозиторий, который не существует, или приватный репозиторий, который вы не можете видеть, также заканчивается этим сообщением. Откройте URL репозитория в вашем браузере или запустите `git ls-remote &lt;url&gt;` в вашем терминале, чтобы подтвердить, что он существует и у вас есть доступ.
+
+Если репозиторий правильный, причина — учётные данные. Claude Code отключает запросы git и программы askpass, включая заданную в `GIT_ASKPASS`, и запускает SSH в пакетном режиме. Когда git нужно запросить ввод, ошибка клонирования содержит `fatal: Cannot prompt because user interactivity has been disabled`, `terminal prompts disabled` или `fatal: unable to get password from user`. Срабатывают только те учётные данные, которые git может получить без запроса и без программы askpass:
+
+* **SSH**: `ssh -T git@&lt;host&gt;` должен успешно выполниться без запроса парольной фразы, и хост должен уже находиться в `known_hosts`
+* **HTTPS**: ваш помощник учётных данных должен содержать токен для хоста. Для GitHub запустите `gh auth login` и `gh auth setup-git`. Для другого хоста сохраните личный токен доступа в помощнике учётных данных git. Чтобы протестировать, сбросьте `GIT_ASKPASS` в вашем терминале и запустите `git -c core.askPass= ls-remote &lt;url&gt;`.
+
+Как только проверка для вашего протокола успешно выполнится без запроса, запустите добавление или обновление снова. Успешное добавление выводит `Successfully added marketplace: &lt;name&gt;`. Успешное обновление выводит `Successfully updated marketplace: &lt;name&gt;` из вашей оболочки или `✔ Updated 1 marketplace` в сессии.
+
+Чтобы Claude Code пропустил SSH для источников GitHub `owner/repo`, установите `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1`. Без этого Claude Code клонирует эти источники через SSH, когда SSH-ключ для `github.com` выглядит настроенным, и возвращается к HTTPS, когда клонирование SSH не удаётся.
+
+Для того, что фоновое автообновление может и не может делать с вашими учётными данными, см. [Что фоновое автообновление делает с учётными данными](https://code.claude.com/docs/ru/plugins/host-marketplace.md#what-background-auto-update-does-with-credentials).
+
+### `SSH host key is not in your known_hosts file`
+
+Вы добавили маркетплейс через SSH с хоста, к которому вы никогда не подключались, и клонирование не удалось с этой строкой и подсказкой `ssh -T git@&lt;host&gt;`. Для хоста, чей ключ изменился, сообщение: `SSH host key has changed` с подсказкой `ssh-keygen -R &lt;host&gt;` вместо этого.
+
+Claude Code клонирует с `StrictHostKeyChecking=yes`, поэтому он отказывает хосту, чей ключ вы ещё не приняли, вместо автоматического принятия ключа. Подключитесь один раз из вашего терминала, чтобы принять отпечаток, затем повторите попытку:
+</code></pre>
+<p>ssh -T git@github.com</p>
+<pre><code>
+Для публичного репозитория добавьте маркетплейс по его URL `https://` вместо этого, чтобы полностью избежать SSH.
+
+### `Command &#x27;git&#x27; not found or is in an unsafe location`
+
+На Windows вы добавили маркетплейс, и Claude Code сообщил `Failed to clone marketplace repository: Command &#x27;git&#x27; not found or is in an unsafe location (current directory)`.
+
+Claude Code ищет `git` в вашем `PATH` и отказывается запускать найденный только в текущем каталоге. Чтобы исправить это, установите Git и повторите попытку:
+
+**1. Установить Git для Windows**
+
+Установите Git для Windows, чтобы `git` находился в вашем `PATH`.
+
+**2. Откройте новый терминал**
+
+Откройте новый терминал, чтобы обновлённый `PATH` применился.
+
+**3. Подтвердите, что git работает**
+
+Подтвердите, что `git --version` выводит версию.
+
+**4. Повторите добавление**
+
+Запустите команду `marketplace add` снова.
+
+### `Git clone timed out after 120s`
+
+Вы добавили или обновили маркетплейс, и это не удалось с `Git clone timed out after 120s`, за которым следует подсказка установить `CLAUDE_CODE_PLUGIN_GIT_TIMEOUT_MS`.
+
+Клонирование маркетплейса и повторное клонирование для его обновления получает 120 секунд по умолчанию. Для большого репозитория или медленного соединения повысьте лимит. Значение указано в миллисекундах:
+
+&gt; [tab] Bash или Zsh
+&gt;
+&gt; ```bash theme={null}
+&gt; export CLAUDE_CODE_PLUGIN_GIT_TIMEOUT_MS=300000
+&gt; ```
+
+&gt; [tab] PowerShell
+&gt;
+&gt; ```powershell theme={null}
+&gt; $env:CLAUDE_CODE_PLUGIN_GIT_TIMEOUT_MS = &quot;300000&quot;
+&gt; ```
+
+Затем повторите попытку в той же оболочке.
+
+Если репозиторий — это монорепо, ограничьте проверку каталогами, которые вы называете с помощью `claude plugin marketplace add &lt;source&gt; --sparse &lt;paths&gt;`.
+
+Если в репозитории есть большие подмодули git, обновите Claude Code. В версии v2.1.295 и новее Claude Code загружает только [подмодули, содержащие файлы плагинов](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#git-submodules-in-the-marketplace-repository). Более ранние версии загружают все подмодули, что само по себе может исчерпать 120 секунд.
+
+### Обновления маркетплейса продолжают не работать в автономном режиме
+
+Вы работаете в среде, где хост git маркетплейса недоступен, и каждая сессия повторяет неудачное обновление в фоне. Ваша существующая копия маркетплейса остаётся на месте.
+
+Каждый сеанс для маркетплейса с [включённым автообновлением](https://code.claude.com/docs/ru/plugins/loading.md#which-marketplaces-and-plugins-auto-update) Claude Code проверяет хост git маркетплейса на предмет новых коммитов в фоне. Когда эта проверка не может достичь хоста, она пытается клонировать маркетплейс снова, и в автономном режиме это клонирование также не удаётся.
+
+Установите эту переменную, чтобы пропустить попытку повторного клонирования и продолжить использовать существующую копию, когда проверка не может достичь хоста:
+
+&gt; [tab] Bash или Zsh
+&gt;
+&gt; ```bash theme={null}
+&gt; export CLAUDE_CODE_PLUGIN_KEEP_MARKETPLACE_ON_FAILURE=1
+&gt; ```
+
+&gt; [tab] PowerShell
+&gt;
+&gt; ```powershell theme={null}
+&gt; $env:CLAUDE_CODE_PLUGIN_KEEP_MARKETPLACE_ON_FAILURE = &quot;1&quot;
+&gt; ```
+
+С установленной переменной Claude Code пропускает повторное клонирование только для копии, которая уже содержит `.claude-plugin/marketplace.json`. Маркетплейс, который никогда не был клонирован или чьё клонирование остановилось на полпути, всё ещё получает попытку клонирования, поэтому добавьте его один раз в сети.
+
+Для полностью автономного развёртывания вместо этого предварительно заполните каталог плагинов во время сборки образа с помощью `CLAUDE_CODE_PLUGIN_SEED_DIR`, следуя [Seed контейнеры и CI](https://code.claude.com/docs/ru/plugins/org.md#seed-containers-and-ci).
+
+### Добавление маркетплейса не работает на хосте GitHub Enterprise Server
+
+Вы добавили маркетплейс с URL GitHub Enterprise Server (GHES) и получили ошибку политики, или вы добавили его с claude.ai и получили ошибку доступа GitHub.
+
+Оба случая находятся на странице GHES:
+
+* [Ошибка политики](https://code.claude.com/docs/ru/github-enterprise-server.md#marketplace-add-fails-with-a-policy-error) означает, что ваша организация ограничила источники маркетплейса, и администратор должен добавить `hostPattern` для хоста
+* [Ошибка доступа GitHub на claude.ai](https://code.claude.com/docs/ru/github-enterprise-server.md#marketplace-add-on-claude-ai-fails-with-a-github-access-error) означает, что ваша собственная учётная запись GitHub Enterprise ещё не подключена
+
+## Установить плагин
+
+Вы добавили маркетплейс и запустили установку, и установка остановилась с сообщением вместо установки чего-либо. Эти записи охватывают эти сообщения. Они также охватывают связанные сообщения, которые появляются позже на вкладке **Errors** в `/plugin` или как пустая вкладка **Discover**, когда плагин или его маркетплейс не могут быть найдены, прочитаны или доверены.
+
+### `Plugin &quot;&lt;name&gt;&quot; not found in marketplace &quot;&lt;marketplace&gt;&quot;`
+
+Вы запустили `/plugin install &lt;name&gt;@&lt;marketplace&gt;` или `claude plugin install &lt;name&gt;@&lt;marketplace&gt;`, и имя плагина отсутствует в копии каталога этого маркетплейса на вашей машине.
+
+`claude plugin install` в вашей оболочке выводит то же сообщение, когда вы вообще не добавили маркетплейс. Если `claude plugin marketplace update &lt;marketplace&gt;` затем ответит `Marketplace &#x27;&lt;marketplace&gt;&#x27; not found`, сначала [добавьте маркетплейс](#add-a-marketplace).
+
+#### `not found in marketplace` с подсказкой обновления
+
+Подсказка гласит `Your local copy may be out of date — try claude plugin marketplace update &lt;marketplace&gt;` или `The marketplace couldn&#x27;t be refreshed (...)`. Claude Code не обновил маркетплейс перед поиском, например, когда вы в автономном режиме, поэтому ваша копия каталога может быть устаревшей. Обновите с именем маркетплейса, затем установите снова:
+</code></pre>
+<p>/plugin marketplace update &lt;marketplace&gt;</p>
+<pre><code>
+`claude plugin marketplace update` выводит `Successfully updated marketplace: &lt;name&gt;`, и `/plugin marketplace update` показывает `✔ Updated 1 marketplace`. Если повторная установка выводит то же сообщение, проверьте имя, как описано в [`not found in marketplace` без подсказки](#the-message-has-no-hint). [Когда Claude Code обновляет маркетплейс перед установкой](https://code.claude.com/docs/ru/plugins/loading.md#when-claude-code-refreshes-a-marketplace-before-an-install) перечисляет другие случаи, когда обновление не запускается.
+
+#### `not found in marketplace` без подсказки
+
+Имя — наиболее вероятная проблема. Откройте `/plugin`, перейдите на **Discover** и скопируйте имя из списка.
+
+До v2.1.232 Claude Code обновлял названный маркетплейс только после того, как поиск не удавался, и только когда для него было включено автообновление.
+
+### `Plugin &quot;&lt;name&gt;&quot; not found in any marketplace`
+
+Вы запустили `/plugin install &lt;name&gt;` без `@marketplace`, и ни один зарегистрированный маркетплейс не имеет этого плагина. `claude plugin install &lt;name&gt;` сообщает `Plugin &quot;&lt;name&gt;&quot; not found in any configured marketplace`.
+
+Без имени маркетплейса `claude plugin install` ищет каталоги, которые он уже имеет, и не обновляет их в первую очередь, и `/plugin install` обновляет только маркетплейсы, у которых включено автообновление. Назовите маркетплейс, и Claude Code обновит его перед поиском плагина:
+</code></pre>
+<p>/plugin install &lt;name&gt;@&lt;marketplace&gt;</p>
+<pre><code>
+Когда установка работает, вы видите `✓ Installed &lt;plugin&gt;.` в сессии или `Successfully installed plugin: &lt;plugin&gt;@&lt;marketplace&gt;` из `claude plugin install`.
+
+Если вы не знаете, какой маркетплейс содержит плагин, запустите `/plugin marketplace list` для маркетплейсов, которые у вас есть, и просмотрите **Discover** в `/plugin` для имени плагина.
+
+### `Plugin &#x27;&lt;name&gt;@&lt;marketplace&gt;&#x27; is already installed globally`
+
+Вы запустили `/plugin install` для плагина, который уже установлен на уровне пользователя или управляемыми настройками, и Claude Code отказал с `Use &#x27;/plugin&#x27; to manage existing plugins.` Если вы ввели имя плагина без `@&lt;marketplace&gt;`, сообщение опускает `globally`.
+
+Плагин уже доступен в каждом проекте, поэтому нечего добавлять. Чтобы изменить его [область действия](https://code.claude.com/docs/ru/plugins/install.md), включить или отключить его или настроить его, откройте `/plugin` и перейдите на **Installed**.
+
+Плагин, установленный только на уровне проекта или на локальном уровне, не вызывает это сообщение. Claude Code позволяет вам установить его также на уровне пользователя, поэтому он доступен в других проектах.
+
+`claude plugin install` в вашей оболочке выводит другое сообщение. Для плагина, уже установленного в целевой области действия, он выводит `Plugin &quot;&lt;name&gt;@&lt;marketplace&gt;&quot; is already installed (scope: user)` и выходит с кодом 0. Если его каталог кэша отсутствует, та же команда повторно загружает его.
+
+### `&quot;&lt;plugin&gt;&quot; was not installed: it would share its folder with &quot;&lt;other&gt;&quot;`
+
+Вы установили плагин через `claude plugin install`, `/plugin` или предложение установки в сессии, и Claude Code отказал ему с этой строкой или с `would share its saved data with`.
+
+ID отказанного плагина и ID установленного плагина отображаются в одну и ту же папку на диске: они одинаковы, когда `.` и `@` записываются как `-`. На macOS и Windows ID, которые отличаются только заглавными буквами, также отображаются в одну и ту же папку. Установка обоих поместит файлы одного плагина в папку другого, поэтому Claude Code отказывает и установленный плагин сохраняет свои файлы.
+
+Сообщение называет способ выхода:
+
+* **Другой плагин установлен**: сообщение говорит `Only one of the two can be installed.` и называет команду `claude plugin uninstall` или шаг удаления в `/plugin`, который удаляет другой плагин. Запустите его, затем установите снова. Для того, что удаляет удаление, см. [Что удаление удаляет и сохраняет](https://code.claude.com/docs/ru/plugins/cli-reference.md#what-an-uninstall-deletes-and-keeps).
+* **Оба ID приходят в одну установку**, такие как плагин и зависимость, которая ему нужна: никакой порядок установки не помогает. Только разработчик маркетплейса, который содержит оба плагина, может исправить это, переименовав один из них. Когда два приходят из разных маркетплейсов, разработчик любого из них может.
+
+### `This plugin uses a source type your Claude Code version does not support`
+
+Вы установили плагин, чья запись маркетплейса использует тип источника, который эта версия Claude Code не может получить, и Claude Code остановился с этим сообщением и `Update Claude Code and try again.`
+
+Обновите Claude Code, затем повторите установку. Типы источников находятся в [справочнике маркетплейса](https://code.claude.com/docs/ru/plugins/marketplace-reference.md).
+
+### `Plugin archive integrity check failed`
+
+Вы установили плагин, который распространяется как zip-архив, и Claude Code отказал ему с этой строкой и `The archive was not installed.` Запись маркетплейса плагина использует [`archive` источник](https://code.claude.com/docs/ru/plugins/marketplace-reference) с закреплением `sha256`, и дайджест загруженного файла не совпадает с закреплением.
+
+Полное сообщение выглядит так:
+</code></pre>
+<p>Plugin archive integrity check failed for https://artifacts.example.com/claude-plugins/my-plugin.zip: expected sha256 6bfa50e3d2e00c052b46abe51fff89346ac803e45771f76dcf6df1ab74cca5e1, got ac52220c0914ef8ca6a602e4a7362f88d30fb021110f72a6d15b68c3fe7df2b7. The archive was not installed. Verify the sha256 in the marketplace entry, or that the URL serves the intended file.</p>
+<pre><code>
+Исправление отличается для издателя и установщика:
+
+* **Вы публикуете плагин**: пересчитайте дайджест точного файла, который отдаёт URL, и обновите `sha256` в записи маркетплейса. Используйте `shasum -a 256 my-plugin.zip` или `Get-FileHash -Algorithm SHA256 my-plugin.zip` в PowerShell
+* **Вы устанавливаете плагин**: запустите `/plugin marketplace update &lt;name&gt;` в сессии, чтобы обновить каталог на случай, если запись была исправлена, затем повторите установку. Если дайджесты всё ещё не совпадают после обновления, спросите владельца маркетплейса, какой файл он закрепил, прежде чем устанавливать
+
+### `An npm plugin source must name a registry package`
+
+Плагин, запись маркетплейса которого использует [источник `npm`](https://code.claude.com/docs/ru/plugins/marketplace-reference#npm-plugin-source), не удалось установить, обновить или загрузить, и сообщение содержит это предложение. Claude Code проверил значение `package` в записи до получения чего-либо и отклонил его. Сообщение называет значение и причину:
+</code></pre>
+<p>&quot;github:acme/formatter&quot; was not installed: it is not an http or https link. An npm plugin source must name a registry package (name or name@version) or link to a tarball file. For a plugin in a git repository, use a &quot;github&quot;, &quot;url&quot; or &quot;git-subdir&quot; source.</p>
+<pre><code>
+Владелец маркетплейса должен изменить запись:
+
+* **Если это вы**: измените `package` на значение, которое принимает [справочник по источнику плагинов npm](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#npm-plugin-source), или переключите запись на источник `github`, `url` или `git-subdir`
+* **Если это не вы**: сообщите сообщение владельцу маркетплейса
+
+### `Marketplace &quot;&lt;name&gt;&quot; is registered from an untrusted source`
+
+Маркетплейс, который вы добавили ранее, перестал загружаться, и его плагины тоже. Эта строка появляется на вкладке **Errors** в `/plugin` или при следующем обновлении.
+
+Маркетплейс зарегистрирован под именем, которое [зарезервировано для официальных маркетплейсов Anthropic](https://code.claude.com/docs/ru/plugins/marketplace-reference.md), но его зарегистрированный источник не является репозиторием GitHub `anthropics`. Зарезервированные имена повторно проверяются каждый раз, когда маркетплейс загружается или обновляется, поэтому маркетплейс и плагины, установленные из него, перестают загружаться.
+
+Полное сообщение называет зарезервированное имя и исправление:
+</code></pre>
+<p>Marketplace &quot;claude-community&quot; is registered from an untrusted source: The name &#x27;claude-community&#x27; is reserved for official Anthropic marketplaces. Only repositories from &#x27;github.com/anthropics/&#x27; can use this name. To fix it, remove the marketplace and re-add it from the official source.</p>
+<pre><code>
+Исправление отличается для пользователей и издателей:
+
+* **Вы используете маркетплейс**: в вашей оболочке запустите `claude plugin marketplace remove &lt;name&gt;`, затем добавьте маркетплейс снова из официального репозитория `github.com/anthropics`
+* **Вы публикуете сторонний маркетплейс, который использовал имя до того, как оно было зарезервировано**: переименуйте его и попросите пользователей повторно добавить его из вашего источника
+
+До v2.1.205 Claude Code проверял имя только при добавлении маркетплейса, поэтому запись, зарегистрированная до того, как её имя было зарезервировано, продолжала загружаться.
+
+### `Marketplace &quot;&lt;name&gt;&quot; is added but ignored`
+
+У маркетплейса есть запись в `~/.claude/plugins/known_marketplaces.json`, но эта запись не прошла проверку, которую Claude Code выполняет при каждом чтении этого файла, поэтому маркетплейс и плагины, установленные из него, перестают загружаться. В вашей оболочке `claude plugin list` сообщает о каждом затронутом плагине строкой, которая называет причину и исправление:
+</code></pre>
+<p>Marketplace team-tools is added but ignored. Its location is on a network drive, has &quot;.&quot; or &quot;..&quot; in its path, or couldn&#x27;t be checked. Re-add the marketplace (one added from a folder or file must be re-added from a copy on this computer), or, to trust a folder on a network drive, declare it under extraKnownMarketplaces in user or managed settings.</p>
+<pre><code>
+В сессии вкладка **Errors** в `/plugin` заключает имя маркетплейса в кавычки, завершает строку после причины и показывает исправление на строке под ней.
+
+Предложение после `is added but ignored` называет проверку, которую запись не прошла:
+
+* `Its location is on a network drive, has &quot;.&quot; or &quot;..&quot; in its path, or couldn&#x27;t be checked` или то же предложение о `The folder or file it was added from`: каталог маркетплейса или локальный путь, из которого он был добавлен, находится в сетевом расположении, содержит сегмент `.` или `..` в пути или не может быть проверен
+* `Its git URL can&#x27;t be used: &lt;reason&gt;` или `Its URL can&#x27;t be read as an https:// or http:// address`: записанный в записи URL источника — один из тех, из которых Claude Code отказывается клонировать или получать данные
+* `Its source doesn&#x27;t match its extraKnownMarketplaces entry in user or managed settings`: запись не совпадает с объявлением [`extraKnownMarketplaces`](https://code.claude.com/docs/ru/settings-reference#extraknownmarketplaces) с тем же именем
+
+Когда `(see the debug log)` следует за `is added but ignored` вместо причины, Claude Code отклоняет имя маркетплейса, например [другое написание зарезервированного имени](https://code.claude.com/docs/ru/errors.md#marketplace-name-is-another-spelling-of-a-reserved-name). [Лог отладки](https://code.claude.com/docs/ru/debug-your-config.md) называет запись.
+
+**Что делать:**
+
+* Следуйте исправлению из сообщения. В вашей оболочке запустите `claude plugin marketplace remove &lt;name&gt;`, затем добавьте маркетплейс снова из поддерживаемого источника или локального пути и переустановите его плагины, которые команда удаления удаляет. Команда удаления работает с игнорируемой записью
+* Чтобы сохранить маркетплейс в сетевом расположении, объявите его в [`extraKnownMarketplaces`](https://code.claude.com/docs/ru/settings-reference#extraknownmarketplaces) в ваших пользовательских или управляемых настройках; объявление в `.claude/settings.json` или `.claude/settings.local.json` репозитория не учитывается
+* Для источника, который отличается от его объявления в настройках, повторно добавьте маркетплейс из объявленного источника или измените объявление. `claude plugin marketplace add` отклоняет такое же несоответствие; см. [соответствующую запись `Cannot add marketplace`](#cannot-add-marketplace-source-doesnt-match)
+* Для отклонённого имени удалите маркетплейс, используя команду после `Remove it:`, если строка её приводит; повторное добавление под тем же именем снова будет отклонено
+
+До v2.1.286, независимо от причины, `claude plugin list` сообщал о таком маркетплейсе как `Marketplace &lt;name&gt; not found`, а вкладка **Errors** в `/plugin` сообщала о нём как `Marketplace &quot;&lt;name&gt;&quot; is registered but was refused (see the debug log)`. Причина появлялась только в логе отладки. В v2.1.286 предложения с причиной и исправлением использовали другую формулировку, например `Its recorded location is network-shaped or unclassifiable (never probed)`.
+
+### `Plugin &lt;name&gt; has a corrupt manifest file` или `has an invalid manifest file`
+
+Claude Code получил плагин, затем не смог прочитать его `.claude-plugin/plugin.json`. В оболочке `&lt;name&gt;` в этой строке может быть временным именем каталога; префикс `Failed to install plugin &quot;&lt;name&gt;@&lt;marketplace&gt;&quot;` содержит реальное имя плагина. Формулировка говорит, какая проверка не удалась:
+
+* **`corrupt manifest file`, за которым следует `JSON parse error:`**: файл не является действительным JSON
+* **`invalid manifest file`, за которым следует `Validation errors:`**: файл анализируется, но не проходит схему, такую как `name: Invalid input` для отсутствующего обязательного поля
+
+`claude plugin install` сообщает либо как `Failed to install plugin &quot;&lt;name&gt;@&lt;marketplace&gt;&quot;:` и выходит с кодом 1.
+
+Автор плагина должен исправить файл, и плагин не может быть установлен до этого:
+
+* **Если это вы**: запустите `claude plugin validate &lt;plugin-directory&gt;` в вашей оболочке, чтобы увидеть ту же ошибку с нарушающим путём, затем исправьте файл
+* **Если это не вы**: сообщите сообщение владельцу маркетплейса
+
+### `Plugin directory not found at path: &lt;path&gt;`
+
+Вкладка **Errors** в `/plugin` показывает это для включённого плагина, который его маркетплейс указывает относительным путём, такой как `./plugins/my-plugin`, когда в этом пути внутри маркетплейса не существует каталога. Если вы поддерживаете маркетплейс, исправьте путь `source` записи или восстановите папку. В противном случае сообщите сообщение владельцу маркетплейса.
+
+`Marketplace directory not found at path: &lt;path&gt;` означает, что вместо этого отсутствует собственный каталог маркетплейса. Для маркетплейса, который вы добавили из локального пути, этот каталог переместился или был удалён. Восстановите его или удалите маркетплейс и добавьте его снова из его нового расположения.
+
+### `No plugins available` или `No marketplaces configured`
+
+Вы открыли `/plugin` и вкладка **Discover** пуста, или `claude plugin marketplace list` вывел `No marketplaces configured`.
+
+Ни один маркетплейс не зарегистрирован, поэтому нет каталога для отображения. В сессии добавьте официальный маркетплейс, `anthropics/claude-plugins-official`:
+</code></pre>
+<p>/plugin marketplace add anthropics/claude-plugins-official</p>
+<pre><code>
+Claude Code выводит `Successfully added marketplace: claude-plugins-official`, и **Discover** перечисляет его плагины. На странице [Маркетплейсы Anthropic](https://code.claude.com/docs/ru/plugins/anthropic-marketplaces.md) перечислены другие маркетплейсы, которые вы можете добавить.
+
+### `Marketplace &quot;&lt;name&gt;&quot; is already added from a different source`
+
+Вы указали новый источник маркетплейса с помощью [`--marketplace &lt;source&gt;` в команде установки](https://code.claude.com/docs/ru/plugins/install#add-a-marketplace-and-install-in-one-command), в сессии или из вашей оболочки. Каталог, который Claude Code получил из этого источника, имеет то же имя, что и маркетплейс, который вы уже добавили из другого источника. Claude Code сохраняет существующий маркетплейс вместо его замены, и плагин не устанавливается.
+
+Полное сообщение выглядит так:
+</code></pre>
+<p>Marketplace &quot;acme-tools&quot; is already added from a different source (github:acme/plugins). To use this source instead, remove that marketplace first with /plugin marketplace remove acme-tools.</p>
+<pre><code>
+Выберите, какой источник вы хотите:
+
+* **Маркетплейс, который вы уже добавили**: установите из него по имени с помощью `/plugin install &lt;plugin&gt;@&lt;name&gt;`
+* **Новый источник**: запустите `/plugin marketplace remove &lt;name&gt;`, затем повторите установку
+
+### `Cannot add marketplace &quot;&lt;name&gt;&quot;: its source doesn&#x27;t match its extraKnownMarketplaces entry in user or managed settings`
+
+Вы добавили маркетплейс, и для `name` в его `marketplace.json` уже есть запись [`extraKnownMarketplaces`](https://code.claude.com/docs/ru/settings-reference#extraknownmarketplaces) в ваших пользовательских или управляемых настройках. Указанный вами источник отличается от того, который указан в этой записи, поэтому Claude Code отказывает в добавлении и ничего не регистрирует.
+
+Два источника совпадают, когда у них одинаковый тип и одинаковое значение в каждом поле. Запись, которая задаёт `ref`, не переданный вами, считается отличающейся. Запись `github` также считается отличающейся, если вы указали репозиторий как URL `https://github.com/`, потому что Claude Code записывает такой URL как [источник `git`](https://code.claude.com/docs/ru/plugins/marketplace-reference#marketplace-sources). Сделайте одно из следующего:
+
+* **Используйте объявленный источник**: Claude Code [регистрирует маркетплейсы, объявленные в настройках](https://code.claude.com/docs/ru/settings-reference.md#extraknownmarketplaces), самостоятельно, поэтому сначала запустите `/plugin marketplace list` в сессии. Если список показывает это имя, маркетплейс уже зарегистрирован и добавлять нечего.
+
+  Если список его не показывает, добавьте его, указав источник так, как он записан в записи. Для записи, объект `source` которой — `{ &quot;source&quot;: &quot;github&quot;, &quot;repo&quot;: &quot;acme-corp/claude-plugins&quot;, &quot;ref&quot;: &quot;v1.2.0&quot; }`, выполните:
+</code></pre>
+<p>/plugin marketplace add acme-corp/claude-plugins#v1.2.0</p>
+<pre><code>
+* **Используйте новый источник**: отредактируйте или удалите запись `extraKnownMarketplaces`, затем добавьте маркетплейс снова. Если управляемые настройки объявляют это, попросите вашего администратора
+
+До v2.1.287 сообщение гласило `Cannot add marketplace &quot;&lt;name&gt;&quot;: its network source differs from the one declared for it in settings (kind, target, or a fetch-shaping field such as headers / ref / path / sparsePaths)`.
+
+### `Failed to install: &lt;plugin&gt; (&lt;reason&gt;)`
+
+Вы выбрали плагины для установки в меню `/plugin`, ни один из них не установился, и меню закрылось с этой сводкой того, что не удалось.
+
+Некоторые причины, такие как вывод git после неудачного клонирования, показывают только их первую строку. Когда такая причина была сокращена, сводка заканчивается `Installing a plugin from its details (Enter) in /plugin shows its full error.`
+
+Что делать, зависит от того, была ли сокращена сводка причины:
+
+* Исправьте то, что называет причина в скобках
+* Когда причина была сокращена, запустите `/plugin`, выберите плагин на вкладке **Discover** и нажмите **Enter**, чтобы установить его из его деталей. Если установка там не удаётся, представление деталей показывает всю ошибку
+
+### `Could not move the new copy of this plugin version into &lt;path&gt;`
+
+Когда вы устанавливаете плагин, Claude Code загружает свежую копию его файлов и перемещает её в папку этой версии в [кэше плагинов](https://code.claude.com/docs/ru/plugins/loading.md#find-plugins-on-disk). Это сообщение означает, что перемещение не удалось, обычно потому, что другая программа использовала папку во время установки. Код файловой системы появляется в скобках:
+</code></pre>
+<p>Could not move the new copy of this plugin version into /home/user/.claude/plugins/cache/acme-tools/formatter/1.2.0: the new copy or the version folder stayed busy while the install ran (ENOTEMPTY) — usually a scanner still reading the freshly downloaded files, another program using that folder, or another process re-creating it. The previously installed copy was moved back. Run the install again once other Claude Code sessions or programs using that folder have finished.</p>
+<pre><code>
+Сообщение говорит, что произошло с копией, которая была установлена раньше, что говорит вам, работает ли плагин:
+
+* `The previously installed copy was moved back`: версия, которая у вас была, всё ещё установлена
+* `had to be removed first`, `was not moved back` или `could not be moved back`: эта версия плагина не установлена до успешной установки
+* Нет такого предложения: не было более ранней копии, поэтому версия ещё не установлена
+
+На Windows, когда другая программа удерживает саму установленную копию, сообщение вместо этого говорит, что эта копия `could not be replaced` и что `It was not replaced and the new copy was discarded`, поэтому версия, которая у вас была, всё ещё установлена.
+
+Список `Left on disk` называет отложенные папки внутри кэша. Более поздняя установка этой версии или очистка кэша плагинов удаляет их, поэтому вам не нужно их удалять.
+
+Чтобы исправить установку:
+
+* Закройте другие сессии Claude Code, редакторы и терминалы, которые используют папку плагина в `~/.claude/plugins/cache`, затем запустите установку снова
+* Когда сообщение говорит проверить права доступа папки кэша плагинов, восстановите права на запись в папку, которую оно называет, и освободите место на диске, затем запустите установку снова
+
+### Ошибки зависимостей
+
+Плагин, который объявляет зависимости, может не установиться или установиться и остаться отключённым, когда зависимость не может быть удовлетворена. Сообщение достигает вас во время установки или во время загрузки:
+
+* **Во время установки**: отказ возвращается как сообщение об ошибке установки
+* **Когда плагин загружается**: проблема появляется в `claude plugin list` и на вкладке **Errors** в `/plugin`, и Claude Code держит затронутый плагин отключённым до тех пор, пока вы не разрешите это
+
+Таблица перечисляет каждое сообщение и его исправление. Чтобы объявить зависимости как автор, см. [Зависимости плагинов](https://code.claude.com/docs/ru/plugins/dependencies.md).
+
+| Сообщение | Значение | Как разрешить |
+| :- | :- | :- |
+| `Dependency &quot;&lt;dep&gt;&quot; is not installed` | Объявленная зависимость не установлена. | Установите её в вашей оболочке с помощью `claude plugin install &lt;dep&gt;@&lt;marketplace&gt;` или удалите плагин. Если маркетплейс зависимости ещё не зарегистрирован, добавьте его и запустите `/reload-plugins` в вашей сессии, который устанавливает отсутствующие зависимости, которые он может разрешить. |
+| `&quot;&lt;name&gt;@synced&quot; is loaded from your claude.ai account but meets a marketplace dependency only for other claude.ai plugins` внутри сообщения `is not installed` | Зависимость указывает маркетплейс, и плагин с таким именем загружен из вашей учётной записи claude.ai. Плагин, который объявляет зависимость, не загружается из claude.ai, поэтому плагин из claude.ai её не удовлетворяет. | В вашей оболочке запустите `claude plugin install &lt;dep&gt;@&lt;marketplace&gt;`, чтобы установить зависимость из её маркетплейса. После этого вместо копии из claude.ai загружается копия из маркетплейса. |
+| `Dependency &quot;&lt;dep&gt;&quot; is disabled` | Зависимость установлена, но отключена. | Включите зависимость или удалите плагин, который её требует. |
+| `Requires &quot;&lt;dep&gt;&quot; &lt;range&gt;, installed &lt;version&gt;` | Версия установленной зависимости находится вне объявленного диапазона плагина. | Обновите зависимость до версии в диапазоне или удалите плагин. |
+| `&lt;Plugin or Dependency&gt; &quot;&lt;name&gt;&quot; has conflicting version requirements` | Ни одна версия не удовлетворяет каждому диапазону, который её закрепляет. Сообщение перечисляет диапазоны. | Удалите или обновите один из конфликтующих плагинов или попросите автора вышестоящего уровня расширить его ограничение. |
+| `... has version requirements too complex to intersect` или `has an invalid version requirement` | Диапазон не является действительным semver или объединённые диапазоны не могут быть пересечены. | Исправьте недействительный диапазон или упростите длинные цепочки `\|\|`. |
+| `... has no git tag satisfying &lt;range&gt;` | Репозиторий зависимости не имеет тега `&lt;name&gt;--v*` в диапазоне. | Проверьте, что вышестоящий уровень помечает выпуски этим соглашением, или ослабьте диапазон. |
+| `Dependency &quot;&lt;dep&gt;&quot; (required by &lt;plugin&gt;) is in marketplace &quot;&lt;marketplace&gt;&quot;, which is not in the allowlist` | Зависимость находится в другом маркетплейсе, и разрешение между маркетплейсами отключено по умолчанию. | Установите зависимость самостоятельно в той же области действия, в вашей оболочке с помощью `claude plugin install &lt;dep&gt;@&lt;marketplace&gt;` плюс `--scope`, в котором вы устанавливаете плагин, затем повторите попытку. |
+
+Чтобы увидеть это программно, запустите `claude plugin list --json` в вашей оболочке. Плагины с проблемами содержат поле `errors` с сообщениями и поле `errorDetails` с `type` для каждого: первые три строки — `dependency-unsatisfied`, а четвёртая — `dependency-version-unsatisfied`.
+
+## Плагин установлен, но не работает
+
+Установка прошла успешно, но skills, hooks или серверы плагина ничего не делают. Начните с [Плагин не появляется или его skills не отображаются](#plugin-doesnt-appear-or-its-skills-dont-show-up), что говорит вам, где Claude Code сообщает, что он загрузил, затем сопоставьте сообщение.
+
+### Плагин не появляется или его skills не отображаются
+
+Вы установили плагин и ввели `/`, ожидая его skills, или попросили Claude использовать его, и ничего не произошло.
+
+Проверьте состояние плагина перед изменением чего-либо:
+
+**1. Подтвердите, что плагин установлен и включён**
+
+Запустите `/plugin` и откройте **Installed**. Подтвердите, что плагин указан и включён. `claude plugin list` в вашей оболочке выводит тот же список с версией каждого плагина, областью видимости и `Status: ✔ enabled`.
+
+**2. Прочитайте вкладку Errors**
+
+Откройте вкладку **Errors** в той же панели. Каждая запись связывает сообщение с строкой руководства. Большинство сообщений в остальной части этого раздела поступают с этой вкладки.
+
+**3. Перезагрузитесь, если вы установили во время этого сеанса**
+
+Если плагин установлен и без ошибок, но вы установили его во время этого сеанса, запустите `/reload-plugins`. Он выводит `Reloaded:` с подсчётом плагинов, skills, агентов, hooks и серверов. Когда что-то не удалось, он добавляет `N errors during load. Run /plugin for details.`
+
+Если плагин загружается без ошибок и его skills всё ещё не появляются, следующий шаг отличается для вашего собственного плагина и для чужого:
+
+* **Плагин, который вы создаёте**: см. [Плагин загружается, но его skills отсутствуют](#plugin-loads-but-its-skills-are-missing)
+* **Плагин, который кто-то другой опубликовал**: откройте **Installed** в `/plugin` и откройте панель деталей плагина, которая перечисляет, что содержит плагин. Плагин, который не перечисляет skills там, не имеет их для предложения, когда вы вводите `/`
+
+### `Run /reload-plugins to apply.`
+
+Сводка установки в `/plugin` закончилась строкой `Run /reload-plugins to apply.` вместо `Plugin is now active.` Одновременно над промптом может появиться уведомление `Plugins changed. Run /reload-plugins to activate.`
+
+Claude Code не активировал плагин во время установки, либо потому, что активация его [инвалидирует кэш подсказок](https://code.claude.com/docs/ru/prompt-caching.md#enabling-or-disabling-a-plugin), либо потому, что попытка активации не удалась.
+
+Вам не нужно вводить команду. Панель закрывается и Claude Code запускает `/reload-plugins` для вас, или ставит её в очередь до завершения потоковой передачи ответа.
+
+Прочитайте, что выводит эта перезагрузка:
+
+* **`Reloaded:` с подсчётом плагинов, skills, агентов, hooks и серверов**: плагин теперь активен. Когда что-то не удалось загрузить, строка добавляет `N errors during load. Run /plugin for details.`
+* **`This reload changes MCP tools (...) — your next message will re-read the whole conversation instead of using the cache. Run /reload-plugins --force to apply.`**: перезагрузка добавит или удалит сервер MCP плагина или инструмент `LSP`, и инвалидирует ваш кэш подсказок. Для случая LSP строка начинается с `This reload adds the LSP tool` или `This reload removes the LSP tool`. Запустите его с `--force`, чтобы активировать плагин в любом случае, или запустите новый сеанс
+
+До v2.1.268 установка, которая не активировалась во время установки, оставалась в ожидании до тех пор, пока вы не запустили `/reload-plugins` самостоятельно.
+
+До v2.1.246 подсчёт skills в этой сводке включал только записи `commands/` плагина, поэтому перезагрузка могла загрузить skills `SKILL.md` плагина и всё ещё сообщать `0 skills`.
+
+### `The packages it lists are not installed` или `were not installed, because ...`
+
+`/plugin` и `claude plugin list` показывают одну из этих заметок для плагина, после установки зависимостей которого не осталось каталога `node_modules`. Плагин загружается, но части, которым нужны отсутствующие пакеты, могут не работать.
+
+* **`are not installed`**: установка для этого плагина может быть выполнена, но не завершилась, например потому, что произошла ошибка или истекло время ожидания. Чтобы повторить попытку установки, выполните в оболочке команду `claude plugin update`, указанную в заметке, или обновите плагин из `/plugin`
+</code></pre>
+<p>claude plugin update formatter@my-marketplace</p>
+<pre><code>
+  Если повторная попытка не удалась, вывод сообщает причину. Пока задана `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`, `claude plugin update` и `/plugin` пропускают повторную попытку и сообщают, что плагин имеет последнюю версию.
+
+* **`were not installed, because ...`**: установка для этого плагина не может быть выполнена, и заметка называет причину, например lock-файл Yarn, pnpm или `bun.lockb`, либо lock-файл, менеджер пакетов которого не установлен на этом компьютере. Пока эта причина сохраняется, обновление плагина не устанавливает пакеты. Если причина в lock-файле, его должен заменить автор плагина. Если отсутствует менеджер пакетов, установите его, затем обновите плагин
+
+### `Plugin &quot;&lt;name&gt;&quot; not cached at &lt;path&gt;`
+
+Вкладка **Errors** показывает эту строку с рекомендацией `Run /plugin to refresh the plugin cache`. Это означает, что Claude Code не нашёл пригодной копии плагина. Например, вы очистили кэш, и каталог, на который указывает запись об установке, отсутствует. Или вы открыли репозиторий, настройки которого включают плагин, но не установили его.
+
+Установите плагин из вашей оболочки. Если вы открыли репозиторий, `.claude/settings.json` которого включает плагин, выполните эту команду из проекта с ключом плагина из `enabledPlugins`, как описано в разделе [Включён в настройках проекта, но не установлен](https://code.claude.com/docs/ru/plugins/loading.md#enabled-in-project-settings-but-not-installed):
+</code></pre>
+<p>claude plugin install &lt;name&gt;@&lt;marketplace&gt; --scope project</p>
+<pre><code>
+В противном случае выполните следующую команду, которая повторно загружает плагин, чей каталог установки отсутствует, даже если его запись существует:
+</code></pre>
+<p>claude plugin install &lt;name&gt;@&lt;marketplace&gt;</p>
+<pre><code>
+Затем запустите `/reload-plugins` в вашей сессии. Запись на вкладке **Errors** исчезает, и плагин появляется в **Installed**.
+
+### `installed_plugins.json holds a record under &quot;&lt;id&gt;&quot; that this version of Claude Code cannot read`
+
+Сообщение появляется в этих формах:
+
+* **`claude plugin list`**: выводит его как `Note:`
+* **`claude plugin install`, `uninstall` и `update`**: отказывают с `Plugin &quot;&lt;name&gt;&quot; was not installed:`, `Plugin &quot;&lt;name&gt;&quot; was not uninstalled:` или `Plugin &quot;&lt;name&gt;&quot; was not updated:`, за которыми следует тот же текст
+* **`--json` на любой из этих трёх команд**: строка результата содержит то же `message` и `failureCode: &quot;install_records_unreadable&quot;`
+* **Несколько таких записей**: сообщение читается как `holds records under`
+* **Весь файл объявляет формат, который эта версия не знает**: сообщение читается как `installed_plugins.json is in a format (version &lt;N&gt;) that this version of Claude Code does not know` вместо этого
+
+Названная запись в `installed_plugins.json` является действительным JSON под действительным идентификатором плагина, но его поля не анализируются для этой версии. Скорее всего, другая версия Claude Code написала это, возможно, более новая.
+
+Пока запись там, эта версия не переписывает файл, поэтому запись не теряется.
+
+Возьмите варианты сообщения по порядку:
+
+1. Обновите Claude Code с помощью `claude update`.
+2. Если вы не можете обновить, удалите названный плагин с версией Claude Code, которая написала запись.
+3. Если ничего не помогает, удалите запись из `installed_plugins.json` вручную, затем перезагрузите Claude Code или запустите `/reload-plugins`.
+
+### `installed_plugins.json could not be read and was rebuilt`
+
+`claude plugin list` выводит эту заметку с путём сохранённого файла с именем `installed_plugins.unreadable.&lt;date&gt;.&lt;hash&gt;.kept`, пока этот файл находится рядом с `installed_plugins.json`.
+
+`installed_plugins.json`, который не является действительным JSON или не является списком плагинов, не может сказать, что вы установили.
+
+Откройте файл `.kept`, чтобы увидеть, что записал старый файл, и переустановите плагины, которые вам не хватает. Claude Code никогда не читает файл обратно, и файл стареет по расписанию [`cleanupPeriodDays`](https://code.claude.com/docs/ru/settings-reference#cleanupperioddays).
+
+### `install records under names that no version of Claude Code can use were removed from installed_plugins.json`
+
+`claude plugin list` выводит эту заметку с путём копии с именем `installed_plugins.set-aside.&lt;date&gt;.&lt;hash&gt;.json`, пока эта копия находится рядом с `installed_plugins.json`. Заметка заканчивается `Nothing needs doing about these copies.`
+
+Запись в `installed_plugins.json` находилась под ключом, который не является действительным идентификатором плагина, поэтому ни одна версия Claude Code не может его использовать. Остальная часть файла загружается нормально.
+
+Claude Code копирует непригодные записи в файл `.set-aside` и удаляет их из списка. Claude Code никогда не читает копии обратно, и копии стареют по расписанию [`cleanupPeriodDays`](https://code.claude.com/docs/ru/settings-reference#cleanupperioddays).
+
+### `does not load (...), so Claude Code ignores the whole file`
+
+Команда сработала. В файле настроек, названном в предупреждении, есть ошибка, поэтому Claude Code игнорирует весь файл, включая всё, что команда туда записала, пока вы её не исправите.
+
+Исправьте ошибку, названную в предупреждении. Для значения, которое Claude Code не принимает, см. [Исправление повреждённого файла настроек](https://code.claude.com/docs/ru/settings.md#fix-a-broken-settings-file). Затем снова выполните команду, если её изменения больше нет в файле.
+
+Предупреждение следует за строкой об успехе `claude plugin install`, `enable`, `disable` или `claude plugin marketplace add` в вашей оболочке:
+</code></pre>
+<p>⚠ /home/user/.claude/settings.json does not load (its &quot;permissions&quot; is not valid), so Claude Code ignores the whole file, including anything this command wrote there. Fix the file, then run this command again if its change is missing. If a newer Claude Code wrote the file, update Claude Code instead.</p>
+<pre><code>
+Текст в скобках называет ошибку:
+
+* **`its &quot;&lt;key&gt;&quot; is not valid`**: указанная в кавычках настройка содержит значение, которое Claude Code не принимает. Найдите настройку в [справочнике настроек](https://code.claude.com/docs/ru/settings-reference.md), чтобы узнать допустимые значения. Когда не проходит проверку более одного значения, текст называет первую настройку и подсчитывает остальные, как в `its &quot;permissions&quot; and 1 other value are not valid`.
+* **`it is not a JSON object`**: верхний уровень файла не является объектом JSON, например файл, верхний уровень которого — массив.
+
+### `Disabled in ~/.claude/settings.json but still loads`
+
+Вы установили плагин на `false` в `~/.claude/settings.json`, и его строка в `claude plugin list` или `/plugin` показывает это сообщение, за которым следует источник, который его включает, такой как `— project settings enable it, which overrides your user setting`. `true` в этом источнике с более высоким приоритетом переопределяет ваш пользовательский параметр.
+
+Чтобы отказаться от плагина, включённого проектом, на вашей машине установите id на `false` в `.claude/settings.local.json`, который имеет более высокий приоритет, чем файл проекта. Для других источников, которые может назвать сообщение, см. [Отключено в пользовательских параметрах, но всё ещё загружается](https://code.claude.com/docs/ru/plugins/loading.md#disabled-in-user-settings-but-still-loads).
+
+Если `claude plugin list` вместо этого помечает плагин `required by your org`, никакой файл параметров не задействован: ваша организация помечает этот синхронизированный плагин как требуемый на claude.ai, и он загружается, даже если вы отключили его ранее. См. [Плагины, синхронизированные с claude.ai](https://code.claude.com/docs/ru/plugins/loading.md#synced-plugins).
+
+### `Plugin &quot;&lt;name&gt;&quot; is enabled in project settings but isn&#x27;t installed here`
+
+Вкладка **Errors** показывает эту строку для плагина, который `.claude/settings.json` вашего проекта включает, с руководством `Run claude plugin install &lt;name&gt;@&lt;marketplace&gt; --scope project to install it for this project`.
+
+Параметры репозитория могут включать плагин для всех, кто его открывает, но они его не устанавливают. Когда плагин поступает из внешнего источника, такого как репозиторий GitHub или пакет npm, Claude Code не загружает его до тех пор, пока вы не установите его самостоятельно. Запустите команду из строки руководства в вашей оболочке, затем перезагрузитесь:
+</code></pre>
+<p>claude plugin install &lt;name&gt;@&lt;marketplace&gt; --scope project</p>
+<pre><code>
+После запуска `/reload-plugins` в вашем сеансе запись на вкладке **Errors** исчезает и плагин указан в **Installed**.
+
+Если ваша организация предварительно устанавливает плагины для вас, она делает это через управляемые параметры вместо этого. См. [Предварительная установка и требование плагинов](https://code.claude.com/docs/ru/plugins/org.md#pre-install-and-require-plugins).
+
+### Плагин остаётся установленным после `plugin uninstall` в Windows
+
+В Windows вы выполняете `claude plugin uninstall` на уровне проекта или на локальном уровне, и команда сообщает об успехе, но `claude plugin list` или `/plugin` по-прежнему показывает плагин.
+
+`installed_plugins.json` содержал две записи об установке плагина для папки проекта, в каждой из которых путь к папке записан по-разному, а одно удаление удаляет только одну из них. Чтобы проверить это, выполните `claude plugin list --json` в вашей оболочке. У оставшейся строки плагина есть `projectPath`, в котором папка записана иначе, чем там, где вы выполняли удаление, например `c:\work\app` вместо `C:\work\app`.
+
+Выполните ту же команду удаления ещё раз, с тем же `--scope`, из той же папки. Второй запуск не находит записи под своим написанием пути, поэтому удаляет запись под другим написанием. Для установки на уровне проекта:
+</code></pre>
+<p>claude plugin uninstall &lt;name&gt;@&lt;marketplace&gt; --scope project</p>
+<pre><code>
+Затем снова выполните `claude plugin list --json`, чтобы убедиться, что строка исчезла.
+
+До v2.1.295 второй запуск завершается ошибкой `Plugin &quot;&lt;name&gt;&quot; is not installed in project scope`. Выполните `claude update`, затем снова выполните удаление.
+
+### Плагин, установленный из git-репозитория, показывает версию `unknown`
+
+`Version: unknown` в `claude plugin list` может означать, что Claude Code не смог прочитать коммит, который он использует в качестве версии плагина из git-источника. Плагин может иметь собственный репозиторий или находиться внутри маркетплейса, размещённого в git.
+
+Выполните следующие команды в вашей оболочке, заменив `formatter@my-marketplace` строкой `name@marketplace` плагина из `claude plugin list`:
+
+**1. Обновите Claude Code**
+
+[Обновите Claude Code](https://code.claude.com/docs/ru/setup.md#update-claude-code) до v2.1.302 или новее: эта версия клонирует репозиторий в формате, из которого она может прочитать коммит:
+</code></pre>
+<p>claude update</p>
+<pre><code>
+**2. Обновите маркетплейс**
+
+Обновите копию маркетплейса в Claude Code, в которой хранится коммит для плагинов внутри репозитория маркетплейса:
+</code></pre>
+<p>claude plugin marketplace update my-marketplace</p>
+<pre><code>
+**3. Обновите плагин**
+
+Обновите плагин, чтобы перезаписать его записанную версию:
+</code></pre>
+<p>claude plugin update formatter@my-marketplace</p>
+<pre><code>
+**4. Проверьте версию**
+
+Проверьте, что в строке `Version:` указано значение, например [12-символьный идентификатор коммита](https://code.claude.com/docs/ru/plugins/loading.md#how-claude-code-computes-the-version):
+</code></pre>
+<p>claude plugin list</p>
+<pre><code>
+`claude plugin update` [изменяет блок одной области действия за запуск](https://code.claude.com/docs/ru/plugins/cli-reference.md#which-scope-the-command-updates). Для блока, который всё ещё показывает `unknown`, выполните команду повторно со значением `Scope:` этого блока:
+</code></pre>
+<p>claude plugin update formatter@my-marketplace --scope project</p>
+<pre><code>
+Если после повторного запуска блок всё ещё показывает `unknown`, см. [Получение дополнительной помощи](https://code.claude.com/docs/ru/troubleshooting.md#get-more-help).
+
+### `Failed to load hooks from &lt;path&gt;` и hooks, которые не срабатывают
+
+Hooks плагина не запускаются, или один блокирует действие. Либо вкладка **Errors** показывает ошибку загрузки для них, hooks загружаются и вы видите уведомления `&lt;Event&gt; hook error` или блокирующую ошибку в стенограмме, либо hook загружается без ошибки и никогда не срабатывает.
+
+#### Hooks не загружаются
+
+Вкладка **Errors** показывает одно из этих сообщений:
+
+* **`Failed to load hooks from &lt;path&gt;: &lt;reason&gt;`**: `hooks/hooks.json` не является действительным JSON или не проходит схему hooks. Причина называет ошибку анализа или проверки. Исправьте файл. Чтобы поймать проблему синтаксиса JSON в `hooks/hooks.json` перед публикацией плагина, запустите `claude plugin validate &lt;plugin-directory&gt;` в вашей оболочке
+* **`hooks path not found: &lt;path&gt;`**: поле `hooks` манифеста называет файл, который не существует по этому пути относительно корня плагина. Исправьте путь или добавьте файл
+* **`hooks path escapes plugin directory: &lt;path&gt;`**: см. [Путь выходит за пределы каталога плагина](https://code.claude.com/docs/ru/errors.md#path-escapes-plugin-directory)
+
+#### Уведомления `hook error` в стенограмме
+
+Уведомление вида `... hook error: Failed with non-blocking status code: &lt;stderr&gt;` означает, что команда хука завершилась ошибкой. Например, `Stop hook error: Failed with non-blocking status code: /bin/sh: node: command not found` означает, что оболочка, которую запустил Claude Code, не смогла найти `node`. Установите его или убедитесь, что он находится в `PATH` терминала, из которого вы запускаете `claude`.
+
+Если stderr показывает путь плагина, обрезанный в пробеле, команда hook в форме shell использует `${CLAUDE_PLUGIN_ROOT}` вне кавычек и путь установки содержит пробел. Оберните переменную в двойные кавычки или используйте [форму exec](https://code.claude.com/docs/ru/hooks.md#exec-form-and-shell-form). Чтобы найти неквотированную переменную, запустите `claude plugin validate` в каталоге плагина и ищите его [предупреждение о кавычках](https://code.claude.com/docs/ru/plugins/manifest-reference.md#quoting-and-path-separators).
+
+* Если уведомление гласит `Failed to run: Plugin directory does not exist: &lt;path&gt;`, см. [`Plugin directory does not exist`](#plugin-directory-does-not-exist).
+* Для любой другой ошибки получите полный stderr с помощью [отладочного логирования](https://code.claude.com/docs/ru/hooks.md#debug-hooks).
+
+#### Hook плагина блокирует вызов инструмента или подсказку
+
+Hook, который выходит с кодом 2, [блокирует действие, для которого он запустился](https://code.claude.com/docs/ru/hooks.md#exit-code-2). Когда hook плагина блокирует таким образом и его stderr является блокирующим сообщением, ошибка заканчивается с `This hook comes from the &lt;plugin&gt; plugin.` чтобы вы знали, какой плагин отключить или исправить. До v2.1.281 ошибка не называла плагин.
+
+Если это сообщение показывает путь плагина, обрезанный в пробеле, примените [исправление неквотированного `${CLAUDE_PLUGIN_ROOT}`](#hook-error-notices-in-the-transcript).
+
+#### Hook загружается, но никогда не срабатывает
+
+Если хук загружается без ошибки, но никогда не срабатывает, сначала запустите `/plugin` в вашей сессии и откройте детали плагина. Заметка там, начинающаяся с `Its hooks.json hooks do not run`, означает, что вместо него свои хуки зарегистрировал другой включённый плагин с тем же именем, а в разделе [Хуки, когда два включённых плагина имеют одно имя](https://code.claude.com/docs/ru/plugins/loading.md#hooks-when-two-enabled-plugins-share-a-name) указано, какая это копия и как переключиться. В противном случае проверьте определение хука, а затем посмотрите, как он запускается:
+
+**1. Проверьте имя события**
+
+Имена событий чувствительны к регистру, поэтому убедитесь, что ваше имя совпадает точно, например `PostToolUse`.
+
+**2. Проверьте matcher**
+
+Для события инструмента, такого как `PostToolUse`, убедитесь, что `matcher` хука совпадает с именем инструмента.
+
+**3. Вызовите событие намеренно**
+
+Включите отладочное логирование, как описано в разделе [Отладка хуков](https://code.claude.com/docs/ru/hooks.md#debug-hooks). Для хука `PostToolUse` попросите Claude отредактировать файл.
+
+**4. Прочитайте отладочный лог**
+
+Откройте [отладочный лог](https://code.claude.com/docs/ru/hooks.md#debug-hooks). Хук, который запустился, появляется там со своим кодом выхода.
+
+### `Plugin directory does not exist: &lt;path&gt;`
+
+Сначала выполните `/reload-plugins` в промпте Claude Code, даже если сообщение предлагает переустановить плагин. Хук плагина завершается ошибкой `Failed to run: Plugin directory does not exist: &lt;path&gt; (&lt;plugin&gt; — run /plugin to reinstall)`, и хук не запускается, когда каталог, из которого ваша сессия загрузила хуки плагина, исчез с диска. [`Plugin directory not found at path: &lt;path&gt;`](#plugin-directory-not-found-at-path) — это другое сообщение, касающееся записи маркетплейса.
+
+Перезагрузка загружает хуки плагина из его текущего каталога. Ошибка показывается один раз за сессию для каждого события хука и команды, поэтому то, что хук перестал сообщать об ошибке, не подтверждает исправление. Вместо этого прочитайте вывод перезагрузки:
+
+* **`Reloaded:` без строки с ошибками**: хуки плагина больше не указывают на отсутствующий каталог
+* **`N errors during load. Run /plugin for details.`**: откройте вкладку **Errors** в `/plugin` и следуйте записи на этой странице для показанного там сообщения
+* **Строка, заканчивающаяся на `Run /reload-plugins --force to apply.`**: ничего не перезагрузилось, и хуки продолжают завершаться ошибкой. Выполните `/reload-plugins --force` в промпте Claude Code
+
+### `Invalid MCP server config for &quot;&lt;server&gt;&quot;` и MCP серверы, которые не запускаются
+
+Плагин содержит MCP сервер, и вкладка **Errors** показывает `Invalid MCP server config for &quot;&lt;server&gt;&quot;: &lt;error&gt;`, или сервер указан, но `/mcp` никогда не показывает его подключённым.
+
+#### `Invalid MCP server config for &quot;&lt;server&gt;&quot;: &lt;error&gt;`
+
+Конфигурация сервера проходит проверку схемы, но Claude Code не может разрешить её для этого сеанса. Текст после двоеточия называет причину и решает исправление:
+
+* **`Missing environment variables: &lt;names&gt;`**: установите эти переменные в оболочке, из которой вы запускаете Claude Code, затем запустите новый сеанс
+* **`URL is unset or invalid`**: опция `${user_config.*}`, которую использует URL, не установлена. Запустите `/plugin configure &lt;plugin&gt;`, чтобы установить её
+* **`has an invalid MCP url`** или **`headersHelper for MCP server &#x27;&lt;server&gt;&#x27; references ${user_config.*}`**: конфигурация самого плагина виновата. Исправьте `url` или `headersHelper` в конфигурации MCP вашего плагина или сообщите об этом автору плагина, если плагин не ваш. Случай `headersHelper` имеет свою собственную запись в разделе [команда плагина ссылается на user\_config](https://code.claude.com/docs/ru/errors.md#plugin-command-references-user-config)
+
+#### `Bundled MCP server &quot;&lt;name&gt;&quot; was not started: it needs configuration`
+
+Плагин включает сервер как [MCPB bundle](https://code.claude.com/docs/ru/plugins/components.md#include-a-packaged-mcpb-server), который объявляет `user_config`, и требуемый параметр не имеет сохранённого значения или сохранённое значение не проходит собственную проверку bundle, поэтому Claude Code пропускает запуск сервера. Остальная часть плагина работает.
+
+Выберите плагин на вкладке **Installed** в `/plugin` и выберите **Configure**, чтобы предоставить значения. После сохранения `/plugin` показывает `Configuration saved.` и закрывается, и Claude Code перезагружает плагины, как описано в разделе [Управление установленными плагинами](https://code.claude.com/docs/ru/plugins/install.md#manage-installed-plugins). Сервер запускается после применения этой перезагрузки. До v2.1.285 Claude Code пропускал сервер без отображения этой строки.
+
+#### Сервер настроен, но никогда не подключается
+
+Запустите `/mcp`, чтобы увидеть статус сервера. Когда сервер здоров, `/mcp` перечисляет его как подключённый.
+
+Чтобы прочитать ошибку, которую сервер вывел при запуске, запустите `claude --debug` и откройте журнал в `~/.claude/debug/&lt;session-id&gt;.txt`. Флаг `--debug` не выводит на терминал.
+
+&gt; [!NOTE]
+&gt;
+&gt; Если подключение к [stdio-серверу плагина](https://code.claude.com/docs/ru/mcp.md#plugin-provided-mcp-servers) завершилось неудачей менее чем за 15 минут до того, как вы запустили `claude --debug`, Claude Code [не запускает сервер](https://code.claude.com/docs/ru/errors.md#skipping-connection-recent-failure-cached). В новой сессии выберите **Reconnect** в меню сервера в `/mcp`, чтобы запустить его, затем откройте лог.
+
+Запись сервера в `.mcp.json`, которая не проходит схему, не появляется на вкладке **Errors**. Claude Code удаляет этот сервер и записывает `Invalid MCP server config for &lt;server&gt; in &lt;path&gt;` только в этот отладочный журнал. Чтобы найти запись без загрузки плагина, запустите `claude plugin validate` в вашей оболочке в каталоге плагина, который сообщает об этом как об ошибке.
+
+До v2.1.281 `claude plugin validate` не проверял `.mcp.json`.
+
+#### Сервер работает с `--plugin-dir`, но не работает после установки
+
+Вы автор плагина, и сервер запускается, когда вы загружаете плагин из его исходного каталога с `--plugin-dir`, но не работает после установки плагина.
+
+Claude Code копирует установленный плагин в его кэш, поэтому путь, который работает только из исходного каталога, ломается. Напишите пути внутри плагина с помощью `${CLAUDE_PLUGIN_ROOT}`.
+
+Для путей, которые достигают вне каталога плагина, см. [Файлы, на которые ссылается плагин вне его каталога, не найдены](#files-the-plugin-references-outside-its-directory-arent-found).
+
+### Языковой сервер не запускается, использует слишком много памяти или сообщает неправильные диагностики
+
+Вы установили [плагин интеллекта кода](https://code.claude.com/docs/ru/plugins/code-intelligence.md) и Claude не видит диагностики, или языковой сервер использует слишком много памяти или сообщает об ошибках, которые не являются реальными.
+
+#### Языковой сервер не запускается
+
+Плагин подключается к двоичному файлу языкового сервера, который вы устанавливаете отдельно, и Claude Code создаёт его по имени команды из вашего `PATH`.
+
+Вкладка **Errors** в `/plugin` показывает ошибку с её причиной, такой как `Executable not found in $PATH: &quot;&lt;binary&gt;&quot;`, и `claude --debug` логирует её как `LSP server &lt;name&gt; failed to start: &lt;reason&gt;`.
+
+Установите двоичный файл и подтвердите, что он находится в `PATH` терминала, из которого вы запускаете `claude`, например, с помощью `which typescript-language-server`. Затем запустите новый сеанс.
+
+#### Языковой сервер использует слишком много памяти
+
+Языковые серверы, такие как `rust-analyzer` и `pyright`, индексируют весь проект. Отключите плагин с помощью `/plugin disable &lt;plugin&gt;` в сеансе и вместо этого полагайтесь на встроенные инструменты поиска Claude.
+
+#### Ложные положительные диагностики в монорепо
+
+Языковой сервер, который не настроен для рабочей области, может сообщать о неразрешённых импортах для внутренних пакетов. На стороне Claude Code нечего исправлять, и диагностики не мешают Claude редактировать код.
+
+## Создать плагин
+
+Вы разрабатываете плагин и загружаете его с помощью `--plugin-dir` или устанавливаете из локального маркетплейса. Эти записи охватывают ошибки, которые вы получаете при разработке плагина. Для проверок, которые запускаются после каждого изменения, см. [Тестирование и отладка](https://code.claude.com/docs/ru/plugins/create.md#test-and-debug).
+
+Две ошибки, которые также достигают пользователей плагина, имеют свои записи в разделе [Плагин установлен, но не работает](#plugin-installed-but-not-working):
+
+* **Хук, который не срабатывает**: см. [хуки, которые не срабатывают](#failed-to-load-hooks-from-and-hooks-that-dont-fire)
+* **MCP-сервер, который не запускается**: см. [MCP-серверы, которые не запускаются](#invalid-mcp-server-config-for-and-mcp-servers-that-dont-start)
+
+### `commands path not found: &lt;path&gt;`
+
+Вкладка **Errors** показывает `commands path not found: &lt;absolute path&gt;` с руководством `Check that the path in your manifest or marketplace config is correct`. То же сообщение появляется для `skills`, `agents` и `hooks`.
+
+Claude Code разрешил путь из вашего `plugin.json` или записи маркетплейса относительно корня плагина и ничего там не нашёл. Путь в сообщении — это абсолютный путь, который он проверил, поэтому сравните его с тем, что находится на диске. Исправьте путь или создайте каталог, затем запустите `/reload-plugins`.
+
+&gt; [!NOTE]
+&gt;
+&gt; До v2.1.299 это сообщение могло появляться при запуске в строке с меткой вроде `synced[0]`. Эта строка относится к плагину, [синхронизированному из claude.ai](https://code.claude.com/docs/ru/plugins/loading.md#synced-plugins). Оно появлялось, когда другая сессия Claude Code на вашем компьютере незадолго до этого обновила плагин и переместила его файлы. Чтобы загрузить плагин, перезапустите Claude Code. Чтобы сообщение не появлялось по этой причине, обновитесь до v2.1.299 или более поздней версии.
+
+Пути в манифесте относительны корню плагина и начинаются с `./`. Путь, который разрешается вне корня плагина, сообщается как `&lt;component&gt; path escapes plugin directory` вместо этого и удаляется.
+
+### `--plugin-dir` в корне маркетплейса не загружает плагины в `plugins/`
+
+Вы запустили `claude --plugin-dir &lt;path&gt;` и не видите ошибку, но скиллы, агенты и хуки плагина отсутствуют.
+
+`--plugin-dir` принимает каталог корня плагина, тот, который содержит `.claude-plugin/plugin.json` и каталоги компонентов, такие как `skills/`. Если вы вместо этого указываете его на корень маркетплейса, Claude Code не читает `marketplace.json`, поэтому плагин в `plugins/` не загружается, и вы не видите ошибку. До v2.1.281 Claude Code загружал корень маркетплейса как один пустой плагин с именем этого каталога. Укажите флаг на сам каталог плагина:
+</code></pre>
+<p>claude --plugin-dir ./my-marketplace/plugins/my-plugin</p>
+<pre><code>
+Затем откройте **Installed** в `/plugin`, где панель деталей плагина перечисляет его компоненты.
+
+### Файлы, на которые ссылается плагин вне его каталога, не найдены
+
+Плагин работает из его исходного каталога с `--plugin-dir`, но не работает после установки, с ошибками о пути, такой как `../shared-utils`.
+
+Claude Code копирует установленный плагин в его кэш и загружает его оттуда, поэтому путь, который достигает вне собственного каталога плагина, указывает на ничто в кэше. Переместите общие файлы внутри каталога плагина или ссылайтесь на них через символическую ссылку внутри него. Для того, где находится кэш и как разрешаются пути, см. [Найдите плагины на диске](https://code.claude.com/docs/ru/plugins/loading.md#find-plugins-on-disk).
+
+### `${CLAUDE_PLUGIN_ROOT}` показывает прямые косые черты на Windows
+
+На Windows хук плагина, который запускается через Git Bash, получает `${CLAUDE_PLUGIN_ROOT}` как `C:/Users/you/...` вместо `C:\Users\you\...`, и скрипт, который ожидал обратных косых черт, ломается.
+
+Если установлен Git Bash, [хук в форме оболочки](https://code.claude.com/docs/ru/hooks.md#exec-form-and-shell-form) по умолчанию запускается через Git Bash. Для хука, который запускается через Git Bash, Claude Code передаёт путь с прямыми косыми чертами, чтобы Bash не воспринимал обратные косые черты как экранирование. Встроенные функции Bash, инструменты MSYS и собственные двоичные файлы Windows все принимают эту форму.
+
+Если вашему скрипту нужны обратные косые черты, переключитесь на одну из форм, которые сохраняют собственные пути, описанные в разделе [exec форма и shell форма](https://code.claude.com/docs/ru/hooks.md#exec-form-and-shell-form):
+
+* Хук в exec-форме, который создаёт процесс непосредственно с массивом `args`
+* Хук с `&quot;shell&quot;: &quot;powershell&quot;`
+
+### Плагин загружается, но его скиллы отсутствуют
+
+Ваш плагин указан в **Installed** без ошибок, но его скиллы не предлагаются, когда вы вводите `/`.
+
+Скиллы загружаются из `skills/` в корне плагина и команды из `commands/` в корне плагина. Только `plugin.json` принадлежит внутри `.claude-plugin/`, и каталог `skills/` внутри `.claude-plugin/` не сканируется. Переместите каталоги в корень плагина и запустите `/reload-plugins`. После этого панель деталей плагина в `/plugin` перечисляет скиллы, и ввод `/` предлагает их.
+
+Каждый скилл — это каталог, содержащий `SKILL.md`. Запись `skills` в манифесте, которая указывает на файл `SKILL.md` вместо его каталога, сообщается как `path is a file; skills entries must be directories containing SKILL.md`.
+
+### Скилл загружается, но Claude никогда не вызывает скилл
+
+Скилл вашего плагина запускается, когда вы вводите его команду `/&lt;plugin&gt;:&lt;skill&gt;`, но Claude никогда не вызывает его в ответ на простой запрос.
+
+Проверьте эти причины по порядку:
+
+* **Скилл устанавливает `disable-model-invocation: true`**: шаблонный скилл в [Создайте свой первый плагин](https://code.claude.com/docs/ru/plugins/create.md#create-your-first-plugin) устанавливает его. Удалите строку из скилла, который вы хотите, чтобы Claude вызывал самостоятельно. [Контролируйте, кто вызывает скилл](https://code.claude.com/docs/ru/skills.md#control-who-invokes-a-skill) охватывает поле
+* **Описание не совпадает с тем, как люди спрашивают**: пройдите проверки в [Скилл не срабатывает](https://code.claude.com/docs/ru/skills.md#skill-not-triggering)
+* **Описание обрезано**: когда установлено много скиллов, Claude Code сокращает описания, чтобы они поместились в бюджет символов списка, что может удалить ключевые слова, которые Claude нужны для сопоставления запроса. См. [Описания скиллов обрезаны](https://code.claude.com/docs/ru/skills.md#skill-descriptions-are-cut-short)
+
+Чтобы измерить, как часто скилл срабатывает на реалистичных промптах, а не проверять по одному, напишите случай eval с [оценщиком `tool_used: Skill`](https://code.claude.com/docs/ru/plugin-evals#create-your-first-eval-suite) и запустите его с `claude plugin eval` после каждого изменения описания.
+
+### `&lt;directory&gt; is not a plugin or skill folder` из `claude plugin eval init`
+
+Вы запустили `claude plugin eval init` из каталога, который не является корнем плагина, такой как ваш домашний каталог или корень репозитория, который хранит плагин в подкаталоге. `init` пишет набор в рабочий каталог, поэтому он останавливается вместо создания каталога `evals/`, который плагин никогда не увидит.
+
+Перейдите в корень плагина, каталог, который содержит `.claude-plugin/plugin.json` или `SKILL.md` скилла, и запустите команду снова. Чтобы создать набор где-то ещё специально, передайте `--eval-dir`. См. [Тестируйте плагины с помощью evals](https://code.claude.com/docs/ru/plugin-evals.md).
+
+### Диалог `userConfig` никогда не появляется
+
+Ваш плагин объявляет опции `userConfig`, но диалог конфигурации не появляется при его установке.
+
+Появляется ли диалог при установке, зависит от того, где вы его запускаете:
+
+* **`/plugin install` в сессии или вкладка Discover в `/plugin`**: диалог является частью этой интерактивной установки
+* **Диалог управления плагинами расширения VS Code**: запрашивает неустановленные опции как форму после установки. До v2.1.285 установка там не показывала форму опций, поэтому установите значения из сессии терминала с помощью `/plugin configure &lt;plugin&gt;@&lt;marketplace&gt;`
+* **`claude plugin install` в вашей оболочке**: никогда не запрашивает значения `userConfig`. Он сохраняет любые значения `--config KEY=VALUE`, которые вы передаёте, и когда опции остаются неустановленными, он выводит `N userConfig options not yet set — run /plugin configure &lt;plugin&gt;@&lt;marketplace&gt; in Claude Code, or pass --config KEY=VALUE.` Когда любая из неустановленных опций требуется, `(M required)` следует за `not yet set`.
+
+Если вы установили из оболочки, передайте значения с `--config`, один флаг на опцию:
+</code></pre>
+<p>claude plugin install my-plugin@my-marketplace --config api_url=https://example.com</p>
+<pre><code>
+Когда каждая опция установлена, вывод установки не содержит строку `not yet set`.
+
+Чтобы открыть диалог позже вместо этого, запустите `/plugin configure my-plugin@my-marketplace` в сессии. Из оболочки, [`claude plugin configure`](https://code.claude.com/docs/ru/plugins/cli-reference#plugin-configure) показывает, какие опции всё ещё не установлены, и сохраняет значения, переданные в stdin. Это требует Claude Code v2.1.285 или позже.
+
+Если вы передаёте ключ `--config`, который манифест не объявляет, плагин всё ещё устанавливается, и команда выводит `⚠ Installed, but --config not applied: --config key &quot;&lt;key&gt;&quot; isn&#x27;t declared in this plugin&#x27;s userConfig.` за которым следуют ключи, которые плагин объявляет.
+
+Для плагина, который поставляет [файл пакета MCPB](https://code.claude.com/docs/ru/plugins/components.md#include-a-packaged-mcpb-server), объявляющий `user_config` собственный, сообщение читается `isn&#x27;t declared in this plugin&#x27;s userConfig or by its bundled MCP servers.` вместо этого, и известные ключи включают ключи этого сервера, написанные `&lt;server&gt;.&lt;key&gt;`. Пакет, на который манифест ссылается по URL, не читается во время установки, поэтому его ключи не указаны и сообщение говорит настроить его в `/plugin`. Установка ключей `&lt;server&gt;.&lt;key&gt;` требует Claude Code v2.1.285 или позже.
+
+### `claude plugin validate` сообщает об ошибках
+
+Вы запустили `claude plugin validate &lt;path&gt;` или `/plugin validate &lt;path&gt;` в сессии, и он вывел `Found N errors` и `Validation failed`, затем вышел с кодом 1.
+
+Валидатор читает манифест по пути, который вы даёте ему: `.claude-plugin/plugin.json` для каталога плагина, `.claude-plugin/marketplace.json` для каталога маркетплейса или оба манифеста для каталога, который содержит оба. Для маркетплейса он предваряет проблемы в собственном манифесте записи с индексом записи, как `plugins[1] plugin.json → json: ...`. До v2.1.289 Claude Code проверял каталог, содержащий оба манифеста, только как маркетплейс.
+
+Таблица охватывает сообщения, которые останавливают валидацию, и два предупреждения, `No frontmatter block found` и `Unknown field &#x27;&lt;key&gt;&#x27;`, которые останавливают её только при передаче `--strict`. Другие предупреждения, такие как отсутствующее описание, не указаны.
+
+| Сообщение | Причина | Исправление |
+| :- | :- | :- |
+| `File not found: &lt;path&gt;` | Путь не имеет манифеста или не существует. | Запустите команду против корня плагина или маркетплейса, каталога, который содержит `.claude-plugin/`. |
+| `No manifest found in directory. Expected .claude-plugin/marketplace.json or .claude-plugin/plugin.json` | Каталог не имеет манифеста `.claude-plugin/`. | Создайте манифест или укажите на правильный каталог. |
+| `Invalid JSON syntax: &lt;parse error&gt;` | Манифест или `hooks/hooks.json` не является действительным JSON. | Исправьте JSON. До тех пор, пока вы не исправите `hooks/hooks.json`, сессия загружает плагин без хуков в этом файле. |
+| `Path not found: &lt;path&gt;. The runtime loader will report this as a load failure.` | Путь компонента в манифесте не существует. | Исправьте путь или создайте каталог. |
+| `Path contains &quot;..&quot; which could be a path traversal attempt: &lt;path&gt;` | Путь компонента выходит за пределы каталога плагина. | Используйте пути внутри корня плагина. |
+| `Path is a file; skills entries must be directories containing SKILL.md` | Запись `skills` указывает на `SKILL.md` вместо его каталога. | Укажите на родительский каталог или `.` для `SKILL.md` на уровне корня. |
+| `No frontmatter block found` или `YAML frontmatter failed to parse: &lt;error&gt;` | Файл скилла, агента или команды имеет отсутствующий или недействительный YAML frontmatter. | Добавьте или исправьте frontmatter между разделителями `---`. Сообщается при валидации каталога плагина. |
+| `Plugin name &quot;&lt;name&gt;&quot; is reserved: it passes as one of Anthropic&#x27;s own` | Имя плагина `name` является одним из [зарезервированных имён](https://code.claude.com/docs/ru/plugins/manifest-reference.md#name). | Переименуйте плагин в соответствии с его функциональностью. |
+| `Must be a version range such as &quot;&gt;=2.1.0&quot;; got &quot;&lt;value&gt;&quot;. It will be ignored at load time.` | Claude Code не может прочитать значение `claude-code` в `engines` как диапазон semver. | Задайте в качестве значения диапазон версий Claude Code, например `&quot;&gt;=2.1.0&quot;`. См. [поле `engines`](https://code.claude.com/docs/ru/plugins/manifest-reference#fields). |
+| `Unknown field &#x27;&lt;key&gt;&#x27;` | Манифест имеет поле, которое схема не определяет. | Удалите его или используйте имя, которое предлагает сообщение. Claude Code игнорирует неизвестные поля во время загрузки. Для `privacyPolicyUrl` и других полей листинга в каталоге в `plugin.json` см. [Поля листинга в каталоге](https://code.claude.com/docs/ru/plugins/manifest-reference.md#directory-listing-fields). |
+
+Запустите команду снова после каждого исправления до тех пор, пока она не выведет никаких ошибок.
+
+Поля `plugin.json` находятся в [справочнике манифеста](https://code.claude.com/docs/ru/plugins/manifest-reference.md), и сообщения на уровне маркетплейса находятся в разделе [Ошибки валидации маркетплейса](#marketplace-validation-errors).
+
+### `Plugin &lt;name&gt; has conflicting manifests`
+
+Плагин не загружается с `Plugin &lt;name&gt; has conflicting manifests: both plugin.json and marketplace entry specify components.`
+
+Плагин имеет свой собственный `plugin.json`, и его запись маркетплейса устанавливает `strict: false`, одновременно объявляя любой из `commands`, `agents`, `skills`, `hooks`, `outputStyles` или `themes`. Удалите эти поля из записи или установите `strict: true` в записи, чтобы Claude Code добавил их к `plugin.json`. См. [Strict режим](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#strict-mode).
+
+### `Warning: No commands found in plugin &lt;name&gt; custom directory`
+
+Когда плагин загружается, лог `claude --debug` в `~/.claude/debug/&lt;session-id&gt;.txt` записывает `Warning: No commands found in plugin &lt;name&gt; custom directory: &lt;path&gt;. Expected .md files or SKILL.md in subdirectories.` Ничего не появляется в сессии или на вкладке **Errors**.
+
+Путь `commands` в манифесте существует, но не содержит файлов `.md` и не содержит `SKILL.md` в подкаталоге. Добавьте файлы команд или удалите путь из манифеста.
+
+## Размещение маркетплейса
+
+Вы публикуете маркетплейс и пользователь сообщает об ошибке, или ваша собственная валидация не удаётся. Эти записи предназначены для владельца маркетплейса.
+
+### Плагины с относительными путями не работают в маркетплейсах на основе URL
+
+Пользователи добавили ваш маркетплейс с URL `https://example.com/marketplace.json`. Установки плагинов, чей `source` — это относительный путь, такой как `./plugins/my-plugin`, не работают с `its marketplace entry path does not stay inside the marketplace directory`. Уже установленные плагины не загружаются с `Plugin source path refused`. Оба сообщения имеют [запись справочника ошибок](https://code.claude.com/docs/ru/errors.md#marketplace-entry-path-does-not-stay-inside-the-marketplace-directory).
+
+Когда пользователь добавляет маркетплейс на основе URL, Claude Code загружает только сам файл `marketplace.json`. Он не загружает файлы плагинов по относительному пути с этого сервера, поэтому относительный путь в записи указывает на каталог, который никогда не был загружен. Дайте каждой записи источник, который Claude Code может получить самостоятельно, такой как репозиторий GitHub:
+</code></pre>
+<p>{ &quot;name&quot;: &quot;my-plugin&quot;, &quot;source&quot;: { &quot;source&quot;: &quot;github&quot;, &quot;repo&quot;: &quot;owner/repo&quot; } }</p>
+<pre><code>
+Альтернативно, разместите маркетплейс в репозитории git и скажите пользователям добавить его с URL репозитория. Для источника git Claude Code клонирует весь репозиторий, поэтому относительные пути разрешаются. Типы источников находятся в [справочнике маркетплейса](https://code.claude.com/docs/ru/plugins/marketplace-reference.md).
+
+### Файлы корневого плагина из подмодуля git отсутствуют после установки
+
+Ваш плагин находится в корне маркетплейса и запускает или читает файл из подмодуля git этого репозитория. После установки каталог подмодуля пуст. До v2.1.295 Claude Code загружал все подмодули, поэтому каталог был заполнен.
+
+Когда Claude Code клонирует ваш маркетплейс, он загружает только [подмодули, содержащие файлы плагинов](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#git-submodules-in-the-marketplace-repository). Для плагина в корне он определяет это, читая пути в конфигурации плагина и текст файлов плагина. Он не может увидеть путь, который скрипт формирует во время выполнения.
+
+Запишите путь в подмодуль полностью там, где Claude Code может его прочитать, например `${CLAUDE_PLUGIN_ROOT}/vendor/tool/run.sh` в команде хука. Тогда Claude Code загрузит все подмодули репозитория для этого плагина.
+
+### Ошибки валидации маркетплейса
+
+Вы запустили `claude plugin validate .` из каталога вашего маркетплейса и он сообщил об ошибках или предупреждениях в самом файле маркетплейса.
+
+`claude plugin validate` также валидирует каждую запись, чей `source` — это локальный путь, и предупреждает, когда `version` записи не совпадает с собственным манифестом плагина.
+
+Таблица перечисляет сообщения на уровне маркетплейса. Сообщения на уровне записи — это сообщения плагина в разделе [`claude plugin validate` сообщает об ошибках](#claude-plugin-validate-reports-errors), предваренные `plugins[N] plugin.json →`.
+
+| Сообщение | Вид | Исправление |
+| :- | :- | :- |
+| `Duplicate plugin name &quot;&lt;name&gt;&quot; found in marketplace` | Ошибка | Дайте каждому плагину уникальное имя `name`. |
+| `Path contains &quot;..&quot;: &lt;path&gt;` в `plugins[N].source` | Ошибка | Используйте пути относительно корня маркетплейса без сегментов `..`. |
+| `Marketplace name cannot contain control or bidirectional-formatting characters` | Ошибка | Удалите символ из имени, такой как escape или новая строка. |
+| `Plugin name cannot contain control or bidirectional-formatting characters` | Ошибка | Удалите символ из имени плагина `name`. |
+| `Claude Code cannot install plugins from marketplace &quot;&lt;name&gt;&quot;. Each part of a plugin id (plugin@marketplace) may use only the letters a-z and A-Z, digits, &quot;.&quot;, &quot;_&quot; and &quot;-&quot;, and must start with a letter or digit. Change the marketplace&#x27;s &quot;name&quot;.` | Ошибка | Переименуйте маркетплейс в соответствии с правилом, указанным в сообщении. |
+| `Claude Code cannot install plugin &quot;&lt;name&gt;&quot;. Each part of a plugin id (plugin@marketplace) may use only the letters a-z and A-Z, digits, &quot;.&quot;, &quot;_&quot; and &quot;-&quot;, and must start with a letter or digit. Change this entry&#x27;s &quot;name&quot;.` | Ошибка | Переименуйте запись в соответствии с правилом, указанным в сообщении. |
+| `Marketplace has no plugins defined` | Предупреждение | Добавьте по крайней мере одну запись в `plugins`. |
+| `No marketplace description provided` | Предупреждение | Добавьте описание на уровне верхнего уровня `description`. |
+| `Plugin name &quot;&lt;name&gt;&quot; is not kebab-case` в `plugins[N] plugin.json → name` | Предупреждение | Переименуйте в строчные буквы, цифры и дефисы; синхронизация маркетплейса claude.ai требует эту форму. |
+| `Entry declares version &quot;&lt;a&gt;&quot; but &lt;path&gt;/plugin.json says &quot;&lt;b&gt;&quot;` | Предупреждение | Обновите запись, чтобы совпадать с `plugin.json`, который является авторитетным во время установки. |
+| `Marketplace name &quot;&lt;name&gt;&quot; is reserved in Claude Desktop` | Предупреждение | Переименуйте маркетплейс. Синхронизация управляемого маркетплейса Claude Desktop отклоняет `org`, `org-provisioned` и `unknown` в любом регистре. |
+| `Marketplace name &quot;&lt;name&gt;&quot; is not accepted by Claude Desktop` или `Plugin name &quot;&lt;name&gt;&quot; is not accepted by Claude Desktop` | Предупреждение | Переименуйте максимум на 128 символов букв, цифр, `.`, `_` и `-`, начиная с буквы или цифры. |
+
+До v2.1.247 имя маркетплейса, содержащее управляющие или двунаправленные символы форматирования, сообщалось только как `Marketplace name impersonates an official Anthropic/Claude marketplace`.
+
+## Заблокировано вашей организацией
+
+Ваша организация развёртывает управляемые параметры, которые ограничивают плагины, и команда была отклонена с сообщением политики. Эти записи называют параметр, стоящий за каждым отказом, чтобы вы знали, что попросить у администратора. Для стороны администратора см. [Управляйте плагинами для вашей организации](https://code.claude.com/docs/ru/plugins/org.md).
+
+### `Marketplace source &#x27;&lt;source&gt;&#x27; is blocked by enterprise policy`
+
+Вы запустили `/plugin marketplace add`, `update` или установку, и Claude Code отказал с этой строкой.
+
+Ваш администратор установил `blockedMarketplaces` или `strictKnownMarketplaces` в управляемых параметрах, и этот источник не разрешён. Попросите вашего администратора разрешить источник или добавить один из разрешённых источников, которые перечисляет сообщение.
+
+Сопоставьте остальную часть сообщения, чтобы увидеть, какой вид политики заблокировал источник:
+
+* **`Allowed sources: &lt;list&gt;`**: блокировка поступает из списка разрешений `strictKnownMarketplaces` вместо списка блокировок `blockedMarketplaces`
+* **`No external marketplaces are allowed.`**: список разрешений `strictKnownMarketplaces` пуст
+* **`Tip:` о том, что сокращение предполагает github.com**: список разрешений разрешает хост git по имени хоста, и сокращение `owner/repo`, которое вы передали, указывает на github.com. Если репозиторий находится на вашем внутреннем хосте, добавьте его снова с его полным URL, такой как `git@your-git-host.com:owner/repo.git`
+
+Маркетплейс, который вы добавили до того, как политика стала более ограничивающей, также перестаёт обновляться, потому что политика применяется при каждом обновлении.
+
+### `Marketplace &quot;&lt;name&gt;&quot; is not in the allowed marketplace list`
+
+Вкладка **Errors** показывает эту строку или `Marketplace &quot;&lt;name&gt;&quot; is blocked by enterprise policy` для маркетплейса, который у вас уже есть зарегистрирован.
+
+Те же управляемые параметры, которые блокируют [источник маркетплейса](#marketplace-source-is-blocked-by-enterprise-policy), применяются во время загрузки. `strictKnownMarketplaces` не включает этот маркетплейс, или `blockedMarketplaces` его называет, поэтому Claude Code перестаёт его загружать и его плагины. Для варианта списка разрешений строка руководства показывает разрешённые источники или `Contact your administrator to configure allowed marketplace sources`. Для варианта списка блокировок она гласит `This marketplace source is explicitly blocked by your administrator`.
+
+### `Plugin &quot;&lt;name&gt;&quot; is blocked by your organization&#x27;s policy and cannot be installed`
+
+Установка была отклонена с этой строкой, включение с той же строкой, заканчивающейся `cannot be enabled`, или установка или обновление с одной, называющей причину: `Plugin &quot;&lt;name&gt;&quot; is from marketplace &quot;&lt;marketplace&gt;&quot;, which is blocked by your organization&#x27;s policy` или `Plugin &quot;&lt;name&gt;&quot; depends on &quot;&lt;dep&gt;&quot;, which is blocked by your organization&#x27;s policy`.
+
+Управляемые параметры блокируют этот плагин, его маркетплейс или зависимость, которая ему нужна. Попросите вашего администратора, какая запись применяется. Заблокированная зависимость означает, что плагин не может установиться до тех пор, пока маркетплейс зависимости не будет разрешён.
+
+### `--plugin-dir is disabled by your organization&#x27;s managed settings (disableSideloadFlags)`
+
+Вы запустили `claude` с `--plugin-dir`, `--plugin-url`, `--agents` или `--mcp-config`. Claude Code вышел с этим сообщением и `Plugins, custom agents, and MCP servers can only be loaded from sources your administrator has approved.`
+
+Ваш администратор установил `disableSideloadFlags` в управляемых параметрах, что отключает флаги, которые загружают плагины, агентов и серверы из произвольных путей. Загрузите плагин из одобренного маркетплейса вместо этого или попросите вашего администратора удалить параметр.
+
+Связанное сообщение на вкладке **Errors** в `/plugin` — это `--plugin-dir copy of &quot;&lt;name&gt;&quot; ignored: plugin is locked by managed settings`. Управляемые параметры включают или отключают этот плагин по имени, и Claude Code игнорирует вашу копию `--plugin-dir` его, чтобы флаг не мог переопределить политику.
+
+### `Plugins from ~/.claude/skills/ are blocked by your organization&#x27;s managed settings`
+
+Вы запустили `claude plugin init` или `claude plugin enable`, и это остановилось с этой строкой. Сообщение называет `strictKnownMarketplaces or blockedMarketplaces` и просит вашего администратора добавить `{&quot;source&quot;:&quot;skills-dir&quot;}` в `strictKnownMarketplaces` или удалить его из `blockedMarketplaces`.
+
+Источник `skills-dir` обозначает плагины, которые Claude Code загружает из вашего каталога `~/.claude/skills/`. Попросите вашего администратора сделать изменение, которое называет сообщение.
+
+### `Command-sourced plugins are disabled by your organization&#x27;s managed settings`
+
+Вы установили или обновили плагин с источником `command`, и это остановилось с этой строкой и `The plugin was not installed or updated and its command was not run.`
+
+Ваш администратор установил `disableCommandPluginSources`, поэтому Claude Code отказывает запуск команды, объявленной маркетплейсом, которая производит плагин. Установка `allowManagedHooksOnly` одна имеет тот же эффект, когда `disableCommandPluginSources` не установлена. Попросите вашего администратора, может ли плагин быть опубликован из типа источника, который разрешает политика.
+
+### `Marketplace &#x27;&lt;name&gt;&#x27; is seed-managed`
+
+Вы запустили `claude plugin marketplace update &lt;name&gt;`, и это не удалось с `Marketplace &#x27;&lt;name&gt;&#x27; is seed-managed (&lt;dir&gt;)` и подсказкой попросить вашего администратора.
+
+Оператор предварительно заполнил этот маркетплейс через `CLAUDE_CODE_PLUGIN_SEED_DIR`, и Claude Code рассматривает управляемый семенем маркетплейс как доступный только для чтения. Массовое `marketplace update` пропускает его и обновляет остальные.
+
+Чтобы изменить содержимое маркетплейса, попросите человека, который поддерживает образ семени, обновить его. Для процедуры см. [Seed контейнеры и CI](https://code.claude.com/docs/ru/plugins/org.md#seed-containers-and-ci).
+
+## Следующие шаги
+
+* [Справочник по загрузке плагинов](https://code.claude.com/docs/ru/plugins/loading.md): почему области видимости, кэш и приоритет ведут себя так, как они ведут себя
+* [Справочник команд плагинов](https://code.claude.com/docs/ru/plugins/cli-reference.md): флаги, значения по умолчанию, вывод и коды выхода для команд `claude plugin`
+* [Установка и управление плагинами](https://code.claude.com/docs/ru/plugins/install.md): шаги установки с начала
+* [Управляйте плагинами для вашей организации](https://code.claude.com/docs/ru/plugins/org.md#troubleshoot-policy): устранение неполадок политики для администраторов
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

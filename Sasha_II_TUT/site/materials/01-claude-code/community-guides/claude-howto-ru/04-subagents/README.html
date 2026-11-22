@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Subagents - Полное справочное руководство</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/04-subagents/index.html">04-subagents</a></nav>
+<p>&lt;picture&gt;
+  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;../resources/logos/claude-howto-logo-dark.svg&quot;&gt;
+  &lt;img alt=&quot;Claude How To&quot; src=&quot;../resources/logos/claude-howto-logo.svg&quot;&gt;
+&lt;/picture&gt;</p>
+<h1 id="subagents-полное-справочное-руководство">Subagents - Полное справочное руководство <a class="h-anchor" href="#subagents-полное-справочное-руководство" aria-label="Ссылка на раздел">#</a></h1>
+<p>&lt;a id=&quot;overview&quot;&gt;&lt;/a&gt;</p>
+<p>Subagents - это специализированные AI-ассистенты, которым Claude Code может делегировать задачи. У каждого subagent есть своё назначение, собственное окно контекста, отделённое от основного разговора, и его можно настроить с конкретными инструментами и кастомным system prompt.</p>
+<h3 id="h">Содержание <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li><a href="#overview">Обзор</a></li>
+<li><a href="#key-benefits">Ключевые преимущества</a></li>
+<li><a href="#file-locations">Расположение файлов</a></li>
+<li><a href="#configuration">Конфигурация</a></li>
+<li><a href="#built-in-subagents">Встроенные Subagents</a></li>
+<li><a href="#managing-subagents">Управление Subagents</a></li>
+<li><a href="#using-subagents">Использование Subagents</a></li>
+<li><a href="#resumable-agents">Возобновляемые агенты</a></li>
+<li><a href="#chaining-subagents">Цепочки Subagents</a></li>
+<li><a href="#persistent-memory-for-subagents">Постоянная память для Subagents</a></li>
+<li><a href="#background-subagents">Фоновые Subagents</a></li>
+<li><a href="#worktree-isolation">Изоляция worktree</a></li>
+<li><a href="#restrict-spawnable-subagents">Ограничение spawnable Subagents</a></li>
+<li><a href="#claude-agents-cli-command">Команда CLI <code>claude agents</code></a></li>
+<li><a href="#agent-teams-experimental">Команды команд (экспериментально)</a></li>
+<li><a href="#plugin-subagent-security">Безопасность plugin subagent</a></li>
+<li><a href="#architecture">Архитектура</a></li>
+<li><a href="#context-management">Управление контекстом</a></li>
+<li><a href="#when-to-use-subagents">Когда использовать Subagents</a></li>
+<li><a href="#best-practices">Лучшие практики</a></li>
+<li><a href="#example-subagents-in-this-folder">Примеры Subagents в этой папке</a></li>
+<li><a href="#installation-instructions">Инструкции по установке</a></li>
+<li><a href="#related-concepts">Связанные концепции</a></li>
+</ol>
+<hr>
+<p>&lt;a id=&quot;key-benefits&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-2">Обзор <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Subagents позволяют делегировать выполнение задач в Claude Code за счёт:</p>
+<ul>
+<li>создания <strong>изолированных AI-ассистентов</strong> с отдельными окнами контекста</li>
+<li>предоставления <strong>настроенных system prompt</strong> для узкой экспертизы</li>
+<li>применения <strong>контроля доступа к инструментам</strong> для ограничения возможностей</li>
+<li>предотвращения <strong>загрязнения контекста</strong> сложными задачами</li>
+<li>возможности <strong>параллельного выполнения</strong> нескольких специализированных задач</li>
+</ul>
+<p>Каждый subagent работает независимо и «с чистого листа», получает только тот контекст, который нужен для его задачи, а затем возвращает результат основному agent для объединения.</p>
+<p><strong>Быстрый старт</strong>: используйте команду <code>/agents</code>, чтобы интерактивно создавать, просматривать, редактировать и управлять subagent.</p>
+<p>&lt;a id=&quot;file-locations&quot;&gt;&lt;/a&gt;</p>
+<hr>
+<h3 id="h-3">Ключевые преимущества <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Преимущество</th><th>Описание</th></tr></thead><tbody><tr><td><strong>Сохранение контекста</strong></td><td>Работает в отдельном контексте и не загрязняет основной разговор</td></tr><tr><td><strong>Специализированная экспертиза</strong></td><td>Настроен под конкретные области и даёт более высокий процент успеха</td></tr><tr><td><strong>Повторное использование</strong></td><td>Можно применять в разных проектах и делиться с командами</td></tr><tr><td><strong>Гибкие разрешения</strong></td><td>Разные уровни доступа к инструментам для разных типов subagent</td></tr><tr><td><strong>Масштабируемость</strong></td><td>Несколько agent работают над разными аспектами одновременно</td></tr></tbody></table></div>
+<hr>
+<h3 id="h-4">Расположение файлов <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Файлы subagent можно хранить в нескольких местах с разными областями действия:</p>
+<div class="table-wrap"><table><thead><tr><th>Приоритет</th><th>Тип</th><th>Расположение</th><th>Область действия</th></tr></thead><tbody><tr><td>1 (highest)</td><td><strong>Определённые через CLI</strong></td><td>Через флаг <code>--agents</code> (JSON)</td><td>Только текущая сессия</td></tr><tr><td>2</td><td><strong>Проектные subagent</strong></td><td><code>.claude/agents/</code></td><td>Текущий проект</td></tr><tr><td>3</td><td><strong>Пользовательские subagent</strong></td><td><code>~/.claude/agents/</code></td><td>Все проекты</td></tr><tr><td>4 (lowest)</td><td><strong>Plugin agents</strong></td><td>Директория <code>agents/</code> плагина</td><td>Через plugins</td></tr></tbody></table></div>
+<p>Если имена совпадают, приоритет всегда у источника с более высоким уровнем.</p>
+<hr>
+<p>&lt;a id=&quot;configuration&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-5">Конфигурация <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-6">Формат файла <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<p>Subagent задаются через YAML frontmatter, а затем следует system prompt в Markdown:</p>
+<pre><code class="language-yaml">---
+name: your-sub-agent-name
+description: Description of when this subagent should be invoked
+tools: tool1, tool2, tool3  # Optional - inherits all tools if omitted
+disallowedTools: tool4  # Optional - explicitly disallowed tools
+model: sonnet  # Optional - sonnet, opus, haiku, or inherit
+permissionMode: default  # Optional - permission mode
+maxTurns: 20  # Optional - limit agentic turns
+skills: skill1, skill2  # Optional - skills to preload into context
+mcpServers: server1  # Optional - MCP servers to make available
+memory: user  # Optional - persistent memory scope (user, project, local)
+background: false  # Optional - run as background task
+effort: high  # Optional - reasoning effort (low, medium, high, max)
+isolation: worktree  # Optional - git worktree isolation
+initialPrompt: &quot;Start by analyzing the codebase&quot;  # Optional - auto-submitted first turn
+hooks:  # Optional - component-scoped hooks
+  PreToolUse:
+    - matcher: &quot;Bash&quot;
+      hooks:
+        - type: command
+          command: &quot;./scripts/security-check.sh&quot;
+---
+
+Здесь размещается system prompt вашего subagent. Он может состоять из нескольких абзацев
+и должен чётко определять роль subagent, его возможности и подход
+к решению задач.</code></pre>
+<h4 id="h-7">Поля конфигурации <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Обязательно</th><th>Описание</th></tr></thead><tbody><tr><td><code>name</code></td><td>Yes</td><td>Уникальный идентификатор (строчные буквы и дефисы)</td></tr><tr><td><code>description</code></td><td>Yes</td><td>Описание назначения на естественном языке. Добавьте &quot;use PROACTIVELY&quot;, чтобы стимулировать автоматический запуск</td></tr><tr><td><code>tools</code></td><td>No</td><td>Список конкретных инструментов через запятую. Если не указан, наследуются все инструменты. Поддерживает синтаксис <code>Agent(agent_name)</code> для ограничения spawnable subagents</td></tr><tr><td><code>disallowedTools</code></td><td>No</td><td>Список инструментов через запятую, которые subagent не должен использовать</td></tr><tr><td><code>model</code></td><td>No</td><td>Модель для использования: <code>sonnet</code>, <code>opus</code>, <code>haiku</code>, полный model ID или <code>inherit</code>. По умолчанию используется настроенная модель subagent</td></tr><tr><td><code>permissionMode</code></td><td>No</td><td><code>default</code>, <code>acceptEdits</code>, <code>dontAsk</code>, <code>bypassPermissions</code>, <code>plan</code></td></tr><tr><td><code>maxTurns</code></td><td>No</td><td>Максимальное число agentic turns, которое может сделать subagent</td></tr><tr><td><code>skills</code></td><td>No</td><td>Список skills через запятую для предварительной загрузки. Полностью внедряет содержимое skill в контекст subagent при старте</td></tr><tr><td><code>mcpServers</code></td><td>No</td><td>MCP servers, доступные subagent</td></tr><tr><td><code>hooks</code></td><td>No</td><td>Hooks уровня компонента (PreToolUse, PostToolUse, Stop)</td></tr><tr><td><code>memory</code></td><td>No</td><td>Область постоянной памяти: <code>user</code>, <code>project</code> или <code>local</code></td></tr><tr><td><code>background</code></td><td>No</td><td>Установите <code>true</code>, чтобы всегда запускать этот subagent как background task</td></tr><tr><td><code>effort</code></td><td>No</td><td>Уровень reasoning effort: <code>low</code>, <code>medium</code>, <code>high</code> или <code>max</code></td></tr><tr><td><code>isolation</code></td><td>No</td><td>Установите <code>worktree</code>, чтобы дать subagent собственный git worktree</td></tr><tr><td><code>initialPrompt</code></td><td>No</td><td>Первый автоматически отправляемый turn, когда subagent запускается как основной agent</td></tr></tbody></table></div>
+<h4 id="h-8">Варианты конфигурации инструментов <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Вариант 1: наследовать все инструменты (поле не указывать)</strong></p>
+<pre><code class="language-yaml">---
+name: full-access-agent
+description: Agent with all available tools
+---</code></pre>
+<p><strong>Вариант 2: указать отдельные инструменты</strong></p>
+<pre><code class="language-yaml">---
+name: limited-agent
+description: Agent with specific tools only
+tools: Read, Grep, Glob, Bash
+---</code></pre>
+<p><strong>Вариант 3: условный доступ к инструментам</strong></p>
+<pre><code class="language-yaml">---
+name: conditional-agent
+description: Agent with filtered tool access
+tools: Read, Bash(npm:*), Bash(test:*)
+---</code></pre>
+<h4 id="конфигурация-через-cli">Конфигурация через CLI <a class="h-anchor" href="#конфигурация-через-cli" aria-label="Ссылка на раздел">#</a></h4>
+<p>Определяйте subagents для одной сессии с помощью флага <code>--agents</code> в формате JSON:</p>
+<pre><code class="language-bash">claude --agents &#x27;{
+  &quot;code-reviewer&quot;: {
+    &quot;description&quot;: &quot;Expert code reviewer. Use proactively after code changes.&quot;,
+    &quot;prompt&quot;: &quot;You are a senior code reviewer. Focus on code quality, security, and best practices.&quot;,
+    &quot;tools&quot;: [&quot;Read&quot;, &quot;Grep&quot;, &quot;Glob&quot;, &quot;Bash&quot;],
+    &quot;model&quot;: &quot;sonnet&quot;
+  }
+}&#x27;</code></pre>
+<p><strong>Формат JSON для флага <code>--agents</code>:</strong></p>
+<pre><code class="language-json">{
+  &quot;agent-name&quot;: {
+    &quot;description&quot;: &quot;Required: when to invoke this agent&quot;,
+    &quot;prompt&quot;: &quot;Required: system prompt for the agent&quot;,
+    &quot;tools&quot;: [&quot;Optional&quot;, &quot;array&quot;, &quot;of&quot;, &quot;tools&quot;],
+    &quot;model&quot;: &quot;optional: sonnet|opus|haiku&quot;
+  }
+}</code></pre>
+<p><strong>Приоритет определений агентов:</strong></p>
+<p>Определения агентов загружаются в таком порядке приоритета (первое совпадение выигрывает):</p>
+<ol>
+<li><strong>CLI-defined</strong> - <code>--agents</code> flag (session only, JSON)</li>
+<li><strong>Project-level</strong> - <code>.claude/agents/</code> (current project)</li>
+<li><strong>User-level</strong> - <code>~/.claude/agents/</code> (all projects)</li>
+<li><strong>Plugin-level</strong> - Plugin <code>agents/</code> directory</li>
+</ol>
+<p>Это позволяет CLI-определениям переопределять все остальные источники в рамках одной сессии.</p>
+<hr>
+<h3 id="встроенные-subagents">Встроенные Subagents <a class="h-anchor" href="#встроенные-subagents" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code включает несколько встроенных subagents, которые всегда доступны:</p>
+<div class="table-wrap"><table><thead><tr><th>Агент</th><th>Модель</th><th>Назначение</th></tr></thead><tbody><tr><td><strong>general-purpose</strong></td><td>Наследуется</td><td>Сложные многошаговые задачи</td></tr><tr><td><strong>Plan</strong></td><td>Наследуется</td><td>Исследование для plan mode</td></tr><tr><td><strong>Explore</strong></td><td>Haiku</td><td>Только чтение, исследование кодовой базы (quick/medium/very thorough)</td></tr><tr><td><strong>Bash</strong></td><td>Наследуется</td><td>Выполнение команд терминала в отдельном контексте</td></tr><tr><td><strong>statusline-setup</strong></td><td>Sonnet</td><td>Настройка status line</td></tr><tr><td><strong>Claude Code Guide</strong></td><td>Haiku</td><td>Ответы на вопросы о возможностях Claude Code</td></tr></tbody></table></div>
+<h4 id="subagent-общего-назначения">Subagent общего назначения <a class="h-anchor" href="#subagent-общего-назначения" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Property</th><th>Value</th></tr></thead><tbody><tr><td><strong>Model</strong></td><td>Inherits from parent</td></tr><tr><td><strong>Tools</strong></td><td>All tools</td></tr><tr><td><strong>Purpose</strong></td><td>Сложные исследовательские задачи, многошаговые операции, изменения кода</td></tr></tbody></table></div>
+<p><strong>Когда используется</strong>: задачи, где нужны и исследование, и изменение кода, с нетривиальным reasoning.</p>
+<h4 id="subagent-plan">Subagent Plan <a class="h-anchor" href="#subagent-plan" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Property</th><th>Value</th></tr></thead><tbody><tr><td><strong>Model</strong></td><td>Inherits from parent</td></tr><tr><td><strong>Tools</strong></td><td>Read, Glob, Grep, Bash</td></tr><tr><td><strong>Purpose</strong></td><td>Автоматически используется в plan mode для исследования кодовой базы</td></tr></tbody></table></div>
+<p><strong>Когда используется</strong>: когда Claude должен понять кодовую базу до того, как показать план.</p>
+<h4 id="subagent-explore">Subagent Explore <a class="h-anchor" href="#subagent-explore" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Property</th><th>Value</th></tr></thead><tbody><tr><td><strong>Model</strong></td><td>Haiku (fast, low-latency)</td></tr><tr><td><strong>Mode</strong></td><td>Strictly read-only</td></tr><tr><td><strong>Tools</strong></td><td>Glob, Grep, Read, Bash (read-only commands only)</td></tr><tr><td><strong>Purpose</strong></td><td>Быстрый поиск и анализ кодовой базы</td></tr></tbody></table></div>
+<p><strong>Когда используется</strong>: когда нужно искать и понимать код без внесения изменений.</p>
+<p><strong>Уровни тщательности</strong> - задают глубину исследования:</p>
+<ul>
+<li><strong>&quot;quick&quot;</strong> - быстрый поиск с минимальным исследованием, хорошо для поиска конкретных паттернов</li>
+<li><strong>&quot;medium&quot;</strong> - умеренное исследование, баланс скорости и полноты, значение по умолчанию</li>
+<li><strong>&quot;very thorough&quot;</strong> - всесторонний анализ по нескольким местам и соглашениям именования, может занять больше времени</li>
+</ul>
+<h4 id="subagent-bash">Subagent Bash <a class="h-anchor" href="#subagent-bash" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Свойство</th><th>Значение</th></tr></thead><tbody><tr><td><strong>Model</strong></td><td>Наследуется от родителя</td></tr><tr><td><strong>Tools</strong></td><td>Bash</td></tr><tr><td><strong>Purpose</strong></td><td>Выполнять команды терминала в отдельном окне контекста</td></tr></tbody></table></div>
+<p><strong>Когда используется</strong>: когда shell-команды выигрывают от изолированного контекста.</p>
+<h4 id="subagent-настройки-status-line">Subagent настройки status line <a class="h-anchor" href="#subagent-настройки-status-line" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Свойство</th><th>Значение</th></tr></thead><tbody><tr><td><strong>Model</strong></td><td>Sonnet</td></tr><tr><td><strong>Tools</strong></td><td>Read, Write, Bash</td></tr><tr><td><strong>Purpose</strong></td><td>Настраивать отображение status line в Claude Code</td></tr></tbody></table></div>
+<p><strong>Когда используется</strong>: при настройке или кастомизации status line.</p>
+<h4 id="subagent-справки-по-claude-code">Subagent справки по Claude Code <a class="h-anchor" href="#subagent-справки-по-claude-code" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Свойство</th><th>Значение</th></tr></thead><tbody><tr><td><strong>Model</strong></td><td>Haiku (быстрый, с низкой задержкой)</td></tr><tr><td><strong>Tools</strong></td><td>Только чтение</td></tr><tr><td><strong>Purpose</strong></td><td>Отвечать на вопросы о возможностях Claude Code и его использовании</td></tr></tbody></table></div>
+<p><strong>Когда используется</strong>: когда пользователи спрашивают, как работает Claude Code или как использовать конкретные функции.</p>
+<hr>
+<h3 id="управление-subagents">Управление Subagents <a class="h-anchor" href="#управление-subagents" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="использование-команды-agents-рекомендуется">Использование команды <code>/agents</code> (рекомендуется) <a class="h-anchor" href="#использование-команды-agents-рекомендуется" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">/agents</code></pre>
+<p>Это открывает интерактивное меню, где можно:</p>
+<ul>
+<li>просматривать все доступные subagents (встроенные, пользовательские и проектные)</li>
+<li>создавать новые subagents с пошаговой настройкой</li>
+<li>редактировать существующие кастомные subagents и доступ к инструментам</li>
+<li>удалять кастомные subagents</li>
+<li>видеть, какие subagents активны при наличии дубликатов</li>
+</ul>
+<h4 id="h-9">Прямое управление файлами <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Создать project subagent
+mkdir -p .claude/agents
+cat &gt; .claude/agents/test-runner.md &lt;&lt; &#x27;EOF&#x27;
+---
+name: test-runner
+description: Use proactively to run tests and fix failures
+---
+
+You are a test automation expert. When you see code changes, proactively
+run the appropriate tests. If tests fail, analyze the failures and fix
+them while preserving the original test intent.
+EOF
+
+# Создать user subagent (доступен во всех проектах)
+mkdir -p ~/.claude/agents</code></pre>
+<hr>
+<h3 id="использование-subagents">Использование Subagents <a class="h-anchor" href="#использование-subagents" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-10">Автоматическое делегирование <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude проактивно делегирует задачи на основе:</p>
+<ul>
+<li>описания задачи в вашем запросе</li>
+<li>поля <code>description</code> в конфигурации subagent</li>
+<li>текущего контекста и доступных инструментов</li>
+</ul>
+<p>Чтобы стимулировать проактивное использование, добавьте <code>&quot;use PROACTIVELY&quot;</code> или <code>&quot;MUST BE USED&quot;</code> в поле <code>description</code>:</p>
+<pre><code class="language-yaml">---
+name: code-reviewer
+description: Expert code review specialist. Use PROACTIVELY after writing or modifying code.
+---</code></pre>
+<h4 id="h-11">Явный вызов <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h4>
+<p>Вы можете явно запросить конкретный subagent:</p>
+<pre><code>&gt; Use the test-runner subagent to fix failing tests
+&gt; Have the code-reviewer subagent look at my recent changes
+&gt; Ask the debugger subagent to investigate this error</code></pre>
+<h4 id="h-12">Вызов через @-упоминание <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте префикс <code>@</code>, чтобы гарантированно вызвать конкретный subagent (обходит эвристику автоматического делегирования):</p>
+<pre><code>&gt; @&quot;code-reviewer (agent)&quot; review the auth module</code></pre>
+<h4 id="h-13">Агент на всю сессию <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h4>
+<p>Можно провести всю сессию с конкретным агентом как основным:</p>
+<pre><code class="language-bash"># Через CLI-флаг
+claude --agent code-reviewer
+
+# Через settings.json
+{
+  &quot;agent&quot;: &quot;code-reviewer&quot;
+}</code></pre>
+<h4 id="h-14">Просмотр доступных агентов <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте команду <code>claude agents</code>, чтобы вывести всех настроенных агентов из всех источников:</p>
+<pre><code class="language-bash">claude agents</code></pre>
+<hr>
+<h3 id="h-15">Возобновляемые агенты <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h3>
+<p>Subagents могут продолжать предыдущие разговоры с сохранением полного контекста:</p>
+<pre><code class="language-bash"># Initial invocation
+&gt; Use the code-analyzer agent to start reviewing the authentication module
+# Returns agentId: &quot;abc123&quot;
+
+# Resume the agent later
+&gt; Resume agent abc123 and now analyze the authorization logic as well</code></pre>
+<p><strong>Сценарии использования</strong>:</p>
+<ul>
+<li>долгие исследования через несколько сессий</li>
+<li>итеративная доработка без потери контекста</li>
+<li>многошаговые workflows с сохранением контекста</li>
+</ul>
+<hr>
+<h3 id="цепочки-subagents">Цепочки Subagents <a class="h-anchor" href="#цепочки-subagents" aria-label="Ссылка на раздел">#</a></h3>
+<p>Запускайте несколько subagents последовательно:</p>
+<pre><code class="language-bash">&gt; First use the code-analyzer subagent to find performance issues,
+  then use the optimizer subagent to fix them</code></pre>
+<p>Это позволяет строить сложные workflows, где результат одного subagent используется другим.</p>
+<hr>
+<h3 id="постоянная-память-для-subagents">Постоянная память для Subagents <a class="h-anchor" href="#постоянная-память-для-subagents" aria-label="Ссылка на раздел">#</a></h3>
+<p>Поле <code>memory</code> даёт subagents постоянный каталог, который переживает разговоры. Это позволяет subagent накапливать знания со временем, сохраняя заметки, находки и контекст между сессиями.</p>
+<h4 id="h-16">Области памяти <a class="h-anchor" href="#h-16" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Область</th><th>Каталог</th><th>Сценарий использования</th></tr></thead><tbody><tr><td><code>user</code></td><td><code>~/.claude/agent-memory/&lt;name&gt;/</code></td><td>Личные заметки и предпочтения для всех проектов</td></tr><tr><td><code>project</code></td><td><code>.claude/agent-memory/&lt;name&gt;/</code></td><td>Знания, специфичные для проекта, общие для команды</td></tr><tr><td><code>local</code></td><td><code>.claude/agent-memory-local/&lt;name&gt;/</code></td><td>Локальные знания проекта, не попадающие в version control</td></tr></tbody></table></div>
+<h4 id="h-17">Как это работает <a class="h-anchor" href="#h-17" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Первые 200 строк <code>MEMORY.md</code> в каталоге памяти автоматически загружаются в system prompt subagent</li>
+<li>Инструменты <code>Read</code>, <code>Write</code> и <code>Edit</code> автоматически доступны subagent для управления файлами памяти</li>
+<li>При необходимости subagent может создавать дополнительные файлы в своём каталоге памяти</li>
+</ul>
+<h4 id="example-configuration">Example Configuration <a class="h-anchor" href="#example-configuration" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-yaml">---
+name: researcher
+memory: user
+---
+
+You are a research assistant. Use your memory directory to store findings,
+track progress across sessions, and build up knowledge over time.
+
+Check your MEMORY.md file at the start of each session to recall previous context.</code></pre>
+<pre><code class="language-mermaid">graph LR
+    A[&quot;Subagent&lt;br/&gt;Session 1&quot;] --&gt;|writes| M[&quot;MEMORY.md&lt;br/&gt;(persistent)&quot;]
+    M --&gt;|loads into| B[&quot;Subagent&lt;br/&gt;Session 2&quot;]
+    B --&gt;|updates| M
+    M --&gt;|loads into| C[&quot;Subagent&lt;br/&gt;Session 3&quot;]
+
+    style A fill:#e1f5fe,stroke:#333,color:#333
+    style B fill:#e1f5fe,stroke:#333,color:#333
+    style C fill:#e1f5fe,stroke:#333,color:#333
+    style M fill:#f3e5f5,stroke:#333,color:#333</code></pre>
+<hr>
+<h3 id="фоновые-subagents">Фоновые Subagents <a class="h-anchor" href="#фоновые-subagents" aria-label="Ссылка на раздел">#</a></h3>
+<p>Subagents могут работать в фоне, освобождая основной разговор для других задач.</p>
+<h4 id="h-18">Конфигурация <a class="h-anchor" href="#h-18" aria-label="Ссылка на раздел">#</a></h4>
+<p>Set <code>background: true</code> in the frontmatter to always run the subagent as a background task:</p>
+<pre><code class="language-yaml">---
+name: long-runner
+background: true
+description: Performs long-running analysis tasks in the background
+---</code></pre>
+<h4 id="h-19">Горячие клавиши <a class="h-anchor" href="#h-19" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Сочетание</th><th>Действие</th></tr></thead><tbody><tr><td><code>Ctrl+B</code></td><td>Перевести текущую задачу subagent в фон</td></tr><tr><td><code>Ctrl+F</code></td><td>Завершить все фоновые агенты (нажмите дважды для подтверждения)</td></tr></tbody></table></div>
+<h4 id="h-20">Отключение фоновых задач <a class="h-anchor" href="#h-20" aria-label="Ссылка на раздел">#</a></h4>
+<p>Set the environment variable to disable background task support entirely:</p>
+<pre><code class="language-bash">export CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1</code></pre>
+<hr>
+<h3 id="изоляция-worktree">Изоляция worktree <a class="h-anchor" href="#изоляция-worktree" aria-label="Ссылка на раздел">#</a></h3>
+<p>Параметр <code>isolation: worktree</code> даёт subagent собственный git worktree, позволяя ему вносить изменения независимо, не затрагивая основное рабочее дерево.</p>
+<h4 id="h-21">Конфигурация <a class="h-anchor" href="#h-21" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-yaml">---
+name: feature-builder
+isolation: worktree
+description: Implements features in an isolated git worktree
+tools: Read, Write, Edit, Bash, Grep, Glob
+---</code></pre>
+<h4 id="h-22">Как это работает <a class="h-anchor" href="#h-22" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TB
+    Main[&quot;Main Working Tree&quot;] --&gt;|spawns| Sub[&quot;Subagent with&lt;br/&gt;Isolated Worktree&quot;]
+    Sub --&gt;|makes changes in| WT[&quot;Separate Git&lt;br/&gt;Worktree + Branch&quot;]
+    WT --&gt;|no changes| Clean[&quot;Auto-cleaned&quot;]
+    WT --&gt;|has changes| Return[&quot;Returns worktree&lt;br/&gt;path and branch&quot;]
+
+    style Main fill:#e1f5fe,stroke:#333,color:#333
+    style Sub fill:#f3e5f5,stroke:#333,color:#333
+    style WT fill:#e8f5e9,stroke:#333,color:#333
+    style Clean fill:#fff3e0,stroke:#333,color:#333
+    style Return fill:#fff3e0,stroke:#333,color:#333</code></pre>
+<ul>
+<li>Subagent работает в собственном git worktree на отдельной ветке</li>
+<li>Если subagent не вносит изменений, worktree автоматически очищается</li>
+<li>Если изменения есть, путь к worktree и имя ветки возвращаются основному agent для ревью или merge</li>
+</ul>
+<hr>
+<h3 id="ограничение-spawnable-subagents">Ограничение spawnable Subagents <a class="h-anchor" href="#ограничение-spawnable-subagents" aria-label="Ссылка на раздел">#</a></h3>
+<p>Вы можете контролировать, каких subagents разрешено создавать данному subagent, используя синтаксис <code>Agent(agent_type)</code> в поле <code>tools</code>. Это позволяет формировать allowlist для делегирования.</p>
+<blockquote>
+<p><strong>Примечание</strong>: в v2.1.63 инструмент <code>Task</code> был переименован в <code>Agent</code>. Существующие ссылки вида <code>Task(...)</code> по-прежнему работают как алиасы.</p>
+</blockquote>
+<h4 id="h-23">Пример <a class="h-anchor" href="#h-23" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-yaml">---
+name: coordinator
+description: Coordinates work between specialized agents
+tools: Agent(worker, researcher), Read, Bash
+---
+
+You are a coordinator agent. You can delegate work to the &quot;worker&quot; and
+&quot;researcher&quot; subagents only. Use Read and Bash for your own exploration.</code></pre>
+<p>In this example, the <code>coordinator</code> subagent can only spawn the <code>worker</code> and <code>researcher</code> subagents. It cannot spawn any other subagents, even if they are defined elsewhere.</p>
+<hr>
+<h3 id="cli-команда-claude-agents">CLI-команда <code>claude agents</code> <a class="h-anchor" href="#cli-команда-claude-agents" aria-label="Ссылка на раздел">#</a></h3>
+<p>Команда <code>claude agents</code> выводит все настроенные агенты, сгруппированные по источнику (built-in, user-level, project-level):</p>
+<pre><code class="language-bash">claude agents</code></pre>
+<p>Эта команда:</p>
+<ul>
+<li>показывает всех доступных агентов из всех источников</li>
+<li>группирует агентов по месту происхождения</li>
+<li>показывает <strong>override</strong>-ы, когда агент с более высоким приоритетом перекрывает агент с более низким приоритетом (например, project-level agent с тем же именем, что и user-level agent)</li>
+</ul>
+<hr>
+<h3 id="h-24">Команды агентов (экспериментально) <a class="h-anchor" href="#h-24" aria-label="Ссылка на раздел">#</a></h3>
+<p>Agent Teams координируют несколько экземпляров Claude Code, работающих вместе над сложными задачами. В отличие от subagents, которые получают делегированные подзадачи и возвращают результат, teammates работают независимо, со своим контекстом, и общаются напрямую через общую mailbox-систему.</p>
+<blockquote>
+<p><strong>Примечание</strong>: Agent Teams находится в экспериментальном статусе и требует Claude Code v2.1.32+. Включите его перед использованием.</p>
+</blockquote>
+<h4 id="subagents-против-agent-teams">Subagents против Agent Teams <a class="h-anchor" href="#subagents-против-agent-teams" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Aspect</th><th>Subagents</th><th>Agent Teams</th></tr></thead><tbody><tr><td><strong>Модель делегирования</strong></td><td>Parent выдаёт подзадачу и ждёт результат</td><td>Team lead назначает работу, teammates выполняют её независимо</td></tr><tr><td><strong>Контекст</strong></td><td>Свежий контекст на каждую подзадачу, результаты сводятся обратно</td><td>Каждый teammate хранит собственный постоянный контекст</td></tr><tr><td><strong>Координация</strong></td><td>Последовательная или параллельная, управляется parent</td><td>Общий список задач с автоматическим управлением зависимостями</td></tr><tr><td><strong>Коммуникация</strong></td><td>Только возвращаемые значения</td><td>Межагентные сообщения через mailbox</td></tr><tr><td><strong>Возобновление сессии</strong></td><td>Поддерживается</td><td>Не поддерживается для in-process teammates</td></tr><tr><td><strong>Лучше всего подходит для</strong></td><td>Сфокусированных, чётко определённых подзадач</td><td>Больших многофайловых проектов, требующих параллельной работы</td></tr></tbody></table></div>
+<h4 id="включение-agent-teams">Включение Agent Teams <a class="h-anchor" href="#включение-agent-teams" aria-label="Ссылка на раздел">#</a></h4>
+<p>Set the environment variable or add it to your <code>settings.json</code>:</p>
+<pre><code class="language-bash">export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1</code></pre>
+<p>Или в <code>settings.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;env&quot;: {
+    &quot;CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS&quot;: &quot;1&quot;
+  }
+}</code></pre>
+<h4 id="h-25">Запуск команды <a class="h-anchor" href="#h-25" aria-label="Ссылка на раздел">#</a></h4>
+<p>После включения попросите Claude работать с teammates прямо в промпте:</p>
+<pre><code>Пользователь: Собери модуль аутентификации. Используй команду: один teammate
+      для API endpoint-ов, один для схемы базы данных и один для набора тестов.</code></pre>
+<p>Claude создаст команду, распределит задачи и автоматически скоординирует работу.</p>
+<h4 id="h-26">Режимы отображения <a class="h-anchor" href="#h-26" aria-label="Ссылка на раздел">#</a></h4>
+<p>Управляйте тем, как отображается активность teammates:</p>
+<div class="table-wrap"><table><thead><tr><th>Режим</th><th>Флаг</th><th>Описание</th></tr></thead><tbody><tr><td><strong>Auto</strong></td><td><code>--teammate-mode auto</code></td><td>Автоматически выбирает лучший режим отображения для вашего терминала</td></tr><tr><td><strong>In-process</strong></td><td><code>--teammate-mode in-process</code></td><td>Показывает вывод teammates прямо в текущем терминале (по умолчанию)</td></tr><tr><td><strong>Split-panes</strong></td><td><code>--teammate-mode tmux</code></td><td>Открывает каждого teammate в отдельной панели tmux или iTerm2</td></tr></tbody></table></div>
+<pre><code class="language-bash">claude --teammate-mode tmux</code></pre>
+<p>Также можно задать режим отображения в <code>settings.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;teammateMode&quot;: &quot;tmux&quot;
+}</code></pre>
+<blockquote>
+<p><strong>Примечание</strong>: режим split-pane требует tmux или iTerm2. Он недоступен в терминале VS Code, Windows Terminal или Ghostty.</p>
+</blockquote>
+<h4 id="h-27">Навигация <a class="h-anchor" href="#h-27" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте <code>Shift+Down</code>, чтобы переключаться между teammates в режиме split-pane.</p>
+<h4 id="h-28">Конфигурация команды <a class="h-anchor" href="#h-28" aria-label="Ссылка на раздел">#</a></h4>
+<p>Конфигурации команд хранятся в <code>~/.claude/teams/{team-name}/config.json</code>.</p>
+<h4 id="h-29">Архитектура <a class="h-anchor" href="#h-29" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TB
+    Lead[&quot;Team Lead&lt;br/&gt;(Координатор)&quot;]
+    TaskList[&quot;Общий список задач&lt;br/&gt;(Dependencies)&quot;]
+    Mailbox[&quot;Почтовый ящик&lt;br/&gt;(Messages)&quot;]
+    T1[&quot;Teammate 1&lt;br/&gt;(Свой контекст)&quot;]
+    T2[&quot;Teammate 2&lt;br/&gt;(Свой контекст)&quot;]
+    T3[&quot;Teammate 3&lt;br/&gt;(Свой контекст)&quot;]
+
+    Lead --&gt;|назначает задачи| TaskList
+    Lead --&gt;|отправляет сообщения| Mailbox
+    TaskList --&gt;|берёт работу| T1
+    TaskList --&gt;|берёт работу| T2
+    TaskList --&gt;|берёт работу| T3
+    T1 --&gt;|читает и пишет| Mailbox
+    T2 --&gt;|читает и пишет| Mailbox
+    T3 --&gt;|читает и пишет| Mailbox
+    T1 --&gt;|обновляет статус| TaskList
+    T2 --&gt;|обновляет статус| TaskList
+    T3 --&gt;|обновляет статус| TaskList
+
+    style Lead fill:#e1f5fe,stroke:#333,color:#333
+    style TaskList fill:#fff9c4,stroke:#333,color:#333
+    style Mailbox fill:#f3e5f5,stroke:#333,color:#333
+    style T1 fill:#e8f5e9,stroke:#333,color:#333
+    style T2 fill:#e8f5e9,stroke:#333,color:#333
+    style T3 fill:#e8f5e9,stroke:#333,color:#333</code></pre>
+<p><strong>Ключевые компоненты</strong>:</p>
+<ul>
+<li><strong>Team Lead</strong>: основная сессия Claude Code, которая создаёт команду, назначает задачи и координирует работу</li>
+<li><strong>Shared Task List</strong>: синхронизированный список задач с автоматическим отслеживанием зависимостей</li>
+<li><strong>Mailbox</strong>: система межагентных сообщений, через которую teammates передают статус и координируют действия</li>
+<li><strong>Teammates</strong>: независимые экземпляры Claude Code, у каждого своё окно контекста</li>
+</ul>
+<h4 id="h-30">Назначение задач и обмен сообщениями <a class="h-anchor" href="#h-30" aria-label="Ссылка на раздел">#</a></h4>
+<p>Team lead разбивает работу на задачи и назначает их teammates. Общий список задач обеспечивает:</p>
+<ul>
+<li><strong>Автоматическое управление зависимостями</strong> — задачи ждут завершения своих зависимостей</li>
+<li><strong>Отслеживание статуса</strong> — teammates обновляют статус по мере работы</li>
+<li><strong>Межагентные сообщения</strong> — teammates отправляют сообщения через mailbox для координации (например, &quot;Схема базы готова, можно начинать писать запросы&quot;)</li>
+</ul>
+<h4 id="h-31">Процесс утверждения плана <a class="h-anchor" href="#h-31" aria-label="Ссылка на раздел">#</a></h4>
+<p>Для сложных задач team lead создаёт план выполнения до того, как teammates начнут работу. Пользователь просматривает и утверждает план, чтобы подход команды соответствовал ожиданиям до внесения каких-либо изменений в код.</p>
+<h4 id="hook-события-для-команд">Hook-события для команд <a class="h-anchor" href="#hook-события-для-команд" aria-label="Ссылка на раздел">#</a></h4>
+<p>Agent Teams добавляют два дополнительных <a href="../06-hooks/">hook-события</a>:</p>
+<div class="table-wrap"><table><thead><tr><th>Событие</th><th>Срабатывает когда</th><th>Сценарий использования</th></tr></thead><tbody><tr><td><code>TeammateIdle</code></td><td>teammate завершает текущую задачу и у него нет ожидающей работы</td><td>запускать уведомления, назначать последующие задачи</td></tr><tr><td><code>TaskCompleted</code></td><td>задача в общем списке помечена как завершённая</td><td>запускать проверку, обновлять dashboards, запускать зависимую работу</td></tr></tbody></table></div>
+<h4 id="h-32">Лучшие практики <a class="h-anchor" href="#h-32" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Размер команды</strong>: держите команды в пределах 3-5 teammates для оптимальной координации</li>
+<li><strong>Размер задач</strong>: разбивайте работу на задачи по 5-15 минут каждая — достаточно мелкие для параллелизации, но достаточно содержательные</li>
+<li><strong>Избегайте конфликтов файлов</strong>: назначайте разные файлы или каталоги разным teammates, чтобы не создавать merge conflicts</li>
+<li><strong>Начинайте просто</strong>: для первой команды используйте in-process mode; на split-panes переходите, когда будете готовы</li>
+<li><strong>Чёткие описания задач</strong>: давайте конкретные, выполнимые описания, чтобы teammates могли работать независимо</li>
+</ul>
+<h4 id="h-33">Ограничения <a class="h-anchor" href="#h-33" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Экспериментально</strong>: поведение функции может измениться в будущих релизах</li>
+<li><strong>Без возобновления сессии</strong>: in-process teammates нельзя возобновить после завершения сессии</li>
+<li><strong>Одна команда на сессию</strong>: нельзя создавать вложенные команды или несколько команд в одной сессии</li>
+<li><strong>Фиксированное лидерство</strong>: роль team lead нельзя передать teammate</li>
+<li><strong>Ограничения split-pane</strong>: требуется tmux/iTerm2; недоступно в терминале VS Code, Windows Terminal или Ghostty</li>
+<li><strong>Без команд между сессиями</strong>: teammates существуют только в рамках текущей сессии</li>
+</ul>
+<blockquote>
+<p><strong>Предупреждение</strong>: Agent Teams находится в экспериментальном статусе. Сначала тестируйте на некритичной работе и следите за координацией teammates на случай неожиданного поведения.</p>
+</blockquote>
+<hr>
+<h3 id="безопасность-plugin-subagent">Безопасность plugin subagent <a class="h-anchor" href="#безопасность-plugin-subagent" aria-label="Ссылка на раздел">#</a></h3>
+<p>У subagents, предоставляемых plugin, ограничены возможности frontmatter ради безопасности. В определениях plugin subagent <strong>не допускаются</strong> следующие поля:</p>
+<ul>
+<li><code>hooks</code> - Нельзя определять lifecycle hooks</li>
+<li><code>mcpServers</code> - Нельзя настраивать MCP servers</li>
+<li><code>permissionMode</code> - Нельзя переопределять настройки разрешений</li>
+</ul>
+<p>Это не позволяет plugins повышать привилегии или выполнять произвольные команды через hooks subagent.</p>
+<hr>
+<h3 id="h-34">Архитектура <a class="h-anchor" href="#h-34" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-35">Архитектура верхнего уровня <a class="h-anchor" href="#h-35" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TB
+    User[&quot;Пользователь&quot;]
+    Main[&quot;Основной агент&lt;br/&gt;(Координатор)&quot;]
+    Reviewer[&quot;Code Reviewer&lt;br/&gt;Subagent&quot;]
+    Tester[&quot;Test Engineer&lt;br/&gt;Subagent&quot;]
+    Docs[&quot;Documentation&lt;br/&gt;Subagent&quot;]
+
+    User --&gt;|задаёт запрос| Main
+    Main --&gt;|делегирует| Reviewer
+    Main --&gt;|делегирует| Tester
+    Main --&gt;|делегирует| Docs
+    Reviewer --&gt;|возвращает результат| Main
+    Tester --&gt;|возвращает результат| Main
+    Docs --&gt;|возвращает результат| Main
+    Main --&gt;|синтезирует ответ| User</code></pre>
+<h4 id="жизненный-цикл-subagent">Жизненный цикл Subagent <a class="h-anchor" href="#жизненный-цикл-subagent" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant User
+    participant MainAgent as Основной агент
+    participant CodeReviewer as Code Reviewer&lt;br/&gt;Subagent
+    participant Context as Отдельное&lt;br/&gt;окно контекста
+
+    User-&gt;&gt;MainAgent: &quot;Сделай новую auth-функцию&quot;
+    MainAgent-&gt;&gt;MainAgent: Анализирует задачу
+    MainAgent-&gt;&gt;CodeReviewer: &quot;Проверь этот код&quot;
+    CodeReviewer-&gt;&gt;Context: Инициализирует чистый контекст
+    Context-&gt;&gt;CodeReviewer: Загружает инструкции ревьюера
+    CodeReviewer-&gt;&gt;CodeReviewer: Выполняет проверку
+    CodeReviewer--&gt;&gt;MainAgent: Возвращает найденные проблемы
+    MainAgent-&gt;&gt;MainAgent: Встраивает результаты
+    MainAgent--&gt;&gt;User: Возвращает итоговый ответ</code></pre>
+<hr>
+<h3 id="h-36">Управление контекстом <a class="h-anchor" href="#h-36" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-mermaid">graph TB
+    A[&quot;Контекст основного агента&lt;br/&gt;50,000 tokens&quot;]
+    B[&quot;Контекст subagent 1&lt;br/&gt;20,000 tokens&quot;]
+    C[&quot;Контекст subagent 2&lt;br/&gt;20,000 токенов&quot;]
+    D[&quot;Контекст subagent 3&lt;br/&gt;20,000 токенов&quot;]
+
+    A --&gt;|Чистый старт| B
+    A --&gt;|Чистый старт| C
+    A --&gt;|Чистый старт| D
+
+    B --&gt;|Только результаты| A
+    C --&gt;|Только результаты| A
+    D --&gt;|Только результаты| A
+
+    style A fill:#e1f5fe
+    style B fill:#fff9c4
+    style C fill:#fff9c4
+    style D fill:#fff9c4</code></pre>
+<h4 id="h-37">Ключевые моменты <a class="h-anchor" href="#h-37" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Каждый subagent получает <strong>свежее окно контекста</strong> без истории основного разговора</li>
+<li>В subagent передаётся только <strong>релевантный контекст</strong> для его задачи</li>
+<li>Результаты <strong>сводятся</strong> обратно в основной агент</li>
+<li>Это предотвращает <strong>исчерпание токенов контекста</strong> на длинных проектах</li>
+</ul>
+<h4 id="h-38">Соображения по производительности <a class="h-anchor" href="#h-38" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Эффективность контекста</strong> - subagents сохраняют основной контекст, позволяя проводить более долгие сессии</li>
+<li><strong>Задержка</strong> - subagents начинают с чистого листа и могут добавлять задержку на сбор начального контекста</li>
+</ul>
+<h4 id="h-39">Ключевое поведение <a class="h-anchor" href="#h-39" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Без вложенного spawn</strong> - subagents не могут создавать другие subagents</li>
+<li><strong>Разрешения в фоне</strong> - фоновые subagents автоматически отклоняют любые разрешения, которые не были заранее одобрены</li>
+<li><strong>Отправка в фон</strong> - нажмите <code>Ctrl+B</code>, чтобы отправить текущую задачу в фон</li>
+<li><strong>Транскрипты</strong> - транскрипты subagent хранятся в <code>~/.claude/projects/{project}/{sessionId}/subagents/agent-{agentId}.jsonl</code></li>
+<li><strong>Автокомпактация</strong> - контекст subagent автоматически компактизируется примерно при 95% заполнении (можно переопределить через переменную окружения <code>CLAUDE_AUTOCOMPACT_PCT_OVERRIDE</code>)</li>
+</ul>
+<hr>
+<h3 id="когда-использовать-subagents">Когда использовать Subagents <a class="h-anchor" href="#когда-использовать-subagents" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Сценарий</th><th>Использовать subagent</th><th>Почему</th></tr></thead><tbody><tr><td>Сложная функция с множеством шагов</td><td>Да</td><td>Разделяет ответственность, предотвращает загрязнение контекста</td></tr><tr><td>Быстрый code review</td><td>Нет</td><td>Лишние накладные расходы</td></tr><tr><td>Параллельное выполнение задач</td><td>Да</td><td>У каждого subagent свой контекст</td></tr><tr><td>Нужна узкая экспертиза</td><td>Да</td><td>Кастомный системный промпт</td></tr><tr><td>Долгий анализ</td><td>Да</td><td>Не даёт основному контексту исчерпаться</td></tr><tr><td>Одна задача</td><td>Нет</td><td>Лишняя задержка</td></tr></tbody></table></div>
+<hr>
+<h3 id="h-40">Лучшие практики <a class="h-anchor" href="#h-40" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-41">Принципы проектирования <a class="h-anchor" href="#h-41" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Делайте:</strong></p>
+<ul>
+<li>Начинайте с сгенерированных Claude agents - сначала создайте базовый subagent через Claude, потом дорабатывайте</li>
+<li>Проектируйте сфокусированные subagents - одна понятная ответственность, а не попытка делать всё</li>
+<li>Пишите подробные промпты - включайте конкретные инструкции, примеры и ограничения</li>
+<li>Ограничивайте доступ к инструментам - выдавайте только то, что нужно для задачи subagent</li>
+<li>Храните в version control - добавляйте project subagents в репозиторий для совместной работы</li>
+</ul>
+<p><strong>Не делайте:</strong></p>
+<ul>
+<li>создавайте пересекающиеся subagents с одинаковыми ролями</li>
+<li>давайте subagents лишний доступ к инструментам</li>
+<li>используйте subagents для простых одношаговых задач</li>
+<li>смешивайте разные ответственности в одном промпте subagent</li>
+<li>забывайте передать нужный контекст</li>
+</ul>
+<h4 id="h-42">Лучшие практики для системного промпта <a class="h-anchor" href="#h-42" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li><strong>Чётко определяйте роль</strong></li>
+</ol>
+<pre><code>   Вы эксперт по проверке кода, специализирующийся на [конкретных областях]</code></pre>
+<ol>
+<li><strong>Ясно задавайте приоритеты</strong></li>
+</ol>
+<pre><code>   Приоритеты проверки (по порядку):
+   1. Проблемы безопасности
+   2. Проблемы производительности
+   3. Качество кода</code></pre>
+<ol>
+<li><strong>Указывайте формат вывода</strong></li>
+</ol>
+<pre><code>   Для каждой проблемы указывайте: Severity, Category, Location, Description, Fix, Impact</code></pre>
+<ol>
+<li><strong>Включайте шаги действий</strong></li>
+</ol>
+<pre><code>   При запуске:
+   1. Выполни `git diff`, чтобы увидеть недавние изменения
+   2. Сосредоточься на изменённых файлах
+   3. Сразу начинай проверку</code></pre>
+<h4 id="h-43">Стратегия доступа к инструментам <a class="h-anchor" href="#h-43" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li><strong>Начинайте с ограничений</strong>: стартуйте только с необходимыми инструментами</li>
+<li><strong>Расширяйте только по необходимости</strong>: добавляйте инструменты по мере появления требований</li>
+<li><strong>По возможности только чтение</strong>: используйте Read/Grep для аналитических agents</li>
+<li><strong>Песочница для выполнения</strong>: ограничивайте Bash-команды конкретными шаблонами</li>
+</ol>
+<hr>
+<h3 id="примеры-subagents-в-этой-папке">Примеры subagents в этой папке <a class="h-anchor" href="#примеры-subagents-в-этой-папке" aria-label="Ссылка на раздел">#</a></h3>
+<p>В этой папке лежат готовые к использованию примеры subagents:</p>
+<h4 id="1-code-reviewer-code-reviewer-md">1. Code Reviewer (<code>code-reviewer.md</code>) <a class="h-anchor" href="#1-code-reviewer-code-reviewer-md" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Назначение</strong>: комплексный анализ качества кода и поддерживаемости</p>
+<p><strong>Инструменты</strong>: Read, Grep, Glob, Bash</p>
+<p><strong>Специализация</strong>:</p>
+<ul>
+<li>выявление уязвимостей безопасности</li>
+<li>поиск возможностей для оптимизации производительности</li>
+<li>оценка поддерживаемости кода</li>
+<li>анализ покрытия тестами</li>
+</ul>
+<p><strong>Когда использовать</strong>: когда нужен автоматизированный code review с фокусом на качестве и безопасности</p>
+<hr>
+<h4 id="2-test-engineer-test-engineer-md">2. Test Engineer (<code>test-engineer.md</code>) <a class="h-anchor" href="#2-test-engineer-test-engineer-md" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Назначение</strong>: тестовая стратегия, анализ покрытия и автоматизированное тестирование</p>
+<p><strong>Инструменты</strong>: Read, Write, Bash, Grep</p>
+<p><strong>Специализация</strong>:</p>
+<ul>
+<li>создание unit-тестов</li>
+<li>проектирование integration-тестов</li>
+<li>выявление пограничных случаев</li>
+<li>анализ покрытия (цель &gt;80%)</li>
+</ul>
+<p><strong>Когда использовать</strong>: когда нужен полный набор тестов или анализ покрытия</p>
+<hr>
+<h4 id="3-documentation-writer-documentation-writer-md">3. Documentation Writer (<code>documentation-writer.md</code>) <a class="h-anchor" href="#3-documentation-writer-documentation-writer-md" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Назначение</strong>: техническая документация, API docs и пользовательские гайды</p>
+<p><strong>Tools</strong>: Read, Write, Grep</p>
+<p><strong>Специализация</strong>:</p>
+<ul>
+<li>документация API endpoint-ов</li>
+<li>создание пользовательских гайдов</li>
+<li>документация архитектуры</li>
+<li>улучшение комментариев в коде</li>
+</ul>
+<p><strong>Когда использовать</strong>: когда нужно создать или обновить документацию проекта</p>
+<hr>
+<h4 id="4-secure-reviewer-secure-reviewer-md">4. Secure Reviewer (<code>secure-reviewer.md</code>) <a class="h-anchor" href="#4-secure-reviewer-secure-reviewer-md" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Назначение</strong>: code review с фокусом на безопасности и минимальными правами</p>
+<p><strong>Tools</strong>: Read, Grep</p>
+<p><strong>Специализация</strong>:</p>
+<ul>
+<li>выявление security уязвимостей</li>
+<li>проблемы аутентификации/авторизации</li>
+<li>риски утечки данных</li>
+<li>обнаружение injection-атак</li>
+</ul>
+<p><strong>Когда использовать</strong>: когда нужны security audits без права на изменения</p>
+<hr>
+<h4 id="5-implementation-agent-implementation-agent-md">5. Implementation Agent (<code>implementation-agent.md</code>) <a class="h-anchor" href="#5-implementation-agent-implementation-agent-md" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Назначение</strong>: полные возможности реализации для разработки функций</p>
+<p><strong>Tools</strong>: Read, Write, Edit, Bash, Grep, Glob</p>
+<p><strong>Специализация</strong>:</p>
+<ul>
+<li>реализация функций</li>
+<li>генерация кода</li>
+<li>запуск сборки и тестов</li>
+<li>изменение кодовой базы</li>
+</ul>
+<p><strong>Когда использовать</strong>: когда нужен subagent, который реализует функции end-to-end</p>
+<hr>
+<h4 id="6-debugger-debugger-md">6. Debugger (<code>debugger.md</code>) <a class="h-anchor" href="#6-debugger-debugger-md" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Назначение</strong>: специалист по отладке ошибок, падений тестов и неожиданного поведения</p>
+<p><strong>Tools</strong>: Read, Edit, Bash, Grep, Glob</p>
+<p><strong>Специализация</strong>:</p>
+<ul>
+<li>анализ root cause</li>
+<li>расследование ошибок</li>
+<li>исправление падений тестов</li>
+<li>минимальная реализация фикса</li>
+</ul>
+<p><strong>Когда использовать</strong>: когда вы сталкиваетесь с багами, ошибками или неожиданным поведением</p>
+<hr>
+<h4 id="7-data-scientist-data-scientist-md">7. Data Scientist (<code>data-scientist.md</code>) <a class="h-anchor" href="#7-data-scientist-data-scientist-md" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Назначение</strong>: эксперт по анализу данных, SQL-запросам и insights</p>
+<p><strong>Tools</strong>: Bash, Read, Write</p>
+<p><strong>Специализация</strong>:</p>
+<ul>
+<li>оптимизация SQL-запросов</li>
+<li>операции BigQuery</li>
+<li>анализ и визуализация данных</li>
+<li>статистические выводы</li>
+</ul>
+<p><strong>Когда использовать</strong>: когда нужны анализ данных, SQL или операции BigQuery</p>
+<hr>
+<h3 id="h-44">Инструкции по установке <a class="h-anchor" href="#h-44" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="способ-1-через-команду-agents-рекомендуется">Способ 1: через команду <code>/agents</code> (рекомендуется) <a class="h-anchor" href="#способ-1-через-команду-agents-рекомендуется" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">/agents</code></pre>
+<p>Далее:</p>
+<ol>
+<li>выберите <code>Create New Agent</code></li>
+<li>выберите уровень <code>project-level</code> или <code>user-level</code></li>
+<li>подробно опишите subagent</li>
+<li>выберите инструменты для доступа (или оставьте пустым, чтобы наследовать все)</li>
+<li>сохраните и используйте</li>
+</ol>
+<h4 id="способ-2-копирование-в-проект">Способ 2: копирование в проект <a class="h-anchor" href="#способ-2-копирование-в-проект" aria-label="Ссылка на раздел">#</a></h4>
+<p>Скопируйте файлы subagent в каталог <code>.claude/agents/</code> вашего проекта:</p>
+<pre><code class="language-bash"># Перейдите в ваш проект
+cd /path/to/your/project
+
+# Создайте каталог agents, если его нет
+mkdir -p .claude/agents
+
+# Скопируйте все файлы agents из этой папки
+cp /path/to/04-subagents/*.md .claude/agents/
+
+# Удалите README (он не нужен в `.claude/agents`)
+rm .claude/agents/README.md</code></pre>
+<h4 id="способ-3-копирование-в-пользовательский-каталог">Способ 3: копирование в пользовательский каталог <a class="h-anchor" href="#способ-3-копирование-в-пользовательский-каталог" aria-label="Ссылка на раздел">#</a></h4>
+<p>Для agents, доступных во всех ваших проектах:</p>
+<pre><code class="language-bash"># Создайте пользовательский каталог agents
+mkdir -p ~/.claude/agents
+
+# Скопируйте agents
+cp /path/to/04-subagents/code-reviewer.md ~/.claude/agents/
+cp /path/to/04-subagents/debugger.md ~/.claude/agents/
+# ... скопируйте остальные по необходимости</code></pre>
+<h4 id="h-45">Проверка <a class="h-anchor" href="#h-45" aria-label="Ссылка на раздел">#</a></h4>
+<p>После установки проверьте, что agents распознаны:</p>
+<pre><code class="language-bash">/agents</code></pre>
+<p>Вы должны увидеть установленные agents рядом со встроенными.</p>
+<hr>
+<h3 id="h-46">Структура файлов <a class="h-anchor" href="#h-46" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>project/
+├── .claude/
+│   └── agents/
+│       ├── code-reviewer.md
+│       ├── test-engineer.md
+│       ├── documentation-writer.md
+│       ├── secure-reviewer.md
+│       ├── implementation-agent.md
+│       ├── debugger.md
+│       └── data-scientist.md
+└── ...</code></pre>
+<hr>
+<h3 id="h-47">Связанные концепции <a class="h-anchor" href="#h-47" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-48">Связанные возможности <a class="h-anchor" href="#h-48" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong><a href="../01-slash-commands/">Slash Commands</a></strong> - Быстрые ярлыки, запускаемые пользователем</li>
+<li><strong><a href="../02-memory/">Memory</a></strong> - Постоянный контекст между сессиями</li>
+<li><strong><a href="../03-skills/">Skills</a></strong> - Переиспользуемые автономные возможности</li>
+<li><strong><a href="../05-mcp/">MCP Protocol</a></strong> - Доступ к внешним данным в реальном времени</li>
+<li><strong><a href="../06-hooks/">Hooks</a></strong> - Автоматизация shell-команд по событиям</li>
+<li><strong><a href="../07-plugins/">Plugins</a></strong> - Пакеты расширений</li>
+</ul>
+<h4 id="h-49">Сравнение с другими возможностями <a class="h-anchor" href="#h-49" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Возможность</th><th>Пользовательский вызов</th><th>Автовызов</th><th>Постоянность</th><th>Внешний доступ</th><th>Изолированный контекст</th></tr></thead><tbody><tr><td><strong>Slash Commands</strong></td><td>Да</td><td>Нет</td><td>Нет</td><td>Нет</td><td>Нет</td></tr><tr><td><strong>Subagents</strong></td><td>Да</td><td>Да</td><td>Нет</td><td>Нет</td><td>Да</td></tr><tr><td><strong>Memory</strong></td><td>Авто</td><td>Авто</td><td>Да</td><td>Нет</td><td>Нет</td></tr><tr><td><strong>MCP</strong></td><td>Авто</td><td>Да</td><td>Нет</td><td>Да</td><td>Нет</td></tr><tr><td><strong>Skills</strong></td><td>Да</td><td>Да</td><td>Нет</td><td>Нет</td><td>Нет</td></tr></tbody></table></div>
+<h4 id="h-50">Паттерн интеграции <a class="h-anchor" href="#h-50" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TD
+    User[&quot;Запрос пользователя&quot;] --&gt; Main[&quot;Основной агент&quot;]
+    Main --&gt;|Использует| Memory[&quot;Memory&lt;br/&gt;(Контекст)&quot;]
+    Main --&gt;|Запрашивает| MCP[&quot;MCP&lt;br/&gt;(Живые данные)&quot;]
+    Main --&gt;|Вызывает| Skills[&quot;Skills&lt;br/&gt;(Автоинструменты)&quot;]
+    Main --&gt;|Делегирует| Subagents[&quot;Subagents&lt;br/&gt;(Специалисты)&quot;]
+
+    Subagents --&gt;|Используют| Memory
+    Subagents --&gt;|Запрашивают| MCP
+    Subagents --&gt;|Изолированы| Context[&quot;Чистое окно&lt;br/&gt;контекста&quot;]</code></pre>
+<hr>
+<h3 id="h-51">Дополнительные ресурсы <a class="h-anchor" href="#h-51" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/en/sub-agents">Официальная документация Subagents</a></li>
+<li><a href="https://code.claude.com/docs/en/cli-reference">Справка по CLI</a> - флаг <code>--agents</code> и другие опции CLI</li>
+<li><a href="../07-plugins/">Руководство по Plugins</a> - для упаковки agents вместе с другими возможностями</li>
+<li><a href="../03-skills/">Руководство по Skills</a> - для автовызываемых возможностей</li>
+<li><a href="../02-memory/">Руководство по Memory</a> - для постоянного контекста</li>
+<li><a href="../06-hooks/">Руководство по Hooks</a> - для автоматизации по событиям</li>
+</ul>
+<hr>
+<p><em>Последнее обновление: март 2026</em></p>
+<p><em>Это руководство охватывает полную конфигурацию subagent, паттерны делегирования и лучшие практики для Claude Code.</em></p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

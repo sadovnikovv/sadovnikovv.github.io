@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Масштабирование на множество инструментов с помощью поиска инструментов</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/agent-sdk/index.html">agent-sdk</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Масштабирование на множество инструментов с помощью поиска инструментов <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Масштабируйте вашего агента на тысячи инструментов, обнаруживая и загружая только необходимое по требованию.</p>
+</blockquote>
+<p>Tool search позволяет вашему агенту работать с сотнями или тысячами инструментов, динамически обнаруживая и загружая их по требованию. Вместо загрузки всех определений инструментов в окно контекста заранее, агент ищет в каталоге инструментов и загружает только необходимые ему инструменты.</p>
+<p>Этот подход решает две проблемы при масштабировании библиотек инструментов:</p>
+<ul>
+<li><strong>Эффективность контекста:</strong> Определения инструментов могут занимать большую часть окна контекста (50 инструментов могут использовать 10-20K токенов), оставляя меньше места для фактической работы.</li>
+<li><strong>Точность выбора инструмента:</strong> Точность выбора инструмента снижается при загрузке более 30-50 инструментов одновременно.</li>
+</ul>
+<h3 id="how-tool-search-works">How tool search works <a class="h-anchor" href="#how-tool-search-works" aria-label="Ссылка на раздел">#</a></h3>
+<p>Tool search включен по умолчанию, за исключением случаев, перечисленных в разделе <a href="#configure-tool-search">Configure tool search</a>.</p>
+<p>Когда tool search активен, определения инструментов исключаются из окна контекста. Агент получает сводку доступных инструментов и ищет релевантные, когда задача требует возможности, которая еще не загружена. До пяти наиболее релевантных инструментов загружаются в контекст по умолчанию, где они остаются доступными для последующих ходов до тех пор, пока SDK не компактирует сообщения, в которых агент их обнаружил. После этой компактификации агент снова ищет эти инструменты, когда они ему снова понадобятся.</p>
+<p>Tool search добавляет один дополнительный обмен данными каждый раз, когда Claude ищет инструменты, но для больших наборов инструментов это компенсируется меньшим контекстом на каждом ходу. При наличии менее \~10 инструментов, определения которых удобно помещаются в окно контекста, загрузка всего заранее обычно быстрее.</p>
+<p>Для получения подробной информации об основном механизме API см. <a href="https://platform.claude.com/docs/ru/agents-and-tools/tool-use/tool-search-tool">Tool search в API</a>.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Tool search не поддерживается на развертываниях Microsoft Foundry, <a href="https://platform.claude.com/docs/en/build-with-claude/claude-in-microsoft-foundry#hosting-options">размещенных на Azure</a>, которые отклоняют его на стороне сервера: SDK обнаруживает отклонение и загружает определения инструментов заранее для этого развертывания вместо этого. <a href="#configure-tool-search"><code>ENABLE_TOOL_SEARCH</code></a> не может переопределить это, так как отклонение исходит от самого развертывания.</p>
+</blockquote>
+<h3 id="h-2">Настройка поиска инструментов <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Tool search включен по умолчанию. Для моделей из списка неподдерживаемых моделей SDK SDK загружает определения инструментов заранее, и никакое значение <code>ENABLE_TOOL_SEARCH</code> не переопределяет это. На Google Cloud&#x27;s Agent Platform SDK решает по поколению модели:</p>
+<ul>
+<li><strong>Claude Opus 4.5, Sonnet 4.5, Haiku 4.5 и более поздние версии</strong>: tool search включен по умолчанию.</li>
+<li><strong>Более ранние модели Agent Platform</strong>: SDK загружает определения инструментов заранее, потому что их стеки обслуживания отклоняют требуемый заголовок beta. <code>ENABLE_TOOL_SEARCH</code> не может переопределить это.</li>
+</ul>
+<p>До Claude Code v2.1.221 SDK отключал tool search для всех моделей на Google Cloud&#x27;s Agent Platform, если вы не установили <code>ENABLE_TOOL_SEARCH</code>.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Tool search включен по умолчанию за шлюзом <code>ANTHROPIC_BASE_URL</code>, и ничего настраивать не нужно. Если шлюз его отклоняет, см. <a href="https://code.claude.com/docs/ru/mcp.md#tool-search-through-a-gateway">Tool search через LLM-шлюз</a>. До Claude Code v2.1.304 SDK отключал tool search за таким шлюзом, если <code>ENABLE_TOOL_SEARCH</code> не имел значения <code>true</code>, <code>auto</code> или <code>auto:N</code>.</p>
+</blockquote>
+<p>Вы управляете тем, откладываются ли определения инструментов и когда, с помощью переменной окружения <code>ENABLE_TOOL_SEARCH</code>, которая принимает следующие значения:</p>
+<p>| Значение | Поведение |
+| :- | :- |
+| (не установлено) | Tool search включен. Определения инструментов отложены и обнаруживаются по требованию. Переключается на загрузку заранее на моделях более ранних версий, чем Opus 4 и Sonnet 4, на <a href="#configure-tool-search">более ранних моделях Agent Platform</a> и на развёртываниях Microsoft Foundry, размещенных на Azure. |
+| <code>true</code> | Tool search включен, с теми же резервными вариантами, что и при (не установлено). |
+| <code>auto</code> | Tool search отключен, и определения инструментов загружаются заранее, пока определения, которые он может отложить, не достигнут 10% контекстного окна модели. Затем tool search активируется и может <a href="https://code.claude.com/docs/ru/mcp.md#tools-that-stay-deferred-below-the-threshold">оставаться включенным в том же диалоге</a>, даже если эти определения позже опустятся ниже 10%. |
+| <code>auto:N</code> | То же, что <code>auto</code>, но с пользовательским процентом. <code>auto:5</code> активируется, когда эти определения достигают 5% контекстного окна. Более низкие значения активируются раньше. |
+| <code>false</code> | Tool search отключен. Все определения инструментов загружаются в контекст на каждом ходу. |</p>
+<p>Установка <a href="https://code.claude.com/docs/ru/env-vars"><code>CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS</code></a> сохраняет tool search отключенным. Вы не можете переопределить это, установив <code>ENABLE_TOOL_SEARCH</code> самостоятельно. В Claude Code v2.1.227 или более поздней версии ваша организация может сохранить tool search включенным при этой переменной через <a href="https://code.claude.com/docs/ru/managed-settings.md">управляемые настройки</a>. В сессии, которая <a href="https://code.claude.com/docs/ru/hipaa-setup.md#check-how-developers-sign-in-and-connect">получает конфигурацию HIPAA</a>, tool search отключен, и ни <code>ENABLE_TOOL_SEARCH</code>, ни управляемые настройки не включают его снова. <a href="https://code.claude.com/docs/ru/llm-gateway-protocol.md#disable-pre-release-capabilities">Отключение предварительных возможностей</a> охватывает, где применяется переопределение и что переменная удаляет.</p>
+<p>Tool search применяется ко всем зарегистрированным инструментам, независимо от того, поступают ли они с удаленных MCP-серверов или <a href="https://code.claude.com/docs/ru/agent-sdk/custom-tools.md">пользовательских SDK MCP-серверов</a>. Когда вы используете <code>auto</code>, SDK подсчитывает каждое определение, которое tool search может отложить, в сторону одного объединенного порога: каждый инструмент MCP, который не отмечен как <a href="https://code.claude.com/docs/ru/mcp#exempt-a-server-from-deferral"><code>alwaysLoad</code></a>, с любого сервера, плюс встроенные инструменты, которые загружаются по требованию. SDK загружает основные встроенные инструменты, такие как Bash, Read и Edit, заранее и не подсчитывает их в сторону порога. <a href="https://code.claude.com/docs/ru/plugins/mods/reference.md#tools">Мод</a> в одном из ваших плагинов также может отложить инструмент или загрузить его заранее, что изменяет этот подсчёт.</p>
+<p>Установите значение в опции <code>env</code> на <code>query()</code>. В TypeScript <code>env</code> заменяет окружение подпроцесса, поэтому распространите <code>...process.env</code>, чтобы сохранить унаследованные переменные. В Python <code>env</code> объединяется с унаследованным окружением. Этот пример подключается к удаленному MCP-серверу, который предоставляет множество инструментов, предварительно одобряет все их с помощью подстановочного символа и использует <code>auto:5</code>, чтобы tool search активировался, когда определения, которые он может отложить, достигают 5% контекстного окна:</p>
+<p>```typescript TypeScript theme={null}
+import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>try {
+  for await (const message of query({
+    prompt: &quot;Find and run the appropriate database query&quot;,
+    options: {
+      mcpServers: {
+        &quot;enterprise-tools&quot;: {
+          // Connect to a remote MCP server
+          type: &quot;http&quot;,
+          url: &quot;https://tools.example.com/mcp&quot;
+        }
+      },
+      allowedTools: [&quot;mcp__enterprise-tools__*&quot;], // Wildcard pre-approves all tools from this server
+      env: {
+        ...process.env, // env replaces the subprocess environment, so keep inherited variables
+        ENABLE_TOOL_SEARCH: &quot;auto:5&quot; // Activate tool search when deferrable definitions reach 5% of context
+      }
+    }
+  })) {
+    if (message.type === &quot;result&quot; &amp;&amp; message.subtype === &quot;success&quot;) {
+      console.log(message.result);
+    }
+  }
+} catch (error) {
+  // A single-shot query() throws after yielding an error result
+  console.log(<code>Session ended with an error: ${error}</code>);
+}</p>
+<pre><code></code></pre>
+<p>import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage</p>
+<p>async def main():
+    options = ClaudeAgentOptions(
+        mcp_servers={
+            &quot;enterprise-tools&quot;: {
+                &quot;type&quot;: &quot;http&quot;,
+                &quot;url&quot;: &quot;https://tools.example.com/mcp&quot;,
+            }
+        },
+        allowed_tools=[
+            &quot;mcp__enterprise-tools__*&quot;
+        ],  # Wildcard pre-approves all tools from this server
+        env={
+            &quot;ENABLE_TOOL_SEARCH&quot;: &quot;auto:5&quot;  # Activate tool search when deferrable definitions reach 5% of context
+        },
+    )</p>
+<p>try:
+        async for message in query(
+            prompt=&quot;Find and run the appropriate database query&quot;,
+            options=options,
+        ):
+            if isinstance(message, ResultMessage) and message.subtype == &quot;success&quot;:
+                print(message.result)
+    except Exception as error:
+        # A single-shot query() raises after yielding an error result
+        print(f&quot;Session ended with an error: {error}&quot;)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+Чтобы запустить этот пример, замените `https://tools.example.com/mcp` на URL вашего собственного MCP-сервера. При успехе текст результата выводится на консоль.
+
+Поскольку это вызов `query()` в один ход, SDK вызывает исключение после выдачи результата ошибки, поэтому пример оборачивает цикл в блок try. Чтобы узнать, почему запуск не удался, проверьте `subtype` сообщения результата, например `error_during_execution`, внутри цикла. Дополнительную информацию о сообщениях результатов см. в разделе [Обработка результата](https://code.claude.com/docs/ru/agent-sdk/agent-loop.md#handle-the-result).
+
+## Optimize tool discovery
+
+Механизм поиска сопоставляет запросы с именами и описаниями инструментов. Имена вроде `search_slack_messages` появляются для более широкого диапазона запросов, чем `query_slack`. Описания с конкретными ключевыми словами (&quot;Search Slack messages by keyword, channel, or date range&quot;) соответствуют большему количеству запросов, чем общие (&quot;Query Slack&quot;).
+
+Вы также можете добавить раздел системного приглашения, в котором перечислены доступные категории инструментов. Это дает агенту контекст о том, какие виды инструментов доступны для поиска. Передайте текст через опцию `systemPrompt` в TypeScript или `system_prompt` в Python, используя предустановку `claude_code` с `append`, которая добавляет ваш текст к приглашению предустановки вместо его замены:
+</code></pre>
+<p>options: {
+  systemPrompt: {
+    type: &quot;preset&quot;,
+    preset: &quot;claude_code&quot;,
+    append: &quot;You can search for tools to interact with Slack, GitHub, and Jira.&quot;
+  }
+}</p>
+<pre><code></code></pre>
+<p>options = ClaudeAgentOptions(
+    system_prompt={
+        &quot;type&quot;: &quot;preset&quot;,
+        &quot;preset&quot;: &quot;claude_code&quot;,
+        &quot;append&quot;: &quot;You can search for tools to interact with Slack, GitHub, and Jira.&quot;,
+    }
+)</p>
+<pre><code>
+Для полного набора опций системного приглашения см. [Изменение системных приглашений](https://code.claude.com/docs/ru/agent-sdk/modifying-system-prompts.md).
+
+## Limits
+
+* **Максимальное количество инструментов:** 10 000 инструментов в вашем каталоге
+* **Результаты поиска:** возвращает до пяти наиболее релевантных инструментов на поиск по умолчанию
+* **Поддержка модели:** Opus 4, Sonnet 4, Haiku 4.5 и более поздние модели, либо Opus 4.5, Sonnet 4.5, Haiku 4.5 и более поздние модели на Agent Platform Google Cloud. На более ранних моделях SDK загружает определения инструментов заранее, как описано в разделе [Настройка поиска инструментов](#configure-tool-search).
+
+## Связанная документация
+
+* [Tool search в API](https://platform.claude.com/docs/ru/agents-and-tools/tool-use/tool-search-tool): Полная документация API для tool search, включая пользовательские реализации
+* [Подключение MCP серверов](https://code.claude.com/docs/ru/agent-sdk/mcp.md): Подключение к внешним инструментам через MCP серверы
+* [Пользовательские инструменты](https://code.claude.com/docs/ru/agent-sdk/custom-tools.md): Создавайте свои собственные инструменты с помощью SDK MCP серверов
+* [Справочник TypeScript SDK](https://code.claude.com/docs/ru/agent-sdk/typescript.md): Полный справочник API
+* [Справочник Python SDK](https://code.claude.com/docs/ru/agent-sdk/python.md): Полный справочник API
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

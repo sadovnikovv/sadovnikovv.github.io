@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Освойте Claude Code за выходные</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a></nav>
+<p>&lt;picture&gt;
+  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;resources/logos/claude-howto-logo-dark.svg&quot;&gt;
+  &lt;img alt=&quot;Claude How To&quot; src=&quot;resources/logos/claude-howto-logo.svg&quot;&gt;
+&lt;/picture&gt;</p>
+<p><a href="https://img.shields.io/badge/License-MIT-blue.svg">![License: MIT</a>](LICENSE)
+<a href="https://img.shields.io/badge/version-2.2.0-brightgreen">![Version</a>](CHANGELOG.md)
+<a href="https://img.shields.io/badge/Claude_Code-2.1+-purple">![Claude Code</a>](https://code.claude.com)</p>
+<h1 id="освойте-claude-code-за-выходные">Освойте Claude Code за выходные <a class="h-anchor" href="#освойте-claude-code-за-выходные" aria-label="Ссылка на раздел">#</a></h1>
+<p>От простого ввода <code>claude</code> до оркестрации агентов, hooks, skills и MCP-серверов — с наглядными туториалами, шаблонами для копирования и пошаговым учебным маршрутом.</p>
+<blockquote>
+<p><strong>Примечание о переводе:</strong> это любительский перевод оригинального проекта <a href="https://github.com/luongnv89/claude-howto">luongnv89/claude-howto</a>. Спасибо автору оригинала за основу. Я открыт к вашим улучшениям перевода и правкам формулировок.</p>
+</blockquote>
+<p><strong><a href="#-get-started-in-15-minutes">Начать за 15 минут</a></strong> | <strong><a href="#-not-sure-where-to-start">Определить свой уровень</a></strong> | <strong><a href="CATALOG.md">Открыть каталог возможностей</a></strong></p>
+<hr>
+<h3 id="h">Содержание <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="#the-problem">Проблема</a></li>
+<li><a href="#how-claude-how-to-fixes-this">Как Claude How To это исправляет</a></li>
+<li><a href="#how-it-works">Как это работает</a></li>
+<li><a href="#-not-sure-where-to-start">Не знаете, с чего начать?</a></li>
+<li><a href="#-get-started-in-15-minutes">Начать за 15 минут</a></li>
+<li><a href="#what-can-you-build-with-this">Что можно собрать на этой базе?</a></li>
+<li><a href="#faq">FAQ</a></li>
+<li><a href="#contributing">Вклад</a></li>
+<li><a href="#license">Лицензия</a></li>
+</ul>
+<hr>
+<p>&lt;a id=&quot;the-problem&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-2">Проблема <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Вы установили Claude Code. Запустили несколько промптов. Что дальше?</p>
+<ul>
+<li><strong>Официальная документация описывает возможности, но не показывает, как собирать их вместе.</strong> Вы знаете, что существуют slash-команды, но не понимаете, как связать их с hooks, memory и subagents в рабочий процесс, который реально экономит часы.</li>
+<li><strong>Нет понятного маршрута обучения.</strong> Что учить раньше: MCP или hooks? skills или subagents? В итоге приходится пролистывать всё подряд и не осваивать по-настоящему ничего.</li>
+<li><strong>Примеры слишком простые.</strong> Slash-команда в стиле <code>hello world</code> не помогает построить production-пайплайн code review, который использует memory, делегирует задачи специализированным агентам и автоматически запускает проверки безопасности.</li>
+</ul>
+<p>Вы оставляете без дела 90% возможностей Claude Code и даже не знаете, чего именно вам не хватает.</p>
+<hr>
+<p>&lt;a id=&quot;how-claude-how-to-fixes-this&quot;&gt;&lt;/a&gt;</p>
+<h3 id="как-claude-how-to-это-исправляет">Как Claude How To это исправляет <a class="h-anchor" href="#как-claude-how-to-это-исправляет" aria-label="Ссылка на раздел">#</a></h3>
+<p>Это не ещё один справочник по возможностям. Это <strong>структурированный, наглядный и ориентированный на примеры гид</strong>, который учит использовать каждую функцию Claude Code с реальными шаблонами, которые можно сразу копировать в свой проект.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th>Официальная документация</th><th>Этот гид</th></tr></thead><tbody><tr><td><strong>Формат</strong></td><td>Справочная документация</td><td>Визуальные туториалы с диаграммами Mermaid</td></tr><tr><td><strong>Глубина</strong></td><td>Описание возможностей</td><td>Как это работает изнутри</td></tr><tr><td><strong>Примеры</strong></td><td>Базовые фрагменты</td><td>Production-ready шаблоны, которые можно использовать сразу</td></tr><tr><td><strong>Структура</strong></td><td>По функциям</td><td>Пошаговый путь обучения от новичка до продвинутого уровня</td></tr><tr><td><strong>Онбординг</strong></td><td>Самостоятельный</td><td>Направляемая дорожная карта с оценкой времени</td></tr><tr><td><strong>Самооценка</strong></td><td>Нет</td><td>Интерактивные квизы, которые помогают найти пробелы и собрать персональный маршрут</td></tr></tbody></table></div>
+<h4 id="h-3">Что вы получите: <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>10 учебных модулей</strong>, покрывающих все возможности Claude Code — от slash-команд до собственных командных команд агентов</li>
+<li><strong>Конфиги для копирования</strong> — slash-команды, шаблоны CLAUDE.md, hook-скрипты, MCP-конфиги, определения subagents и готовые наборы плагинов</li>
+<li><strong>Диаграммы Mermaid</strong>, показывающие внутреннюю механику каждой функции, чтобы понимать не только <em>как</em>, но и <em>почему</em></li>
+<li><strong>Направляемый учебный маршрут</strong>, который проведёт вас от новичка до power user за 11-13 часов</li>
+<li><strong>Встроенная самооценка</strong> — запустите <code>/self-assessment</code> или <code>/lesson-quiz hooks</code> прямо в Claude Code, чтобы найти пробелы</li>
+</ul>
+<p><strong><a href="LEARNING-ROADMAP.md">Начать учебный маршрут -&gt;</a></strong></p>
+<hr>
+<p>&lt;a id=&quot;how-it-works&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-4">Как это работает <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="1-определите-свой-уровень">1. Определите свой уровень <a class="h-anchor" href="#1-определите-свой-уровень" aria-label="Ссылка на раздел">#</a></h4>
+<p>Пройдите <a href="LEARNING-ROADMAP.md#-find-your-level">квиз самооценки</a> или запустите <code>/self-assessment</code> в Claude Code. На основе того, что вы уже знаете, получите персональную дорожную карту.</p>
+<h4 id="2-следуйте-по-направляемому-маршруту">2. Следуйте по направляемому маршруту <a class="h-anchor" href="#2-следуйте-по-направляемому-маршруту" aria-label="Ссылка на раздел">#</a></h4>
+<p>Проходите 10 модулей по порядку — каждый опирается на предыдущий. По ходу обучения копируйте шаблоны прямо в свой проект.</p>
+<h4 id="3-собирайте-возможности-в-рабочие-процессы">3. Собирайте возможности в рабочие процессы <a class="h-anchor" href="#3-собирайте-возможности-в-рабочие-процессы" aria-label="Ссылка на раздел">#</a></h4>
+<p>Сила этого подхода в комбинации возможностей. Вы научитесь связывать slash-команды + memory + subagents + hooks в автоматизированные пайплайны для code review, деплоя и генерации документации.</p>
+<h4 id="4-проверьте-понимание">4. Проверьте понимание <a class="h-anchor" href="#4-проверьте-понимание" aria-label="Ссылка на раздел">#</a></h4>
+<p>После каждого модуля запускайте <code>/lesson-quiz [topic]</code>. Квиз точно показывает, что вы упустили, чтобы можно было быстро закрыть пробелы.</p>
+<p><strong><a href="#-get-started-in-15-minutes">Начать за 15 минут</a></strong></p>
+<hr>
+<h3 id="h-5">О переводе <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Это русскоязычная версия оригинального гайда <code>claude-howto</code></li>
+<li>Основа и автор оригинального проекта: <a href="https://github.com/luongnv89/claude-howto">luongnv89/claude-howto</a></li>
+<li>Если заметите неточный перевод, корявую формулировку или смысловую ошибку, улучшения приветствуются</li>
+</ul>
+<hr>
+<p>&lt;a id=&quot;-not-sure-where-to-start&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-6">Не знаете, с чего начать? <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<p>Пройдите самооценку или выберите свой уровень:</p>
+<div class="table-wrap"><table><thead><tr><th>Уровень</th><th>Вы умеете...</th><th>Начните здесь</th><th>Время</th></tr></thead><tbody><tr><td><strong>Beginner</strong></td><td>Запускать Claude Code и общаться с ним</td><td><a href="01-slash-commands/">Slash Commands</a></td><td>~2.5 часа</td></tr><tr><td><strong>Intermediate</strong></td><td>Использовать CLAUDE.md и собственные команды</td><td><a href="03-skills/">Skills</a></td><td>~3.5 часа</td></tr><tr><td><strong>Advanced</strong></td><td>Настраивать MCP-серверы и hooks</td><td><a href="09-advanced-features/">Advanced Features</a></td><td>~5 часов</td></tr></tbody></table></div>
+<p><strong>Полный маршрут обучения из 10 модулей:</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Порядок</th><th>Модуль</th><th>Уровень</th><th>Время</th></tr></thead><tbody><tr><td>1</td><td><a href="01-slash-commands/">Slash Commands</a></td><td>Beginner</td><td>30 мин</td></tr><tr><td>2</td><td><a href="02-memory/">Memory</a></td><td>Beginner+</td><td>45 мин</td></tr><tr><td>3</td><td><a href="08-checkpoints/">Checkpoints</a></td><td>Intermediate</td><td>45 мин</td></tr><tr><td>4</td><td><a href="10-cli/">CLI Basics</a></td><td>Beginner+</td><td>30 мин</td></tr><tr><td>5</td><td><a href="03-skills/">Skills</a></td><td>Intermediate</td><td>1 час</td></tr><tr><td>6</td><td><a href="06-hooks/">Hooks</a></td><td>Intermediate</td><td>1 час</td></tr><tr><td>7</td><td><a href="05-mcp/">MCP</a></td><td>Intermediate+</td><td>1 час</td></tr><tr><td>8</td><td><a href="04-subagents/">Subagents</a></td><td>Intermediate+</td><td>1.5 часа</td></tr><tr><td>9</td><td><a href="09-advanced-features/">Advanced Features</a></td><td>Advanced</td><td>2-3 часа</td></tr><tr><td>10</td><td><a href="07-plugins/">Plugins</a></td><td>Advanced</td><td>2 часа</td></tr></tbody></table></div>
+<p><strong><a href="LEARNING-ROADMAP.md">Полная дорожная карта обучения -&gt;</a></strong></p>
+<hr>
+<p>&lt;a id=&quot;-get-started-in-15-minutes&quot;&gt;&lt;/a&gt;</p>
+<h3 id="начать-за-15-минут">Начать за 15 минут <a class="h-anchor" href="#начать-за-15-минут" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-bash"># 1. Clone the guide
+git clone https://github.com/luongnv89/claude-howto.git
+cd claude-howto
+
+# 2. Copy your first slash command
+mkdir -p /path/to/your-project/.claude/commands
+cp 01-slash-commands/optimize.md /path/to/your-project/.claude/commands/
+
+# 3. Try it — in Claude Code, type:
+# /optimize
+
+# 4. Ready for more? Set up project memory:
+cp 02-memory/project-CLAUDE.md /path/to/your-project/CLAUDE.md
+
+# 5. Install a skill:
+cp -r 03-skills/code-review ~/.claude/skills/</code></pre>
+<p>Нужна полная настройка? Вот <strong>базовая настройка за 1 час</strong>:</p>
+<pre><code class="language-bash"># Slash commands (15 min)
+cp 01-slash-commands/*.md .claude/commands/
+
+# Project memory (15 min)
+cp 02-memory/project-CLAUDE.md ./CLAUDE.md
+
+# Install a skill (15 min)
+cp -r 03-skills/code-review ~/.claude/skills/
+
+# Weekend goal: add hooks, subagents, MCP, and plugins
+# Follow the learning path for guided setup</code></pre>
+<p>&lt;a id=&quot;installation-quick-reference&quot;&gt;&lt;/a&gt;
+<strong><a href="#installation-quick-reference">Посмотреть полную справку по установке</a></strong></p>
+<hr>
+<p>&lt;a id=&quot;what-can-you-build-with-this&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-7">Что можно собрать на этой базе? <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Сценарий</th><th>Какие возможности вы объедините</th></tr></thead><tbody><tr><td><strong>Автоматизированный code review</strong></td><td>Slash Commands + Subagents + Memory + MCP</td></tr><tr><td><strong>Онбординг команды</strong></td><td>Memory + Slash Commands + Plugins</td></tr><tr><td><strong>Автоматизация CI/CD</strong></td><td>CLI Reference + Hooks + Background Tasks</td></tr><tr><td><strong>Генерация документации</strong></td><td>Skills + Subagents + Plugins</td></tr><tr><td><strong>Security Audits</strong></td><td>Subagents + Skills + Hooks (режим только для чтения)</td></tr><tr><td><strong>DevOps-пайплайны</strong></td><td>Plugins + MCP + Hooks + Background Tasks</td></tr><tr><td><strong>Сложный рефакторинг</strong></td><td>Checkpoints + Planning Mode + Hooks</td></tr></tbody></table></div>
+<hr>
+<p>&lt;a id=&quot;faq&quot;&gt;&lt;/a&gt;</p>
+<h3 id="faq">FAQ <a class="h-anchor" href="#faq" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Это бесплатно?</strong>
+Да. Лицензия MIT, бесплатно навсегда. Используйте в личных проектах, на работе, в команде — ограничений нет, кроме необходимости сохранять уведомление о лицензии.</p>
+<p><strong>Гид поддерживается?</strong>
+Да, активно. Он синхронизируется с каждым релизом Claude Code. Текущая версия: v2.2.0 (март 2026), совместима с Claude Code 2.1+.</p>
+<p><strong>Чем это отличается от официальной документации?</strong>
+Официальная документация — это справочник по функциям. Этот гид — туториал с диаграммами, готовыми к production шаблонами и последовательным маршрутом обучения. Они дополняют друг друга: начинайте здесь, чтобы учиться, и обращайтесь к docs за точными деталями.</p>
+<p><strong>Сколько времени займёт весь путь?</strong>
+11-13 часов на полный маршрут. Но пользу вы получите уже за 15 минут — достаточно скопировать шаблон slash-команды и попробовать его.</p>
+<p><strong>Можно использовать с Claude Sonnet / Haiku / Opus?</strong>
+Да. Все шаблоны работают с Claude Sonnet 4.6, Claude Opus 4.6 и Claude Haiku 4.5.</p>
+<p><strong>Можно внести вклад?</strong>
+Да, конечно. См. <a href="CONTRIBUTING.md">CONTRIBUTING.md</a> для правил. Мы рады новым примерам, исправлениям ошибок, улучшениям документации и шаблонам от сообщества.</p>
+<p><strong>Можно читать это офлайн?</strong>
+Да. Запустите <code>uv run scripts/build_epub.py</code>, чтобы сгенерировать EPUB-книгу со всем содержимым и отрисованными диаграммами.</p>
+<hr>
+<p>&lt;a id=&quot;license&quot;&gt;&lt;/a&gt;</p>
+<h3 id="начните-осваивать-claude-code-уже-сегодня">Начните осваивать Claude Code уже сегодня <a class="h-anchor" href="#начните-осваивать-claude-code-уже-сегодня" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code у вас уже установлен. Между вами и ростом продуктивности в 10 раз стоит только понимание того, как им пользоваться. Этот гид даёт вам структурированный путь, наглядные объяснения и шаблоны, которые можно копировать и сразу применять.</p>
+<p>Лицензия MIT. Бесплатно навсегда. Клонируйте, форкайте, адаптируйте под себя.</p>
+<p><strong><a href="LEARNING-ROADMAP.md">Начать учебный маршрут -&gt;</a></strong> | <strong><a href="CATALOG.md">Открыть каталог возможностей</a></strong> | <strong><a href="#-get-started-in-15-minutes">Начать за 15 минут</a></strong></p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

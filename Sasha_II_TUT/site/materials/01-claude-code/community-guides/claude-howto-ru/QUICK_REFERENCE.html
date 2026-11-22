@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Claude Code Examples - Краткая справка</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a></nav>
+<p>&lt;picture&gt;
+  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;resources/logos/claude-howto-logo-dark.svg&quot;&gt;
+  &lt;img alt=&quot;Claude How To&quot; src=&quot;resources/logos/claude-howto-logo.svg&quot;&gt;
+&lt;/picture&gt;</p>
+<h1 id="claude-code-examples-краткая-справка">Claude Code Examples - Краткая справка <a class="h-anchor" href="#claude-code-examples-краткая-справка" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="h">🚀 Быстрые команды установки <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="slash-команды">Slash-команды <a class="h-anchor" href="#slash-команды" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Установить всё
+cp 01-slash-commands/*.md .claude/commands/
+
+# Установить конкретную команду
+cp 01-slash-commands/optimize.md .claude/commands/</code></pre>
+<h4 id="memory">Memory <a class="h-anchor" href="#memory" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Память проекта
+cp 02-memory/project-CLAUDE.md ./CLAUDE.md
+
+# Личная память
+cp 02-memory/personal-CLAUDE.md ~/.claude/CLAUDE.md</code></pre>
+<h4 id="skills">Skills <a class="h-anchor" href="#skills" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Личные skills
+cp -r 03-skills/code-review ~/.claude/skills/
+
+# Skills проекта
+cp -r 03-skills/code-review .claude/skills/</code></pre>
+<h4 id="subagents">Subagents <a class="h-anchor" href="#subagents" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Установить всё
+cp 04-subagents/*.md .claude/agents/
+
+# Установить конкретного подагента
+cp 04-subagents/code-reviewer.md .claude/agents/</code></pre>
+<h4 id="mcp">MCP <a class="h-anchor" href="#mcp" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Задать учётные данные
+export GITHUB_TOKEN=&quot;your_token&quot;
+export DATABASE_URL=&quot;postgresql://...&quot;
+
+# Установить конфиг (область проекта)
+cp 05-mcp/github-mcp.json .mcp.json
+
+# Или в пользовательской области: добавьте в ~/.claude.json</code></pre>
+<h4 id="hooks">Hooks <a class="h-anchor" href="#hooks" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Установить hooks
+mkdir -p ~/.claude/hooks
+cp 06-hooks/*.sh ~/.claude/hooks/
+chmod +x ~/.claude/hooks/*.sh
+
+# Настроить в settings (~/.claude/settings.json)</code></pre>
+<h4 id="plugins">Plugins <a class="h-anchor" href="#plugins" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Установить из примеров (если опубликованы)
+/plugin install pr-review
+/plugin install devops-automation
+/plugin install documentation</code></pre>
+<h4 id="checkpoints">Checkpoints <a class="h-anchor" href="#checkpoints" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Checkpoints создаются автоматически для каждого пользовательского запроса
+# Чтобы откатиться, нажмите Esc дважды или используйте:
+/rewind
+
+# Затем выберите: восстановить код и разговор, восстановить разговор,
+# восстановить код, суммировать отсюда или не обращать внимания</code></pre>
+<h4 id="h-2">Продвинутые возможности <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Настройка в settings (.claude/settings.json)
+# См. 09-advanced-features/config-examples.json
+
+# Режим планирования
+/plan Описание задачи
+
+# Режимы разрешений (используйте флаг `--permission-mode`)
+# default          - Запрашивает подтверждение для рискованных действий
+# acceptEdits      - Автоматически принимает правки файлов, спрашивает для остальных
+# plan             - Только чтение, без изменений
+# dontAsk          - Принимает все действия, кроме рискованных
+# auto             - Фоновый классификатор сам определяет разрешения
+# bypassPermissions - Принимает все действия (требует `--dangerously-skip-permissions`)
+
+# Управление сессиями
+/resume                # Возобновить предыдущий разговор
+/rename &quot;name&quot;         # Назвать текущую сессию
+/fork                  # Разветвить текущую сессию
+claude -c              # Продолжить самый последний разговор
+claude -r &quot;session&quot;    # Возобновить сессию по имени/ID</code></pre>
+<hr>
+<h3 id="h-3">📋 Сводка по возможностям <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Возможность</th><th>Путь установки</th><th>Использование</th></tr></thead><tbody><tr><td><strong>Slash-команды (55+)</strong></td><td><code>.claude/commands/*.md</code></td><td><code>/command-name</code></td></tr><tr><td><strong>Memory</strong></td><td><code>./CLAUDE.md</code></td><td>Загружается автоматически</td></tr><tr><td><strong>Skills</strong></td><td><code>.claude/skills/*/SKILL.md</code></td><td>Запускаются автоматически</td></tr><tr><td><strong>Subagents</strong></td><td><code>.claude/agents/*.md</code></td><td>Делегируются автоматически</td></tr><tr><td><strong>MCP</strong></td><td><code>.mcp.json</code> (project) или <code>~/.claude.json</code> (user)</td><td><code>/mcp__server__action</code></td></tr><tr><td><strong>Hooks (25 событий)</strong></td><td><code>~/.claude/hooks/*.sh</code></td><td>Срабатывают по событиям (4 типа)</td></tr><tr><td><strong>Plugins</strong></td><td>Через <code>/plugin install</code></td><td>Собирают всё вместе</td></tr><tr><td><strong>Checkpoints</strong></td><td>Встроено</td><td><code>Esc+Esc</code> или <code>/rewind</code></td></tr><tr><td><strong>Режим планирования</strong></td><td>Встроено</td><td><code>/plan &lt;task&gt;</code></td></tr><tr><td><strong>Режимы разрешений (6)</strong></td><td>Встроено</td><td><code>--allowedTools</code>, <code>--permission-mode</code></td></tr><tr><td><strong>Сессии</strong></td><td>Встроено</td><td><code>/session &lt;command&gt;</code></td></tr><tr><td><strong>Background Tasks</strong></td><td>Встроено</td><td>Выполняются в фоне</td></tr><tr><td><strong>Удалённое управление</strong></td><td>Встроено</td><td>WebSocket API</td></tr><tr><td><strong>Веб-сессии</strong></td><td>Встроено</td><td><code>claude web</code></td></tr><tr><td><strong>Git Worktrees</strong></td><td>Встроено</td><td><code>/worktree</code></td></tr><tr><td><strong>Автопамять</strong></td><td>Встроено</td><td>Автосохраняется в CLAUDE.md</td></tr><tr><td><strong>Список задач</strong></td><td>Встроено</td><td><code>/task list</code></td></tr><tr><td><strong>Встроенные skills (5)</strong></td><td>Встроено</td><td><code>/simplify</code>, <code>/loop</code>, <code>/claude-api</code>, <code>/voice</code>, <code>/browse</code></td></tr></tbody></table></div>
+<hr>
+<h3 id="h-4">🎯 Частые сценарии использования <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-5">Ревью кода <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Способ 1: slash-команда
+cp 01-slash-commands/optimize.md .claude/commands/
+# Использование: /optimize
+
+# Способ 2: subagent
+cp 04-subagents/code-reviewer.md .claude/agents/
+# Использование: авто-делегирование
+
+# Способ 3: skill
+cp -r 03-skills/code-review ~/.claude/skills/
+# Использование: автоматический запуск
+
+# Способ 4: plugin (полное решение)
+/plugin install pr-review
+# Использование: /review-pr</code></pre>
+<h4 id="h-6">Документация <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Slash-команда
+cp 01-slash-commands/generate-api-docs.md .claude/commands/
+
+# Subagent
+cp 04-subagents/documentation-writer.md .claude/agents/
+
+# Skill
+cp -r 03-skills/doc-generator ~/.claude/skills/
+
+# Plugin (полное решение)
+/plugin install documentation</code></pre>
+<h4 id="devops">DevOps <a class="h-anchor" href="#devops" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Полный plugin
+/plugin install devops-automation
+
+# Команды: /deploy, /rollback, /status, /incident</code></pre>
+<h4 id="h-7">Стандарты команды <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Память проекта
+cp 02-memory/project-CLAUDE.md ./CLAUDE.md
+
+# Отредактируйте под свою команду
+vim CLAUDE.md</code></pre>
+<h4 id="автоматизация-и-hooks">Автоматизация и hooks <a class="h-anchor" href="#автоматизация-и-hooks" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Установить hooks (25 событий, 4 типа: command, http, prompt, agent)
+mkdir -p ~/.claude/hooks
+cp 06-hooks/*.sh ~/.claude/hooks/
+chmod +x ~/.claude/hooks/*.sh
+
+# Примеры:
+# - Pre-commit tests: pre-commit.sh
+# - Auto-format code: format-code.sh
+# - Security scanning: security-scan.sh
+
+# Режим auto для полностью автономных workflows
+claude --enable-auto-mode -p &quot;Refactor and test the auth module&quot;
+# Или переключайте режимы интерактивно через Shift+Tab</code></pre>
+<h4 id="h-8">Безопасный рефакторинг <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Checkpoints создаются автоматически перед каждым запросом
+# Попробуйте рефакторинг
+# Если всё работает: продолжайте
+# Если нет: нажмите Esc+Esc или используйте /rewind, чтобы откатиться</code></pre>
+<h4 id="h-9">Сложная реализация <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Используйте режим планирования
+/plan Implement user authentication system
+
+# Claude создаёт детальный план
+# Проверьте и одобрите
+# Claude реализует всё пошагово</code></pre>
+<h4 id="интеграция-ci-cd">Интеграция CI/CD <a class="h-anchor" href="#интеграция-ci-cd" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Запуск в headless-режиме (без интерактива)
+claude -p &quot;Run all tests and generate report&quot;
+
+# С режимом разрешений для CI
+claude -p &quot;Run tests&quot; --permission-mode dontAsk
+
+# С режимом auto для полностью автономных CI-задач
+claude --enable-auto-mode -p &quot;Run tests and fix failures&quot;
+
+# С hooks для автоматизации
+# См. 09-advanced-features/README.md</code></pre>
+<h4 id="h-10">Обучение и эксперименты <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Используйте режим plan для безопасного анализа
+claude --permission-mode plan
+
+# Экспериментируйте безопасно - checkpoints создаются автоматически
+# Если нужно откатиться: нажмите Esc+Esc или используйте /rewind</code></pre>
+<h4 id="h-11">Команды агентов <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Включить команды агентов
+export CLAUDE_AGENT_TEAMS=1
+
+# Или в settings.json
+{ &quot;agentTeams&quot;: { &quot;enabled&quot;: true } }
+
+# Начните с: &quot;Реализуй функцию X командным подходом&quot;</code></pre>
+<h4 id="h-12">Запланированные задачи <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Запускать команду каждые 5 минут
+/loop 5m /check-status
+
+# Одноразовое напоминание
+/loop 30m &quot;remind me to check the deploy&quot;</code></pre>
+<hr>
+<h3 id="h-13">📁 Справка по расположению файлов <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>Ваш проект/
+├── .claude/
+│   ├── commands/              # Здесь находятся slash-команды
+│   ├── agents/                # Здесь находятся subagents
+│   ├── skills/                # Здесь находятся project skills
+│   └── settings.json          # Настройки проекта (hooks и т. д.)
+├── .mcp.json                  # Конфигурация MCP (область проекта)
+├── CLAUDE.md                  # Память проекта
+└── src/
+    └── api/
+        └── CLAUDE.md          # Память для конкретного каталога
+
+Домашняя папка пользователя/
+├── .claude/
+│   ├── commands/              # Личные команды
+│   ├── agents/                # Личные агенты
+│   ├── skills/                # Личные skills
+│   ├── hooks/                 # Hook-скрипты
+│   ├── settings.json          # Настройки пользователя
+│   ├── managed-settings.d/    # Управляемые настройки (enterprise/org)
+│   └── CLAUDE.md              # Личная память
+└── .claude.json               # Личная конфигурация MCP (область пользователя)</code></pre>
+<hr>
+<h3 id="h-14">🔍 Поиск примеров <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-15">По категориям <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Slash Commands</strong>: <code>01-slash-commands/</code></li>
+<li><strong>Memory</strong>: <code>02-memory/</code></li>
+<li><strong>Skills</strong>: <code>03-skills/</code></li>
+<li><strong>Subagents</strong>: <code>04-subagents/</code></li>
+<li><strong>MCP</strong>: <code>05-mcp/</code></li>
+<li><strong>Hooks</strong>: <code>06-hooks/</code></li>
+<li><strong>Plugins</strong>: <code>07-plugins/</code></li>
+<li><strong>Checkpoints</strong>: <code>08-checkpoints/</code></li>
+<li><strong>Advanced Features</strong>: <code>09-advanced-features/</code></li>
+<li><strong>CLI</strong>: <code>10-cli/</code></li>
+</ul>
+<h4 id="h-16">По сценарию использования <a class="h-anchor" href="#h-16" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Performance</strong>: <code>01-slash-commands/optimize.md</code></li>
+<li><strong>Security</strong>: <code>04-subagents/secure-reviewer.md</code></li>
+<li><strong>Testing</strong>: <code>04-subagents/test-engineer.md</code></li>
+<li><strong>Docs</strong>: <code>03-skills/doc-generator/</code></li>
+<li><strong>DevOps</strong>: <code>07-plugins/devops-automation/</code></li>
+</ul>
+<h4 id="h-17">По сложности <a class="h-anchor" href="#h-17" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Простые</strong>: slash-команды</li>
+<li><strong>Средние</strong>: subagents, memory</li>
+<li><strong>Продвинутые</strong>: skills, hooks</li>
+<li><strong>Полные</strong>: plugins</li>
+</ul>
+<hr>
+<h3 id="h-18">🎓 Путь обучения <a class="h-anchor" href="#h-18" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="день-1">День 1 <a class="h-anchor" href="#день-1" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Прочитать обзор
+cat README.md
+
+# Установить команду
+cp 01-slash-commands/optimize.md .claude/commands/
+
+# Попробовать
+/optimize</code></pre>
+<h4 id="день-2-3">День 2-3 <a class="h-anchor" href="#день-2-3" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Настроить memory
+cp 02-memory/project-CLAUDE.md ./CLAUDE.md
+vim CLAUDE.md
+
+# Установить subagent
+cp 04-subagents/code-reviewer.md .claude/agents/</code></pre>
+<h4 id="день-4-5">День 4-5 <a class="h-anchor" href="#день-4-5" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Настроить MCP
+export GITHUB_TOKEN=&quot;your_token&quot;
+cp 05-mcp/github-mcp.json .mcp.json
+
+# Попробовать команды MCP
+/mcp__github__list_prs</code></pre>
+<h4 id="неделя-2">Неделя 2 <a class="h-anchor" href="#неделя-2" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Установить skill
+cp -r 03-skills/code-review ~/.claude/skills/
+
+# Пусть он вызывается автоматически
+# Просто скажите: &quot;Проверь этот код на проблемы&quot;</code></pre>
+<h4 id="неделя-3">Неделя 3+ <a class="h-anchor" href="#неделя-3" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Установить полный plugin
+/plugin install pr-review
+
+# Использовать встроенные возможности
+/review-pr
+/check-security
+/check-tests</code></pre>
+<hr>
+<h3 id="новые-возможности-март-2026">Новые возможности (март 2026) <a class="h-anchor" href="#новые-возможности-март-2026" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Возможность</th><th>Описание</th><th>Использование</th></tr></thead><tbody><tr><td><strong>Auto Mode</strong></td><td>Полностью автономная работа с фоновым классификатором</td><td>флаг <code>--enable-auto-mode</code>, <code>Shift+Tab</code> для переключения режимов</td></tr><tr><td><strong>Channels</strong></td><td>Интеграция с Discord и Telegram</td><td>флаг <code>--channels</code>, боты Discord/Telegram</td></tr><tr><td><strong>Voice Dictation</strong></td><td>Произносите команды и контекст для Claude</td><td>команда <code>/voice</code></td></tr><tr><td><strong>Hooks (25 events)</strong></td><td>Расширенная система hooks с 4 типами</td><td>типы hooks: command, http, prompt, agent</td></tr><tr><td><strong>MCP Elicitation</strong></td><td>MCP-серверы могут запрашивать ввод пользователя во время выполнения</td><td>Автоматический запрос, когда серверу нужна уточняющая информация</td></tr><tr><td><strong>WebSocket MCP</strong></td><td>WebSocket-транспорт для MCP-подключений</td><td>Настраивается в <code>.mcp.json</code> с URL <code>ws://</code></td></tr><tr><td><strong>Plugin LSP</strong></td><td>Поддержка Language Server Protocol для плагинов</td><td><code>userConfig</code>, переменная <code>${CLAUDE_PLUGIN_DATA}</code></td></tr><tr><td><strong>Remote Control</strong></td><td>Управление Claude Code через WebSocket API</td><td><code>claude --remote</code> для внешних интеграций</td></tr><tr><td><strong>Web Sessions</strong></td><td>Браузерный интерфейс Claude Code</td><td>запуск через <code>claude web</code></td></tr><tr><td><strong>Desktop App</strong></td><td>Нативное desktop-приложение</td><td>Скачать с claude.ai/download</td></tr><tr><td><strong>Task List</strong></td><td>Управление фоновыми задачами</td><td><code>/task list</code>, <code>/task status &lt;id&gt;</code></td></tr><tr><td><strong>Auto Memory</strong></td><td>Автоматическое сохранение памяти из бесед</td><td>Claude автоматически сохраняет ключевой контекст в <code>CLAUDE.md</code></td></tr><tr><td><strong>Git Worktrees</strong></td><td>Изолированные рабочие пространства для параллельной разработки</td><td><code>/worktree</code> для создания изолированного workspace</td></tr><tr><td><strong>Model Selection</strong></td><td>Переключение между Sonnet 4.6 и Opus 4.6</td><td><code>/model</code> или флаг <code>--model</code></td></tr><tr><td><strong>Agent Teams</strong></td><td>Координация нескольких агентов над задачами</td><td>Включается переменной окружения <code>CLAUDE_AGENT_TEAMS=1</code></td></tr><tr><td><strong>Scheduled Tasks</strong></td><td>Повторяющиеся задачи через <code>/loop</code></td><td><code>/loop 5m /command</code> или инструмент CronCreate</td></tr><tr><td><strong>Chrome Integration</strong></td><td>Автоматизация браузера</td><td>флаг <code>--chrome</code> или команда <code>/chrome</code></td></tr><tr><td><strong>Keyboard Customization</strong></td><td>Пользовательские горячие клавиши</td><td>команда <code>/keybindings</code></td></tr></tbody></table></div>
+<hr>
+<h3 id="h-19">Советы и приёмы <a class="h-anchor" href="#h-19" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-20">Кастомизация <a class="h-anchor" href="#h-20" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Начинайте с примеров как есть</li>
+<li>Подстраивайте под свои потребности</li>
+<li>Проверяйте перед тем, как делиться с командой</li>
+<li>Храните конфигурации в version control</li>
+</ul>
+<h4 id="h-21">Лучшие практики <a class="h-anchor" href="#h-21" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Используйте memory для стандартов команды</li>
+<li>Используйте plugins для полноценных workflows</li>
+<li>Используйте subagents для сложных задач</li>
+<li>Используйте slash-команды для быстрых задач</li>
+</ul>
+<h4 id="h-22">Устранение неполадок <a class="h-anchor" href="#h-22" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Проверить расположение файлов
+ls -la .claude/commands/
+ls -la .claude/agents/
+
+# Проверить синтаксис YAML
+head -20 .claude/agents/code-reviewer.md
+
+# Проверить подключение MCP
+echo $GITHUB_TOKEN</code></pre>
+<hr>
+<h3 id="h-23">📊 Матрица возможностей <a class="h-anchor" href="#h-23" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Что нужно</th><th>Используйте это</th><th>Пример</th></tr></thead><tbody><tr><td>Быстрый ярлык</td><td>Slash Command (55+)</td><td><code>01-slash-commands/optimize.md</code></td></tr><tr><td>Стандарты команды</td><td>Memory</td><td><code>02-memory/project-CLAUDE.md</code></td></tr><tr><td>Автоматический workflow</td><td>Skill</td><td><code>03-skills/code-review/</code></td></tr><tr><td>Специализированная задача</td><td>Subagent</td><td><code>04-subagents/code-reviewer.md</code></td></tr><tr><td>Внешние данные</td><td>MCP (+ Elicitation, WebSocket)</td><td><code>05-mcp/github-mcp.json</code></td></tr><tr><td>Автоматизация по событиям</td><td>Hook (25 событий, 4 типа)</td><td><code>06-hooks/pre-commit.sh</code></td></tr><tr><td>Полное решение</td><td>Plugin (+ поддержка LSP)</td><td><code>07-plugins/pr-review/</code></td></tr><tr><td>Безопасный эксперимент</td><td>Checkpoint</td><td><code>08-checkpoints/checkpoint-examples.md</code></td></tr><tr><td>Полная автономность</td><td>Auto Mode</td><td><code>--enable-auto-mode</code> или <code>Shift+Tab</code></td></tr><tr><td>Чат-интеграции</td><td>Channels</td><td><code>--channels</code> (Discord, Telegram)</td></tr><tr><td>CI/CD pipeline</td><td>CLI</td><td><code>10-cli/README.md</code></td></tr></tbody></table></div>
+<hr>
+<h3 id="h-24">🔗 Быстрые ссылки <a class="h-anchor" href="#h-24" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong>Основной гайд</strong>: <code>README.md</code></li>
+<li><strong>Полный индекс</strong>: <code>INDEX.md</code></li>
+<li><strong>Сводка</strong>: <code>EXAMPLES_SUMMARY.md</code></li>
+<li><strong>Исходный гайд</strong>: <code>claude_concepts_guide.md</code></li>
+</ul>
+<hr>
+<h3 id="h-25">📞 Частые вопросы <a class="h-anchor" href="#h-25" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Q: Что использовать?</strong>
+A: Начните со slash-команд и добавляйте возможности по мере необходимости.</p>
+<p><strong>Q: Можно ли смешивать возможности?</strong>
+A: Да. Они работают вместе. Memory + Commands + MCP = мощная комбинация.</p>
+<p><strong>Q: Как делиться с командой?</strong>
+A: Закоммитьте каталог <code>.claude/</code> в git.</p>
+<p><strong>Q: Что насчёт секретов?</strong>
+A: Используйте переменные окружения; никогда не хардкодьте их.</p>
+<p><strong>Q: Можно изменять примеры?</strong>
+A: Да. Это шаблоны для настройки.</p>
+<hr>
+<h3 id="h-26">✅ Чеклист <a class="h-anchor" href="#h-26" aria-label="Ссылка на раздел">#</a></h3>
+<p>Чеклист для начала работы:</p>
+<ul>
+<li>[ ] Прочитать <code>README.md</code></li>
+<li>[ ] Установить 1 slash-команду</li>
+<li>[ ] Попробовать команду</li>
+<li>[ ] Создать проектный <code>CLAUDE.md</code></li>
+<li>[ ] Установить 1 subagent</li>
+<li>[ ] Настроить 1 MCP-интеграцию</li>
+<li>[ ] Установить 1 skill</li>
+<li>[ ] Попробовать полный plugin</li>
+<li>[ ] Настроить под свои нужды</li>
+<li>[ ] Поделиться с командой</li>
+</ul>
+<hr>
+<p><strong>Быстрый старт</strong>: <code>cat README.md</code></p>
+<p><strong>Полный индекс</strong>: <code>cat INDEX.md</code></p>
+<p><strong>Эта карточка</strong>: держите под рукой для быстрой справки!</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

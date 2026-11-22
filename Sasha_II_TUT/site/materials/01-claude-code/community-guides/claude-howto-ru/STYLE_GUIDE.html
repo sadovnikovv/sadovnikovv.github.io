@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Руководство по стилю</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a></nav>
+<p>&lt;picture&gt;
+  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;resources/logos/claude-howto-logo-dark.svg&quot;&gt;
+  &lt;img alt=&quot;Claude How To&quot; src=&quot;resources/logos/claude-howto-logo.svg&quot;&gt;
+&lt;/picture&gt;</p>
+<h1 id="h">Руководство по стилю <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Соглашения и правила форматирования для участия в Claude How To. Следуйте этому руководству, чтобы контент оставался единым, профессиональным и удобным для поддержки.</p>
+</blockquote>
+<hr>
+<h3 id="h-2">Содержание <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="#file-and-folder-naming">Именование файлов и папок</a></li>
+<li><a href="#document-structure">Структура документа</a></li>
+<li><a href="#headings">Заголовки</a></li>
+<li><a href="#text-formatting">Форматирование текста</a></li>
+<li><a href="#lists">Списки</a></li>
+<li><a href="#tables">Таблицы</a></li>
+<li><a href="#code-blocks">Блоки кода</a></li>
+<li><a href="#links-and-cross-references">Ссылки и перекрёстные ссылки</a></li>
+<li><a href="#diagrams">Диаграммы</a></li>
+<li><a href="#emoji-usage">Использование emoji</a></li>
+<li><a href="#yaml-frontmatter">YAML frontmatter</a></li>
+<li><a href="#images-and-media">Изображения и медиа</a></li>
+<li><a href="#tone-and-voice">Тон и голос</a></li>
+<li><a href="#commit-messages">Сообщения коммитов</a></li>
+<li><a href="#checklist-for-authors">Чеклист для авторов</a></li>
+</ul>
+<hr>
+<h3 id="h-3">Именование файлов и папок <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-4">Папки уроков <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<p>Папки уроков используют <strong>двузначный числовой префикс</strong>, за которым следует дескриптор в <strong>kebab-case</strong>:</p>
+<pre><code>01-slash-commands/
+02-memory/
+03-skills/
+04-subagents/
+05-mcp/</code></pre>
+<p>Число отражает порядок учебного маршрута от новичка к продвинутому уровню.</p>
+<h4 id="h-5">Имена файлов <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Тип</th><th>Соглашение</th><th>Примеры</th></tr></thead><tbody><tr><td><strong>README урока</strong></td><td><code>README.md</code></td><td><code>01-slash-commands/README.md</code></td></tr><tr><td><strong>Файл функции</strong></td><td><code>.md</code> в kebab-case</td><td><code>code-reviewer.md</code>, <code>generate-api-docs.md</code></td></tr><tr><td><strong>Shell-скрипт</strong></td><td><code>.sh</code> в kebab-case</td><td><code>format-code.sh</code>, <code>validate-input.sh</code></td></tr><tr><td><strong>Файл конфигурации</strong></td><td>Стандартные имена</td><td><code>.mcp.json</code>, <code>settings.json</code></td></tr><tr><td><strong>Файл памяти</strong></td><td>Префикс области</td><td><code>project-CLAUDE.md</code>, <code>personal-CLAUDE.md</code></td></tr><tr><td><strong>Документы верхнего уровня</strong></td><td><code>.md</code> в UPPER_CASE</td><td><code>CATALOG.md</code>, <code>QUICK_REFERENCE.md</code>, <code>CONTRIBUTING.md</code></td></tr><tr><td><strong>Изображения</strong></td><td>kebab-case</td><td><code>pr-slash-command.png</code>, <code>claude-howto-logo.svg</code></td></tr></tbody></table></div>
+<h4 id="h-6">Правила <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Используйте <strong>lowercase</strong> для всех имён файлов и папок, кроме верхнеуровневых документов вроде <code>README.md</code>, <code>CATALOG.md</code></li>
+<li>Используйте <strong>дефисы</strong> (<code>-</code>) как разделители слов, никогда не используйте подчёркивания или пробелы</li>
+<li>Делайте имена описательными, но короткими</li>
+</ul>
+<hr>
+<h3 id="h-7">Структура документа <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="корневой-readme">Корневой README <a class="h-anchor" href="#корневой-readme" aria-label="Ссылка на раздел">#</a></h4>
+<p>Корневой <code>README.md</code> следует такому порядку:</p>
+<ol>
+<li>Logo (<code>&lt;picture&gt;</code> element with dark/light variants)</li>
+<li>H1 title</li>
+<li>Introductory blockquote (one-line value proposition)</li>
+<li>Section &quot;Why This Guide?&quot; with comparison table</li>
+<li>Horizontal rule (<code>---</code>)</li>
+<li>Table of Contents</li>
+<li>Каталог возможностей</li>
+<li>Быстрая навигация</li>
+<li>Учебный путь</li>
+<li>Разделы возможностей</li>
+<li>Начало работы</li>
+<li>Лучшие практики / Устранение неполадок</li>
+<li>Вклад / Лицензия</li>
+</ol>
+<h4 id="readme-урока">README урока <a class="h-anchor" href="#readme-урока" aria-label="Ссылка на раздел">#</a></h4>
+<p>Каждый <code>README.md</code> урока следует такому порядку:</p>
+<ol>
+<li>H1 title (например, <code># Slash Commands</code>)</li>
+<li>Краткий обзорный абзац</li>
+<li>Краткая справочная таблица (необязательно)</li>
+<li>Диаграмма архитектуры (Mermaid)</li>
+<li>Подробные разделы (H2)</li>
+<li>Практические примеры (нумерованные, 4-6 примеров)</li>
+<li>Best practices (таблицы Do&#x27;s and Don&#x27;ts)</li>
+<li>Устранение неполадок</li>
+<li>Связанные гайды / официальная документация</li>
+<li>Footer с метаданными документа</li>
+</ol>
+<h4 id="h-8">Файл функции/примера <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<p>Отдельные файлы функций, например <code>optimize.md</code> или <code>pr.md</code>:</p>
+<ol>
+<li>YAML frontmatter (если применимо)</li>
+<li>H1 title</li>
+<li>Purpose / description</li>
+<li>Инструкции по использованию</li>
+<li>Примеры кода</li>
+<li>Советы по кастомизации</li>
+</ol>
+<h4 id="h-9">Разделители секций <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте горизонтальные линии (<code>---</code>) для отделения крупных областей документа:</p>
+<pre><code class="language-markdown">---
+
+## New Major Section</code></pre>
+<p>Ставьте их после вводной цитаты и между логически различными частями документа.</p>
+<hr>
+<h3 id="h-10">Заголовки <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-11">Иерархия <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Уровень</th><th>Использование</th><th>Пример</th></tr></thead><tbody><tr><td><code>#</code> H1</td><td>Заголовок страницы (один на документ)</td><td><code># Slash Commands</code></td></tr><tr><td><code>##</code> H2</td><td>Крупные разделы</td><td><code>## Best Practices</code></td></tr><tr><td><code>###</code> H3</td><td>Подразделы</td><td><code>### Adding a Skill</code></td></tr><tr><td><code>####</code> H4</td><td>Подподразделы (редко)</td><td><code>#### Configuration Options</code></td></tr></tbody></table></div>
+<h4 id="h-12">Правила <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Один H1 на документ</strong> — только заголовок страницы</li>
+<li><strong>Не пропускайте уровни</strong> — не переходите с H2 сразу на H4</li>
+<li><strong>Делайте заголовки короткими</strong> — 2-5 слов</li>
+<li><strong>Используйте sentence case</strong> — с заглавной только первое слово и имена собственные (исключение: названия функций остаются как есть)</li>
+<li><strong>Добавляйте emoji-префиксы только в корневом README</strong> у заголовков секций (см. <a href="#emoji-usage">Использование emoji</a>)</li>
+</ul>
+<hr>
+<h3 id="h-13">Форматирование текста <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-14">Выделение <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Стиль</th><th>Когда использовать</th><th>Пример</th></tr></thead><tbody><tr><td><strong>Bold</strong> (<code>**text**</code>)</td><td>Ключевые термины, подписи в таблицах, важные концепции</td><td><code>**Installation**:</code></td></tr><tr><td><em>Italic</em> (<code>*text*</code>)</td><td>Первое упоминание технического термина, названия книг/документов</td><td><code>*frontmatter*</code></td></tr><tr><td><code>Code</code> (`<code> </code>text<code> </code>`)</td><td>Имена файлов, команды, значения конфигурации, ссылки на код</td><td>`<code> </code>CLAUDE.md<code> </code>`</td></tr></tbody></table></div>
+<h4 id="h-15">Блок-цитаты для заметок <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте blockquote с жирным префиксом для важных заметок:</p>
+<pre><code class="language-markdown">&gt; **Note**: Custom slash commands have been merged into skills since v2.0.
+
+&gt; **Important**: Never commit API keys or credentials.
+
+&gt; **Tip**: Combine memory with skills for maximum effectiveness.</code></pre>
+<p>Поддерживаемые типы заметок: <strong>Note</strong>, <strong>Important</strong>, <strong>Tip</strong>, <strong>Warning</strong>.</p>
+<h4 id="h-16">Абзацы <a class="h-anchor" href="#h-16" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Держите абзацы короткими (2-4 предложения)</li>
+<li>Делайте пустую строку между абзацами</li>
+<li>Сначала сообщайте ключевую мысль, потом давайте контекст</li>
+<li>Объясняйте не только &quot;что&quot;, но и &quot;почему&quot;</li>
+</ul>
+<hr>
+<h3 id="h-17">Списки <a class="h-anchor" href="#h-17" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-18">Ненумерованные списки <a class="h-anchor" href="#h-18" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте дефисы (<code>-</code>) с отступом 2 пробела для вложенности:</p>
+<pre><code class="language-markdown">- First item
+- Second item
+  - Nested item
+  - Another nested item
+    - Deep nested (avoid going deeper than 3 levels)
+- Third item</code></pre>
+<h4 id="h-19">Нумерованные списки <a class="h-anchor" href="#h-19" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте нумерованные списки для последовательных шагов, инструкций и ранжированных элементов:</p>
+<pre><code class="language-markdown">1. First step
+2. Second step
+   - Sub-point detail
+   - Another sub-point
+3. Third step</code></pre>
+<h4 id="h-20">Описательные списки <a class="h-anchor" href="#h-20" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте жирные подписи для key-value списков:</p>
+<pre><code class="language-markdown">- **Performance bottlenecks** - identify O(n^2) operations, inefficient loops
+- **Memory leaks** - find unreleased resources, circular references
+- **Algorithm improvements** - suggest better algorithms or data structures</code></pre>
+<h4 id="h-21">Правила <a class="h-anchor" href="#h-21" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Соблюдайте единообразный отступ (2 пробела на уровень)</li>
+<li>Добавляйте пустую строку до и после списка</li>
+<li>Делайте элементы списка параллельными по структуре</li>
+<li>Не уходите глубже 3 уровней вложенности</li>
+</ul>
+<hr>
+<h3 id="h-22">Таблицы <a class="h-anchor" href="#h-22" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-23">Стандартный формат <a class="h-anchor" href="#h-23" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-markdown">| Column 1 | Column 2 | Column 3 |
+|----------|----------|----------|
+| Data     | Data     | Data     |</code></pre>
+<h4 id="h-24">Частые шаблоны таблиц <a class="h-anchor" href="#h-24" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Сравнение возможностей (3-4 колонки):</strong></p>
+<pre><code class="language-markdown">| Feature | Invocation | Persistence | Best For |
+|---------|-----------|------------|----------|
+| **Slash Commands** | Manual (`/cmd`) | Session only | Quick shortcuts |
+| **Memory** | Auto-loaded | Cross-session | Long-term learning |</code></pre>
+<p><strong>Do&#x27;s and Don&#x27;ts:</strong></p>
+<pre><code class="language-markdown">| Do | Don&#x27;t |
+|----|-------|
+| Use descriptive names | Use vague names |
+| Keep files focused | Overload a single file |</code></pre>
+<p><strong>Краткая справка:</strong></p>
+<pre><code class="language-markdown">| Aspect | Details |
+|--------|---------|
+| **Purpose** | Generate API documentation |
+| **Scope** | Project-level |
+| **Complexity** | Intermediate |</code></pre>
+<h4 id="h-25">Правила <a class="h-anchor" href="#h-25" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Делайте заголовки таблиц жирными, когда они выступают как подписи строк (первый столбец)</li>
+<li>По возможности выравнивайте вертикальные черты для читаемости исходника</li>
+<li>Делайте содержимое ячеек кратким; для деталей используйте ссылки</li>
+<li>Используйте <code>code formatting</code> для команд и путей внутри ячеек</li>
+</ul>
+<hr>
+<h3 id="h-26">Блоки кода <a class="h-anchor" href="#h-26" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-27">Языковые теги <a class="h-anchor" href="#h-27" aria-label="Ссылка на раздел">#</a></h4>
+<p>Всегда указывайте языковой тег для подсветки синтаксиса:</p>
+<div class="table-wrap"><table><thead><tr><th>Language</th><th>Tag</th><th>Use For</th></tr></thead><tbody><tr><td>Shell</td><td><code>bash</code></td><td>CLI commands, scripts</td></tr><tr><td>Python</td><td><code>python</code></td><td>Python code</td></tr><tr><td>JavaScript</td><td><code>javascript</code></td><td>JS code</td></tr><tr><td>TypeScript</td><td><code>typescript</code></td><td>TS code</td></tr><tr><td>JSON</td><td><code>json</code></td><td>Configuration files</td></tr><tr><td>YAML</td><td><code>yaml</code></td><td>Frontmatter, config</td></tr><tr><td>Markdown</td><td><code>markdown</code></td><td>Markdown examples</td></tr><tr><td>SQL</td><td><code>sql</code></td><td>Database queries</td></tr><tr><td>Plain text</td><td>(no tag)</td><td>Expected output, directory trees</td></tr></tbody></table></div>
+<h4 id="h-28">Соглашения <a class="h-anchor" href="#h-28" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Comment explaining what the command does
+claude mcp add notion --transport http https://mcp.notion.com/mcp</code></pre>
+<ul>
+<li>Добавляйте <strong>строку-комментарий</strong> перед неочевидными командами</li>
+<li>Делайте все примеры <strong>готовыми к копированию и вставке</strong></li>
+<li>Показывайте <strong>и простые, и продвинутые</strong> варианты, когда это уместно</li>
+<li>Добавляйте <strong>ожидаемый вывод</strong>, если это помогает понять пример (используйте code block без тега)</li>
+</ul>
+<h4 id="h-29">Блоки установки <a class="h-anchor" href="#h-29" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте такой шаблон для инструкций по установке:</p>
+<pre><code class="language-bash"># Copy files to your project
+cp 01-slash-commands/*.md .claude/commands/</code></pre>
+<h4 id="многошаговые-workflow">Многошаговые workflow <a class="h-anchor" href="#многошаговые-workflow" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Step 1: Create the directory
+mkdir -p .claude/commands
+
+# Step 2: Copy the templates
+cp 01-slash-commands/*.md .claude/commands/
+
+# Step 3: Verify installation
+ls .claude/commands/</code></pre>
+<hr>
+<h3 id="h-30">Ссылки и перекрёстные ссылки <a class="h-anchor" href="#h-30" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-31">Внутренние ссылки (относительные) <a class="h-anchor" href="#h-31" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте относительные пути для всех внутренних ссылок:</p>
+<pre><code class="language-markdown">[Slash Commands](01-slash-commands/)
+[Skills Guide](03-skills/)
+[Memory Architecture](02-memory/#memory-architecture)</code></pre>
+<p>Из папки урока назад к корню или соседнему разделу:</p>
+<pre><code class="language-markdown">[Back to main guide](../README.md)
+[Related: Skills](../03-skills/)</code></pre>
+<h4 id="h-32">Внешние ссылки (абсолютные) <a class="h-anchor" href="#h-32" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте полные URL с понятным текстом ссылки:</p>
+<pre><code class="language-markdown">[Anthropic&#x27;s official documentation](https://code.claude.com/docs/en/overview)</code></pre>
+<ul>
+<li>Никогда не используйте &quot;click here&quot; или &quot;this link&quot; как текст ссылки</li>
+<li>Используйте описательный текст, который понятен без контекста</li>
+</ul>
+<h4 id="h-33">Якоря разделов <a class="h-anchor" href="#h-33" aria-label="Ссылка на раздел">#</a></h4>
+<p>Ссылайтесь на разделы внутри того же документа с помощью якорей GitHub-стиля:</p>
+<pre><code class="language-markdown">[Feature Catalog](#-feature-catalog)
+[Best Practices](#best-practices)</code></pre>
+<h4 id="h-34">Шаблон связанных гайдов <a class="h-anchor" href="#h-34" aria-label="Ссылка на раздел">#</a></h4>
+<p>Заканчивайте уроки разделом related guides:</p>
+<pre><code class="language-markdown">## Related Guides
+
+- [Slash Commands](../01-slash-commands/) - Quick shortcuts
+- [Memory](../02-memory/) - Persistent context
+- [Skills](../03-skills/) - Reusable capabilities</code></pre>
+<hr>
+<h3 id="h-35">Диаграммы <a class="h-anchor" href="#h-35" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="mermaid">Mermaid <a class="h-anchor" href="#mermaid" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте Mermaid для всех диаграмм. Поддерживаемые типы:</p>
+<ul>
+<li><code>graph TB</code> / <code>graph LR</code> — архитектура, иерархия, потоки</li>
+<li><code>sequenceDiagram</code> — сценарии взаимодействия</li>
+<li><code>timeline</code> — хронологические последовательности</li>
+</ul>
+<h4 id="h-36">Соглашения по стилю <a class="h-anchor" href="#h-36" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте единые цвета через style blocks:</p>
+<pre><code class="language-mermaid">graph TB
+    A[&quot;Component A&quot;] --&gt; B[&quot;Component B&quot;]
+    B --&gt; C[&quot;Component C&quot;]
+
+    style A fill:#e1f5fe,stroke:#333,color:#333
+    style B fill:#fce4ec,stroke:#333,color:#333
+    style C fill:#e8f5e9,stroke:#333,color:#333</code></pre>
+<p><strong>Палитра цветов:</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Color</th><th>Hex</th><th>Use For</th></tr></thead><tbody><tr><td>Light blue</td><td><code>#e1f5fe</code></td><td>Primary components, inputs</td></tr><tr><td>Light pink</td><td><code>#fce4ec</code></td><td>Processing, middleware</td></tr><tr><td>Light green</td><td><code>#e8f5e9</code></td><td>Outputs, results</td></tr><tr><td>Light yellow</td><td><code>#fff9c4</code></td><td>Configuration, optional</td></tr><tr><td>Light purple</td><td><code>#f3e5f5</code></td><td>User-facing, UI</td></tr></tbody></table></div>
+<h4 id="h-37">Правила <a class="h-anchor" href="#h-37" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Используйте <code>[&quot;Label text&quot;]</code> для подписей узлов (это позволяет использовать специальные символы)</li>
+<li>Используйте <code>&lt;br/&gt;</code> для переносов строк внутри подписей</li>
+<li>Делайте диаграммы простыми (максимум 10-12 узлов)</li>
+<li>Добавляйте краткое текстовое описание под диаграммой для доступности</li>
+<li>Используйте top-to-bottom (<code>TB</code>) для иерархий, left-to-right (<code>LR</code>) для workflow</li>
+</ul>
+<hr>
+<h3 id="использование-emoji">Использование emoji <a class="h-anchor" href="#использование-emoji" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="где-используются-emoji">Где используются emoji <a class="h-anchor" href="#где-используются-emoji" aria-label="Ссылка на раздел">#</a></h4>
+<p>Emoji используются <strong>экономно и осмысленно</strong> — только в конкретных контекстах:</p>
+<div class="table-wrap"><table><thead><tr><th>Контекст</th><th>Emoji</th><th>Пример</th></tr></thead><tbody><tr><td>Заголовки секций корневого README</td><td>Иконки категорий</td><td><code>## 📚 Learning Path</code></td></tr><tr><td>Индикаторы уровня навыка</td><td>Цветные кружки</td><td>🟢 Beginner, 🔵 Intermediate, 🔴 Advanced</td></tr><tr><td>Do&#x27;s and Don&#x27;ts</td><td>Галочка / крест</td><td>✅ Do this, ❌ Don&#x27;t do this</td></tr><tr><td>Рейтинг сложности</td><td>Звёзды</td><td>⭐⭐⭐</td></tr></tbody></table></div>
+<h4 id="стандартный-набор-emoji">Стандартный набор emoji <a class="h-anchor" href="#стандартный-набор-emoji" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Emoji</th><th>Meaning</th></tr></thead><tbody><tr><td>📚</td><td>Learning, guides, documentation</td></tr><tr><td>⚡</td><td>Getting started, quick reference</td></tr><tr><td>🎯</td><td>Features, quick reference</td></tr><tr><td>🎓</td><td>Learning paths</td></tr><tr><td>📊</td><td>Statistics, comparisons</td></tr><tr><td>🚀</td><td>Installation, quick commands</td></tr><tr><td>🟢</td><td>Beginner level</td></tr><tr><td>🔵</td><td>Intermediate level</td></tr><tr><td>🔴</td><td>Advanced level</td></tr><tr><td>✅</td><td>Recommended practice</td></tr><tr><td>❌</td><td>Avoid / anti-pattern</td></tr><tr><td>⭐</td><td>Complexity rating unit</td></tr></tbody></table></div>
+<h4 id="h-38">Правила <a class="h-anchor" href="#h-38" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Никогда не используйте emoji в основном тексте</strong> или абзацах</li>
+<li><strong>Используйте emoji только в заголовках</strong> в корневом README (не в lesson READMEs)</li>
+<li><strong>Не добавляйте декоративные emoji</strong> — каждое emoji должно нести смысл</li>
+<li>Держите использование emoji согласованным с таблицей выше</li>
+</ul>
+<hr>
+<h3 id="yaml-frontmatter">YAML frontmatter <a class="h-anchor" href="#yaml-frontmatter" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="файлы-функций-skills-commands-agents">Файлы функций (Skills, Commands, Agents) <a class="h-anchor" href="#файлы-функций-skills-commands-agents" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-yaml">---
+name: unique-identifier
+description: What this feature does and when to use it
+allowed-tools: Bash, Read, Grep
+---</code></pre>
+<h4 id="h-39">Необязательные поля <a class="h-anchor" href="#h-39" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-yaml">---
+name: my-feature
+description: Brief description
+argument-hint: &quot;[file-path] [options]&quot;
+allowed-tools: Bash, Read, Grep, Write, Edit
+model: opus                        # opus, sonnet, or haiku
+disable-model-invocation: true     # User-only invocation
+user-invocable: false              # Hidden from user menu
+context: fork                      # Run in isolated subagent
+agent: Explore                     # Agent type for context: fork
+---</code></pre>
+<h4 id="h-40">Правила <a class="h-anchor" href="#h-40" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Размещайте frontmatter в самом верху файла</li>
+<li>Используйте <strong>kebab-case</strong> для поля <code>name</code></li>
+<li>Держите <code>description</code> в пределах одного предложения</li>
+<li>Включайте только нужные поля</li>
+</ul>
+<hr>
+<h3 id="h-41">Изображения и медиа <a class="h-anchor" href="#h-41" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-42">Шаблон логотипа <a class="h-anchor" href="#h-42" aria-label="Ссылка на раздел">#</a></h4>
+<p>Все документы, которые начинаются с логотипа, используют элемент <code>&lt;picture&gt;</code> для поддержки светлой и тёмной темы:</p>
+<pre><code class="language-html">&lt;picture&gt;
+  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;resources/logos/claude-howto-logo-dark.svg&quot;&gt;
+  &lt;img alt=&quot;Claude How To&quot; src=&quot;resources/logos/claude-howto-logo.svg&quot;&gt;
+&lt;/picture&gt;</code></pre>
+<h4 id="h-43">Скриншоты <a class="h-anchor" href="#h-43" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Храните их в соответствующей папке урока, например <code>01-slash-commands/pr-slash-command.png</code></li>
+<li>Используйте имена файлов в kebab-case</li>
+<li>Добавляйте понятный alt text</li>
+<li>Для диаграмм предпочитайте SVG, для скриншотов — PNG</li>
+</ul>
+<h4 id="h-44">Правила <a class="h-anchor" href="#h-44" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Всегда указывайте alt text для изображений</li>
+<li>Следите за разумным размером файлов изображений (менее 500 KB для PNG)</li>
+<li>Используйте относительные пути для ссылок на изображения</li>
+<li>Храните изображения в той же директории, что и документ, который на них ссылается, либо в <code>assets/</code> для общих ресурсов</li>
+</ul>
+<hr>
+<h3 id="h-45">Тон и голос <a class="h-anchor" href="#h-45" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-46">Стиль письма <a class="h-anchor" href="#h-46" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Professional but approachable</strong> — техническая точность без перегруза жаргоном</li>
+<li><strong>Active voice</strong> — &quot;Create a file&quot;, а не &quot;A file should be created&quot;</li>
+<li><strong>Direct instructions</strong> — &quot;Run this command&quot;, а не &quot;You might want to run this command&quot;</li>
+<li><strong>Beginner-friendly</strong> — считайте, что читатель новичок в Claude Code, но не в программировании</li>
+</ul>
+<h4 id="h-47">Принципы контента <a class="h-anchor" href="#h-47" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Принцип</th><th>Пример</th></tr></thead><tbody><tr><td><strong>Show, don&#x27;t tell</strong></td><td>Давайте работающие примеры, а не абстрактные описания</td></tr><tr><td><strong>Progressive complexity</strong></td><td>Начинайте просто, добавляйте глубину в более поздних разделах</td></tr><tr><td><strong>Explain the &quot;why&quot;</strong></td><td>&quot;Use memory for... because...&quot; а не только &quot;Use memory for...&quot;</td></tr><tr><td><strong>Copy-paste ready</strong></td><td>Каждый блок кода должен работать после вставки</td></tr><tr><td><strong>Real-world context</strong></td><td>Используйте практические сценарии, а не искусственные примеры</td></tr></tbody></table></div>
+<h4 id="h-48">Словарь <a class="h-anchor" href="#h-48" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Используйте &quot;Claude Code&quot; (не &quot;Claude CLI&quot; и не &quot;the tool&quot;)</li>
+<li>Используйте &quot;skill&quot; (а не &quot;custom command&quot; — это устаревший термин)</li>
+<li>Используйте &quot;lesson&quot; или &quot;guide&quot; для пронумерованных разделов</li>
+<li>Используйте &quot;example&quot; для отдельных файлов функций</li>
+</ul>
+<hr>
+<h3 id="h-49">Сообщения коммитов <a class="h-anchor" href="#h-49" aria-label="Ссылка на раздел">#</a></h3>
+<p>Следуйте <a href="https://www.conventionalcommits.org/">Conventional Commits</a>:</p>
+<pre><code>type(scope): description</code></pre>
+<h4 id="h-50">Типы <a class="h-anchor" href="#h-50" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Type</th><th>Use For</th></tr></thead><tbody><tr><td><code>feat</code></td><td>New feature, example, or guide</td></tr><tr><td><code>fix</code></td><td>Bug fix, correction, broken link</td></tr><tr><td><code>docs</code></td><td>Documentation improvements</td></tr><tr><td><code>refactor</code></td><td>Restructuring without changing behavior</td></tr><tr><td><code>style</code></td><td>Formatting changes only</td></tr><tr><td><code>test</code></td><td>Test additions or changes</td></tr><tr><td><code>chore</code></td><td>Build, dependencies, CI</td></tr></tbody></table></div>
+<h4 id="h-51">Области <a class="h-anchor" href="#h-51" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте имя урока или область файла как scope:</p>
+<pre><code>feat(slash-commands): Add API documentation generator
+docs(memory): Improve personal preferences example
+fix(README): Correct table of contents link
+docs(skills): Add comprehensive code review skill</code></pre>
+<hr>
+<h3 id="h-52">Нижний колонтитул с метаданными документа <a class="h-anchor" href="#h-52" aria-label="Ссылка на раздел">#</a></h3>
+<p>README уроков заканчиваются блоком метаданных:</p>
+<pre><code class="language-markdown">---
+**Last Updated**: March 2026
+**Claude Code Version**: 2.1+
+**Compatible Models**: Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5</code></pre>
+<ul>
+<li>Используйте формат месяц + год, например &quot;March 2026&quot;</li>
+<li>Обновляйте версию при изменении функций</li>
+<li>Перечисляйте все совместимые модели</li>
+</ul>
+<hr>
+<h3 id="h-53">Чеклист для авторов <a class="h-anchor" href="#h-53" aria-label="Ссылка на раздел">#</a></h3>
+<p>Перед отправкой контента проверьте:</p>
+<ul>
+<li>[ ] Имена файлов и папок используют kebab-case</li>
+<li>[ ] Документ начинается с H1 title (один на файл)</li>
+<li>[ ] Иерархия заголовков корректна (без пропусков уровней)</li>
+<li>[ ] У всех блоков кода есть языковые теги</li>
+<li>[ ] Примеры кода готовы к копированию и вставке</li>
+<li>[ ] Внутренние ссылки используют относительные пути</li>
+<li>[ ] У внешних ссылок есть описательный anchor text</li>
+<li>[ ] Таблицы отформатированы правильно</li>
+<li>[ ] Emoji соответствуют стандартному набору, если используются</li>
+<li>[ ] Диаграммы Mermaid используют стандартную цветовую палитру</li>
+<li>[ ] Нет чувствительной информации (API keys, credentials)</li>
+<li>[ ] YAML frontmatter валиден, если он используется</li>
+<li>[ ] У изображений есть alt text</li>
+<li>[ ] Абзацы короткие и сфокусированные</li>
+<li>[ ] Раздел related guides ссылается на релевантные уроки</li>
+<li>[ ] Сообщение коммита соответствует формату Conventional Commits</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,440 @@
+> ## Documentation Index
+> Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Запуск параллельных сеансов с worktrees
+
+> Изолируйте параллельные сеансы Claude Code в отдельных git worktrees, чтобы изменения не конфликтовали. Охватывает флаг `--worktree`, изоляцию subagent, `.worktreeinclude`, очистку и hooks для не-git VCS.
+
+[git worktree](https://git-scm.com/docs/git-worktree) — это отдельный рабочий каталог с собственными файлами и веткой, использующий ту же историю репозитория и удалённый сервер, что и ваша основная копия. Запуск каждой сессии Claude Code в собственном worktree даёт ей отдельную копию файлов для редактирования, поэтому одна сессия может создавать функцию, а вторая исправлять ошибку.
+
+> [!NOTE]
+>
+> Если вы используете другую систему контроля версий или десктопное приложение, следуйте инструкциям для вашей конфигурации:
+>
+> * **Другие системы контроля версий**: worktrees требуют git-репозитория; [настройте хуки для замены логики git](#non-git-version-control)
+> * **Десктопное приложение**: см. [Запуск сессии в собственном worktree](https://code.claude.com/docs/ru/desktop.md#run-a-session-in-its-own-worktree)
+
+Worktrees — один из нескольких способов запуска Claude параллельно. Они изолируют правки файлов. [Subagents](https://code.claude.com/docs/ru/sub-agents.md) разделяют работу внутри одного сеанса, а [кросс-сеансовая передача сообщений](https://code.claude.com/docs/ru/cross-session-messaging.md) позволяет Claude передавать результаты между сеансами в ваших worktrees. См. [Запуск агентов параллельно](https://code.claude.com/docs/ru/agents.md), чтобы сравнить подходы, или перейдите к [Изолируйте subagents с помощью worktrees](#isolate-subagents-with-worktrees), чтобы использовать worktrees и subagents вместе.
+
+Большинству сеансов нужны только первые два раздела: [запустите Claude в worktree](#start-claude-in-a-worktree), затем [очистите при выходе](#clean-up-worktrees). Вернитесь к остальной части страницы, когда вам нужно [возобновить сеанс](#resume-a-worktree-session), [изменить способ создания worktrees](#customize-worktree-creation) или [отладить сбой](#troubleshooting).
+
+## Запустите Claude в worktree
+
+Передайте `--worktree` или `-w` с именем, чтобы создать изолированный worktree и запустить Claude в нём. По умолчанию worktree создаётся в `.claude/worktrees/<name>/` в корне вашего репозитория на новой ветке с именем `worktree-<name>`:
+
+```bash theme={null}
+claude --worktree feature-auth
+```
+
+Запустите команду снова с другим именем в другом терминале, чтобы запустить второй изолированный сеанс. Если вы опустите имя, Claude сгенерирует одно, например `bright-running-fox`.
+
+Интерактивные запуски требуют [доверия рабочей области](https://code.claude.com/docs/ru/security.md): если вы ещё не запускали Claude в этом каталоге, запустите `claude` один раз там, чтобы принять диалог доверия, или `--worktree` завершится с ошибкой, предлагая вам это сделать. Неинтерактивные запуски с `-p` пропускают проверку доверия, поэтому `claude -p --worktree` продолжает работу без неё.
+
+> [!TIP]
+>
+> Добавьте `.claude/worktrees/` в ваш `.gitignore`, чтобы содержимое worktree не отображалось как неотслеживаемые файлы в вашей основной копии.
+
+### Настройте окружение worktree
+
+Worktree — это свежая копия, поэтому инициализируйте вашу среду разработки там: попросите Claude установить зависимости или запустите настройку вашего проекта самостоятельно в каталоге worktree в `.claude/worktrees/`. Чтобы автоматически переносить игнорируемые git файлы, такие как `.env`, в каждый новый worktree, добавьте файл [`.worktreeinclude`](#copy-gitignored-files-into-worktrees).
+
+### Попросите Claude создать worktree
+
+Вы также можете попросить Claude «работать в worktree» во время сессии, и он создаст его с помощью инструмента [`EnterWorktree`](https://code.claude.com/docs/ru/tools-reference#enterworktree-tool-behavior). После входа в worktree Claude может переключиться непосредственно на другой worktree в `.claude/worktrees/`, вызвав `EnterWorktree` с целевым путём; предыдущий worktree остаётся на диске нетронутым.
+
+Когда Claude входит в путь вне каталога `.claude/worktrees/` репозитория, Claude Code сначала запрашивает ваше подтверждение. Это перемещение переносит в указанное место рабочий каталог сессии, доступ на запись и конфигурацию проекта, такую как `CLAUDE.md` и настройки. [Правило разрешений](https://code.claude.com/docs/ru/permissions.md) для `EnterWorktree` или выбор «не спрашивать снова» не отключает этот запрос подтверждения; пропускает его только режим `bypassPermissions`.
+
+> [!NOTE]
+>
+> **Пути hooks не следуют за worktree.** После того как Claude входит в worktree, Claude Code сохраняет `${CLAUDE_PROJECT_DIR}` в ваших [hooks](https://code.claude.com/docs/ru/hooks.md#reference-scripts-by-path) там, где он был, и передаёт путь worktree им другим способом:
+>
+> * **`${CLAUDE_PROJECT_DIR}` остаётся на месте**: он по-прежнему указывает на корень проекта, где сеанс начался, поэтому команда hook, такая как `${CLAUDE_PROJECT_DIR}/.claude/hooks/check-style.sh`, по-прежнему запускает скрипт в основной копии.
+> * **`cwd` следует за Claude**: поле `cwd` в [входном JSON](https://code.claude.com/docs/ru/hooks.md#common-input-fields) hook — это корень worktree, и оно снова перемещается, когда Claude запускает `cd`. Читайте его, когда hook нужен путь worktree.
+
+#### У Claude нет инструмента `EnterWorktree`
+
+Если вы просите Claude работать в worktree, а у него нет инструмента `EnterWorktree` или `ExitWorktree`, проверьте, включён ли параметр [`permissions.blockWritesOutsideWorkingDirectories`](https://code.claude.com/docs/ru/settings-reference#permissions-blockwritesoutsideworkingdirectories). Когда этот параметр включён, Claude Code удаляет оба инструмента для работы с worktree или отклоняет их вызовы.
+
+Вы можете продолжать работать в worktree, пока этот параметр включён:
+
+* **Интерактивные сессии**: запустите сессию в worktree с помощью `claude --worktree`.
+* **[Фоновые сессии](https://code.claude.com/docs/ru/agent-view.md#how-file-edits-are-isolated)**: Claude Code отклоняет правки фоновой сессии в вашей основной копии, пока сессия не вызовет `EnterWorktree`, которого у неё нет. Любой из следующих способов позволяет сессии вносить правки:
+  * Запустите её с помощью `claude --bg --worktree`
+  * Установите для [`worktree.bgIsolation`](https://code.claude.com/docs/ru/settings-reference#worktree-bgisolation) значение `"none"`
+  * Попросите Claude вносить правки в worktree, созданном с помощью `git worktree add` внутри каталога, в котором была запущена сессия
+
+Чтобы вернуть инструменты, выполните `/status` в сессии, чтобы вывести список [загруженных ею источников настроек](https://code.claude.com/docs/ru/settings.md#check-what-loaded), и удалите этот параметр из каждого файла, в котором он задан. Затем перезапустите Claude Code. Если параметр задан в управляемых настройках, спросите у администратора, следует ли изменить политику.
+
+## Очистка worktrees
+
+Когда вы выходите из интерактивного сеанса worktree, Claude проверяет worktree на наличие работы, которая будет удалена при удалении: изменённые или неотслеживаемые файлы, незафиксированная работа внутри извлечённых подмодулей и новые коммиты. Эти правила применяются к worktrees, которые Claude создал с помощью git. Для worktree, который создал ваш [WorktreeCreate hook](https://code.claude.com/docs/ru/hooks.md#worktreecreate), см. вместо этого [WorktreeRemove](https://code.claude.com/docs/ru/hooks.md#worktreeremove).
+
+* **Worktree чист**: для безымянного сеанса Claude автоматически удаляет worktree и его ветку. [Именованный](https://code.claude.com/docs/ru/sessions.md#name-your-sessions) сеанс сначала предлагает вам, чтобы вы могли сохранить worktree на потом
+* **Worktree содержит работу**: Claude предлагает вам сохранить или удалить worktree. Сохранение сохраняет каталог и ветку. Чтобы вернуться позже, запустите команду `claude --worktree <name> --resume`, которую Claude Code выведет при выходе. Удаление удаляет каталог worktree и его ветку, вместе со всей работой в них
+* **Извлечена другая ветка**: если worktree находится на ветке, отличной от его собственной, и в ней есть коммиты после начального коммита worktree, Claude предлагает вам сохранить или удалить worktree. При любом ответе эта другая ветка и её коммиты сохраняются. Удаление удаляет каталог worktree и собственную ветку worktree — ту, которую Claude создал вместе с ним
+* **Состояние worktree не может быть проверено**: когда Claude Code не может подсчитать изменения worktree или не может проверить проверки его подмодулей, он предлагает вам вместо автоматического удаления worktree. Подсказка указывает, что он не смог проверить
+
+Неинтерактивные запуски с `-p` не имеют подсказки выхода, поэтому Claude не очищает их worktrees, и Claude Code оставляет блокировку, которую он взял на каждый при создании, на месте до тех пор, пока более поздний сеанс [очистка устаревших блокировок](#clean-up-subagent-and-background-session-worktrees) не освободит её. Чтобы удалить один, запустите `git worktree remove`; если git отказывает, потому что worktree заблокирован, сначала запустите `git worktree unlock` на нём.
+
+На Windows удаление worktree не удаляет файлы вне него. Если папка внутри worktree — это ссылка на что-то другое, например соединение NTFS или символическая ссылка на каталог, Claude Code удаляет только ссылку.
+
+## Возобновите сеанс worktree
+
+Когда вы возобновляете сессию, которая закончилась внутри worktree без [выхода из него](#clean-up-worktrees), Claude Code возвращает сессию в этот worktree. Это применяется к интерактивным возобновлениям, к `--continue` и `--resume` в [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) с `-p` и к Agent SDK. `--continue` выбирает самую последнюю сессию, записанную в каталоге, из которого вы запускаете. Вернувшись в worktree, Claude может выйти из него с помощью инструмента [`ExitWorktree`](https://code.claude.com/docs/ru/tools-reference), [если у сессии есть этот инструмент](#claude-has-no-enterworktree-tool).
+
+Перед возвращением сеанса в его worktree Claude Code проверяет, что worktree по-прежнему является отдельной копией от основной, и отказывается повторно входить в worktree, который не проходит проверку. Для git worktree проверка читает его метаданные git. Worktree без метаданных git, такой как тот, который создал hook [`WorktreeCreate`](#non-git-version-control), может пройти проверку; случаи, которые Claude Code по-прежнему отказывается использовать, перечислены с их восстановлением в разделе [Claude Code отказывается использовать worktree](#claude-code-refuses-to-use-a-worktree). Для сообщений и способов восстановления от каждого см. [Сеанс возобновляется вне его worktree](#the-session-resumes-outside-its-worktree).
+
+Где вы запускаете и как вы возобновляете, изменяет то, что Claude Code повторно входит:
+
+* **Каталог запуска**: возобновите с помощью `--resume` из основной копии или другого каталога репозитория. Claude Code повторно входит в worktree, который он создал с git в `.claude/worktrees/`, даже когда вы запускаете из него. Когда вы запускаете из любого другого worktree, Claude Code повторно входит в него только если может поручиться за него оттуда: worktree, который является его собственным репозиторием, один без метаданных git, или запуск из подкаталога worktree, который вы создали с `git worktree add`, отказывает, поэтому запускайте их из основной копии.
+* **`--fork-session`**: разветвлённый сеанс начинается в каталоге, из которого вы запустили Claude, и Claude Code оставляет worktree исходного сеанса нетронутым.
+* **Удалённый worktree**: если каталог worktree больше не существует, Claude Code возобновляет сеанс в каталоге, из которого вы запустили Claude. Он сообщает вам, что worktree исчез, и очищает привязку worktree сеанса.
+
+> [!NOTE]
+>
+> До версии 2.1.212 неинтерактивное возобновление оставалось в начальном каталоге и `ExitWorktree` сообщал, что не было активного сеанса worktree для выхода.
+
+Когда Claude входит в worktree, который Claude Code создал с git, или выходит из него, транскрипт следует за ним. Claude Code записывает сессию в новый рабочий каталог сессии, так же как это делает [`/cd`](https://code.claude.com/docs/ru/commands), поэтому `/desktop` и `--resume` находят её там. Выход перемещает её обратно тем же способом. Worktree, созданный хуком [`WorktreeCreate`](#non-git-version-control), сохраняет свой транскрипт в каталоге запуска.
+
+## Как Claude Code обеспечивает изоляцию
+
+Пока сеанс изолирован в worktree, Claude Code блокирует вызовы инструментов, которые определяют приведённые ниже проверки. Те же правила применяются независимо от того, запустили ли вы сеанс с `--worktree`, Claude вошёл в worktree с `EnterWorktree` или вы возобновили сеанс worktree.
+
+Та же самая защита охватывает каждого subagent, который Claude порождает из изолированного сеанса. Она применяется независимо от того, является ли сеанс интерактивным или работает в [фоне](https://code.claude.com/docs/ru/agent-view.md#how-file-edits-are-isolated). [Subagents, которые работают в собственном worktree](#isolate-subagents-with-worktrees), несут те же проверки. Их история версий находится в разделе [Запись файлов subagent](https://code.claude.com/docs/ru/sub-agents.md#write-subagent-files).
+
+Claude Code применяет четыре проверки:
+
+* **Правки файлов**: Claude Code блокирует `Edit`, `Write` или `NotebookEdit`, который нацелен на путь в основной копии. Чтобы изменить файл в основной копии, отредактируйте его самостоятельно или запустите там интерактивную сессию.
+* **Рабочий каталог команды**: Claude Code блокирует команду Bash, PowerShell или Monitor, чей рабочий каталог разрешается в основную копию, или чей рабочий каталог он не может проверить, остаётся вне неё.
+* **Перенаправления git**: Claude Code блокирует команду Bash или Monitor, которая перенаправляет git в основную копию. Перенаправление может поступать через `git -C`, `--git-dir`, переменную `GIT_DIR` или `GIT_WORK_TREE` или `cd` в основную копию перед запуском git.
+* **Форма команды**: Claude Code блокирует команду Bash или Monitor, когда он не может проверить из текста команды, что любой git, который запускает команда, остаётся внутри worktree. Это происходит, например, когда имя команды вычисляется во время выполнения, когда синтаксис не может быть проанализирован, или когда расширение, такое как `${!name}` или `${ command; }`, может запустить команду, которую текст не указывает явно. Claude Code сообщает Claude, как переписать отказанную команду, например разделив её на простые отдельные команды. Вы не можете отключить эту проверку.
+
+Эти проверки считывают путь, на который нацелена правка, каталог, в котором выполняется команда, и текст команды. Ни одна из них не отслеживает, какие файлы записывает shell-команда, поэтому команда, которая записывает в основную копию, не запуская там git, например `cp` или перенаправление оболочки, ими не отклоняется. Claude Code обрабатывает такую команду как любую другую shell-команду в соответствии с вашими настройками [разрешений](https://code.claude.com/docs/ru/permissions.md) и [изоляции в песочнице](https://code.claude.com/docs/ru/sandboxing.md).
+
+Проверки применяются к репозиторию, из которого вы запустили Claude Code. Они также охватывают основную копию, на которую ссылается связанный worktree. Для команд PowerShell Claude Code применяет только проверку рабочего каталога.
+
+Claude видит каждый отказ как ошибку инструмента, которая называет worktree и говорит, как продолжить. Для отказанной команды см. [что означает сообщение об отказе и как его очистить](https://code.claude.com/docs/ru/errors.md#command-blocked-by-the-worktree-isolation-checks).
+
+## Изолируйте subagents с помощью worktrees
+
+Subagents могут работать в собственных worktrees, чтобы параллельные правки не конфликтовали. Попросите Claude "использовать worktrees для ваших агентов" или сделайте изоляцию постоянной для [пользовательского subagent](https://code.claude.com/docs/ru/sub-agents.md#supported-frontmatter-fields), добавив `isolation: worktree` в frontmatter.
+
+Этот subagent в `.claude/agents/` всегда работает в собственном worktree:
+
+```markdown theme={null}
+---
+name: refactorer
+description: Applies mechanical refactors across many files
+isolation: worktree
+---
+
+Apply the requested refactor across every affected file, then run the tests
+and report the results.
+```
+
+Каждый субагент получает временный worktree, который Claude Code автоматически удаляет, когда субагент завершает работу без изменений; worktree с изменениями остаётся на диске до тех пор, пока [периодическая очистка ниже](#clean-up-subagent-and-background-session-worktrees) не сможет его удалить без потери работы. Для worktree, созданного вашим [хуком WorktreeCreate](https://code.claude.com/docs/ru/hooks.md#worktreecreate), см. вместо этого [WorktreeRemove](https://code.claude.com/docs/ru/hooks.md#worktreeremove).
+
+Worktrees subagents используют ту же [базовую ветку](#choose-the-base-branch), что и `--worktree`, поэтому они ветвятся от ветки по умолчанию вашего репозитория, если только `worktree.baseRef` не установлен на `"head"`.
+
+Субагент в собственном worktree получает файлы инструкций, с которыми он [запускается](https://code.claude.com/docs/ru/sub-agents.md#what-loads-at-startup), из вашего основного диалога, а не из своего worktree. Когда этот worktree находится в расположении по умолчанию в `.claude/worktrees/`, субагент также не загружает файл `CLAUDE.md` или каталог `.claude/rules/` в корне worktree при чтении файлов там, даже если они отличаются в ветке worktree.
+
+### Очистка worktrees subagent и фоновых сеансов
+
+Claude Code запускает периодическую очистку, которая удаляет worktrees, которые Claude создал для subagents и [фоновых сеансов](https://code.claude.com/docs/ru/agent-view.md#how-file-edits-are-isolated), как только они становятся старше вашего параметра [`cleanupPeriodDays`](https://code.claude.com/docs/ru/settings-reference#cleanupperioddays), следуя [правилам очистки](https://code.claude.com/docs/ru/claude-directory.md#cleaned-up-automatically).
+
+Когда вы [отправляете в фон](https://code.claude.com/docs/ru/agent-view.md#send-the-session-to-the-background) сеанс `--worktree`, его worktree становится worktree фонового сеанса, который очистка может удалить. Очистка оставляет worktree на месте в этих случаях:
+
+* Worktree по-прежнему содержит работу: изменённые или неотслеживаемые файлы или неотправленные коммиты.
+* Извлечённый submodule в worktree содержит изменённые или неотслеживаемые файлы, или Claude Code не может проверить submodules worktree. Эта проверка требует Claude Code v2.1.274 или более позднюю версию.
+* Один из [четырёх случаев, которые также блокируют создание worktree](#git-lfs-content-is-missing-from-a-worktree-claude-code-created) применяется: Claude Code не может определить, какие драйверы фильтров определяет конфигурация репозитория, или находит там параметр, который не может отключить.
+* Worktree принадлежит сеансу `--worktree`, который вы не отправили в фон, независимо от его возраста.
+* Вы создали worktree самостоятельно с `git worktree add`, даже если вы затем запустили сеанс `--worktree <name>` в нём и отправили этот сеанс в фон.
+
+Claude Code записывает маркер в метаданные git каждого worktree, который он создаёт с git, и очистка сохраняет любой worktree без него, включая worktree, который создал hook [`WorktreeCreate`](#non-git-version-control).
+
+#### Блокировки worktree и ручное удаление
+
+Пока агент работает, Claude Code держит `git worktree lock` на его worktree, чтобы одновременная очистка не могла его удалить, и освобождает блокировку, когда агент завершает работу. Claude Code держит ту же блокировку на worktree, который он создал для фонового сеанса, пока сеанс работает, поэтому очистка оставляет worktree на месте и `git worktree remove` отказывает его удалить.
+
+Очистка также освобождает блокировку, которую Claude Code установил для сессии, чей процесс завершился, поэтому убитая фоновая сессия не оставляет свой worktree постоянно заблокированным. Очистка никогда не освобождает блокировку, которую вы установили самостоятельно с помощью `git worktree lock`.
+
+Чтобы очистить worktree, который очистка сохраняет, запустите `git worktree remove`, добавив `--force`, если worktree содержит неотправленные изменения или неотслеживаемые файлы. Если git отказывает, потому что worktree заблокирован, сначала запустите `git worktree unlock` на нём.
+
+## Настройка создания worktree
+
+Стандартные параметры Claude Code для создания worktree подходят для большинства сессий: worktree создаются в `.claude/worktrees/`, ответвляются от ветки по умолчанию вашего репозитория, и в них извлекаются только отслеживаемые файлы. Параметры в этом разделе изменяют эти стандартные значения.
+
+### Выбор базовой ветки
+
+Новые worktree ответвляются от ветки по умолчанию репозитория, поэтому в большинстве сессий эта настройка не нужна. Задайте `worktree.baseRef` в [настройках](https://code.claude.com/docs/ru/settings-reference.md#worktree), чтобы вместо этого ответвляться от вашей текущей работы. Настройка принимает два значения:
+
+* `"fresh"` (по умолчанию): ответвление от ветки по умолчанию репозитория на удалённом сервере, обычно `main`, чтобы worktree начинался с чистого дерева, совпадающего с удалённым.
+* `"head"`: ответвление от вашего текущего локального `HEAD`, чтобы worktree содержал ваши неотправленные коммиты и состояние feature-ветки. Используйте это значение при изоляции субагентов, которым нужно работать с незавершённой работой. Внутри worktree `"head"` указывает на `HEAD` этого worktree, а не основного checkout.
+
+Задать в `worktree.baseRef` имя ветки нельзя. Чтобы создать worktree от конкретной существующей ветки, [создайте его напрямую с помощью git](#manage-worktrees-manually).
+
+При базе `"fresh"` Claude Code поддерживает `origin/HEAD` в актуальном состоянии:
+
+* Если репозиторий не получал обновления в течение последних 24 часов, Claude Code выполняет fetch ветки по умолчанию с ограничением в пять секунд и использует локально кэшированную ссылку, если fetch завершился неудачно.
+* Fetch никогда не ожидает ввода в вашем терминале. Он также считается неудачным, если git или ssh запросили бы пароль, парольную фразу ключа или подтверждение нового SSH-хоста.
+* Если удалённый репозиторий не настроен либо `origin/HEAD` не кэширован локально и не может быть получен, worktree создаётся от вашего текущего локального `HEAD`.
+
+В этом примере каждый новый worktree ответвляется от вашей текущей работы:
+
+```json theme={null}
+{
+  "worktree": {
+    "baseRef": "head"
+  }
+}
+```
+
+### Ответвление от pull request
+
+Чтобы ответвиться от конкретного pull request или merge request, передайте `--worktree` номер с префиксом `#`, URL pull request GitHub или URL merge request GitLab, например `https://gitlab.com/group/repo/-/merge_requests/123`. Claude Code получает головной коммит этого изменения из `origin` и создаёт worktree в `.claude/worktrees/pr-<number>`. Заключите аргумент в кавычки, чтобы оболочка не восприняла `#` как начало комментария:
+
+```bash theme={null}
+claude --worktree "#1234"
+```
+
+Claude Code считывает из URL только номер. Он всегда выполняет fetch из удалённого репозитория `origin` вашего репозитория и выбирает путь для fetch в зависимости от хоста `origin`:
+
+* **github.com**: получает `pull/<number>/head`
+* **gitlab.com**: получает `merge-requests/<number>/head`
+* **GitHub Enterprise, самостоятельно размещённый GitLab или любой другой хост**: сначала пробует `pull/<number>/head`, затем `merge-requests/<number>/head`
+
+Этот fetch никогда не ожидает ввода в вашем терминале. Если git или ssh запросили бы пароль, парольную фразу ключа или подтверждение нового SSH-хоста, fetch вместо этого завершается неудачно, и Claude Code завершает работу с сообщением `Error creating worktree: Failed to fetch PR/MR #<number>`. Ключ, который хранится в `ssh-agent`, по-прежнему работает, поэтому загрузите туда свой ключ и один раз выполните `git fetch` вручную, чтобы записать новый хост перед началом работы.
+
+### Копирование игнорируемых git файлов в worktree
+
+Worktree — это новый checkout, поэтому неотслеживаемые файлы, такие как `.env` или `.env.local`, из вашего основного репозитория в нём отсутствуют. Чтобы автоматически копировать их, когда Claude создаёт worktree, добавьте файл `.worktreeinclude` в корень проекта.
+
+Файл использует синтаксис `.gitignore`. Копируются только файлы, которые соответствуют шаблону и при этом игнорируются git, поэтому отслеживаемые файлы никогда не дублируются.
+
+Если вы пишете шаблон, начинающийся с `**/`, а нужные файлы находятся внутри каталога, который игнорируется git целиком, Claude Code копирует их, только если сам этот каталог соответствует шаблону или если первое имя после `**/` является одним из имён в пути к каталогу. Например, если вы пишете `**/.claude/skills/*.md`, первое имя — `.claude`, поэтому Claude Code копирует соответствующие файлы из игнорируемого каталога `.claude/`. Чтобы копировать файлы из игнорируемого каталога, до которого шаблон с `**/` не доходит, укажите каталог в шаблоне явно: пишите `vendor/**/config.json`, а не `**/config.json`. До v2.1.239 Claude Code копировал файлы из полностью игнорируемого каталога для шаблона `**/`, только если сам каталог соответствовал шаблону.
+
+Этот `.worktreeinclude` копирует два env-файла и конфигурацию секретов в каждый новый worktree:
+
+```text .worktreeinclude theme={null}
+.env
+.env.local
+config/secrets.json
+```
+
+Это относится к каждому worktree, который Claude Code создаёт с помощью git: worktree через `--worktree`, [worktree субагентов](#isolate-subagents-with-worktrees) и параллельным сессиям в [десктопном приложении](https://code.claude.com/docs/ru/desktop.md#work-in-parallel-with-sessions). При использовании [хука `WorktreeCreate`](#non-git-version-control) копируйте файлы внутри скрипта хука.
+
+### Повторное использование имени worktree
+
+Если worktree с именем, которое вы передаёте в `--worktree`, уже существует, Claude Code открывает его, а не создаёт новый. Если Claude Code останавливается с ошибкой, содержащей `belongs to a different repository` или `is a leftover worktree`, см. [Каталог worktree `belongs to a different repository`](#belongs-to-a-different-repository).
+
+При [базе](#choose-the-base-branch) `"fresh"` по умолчанию повторно открытый worktree сбрасывается на ветку по умолчанию репозитория, а не продолжает с прежней вершины, если выполняются все следующие условия:
+
+* [Песочница](https://code.claude.com/docs/ru/sandboxing.md#filesystem-isolation) не ограничивает запись файлов в вашей сессии, и ни файлы настроек `.claude` worktree, ни файлы настроек `.claude` основного checkout не включают песочницу.
+* В worktree нет незакоммиченных изменений или неотслеживаемых файлов.
+* Он по-прежнему находится на ветке, которую Claude Code создал для него.
+* В нём нет собственных коммитов, либо его pull request или merge request был слит, а удалённая ветка удалена.
+
+Claude Code определяет случай слияния только по состоянию git: удалённая ветка, в которую worktree отправлял изменения, больше не существует, и каждый коммит в worktree уже есть в ветке по умолчанию.
+
+Во всех остальных случаях Claude Code повторно открывает worktree на прежней вершине:
+
+* Worktree или сессия не удовлетворяет какому-либо из условий.
+* Claude Code не может проверить состояние worktree.
+* `worktree.baseRef` имеет значение `"head"`.
+* Имя является ссылкой на pull request или merge request.
+
+Если вы используете песочницу с базой `"fresh"`, выполните `git fetch origin`, а затем передайте новое имя в `--worktree`, чтобы начать с последней версии ветки по умолчанию.
+
+### Замена создания worktree хуком
+
+Настройте [хук `WorktreeCreate`](https://code.claude.com/docs/ru/hooks#worktreecreate), чтобы полностью заменить стандартную логику `git worktree`, включая размещение worktree в другом месте, а не в `.claude/worktrees/`. Полный пример см. в разделе [Системы контроля версий, отличные от git](#non-git-version-control).
+
+## Что worktrees делят с основной копией
+
+Worktree получает собственные файлы и ветку, но делит следующее с основной копией:
+
+* **Каталог `.git` репозитория**: команды git в worktree записывают в общий каталог `.git` основного репозитория. При включённой [песочнице](https://code.claude.com/docs/ru/sandboxing.md#filesystem-isolation) команды, такие как `git commit`, работают в сессии, запущенной в корне worktree, — именно там её запускает `--worktree`. По умолчанию они [завершаются с ошибкой `index.lock`, если вы запускаете `claude` в подкаталоге worktree](https://code.claude.com/docs/ru/sandboxing#git-index-lock).
+* **Плагины**: плагины, установленные на [уровне проекта](https://code.claude.com/docs/ru/plugins/loading.md#find-where-a-plugin-is-enabled) из основной копии, также загружаются в worktrees того же репозитория, поэтому вам не нужно переустанавливать их для каждого worktree.
+* **Подтверждения разрешений**: выбор "Yes, and don't ask again" для команды Bash в сессии worktree сохраняет правило в `.claude/settings.local.json` основной копии. Правило применяется в основной копии и в каждом другом worktree репозитория и сохраняется после удаления worktree.
+
+  На Windows и в других случаях, когда Claude Code [не использует корень репозитория](https://code.claude.com/docs/ru/settings.md#where-claude-code-looks-for-each-file), правило остаётся с этим worktree. См. [где сохраняются подтверждения](https://code.claude.com/docs/ru/permissions.md#permission-system).
+* **Неотслеживаемые skills, agents и commands**: когда копия worktree не имеет каталога `.claude/skills` в своём корне, например потому что ваш `.claude/skills` находится в gitignore, Claude Code загружает [project skills](https://code.claude.com/docs/ru/skills.md#where-skills-live) основной копии в сеансе worktree. В worktree с собственным каталогом `.claude/skills` загружается только эта копия.
+
+  То же самое применяется к `.claude/agents` и `.claude/commands`. Для skills это требует Claude Code версии 2.1.277 или позже.
+
+Всё это применяется независимо от того, создаёте ли вы worktree с `--worktree` или с `git worktree add`.
+
+В сессии worktree, которую вы запускаете из [десктопного приложения](https://code.claude.com/docs/ru/desktop.md#run-a-session-in-its-own-worktree), Claude Code читает конфигурацию проекта, такую как настройки, хуки, скиллы, агенты, команды и серверы [`.mcp.json`](https://code.claude.com/docs/ru/mcp#project-scope), из корня основной копии. Команды хуков выполняются в этом корне, и `${CLAUDE_PROJECT_DIR}` указывает на него. Чтобы получить доступ к файлам, с которыми работает Claude, считайте путь worktree из [поля ввода `cwd`](https://code.claude.com/docs/ru/hooks#common-input-fields) хука. Файлы `CLAUDE.md` и `.claude/rules/` по-прежнему загружаются из worktree.
+
+## Управляйте worktrees вручную
+
+Создавайте worktrees с Git напрямую, когда вам нужно извлечь конкретную существующую ветку или поместить worktree вне репозитория.
+
+Создайте worktree на новой ветке:
+
+```bash theme={null}
+git worktree add ../project-feature-a -b feature-a
+```
+
+Создайте worktree из существующей ветки, заменив `fix-issue-456` веткой, которая уже существует в вашем репозитории:
+
+```bash theme={null}
+git worktree add ../project-bugfix fix-issue-456
+```
+
+Запустите Claude в worktree:
+
+```bash theme={null}
+cd ../project-feature-a
+claude
+```
+
+Перечислите ваши worktrees:
+
+```bash theme={null}
+git worktree list
+```
+
+Удалите один, когда вы с ним закончите:
+
+```bash theme={null}
+git worktree remove ../project-feature-a
+```
+
+Полный справочник команд см. в [документации Git worktree](https://git-scm.com/docs/git-worktree).
+
+## Не-git системы контроля версий
+
+Изоляция worktrees использует git по умолчанию. Для SVN, Perforce, Mercurial или других систем настройте hooks [`WorktreeCreate` и `WorktreeRemove`](https://code.claude.com/docs/ru/hooks#worktreecreate), чтобы предоставить пользовательскую логику создания и очистки. Поскольку hook заменяет поведение git по умолчанию, [`.worktreeinclude`](#copy-gitignored-files-into-worktrees) не обрабатывается при использовании `--worktree`. Скопируйте любые локальные файлы конфигурации внутри вашего скрипта hook вместо этого.
+
+Этот hook `WorktreeCreate` читает имя worktree из JSON на stdin с `jq`, проверяет свежую рабочую копию SVN и выводит путь каталога, чтобы Claude Code мог использовать его как рабочий каталог сеанса. Добавьте конфигурацию в ваш [`settings.json`](https://code.claude.com/docs/ru/settings#where-settings-live):
+
+```json theme={null}
+{
+  "hooks": {
+    "WorktreeCreate": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'NAME=$(jq -r .name); DIR=\"$HOME/.claude/worktrees/$NAME\"; svn checkout https://svn.example.com/repo/trunk \"$DIR\" >&2 && echo \"$DIR\"'"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Объедините его с hook `WorktreeRemove` для очистки при завершении сеанса. Схему входных данных и пример удаления см. в [справочнике hooks](https://code.claude.com/docs/ru/hooks.md#worktreecreate).
+
+Hook `WorktreeCreate` также позволяет запускать [`/batch`](https://code.claude.com/docs/ru/commands#all-commands) вне репозитория git. Каждый подагент `/batch` затем публикует свое изменение с помощью команд контроля версий вашего проекта и, когда он не может открыть pull request, сообщает о том, что он опубликовал вместо этого. Запуск `/batch` вне репозитория git требует Claude Code v2.1.281 или более поздней версии.
+
+## Устранение неполадок
+
+Claude Code сообщает об ошибках ниже, когда он создаёт worktree, входит в один при запуске или возвращает возобновленный сеанс в один.
+
+### Claude Code не может войти в worktree при запуске
+
+Когда Claude Code не может войти в каталог worktree при запуске, он выводит ошибку с указанием пути и завершается с кодом 1. Это может произойти, когда hook [`WorktreeCreate`](https://code.claude.com/docs/ru/hooks#worktreecreate) выводит что-то другое, чем каталог, который он создал, или когда каталог был удалён после его настройки.
+
+### Создание worktree не удаётся на символической ссылке
+
+Claude Code отказывает создавать worktree, когда `.claude`, `.claude/worktrees` или сам каталог worktree — это символическая ссылка, и ошибка называет символически связанный путь. Удалите символическую ссылку и повторите попытку. До версии 2.1.212, если репозиторий уже содержал зафиксированную символическую ссылку в одном из этих путей, создание worktree следовало ей и могло создавать файлы вне репозитория.
+
+### Worktree, созданный Claude Code, содержит исходное содержимое заменённых объектов
+
+Если ваш репозиторий использует [`git replace`](https://git-scm.com/docs/git-replace), файлы в worktree, который создаёт Claude Code, содержат содержимое исходных объектов, а не замены, указанные в ваших записях `refs/replace/`. Claude Code выполняет команды git, которые извлекают файлы worktree, с `GIT_NO_REPLACE_OBJECTS=1`, игнорируя любое значение, экспортированное вами для этой переменной.
+
+Чтобы получить заменённое содержимое, [создайте worktree самостоятельно](#manage-worktrees-manually) с помощью `git worktree add` и запустите Claude Code внутри него.
+
+### Файлы Git LFS — это файлы указателей в worktree, который создал Claude Code
+
+Если вы настроили [Git LFS](https://git-lfs.com) с `git lfs install --local`, worktree, который создаёт Claude Code, содержит файлы указателей LFS вместо реальных файлов. Флаг `--local` записывает фильтр LFS в собственный `.git/config` репозитория, а не в вашу глобальную конфигурацию git. Простой `git lfs install` записывает в вашу глобальную конфигурацию и не затронут. То же самое применяется к любому другому [драйверу фильтра](https://git-scm.com/docs/gitattributes), определённому в собственной конфигурации репозитория.
+
+Claude Code пропускает драйверы фильтров репозитория при создании worktree, потому что драйвер фильтра — это команда оболочки, и всё, что может писать в репозиторий, включая Claude, могло поместить его туда. До версии 2.1.247 Claude Code запускал эти драйверы во время создания worktree.
+
+Чтобы получить реальные файлы, запустите `git lfs pull` внутри worktree.
+
+В четырёх редких случаях Claude Code вообще не создаёт worktree: он не может определить, какие драйверы фильтров определяет конфигурация репозитория, или он находит там параметр, который не может отключить. Сопоставьте ошибку с её исправлением:
+
+* **`Could not read the repository git config to neutralize filter drivers`**: Claude Code не мог прочитать `.git/config` репозитория, например из-за его разрешений. Исправьте это и повторите попытку.
+* **`The repository git config defines a filter driver whose name cannot be neutralized (contains "=" or a newline)`**: переименуйте или удалите этот драйвер фильтра в `.git/config` и повторите попытку.
+* **`The repository git config has a conditional include (includeIf)`**: переместите параметры, которые `includeIf` в `.git/config` вытягивает, непосредственно в этот файл, удалите `includeIf` и повторите попытку. `includeIf` в вашей глобальной конфигурации git не вызывает это.
+* **`Git was not run: the repository's own git config sets <key>`**: сообщение называет ключ, который указывает Git LFS на программу для запуска, такую как `lfs.customtransfer.<name>.path` или `lfs.standalonetransferagent`. Если этот параметр ваш, переместите его в вашу глобальную конфигурацию git. Если вы его не узнаёте, удалите его из конфигурации репозитория, так как инструмент или checkout, которому вы не доверяете, мог его написать. Повторите попытку, когда ключ исчезнет из конфигурации репозитория.
+
+### Создание worktree не удаётся в частичном клоне
+
+Ошибка, содержащая `This repository is a partial clone`, означает, что Claude Code не смог получить все объекты git, необходимые для начального коммита worktree. Выполните действие из предложения сообщения, которое заканчивается на `try again`. Затем повторите попытку из той оболочки, в которой вы его выполнили: запустите `claude --worktree` или запустите там `claude` и попросите снова.
+
+### `Can only use --worktree in a git repository`
+
+Эта ошибка означает, что вы передали `--worktree` в каталоге, который не является git checkout, и ни один [хук `WorktreeCreate`](#non-git-version-control) не активен.
+
+* В папке без системы контроля версий выполните там `git init`, создайте первый коммит, затем повторите попытку.
+* В checkout другой системы контроля версий настройте хук, который предлагает сообщение.
+* Чтобы работать непосредственно в каталоге, запустите Claude без `--worktree`.
+
+### Каталог worktree `belongs to a different repository`
+
+Ошибки `belongs to a different repository` и `is a leftover worktree` обе означают, что git связывает каталог для переданного вами имени worktree с другим расположением. Это может произойти после копирования или перемещения проекта.
+
+Передайте другое имя worktree. Если в каталоге нет работы, которую нужно сохранить, и вы не копировали и не перемещали проект, вы можете удалить его и повторить попытку с тем же именем. После копирования или перемещения такая повторная попытка может завершиться ошибкой `is already checked out elsewhere in this repository`, поэтому используйте другое имя.
+
+### Claude Code отказывается использовать worktree
+
+Ошибка, начинающаяся с `Refusing to use <path> as an isolation worktree`, означает, что Claude Code проверил идентичность git каталога перед его принятием как изолированной копии сеанса или subagent и отказал. Проверка выполняется независимо от того, создаёт ли Claude Code worktree, входит в существующий или повторно использует один из более раннего запуска.
+
+В большинстве случаев остальная часть сообщения говорит, что метаданные git каталога разрешаются в основную копию: например, его файл `.git` указывает на собственный каталог `.git` основного репозитория, или git разрешает его рабочее дерево в основную копию через перенаправление `core.worktree`. Из такого каталога обычная команда git, такая как `git reset --hard`, будет действовать на основную копию вместо worktree. Claude Code также отказывает, когда каталог имеет запись `.git`, которую он не может прочитать, вместо предположения, что worktree безопасен.
+
+Каталог без метаданных git вообще, такой как тот, который создаёт ваш hook [`WorktreeCreate`](#non-git-version-control), проходит проверку только когда никакой git-репозиторий его не содержит. Если hook создаёт каталог внутри репозитория, git разрешает его в копию этого репозитория и Claude Code отказывает его с сообщением `git resolves its working tree to`, поэтому пусть hook создаёт свои каталоги вне любого репозитория.
+
+Claude Code оставляет отказанный каталог на месте, так как он может содержать работу. Сопоставьте сообщение с его восстановлением, появляется ли оно после `Refusing to use <path>` или в [сообщении возобновления](#the-session-resumes-outside-its-worktree); некоторые окончания встречаются только в сообщениях возобновления:
+
+* **Говорит `launch from the parent checkout` или `Run the resume from the project checkout`**: вы запустили Claude Code из worktree. Запустите из основной копии вместо этого; worktree не нуждается в пересоздании.
+* **Говорит `it cannot be resumed or re-entered`**: ничто в этом сеансе не поручается за worktree из того места, где вы запустили. Пересоздайте его; каталог и его работа остаются на диске для ручного восстановления, и когда worktree имеет родительскую копию, возобновление оттуда также работает.
+* **Говорит `it contains the protected checkout`**: отказанный каталог — это родитель вашей основной копии, такой как ваш домашний каталог. Не удаляйте его. Измените путь worktree, такой как путь, который возвращает ваш hook `WorktreeCreate` или цель `EnterWorktree`, чтобы worktree не содержал копию.
+* **Говорит `the protected checkout <path> has a .git entry that could not be examined` или `has git metadata that could not be resolved`**: проблема в метаданных git основной копии, а не worktree. Не удаляйте worktree и игнорируйте совет сообщения в конце пересоздать его, который не применяется к этим двум окончаниям. Отремонтируйте основную копию, например проблему разрешений или отказ git `dubious ownership` на её `.git`, и повторите попытку.
+
+  До версии 2.1.302 при использовании git 2.56 или новее окончание `could not be resolved` также появлялось, когда `<path>` после `the protected checkout` содержал посторонний файл `.git`. Посторонний здесь означает, что путь в строке `gitdir:` этого файла не ведёт к действительному git-репозиторию. Для восстановления [обновите Claude Code](https://code.claude.com/docs/ru/setup.md#update-claude-code) и повторите попытку. Если этот путь `gitdir:` больше не существует, вы также можете удалить файл `.git` и повторить попытку.
+* **Говорит `its recorded path has a network spelling`**: Claude Code никогда не возобновляет в worktree по сетевому пути. Пересоздайте worktree по локальному пути.
+* **Любое другое окончание**: сообщение называет проблему и её исправление, такое как удаление перенаправления `core.worktree` или пересоздание worktree; следуйте ему. Перед удалением каталога, чьё сообщение говорит, что его идентичность git не может быть проверена, сначала решите названную причину, например символическую ссылку в пути worktree или сам git, отказывающийся работать, так как каталог может быть здоров. Когда вы пересоздаёте, сначала спасите любые изменения, которые вам нужны, из старого каталога; он остаётся на диске.
+
+### Сеанс возобновляется вне его worktree
+
+Когда вы возобновляете сеанс интерактивно и Claude Code не может вернуть его в его worktree, Claude Code говорит об этом одним из сообщений ниже. Когда Claude Code очищает привязку worktree, он записывает очистку в стенограмму сеанса. Если вы [подавляете записи стенограммы](https://code.claude.com/docs/ru/sessions.md#where-transcripts-are-stored), сообщение вместо этого говорит, что привязка не может быть очищена и что Claude Code повторно проверит worktree при более позднем возобновлении.
+
+| Сообщение начинается с | Что произошло и что делать |
+| :- | :- |
+| `Your worktree <path> no longer exists` | Каталог worktree был удалён. Сеанс продолжается в текущем каталоге без изоляции, и Claude Code очищает привязку worktree. Никаких действий не требуется. |
+| `Could not verify your worktree <path> this time` | Claude Code не мог проверить worktree, обычно по временной причине; привязка сохраняется, и сеанс продолжается в текущем каталоге без изоляции. Возобновите снова, чтобы повторить попытку; если это продолжает происходить, введите worktree в новом сеансе и сопоставьте сообщение отказа в разделе [Claude Code отказывается использовать worktree](#claude-code-refuses-to-use-a-worktree), которое может назвать метаданные основной копии, а не worktree. |
+| `Did not re-enter your worktree <path>` | Claude Code отказал привязку worktree как небезопасную; он очищает привязку и сеанс продолжается без изоляции. Сообщение включает конкретный отказ: сопоставьте его в разделе [Claude Code отказывается использовать worktree](#claude-code-refuses-to-use-a-worktree), так как исправление — пересоздание для некоторых отказов и изменение пути для других. |
+| `Could not re-enter your worktree <path>` | Claude Code не может поручиться за worktree из того места, где вы запустили, чаще всего потому что вы запустили из него; привязка сохраняется. Остальная часть сообщения называет исправление; сопоставьте его в разделе [Claude Code отказывается использовать worktree](#claude-code-refuses-to-use-a-worktree). |
+
+В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) с `-p` и при возобновлениях, которые запускает [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/sessions.md), Claude Code останавливает возобновление с ошибкой stderr для каждого отказа, кроме исчезнувшего worktree, вместо продолжения без изоляции.
+
+С `--output-format stream-json`, отказ также поступает на stdout как сообщение `result` с подтипом `error_during_execution`, чей массив `errors` несёт тот же текст, поэтому приложение Agent SDK получает причину, а не только ненулевой выход. До версии 2.1.260 отказ возобновления worktree не производил сообщение `result`.
+
+Сообщения принимают разные формы от интерактивных сообщений в таблице:
+
+* `Error: cannot resume into worktree <path>: ...This session was not started.` для отказа, который таблица показывает как `Did not re-enter`. Claude Code очищает привязку worktree перед выходом, и ошибка говорит об этом; в следующий раз, когда вы возобновите разговор, сеанс продолжается в текущем каталоге без изоляции worktree. До версии 2.1.260 Claude Code не писал очищенную привязку, поэтому каждая повторная попытка того же возобновления не удалась с той же ошибкой.
+
+  Если вы [подавляете записи стенограммы](https://code.claude.com/docs/ru/sessions.md#where-transcripts-are-stored), очистка не может быть сохранена. Ошибка затем говорит, что та же команда будет отказана снова, и называет `--fork-session` и запуск нового разговора как способы продолжить без worktree.
+* `Error: could not verify worktree <path> for this resume, so the resume was aborted...` для `Could not verify`
+* `Error: ...The worktree binding is kept.` для `Could not re-enter`
+* `Notice: the worktree <path> for this session no longer exists...` для исчезнувшего worktree; Claude Code выводит его и продолжает сеанс, как интерактивное возобновление это делает
+
+Окончание отказа, встроенное в каждую ошибку, делится с интерактивными уведомлениями, поэтому оно по-прежнему сопоставляется с его записью в разделе [Claude Code отказывается использовать worktree](#claude-code-refuses-to-use-a-worktree).
+
+В результате stream-json [`startup_failure_reason`](https://code.claude.com/docs/ru/agent-sdk/typescript#startup_failure_reason) — это `worktree_unverified` для ошибки `could not verify worktree` и `worktree_resume_refused` для ошибок `cannot resume into worktree` и `The worktree binding is kept`. Приложение может ветвиться на нём вместо сопоставления текста ошибки. До версии 2.1.274 результат не содержал поле `startup_failure_reason`.
+
+## См. также
+
+Worktrees обрабатывают изоляцию файлов. Связанные страницы ниже охватывают делегирование работы в эти изолированные копии, передачу результатов между ними и переключение между созданными вами сеансами:
+
+* [Subagents](https://code.claude.com/docs/ru/sub-agents.md): делегируйте работу изолированным агентам внутри сеанса
+* [Cross-session messaging](https://code.claude.com/docs/ru/cross-session-messaging.md): позвольте сеансам в ваших worktrees передавать результаты друг другу
+* [Agent teams](https://code.claude.com/docs/ru/agent-teams.md): координируйте несколько сеансов Claude автоматически
+* [Manage sessions](https://code.claude.com/docs/ru/sessions.md): назовите, возобновите и переключайтесь между беседами
+* [Запуск сессии Desktop в собственном worktree](https://code.claude.com/docs/ru/desktop.md#run-a-session-in-its-own-worktree): сессии на основе worktree в десктопном приложении

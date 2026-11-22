@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Hooks</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/06-hooks/index.html">06-hooks</a></nav>
+<p>&lt;picture&gt;
+  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;../resources/logos/claude-howto-logo-dark.svg&quot;&gt;
+  &lt;img alt=&quot;Claude How To&quot; src=&quot;../resources/logos/claude-howto-logo.svg&quot;&gt;
+&lt;/picture&gt;</p>
+<h1 id="hooks">Hooks <a class="h-anchor" href="#hooks" aria-label="Ссылка на раздел">#</a></h1>
+<p>Hooks — это автоматические скрипты, которые запускаются в ответ на конкретные события во время сессий Claude Code. Они обеспечивают автоматизацию, валидацию, управление разрешениями и пользовательские workflows.</p>
+<p>&lt;a id=&quot;overview&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h">Обзор <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Hooks — это автоматические действия (shell-команды, HTTP webhooks, LLM prompts или оценки subagent), которые запускаются автоматически при наступлении определённых событий в Claude Code. Они получают JSON-ввод и передают результаты через exit code и JSON-вывод.</p>
+<p><strong>Ключевые возможности:</strong></p>
+<ul>
+<li>Автоматизация, основанная на событиях</li>
+<li>JSON-ввод и JSON-вывод</li>
+<li>Поддержка типов hooks: command, prompt, HTTP и agent</li>
+<li>Сопоставление по шаблонам для hooks, привязанных к конкретным инструментам</li>
+</ul>
+<h3 id="h-2">Конфигурация <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Hooks настраиваются в файлах settings с определённой структурой:</p>
+<ul>
+<li><code>~/.claude/settings.json</code> - пользовательские настройки (все проекты)</li>
+<li><code>.claude/settings.json</code> - настройки проекта (можно шарить, коммитятся)</li>
+<li><code>.claude/settings.local.json</code> - локальные настройки проекта (не коммитятся)</li>
+<li>Managed policy - настройки на уровне организации</li>
+<li>Plugin <code>hooks/hooks.json</code> - hooks уровня плагина</li>
+<li>Skill/Agent frontmatter - hooks на время жизни компонента</li>
+</ul>
+<h4 id="h-3">Базовая структура конфигурации <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;EventName&quot;: [
+      {
+        &quot;matcher&quot;: &quot;ToolPattern&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;your-command-here&quot;,
+            &quot;timeout&quot;: 60
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<p><strong>Ключевые поля:</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Описание</th><th>Пример</th></tr></thead><tbody><tr><td><code>matcher</code></td><td>Шаблон для сопоставления имён инструментов (с учётом регистра)</td><td><code>&quot;Write&quot;</code>, <code>&quot;Edit|Write&quot;</code>, <code>&quot;*&quot;</code></td></tr><tr><td><code>hooks</code></td><td>Массив определений hook</td><td><code>[{ &quot;type&quot;: &quot;command&quot;, ... }]</code></td></tr><tr><td><code>type</code></td><td>Тип hook: <code>&quot;command&quot;</code> (bash), <code>&quot;prompt&quot;</code> (LLM), <code>&quot;http&quot;</code> (webhook) или <code>&quot;agent&quot;</code> (subagent)</td><td><code>&quot;command&quot;</code></td></tr><tr><td><code>command</code></td><td>Shell-команда для выполнения</td><td><code>&quot;$CLAUDE_PROJECT_DIR/.claude/hooks/format.sh&quot;</code></td></tr><tr><td><code>timeout</code></td><td>Необязательный таймаут в секундах (по умолчанию 60)</td><td><code>30</code></td></tr><tr><td><code>once</code></td><td>Если <code>true</code>, запускать hook только один раз за сессию</td><td><code>true</code></td></tr></tbody></table></div>
+<h4 id="шаблоны-matcher">Шаблоны matcher <a class="h-anchor" href="#шаблоны-matcher" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Шаблон</th><th>Описание</th><th>Пример</th></tr></thead><tbody><tr><td>Точное совпадение</td><td>Совпадает с конкретным инструментом</td><td><code>&quot;Write&quot;</code></td></tr><tr><td>Regex-шаблон</td><td>Совпадает с несколькими инструментами</td><td><code>&quot;Edit|Write&quot;</code></td></tr><tr><td>Wildcard</td><td>Совпадает со всеми инструментами</td><td><code>&quot;*&quot;</code> or <code>&quot;&quot;</code></td></tr><tr><td>MCP tools</td><td>Шаблон сервера и инструмента</td><td><code>&quot;mcp__memory__.*&quot;</code></td></tr></tbody></table></div>
+<h3 id="типы-hooks">Типы hooks <a class="h-anchor" href="#типы-hooks" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code поддерживает четыре типа hooks:</p>
+<h4 id="command-hooks">Command hooks <a class="h-anchor" href="#command-hooks" aria-label="Ссылка на раздел">#</a></h4>
+<p>Тип hook по умолчанию. Выполняет shell-команду и обменивается данными через JSON stdin/stdout и коды выхода.</p>
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;command&quot;,
+  &quot;command&quot;: &quot;python3 \&quot;$CLAUDE_PROJECT_DIR/.claude/hooks/validate.py\&quot;&quot;,
+  &quot;timeout&quot;: 60
+}</code></pre>
+<h4 id="http-hooks">HTTP hooks <a class="h-anchor" href="#http-hooks" aria-label="Ссылка на раздел">#</a></h4>
+<blockquote>
+<p>Добавлено в v2.1.63.</p>
+</blockquote>
+<p>Удалённые webhook-endpoint&#x27;ы, которые получают тот же JSON-ввод, что и command hooks. HTTP hooks отправляют JSON через POST на URL и получают JSON-ответ. При включённом sandboxing HTTP hooks проходят через sandbox. Для подстановки переменных окружения в URL требуется явный список <code>allowedEnvVars</code> в целях безопасности.</p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;PostToolUse&quot;: [{
+      &quot;type&quot;: &quot;http&quot;,
+      &quot;url&quot;: &quot;https://my-webhook.example.com/hook&quot;,
+      &quot;matcher&quot;: &quot;Write&quot;
+    }]
+  }
+}</code></pre>
+<p><strong>Ключевые свойства:</strong></p>
+<ul>
+<li><code>&quot;type&quot;: &quot;http&quot;</code> -- указывает, что это HTTP hook</li>
+<li><code>&quot;url&quot;</code> -- URL webhook endpoint&#x27;а</li>
+<li>Проходит через sandbox при включённом sandboxing</li>
+<li>Для любой подстановки переменных окружения в URL требуется явный список <code>allowedEnvVars</code></li>
+</ul>
+<h4 id="prompt-hooks">Prompt hooks <a class="h-anchor" href="#prompt-hooks" aria-label="Ссылка на раздел">#</a></h4>
+<p>Prompt&#x27;ы, оцениваемые LLM, где содержимое hook&#x27;а - это prompt, который Claude анализирует. Чаще всего используются с событиями <code>Stop</code> и <code>SubagentStop</code> для интеллектуальной проверки завершения задачи.</p>
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;prompt&quot;,
+  &quot;prompt&quot;: &quot;Evaluate if Claude completed all requested tasks.&quot;,
+  &quot;timeout&quot;: 30
+}</code></pre>
+<p>LLM оценивает prompt и возвращает структурированное решение (подробности см. в разделе <a href="#prompt-based-hooks">Prompt-Based Hooks</a>).</p>
+<h4 id="agent-hooks">Agent hooks <a class="h-anchor" href="#agent-hooks" aria-label="Ссылка на раздел">#</a></h4>
+<p>Hooks проверки на основе subagent, которые запускают отдельного agent&#x27;а для оценки условий или выполнения сложных проверок. В отличие от prompt hooks (одношаговой оценки LLM), agent hooks могут использовать tools и выполнять многошаговое рассуждение.</p>
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;agent&quot;,
+  &quot;prompt&quot;: &quot;Verify the code changes follow our architecture guidelines. Check the relevant design docs and compare.&quot;,
+  &quot;timeout&quot;: 120
+}</code></pre>
+<p><strong>Ключевые свойства:</strong></p>
+<ul>
+<li><code>&quot;type&quot;: &quot;agent&quot;</code> -- указывает, что это agent hook</li>
+<li><code>&quot;prompt&quot;</code> -- описание задачи для subagent</li>
+<li>Agent может использовать tools (Read, Grep, Bash и т. д.) для выполнения проверки</li>
+<li>Возвращает структурированное решение, похожее на prompt hooks</li>
+</ul>
+<h3 id="события-hooks">События hooks <a class="h-anchor" href="#события-hooks" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code поддерживает <strong>25 hook events</strong>:</p>
+<div class="table-wrap"><table><thead><tr><th>Событие</th><th>Когда срабатывает</th><th>Вход matcher</th><th>Может блокировать</th><th>Типичное использование</th></tr></thead><tbody><tr><td><strong>SessionStart</strong></td><td>Сессия начинается, возобновляется, очищается или compact&#x27;ится</td><td>startup/resume/clear/compact</td><td>Нет</td><td>Настройка окружения</td></tr><tr><td><strong>InstructionsLoaded</strong></td><td>После загрузки CLAUDE.md или файла правил</td><td>(нет)</td><td>Нет</td><td>Изменение/фильтрация инструкций</td></tr><tr><td><strong>UserPromptSubmit</strong></td><td>Пользователь отправляет prompt</td><td>(нет)</td><td>Да</td><td>Проверка prompt&#x27;ов</td></tr><tr><td><strong>PreToolUse</strong></td><td>До выполнения tool</td><td>Имя tool</td><td>Да (allow/deny/ask)</td><td>Проверка и изменение входных данных</td></tr><tr><td><strong>PermissionRequest</strong></td><td>Показывается диалог разрешения</td><td>Имя tool</td><td>Да</td><td>Авто-approve/deny</td></tr><tr><td><strong>PostToolUse</strong></td><td>После успешного выполнения tool</td><td>Имя tool</td><td>Нет</td><td>Добавление контекста, feedback</td></tr><tr><td><strong>PostToolUseFailure</strong></td><td>Выполнение tool завершается ошибкой</td><td>Имя tool</td><td>Нет</td><td>Обработка ошибок, logging</td></tr><tr><td><strong>Notification</strong></td><td>Отправлено уведомление</td><td>Тип уведомления</td><td>Нет</td><td>Пользовательские уведомления</td></tr><tr><td><strong>SubagentStart</strong></td><td>Запущен subagent</td><td>Имя типа agent</td><td>Нет</td><td>Настройка subagent</td></tr><tr><td><strong>SubagentStop</strong></td><td>Subagent завершает работу</td><td>Имя типа agent</td><td>Да</td><td>Проверка subagent</td></tr><tr><td><strong>Stop</strong></td><td>Claude завершает ответ</td><td>(нет)</td><td>Да</td><td>Проверка завершения задачи</td></tr><tr><td><strong>StopFailure</strong></td><td>Ошибка API завершает ход</td><td>(нет)</td><td>Нет</td><td>Восстановление после ошибки, logging</td></tr><tr><td><strong>TeammateIdle</strong></td><td>Участник команды agent&#x27;ов простаивает</td><td>(нет)</td><td>Да</td><td>Координация участников</td></tr><tr><td><strong>TaskCompleted</strong></td><td>Задача помечена завершённой</td><td>(нет)</td><td>Да</td><td>Действия после задачи</td></tr><tr><td><strong>TaskCreated</strong></td><td>Задача создана через TaskCreate</td><td>(нет)</td><td>Нет</td><td>Отслеживание и logging задач</td></tr><tr><td><strong>ConfigChange</strong></td><td>Изменяется файл конфигурации</td><td>(нет)</td><td>Да (кроме policy)</td><td>Реакция на обновления конфигурации</td></tr><tr><td><strong>CwdChanged</strong></td><td>Меняется рабочий каталог</td><td>(нет)</td><td>Нет</td><td>Настройка для конкретного каталога</td></tr><tr><td><strong>FileChanged</strong></td><td>Изменяется отслеживаемый файл</td><td>(нет)</td><td>Нет</td><td>Мониторинг файлов, rebuild</td></tr><tr><td><strong>PreCompact</strong></td><td>Перед context compaction</td><td>manual/auto</td><td>Нет</td><td>Действия перед compaction</td></tr><tr><td><strong>PostCompact</strong></td><td>После завершения compaction</td><td>(нет)</td><td>Нет</td><td>Действия после compaction</td></tr><tr><td><strong>WorktreeCreate</strong></td><td>Создаётся worktree</td><td>(нет)</td><td>Да (path return)</td><td>Инициализация worktree</td></tr><tr><td><strong>WorktreeRemove</strong></td><td>Worktree удаляется</td><td>(нет)</td><td>Нет</td><td>Очистка worktree</td></tr><tr><td><strong>Elicitation</strong></td><td>MCP server запрашивает ввод пользователя</td><td>(нет)</td><td>Да</td><td>Проверка ввода</td></tr><tr><td><strong>ElicitationResult</strong></td><td>Пользователь отвечает на elicitation</td><td>(нет)</td><td>Да</td><td>Обработка ответа</td></tr><tr><td><strong>SessionEnd</strong></td><td>Сессия завершается</td><td>(нет)</td><td>Нет</td><td>Очистка, финальное logging</td></tr></tbody></table></div>
+<h4 id="pretooluse">PreToolUse <a class="h-anchor" href="#pretooluse" aria-label="Ссылка на раздел">#</a></h4>
+<p>Срабатывает после того, как Claude создаёт параметры tool, и до обработки. Используйте это, чтобы проверить или изменить входные данные tool.</p>
+<p><strong>Конфигурация:</strong></p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Bash&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;$CLAUDE_PROJECT_DIR/.claude/hooks/validate-bash.py&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<p><strong>Распространённые matcher-ы:</strong> <code>Task</code>, <code>Bash</code>, <code>Glob</code>, <code>Grep</code>, <code>Read</code>, <code>Edit</code>, <code>Write</code>, <code>WebFetch</code>, <code>WebSearch</code></p>
+<p><strong>Управление выводом:</strong></p>
+<ul>
+<li><code>permissionDecision</code>: <code>&quot;allow&quot;</code>, <code>&quot;deny&quot;</code>, or <code>&quot;ask&quot;</code></li>
+<li><code>permissionDecisionReason</code>: Explanation for decision</li>
+<li><code>updatedInput</code>: Modified tool input parameters</li>
+</ul>
+<h4 id="posttooluse">PostToolUse <a class="h-anchor" href="#posttooluse" aria-label="Ссылка на раздел">#</a></h4>
+<p>Срабатывает сразу после завершения tool. Используйте для проверки, logging или передачи контекста обратно Claude.</p>
+<p><strong>Configuration:</strong></p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;PostToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Write|Edit&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;$CLAUDE_PROJECT_DIR/.claude/hooks/security-scan.py&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<p><strong>Output control:</strong></p>
+<ul>
+<li><code>&quot;block&quot;</code> decision prompts Claude with feedback</li>
+<li><code>additionalContext</code>: Context added for Claude</li>
+</ul>
+<h4 id="userpromptsubmit">UserPromptSubmit <a class="h-anchor" href="#userpromptsubmit" aria-label="Ссылка на раздел">#</a></h4>
+<p>Срабатывает, когда пользователь отправляет prompt, до того как Claude начнёт его обрабатывать.</p>
+<p><strong>Configuration:</strong></p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;UserPromptSubmit&quot;: [
+      {
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;$CLAUDE_PROJECT_DIR/.claude/hooks/validate-prompt.py&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<p><strong>Output control:</strong></p>
+<ul>
+<li><code>decision</code>: <code>&quot;block&quot;</code> to prevent processing</li>
+<li><code>reason</code>: Explanation if blocked</li>
+<li><code>additionalContext</code>: Context added to prompt</li>
+</ul>
+<h4 id="stop-и-subagentstop">Stop и SubagentStop <a class="h-anchor" href="#stop-и-subagentstop" aria-label="Ссылка на раздел">#</a></h4>
+<p>Срабатывает, когда Claude завершает ответ (Stop) или subagent заканчивает работу (SubagentStop). Поддерживает оценку на основе prompt для умной проверки завершения задачи.</p>
+<p><strong>Дополнительное поле ввода:</strong> hooks <code>Stop</code> и <code>SubagentStop</code> получают поле <code>last_assistant_message</code> в JSON-вводе, содержащее финальное сообщение Claude или subagent перед остановкой. Это полезно для оценки завершённости задачи.</p>
+<p><strong>Configuration:</strong></p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;Stop&quot;: [
+      {
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;prompt&quot;,
+            &quot;prompt&quot;: &quot;Evaluate if Claude completed all requested tasks.&quot;,
+            &quot;timeout&quot;: 30
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<h4 id="subagentstart">SubagentStart <a class="h-anchor" href="#subagentstart" aria-label="Ссылка на раздел">#</a></h4>
+<p>Срабатывает, когда subagent начинает выполнение. Входное значение matcher - это имя типа agent, что позволяет нацеливать hooks на конкретные типы subagent.</p>
+<p><strong>Configuration:</strong></p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;SubagentStart&quot;: [
+      {
+        &quot;matcher&quot;: &quot;code-review&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;$CLAUDE_PROJECT_DIR/.claude/hooks/subagent-init.sh&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<h4 id="sessionstart">SessionStart <a class="h-anchor" href="#sessionstart" aria-label="Ссылка на раздел">#</a></h4>
+<p>Срабатывает при запуске или возобновлении сессии. Может сохранять переменные окружения.</p>
+<p><strong>Matchers:</strong> <code>startup</code>, <code>resume</code>, <code>clear</code>, <code>compact</code></p>
+<p><strong>Особенность:</strong> используйте <code>CLAUDE_ENV_FILE</code>, чтобы сохранять переменные окружения (также доступно в hooks <code>CwdChanged</code> и <code>FileChanged</code>):</p>
+<pre><code class="language-bash">#!/bin/bash
+if [ -n &quot;$CLAUDE_ENV_FILE&quot; ]; then
+  echo &#x27;export NODE_ENV=development&#x27; &gt;&gt; &quot;$CLAUDE_ENV_FILE&quot;
+fi
+exit 0</code></pre>
+<h4 id="sessionend">SessionEnd <a class="h-anchor" href="#sessionend" aria-label="Ссылка на раздел">#</a></h4>
+<p>Срабатывает при завершении сессии для очистки или финального логирования. Не может блокировать завершение.</p>
+<p><strong>Значения поля reason:</strong></p>
+<ul>
+<li><code>clear</code> - пользователь очистил сессию</li>
+<li><code>logout</code> - пользователь вышел из аккаунта</li>
+<li><code>prompt_input_exit</code> - пользователь вышел через prompt input</li>
+<li><code>other</code> - другая причина</li>
+</ul>
+<p><strong>Configuration:</strong></p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;SessionEnd&quot;: [
+      {
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;\&quot;$CLAUDE_PROJECT_DIR/.claude/hooks/session-cleanup.sh\&quot;&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<h4 id="notification">Notification <a class="h-anchor" href="#notification" aria-label="Ссылка на раздел">#</a></h4>
+<p>Обновлённые matcher для notification events:</p>
+<ul>
+<li><code>permission_prompt</code> - уведомление о запросе разрешения</li>
+<li><code>idle_prompt</code> - уведомление о простое</li>
+<li><code>auth_success</code> - успешная аутентификация</li>
+<li><code>elicitation_dialog</code> - диалог, показанный пользователю</li>
+</ul>
+<h3 id="hooks-уровня-компонента">Hooks уровня компонента <a class="h-anchor" href="#hooks-уровня-компонента" aria-label="Ссылка на раздел">#</a></h3>
+<p>Hooks можно привязывать к конкретным компонентам (skills, agents, commands) в их frontmatter:</p>
+<p><strong>В <code>SKILL.md</code>, <code>agent.md</code> или <code>command.md</code>:</strong></p>
+<pre><code class="language-yaml">---
+name: secure-operations
+description: Perform operations with security checks
+hooks:
+  PreToolUse:
+    - matcher: &quot;Bash&quot;
+      hooks:
+        - type: command
+          command: &quot;./scripts/check.sh&quot;
+          once: true  # Only run once per session
+---</code></pre>
+<p><strong>Поддерживаемые события для component hooks:</strong> <code>PreToolUse</code>, <code>PostToolUse</code>, <code>Stop</code></p>
+<p>Это позволяет определять hooks прямо в компоненте, который их использует, и держать связанный код рядом.</p>
+<h4 id="hooks-in-subagent-frontmatter">Hooks in Subagent Frontmatter <a class="h-anchor" href="#hooks-in-subagent-frontmatter" aria-label="Ссылка на раздел">#</a></h4>
+<p>Когда hook <code>Stop</code> определён во frontmatter subagent, он автоматически преобразуется в hook <code>SubagentStop</code>, привязанный к этому subagent. Это гарантирует, что hook остановки срабатывает только при завершении именно этого subagent, а не когда заканчивается основная сессия.</p>
+<pre><code class="language-yaml">---
+name: code-review-agent
+description: Automated code review subagent
+hooks:
+  Stop:
+    - hooks:
+        - type: prompt
+          prompt: &quot;Verify the code review is thorough and complete.&quot;
+  # The above Stop hook auto-converts to SubagentStop for this subagent
+---</code></pre>
+<h3 id="permissionrequest">PermissionRequest <a class="h-anchor" href="#permissionrequest" aria-label="Ссылка на раздел">#</a></h3>
+<p>Обрабатывает запросы разрешений с пользовательским форматом вывода:</p>
+<pre><code class="language-json">{
+  &quot;hookSpecificOutput&quot;: {
+    &quot;hookEventName&quot;: &quot;PermissionRequest&quot;,
+    &quot;decision&quot;: {
+      &quot;behavior&quot;: &quot;allow|deny&quot;,
+      &quot;updatedInput&quot;: {},
+      &quot;message&quot;: &quot;Custom message&quot;,
+      &quot;interrupt&quot;: false
+    }
+  }
+}</code></pre>
+<h3 id="ввод-и-вывод-hooks">Ввод и вывод hooks <a class="h-anchor" href="#ввод-и-вывод-hooks" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="json-input-через-stdin">JSON input (через stdin) <a class="h-anchor" href="#json-input-через-stdin" aria-label="Ссылка на раздел">#</a></h4>
+<p>Все hooks получают JSON-ввод через stdin:</p>
+<pre><code class="language-json">{
+  &quot;session_id&quot;: &quot;abc123&quot;,
+  &quot;transcript_path&quot;: &quot;/path/to/transcript.jsonl&quot;,
+  &quot;cwd&quot;: &quot;/current/working/directory&quot;,
+  &quot;permission_mode&quot;: &quot;default&quot;,
+  &quot;hook_event_name&quot;: &quot;PreToolUse&quot;,
+  &quot;tool_name&quot;: &quot;Write&quot;,
+  &quot;tool_input&quot;: {
+    &quot;file_path&quot;: &quot;/path/to/file.js&quot;,
+    &quot;content&quot;: &quot;...&quot;
+  },
+  &quot;tool_use_id&quot;: &quot;toolu_01ABC123...&quot;,
+  &quot;agent_id&quot;: &quot;agent-abc123&quot;,
+  &quot;agent_type&quot;: &quot;main&quot;,
+  &quot;worktree&quot;: &quot;/path/to/worktree&quot;
+}</code></pre>
+<p><strong>Общие поля:</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Описание</th></tr></thead><tbody><tr><td><code>session_id</code></td><td>Уникальный идентификатор сессии</td></tr><tr><td><code>transcript_path</code></td><td>Путь к файлу транскрипта разговора</td></tr><tr><td><code>cwd</code></td><td>Текущая рабочая директория</td></tr><tr><td><code>hook_event_name</code></td><td>Имя события, запустившего hook</td></tr><tr><td><code>agent_id</code></td><td>Идентификатор agent, выполняющего этот hook</td></tr><tr><td><code>agent_type</code></td><td>Тип agent (<code>&quot;main&quot;</code>, имя типа subagent и т. д.)</td></tr><tr><td><code>worktree</code></td><td>Путь к git worktree, если agent работает в нём</td></tr></tbody></table></div>
+<h4 id="exit-codes">Exit codes <a class="h-anchor" href="#exit-codes" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Exit code</th><th>Значение</th><th>Поведение</th></tr></thead><tbody><tr><td><strong>0</strong></td><td>Успех</td><td>Продолжить, разобрать JSON stdout</td></tr><tr><td><strong>2</strong></td><td>Блокирующая ошибка</td><td>Заблокировать операцию, stderr показать как ошибку</td></tr><tr><td><strong>Other</strong></td><td>Неблокирующая ошибка</td><td>Продолжить, stderr показать в verbose mode</td></tr></tbody></table></div>
+<h4 id="json-output-stdout-exit-code-0">JSON output (stdout, exit code 0) <a class="h-anchor" href="#json-output-stdout-exit-code-0" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-json">{
+  &quot;continue&quot;: true,
+  &quot;stopReason&quot;: &quot;Optional message if stopping&quot;,
+  &quot;suppressOutput&quot;: false,
+  &quot;systemMessage&quot;: &quot;Optional warning message&quot;,
+  &quot;hookSpecificOutput&quot;: {
+    &quot;hookEventName&quot;: &quot;PreToolUse&quot;,
+    &quot;permissionDecision&quot;: &quot;allow&quot;,
+    &quot;permissionDecisionReason&quot;: &quot;File is in allowed directory&quot;,
+    &quot;updatedInput&quot;: {
+      &quot;file_path&quot;: &quot;/modified/path.js&quot;
+    }
+  }
+}</code></pre>
+<h3 id="h-4">Переменные окружения <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Variable</th><th>Availability</th><th>Description</th></tr></thead><tbody><tr><td><code>CLAUDE_PROJECT_DIR</code></td><td>All hooks</td><td>Absolute path to project root</td></tr><tr><td><code>CLAUDE_ENV_FILE</code></td><td>SessionStart, CwdChanged, FileChanged</td><td>File path for persisting env vars</td></tr><tr><td><code>CLAUDE_CODE_REMOTE</code></td><td>All hooks</td><td><code>&quot;true&quot;</code> if running in remote environments</td></tr><tr><td><code>${CLAUDE_PLUGIN_ROOT}</code></td><td>Plugin hooks</td><td>Path to plugin directory</td></tr><tr><td><code>${CLAUDE_PLUGIN_DATA}</code></td><td>Plugin hooks</td><td>Path to plugin data directory</td></tr><tr><td><code>CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS</code></td><td>SessionEnd hooks</td><td>Configurable timeout in milliseconds for SessionEnd hooks (overrides default)</td></tr></tbody></table></div>
+<h3 id="prompt-based-hooks">Prompt-Based Hooks <a class="h-anchor" href="#prompt-based-hooks" aria-label="Ссылка на раздел">#</a></h3>
+<p>Для событий <code>Stop</code> и <code>SubagentStop</code> можно использовать оценку на основе LLM:</p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;Stop&quot;: [
+      {
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;prompt&quot;,
+            &quot;prompt&quot;: &quot;Review if all tasks are complete. Return your decision.&quot;,
+            &quot;timeout&quot;: 30
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<p><strong>Схема ответа LLM:</strong></p>
+<pre><code class="language-json">{
+  &quot;decision&quot;: &quot;approve&quot;,
+  &quot;reason&quot;: &quot;All tasks completed successfully&quot;,
+  &quot;continue&quot;: false,
+  &quot;stopReason&quot;: &quot;Task complete&quot;
+}</code></pre>
+<h3 id="h-5">Примеры <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="пример-1-валидатор-bash-команд-pretooluse">Пример 1: валидатор Bash-команд (PreToolUse) <a class="h-anchor" href="#пример-1-валидатор-bash-команд-pretooluse" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>File:</strong> <code>.claude/hooks/validate-bash.py</code></p>
+<pre><code class="language-python">#!/usr/bin/env python3
+import json
+import sys
+import re
+
+BLOCKED_PATTERNS = [
+    (r&quot;\brm\s+-rf\s+/&quot;, &quot;Blocking dangerous rm -rf / command&quot;),
+    (r&quot;\bsudo\s+rm&quot;, &quot;Blocking sudo rm command&quot;),
+]
+
+def main():
+    input_data = json.load(sys.stdin)
+
+    tool_name = input_data.get(&quot;tool_name&quot;, &quot;&quot;)
+    if tool_name != &quot;Bash&quot;:
+        sys.exit(0)
+
+    command = input_data.get(&quot;tool_input&quot;, {}).get(&quot;command&quot;, &quot;&quot;)
+
+    for pattern, message in BLOCKED_PATTERNS:
+        if re.search(pattern, command):
+            print(message, file=sys.stderr)
+            sys.exit(2)  # Exit 2 = blocking error
+
+    sys.exit(0)
+
+if __name__ == &quot;__main__&quot;:
+    main()</code></pre>
+<p><strong>Конфигурация:</strong></p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Bash&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;python3 \&quot;$CLAUDE_PROJECT_DIR/.claude/hooks/validate-bash.py\&quot;&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<h4 id="пример-2-сканер-безопасности-posttooluse">Пример 2: сканер безопасности (PostToolUse) <a class="h-anchor" href="#пример-2-сканер-безопасности-posttooluse" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>File:</strong> <code>.claude/hooks/security-scan.py</code></p>
+<pre><code class="language-python">#!/usr/bin/env python3
+import json
+import sys
+import re
+
+SECRET_PATTERNS = [
+    (r&quot;password\s*=\s*[&#x27;\&quot;][^&#x27;\&quot;]+[&#x27;\&quot;]&quot;, &quot;Potential hardcoded password&quot;),
+    (r&quot;api[_-]?key\s*=\s*[&#x27;\&quot;][^&#x27;\&quot;]+[&#x27;\&quot;]&quot;, &quot;Potential hardcoded API key&quot;),
+]
+
+def main():
+    input_data = json.load(sys.stdin)
+
+    tool_name = input_data.get(&quot;tool_name&quot;, &quot;&quot;)
+    if tool_name not in [&quot;Write&quot;, &quot;Edit&quot;]:
+        sys.exit(0)
+
+    tool_input = input_data.get(&quot;tool_input&quot;, {})
+    content = tool_input.get(&quot;content&quot;, &quot;&quot;) or tool_input.get(&quot;new_string&quot;, &quot;&quot;)
+    file_path = tool_input.get(&quot;file_path&quot;, &quot;&quot;)
+
+    warnings = []
+    for pattern, message in SECRET_PATTERNS:
+        if re.search(pattern, content, re.IGNORECASE):
+            warnings.append(message)
+
+    if warnings:
+        output = {
+            &quot;hookSpecificOutput&quot;: {
+                &quot;hookEventName&quot;: &quot;PostToolUse&quot;,
+                &quot;additionalContext&quot;: f&quot;Security warnings for {file_path}: &quot; + &quot;; &quot;.join(warnings)
+            }
+        }
+        print(json.dumps(output))
+
+    sys.exit(0)
+
+if __name__ == &quot;__main__&quot;:
+    main()</code></pre>
+<h4 id="пример-3-автоформатирование-кода-posttooluse">Пример 3: автоформатирование кода (PostToolUse) <a class="h-anchor" href="#пример-3-автоформатирование-кода-posttooluse" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>File:</strong> <code>.claude/hooks/format-code.sh</code></p>
+<pre><code class="language-bash">#!/bin/bash
+
+# Read JSON from stdin
+INPUT=$(cat)
+TOOL_NAME=$(echo &quot;$INPUT&quot; | python3 -c &quot;import sys, json; print(json.load(sys.stdin).get(&#x27;tool_name&#x27;, &#x27;&#x27;))&quot;)
+FILE_PATH=$(echo &quot;$INPUT&quot; | python3 -c &quot;import sys, json; print(json.load(sys.stdin).get(&#x27;tool_input&#x27;, {}).get(&#x27;file_path&#x27;, &#x27;&#x27;))&quot;)
+
+if [ &quot;$TOOL_NAME&quot; != &quot;Write&quot; ] &amp;&amp; [ &quot;$TOOL_NAME&quot; != &quot;Edit&quot; ]; then
+    exit 0
+fi
+
+# Format based on file extension
+case &quot;$FILE_PATH&quot; in
+    *.js|*.jsx|*.ts|*.tsx|*.json)
+        command -v prettier &amp;&gt;/dev/null &amp;&amp; prettier --write &quot;$FILE_PATH&quot; 2&gt;/dev/null
+        ;;
+    *.py)
+        command -v black &amp;&gt;/dev/null &amp;&amp; black &quot;$FILE_PATH&quot; 2&gt;/dev/null
+        ;;
+    *.go)
+        command -v gofmt &amp;&gt;/dev/null &amp;&amp; gofmt -w &quot;$FILE_PATH&quot; 2&gt;/dev/null
+        ;;
+esac
+
+exit 0</code></pre>
+<h4 id="пример-4-валидатор-prompt-userpromptsubmit">Пример 4: валидатор prompt (UserPromptSubmit) <a class="h-anchor" href="#пример-4-валидатор-prompt-userpromptsubmit" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>File:</strong> <code>.claude/hooks/validate-prompt.py</code></p>
+<pre><code class="language-python">#!/usr/bin/env python3
+import json
+import sys
+import re
+
+BLOCKED_PATTERNS = [
+    (r&quot;delete\s+(all\s+)?database&quot;, &quot;Dangerous: database deletion&quot;),
+    (r&quot;rm\s+-rf\s+/&quot;, &quot;Dangerous: root deletion&quot;),
+]
+
+def main():
+    input_data = json.load(sys.stdin)
+    prompt = input_data.get(&quot;user_prompt&quot;, &quot;&quot;) or input_data.get(&quot;prompt&quot;, &quot;&quot;)
+
+    for pattern, message in BLOCKED_PATTERNS:
+        if re.search(pattern, prompt, re.IGNORECASE):
+            output = {
+                &quot;decision&quot;: &quot;block&quot;,
+                &quot;reason&quot;: f&quot;Blocked: {message}&quot;
+            }
+            print(json.dumps(output))
+            sys.exit(0)
+
+    sys.exit(0)
+
+if __name__ == &quot;__main__&quot;:
+    main()</code></pre>
+<h4 id="пример-5-интеллектуальный-hook-остановки-на-основе-prompt">Пример 5: интеллектуальный hook остановки (на основе prompt) <a class="h-anchor" href="#пример-5-интеллектуальный-hook-остановки-на-основе-prompt" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;Stop&quot;: [
+      {
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;prompt&quot;,
+            &quot;prompt&quot;: &quot;Review if Claude completed all requested tasks. Check: 1) Were all files created/modified? 2) Were there unresolved errors? If incomplete, explain what&#x27;s missing.&quot;,
+            &quot;timeout&quot;: 30
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<h4 id="пример-6-трекер-использования-контекста-пара-hooks">Пример 6: трекер использования контекста (пара hooks) <a class="h-anchor" href="#пример-6-трекер-использования-контекста-пара-hooks" aria-label="Ссылка на раздел">#</a></h4>
+<p>Отслеживайте расход токенов на запрос с помощью пары hooks <code>UserPromptSubmit</code> (до сообщения) и <code>Stop</code> (после ответа).</p>
+<p><strong>File:</strong> <code>.claude/hooks/context-tracker.py</code></p>
+<pre><code class="language-python">#!/usr/bin/env python3
+&quot;&quot;&quot;
+Context Usage Tracker - отслеживает расход токенов на каждый запрос.
+
+Использует `UserPromptSubmit` как hook &quot;до сообщения&quot; и `Stop` как hook &quot;после ответа&quot;
+для расчёта разницы в расходе токенов на каждый запрос.
+
+Методы подсчёта токенов:
+1. Character estimation (default): ~4 chars per token, no dependencies
+2. tiktoken (optional): More accurate (~90-95%), requires: pip install tiktoken
+&quot;&quot;&quot;
+import json
+import os
+import sys
+import tempfile
+
+# Configuration
+CONTEXT_LIMIT = 128000  # Claude&#x27;s context window (adjust for your model)
+USE_TIKTOKEN = False    # Set True if tiktoken is installed for better accuracy
+
+
+def get_state_file(session_id: str) -&gt; str:
+    &quot;&quot;&quot;Get temp file path for storing pre-message token count, isolated by session.&quot;&quot;&quot;
+    return os.path.join(tempfile.gettempdir(), f&quot;claude-context-{session_id}.json&quot;)
+
+
+def count_tokens(text: str) -&gt; int:
+    &quot;&quot;&quot;
+    Count tokens in text.
+
+    Uses tiktoken with p50k_base encoding if available (~90-95% accuracy),
+    otherwise falls back to character estimation (~80-90% accuracy).
+    &quot;&quot;&quot;
+    if USE_TIKTOKEN:
+        try:
+            import tiktoken
+            enc = tiktoken.get_encoding(&quot;p50k_base&quot;)
+            return len(enc.encode(text))
+        except ImportError:
+            pass  # Fall back to estimation
+
+    # Character-based estimation: ~4 characters per token for English
+    return len(text) // 4
+
+
+def read_transcript(transcript_path: str) -&gt; str:
+    &quot;&quot;&quot;Read and concatenate all content from transcript file.&quot;&quot;&quot;
+    if not transcript_path or not os.path.exists(transcript_path):
+        return &quot;&quot;
+
+    content = []
+    with open(transcript_path, &quot;r&quot;) as f:
+        for line in f:
+            try:
+                entry = json.loads(line.strip())
+                # Extract text content from various message formats
+                if &quot;message&quot; in entry:
+                    msg = entry[&quot;message&quot;]
+                    if isinstance(msg.get(&quot;content&quot;), str):
+                        content.append(msg[&quot;content&quot;])
+                    elif isinstance(msg.get(&quot;content&quot;), list):
+                        for block in msg[&quot;content&quot;]:
+                            if isinstance(block, dict) and block.get(&quot;type&quot;) == &quot;text&quot;:
+                                content.append(block.get(&quot;text&quot;, &quot;&quot;))
+            except json.JSONDecodeError:
+                continue
+
+    return &quot;\n&quot;.join(content)
+
+
+def handle_user_prompt_submit(data: dict) -&gt; None:
+    &quot;&quot;&quot;Pre-message hook: Save current token count before request.&quot;&quot;&quot;
+    session_id = data.get(&quot;session_id&quot;, &quot;unknown&quot;)
+    transcript_path = data.get(&quot;transcript_path&quot;, &quot;&quot;)
+
+    transcript_content = read_transcript(transcript_path)
+    current_tokens = count_tokens(transcript_content)
+
+    # Save to temp file for later comparison
+    state_file = get_state_file(session_id)
+    with open(state_file, &quot;w&quot;) as f:
+        json.dump({&quot;pre_tokens&quot;: current_tokens}, f)
+
+
+def handle_stop(data: dict) -&gt; None:
+    &quot;&quot;&quot;Post-response hook: Calculate and report token delta.&quot;&quot;&quot;
+    session_id = data.get(&quot;session_id&quot;, &quot;unknown&quot;)
+    transcript_path = data.get(&quot;transcript_path&quot;, &quot;&quot;)
+
+    transcript_content = read_transcript(transcript_path)
+    current_tokens = count_tokens(transcript_content)
+
+    # Load pre-message count
+    state_file = get_state_file(session_id)
+    pre_tokens = 0
+    if os.path.exists(state_file):
+        try:
+            with open(state_file, &quot;r&quot;) as f:
+                state = json.load(f)
+                pre_tokens = state.get(&quot;pre_tokens&quot;, 0)
+        except (json.JSONDecodeError, IOError):
+            pass
+
+    # Calculate delta
+    delta_tokens = current_tokens - pre_tokens
+    remaining = CONTEXT_LIMIT - current_tokens
+    percentage = (current_tokens / CONTEXT_LIMIT) * 100
+
+    # Report usage
+    method = &quot;tiktoken&quot; if USE_TIKTOKEN else &quot;estimated&quot;
+    print(f&quot;Context ({method}): ~{current_tokens:,} tokens ({percentage:.1f}% used, ~{remaining:,} remaining)&quot;, file=sys.stderr)
+    if delta_tokens &gt; 0:
+        print(f&quot;This request: ~{delta_tokens:,} tokens&quot;, file=sys.stderr)
+
+
+def main():
+    data = json.load(sys.stdin)
+    event = data.get(&quot;hook_event_name&quot;, &quot;&quot;)
+
+    if event == &quot;UserPromptSubmit&quot;:
+        handle_user_prompt_submit(data)
+    elif event == &quot;Stop&quot;:
+        handle_stop(data)
+
+    sys.exit(0)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()</code></pre>
+<p><strong>Configuration:</strong></p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;UserPromptSubmit&quot;: [
+      {
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;python3 \&quot;$CLAUDE_PROJECT_DIR/.claude/hooks/context-tracker.py\&quot;&quot;
+          }
+        ]
+      }
+    ],
+    &quot;Stop&quot;: [
+      {
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;python3 \&quot;$CLAUDE_PROJECT_DIR/.claude/hooks/context-tracker.py\&quot;&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<p><strong>How it works:</strong></p>
+<ol>
+<li><code>UserPromptSubmit</code> fires before your prompt is processed - saves current token count</li>
+<li><code>Stop</code> fires after Claude responds - calculates delta and reports usage</li>
+<li>Each session is isolated via <code>session_id</code> in the temp filename</li>
+</ol>
+<p><strong>Token Counting Methods:</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Method</th><th>Accuracy</th><th>Dependencies</th><th>Speed</th></tr></thead><tbody><tr><td>Character estimation</td><td>~80-90%</td><td>None</td><td>&lt;1ms</td></tr><tr><td>tiktoken (p50k_base)</td><td>~90-95%</td><td><code>pip install tiktoken</code></td><td>&lt;10ms</td></tr></tbody></table></div>
+<blockquote>
+<p><strong>Note:</strong> Anthropic hasn&#x27;t released an official offline tokenizer. Both methods are approximations. The transcript includes user prompts, Claude&#x27;s responses, and tool outputs, but NOT system prompts or internal context.</p>
+</blockquote>
+<h4 id="пример-7-режим-auto-adapt-posttooluse">Пример 7: режим Auto-Adapt (PostToolUse) <a class="h-anchor" href="#пример-7-режим-auto-adapt-posttooluse" aria-label="Ссылка на раздел">#</a></h4>
+<p>Автоматически учится на ваших разрешениях для tools и обновляет permissions в <code>~/.claude/settings.json</code>. Каждый раз, когда вы разрешаете выполнение tool, hook обобщает команду в переиспользуемое правило разрешений - так вам не придётся дважды одобрять один и тот же тип команды. Опасные и разрушительные команды <strong>никогда</strong> не запоминаются.</p>
+<p>При первом запуске он заполняет конфиг базовым набором разрешений, эквивалентным auto mode (чтение/запись файлов, git-операции, package managers, распространённые CLI tools).</p>
+<p><strong>File:</strong> <code>.claude/hooks/auto-adapt-mode.py</code></p>
+<pre><code class="language-python">#!/usr/bin/env python3
+&quot;&quot;&quot;
+auto-adapt-mode: учится на разрешениях пользователя для tools и обновляет конфигурацию Claude.
+
+Тип hook: `PostToolUse`
+Событие: срабатывает после успешного выполнения tool (то есть после того, как пользователь его одобрил)
+&quot;&quot;&quot;
+
+import json
+import os
+import sys
+import re
+from pathlib import Path
+
+SETTINGS_PATH = Path.home() / &quot;.claude&quot; / &quot;settings.json&quot;
+LOG_PATH = Path.home() / &quot;.claude&quot; / &quot;auto-adapt-mode.log&quot;
+
+# Auto-mode baseline: safe, local, reversible operations
+AUTO_MODE_BASELINE = [
+    &quot;Read(*)&quot;, &quot;Edit(*)&quot;, &quot;Write(*)&quot;, &quot;Glob(*)&quot;, &quot;Grep(*)&quot;,
+    &quot;Bash(git status:*)&quot;, &quot;Bash(git log:*)&quot;, &quot;Bash(git diff:*)&quot;,
+    &quot;Bash(git add:*)&quot;, &quot;Bash(git commit:*)&quot;, &quot;Bash(git checkout:*)&quot;,
+    &quot;Bash(npm install:*)&quot;, &quot;Bash(npm test:*)&quot;, &quot;Bash(npm run:*)&quot;,
+    &quot;Bash(pip install:*)&quot;, &quot;Bash(pytest:*)&quot;,
+    &quot;Bash(ls:*)&quot;, &quot;Bash(cat:*)&quot;, &quot;Bash(find:*)&quot;, &quot;Bash(mkdir:*)&quot;,
+    &quot;Bash(cp:*)&quot;, &quot;Bash(mv:*)&quot;, &quot;Bash(chmod:*)&quot;,
+    &quot;Bash(gh pr view:*)&quot;, &quot;Bash(gh issue list:*)&quot;,
+    &quot;Agent(*)&quot;, &quot;Skill(*)&quot;, &quot;WebSearch(*)&quot;, &quot;WebFetch(*)&quot;,
+    # ... (full list includes 70+ safe patterns)
+]
+
+# Commands that are NEVER auto-remembered
+DANGEROUS_PATTERNS = [
+    r&quot;rm\s+(-[a-zA-Z]*r[a-zA-Z]*|--recursive)&quot;,   # rm -rf
+    r&quot;git\s+push\s+(-[a-zA-Z]*f|--force)&quot;,          # force push
+    r&quot;git\s+reset\s+--hard&quot;,                         # hard reset
+    r&quot;DROP\s+(TABLE|DATABASE)&quot;,                       # SQL destructive
+    r&quot;curl\s+.*\|\s*(bash|sh)&quot;,                       # pipe to shell
+    r&quot;sudo\b&quot;,                                        # privilege escalation
+    r&quot;docker\s+(rm|rmi|system\s+prune)&quot;,              # container destructive
+    r&quot;kubectl\s+delete&quot;,                              # k8s destructive
+    r&quot;terraform\s+destroy&quot;,                           # infra destructive
+    r&quot;npm\s+publish&quot;,                                 # irreversible publish
+    r&quot;deploy\s+.*prod&quot;,                               # production deploy
+    # ... (full list includes 25+ patterns)
+]
+
+
+def is_dangerous_command(command: str) -&gt; bool:
+    &quot;&quot;&quot;Check if a bash command matches any dangerous pattern.&quot;&quot;&quot;
+    return any(re.search(p, command, re.IGNORECASE) for p in DANGEROUS_PATTERNS)
+
+
+def generalize_tool_permission(tool_name: str, tool_input: dict) -&gt; str | None:
+    &quot;&quot;&quot;Convert a specific tool invocation into a generalized permission rule.&quot;&quot;&quot;
+    if tool_name == &quot;Bash&quot;:
+        command = tool_input.get(&quot;command&quot;, &quot;&quot;)
+        if not command or is_dangerous_command(command):
+            return None
+        parts = command.strip().split()
+        base = parts[0]
+        # Compound commands: &quot;git push&quot; -&gt; &quot;Bash(git push:*)&quot;
+        compound = [&quot;git&quot;, &quot;npm&quot;, &quot;npx&quot;, &quot;pip&quot;, &quot;cargo&quot;, &quot;go&quot;, &quot;gh&quot;, &quot;python3&quot;]
+        if base in compound and len(parts) &gt; 1:
+            sub = parts[1]
+            if sub.lower() in {&quot;rm&quot;, &quot;delete&quot;, &quot;destroy&quot;, &quot;publish&quot;}:
+                return None
+            return f&quot;Bash({base} {sub}:*)&quot;
+        return f&quot;Bash({base}:*)&quot;
+    elif tool_name == &quot;Bash&quot;:  # Never allow generic Bash(*)
+        return None
+    else:
+        return f&quot;{tool_name}(*)&quot;
+
+
+def main():
+    try:
+        hook_input = json.load(sys.stdin)
+    except (json.JSONDecodeError, EOFError):
+        sys.exit(0)
+
+    tool_name = hook_input.get(&quot;tool_name&quot;, &quot;&quot;)
+    tool_input = hook_input.get(&quot;tool_input&quot;, {})
+    if not tool_name:
+        sys.exit(0)
+
+    # Load settings, ensure baseline, add new rule if safe
+    settings = json.load(open(SETTINGS_PATH)) if SETTINGS_PATH.exists() else {}
+    allow = settings.setdefault(&quot;permissions&quot;, {}).setdefault(&quot;allow&quot;, [])
+
+    # Seed baseline on first run
+    marker = Path.home() / &quot;.claude&quot; / &quot;.auto-adapt-mode-initialized&quot;
+    if not marker.exists():
+        existing = set(allow)
+        for rule in AUTO_MODE_BASELINE:
+            if rule not in existing:
+                allow.append(rule)
+        marker.touch()
+
+    # Generalize and add the new rule
+    rule = generalize_tool_permission(tool_name, tool_input)
+    if rule and rule not in allow:
+        allow.append(rule)
+        with open(SETTINGS_PATH, &quot;w&quot;) as f:
+            json.dump(settings, f, indent=2)
+            f.write(&quot;\n&quot;)
+
+    sys.exit(0)
+
+if __name__ == &quot;__main__&quot;:
+    main()</code></pre>
+<p><strong>Configuration:</strong></p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;PostToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;*&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;python3 \&quot;$CLAUDE_PROJECT_DIR/.claude/hooks/auto-adapt-mode.py\&quot;&quot;,
+            &quot;timeout&quot;: 10
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<p><strong>Как это работает:</strong></p>
+<ol>
+<li><code>PostToolUse</code> срабатывает после <strong>каждого</strong> успешного выполнения tool (то есть вы уже его одобрили)</li>
+<li>Hook извлекает имя tool и входные данные, затем обобщает их в правило разрешений</li>
+<li>Составные команды вроде <code>git push origin main</code> превращаются в <code>Bash(git push:*)</code> - это покрывает любой вариант <code>git push</code></li>
+<li>Правило добавляется в <code>~/.claude/settings.json</code> → <code>permissions.allow</code>, если там его ещё нет</li>
+<li>При первом запуске задаётся примерно 70 базовых разрешений, эквивалентных auto mode</li>
+</ol>
+<p><strong>Гарантии безопасности:</strong></p>
+<ul>
+<li>Опасные команды (force push, <code>rm -rf</code>, <code>sudo</code>, <code>DROP TABLE</code> и т. п.) <strong>никогда</strong> не запоминаются</li>
+<li>Необратимые операции (<code>npm publish</code>, <code>terraform destroy</code>, prod deploys) <strong>всегда</strong> блокируются</li>
+<li>Команды из списка <code>deny</code> никогда не переопределяются</li>
+<li>Hook никогда не блокирует выполнение tool (всегда завершается с кодом 0)</li>
+<li>Файл журнала <code>~/.claude/auto-adapt-mode.log</code> фиксирует все решения для аудита</li>
+</ul>
+<p><strong>Примеры обобщения:</strong></p>
+<div class="table-wrap"><table><thead><tr><th>You approve</th><th>Rule added</th><th>Covers</th></tr></thead><tbody><tr><td><code>git push origin main</code></td><td><code>Bash(git push:*)</code></td><td>All git push variants</td></tr><tr><td><code>npm run build</code></td><td><code>Bash(npm run:*)</code></td><td>All npm scripts</td></tr><tr><td><code>ls -la src/</code></td><td><code>Bash(ls:*)</code></td><td>All ls invocations</td></tr><tr><td><code>rm -rf /tmp/test</code></td><td><em>(blocked)</em></td><td>Never remembered</td></tr><tr><td><code>git push --force</code></td><td><em>(blocked)</em></td><td>Never remembered</td></tr><tr><td><code>Write</code> tool</td><td><code>Write(*)</code></td><td>All file writes</td></tr></tbody></table></div>
+<blockquote>
+<p><strong>Совет:</strong> удалите <code>~/.claude/.auto-adapt-mode-initialized</code>, чтобы заново заполнить базовые permissions. Проверьте <code>~/.claude/auto-adapt-mode.log</code>, чтобы увидеть, какие правила были добавлены и какие заблокированы.</p>
+</blockquote>
+<h3 id="plugin-hooks">Plugin Hooks <a class="h-anchor" href="#plugin-hooks" aria-label="Ссылка на раздел">#</a></h3>
+<p>Плагины могут включать hooks в файле <code>hooks/hooks.json</code>:</p>
+<p><strong>File:</strong> <code>plugins/hooks/hooks.json</code></p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Bash&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<p><strong>Переменные окружения в plugin hooks:</strong></p>
+<ul>
+<li><code>${CLAUDE_PLUGIN_ROOT}</code> - Path to the plugin directory</li>
+<li><code>${CLAUDE_PLUGIN_DATA}</code> - Path to the plugin data directory</li>
+</ul>
+<p>Это позволяет плагинам включать собственные hooks для валидации и автоматизации.</p>
+<h3 id="mcp-tool-hooks">MCP Tool Hooks <a class="h-anchor" href="#mcp-tool-hooks" aria-label="Ссылка на раздел">#</a></h3>
+<p>MCP tools следуют шаблону <code>mcp__&lt;server&gt;__&lt;tool&gt;</code>:</p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;mcp__memory__.*&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;echo &#x27;{\&quot;systemMessage\&quot;: \&quot;Memory operation logged\&quot;}&#x27;&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<h3 id="h-6">Соображения по безопасности <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-7">Отказ от ответственности <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>ИСПОЛЬЗУЙТЕ НА СВОЙ СТРАХ И РИСК</strong>: hooks выполняют произвольные shell-команды. Вы несёте полную ответственность за:</p>
+<ul>
+<li>Команды, которые вы настраиваете</li>
+<li>Права доступа и изменения файлов</li>
+<li>Потенциальную потерю данных или повреждение системы</li>
+<li>Проверку hooks в безопасной среде до использования в production</li>
+</ul>
+<h4 id="h-8">Замечания по безопасности <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Требуется доверие к workspace:</strong> output commands хуков <code>statusLine</code> и <code>fileSuggestion</code> теперь требуют принятия workspace trust, прежде чем вступят в силу.</li>
+<li><strong>HTTP hooks и переменные окружения:</strong> HTTP hooks требуют явного списка <code>allowedEnvVars</code>, чтобы использовать подстановку переменных окружения в URL. Это предотвращает случайную утечку чувствительных переменных на удалённые endpoints.</li>
+<li><strong>Иерархия managed settings:</strong> настройка <code>disableAllHooks</code> теперь учитывает иерархию managed settings, поэтому настройки уровня организации могут принудительно отключать hooks, а отдельные пользователи не могут это переопределить.</li>
+</ul>
+<h4 id="h-9">Лучшие практики <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Do</th><th>Don&#x27;t</th></tr></thead><tbody><tr><td>Валидируйте и очищайте все входные данные</td><td>Безоговорочно доверяйте входу</td></tr><tr><td>Квотируйте shell-переменные: <code>&quot;$VAR&quot;</code></td><td>Используйте без кавычек: <code>$VAR</code></td></tr><tr><td>Блокируйте path traversal (<code>..</code>)</td><td>Разрешайте произвольные пути</td></tr><tr><td>Используйте абсолютные пути с <code>$CLAUDE_PROJECT_DIR</code></td><td>Захардкоживайте пути</td></tr><tr><td>Пропускайте чувствительные файлы (<code>.env</code>, <code>.git/</code>, keys)</td><td>Обрабатывайте все файлы</td></tr><tr><td>Сначала тестируйте hooks изолированно</td><td>Разворачивайте непроверенные hooks</td></tr><tr><td>Для HTTP hooks задавайте явный <code>allowedEnvVars</code></td><td>Открывайте все env vars для webhooks</td></tr></tbody></table></div>
+<h3 id="h-10">Отладка <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="включить-debug-mode">Включить debug mode <a class="h-anchor" href="#включить-debug-mode" aria-label="Ссылка на раздел">#</a></h4>
+<p>Запустите Claude с debug flag, чтобы получать подробные логи hooks:</p>
+<pre><code class="language-bash">claude --debug</code></pre>
+<h4 id="verbose-mode">Verbose Mode <a class="h-anchor" href="#verbose-mode" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте <code>Ctrl+O</code> в Claude Code, чтобы включить verbose mode и видеть ход выполнения hooks.</p>
+<h4 id="тестирование-hooks-отдельно">Тестирование hooks отдельно <a class="h-anchor" href="#тестирование-hooks-отдельно" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Тест с примером JSON input
+echo &#x27;{&quot;tool_name&quot;: &quot;Bash&quot;, &quot;tool_input&quot;: {&quot;command&quot;: &quot;ls -la&quot;}}&#x27; | python3 .claude/hooks/validate-bash.py
+
+# Проверка exit code
+echo $?</code></pre>
+<h3 id="h-11">Полный пример конфигурации <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Bash&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;python3 \&quot;$CLAUDE_PROJECT_DIR/.claude/hooks/validate-bash.py\&quot;&quot;,
+            &quot;timeout&quot;: 10
+          }
+        ]
+      }
+    ],
+    &quot;PostToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Write|Edit&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;\&quot;$CLAUDE_PROJECT_DIR/.claude/hooks/format-code.sh\&quot;&quot;,
+            &quot;timeout&quot;: 30
+          },
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;python3 \&quot;$CLAUDE_PROJECT_DIR/.claude/hooks/security-scan.py\&quot;&quot;,
+            &quot;timeout&quot;: 10
+          }
+        ]
+      }
+    ],
+    &quot;UserPromptSubmit&quot;: [
+      {
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;python3 \&quot;$CLAUDE_PROJECT_DIR/.claude/hooks/validate-prompt.py\&quot;&quot;
+          }
+        ]
+      }
+    ],
+    &quot;SessionStart&quot;: [
+      {
+        &quot;matcher&quot;: &quot;startup&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;\&quot;$CLAUDE_PROJECT_DIR/.claude/hooks/session-init.sh\&quot;&quot;
+          }
+        ]
+      }
+    ],
+    &quot;Stop&quot;: [
+      {
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;prompt&quot;,
+            &quot;prompt&quot;: &quot;Verify all tasks are complete before stopping.&quot;,
+            &quot;timeout&quot;: 30
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<h3 id="детали-выполнения-hooks">Детали выполнения hooks <a class="h-anchor" href="#детали-выполнения-hooks" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Aspect</th><th>Behavior</th></tr></thead><tbody><tr><td><strong>Timeout</strong></td><td>По умолчанию 60 секунд, настраивается для каждой команды</td></tr><tr><td><strong>Параллельность</strong></td><td>Все подходящие hooks запускаются параллельно</td></tr><tr><td><strong>Дедупликация</strong></td><td>Идентичные hook-команды дедуплицируются</td></tr><tr><td><strong>Окружение</strong></td><td>Запускаются в текущей директории с окружением Claude Code</td></tr></tbody></table></div>
+<h3 id="h-12">Устранение неполадок <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="hook-не-выполняется">Hook не выполняется <a class="h-anchor" href="#hook-не-выполняется" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Проверьте, что синтаксис JSON-конфигурации корректен</li>
+<li>Убедитесь, что pattern matcher совпадает с именем tool</li>
+<li>Проверьте, что скрипт существует и исполняемый: <code>chmod +x script.sh</code></li>
+<li>Запустите <code>claude --debug</code>, чтобы увидеть логи выполнения hooks</li>
+<li>Убедитесь, что hook читает JSON из stdin, а не из аргументов команды</li>
+</ul>
+<h4 id="hook-блокирует-неожиданно">Hook блокирует неожиданно <a class="h-anchor" href="#hook-блокирует-неожиданно" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Протестируйте hook на примере JSON: <code>echo &#x27;{&quot;tool_name&quot;: &quot;Write&quot;, ...}&#x27; | ./hook.py</code></li>
+<li>Проверьте exit code: должен быть 0 для разрешения и 2 для блокировки</li>
+<li>Проверьте stderr output (показывается при exit code 2)</li>
+</ul>
+<h4 id="ошибки-разбора-json">Ошибки разбора JSON <a class="h-anchor" href="#ошибки-разбора-json" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Всегда читайте из stdin, а не из аргументов команды</li>
+<li>Используйте полноценный JSON parsing, а не манипуляции строками</li>
+<li>Аккуратно обрабатывайте отсутствующие поля</li>
+</ul>
+<h3 id="h-13">Установка <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="шаг-1-создайте-каталог-hooks">Шаг 1: создайте каталог hooks <a class="h-anchor" href="#шаг-1-создайте-каталог-hooks" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">mkdir -p ~/.claude/hooks</code></pre>
+<h4 id="шаг-2-скопируйте-примеры-hooks">Шаг 2: скопируйте примеры hooks <a class="h-anchor" href="#шаг-2-скопируйте-примеры-hooks" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">cp 06-hooks/*.sh ~/.claude/hooks/
+chmod +x ~/.claude/hooks/*.sh</code></pre>
+<h4 id="шаг-3-настройте-в-settings">Шаг 3: настройте в settings <a class="h-anchor" href="#шаг-3-настройте-в-settings" aria-label="Ссылка на раздел">#</a></h4>
+<p>Отредактируйте <code>~/.claude/settings.json</code> или <code>.claude/settings.json</code>, добавив конфигурацию hooks, показанную выше.</p>
+<h3 id="h-14">Связанные концепции <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong><a href="../08-checkpoints/">Checkpoints and Rewind</a></strong> - сохранение и восстановление состояния разговора</li>
+<li><strong><a href="../01-slash-commands/">Slash Commands</a></strong> - создание собственных slash-команд</li>
+<li><strong><a href="../03-skills/">Skills</a></strong> - переиспользуемые автономные возможности</li>
+<li><strong><a href="../04-subagents/">Subagents</a></strong> - делегированное выполнение задач</li>
+<li><strong><a href="../07-plugins/">Plugins</a></strong> - упакованные расширения</li>
+<li><strong><a href="../09-advanced-features/">Advanced Features</a></strong> - изучение продвинутых возможностей Claude Code</li>
+</ul>
+<h3 id="h-15">Дополнительные ресурсы <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong><a href="https://code.claude.com/docs/en/hooks">Official Hooks Documentation</a></strong> - полная справка по hooks</li>
+<li><strong><a href="https://code.claude.com/docs/en/cli-reference">CLI Reference</a></strong> - документация по командной строке</li>
+<li><strong><a href="../02-memory/">Memory Guide</a></strong> - настройка постоянного контекста</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

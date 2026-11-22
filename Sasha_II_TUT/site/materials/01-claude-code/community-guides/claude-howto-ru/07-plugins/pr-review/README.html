@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>PR Review Plugin</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../../materials/index.html">Материалы</a> / <a href="../../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/07-plugins/index.html">07-plugins</a> / <a href="../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/07-plugins/pr-review/index.html">pr-review</a></nav>
+<p>&lt;picture&gt;
+  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;../../resources/logos/claude-howto-logo-dark.svg&quot;&gt;
+  &lt;img alt=&quot;Claude How To&quot; src=&quot;../../resources/logos/claude-howto-logo.svg&quot;&gt;
+&lt;/picture&gt;</p>
+<h1 id="pr-review-plugin">PR Review Plugin <a class="h-anchor" href="#pr-review-plugin" aria-label="Ссылка на раздел">#</a></h1>
+<p>Complete PR review workflow with security, testing, and documentation checks.</p>
+<h3 id="features">Features <a class="h-anchor" href="#features" aria-label="Ссылка на раздел">#</a></h3>
+<p>✅ Security analysis
+✅ Test coverage checking
+✅ Documentation verification
+✅ Code quality assessment
+✅ Performance impact analysis</p>
+<h3 id="installation">Installation <a class="h-anchor" href="#installation" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-bash">/plugin install pr-review</code></pre>
+<h3 id="what-s-included">What&#x27;s Included <a class="h-anchor" href="#what-s-included" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="slash-commands">Slash Commands <a class="h-anchor" href="#slash-commands" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><code>/review-pr</code> - Comprehensive PR review</li>
+<li><code>/check-security</code> - Security-focused review</li>
+<li><code>/check-tests</code> - Test coverage analysis</li>
+</ul>
+<h4 id="subagents">Subagents <a class="h-anchor" href="#subagents" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><code>security-reviewer</code> - Security vulnerability detection</li>
+<li><code>test-checker</code> - Test coverage analysis</li>
+<li><code>performance-analyzer</code> - Performance impact evaluation</li>
+</ul>
+<h4 id="mcp-servers">MCP Servers <a class="h-anchor" href="#mcp-servers" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>GitHub integration for PR data</li>
+</ul>
+<h4 id="hooks">Hooks <a class="h-anchor" href="#hooks" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><code>pre-review.js</code> - Pre-review validation</li>
+</ul>
+<h3 id="usage">Usage <a class="h-anchor" href="#usage" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="basic-pr-review">Basic PR Review <a class="h-anchor" href="#basic-pr-review" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>/review-pr</code></pre>
+<h4 id="security-check-only">Security Check Only <a class="h-anchor" href="#security-check-only" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>/check-security</code></pre>
+<h4 id="test-coverage-check">Test Coverage Check <a class="h-anchor" href="#test-coverage-check" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>/check-tests</code></pre>
+<h3 id="requirements">Requirements <a class="h-anchor" href="#requirements" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Claude Code 1.0+</li>
+<li>GitHub access</li>
+<li>Git repository</li>
+</ul>
+<h3 id="configuration">Configuration <a class="h-anchor" href="#configuration" aria-label="Ссылка на раздел">#</a></h3>
+<p>Set up your GitHub token:</p>
+<pre><code class="language-bash">export GITHUB_TOKEN=&quot;your_github_token&quot;</code></pre>
+<h3 id="example-workflow">Example Workflow <a class="h-anchor" href="#example-workflow" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>User: /review-pr
+
+Claude:
+1. Runs pre-review hook (validates git repo)
+2. Fetches PR data via GitHub MCP
+3. Delegates security review to security-reviewer subagent
+4. Delegates testing to test-checker subagent
+5. Delegates performance to performance-analyzer subagent
+6. Synthesizes all findings
+7. Provides comprehensive review report
+
+Result:
+✅ Security: No critical issues found
+⚠️  Testing: Coverage is 65%, recommend 80%+
+✅ Performance: No significant impact
+📝 Recommendations: Add tests for edge cases</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

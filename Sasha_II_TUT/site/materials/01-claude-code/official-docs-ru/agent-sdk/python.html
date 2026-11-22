@@ -1,0 +1,3291 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Справочник Agent SDK - Python</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/agent-sdk/index.html">agent-sdk</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="справочник-agent-sdk-python">Справочник Agent SDK - Python <a class="h-anchor" href="#справочник-agent-sdk-python" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Полный справочник API для Python Agent SDK, включая все функции, типы и классы.</p>
+</blockquote>
+<h3 id="h">Установка <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Установите пакет в виртуальное окружение. На недавних установках Debian, Ubuntu и Homebrew Python запуск <code>pip install</code> для системного Python завершается ошибкой <code>error: externally-managed-environment</code>.</p>
+<p>```bash theme={null}
+python3 -m venv .venv
+source .venv/bin/activate
+pip install claude-agent-sdk</p>
+<pre><code>
+Для uv, Windows PowerShell и настройки API-ключа см. раздел [Настройка в быстром старте Agent SDK](https://code.claude.com/docs/ru/agent-sdk/quickstart.md#setup).
+
+## Выбор между `query()` и `ClaudeSDKClient`
+
+Python SDK предоставляет два способа взаимодействия с Claude Code:
+
+| Функция | `query()` | `ClaudeSDKClient` |
+| :- | :- | :- |
+| **Сеанс** | Создает новый сеанс по умолчанию | Повторно использует один и тот же сеанс |
+| **Разговор** | Один обмен | Несколько обменов в одном контексте |
+| **Соединение** | Управляется автоматически | Ручное управление |
+| **Потоковый ввод** | ✅ Поддерживается | ✅ Поддерживается |
+| **Прерывания** | ❌ Не поддерживается | ✅ Поддерживается |
+| **Hooks** | ✅ Поддерживается | ✅ Поддерживается |
+| **Пользовательские инструменты** | ✅ Поддерживается | ✅ Поддерживается |
+| **Продолжить чат** | Ручное через `continue_conversation` или `resume` | ✅ Автоматическое |
+| **Вариант использования** | Одноразовые задачи | Непрерывные разговоры |
+
+Используйте `ClaudeSDKClient` для интерактивных приложений, таких как интерфейсы чата, или когда следующее действие зависит от ответа Claude.
+
+## Функции
+
+&gt; [!NOTE]
+&gt;
+&gt; Блоки сигнатур и голые фрагменты `async for` / `async with` на этой странице являются иллюстративными. Чтобы их запустить, оберните тело в `async def main(): ...` и вызовите `asyncio.run(main())`.
+
+### `query()`
+
+Создает новый сеанс для каждого взаимодействия с Claude Code по умолчанию. Возвращает асинхронный итератор, который выдает сообщения по мере их поступления. Каждый вызов `query()` начинается с нуля без памяти о предыдущих взаимодействиях, если вы не передадите `continue_conversation=True` или `resume` в [`ClaudeAgentOptions`](#claudeagentoptions). См. [Sessions](https://code.claude.com/docs/ru/agent-sdk/sessions.md).
+</code></pre>
+<p>async def query(
+    *,
+    prompt: str | AsyncIterable[dict[str, Any]],
+    options: ClaudeAgentOptions | None = None,
+    transport: Transport | None = None
+) -&gt; AsyncIterator[Message]</p>
+<pre><code>
+#### Параметры
+
+| Параметр | Тип | Описание |
+| :- | :- | :- |
+| `prompt` | `str \| AsyncIterable[dict]` | Входная подсказка в виде строки или асинхронного итератора для режима потоковой передачи |
+| `options` | `ClaudeAgentOptions \| None` | Объект дополнительной конфигурации (по умолчанию `ClaudeAgentOptions()`, если None) |
+| `transport` | `Transport \| None` | Дополнительный пользовательский транспорт для связи с процессом CLI |
+
+#### Возвращаемое значение
+
+Возвращает `AsyncIterator[Message]`, который выдает сообщения из разговора.
+
+#### Пример - С параметрами
+</code></pre>
+<p>import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions</p>
+<p>async def main():
+    options = ClaudeAgentOptions(
+        system_prompt=&quot;You are an expert Python developer&quot;,
+        permission_mode=&quot;acceptEdits&quot;,
+    )</p>
+<p>async for message in query(prompt=&quot;Create a Python web server&quot;, options=options):
+        print(message)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+### `tool()`
+
+Декоратор для определения MCP tools с проверкой типов.
+</code></pre>
+<p>def tool(
+    name: str,
+    description: str,
+    input_schema: type | dict[str, Any],
+    annotations: ToolAnnotations | None = None
+) -&gt; Callable[[Callable[[Any], Awaitable[dict[str, Any]]]], SdkMcpTool[Any]]</p>
+<pre><code>
+#### Параметры
+
+| Параметр | Тип | Описание |
+| :- | :- | :- |
+| `name` | `str` | Уникальный идентификатор инструмента |
+| `description` | `str` | Понятное описание того, что делает инструмент |
+| `input_schema` | `type \| dict[str, Any]` | Схема, определяющая входные параметры инструмента. См. [Input schema options](#input-schema-options) |
+| `annotations` | [`ToolAnnotations`](#toolannotations)` \| None` | Дополнительные аннотации MCP tool, предоставляющие подсказки поведения клиентам |
+
+#### Варианты схемы ввода
+
+1. **Простое сопоставление типов** (рекомендуется):
+</code></pre>
+<p>{&quot;text&quot;: str, &quot;count&quot;: int, &quot;enabled&quot;: bool}</p>
+<pre><code>
+2. **Формат JSON Schema** (для сложной валидации):</code></pre>
+<p>{
+       &quot;type&quot;: &quot;object&quot;,
+       &quot;properties&quot;: {
+           &quot;text&quot;: {&quot;type&quot;: &quot;string&quot;},
+           &quot;count&quot;: {&quot;type&quot;: &quot;integer&quot;, &quot;minimum&quot;: 0},
+       },
+       &quot;required&quot;: [&quot;text&quot;],
+   }</p>
+<pre><code>
+3. **Класс TypedDict**: типизированная схема, ключи `NotRequired` которой не включаются в `required`.
+
+   * **Python 3.11 и новее**: импортируйте `TypedDict` и `NotRequired` из `typing`.
+   * **Python 3.10**: в `typing` нет `NotRequired`. Импортируйте `TypedDict` и `NotRequired` из `typing_extensions`, который SDK устанавливает на Python 3.10.
+</code></pre>
+<p>from typing import Annotated, Any, NotRequired, TypedDict
+   from claude_agent_sdk import tool</p>
+<p>class ForecastArgs(TypedDict):
+       latitude: Annotated[float, &quot;Latitude coordinate&quot;]
+       hours: NotRequired[Annotated[int, &quot;How many hours of forecast to return&quot;]]</p>
+<p>@tool(&quot;get_forecast&quot;, &quot;Get the hourly forecast for a location&quot;, ForecastArgs)
+   async def get_forecast(args: dict[str, Any]) -&gt; dict[str, Any]:
+       hours = args.get(&quot;hours&quot;, 12)
+       return {&quot;content&quot;: [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: f&quot;{hours}-hour forecast for {args[&#x27;latitude&#x27;]}&quot;}]}</p>
+<pre><code>
+В формах простого сопоставления и TypedDict оберните тип в `Annotated[type, &quot;description&quot;]`, чтобы задать описание поля.
+
+#### Возвращаемое значение
+
+Функция-декоратор, которая оборачивает реализацию инструмента и возвращает экземпляр `SdkMcpTool`.
+
+#### Пример
+</code></pre>
+<p>from claude_agent_sdk import tool
+from typing import Any</p>
+<p>@tool(&quot;greet&quot;, &quot;Greet a user&quot;, {&quot;name&quot;: str})
+async def greet(args: dict[str, Any]) -&gt; dict[str, Any]:
+    return {&quot;content&quot;: [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: f&quot;Hello, {args[&#x27;name&#x27;]}!&quot;}]}</p>
+<pre><code>
+#### `ToolAnnotations`
+
+Подсказки поведения для инструмента, передаваемые как аргумент `annotations` функции [`tool()`](#tool). `ToolAnnotations` расширяет `mcp.types.ToolAnnotations` SDK MCP с полем `maxResultSizeChars`, и вы можете писать каждую подсказку в camelCase или snake\_case: `ToolAnnotations(readOnlyHint=True)` и `ToolAnnotations(read_only_hint=True)` эквивалентны. Чтобы прочитать подсказку обратно из объекта, используйте написание, объявленное в установленном у вас пакете `mcp`: `.readOnlyHint` в `mcp` 1.x и `.read_only_hint` в 2.x, тогда как `.maxResultSizeChars` работает в обоих. Вы также можете передать простой `mcp.types.ToolAnnotations` везде, где SDK принимает аннотации.
+
+Имена snake\_case и типизированное поле `maxResultSizeChars` требуют Python Agent SDK 0.2.140 или позже. Версии 0.1.31 по 0.2.139 переэкспортируют `mcp.types.ToolAnnotations` без изменений. В версиях 0.1.55 по 0.2.139 вы все еще можете передать `maxResultSizeChars` как аргумент ключевого слова: класс MCP принимает дополнительные поля, и SDK пересылает значение в Claude Code.
+
+Все поля являются дополнительными. Клиенты не должны полагаться на подсказки для решений безопасности.
+
+| Поле | Тип | По умолчанию | Описание |
+| :- | :- | :- | :- |
+| `title` | `str \| None` | `None` | Понятное название инструмента |
+| `readOnlyHint` | `bool \| None` | `False` | Если `True`, инструмент не изменяет свою среду |
+| `destructiveHint` | `bool \| None` | `True` | Если `True`, инструмент может выполнять деструктивные обновления (имеет смысл только когда `readOnlyHint` равен `False`) |
+| `idempotentHint` | `bool \| None` | `False` | Если `True`, повторные вызовы с одинаковыми аргументами не имеют дополнительного эффекта (имеет смысл только когда `readOnlyHint` равен `False`) |
+| `openWorldHint` | `bool \| None` | `True` | Если `True`, инструмент взаимодействует с внешними сущностями (например, веб-поиск). Если `False`, область инструмента закрыта (например, инструмент памяти) |
+| `maxResultSizeChars` | `int \| None` | `None` | Количество символов, до которого Claude Code сохраняет текстовый результат этого инструмента встроенным в разговор вместо сохранения в файл, до 500 000. Результаты, содержащие изображения, не затрагиваются. Параметр Claude Code, а не подсказка MCP: SDK отправляет его в `_meta` инструмента как `anthropic/maxResultSizeChars`. См. [Повысить лимит для конкретного инструмента](https://code.claude.com/docs/ru/mcp.md#raise-the-limit-for-a-specific-tool) |
+</code></pre>
+<p>from claude_agent_sdk import tool, ToolAnnotations
+from typing import Any</p>
+<p>@tool(
+    &quot;search&quot;,
+    &quot;Search the web&quot;,
+    {&quot;query&quot;: str},
+    annotations=ToolAnnotations(readOnlyHint=True, openWorldHint=True),
+)
+async def search(args: dict[str, Any]) -&gt; dict[str, Any]:
+    return {&quot;content&quot;: [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: f&quot;Results for: {args[&#x27;query&#x27;]}&quot;}]}</p>
+<pre><code>
+### `create_sdk_mcp_server()`
+
+Создайте встроенный MCP server, который работает в вашем приложении Python.
+</code></pre>
+<p>def create_sdk_mcp_server(
+    name: str,
+    version: str = &quot;1.0.0&quot;,
+    tools: list[SdkMcpTool[Any]] | None = None
+) -&gt; McpSdkServerConfig</p>
+<pre><code>
+#### Параметры
+
+| Параметр | Тип | По умолчанию | Описание |
+| :- | :- | :- | :- |
+| `name` | `str` | - | Уникальный идентификатор сервера |
+| `version` | `str` | `&quot;1.0.0&quot;` | Строка версии сервера |
+| `tools` | `list[SdkMcpTool[Any]] \| None` | `None` | Список функций инструментов, созданных с помощью декоратора `@tool` |
+
+#### Возвращаемое значение
+
+Возвращает объект `McpSdkServerConfig`, который можно передать в `ClaudeAgentOptions.mcp_servers`.
+
+#### Пример
+</code></pre>
+<p>from claude_agent_sdk import tool, create_sdk_mcp_server, ClaudeAgentOptions</p>
+<p>@tool(&quot;add&quot;, &quot;Add two numbers&quot;, {&quot;a&quot;: float, &quot;b&quot;: float})
+async def add(args):
+    return {&quot;content&quot;: [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: f&quot;Sum: {args[&#x27;a&#x27;] + args[&#x27;b&#x27;]}&quot;}]}</p>
+<p>@tool(&quot;multiply&quot;, &quot;Multiply two numbers&quot;, {&quot;a&quot;: float, &quot;b&quot;: float})
+async def multiply(args):
+    return {&quot;content&quot;: [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: f&quot;Product: {args[&#x27;a&#x27;] * args[&#x27;b&#x27;]}&quot;}]}</p>
+<p>calculator = create_sdk_mcp_server(
+    name=&quot;calculator&quot;,
+    version=&quot;2.0.0&quot;,
+    tools=[add, multiply],  # Pass decorated functions
+)</p>
+<h1 id="use-with-claude">Use with Claude <a class="h-anchor" href="#use-with-claude" aria-label="Ссылка на раздел">#</a></h1>
+<p>options = ClaudeAgentOptions(
+    mcp_servers={&quot;calc&quot;: calculator},
+    allowed_tools=[&quot;mcp__calc__add&quot;, &quot;mcp__calc__multiply&quot;],
+)</p>
+<pre><code>
+### `list_sessions()`
+
+Выводит список прошлых сеансов с метаданными. Фильтруйте по каталогу проекта или выводите сеансы во всех проектах. Синхронно; возвращается немедленно.
+</code></pre>
+<p>def list_sessions(
+    directory: str | None = None,
+    limit: int | None = None,
+    offset: int = 0,
+    include_worktrees: bool = True
+) -&gt; list[SDKSessionInfo]</p>
+<pre><code>
+#### Параметры
+
+| Параметр | Тип | По умолчанию | Описание |
+| :- | :- | :- | :- |
+| `directory` | `str \| None` | `None` | Каталог для вывода сеансов. Если опущено, возвращает сеансы во всех проектах |
+| `limit` | `int \| None` | `None` | Максимальное количество возвращаемых сеансов |
+| `offset` | `int` | `0` | Количество сеансов для пропуска с начала отсортированных результатов. Используйте с `limit` для разбиения на страницы |
+| `include_worktrees` | `bool` | `True` | Когда `directory` находится внутри репозитория git, включайте сеансы из всех путей worktrees |
+
+#### Тип возвращаемого значения: `SDKSessionInfo`
+
+| Свойство | Тип | Описание |
+| :- | :- | :- |
+| `session_id` | `str` | Уникальный идентификатор сеанса |
+| `summary` | `str` | Отображаемое название: пользовательское название, самый последний запрос, автоматически созданное резюме или первый запрос |
+| `last_modified` | `int` | Время последнего изменения в миллисекундах с начала эпохи |
+| `file_size` | `int \| None` | Размер файла сеанса в байтах (`None` для удаленных хранилищ) |
+| `custom_title` | `str \| None` | Название сеанса, установленное пользователем |
+| `first_prompt` | `str \| None` | Первая значимая подсказка пользователя в сеансе |
+| `git_branch` | `str \| None` | Ветка Git в конце сеанса |
+| `cwd` | `str \| None` | Рабочий каталог для сеанса |
+| `tag` | `str \| None` | Тег сеанса, установленный пользователем (см. [`tag_session()`](#tag_session)) |
+| `created_at` | `int \| None` | Время создания сеанса в миллисекундах с начала эпохи |
+
+#### Пример
+
+Выведите 10 самых последних сеансов для проекта. Результаты отсортированы по `last_modified` в убывающем порядке, поэтому первый элемент - самый новый. Опустите `directory`, чтобы искать во всех проектах.
+</code></pre>
+<p>from claude_agent_sdk import list_sessions</p>
+<p>for session in list_sessions(directory=&quot;/path/to/project&quot;, limit=10):
+    print(f&quot;{session.summary} ({session.session_id})&quot;)</p>
+<pre><code>
+### `get_session_messages()`
+
+Извлекает сообщения из прошлого сеанса. Синхронно; возвращается немедленно.
+</code></pre>
+<p>def get_session_messages(
+    session_id: str,
+    directory: str | None = None,
+    limit: int | None = None,
+    offset: int = 0
+) -&gt; list[SessionMessage]</p>
+<pre><code>
+#### Параметры
+
+| Параметр | Тип | По умолчанию | Описание |
+| :- | :- | :- | :- |
+| `session_id` | `str` | обязательно | ID сеанса для извлечения сообщений |
+| `directory` | `str \| None` | `None` | Каталог проекта для поиска. Если опущено, ищет во всех проектах |
+| `limit` | `int \| None` | `None` | Максимальное количество возвращаемых сообщений |
+| `offset` | `int` | `0` | Количество сообщений для пропуска с начала |
+
+#### Тип возвращаемого значения: `SessionMessage`
+
+| Свойство | Тип | Описание |
+| :- | :- | :- |
+| `type` | `Literal[&quot;user&quot;, &quot;assistant&quot;]` | Роль сообщения |
+| `uuid` | `str` | Уникальный идентификатор сообщения |
+| `session_id` | `str` | Идентификатор сеанса |
+| `message` | `Any` | Необработанное содержимое сообщения |
+| `parent_tool_use_id` | `str \| None` | Для сообщений подагента, ID блока tool-use `Agent`, который его создал. `None` для сообщений основного сеанса и более старых сеансов |
+| `parent_agent_id` | `str \| None` | Для сообщений от [вложенного подагента](https://code.claude.com/docs/ru/sub-agents.md#let-subagents-spawn-their-own-subagents), ID агента родительского подагента. `None` для сообщений основного сеанса, сообщений подагента верхнего уровня и более старых сеансов. Требует Python Agent SDK 0.2.140 или позже |
+
+#### Пример
+</code></pre>
+<p>from claude_agent_sdk import list_sessions, get_session_messages</p>
+<p>sessions = list_sessions(limit=1)
+if sessions:
+    messages = get_session_messages(sessions[0].session_id)
+    for msg in messages:
+        print(f&quot;[{msg.type}] {msg.uuid}&quot;)</p>
+<pre><code>
+### `get_session_info()`
+
+Читает метаданные для одного сеанса по ID без сканирования полного каталога проекта. Синхронно; возвращается немедленно.
+</code></pre>
+<p>def get_session_info(
+    session_id: str,
+    directory: str | None = None,
+) -&gt; SDKSessionInfo | None</p>
+<pre><code>
+#### Параметры
+
+| Параметр | Тип | По умолчанию | Описание |
+| :- | :- | :- | :- |
+| `session_id` | `str` | обязательно | UUID сеанса для поиска |
+| `directory` | `str \| None` | `None` | Путь каталога проекта. Если опущено, ищет во всех каталогах проектов |
+
+Возвращает [`SDKSessionInfo`](#return-type-sdksessioninfo) или `None`, если сеанс не найден.
+
+#### Пример
+
+Найдите метаданные одного сеанса без сканирования каталога проекта. Полезно, когда у вас уже есть ID сеанса из предыдущего запуска.
+</code></pre>
+<p>from claude_agent_sdk import get_session_info</p>
+<p>info = get_session_info(&quot;550e8400-e29b-41d4-a716-446655440000&quot;)
+if info:
+    print(f&quot;{info.summary} (branch: {info.git_branch}, tag: {info.tag})&quot;)</p>
+<pre><code>
+### `rename_session()`
+
+Переименовывает сеанс, добавляя запись с пользовательским названием. Повторные вызовы безопасны; побеждает самое последнее название. Синхронно.
+</code></pre>
+<p>def rename_session(
+    session_id: str,
+    title: str,
+    directory: str | None = None,
+) -&gt; None</p>
+<pre><code>
+#### Параметры
+
+| Параметр | Тип | По умолчанию | Описание |
+| :- | :- | :- | :- |
+| `session_id` | `str` | обязательно | UUID сеанса для переименования |
+| `title` | `str` | обязательно | Новое название. Должно быть непустым после удаления пробелов |
+| `directory` | `str \| None` | `None` | Путь каталога проекта. Если опущено, ищет во всех каталогах проектов |
+
+Вызывает `ValueError`, если `session_id` не является допустимым UUID или `title` пуст; `FileNotFoundError`, если сеанс не найден.
+
+#### Пример
+
+Переименуйте самый последний сеанс, чтобы его было легче найти позже. Новое название появляется в [`SDKSessionInfo.custom_title`](#return-type-sdksessioninfo) при последующих чтениях.
+</code></pre>
+<p>from claude_agent_sdk import list_sessions, rename_session</p>
+<p>sessions = list_sessions(directory=&quot;/path/to/project&quot;, limit=1)
+if sessions:
+    rename_session(sessions[0].session_id, &quot;Refactor auth module&quot;)</p>
+<pre><code>
+### `tag_session()`
+
+Помечает сеанс. Передайте `None` для очистки тега. Повторные вызовы безопасны; побеждает самый последний тег. Синхронно.
+</code></pre>
+<p>def tag_session(
+    session_id: str,
+    tag: str | None,
+    directory: str | None = None,
+) -&gt; None</p>
+<pre><code>
+#### Параметры
+
+| Параметр | Тип | По умолчанию | Описание |
+| :- | :- | :- | :- |
+| `session_id` | `str` | обязательно | UUID сеанса для пометки |
+| `tag` | `str \| None` | обязательно | Строка тега или `None` для очистки. Очищается от Unicode перед сохранением |
+| `directory` | `str \| None` | `None` | Путь каталога проекта. Если опущено, ищет во всех каталогах проектов |
+
+Вызывает `ValueError`, если `session_id` не является допустимым UUID или `tag` пуст после очистки; `FileNotFoundError`, если сеанс не найден.
+
+#### Пример
+
+Пометьте сеанс, затем отфильтруйте по этому тегу при последующем чтении. Передайте `None` для очистки существующего тега.
+</code></pre>
+<p>from claude_agent_sdk import list_sessions, tag_session</p>
+<h1 id="tag-the-most-recent-session">Tag the most recent session <a class="h-anchor" href="#tag-the-most-recent-session" aria-label="Ссылка на раздел">#</a></h1>
+<p>sessions = list_sessions(directory=&quot;/path/to/project&quot;, limit=1)
+if sessions:
+    tag_session(sessions[0].session_id, &quot;needs-review&quot;)</p>
+<h1 id="later-find-all-sessions-with-that-tag">Later: find all sessions with that tag <a class="h-anchor" href="#later-find-all-sessions-with-that-tag" aria-label="Ссылка на раздел">#</a></h1>
+<p>for session in list_sessions(directory=&quot;/path/to/project&quot;):
+    if session.tag == &quot;needs-review&quot;:
+        print(session.summary)</p>
+<pre><code>
+### `fork_session()`
+
+Копирует транскрипт сессии в новую сессию, чтобы вы могли направить диалог в другую сторону, а исходная сессия осталась без изменений. Чтобы создать ответвление от более ранней точки диалога, передайте `up_to_message_id`. Синхронно.
+</code></pre>
+<p>def fork_session(
+    session_id: str,
+    directory: str | None = None,
+    up_to_message_id: str | None = None,
+    title: str | None = None,
+) -&gt; ForkSessionResult</p>
+<pre><code>
+#### Параметры
+
+| Параметр | Тип | По умолчанию | Описание |
+| :- | :- | :- | :- |
+| `session_id` | `str` | обязательно | UUID сессии для форка |
+| `directory` | `str \| None` | `None` | Путь каталога проекта. Если опущено, ищет во всех каталогах проектов |
+| `up_to_message_id` | `str \| None` | `None` | Копировать транскрипт до сообщения с этим UUID включительно, например `uuid` из [`get_session_messages()`](#get_session_messages). Если опущено, копирует весь транскрипт |
+| `title` | `str \| None` | `None` | Название форка. Если опущено, SDK формирует его из исходной сессии с добавлением `(fork)` |
+
+Возвращает `ForkSessionResult`, в котором `session_id` — это UUID новой сессии. Передайте его как [`resume`](#claudeagentoptions), чтобы продолжить форк. Форк не включает [чекпоинты файлов](https://code.claude.com/docs/ru/agent-sdk/file-checkpointing.md) исходной сессии, поэтому вы не сможете откатить его к чекпоинту, созданному до форка.
+
+`fork_session()` вызывает:
+
+* `ValueError`: `session_id` или `up_to_message_id` не является допустимым UUID
+* `ValueError`: в сессии нет сообщений, или `up_to_message_id` не соответствует ни одному сообщению в транскрипте
+* `FileNotFoundError`: сессия не найдена
+
+#### Пример
+
+Создайте форк самой последней сессии с новым названием, затем возобновите форк. Исходная сессия сохраняет собственную историю.
+</code></pre>
+<p>from claude_agent_sdk import fork_session, list_sessions</p>
+<p>sessions = list_sessions(directory=&quot;/path/to/project&quot;, limit=1)
+if sessions:
+    forked = fork_session(sessions[0].session_id, title=&quot;Try the OAuth approach&quot;)
+    print(forked.session_id)  # pass as ClaudeAgentOptions(resume=...) to continue the fork</p>
+<pre><code>
+## Классы
+
+### `ClaudeSDKClient`
+
+**Поддерживает сеанс разговора через несколько обменов.** Это эквивалент Python того, как функция `query()` TypeScript SDK работает внутри - она создает объект клиента, который может продолжать разговоры. См. [сравнение с `query()`](#choosing-between-query-and-claudesdkclient).
+</code></pre>
+<p>class ClaudeSDKClient:
+    def __init__(self, options: ClaudeAgentOptions | None = None, transport: Transport | None = None)
+    async def connect(self, prompt: str | AsyncIterable[dict] | None = None) -&gt; None
+    async def query(self, prompt: str | AsyncIterable[dict], session_id: str = &quot;default&quot;) -&gt; None
+    async def receive_messages(self) -&gt; AsyncIterator[Message]
+    async def receive_response(self) -&gt; AsyncIterator[Message]
+    async def interrupt(self) -&gt; None
+    async def set_permission_mode(self, mode: PermissionMode) -&gt; None
+    async def set_model(self, model: str | None = None) -&gt; None
+    async def rewind_files(self, user_message_id: str) -&gt; None
+    async def get_mcp_status(self) -&gt; McpStatusResponse
+    async def get_context_usage(self) -&gt; ContextUsageResponse
+    async def reconnect_mcp_server(self, server_name: str) -&gt; None
+    async def toggle_mcp_server(self, server_name: str, enabled: bool) -&gt; None
+    async def stop_task(self, task_id: str) -&gt; None
+    async def get_server_info(self) -&gt; dict[str, Any] | None
+    async def disconnect(self) -&gt; None</p>
+<pre><code>
+#### Методы
+
+| Метод | Описание |
+| :- | :- |
+| `__init__(options)` | Инициализируйте клиент с дополнительной конфигурацией |
+| `connect(prompt)` | Подключитесь к Claude с дополнительной начальной подсказкой или потоком сообщений |
+| `query(prompt, session_id)` | Отправьте новый запрос в режиме потоковой передачи |
+| `receive_messages()` | Получайте все сообщения от Claude как асинхронный итератор |
+| `receive_response()` | Получайте сообщения до и включая ResultMessage |
+| `interrupt()` | Отправьте сигнал прерывания (работает только в режиме потоковой передачи) |
+| `set_permission_mode(mode)` | Измените режим разрешений для текущего сеанса |
+| `set_model(model)` | Измените модель для текущей сессии. Передайте `None` для сброса на [модель по умолчанию Claude Code](https://code.claude.com/docs/ru/model-config.md). Сессия в режиме `auto` [переключается в режим `default`](https://code.claude.com/docs/ru/agent-sdk/permissions#auto-mode-auto), если новая модель не поддерживает авторежим |
+| `rewind_files(user_message_id)` | Восстановите файлы в их состояние в указанном пользовательском сообщении. Требует `enable_file_checkpointing=True`. См. [Чекпоинты файлов](https://code.claude.com/docs/ru/agent-sdk/file-checkpointing.md) |
+| `get_mcp_status()` | Получите статус всех настроенных MCP servers. Возвращает [`McpStatusResponse`](#mcpstatusresponse) |
+| `get_context_usage()` | Получите разбивку использования контекстного окна по категориям, скиллам и инструментам. Включает данные, которые `/context` показывает в интерактивной сессии. Возвращает [`ContextUsageResponse`](#contextusageresponse). Для вычисления разбивки Claude Code делает несколько запросов API подсчета токенов, которые не отображаются в потоке сообщений; см. [как эти запросы обрабатываются](#contextusageresponse) |
+| `reconnect_mcp_server(server_name)` | Повторите попытку подключения к MCP server, который не удался или был отключен |
+| `toggle_mcp_server(server_name, enabled)` | Включите или отключите MCP server в середине сеанса. Отключение удаляет его инструменты |
+| `stop_task(task_id)` | Остановите выполняющуюся фоновую задачу. [`TaskNotificationMessage`](#tasknotificationmessage) со статусом `&quot;stopped&quot;` следует в потоке сообщений |
+| `get_server_info()` | Получите информацию об инициализации сервера, включая доступные команды и стили вывода |
+| `disconnect()` | Отключитесь от Claude |
+
+#### Поддержка менеджера контекста
+
+Клиент можно использовать как асинхронный менеджер контекста для автоматического управления соединением:
+</code></pre>
+<p>import asyncio
+from claude_agent_sdk import ClaudeSDKClient</p>
+<p>async def main():
+    async with ClaudeSDKClient() as client:
+        await client.query(&quot;Hello Claude&quot;)
+        async for message in client.receive_response():
+            print(message)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+&gt; **Важно:** При итерации по сообщениям избегайте использования `break` для раннего выхода, так как это может вызвать проблемы с очисткой asyncio. Вместо этого позвольте итерации завершиться естественным образом или используйте флаги для отслеживания, когда вы нашли то, что вам нужно.
+
+#### Пример - Продолжение разговора
+</code></pre>
+<p>import asyncio
+from claude_agent_sdk import ClaudeSDKClient, AssistantMessage, TextBlock, ResultMessage</p>
+<p>async def main():
+    async with ClaudeSDKClient() as client:
+        # First question
+        await client.query(&quot;What&#x27;s the capital of France?&quot;)</p>
+<p># Process response
+        async for message in client.receive_response():
+            if isinstance(message, AssistantMessage):
+                for block in message.content:
+                    if isinstance(block, TextBlock):
+                        print(f&quot;Claude: {block.text}&quot;)</p>
+<p># Follow-up question - the session retains the previous context
+        await client.query(&quot;What&#x27;s the population of that city?&quot;)</p>
+<p>async for message in client.receive_response():
+            if isinstance(message, AssistantMessage):
+                for block in message.content:
+                    if isinstance(block, TextBlock):
+                        print(f&quot;Claude: {block.text}&quot;)</p>
+<p># Another follow-up - still in the same conversation
+        await client.query(&quot;What are some famous landmarks there?&quot;)</p>
+<p>async for message in client.receive_response():
+            if isinstance(message, AssistantMessage):
+                for block in message.content:
+                    if isinstance(block, TextBlock):
+                        print(f&quot;Claude: {block.text}&quot;)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+#### Пример - Потоковый ввод с ClaudeSDKClient
+
+`query()` также принимает асинхронный итерируемый объект словарей пользовательских сообщений, поэтому вы можете собрать подсказку во время отправки или включить блоки содержимого, такие как изображения. Claude Code начинает отвечать на первое полученное сообщение сразу же по его прибытии, не дожидаясь завершения итерируемого объекта, и `receive_response()` останавливается на `ResultMessage`, который завершает этот ответ. Поместите все, что Claude должен прочитать перед ответом, в одно сообщение, как это делает этот генератор, и свяжите каждый вызов `query()` с его собственным циклом `receive_response()`.
+</code></pre>
+<p>import asyncio
+from claude_agent_sdk import ClaudeSDKClient</p>
+<p>async def message_stream():
+    &quot;&quot;&quot;Assemble the prompt at send time and yield it as one user message.&quot;&quot;&quot;
+    readings = {&quot;Temperature&quot;: &quot;25°C&quot;, &quot;Humidity&quot;: &quot;60%&quot;}
+    data = &quot;, &quot;.join(f&quot;{name}: {value}&quot; for name, value in readings.items())
+    yield {
+        &quot;type&quot;: &quot;user&quot;,
+        &quot;message&quot;: {
+            &quot;role&quot;: &quot;user&quot;,
+            &quot;content&quot;: f&quot;Analyze the following sensor data and describe any patterns you see: {data}&quot;,
+        },
+    }</p>
+<p>async def main():
+    async with ClaudeSDKClient() as client:
+        # Stream input to Claude
+        await client.query(message_stream())</p>
+<p># Process response
+        async for message in client.receive_response():
+            print(message)</p>
+<p># Follow-up in same session
+        await client.query(&quot;Should we be concerned about these readings?&quot;)</p>
+<p>async for message in client.receive_response():
+            print(message)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+#### Пример - Использование прерываний
+</code></pre>
+<p>import asyncio
+from claude_agent_sdk import ClaudeSDKClient, ClaudeAgentOptions, ResultMessage</p>
+<p>async def interruptible_task():
+    options = ClaudeAgentOptions(allowed_tools=[&quot;Bash&quot;], permission_mode=&quot;acceptEdits&quot;)</p>
+<p>async with ClaudeSDKClient(options=options) as client:
+        # Start a long-running task
+        await client.query(&quot;Count from 1 to 100 slowly, using the bash sleep command&quot;)</p>
+<p># Let it run for a bit
+        await asyncio.sleep(2)</p>
+<p># Interrupt the task
+        await client.interrupt()
+        print(&quot;Task interrupted!&quot;)</p>
+<p># Drain the interrupted task&#x27;s messages (including its ResultMessage)
+        async for message in client.receive_response():
+            if isinstance(message, ResultMessage):
+                print(f&quot;Interrupted task: terminal_reason={message.terminal_reason!r}&quot;)
+                # terminal_reason is &quot;aborted_streaming&quot; or &quot;aborted_tools&quot;
+                # for interrupted turns</p>
+<p># Send a new command
+        await client.query(&quot;Just say hello instead&quot;)</p>
+<p># Now receive the new response
+        async for message in client.receive_response():
+            if isinstance(message, ResultMessage) and message.subtype == &quot;success&quot;:
+                print(f&quot;New result: {message.result}&quot;)</p>
+<p>asyncio.run(interruptible_task())</p>
+<pre><code>
+&gt; [!NOTE]
+&gt;
+&gt; **Поведение буфера после прерывания:** `interrupt()` отправляет сигнал остановки, но не очищает буфер сообщений. Сообщения, уже созданные прерванной задачей, включая ее `ResultMessage`, остаются в потоке. Вы должны слить их с помощью `receive_response()` перед чтением ответа на новый запрос. Если вы отправите новый запрос сразу после `interrupt()` и вызовете `receive_response()` только один раз, вы получите сообщения прерванной задачи, а не ответ на новый запрос.
+
+#### Пример - Расширенное управление разрешениями
+</code></pre>
+<p>import asyncio
+from claude_agent_sdk import ClaudeSDKClient, ClaudeAgentOptions
+from claude_agent_sdk.types import (
+    PermissionResultAllow,
+    PermissionResultDeny,
+    ToolPermissionContext,
+)</p>
+<p>async def custom_permission_handler(
+    tool_name: str, input_data: dict, context: ToolPermissionContext
+) -&gt; PermissionResultAllow | PermissionResultDeny:
+    &quot;&quot;&quot;Custom logic for tool permissions.&quot;&quot;&quot;</p>
+<p># Block writes to system directories
+    if tool_name == &quot;Write&quot; and input_data.get(&quot;file_path&quot;, &quot;&quot;).startswith(&quot;/system/&quot;):
+        return PermissionResultDeny(
+            message=&quot;System directory write not allowed&quot;, interrupt=True
+        )</p>
+<p># Redirect sensitive file operations
+    if tool_name in [&quot;Write&quot;, &quot;Edit&quot;] and &quot;config&quot; in input_data.get(&quot;file_path&quot;, &quot;&quot;):
+        safe_path = f&quot;./sandbox/{input_data[&#x27;file_path&#x27;]}&quot;
+        return PermissionResultAllow(
+            updated_input={**input_data, &quot;file_path&quot;: safe_path}
+        )</p>
+<p># Allow everything else
+    return PermissionResultAllow(updated_input=input_data)</p>
+<p>async def main():
+    # Don&#x27;t also list the gated tools in allowed_tools: allow rules approve calls before can_use_tool runs
+    options = ClaudeAgentOptions(can_use_tool=custom_permission_handler)</p>
+<p>async with ClaudeSDKClient(options=options) as client:
+        await client.query(&quot;Update the system config file&quot;)</p>
+<p>async for message in client.receive_response():
+            # Will use sandbox path instead
+            print(message)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+## Типы
+
+&gt; [!NOTE]
+&gt;
+&gt; **`@dataclass` vs `TypedDict`:** Этот SDK использует два вида типов. Классы, украшенные `@dataclass` (такие как `ResultMessage`, `AgentDefinition`, `TextBlock`), являются экземплярами объектов во время выполнения и поддерживают доступ к атрибутам: `msg.result`. Классы, определённые с помощью `TypedDict` (такие как `ThinkingConfigEnabled`, `McpStdioServerConfig`, `SyncHookJSONOutput`), являются **простыми словарями во время выполнения** и требуют доступа по ключам: `config[&quot;budget_tokens&quot;]`, а не `config.budget_tokens`. Синтаксис вызова `ClassName(field=value)` работает для обоих, но только dataclasses создают объекты с атрибутами.
+
+### `SdkMcpTool`
+
+Определение инструмента SDK MCP, созданного с помощью декоратора `@tool`.
+</code></pre>
+<p>@dataclass
+class SdkMcpTool(Generic[T]):
+    name: str
+    description: str
+    input_schema: type[T] | dict[str, Any]
+    handler: Callable[[T], Awaitable[dict[str, Any]]]
+    annotations: ToolAnnotations | None = None</p>
+<pre><code>
+| Свойство | Тип | Описание |
+| :- | :- | :- |
+| `name` | `str` | Уникальный идентификатор инструмента |
+| `description` | `str` | Описание, понятное человеку |
+| `input_schema` | `type[T] \| dict[str, Any]` | Схема для валидации входных данных |
+| `handler` | `Callable[[T], Awaitable[dict[str, Any]]]` | Асинхронная функция, которая обрабатывает выполнение инструмента |
+| `annotations` | [`ToolAnnotations`](#toolannotations)` \| None` | Дополнительные аннотации инструмента (например `readOnlyHint`, `destructiveHint`, `openWorldHint`, `maxResultSizeChars`) |
+
+### `Transport`
+
+Абстрактный базовый класс для пользовательских реализаций транспорта. Используйте это для связи с процессом Claude через пользовательский канал (например, удалённое соединение вместо локального подпроцесса).
+
+&gt; [!WARNING]
+&gt;
+&gt; Это низкоуровневый внутренний API. Интерфейс может измениться в будущих версиях. Пользовательские реализации должны быть обновлены в соответствии с любыми изменениями интерфейса.
+</code></pre>
+<p>from abc import ABC, abstractmethod
+from collections.abc import AsyncIterator
+from typing import Any</p>
+<p>class Transport(ABC):
+    @abstractmethod
+    async def connect(self) -&gt; None: ...</p>
+<p>@abstractmethod
+    async def write(self, data: str) -&gt; None: ...</p>
+<p>@abstractmethod
+    def read_messages(self) -&gt; AsyncIterator[dict[str, Any]]: ...</p>
+<p>@abstractmethod
+    async def close(self) -&gt; None: ...</p>
+<p>@abstractmethod
+    def is_ready(self) -&gt; bool: ...</p>
+<p>@abstractmethod
+    async def end_input(self) -&gt; None: ...</p>
+<pre><code>
+| Метод | Описание |
+| :- | :- |
+| `connect()` | Подключить транспорт и подготовить к связи |
+| `write(data)` | Записать необработанные данные (JSON + новая строка) в транспорт |
+| `read_messages()` | Асинхронный итератор, который выдаёт разобранные JSON-сообщения |
+| `close()` | Закрыть соединение и очистить ресурсы |
+| `is_ready()` | Возвращает `True`, если транспорт может отправлять и получать |
+| `end_input()` | Закрыть входной поток (например, закрыть stdin для транспортов подпроцесса) |
+
+Импорт: `from claude_agent_sdk import Transport`
+
+### `ClaudeAgentOptions`
+
+Конфигурационный dataclass для запросов Claude Code.
+</code></pre>
+<p>@dataclass
+class ClaudeAgentOptions:
+    tools: list[str] | ToolsPreset | None = None
+    allowed_tools: list[str] = field(default_factory=list)
+    system_prompt: str | SystemPromptPreset | SystemPromptCustom | SystemPromptFile | None = None
+    mcp_servers: dict[str, McpServerConfig] | str | Path = field(default_factory=dict)
+    strict_mcp_config: bool = False
+    permission_mode: PermissionMode | None = None
+    continue_conversation: bool = False
+    resume: str | None = None
+    session_id: str | None = None
+    max_turns: int | None = None
+    max_budget_usd: float | None = None
+    disallowed_tools: list[str] = field(default_factory=list)
+    model: str | None = None
+    fallback_model: str | None = None
+    betas: list[SdkBeta] = field(default_factory=list)
+    output_format: dict[str, Any] | None = None
+    permission_prompt_tool_name: str | None = None
+    cwd: str | Path | None = None
+    cli_path: str | Path | None = None
+    settings: str | None = None
+    add_dirs: list[str | Path] = field(default_factory=list)
+    env: dict[str, str] = field(default_factory=dict)
+    extra_args: dict[str, str | None] = field(default_factory=dict)
+    max_buffer_size: int | None = None
+    debug_stderr: Any = sys.stderr  # Deprecated
+    stderr: Callable[[str], None] | None = None
+    can_use_tool: CanUseTool | None = None
+    hooks: dict[HookEvent, list[HookMatcher]] | None = None
+    user: str | None = None
+    include_partial_messages: bool = False
+    include_hook_events: bool = False
+    forward_subagent_text: bool = False
+    verbatim_prompts: bool = False
+    fork_session: bool = False
+    resume_session_at: str | None = None
+    resume_drops_turn: str | None = None
+    agents: dict[str, AgentDefinition] | None = None
+    setting_sources: list[SettingSource] | None = None
+    skills: list[str] | Literal[&quot;all&quot;] | None = None
+    sandbox: SandboxSettings | None = None
+    plugins: list[SdkPluginConfig] = field(default_factory=list)
+    max_thinking_tokens: int | None = None  # Deprecated: use thinking instead
+    thinking: ThinkingConfig | None = None
+    effort: EffortLevel | None = None
+    enable_file_checkpointing: bool = False
+    session_store: SessionStore | None = None
+    session_store_flush: SessionStoreFlushMode = &quot;batched&quot;
+    load_timeout_ms: int = 60_000
+    task_budget: TaskBudget | None = None</p>
+<pre><code>
+| Свойство | Тип | По умолчанию | Описание |
+| :- | :- | :- | :- |
+| `tools` | `list[str] \| ToolsPreset \| None` | `None` | Конфигурация инструментов. Используйте `{&quot;type&quot;: &quot;preset&quot;, &quot;preset&quot;: &quot;claude_code&quot;}` для инструментов Claude Code по умолчанию |
+| `allowed_tools` | `list[str]` | `[]` | Инструменты для автоматического одобрения без запроса разрешения, за исключением чтения по [сетевым путям](https://code.claude.com/docs/ru/permissions.md#network-paths). Это не ограничивает Claude только этими инструментами. Если вы укажете здесь один из [инструментов отслеживания задач](https://code.claude.com/docs/ru/agent-sdk/todo-tracking.md#model-availability), Claude Code также включает их для сессии. Остальные неуказанные инструменты передаются на обработку `permission_mode` и `can_use_tool`. Используйте `disallowed_tools` для блокировки инструментов. См. [Разрешения](https://code.claude.com/docs/ru/agent-sdk/permissions.md#allow-and-deny-rules) |
+| `system_prompt` | `str \| SystemPromptPreset \| SystemPromptCustom \| SystemPromptFile \| None` | `None` | Конфигурация системного промпта. Передайте строку для пользовательского промпта, `{&quot;type&quot;: &quot;preset&quot;, &quot;preset&quot;: &quot;claude_code&quot;}` для системного промпта Claude Code с необязательным `&quot;append&quot;`, `{&quot;type&quot;: &quot;custom&quot;, &quot;prompt&quot;: &quot;...&quot;}` для пользовательского промпта, который также может задать `&quot;snapshot&quot;`, или `{&quot;type&quot;: &quot;file&quot;, &quot;path&quot;: &quot;...&quot;}` для загрузки большого промпта с диска. См. [`SystemPromptPreset`](#systempromptpreset), [`SystemPromptCustom`](#systempromptcustom) и [`SystemPromptFile`](#systempromptfile) |
+| `mcp_servers` | `dict[str, McpServerConfig] \| str \| Path` | `{}` | Конфигурации MCP-серверов или путь к файлу конфигурации |
+| `strict_mcp_config` | `bool` | `False` | При значении `True` используются серверы, переданные в `mcp_servers`, а файл `.mcp.json` проекта, пользовательские настройки, MCP-серверы, предоставляемые плагинами, и [коннекторы claude.ai](https://code.claude.com/docs/ru/mcp.md#use-mcp-servers-from-claude-ai) игнорируются. Соответствует флагу CLI `--strict-mcp-config` |
+| `permission_mode` | `PermissionMode \| None` | `None` | Режим разрешений для использования инструментов |
+| `continue_conversation` | `bool` | `False` | Продолжить самый последний диалог |
+| `resume` | `str \| None` | `None` | ID сессии для возобновления |
+| `session_id` | `str \| None` | `None` | Использовать определённый ID сессии вместо автоматически сгенерированного. Должен быть действительным UUID. Нельзя сочетать с `continue_conversation` или `resume`, если не задан также `fork_session` |
+| `max_turns` | `int \| None` | `None` | Максимальное количество агентских [ходов](https://code.claude.com/docs/ru/agent-sdk/agent-loop.md#turns-and-messages) |
+| `max_budget_usd` | `float \| None` | `None` | Остановить запрос, когда оценка стоимости на стороне клиента достигнет этого значения в USD. Оценка может превысить это значение, поэтому [оставьте запас](https://code.claude.com/docs/ru/agent-sdk/agent-loop.md#budget-headroom). Учитывает только расходы самого вызова; итоги, восстановленные из возобновлённой сессии, не учитываются. Об оговорках по точности и поведении сброса см. [Отслеживание затрат и использования](https://code.claude.com/docs/ru/agent-sdk/cost-tracking.md) |
+| `disallowed_tools` | `list[str]` | `[]` | Инструменты для запрета. Простое имя, такое как `&quot;Bash&quot;`, удаляет инструмент из контекста Claude. Правило с уточнением, такое как `&quot;Bash(rm *)&quot;`, оставляет инструмент доступным и запрещает соответствующие вызовы в каждом режиме разрешений, включая `bypassPermissions`, для команды [в том виде, как она написана](https://code.claude.com/docs/ru/permissions.md#bash-rule-limits). См. [Разрешения](https://code.claude.com/docs/ru/agent-sdk/permissions.md#allow-and-deny-rules) |
+| `enable_file_checkpointing` | `bool` | `False` | Включить отслеживание изменений файлов для перемотки. См. [Чекпоинты файлов](https://code.claude.com/docs/ru/agent-sdk/file-checkpointing.md) |
+| `model` | `str \| None` | `None` | Псевдоним модели Claude или полное имя модели. См. [допустимые значения и ID, специфичные для поставщика](https://code.claude.com/docs/ru/model-config.md#available-models) |
+| `fallback_model` | `str \| None` | `None` | Резервная модель, используемая при сбое основной модели. Принимает список, разделённый запятыми. Рекомендации см. в разделе [Выбор модели](https://code.claude.com/docs/ru/agent-sdk/configuration.md#choose-a-model) |
+| `betas` | `list[SdkBeta]` | `[]` | Бета-функции для включения. См. [`SdkBeta`](#sdkbeta) для доступных опций |
+| `output_format` | `dict[str, Any] \| None` | `None` | Формат вывода для структурированных ответов (например, `{&quot;type&quot;: &quot;json_schema&quot;, &quot;schema&quot;: {...}}`). Подробнее см. [Структурированные выходы](https://code.claude.com/docs/ru/agent-sdk/structured-outputs.md) |
+| `permission_prompt_tool_name` | `str \| None` | `None` | Имя инструмента MCP для запросов разрешения |
+| `cwd` | `str \| Path \| None` | `None` | Текущий рабочий каталог |
+| `cli_path` | `str \| Path \| None` | `None` | Пользовательский путь к исполняемому файлу Claude Code CLI |
+| `settings` | `str \| None` | `None` | Путь к файлу настроек или встроенная строка JSON |
+| `add_dirs` | `list[str \| Path]` | `[]` | Дополнительные каталоги, к которым Claude может получить доступ. SDK передаёт каждую запись в Claude Code как `--add-dir`, поэтому с источником настроек `project` Claude Code также [загружает скиллы, команды и субагентов каталога](https://code.claude.com/docs/ru/permissions.md#additional-directories-grant-file-access-not-configuration) |
+| `env` | `dict[str, str]` | `{}` | Переменные окружения, объединённые поверх унаследованного окружения процесса. См. [Переменные окружения](https://code.claude.com/docs/ru/env-vars.md) для переменных, которые читает базовый CLI, и [Обработка медленных или зависших ответов API](#handle-slow-or-stalled-api-responses) для переменных, связанных с таймаутами. Установите `CLAUDE_AGENT_SDK_CLIENT_APP` для идентификации вашего приложения в заголовке User-Agent |
+| `extra_args` | `dict[str, str \| None]` | `{}` | Дополнительные аргументы CLI для передачи непосредственно в CLI |
+| `max_buffer_size` | `int \| None` | `None` | Максимальная длина отдельного сообщения, которое SDK принимает от CLI, в символах. При `None` используется 1 048 576. Более длинное сообщение вызывает [`CLIJSONDecodeError`](#clijsondecodeerror) |
+| `debug_stderr` | `Any` | `sys.stderr` | *Устарело* - SDK игнорирует это значение. Используйте обратный вызов `stderr` для вывода stderr CLI |
+| `stderr` | `Callable[[str], None] \| None` | `None` | Функция обратного вызова для вывода stderr из CLI |
+| `can_use_tool` | [`CanUseTool`](#canusetool) ` \| None` | `None` | Обратный вызов разрешений инструмента, вызываемый только тогда, когда [процесс проверки разрешений](https://code.claude.com/docs/ru/agent-sdk/permissions.md#how-permissions-are-evaluated) доходит до запроса разрешения. Не вызывается для вызовов, автоматически одобренных `allowed_tools`, правилами разрешения или `permission_mode`. Правило разрешения не одобряет заранее [действия, которые ни один режим не одобряет автоматически](https://code.claude.com/docs/ru/permission-modes.md#actions-no-mode-auto-approves). Подробнее см. [`CanUseTool`](#canusetool) |
+| `hooks` | `dict[HookEvent, list[HookMatcher]] \| None` | `None` | Конфигурации хуков для перехвата событий |
+| `user` | `str \| None` | `None` | На платформах POSIX учётная запись пользователя ОС, под которой работает подпроцесс Claude Code. Claude Code сохраняет окружение родительского процесса, включая `HOME`, и работает в `cwd` |
+| `include_partial_messages` | `bool` | `False` | Включить события потоковой передачи частичных сообщений. Когда включено, выдаются сообщения [`StreamEvent`](#streamevent) |
+| `include_hook_events` | `bool` | `False` | Включить события жизненного цикла хуков в поток сообщений как объекты `HookEventMessage` |
+| `forward_subagent_text` | `bool` | `False` | Пересылать текстовые блоки и блоки размышлений субагента в поток сообщений. Без этой опции Claude Code опускает текстовые блоки и блоки размышлений субагента, который выполняется [на переднем плане](https://code.claude.com/docs/ru/sub-agents.md#run-subagents-in-foreground-or-background). О вложенных субагентах, скиллах с `context: fork` и версии Claude Code, необходимой в каждом случае, см. [Отслеживание сообщений субагентов](https://code.claude.com/docs/ru/headless.md#follow-subagent-messages). Требует Python Agent SDK 0.2.140 или новее |
+| `verbatim_prompts` | `bool` | `False` | Доставлять каждый промпт в том виде, как он написан. SDK отправляет каждое пользовательское сообщение с `client_composed`, установленным в `True`. Что Claude Code пропускает для таких сообщений, см. в [`client_composed`](https://code.claude.com/docs/ru/agent-sdk/typescript#sdkusermessage). Используйте эту опцию, когда текст вашего промпта включает содержимое, которое конечный пользователь не вводил. Для управления на уровне отдельных ходов оставьте её отключённой и вместо этого устанавливайте `&quot;client_composed&quot;: True` для отдельных потоковых сообщений. Пока опция включена, SDK перезаписывает любое заданное вами значение `client_composed`. Требует Python Agent SDK 0.2.158 или новее и Claude Code v2.1.248 или новее; CLI, поставляемый с этими версиями SDK, удовлетворяет требованию к Claude Code |
+| `fork_session` | `bool` | `False` | При возобновлении с `resume` создать ответвление с новым ID сессии вместо продолжения исходной сессии |
+| `resume_session_at` | `str \| None` | `None` | При возобновлении загрузить диалог только до сообщения с этим UUID включительно. Используйте с `resume` и обычно с `fork_session`, чтобы создать ответвление с более ранней точки. Требует Python Agent SDK 0.2.137 или новее |
+| `resume_drops_turn` | `str \| None` | `None` | UUID пользовательского промпта, ход которого отбрасывается усечением `resume_session_at`. Если задано, CLI отказывает в возобновлении, если отброшенный диапазон содержит записи, не относящиеся к этому ходу. Требует Python Agent SDK 0.2.137 или новее и Claude Code v2.1.223 или новее; CLI, поставляемый с этими версиями SDK, удовлетворяет требованию к Claude Code |
+| `agents` | `dict[str, AgentDefinition] \| None` | `None` | Программно определённые субагенты |
+| `plugins` | `list[SdkPluginConfig]` | `[]` | Загрузить пользовательские плагины из локальных путей. Подробнее см. [Плагины](https://code.claude.com/docs/ru/agent-sdk/plugins.md) |
+| `sandbox` | [`SandboxSettings`](#sandboxsettings) ` \| None` | `None` | Программно настроить поведение песочницы. Подробнее см. [Настройки песочницы](#sandboxsettings) |
+| `setting_sources` | `list[SettingSource] \| None` | `None` (CLI defaults: all sources) | Управляет тем, какие настройки файловой системы загружать. Передайте `[]`, чтобы отключить пользовательские, проектные и локальные настройки. Если `skills` задан, а это поле не задано, загружаются только пользовательские и проектные источники. Задайте `setting_sources` явно, чтобы сохранить локальные настройки. Политика, управляемая на конечном устройстве, загружается в любом случае; настройки, управляемые сервером, извлекаются, когда сессия аутентифицируется с учётными данными организации в [подходящей конфигурации](https://code.claude.com/docs/ru/server-managed-settings.md#platform-availability). О входных данных, которые читаются независимо от этой опции, см. [Что settingSources не контролирует](https://code.claude.com/docs/ru/agent-sdk/claude-code-features.md#what-settingsources-does-not-control) |
+| `skills` | `list[str] \| Literal[&quot;all&quot;] \| None` | `None` | Скиллы, доступные для сессии. Передайте `&quot;all&quot;`, чтобы включить все обнаруженные скиллы, или список имён скиллов. Передавайте только точные имена. SDK отклоняет некорректные имена и имена с подстановочными знаками с ошибкой `ValueError` до запуска процесса Claude Code; эта проверка требует Python Agent SDK 0.2.129 или новее. Если задано, SDK автоматически добавляет инструмент Skill в `allowed_tools`. Если вы также передаёте `tools`, включите `&quot;Skill&quot;` в этот список. См. [Скиллы](https://code.claude.com/docs/ru/agent-sdk/skills.md) |
+| `max_thinking_tokens` | `int \| None` | `None` | *Устарело* - Максимальное количество токенов для блоков размышлений. Используйте вместо этого `thinking` |
+| `thinking` | [`ThinkingConfig`](#thinkingconfig) ` \| None` | `None` | Управляет поведением расширенного мышления. Имеет приоритет над `max_thinking_tokens` |
+| `effort` | [`EffortLevel`](#effortlevel) ` \| None` | `None` | Уровень effort, определяющий глубину мышления. См. [настройку уровня effort](https://code.claude.com/docs/ru/model-config.md#adjust-effort-level) |
+| `session_store` | [`SessionStore`](https://code.claude.com/docs/ru/agent-sdk/session-storage#the-sessionstore-interface) ` \| None` | `None` | Зеркалировать транскрипты сессий во внешний бэкенд, чтобы другой хост мог их возобновить. См. [Сохранение сессий во внешнем хранилище](https://code.claude.com/docs/ru/agent-sdk/session-storage.md) |
+| `session_store_flush` | `Literal[&quot;batched&quot;, &quot;eager&quot;]` | `&quot;batched&quot;` | Когда сбрасывать зеркалируемые записи транскрипта в `session_store`. `&quot;batched&quot;` сбрасывает один раз за ход или при заполнении буфера; `&quot;eager&quot;` запускает фоновый сброс после каждого кадра. Игнорируется, когда `session_store` равен `None` |
+| `load_timeout_ms` | `int` | `60000` | Таймаут на каждый вызов `session_store.load()` и `list_subkeys()` во время материализации при возобновлении, в миллисекундах |
+| `task_budget` | `TaskBudget \| None` | `None` | Бюджет токенов на стороне API. Отправляется как `output_config.task_budget` с бета-заголовком `task-budgets-2026-03-13`. Передайте `{&quot;total&quot;: &lt;int&gt;}`. |
+
+#### Обработка медленных или зависших ответов API
+
+Подпроцесс CLI читает несколько переменных окружения, которые управляют таймаутами API и обнаружением зависаний. Передайте их через `ClaudeAgentOptions.env`:
+</code></pre>
+<p>from claude_agent_sdk import ClaudeAgentOptions</p>
+<p>options = ClaudeAgentOptions(
+    env={
+        &quot;API_TIMEOUT_MS&quot;: &quot;120000&quot;,
+        &quot;CLAUDE_CODE_MAX_RETRIES&quot;: &quot;2&quot;,
+        &quot;CLAUDE_ASYNC_AGENT_STALL_TIMEOUT_MS&quot;: &quot;120000&quot;,
+    },
+)</p>
+<pre><code>
+* [`API_TIMEOUT_MS`](https://code.claude.com/docs/ru/env-vars): сколько времени каждая попытка запроса может ожидать заголовков ответа, в миллисекундах. Не ограничивает продолжительность потокового ответа после получения заголовков. По умолчанию `600000`. Применяется к основному циклу и всем субагентам.
+* `CLAUDE_CODE_MAX_RETRIES`: максимальное количество повторных попыток API. По умолчанию `10`, ограничено значением `15`. Каждая повторная попытка получает собственное окно `API_TIMEOUT_MS`.
+
+  Для автоматических запусков, которым нужно пережидать более длительные сбои, установите [`CLAUDE_CODE_RETRY_WATCHDOG=1`](https://code.claude.com/docs/ru/errors#tune-retry-behavior): эта настройка бесконечно повторяет попытки при временных ошибках нехватки ёмкости и, в Claude Code v2.1.199 или новее, повышает значение по умолчанию для других временных ошибок до `300` и снимает ограничение с этой переменной.
+* `CLAUDE_ASYNC_AGENT_STALL_TIMEOUT_MS`: сторож зависаний для субагентов. Пока включён сторож потока, значение по умолчанию равно `CLAUDE_STREAM_IDLE_TIMEOUT_MS` плюс 5 минут, что составляет `600000`, если вы не увеличите эту переменную. Когда сторож потока отключён, значение по умолчанию — `600000`. До v2.1.257 значение по умолчанию всегда было `600000`.
+
+  Таймер сбрасывается при каждом событии потока. При зависании Claude Code прерывает субагента и сообщает о зависании родителю. Для фонового субагента он также помечает задачу как неудавшуюся и прикрепляет любой частичный результат.
+* `CLAUDE_ENABLE_STREAM_WATCHDOG` вместе с `CLAUDE_STREAM_IDLE_TIMEOUT_MS`: сторож потока, который прерывает запрос, когда заголовки уже получены, но тело ответа перестало передаваться. Сторож включён по умолчанию для всех поставщиков; установите `CLAUDE_ENABLE_STREAM_WATCHDOG=0`, чтобы его отключить. `CLAUDE_STREAM_IDLE_TIMEOUT_MS` по умолчанию равно `300000` и не может быть меньше этого минимума. Что делает Claude Code после прерывания в зависимости от того, насколько продвинулся ответ, описано в разделе [Автоматические повторные попытки](https://code.claude.com/docs/ru/errors.md#automatic-retries).
+
+  Пока сторож ожидает ответ, который шлюз за `ANTHROPIC_BASE_URL` удерживает открытым с помощью keep-alive пингов, хост, установивший `include_partial_messages`, продолжает получать сообщения `ping` [`StreamEvent`](#streamevent). Воспринимайте эти кадры как признак активности, а не завершайте сессию по таймауту из-за отсутствия данных. До v2.1.257 эти кадры прекращались через 5 минут после последнего реального события потока.
+
+### `OutputFormat`
+
+Конфигурация для валидации структурированного вывода. Передайте это как `dict` в поле `output_format` в `ClaudeAgentOptions`:
+</code></pre>
+<h1 id="ожидаемая-форма-dict-для-output_format">Ожидаемая форма dict для output_format <a class="h-anchor" href="#ожидаемая-форма-dict-для-output_format" aria-label="Ссылка на раздел">#</a></h1>
+<p>{
+    &quot;type&quot;: &quot;json_schema&quot;,
+    &quot;schema&quot;: {...},  # Ваше определение JSON Schema
+}</p>
+<pre><code>
+| Поле | Обязательно | Описание |
+| :- | :- | :- |
+| `type` | Да | Должно быть `&quot;json_schema&quot;` для валидации JSON Schema |
+| `schema` | Да | Определение JSON Schema для валидации вывода |
+
+### `SystemPromptPreset`
+
+Конфигурация для использования предустановленного системного промпта Claude Code с необязательными дополнениями.
+</code></pre>
+<p>class SystemPromptPreset(TypedDict):
+    type: Literal[&quot;preset&quot;]
+    preset: Literal[&quot;claude_code&quot;]
+    append: NotRequired[str]
+    exclude_dynamic_sections: NotRequired[bool]
+    snapshot: NotRequired[bool]</p>
+<pre><code>
+| Поле | Обязательно | Описание |
+| :- | :- | :- |
+| `type` | Да | Должно быть `&quot;preset&quot;` для использования предустановленного системного промпта |
+| `preset` | Да | Должно быть `&quot;claude_code&quot;` для использования системного промпта Claude Code |
+| `append` | Нет | Дополнительные инструкции, добавляемые к предустановленному системному промпту |
+| `exclude_dynamic_sections` | Нет | Перенести контекст, специфичный для пользователя, например расположение автоматической памяти, из системного промпта в первое пользовательское сообщение. Улучшает повторное использование кэша промптов между пользователями и машинами. См. [Изменение системных промптов](https://code.claude.com/docs/ru/agent-sdk/modifying-system-prompts.md#improve-prompt-caching-across-users-and-machines) |
+| `snapshot` | Нет | Установите `False`, чтобы пересобирать системный промпт при каждом запросе вместо [повторного использования промпта, записанного сессией при первом запросе](https://code.claude.com/docs/ru/agent-sdk/modifying-system-prompts.md#change-the-prompt-of-an-existing-session). Требует `claude-agent-sdk` v0.2.153 или новее |
+
+### `SystemPromptCustom`
+
+Пользовательский системный промпт в форме объекта, эквивалентный передаче строки в `system_prompt`, который также может задавать `snapshot`. Требует `claude-agent-sdk` v0.2.153 или новее.
+</code></pre>
+<p>class SystemPromptCustom(TypedDict):
+    type: Literal[&quot;custom&quot;]
+    prompt: str
+    snapshot: NotRequired[bool]</p>
+<pre><code>
+| Поле | Обязательно | Описание |
+| :- | :- | :- |
+| `type` | Да | Должно быть `&quot;custom&quot;` |
+| `prompt` | Да | Текст системного промпта. Передаётся в CLI как аргумент командной строки, поэтому действуют [ограничения длины командной строки](#systempromptfile) |
+| `snapshot` | Нет | То же, что [`SystemPromptPreset.snapshot`](#systempromptpreset), применительно к `prompt` |
+
+### `SystemPromptFile`
+
+Конфигурация для загрузки пользовательского системного промпта из файла вместо передачи его строкой. SDK сопоставляет это с флагом CLI [`--system-prompt-file`](https://code.claude.com/docs/ru/cli-reference#system-prompt-flags). Используйте форму с файлом, когда промпт большой: строковый `system_prompt` SDK передаёт в argv подпроцесса CLI, что подпадает под ограничения длины командной строки ОС ещё до того, как SDK отправит какой-либо запрос к API. В Linux отдельный аргумент длиннее примерно 128 КБ приводит к сбою при запуске процесса с ошибкой `Argument list too long`. В Windows вся командная строка ограничена примерно 32 КБ, поэтому строковая форма даёт сбой при ещё меньшем размере.
+</code></pre>
+<p>class SystemPromptFile(TypedDict):
+    type: Literal[&quot;file&quot;]
+    path: str</p>
+<pre><code>
+| Поле | Обязательно | Описание |
+| :- | :- | :- |
+| `type` | Да | Должно быть `&quot;file&quot;` для загрузки промпта с диска |
+| `path` | Да | Путь к файлу, содержащему системный промпт |
+
+### `SettingSource`
+
+Определяет, из каких источников конфигурации в файловой системе SDK загружает настройки.
+</code></pre>
+<p>SettingSource = Literal[&quot;user&quot;, &quot;project&quot;, &quot;local&quot;]</p>
+<pre><code>
+| Значение | Описание | Местоположение |
+| :- | :- | :- |
+| `&quot;user&quot;` | Глобальные пользовательские настройки | `~/.claude/settings.json` |
+| `&quot;project&quot;` | Общие настройки проекта (под контролем версий) | `.claude/settings.json` |
+| `&quot;local&quot;` | Локальные настройки проекта, добавляемые в gitignore, когда Claude Code сохраняет в них настройку | `.claude/settings.local.json` |
+
+#### Поведение по умолчанию
+
+Когда `setting_sources` опущен или равен `None` и `skills` не задан, `query()` загружает те же настройки файловой системы, что и CLI Claude Code: пользовательские, проектные и локальные. Если `skills` задан, текущее значение по умолчанию описано в строке [`setting_sources`](#claudeagentoptions). Политика, управляемая на конечном устройстве, загружается во всех случаях; настройки, управляемые сервером, извлекаются, когда сессия аутентифицируется с учётными данными организации в [подходящей конфигурации](https://code.claude.com/docs/ru/server-managed-settings.md#platform-availability). Дополнительную информацию см. в разделе [Что settingSources не контролирует](https://code.claude.com/docs/ru/agent-sdk/claude-code-features.md#what-settingsources-does-not-control).
+
+#### Зачем использовать setting\_sources
+
+**Отключить настройки файловой системы:**
+</code></pre>
+<h1 id="h-2">Не загружать пользовательские, проектные или локальные настройки с диска <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h1>
+<p>import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions</p>
+<p>async def main():
+    async for message in query(
+        prompt=&quot;Analyze this code&quot;,
+        options=ClaudeAgentOptions(
+            setting_sources=[]
+        ),
+    ):
+        print(message)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+&gt; [!NOTE]
+&gt;
+&gt; В Python SDK 0.1.59 и более ранних версиях пустой список обрабатывался так же, как отсутствие опции, поэтому `setting_sources=[]` не отключал настройки файловой системы. Обновитесь до более новой версии, если вам нужно, чтобы пустой список вступал в силу. TypeScript SDK это не затрагивает.
+
+**Загрузить только определённые источники настроек:**
+</code></pre>
+<h1 id="h-3">Загрузить только настройки проекта, игнорировать пользовательские и локальные <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h1>
+<p>import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions</p>
+<p>async def main():
+    async for message in query(
+        prompt=&quot;Run CI checks&quot;,
+        options=ClaudeAgentOptions(
+            setting_sources=[&quot;project&quot;]  # Только .claude/settings.json
+        ),
+    ):
+        print(message)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+**Приложения только на SDK:**
+</code></pre>
+<h1 id="h-4">Определить всё программно. <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="h-5">Передайте [], чтобы отказаться от источников настроек файловой системы. <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h1>
+<p>import asyncio
+from claude_agent_sdk import AgentDefinition, ClaudeAgentOptions, query</p>
+<p>async def main():
+    async for message in query(
+        prompt=&quot;Review this PR&quot;,
+        options=ClaudeAgentOptions(
+            setting_sources=[],
+            agents={
+                &quot;code-reviewer&quot;: AgentDefinition(
+                    description=&quot;Reviews code changes&quot;,
+                    prompt=&quot;You are a code reviewer. Report issues in the diff.&quot;,
+                ),
+            },
+            allowed_tools=[&quot;Read&quot;, &quot;Grep&quot;, &quot;Glob&quot;],
+        ),
+    ):
+        print(message)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+Чтобы загрузить инструкции проекта из CLAUDE.md, включите `&quot;project&quot;` в `setting_sources`. О том, как загрузка CLAUDE.md взаимодействует с опциями системного промпта, см. [Изменение системных промптов](https://code.claude.com/docs/ru/agent-sdk/modifying-system-prompts.md#claude-md-files-for-project-level-instructions).
+
+#### Приоритет настроек
+
+Когда загружается несколько источников, настройки объединяются в следующем порядке приоритета (от наивысшего к наименьшему):
+
+1. Локальные настройки (`.claude/settings.local.json`)
+2. Настройки проекта (`.claude/settings.json`)
+3. Пользовательские настройки (`~/.claude/settings.json`)
+
+Программные опции, такие как `agents`, `allowed_tools` и `settings`, переопределяют пользовательские, проектные и локальные настройки файловой системы. Управляемые настройки политики имеют приоритет над программными опциями.
+
+### `AgentDefinition`
+
+Конфигурация для субагента, определённого программно.
+</code></pre>
+<p>@dataclass
+class AgentDefinition:
+    description: str
+    prompt: str
+    tools: list[str] | None = None
+    disallowedTools: list[str] | None = None
+    model: str | None = None
+    skills: list[str] | None = None
+    memory: Literal[&quot;user&quot;, &quot;project&quot;, &quot;local&quot;] | None = None
+    mcpServers: list[str | dict[str, Any]] | None = None
+    initialPrompt: str | None = None
+    maxTurns: int | None = None
+    background: bool | None = None
+    effort: EffortLevel | int | None = None
+    permissionMode: PermissionMode | None = None</p>
+<pre><code>
+| Поле | Обязательно | Описание |
+| :- | :- | :- |
+| `description` | Да | Описание на естественном языке, когда использовать этого агента |
+| `prompt` | Да | Системный промпт агента |
+| `tools` | Нет | Массив имён разрешённых инструментов. Если опущено, наследуются все [инструменты, доступные субагентам](https://code.claude.com/docs/ru/sub-agents.md#available-tools) |
+| `disallowedTools` | Нет | Массив имён инструментов, удаляемых из набора инструментов агента. Также принимаются шаблоны на уровне MCP-сервера: `mcp__server` или `mcp__server__*` удаляет все инструменты этого сервера, а `mcp__*` удаляет все инструменты MCP с любого сервера |
+| `model` | Нет | Переопределение модели для этого агента. Принимает псевдоним, такой как `&quot;sonnet&quot;`, `&quot;opus&quot;`, `&quot;haiku&quot;` или `&quot;inherit&quot;`, или полный ID модели. Если опущено, Claude Code выбирает модель в соответствии с [порядком выбора модели для субагентов](https://code.claude.com/docs/ru/sub-agents.md#choose-a-model) |
+| `skills` | Нет | Список имён скиллов для предварительной загрузки в контекст агента при запуске. Неуказанные скиллы по-прежнему можно вызвать через инструмент Skill |
+| `memory` | Нет | Источник памяти для этого агента: `&quot;user&quot;`, `&quot;project&quot;` или `&quot;local&quot;` |
+| `mcpServers` | Нет | MCP-серверы, доступные этому агенту. Каждая запись — это имя сервера или встроенный dict `{name: config}` |
+| `initialPrompt` | Нет | Автоматически отправляется как первый ход пользователя, когда этот агент работает как агент основного потока |
+| `maxTurns` | Нет | Максимальное количество агентских ходов до остановки агента |
+| `background` | Нет | Запускать этого агента как неблокирующую фоновую задачу при вызове |
+| `effort` | Нет | Уровень effort рассуждений для этого агента. Принимает именованный уровень или целое число. См. [`EffortLevel`](#effortlevel) |
+| `permissionMode` | Нет | Режим разрешений для выполнения инструментов в этом агенте. Когда он применяется, определяют [правила наследования для субагентов](https://code.claude.com/docs/ru/agent-sdk/permissions.md#available-modes). См. [`PermissionMode`](#permissionmode) |
+
+&gt; [!NOTE]
+&gt;
+&gt; Имена полей `AgentDefinition` используют camelCase, например `disallowedTools`, `permissionMode` и `maxTurns`. Эти имена напрямую соответствуют формату передачи данных, общему с TypeScript SDK. Это отличается от `ClaudeAgentOptions`, где для эквивалентных полей верхнего уровня используется принятый в Python snake\_case, например `disallowed_tools` и `permission_mode`. Поскольку `AgentDefinition` является dataclass, передача ключевого аргумента в snake\_case вызывает `TypeError` при создании объекта.
+
+### `PermissionMode`
+
+Режимы разрешений для управления выполнением инструментов.
+</code></pre>
+<p>PermissionMode = Literal[
+    &quot;default&quot;,  # Стандартное поведение разрешений
+    &quot;acceptEdits&quot;,  # Автоматически принимать изменения файлов
+    &quot;plan&quot;,  # Режим планирования - Claude исследует и планирует
+    &quot;dontAsk&quot;,  # Отклонять всё, что не одобрено заранее, вместо запроса
+    &quot;bypassPermissions&quot;,  # Обходить проверки разрешений; явные правила ask всё равно запрашивают (используйте с осторожностью)
+    &quot;auto&quot;,  # Классификатор модели проверяет действия, такие как shell-команды и сетевые запросы
+]</p>
+<pre><code>
+### `EffortLevel`
+
+Уровни effort, определяющие глубину мышления.
+</code></pre>
+<p>EffortLevel = Literal[
+    &quot;low&quot;,  # Минимальное мышление, самые быстрые ответы
+    &quot;medium&quot;,  # Умеренное мышление
+    &quot;high&quot;,  # Глубокие рассуждения
+    &quot;xhigh&quot;,  # Расширенные рассуждения; на моделях без поддержки переключается на &quot;high&quot;
+    &quot;max&quot;,  # Максимальный effort
+]</p>
+<pre><code>
+### `CanUseTool`
+
+Псевдоним типа для функций обратного вызова разрешений инструментов.
+</code></pre>
+<p>CanUseTool = Callable[
+    [str, dict[str, Any], ToolPermissionContext], Awaitable[PermissionResult]
+]</p>
+<pre><code>
+Обратный вызов получает:
+
+* `tool_name`: Имя вызываемого инструмента
+* `input_data`: Входные параметры инструмента
+* `context`: `ToolPermissionContext` с дополнительной информацией
+
+Возвращает `PermissionResult` (либо `PermissionResultAllow`, либо `PermissionResultDeny`).
+
+Обратный вызов заменяет интерактивный запрос разрешения. SDK вызывает `can_use_tool`, когда [процесс проверки разрешений](https://code.claude.com/docs/ru/agent-sdk/permissions.md#how-permissions-are-evaluated) приводит к запросу разрешения. Вызовы, одобренные любым из следующих способов, выполняются без вызова `can_use_tool`:
+
+* Вызов, который одобряет запись в `allowed_tools` или правило разрешения в настройках
+* Вызов, который одобряет режим разрешений, например изменение файла в режиме `acceptEdits`
+
+Чтобы проверять такие вызовы, используйте [хук `PreToolUse`](https://code.claude.com/docs/ru/agent-sdk/hooks), который выполняется и для них.
+
+Правило разрешения не одобряет заранее [действия, которые ни один режим не одобряет автоматически](https://code.claude.com/docs/ru/permission-modes.md#actions-no-mode-auto-approves); о том, какие из них доходят до обратного вызова и что происходит в режимах `dontAsk` и `auto`, см. [Как проверяются разрешения](https://code.claude.com/docs/ru/agent-sdk/permissions.md#how-permissions-are-evaluated).
+
+### `ToolPermissionContext`
+
+Контекстная информация, передаваемая обратным вызовам разрешений инструментов.
+</code></pre>
+<p>@dataclass
+class ToolPermissionContext:
+    signal: Any | None = None  # Future: abort signal support
+    suggestions: list[PermissionUpdate] = field(default_factory=list)
+    tool_use_id: str | None = None
+    agent_id: str | None = None
+    blocked_path: str | None = None
+    decision_reason: str | None = None
+    title: str | None = None
+    display_name: str | None = None
+    description: str | None = None</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `signal` | `Any \| None` | Зарезервировано для будущей поддержки сигнала прерывания |
+| `suggestions` | `list[PermissionUpdate]` | Предлагаемые CLI обновления разрешений. Запросы разрешения для Bash могут включать предложение с назначением `localSettings`, поэтому его возврат в `updated_permissions` записывает правило в `.claude/settings.local.json`, и оно сохраняется между сессиями. |
+| `tool_use_id` | `str \| None` | Идентификатор конкретного вызова инструмента, к которому относится этот запрос. Всегда заполняется при передаче в `can_use_tool` |
+| `agent_id` | `str \| None` | ID субагента, если вызов исходит от субагента; `None` для основного агента |
+| `blocked_path` | `str \| None` | Путь к файлу, который вызвал запрос разрешения, если применимо. Например, когда команда Bash пытается обратиться к пути за пределами разрешённых каталогов |
+| `decision_reason` | `str \| None` | Причина, по которой был вызван этот запрос разрешения. Передаётся из `permissionDecisionReason` хука PreToolUse, когда хук вернул `&quot;ask&quot;` |
+| `title` | `str \| None` | Полное предложение запроса разрешения, например `Claude wants to read foo.txt`. Если присутствует, используйте как основной текст запроса |
+| `display_name` | `str \| None` | Короткое именное словосочетание для действия инструмента, например `Read file`, подходящее для надписей на кнопках |
+| `description` | `str \| None` | Понятный человеку подзаголовок для интерфейса разрешений |
+
+### `PermissionResult`
+
+Тип объединения для результатов обратного вызова разрешений.
+</code></pre>
+<p>PermissionResult = PermissionResultAllow | PermissionResultDeny</p>
+<pre><code>
+### `PermissionResultAllow`
+
+Результат, указывающий, что вызов инструмента должен быть разрешён.
+</code></pre>
+<p>@dataclass
+class PermissionResultAllow:
+    behavior: Literal[&quot;allow&quot;] = &quot;allow&quot;
+    updated_input: dict[str, Any] | None = None
+    updated_permissions: list[PermissionUpdate] | None = None</p>
+<pre><code>
+| Поле | Тип | По умолчанию | Описание |
+| :- | :- | :- | :- |
+| `behavior` | `Literal[&quot;allow&quot;]` | `&quot;allow&quot;` | Должно быть &quot;allow&quot; |
+| `updated_input` | `dict[str, Any] \| None` | `None` | Изменённые входные данные для использования вместо исходных |
+| `updated_permissions` | `list[PermissionUpdate] \| None` | `None` | Применяемые обновления разрешений |
+
+Если вы возвращаете `PermissionResultAllow` с более чем 4 096 элементами в `updated_permissions`, Claude Code считает результат недопустимым и отклоняет вызов инструмента. Каждый [`PermissionUpdate`](#permissionupdate) считается одним элементом, как и каждая запись в его списке `rules` или `directories`. Сообщение об отклонении заканчивается текстом `updatedPermissions may hold at most 4096 updates, rules and directories in all.` Чтобы избежать отклонения, возвращайте не более 4 096 элементов.
+
+### `PermissionResultDeny`
+
+Результат, указывающий, что вызов инструмента должен быть отклонён.
+</code></pre>
+<p>@dataclass
+class PermissionResultDeny:
+    behavior: Literal[&quot;deny&quot;] = &quot;deny&quot;
+    message: str = &quot;&quot;
+    interrupt: bool = False</p>
+<pre><code>
+| Поле | Тип | По умолчанию | Описание |
+| :- | :- | :- | :- |
+| `behavior` | `Literal[&quot;deny&quot;]` | `&quot;deny&quot;` | Должно быть &quot;deny&quot; |
+| `message` | `str` | `&quot;&quot;` | Сообщение, объясняющее, почему инструмент был отклонён |
+| `interrupt` | `bool` | `False` | Следует ли прервать текущее выполнение |
+
+### `PermissionUpdate`
+
+Конфигурация для программного обновления разрешений.
+</code></pre>
+<p>@dataclass
+class PermissionUpdate:
+    type: Literal[
+        &quot;addRules&quot;,
+        &quot;replaceRules&quot;,
+        &quot;removeRules&quot;,
+        &quot;setMode&quot;,
+        &quot;addDirectories&quot;,
+        &quot;removeDirectories&quot;,
+    ]
+    rules: list[PermissionRuleValue] | None = None
+    behavior: Literal[&quot;allow&quot;, &quot;deny&quot;, &quot;ask&quot;] | None = None
+    mode: PermissionMode | None = None
+    directories: list[str] | None = None
+    destination: (
+        Literal[&quot;userSettings&quot;, &quot;projectSettings&quot;, &quot;localSettings&quot;, &quot;session&quot;] | None
+    ) = None</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `type` | `Literal[...]` | Тип операции обновления разрешений |
+| `rules` | `list[PermissionRuleValue] \| None` | Правила для операций добавления/замены/удаления |
+| `behavior` | `Literal[&quot;allow&quot;, &quot;deny&quot;, &quot;ask&quot;] \| None` | Поведение для операций на основе правил |
+| `mode` | `PermissionMode \| None` | Режим для операции setMode |
+| `directories` | `list[str] \| None` | Каталоги для операций добавления/удаления каталогов |
+| `destination` | `Literal[...] \| None` | Где применить обновление разрешений |
+
+### `PermissionRuleValue`
+
+Правило для добавления, замены или удаления при обновлении разрешений.
+</code></pre>
+<p>@dataclass
+class PermissionRuleValue:
+    tool_name: str
+    rule_content: str | None = None</p>
+<pre><code>
+### `ToolsPreset`
+
+Предустановленная конфигурация инструментов для использования набора инструментов Claude Code по умолчанию.
+</code></pre>
+<p>class ToolsPreset(TypedDict):
+    type: Literal[&quot;preset&quot;]
+    preset: Literal[&quot;claude_code&quot;]</p>
+<pre><code>
+### `ThinkingConfig`
+
+Управляет поведением расширенного мышления. Объединение трёх конфигураций:
+</code></pre>
+<p>ThinkingDisplay = Literal[&quot;summarized&quot;, &quot;omitted&quot;]</p>
+<p>class ThinkingConfigAdaptive(TypedDict):
+    type: Literal[&quot;adaptive&quot;]
+    display: NotRequired[ThinkingDisplay]</p>
+<p>class ThinkingConfigEnabled(TypedDict):
+    type: Literal[&quot;enabled&quot;]
+    budget_tokens: int
+    display: NotRequired[ThinkingDisplay]</p>
+<p>class ThinkingConfigDisabled(TypedDict):
+    type: Literal[&quot;disabled&quot;]</p>
+<p>ThinkingConfig = ThinkingConfigAdaptive | ThinkingConfigEnabled | ThinkingConfigDisabled</p>
+<pre><code>
+| Вариант | Поля | Описание |
+| :- | :- | :- |
+| `adaptive` | `type`, `display` | Claude адаптивно решает, когда думать |
+| `enabled` | `type`, `budget_tokens`, `display` | Включить мышление с определённым бюджетом токенов |
+| `disabled` | `type` | Отключить мышление [там, где это позволяют модель и поставщик](https://code.claude.com/docs/ru/model-config.md#where-you-cant-turn-thinking-off) |
+
+Необязательное поле `display` определяет, возвращается ли текст размышлений в виде `&quot;summarized&quot;` или `&quot;omitted&quot;`. В Claude Opus 4.7 и новее значение API по умолчанию — `&quot;omitted&quot;`, поэтому установите `&quot;summarized&quot;`, чтобы получать содержимое размышлений в выходных данных [`ThinkingBlock`](#thinkingblock). У таких поставщиков, как Amazon Bedrock и Google Cloud&#x27;s Agent Platform, Claude Code не передаёт `display` для распознаваемых им более ранних моделей. Это Opus 4.6, Sonnet 4.6, Haiku 4.5 и более ранние модели, которые используют своё значение по умолчанию.
+
+Поскольку это классы `TypedDict`, во время выполнения они являются простыми словарями. Можно либо создавать их как dict-литералы, либо вызывать класс как конструктор; в обоих случаях получается `dict`. Обращайтесь к полям через `config[&quot;budget_tokens&quot;]`, а не `config.budget_tokens`:
+</code></pre>
+<p>from claude_agent_sdk import ClaudeAgentOptions, ThinkingConfigEnabled</p>
+<h1 id="вариант-1-dict-литерал-рекомендуется-импорт-не-требуется">Вариант 1: dict-литерал (рекомендуется, импорт не требуется) <a class="h-anchor" href="#вариант-1-dict-литерал-рекомендуется-импорт-не-требуется" aria-label="Ссылка на раздел">#</a></h1>
+<p>options = ClaudeAgentOptions(thinking={&quot;type&quot;: &quot;enabled&quot;, &quot;budget_tokens&quot;: 20000})</p>
+<h1 id="вариант-2-в-стиле-конструктора-возвращает-простой-dict">Вариант 2: в стиле конструктора (возвращает простой dict) <a class="h-anchor" href="#вариант-2-в-стиле-конструктора-возвращает-простой-dict" aria-label="Ссылка на раздел">#</a></h1>
+<p>config = ThinkingConfigEnabled(type=&quot;enabled&quot;, budget_tokens=20000)
+print(config[&quot;budget_tokens&quot;])  # 20000</p>
+<h1 id="config-budget_tokens-вызовет-attributeerror">config.budget_tokens вызовет AttributeError <a class="h-anchor" href="#config-budget_tokens-вызовет-attributeerror" aria-label="Ссылка на раздел">#</a></h1>
+<pre><code>
+### `TaskBudget`
+
+Бюджет задачи на стороне API в токенах, используемый с полем `task_budget` в `ClaudeAgentOptions`.
+</code></pre>
+<p>class TaskBudget(TypedDict):
+    total: int</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `total` | `int` | Общий бюджет токенов для задачи |
+
+Поскольку это `TypedDict`, передавайте его как простой dict, например `ClaudeAgentOptions(task_budget={&quot;total&quot;: 50000})`.
+
+### `SdkBeta`
+
+Литеральный тип для бета-функций SDK.
+</code></pre>
+<p>SdkBeta = Literal[&quot;context-1m-2025-08-07&quot;]</p>
+<pre><code>
+Используйте с полем `betas` в `ClaudeAgentOptions` для включения бета-функций.
+
+&gt; [!WARNING]
+&gt;
+&gt; В Claude API бета-версия `context-1m-2025-08-07` выведена из эксплуатации для Claude Sonnet 4.5 и Claude Sonnet 4. Если вы всё ещё передаёте её с любой из этих моделей, запросы, превышающие стандартное контекстное окно в 200K токенов, возвращают ошибку, поэтому удалите её из `betas`. Чтобы запустить сессию с контекстным окном в 1M токенов, установите в `model` модель, которая [по умолчанию работает с окном в 1M](https://code.claude.com/docs/ru/model-config.md#extended-context), например `claude-sonnet-5-5` или `claude-opus-5-5`. Для модели, которая поддерживает 1M только через свой вариант `[1m]`, добавьте этот суффикс к ID модели, как в `claude-opus-4-6[1m]`.
+
+### `McpSdkServerConfig`
+
+Конфигурация для SDK MCP-серверов, созданных с помощью `create_sdk_mcp_server()`.
+</code></pre>
+<p>class McpSdkServerConfig(TypedDict):
+    type: Literal[&quot;sdk&quot;]
+    name: str
+    instance: Any  # MCP Server instance</p>
+<pre><code>
+### `McpServerConfig`
+
+Тип объединения для конфигураций MCP-серверов.
+</code></pre>
+<p>McpServerConfig = (
+    McpStdioServerConfig | McpSSEServerConfig | McpHttpServerConfig | McpSdkServerConfig
+)</p>
+<pre><code>
+#### `McpStdioServerConfig`
+</code></pre>
+<p>class McpStdioServerConfig(TypedDict):
+    type: NotRequired[Literal[&quot;stdio&quot;]]  # Optional for backwards compatibility
+    command: str
+    args: NotRequired[list[str]]
+    env: NotRequired[dict[str, str]]</p>
+<pre><code>
+#### `McpSSEServerConfig`
+</code></pre>
+<p>class McpSSEServerConfig(TypedDict):
+    type: Literal[&quot;sse&quot;]
+    url: str
+    headers: NotRequired[dict[str, str]]</p>
+<pre><code>
+#### `McpHttpServerConfig`
+</code></pre>
+<p>class McpHttpServerConfig(TypedDict):
+    type: Literal[&quot;http&quot;]
+    url: str
+    headers: NotRequired[dict[str, str]]</p>
+<pre><code>
+### `McpServerStatusConfig`
+
+Конфигурация MCP-сервера в том виде, в котором её возвращает [`get_mcp_status()`](#methods). Это объединение всех транспортных вариантов [`McpServerConfig`](#mcpserverconfig) плюс доступный только в выходных данных вариант `claudeai-proxy` для серверов, проксируемых через claude.ai.
+</code></pre>
+<p>McpServerStatusConfig = (
+    McpStdioServerConfig
+    | McpSSEServerConfig
+    | McpHttpServerConfig
+    | McpSdkServerConfigStatus
+    | McpClaudeAIProxyServerConfig
+)</p>
+<pre><code>
+`McpSdkServerConfigStatus` — это сериализуемая форма [`McpSdkServerConfig`](#mcpsdkserverconfig), содержащая только поля `type` (`&quot;sdk&quot;`) и `name` (`str`); внутрипроцессный `instance` опущен. `McpClaudeAIProxyServerConfig` имеет поля `type` (`&quot;claudeai-proxy&quot;`), `url` (`str`) и `id` (`str`).
+
+### `McpStatusResponse`
+
+Ответ от [`ClaudeSDKClient.get_mcp_status()`](#methods). Содержит список статусов серверов под ключом `mcpServers`.
+</code></pre>
+<p>class McpStatusResponse(TypedDict):
+    mcpServers: list[McpServerStatus]</p>
+<pre><code>
+### `McpServerStatus`
+
+Статус подключённого MCP-сервера, содержащийся в [`McpStatusResponse`](#mcpstatusresponse).
+</code></pre>
+<p>class McpServerStatus(TypedDict):
+    name: str
+    status: McpServerConnectionStatus  # &quot;connected&quot; | &quot;failed&quot; | &quot;needs-auth&quot; | &quot;pending&quot; | &quot;disabled&quot;
+    serverInfo: NotRequired[McpServerInfo]
+    error: NotRequired[str]
+    config: NotRequired[McpServerStatusConfig]
+    scope: NotRequired[str]
+    tools: NotRequired[list[McpToolInfo]]</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `name` | `str` | Имя сервера |
+| `status` | `str` | Одно из значений `&quot;connected&quot;`, `&quot;failed&quot;`, `&quot;needs-auth&quot;`, `&quot;pending&quot;` или `&quot;disabled&quot;` |
+| `serverInfo` | `dict` (необязательно) | Имя и версия сервера (`{&quot;name&quot;: str, &quot;version&quot;: str}`) |
+| `error` | `str` (необязательно) | Сообщение об ошибке, если серверу не удалось подключиться |
+| `config` | [`McpServerStatusConfig`](#mcpserverstatusconfig) (необязательно) | Конфигурация сервера. Та же структура, что и у [`McpServerConfig`](#mcpserverconfig) (stdio, SSE, HTTP или SDK), плюс вариант `claudeai-proxy` для серверов, подключённых через claude.ai |
+| `scope` | `str` (необязательно) | Область действия конфигурации |
+| `tools` | `list` (необязательно) | Инструменты, предоставляемые этим сервером, каждый с полями `name`, `description` и `annotations` |
+
+### `ContextUsageResponse`
+
+Ответ от [`ClaudeSDKClient.get_context_usage()`](#methods). Ответ включает данные, которые Claude Code отображает для команды `/context` в интерактивной сессии. Помимо количества токенов, эти данные содержат поля отображения, такие как `color` и `gridRows`, которые Claude Code использует для отрисовки сетки использования `/context`.
+
+Claude Code формирует эти данные, отправляя несколько запросов к API [подсчёта токенов](https://platform.claude.com/docs/en/build-with-claude/token-counting). Эти запросы не отображаются в потоке сообщений, поэтому отслеживание стоимости, основанное на чтении потока, их не увидит. В Anthropic API подсчёт токенов не тарифицируется.
+</code></pre>
+<p>class ContextUsageResponse(TypedDict):
+    categories: list[ContextUsageCategory]
+    totalTokens: int
+    maxTokens: int
+    rawMaxTokens: int
+    percentage: float
+    model: str
+    isAutoCompactEnabled: bool
+    memoryFiles: list[dict[str, Any]]
+    mcpTools: list[dict[str, Any]]
+    agents: list[dict[str, Any]]
+    gridRows: list[list[dict[str, Any]]]
+    autoCompactThreshold: NotRequired[int]
+    deferredBuiltinTools: NotRequired[list[dict[str, Any]]]
+    systemTools: NotRequired[list[dict[str, Any]]]
+    systemPromptSections: NotRequired[list[dict[str, Any]]]
+    slashCommands: NotRequired[dict[str, Any]]
+    skills: NotRequired[dict[str, Any]]  # skill usage with frontmatter breakdown
+    messageBreakdown: NotRequired[dict[str, Any]]  # message tokens by type
+    apiUsage: NotRequired[dict[str, Any] | None]</p>
+<pre><code>
+Каждая запись `ContextUsageCategory` содержит `name`, `tokens`, `color` и необязательный флаг `isDeferred`. `totalTokens` — это текущее использование контекста в сессии, а `maxTokens` — окно, относительно которого измеряется это использование. Этим окном является контекстное окно модели или меньшее окно автосжатия, если оно применяется, а `rawMaxTokens` содержит то же значение, что и `maxTokens`. `apiUsage` содержит данные об использовании из последнего ответа API, а не накопленный итог для сессии. Claude Code не заполняет необязательные ключи `deferredBuiltinTools`, `systemTools` и `systemPromptSections`, поэтому рассчитывайте на их отсутствие, даже несмотря на то, что тип их объявляет.
+
+### `SdkPluginConfig`
+
+Конфигурация для загрузки плагинов в SDK.
+</code></pre>
+<p>class SdkPluginConfig(TypedDict):
+    type: Literal[&quot;local&quot;]
+    path: str</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `type` | `Literal[&quot;local&quot;]` | Должно быть `&quot;local&quot;` (в настоящее время поддерживаются только локальные плагины) |
+| `path` | `str` | Абсолютный или относительный путь к каталогу плагина |
+
+**Пример:**
+</code></pre>
+<p>plugins = [
+    {&quot;type&quot;: &quot;local&quot;, &quot;path&quot;: &quot;./my-plugin&quot;},
+    {&quot;type&quot;: &quot;local&quot;, &quot;path&quot;: &quot;/absolute/path/to/plugin&quot;},
+]</p>
+<pre><code>
+Полную информацию о создании и использовании плагинов см. в разделе [Плагины](https://code.claude.com/docs/ru/agent-sdk/plugins.md).
+
+## Типы сообщений
+
+### `Message`
+
+Тип объединения всех возможных сообщений.
+</code></pre>
+<p>Message = (
+    UserMessage
+    | AssistantMessage
+    | SystemMessage
+    | ResultMessage
+    | StreamEvent
+    | RateLimitEvent
+    | ConversationResetMessage
+)</p>
+<pre><code>
+### `UserMessage`
+
+Сообщение пользовательского ввода.
+</code></pre>
+<p>@dataclass
+class UserMessage:
+    content: str | list[ContentBlock]
+    uuid: str | None = None
+    parent_tool_use_id: str | None = None
+    tool_use_result: dict[str, Any] | None = None
+    origin: MessageOrigin | None = None</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `content` | `str \| list[ContentBlock]` | Содержимое сообщения как текст или блоки содержимого |
+| `uuid` | `str \| None` | Уникальный идентификатор сообщения |
+| `parent_tool_use_id` | `str \| None` | ID использования инструмента, если это сообщение является ответом результата инструмента |
+| `tool_use_result` | `dict[str, Any] \| None` | Данные результата инструмента, если применимо |
+| `origin` | `MessageOrigin \| None` | Происхождение этого сообщения, заполняется при внедренных ходах, таких как уведомления о задачах и сообщения от коллег. `None`, когда CLI не атрибутировал его. Требуется Python Agent SDK 0.2.137 или позже |
+
+SDK передает `tool_use_result` из CLI без изменений. Для инструмента на внешнем MCP сервере, результат которого содержит блоки `resource_link`, словарь имеет ключ `resourceLinks`, содержащий список словарей с ключами типа TypeScript [`SDKMcpResourceLink`](https://code.claude.com/docs/ru/agent-sdk/typescript#sdkmcpresourcelink). Claude получает каждую ссылку как строку текста в результате инструмента. Для отображения файлов, возвращенных сервером, читайте `resourceLinks` вместо анализа этого текста. Ключ `resourceLinks` требует Python Agent SDK 0.2.150 или позже и Claude Code v2.1.257 или позже; CLI, поставляемый с этой версией SDK, удовлетворяет требованию Claude Code.
+
+CLI опускает ключ, когда результат не содержит ссылок и при результатах от подагентов. CLI сохраняет максимум 50 ссылок на результат и прекращает добавление ссылок, когда список достигает 64 КиБ сериализованного JSON. Инструмент, который вы определяете внутри процесса с помощью [`tool()`](#tool), никогда не создает ключ, потому что SDK преобразует его блоки `resource_link` в текст перед тем, как CLI увидит результат.
+
+### `AssistantMessage`
+
+Сообщение ответа помощника с блоками содержимого.
+</code></pre>
+<p>@dataclass
+class AssistantMessage:
+    content: list[ContentBlock]
+    model: str
+    parent_tool_use_id: str | None = None
+    error: AssistantMessageError | None = None
+    usage: dict[str, Any] | None = None
+    message_id: str | None = None
+    stop_reason: str | None = None
+    session_id: str | None = None
+    uuid: str | None = None</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `content` | `list[ContentBlock]` | Список блоков содержимого в ответе |
+| `model` | `str` | Модель, которая создала ответ |
+| `parent_tool_use_id` | `str \| None` | ID использования инструмента, если это вложенный ответ |
+| `error` | [`AssistantMessageError`](#assistantmessageerror) ` \| None` | Тип ошибки, если ответ столкнулся с ошибкой |
+| `usage` | `dict[str, Any] \| None` | Использование токенов для каждого сообщения (те же ключи, что и [`ResultMessage.usage`](#resultmessage)) |
+| `message_id` | `str \| None` | ID сообщения API. Несколько сообщений из одного хода имеют одинаковый ID |
+| `stop_reason` | `str \| None` | Причина остановки из API (например `end_turn`, `tool_use`) |
+| `session_id` | `str \| None` | ID сеанса, к которому принадлежит это сообщение |
+| `uuid` | `str \| None` | Уникальный идентификатор сообщения в пределах транскрипта сеанса |
+
+### `AssistantMessageError`
+
+Возможные типы ошибок для сообщений помощника.
+</code></pre>
+<p>AssistantMessageError = Literal[
+    &quot;authentication_failed&quot;,
+    &quot;billing_error&quot;,
+    &quot;rate_limit&quot;,
+    &quot;invalid_request&quot;,
+    &quot;server_error&quot;,
+    &quot;unknown&quot;,
+]</p>
+<pre><code>
+Базовый процесс CLI может выдавать типы ошибок, которые этот Literal не перечисляет, такие как `max_output_tokens`. SDK передает значение без изменений, поэтому обрабатывайте строки вне этого списка так же, как вы обрабатываете `unknown`. Тип TypeScript [`SDKAssistantMessageError`](https://code.claude.com/docs/ru/agent-sdk/typescript#sdkassistantmessage) перечисляет полный набор значений, которые может выдать CLI.
+
+### `SystemMessage`
+
+Системное сообщение с метаданными.
+</code></pre>
+<p>@dataclass
+class SystemMessage:
+    subtype: str
+    data: dict[str, Any]</p>
+<pre><code>
+Подтипы, у которых нет собственного dataclass, поступают как `SystemMessage`. Чтобы отслеживать состояние сессии между ходами, установите [`CLAUDE_CODE_EMIT_SESSION_STATE_EVENTS=1`](https://code.claude.com/docs/ru/env-vars#variables) и читайте `message.data[&quot;state&quot;]` в каждом сообщении, у которого `subtype` равен `session_state_changed`. [`SDKSessionStateChangedMessage`](https://code.claude.com/docs/ru/agent-sdk/typescript#sdksessionstatechangedmessage) перечисляет состояния, которые оно может содержать. Чтобы читать их, выполняйте итерацию с помощью `receive_messages()`: `receive_response()` останавливается на `ResultMessage`, а сообщение `session_state_changed` может следовать после этого результата.
+
+### `ResultMessage`
+
+Финальное сообщение результата с информацией о стоимости и использовании.
+</code></pre>
+<p>@dataclass
+class ResultMessage:
+    subtype: str
+    duration_ms: int
+    duration_api_ms: int
+    is_error: bool
+    num_turns: int
+    session_id: str
+    stop_reason: str | None = None
+    total_cost_usd: float | None = None
+    usage: dict[str, Any] | None = None
+    result: str | None = None
+    structured_output: Any = None
+    model_usage: dict[str, ModelUsage] | None = None
+    permission_denials: list[Any] | None = None
+    deferred_tool_use: DeferredToolUse | None = None
+    errors: list[str] | None = None
+    api_error_status: int | None = None
+    uuid: str | None = None
+    terminal_reason: str | None = None
+    origin: MessageOrigin | None = None</p>
+<pre><code>
+Поле `subtype` определяет, какие другие поля заполнены. Это одно из `&quot;success&quot;`, `&quot;error_during_execution&quot;`, `&quot;error_max_turns&quot;`, `&quot;error_max_budget_usd&quot;` или `&quot;error_max_structured_output_retries&quot;`. Dataclass Python объединяет все варианты в одну форму, поэтому поля, которые не применяются к возвращаемому подтипу, имеют значение `None`.
+
+Несколько полей содержат диагностические детали о том, как разговор закончился:
+
+* `is_error`: `True`, когда диалог закончился в состоянии ошибки. Всегда `True` на подтипах `error_*`. На `subtype=&quot;success&quot;` это `True` в трех случаях. Проверьте `stop_reason`, чтобы различить их:
+  * `&quot;refusal&quot;`: модель отказалась отвечать. Прочитайте текст отказа в `result` или в предшествующем `AssistantMessage`, если `result` пуст.
+  * `&quot;tool_deferred_unavailable&quot;`: [отложенный инструмент](https://code.claude.com/docs/ru/hooks.md#defer-a-tool-call-for-later) больше не был доступен, когда вы возобновили сессию, например потому что его MCP-сервер не был подключен. В двух случаях ниже промпт, который вы отправляете после возобновления, считается так же, как промпт, переданный вместе с возобновлением:
+    * Без промпта: по умолчанию вызов всё ещё ожидает выполнения. Сделайте инструмент доступным и снова возобновите сессию без промпта, и вызов выполнится первым.
+    * С промптом: по умолчанию промпт не доходит до Claude, и вызов всё ещё ожидает выполнения. Чтобы продолжить без инструмента, [отбросьте вызов](https://code.claude.com/docs/ru/hooks.md#resume-when-a-deferred-tool-is-unavailable).
+  * Любое другое значение: ход завершился ошибкой, о которой Claude Code сообщил вместо ответа модели, например ошибкой API. Причину смотрите в `terminal_reason`, сообщение — в `result`, а HTTP-статус — в `api_error_status`, если API его вернул.
+* `api_error_status`: код состояния HTTP завершающей ошибки API. `None`, когда ход закончился без ошибки. Заполняется только на `subtype=&quot;success&quot;`.
+* `result`: текст финального сообщения помощника на `subtype=&quot;success&quot;` или `None` на подтипах `error_*`. Когда `subtype=&quot;success&quot;` и `is_error=True`, это содержит строку ошибки API, если она доступна, но может быть пустой, поэтому проверьте `api_error_status` и предыдущее содержимое `AssistantMessage` для деталей.
+* `errors`: строки ошибок уровня цикла, такие как сообщение о максимальных ходах. Заполняется только на подтипах `error_*`.
+* `terminal_reason`: почему цикл запроса закончился, например `&quot;completed&quot;`, `&quot;max_turns&quot;`, `&quot;api_error&quot;`, `&quot;aborted_streaming&quot;` или `&quot;aborted_tools&quot;`. Значение `&quot;aborted_streaming&quot;` или `&quot;aborted_tools&quot;` означает, что ход был прерван до завершения. Частые причины - [`interrupt()`](#claudesdkclient) и callback разрешения, возвращающий [`PermissionResultDeny`](#permissionresultdeny) с `interrupt=True`. `None` на версиях CLI, которые предшествуют полю, на результатах локальных команд, таких как `/voice` или `/usage`, которые обходят цикл запроса, или на синтезированных результатах ошибок, выданных при критическом отказе сеанса. Зеркалирует [`SDKResultMessage.terminal_reason`](https://code.claude.com/docs/ru/agent-sdk/typescript#sdkresultmessage) TypeScript SDK, который перечисляет полный набор значений.
+* `origin`: происхождение пользовательского сообщения, которое запустило этот ход. Требуется Python Agent SDK 0.2.137 или позже. Не подавляйте результат, опираясь только на `kind`. В [режиме потоковой передачи входных данных](https://code.claude.com/docs/ru/agent-sdk/streaming-vs-single-mode.md) проверьте `origin`, чтобы узнать, запустил ли ход ваш собственный промпт:
+  * **Ваш собственный промпт**: `origin` равен `None` или `{&quot;kind&quot;: &quot;human&quot;}`
+  * **Уведомление фоновой задачи**: `origin[&quot;kind&quot;]` равен `&quot;task-notification&quot;`. Результат такого хода также может содержать ответ Claude на сообщение, которое вы отправили, пока ход выполнял инструменты.
+
+Когда несколько фоновых задач завершаются почти одновременно, Claude Code может ответить на их уведомления за один ход, а не за отдельный ход на каждое. Вы всё равно получаете по одному `ResultMessage` на каждое уведомление, по порядку, и у каждого из них `origin` имеет `kind`, равный `&quot;task-notification&quot;`. У всех, кроме последнего, `num_turns` равен `0`, а `result` пуст, а последний содержит ход, который отвечает на все из них.
+
+Словарь `usage` охватывает только основной цикл агента и исключает подагентов и другие вложенные или вспомогательные вызовы модели. В [режиме потоковой передачи входных данных](https://code.claude.com/docs/ru/agent-sdk/streaming-vs-single-mode.md) значения указаны за ход. Предпочитайте `model_usage` для учета токенов и стоимости. Словарь `usage` содержит следующие ключи, если они присутствуют:
+
+| Ключ | Тип | Описание |
+| - | - | - |
+| `input_tokens` | `int` | Входные токены, потребленные циклом агента верхнего уровня. [Токены подагента не включены](https://code.claude.com/docs/ru/agent-sdk/cost-tracking.md#get-the-total-cost-of-a-query); используйте `model_usage` для учета всего дерева. |
+| `output_tokens` | `int` | Выходные токены, созданные циклом агента верхнего уровня. Токены подагента не включены. |
+| `cache_creation_input_tokens` | `int` | Токены, используемые для создания новых записей кэша. |
+| `cache_read_input_tokens` | `int` | Токены, прочитанные из существующих записей кэша. |
+
+Словарь `model_usage` отображает имена моделей на использование для каждой модели. Он охватывает каждый вызов модели, сделанный через конвейер запроса: основной цикл, подагентов и внутренние вызовы, такие как компактирование и агентов Workflow. Вспомогательные вызовы вне этого конвейера, такие как классификатор разрешений и запросы подсчета токенов, исключены из `model_usage`. Рассматривайте `model_usage` как оценку, а не как выписку по счету.
+
+В [режиме потоковой передачи входных данных](https://code.claude.com/docs/ru/agent-sdk/streaming-vs-single-mode.md) `model_usage` и `total_cost_usd` являются кумулятивными по ходам, поэтому читайте последний результат вместо суммирования по результатам. Вызов, который возобновляет сеанс, также учитывает [итоги, восстановленные из более ранних вызовов сеанса](https://code.claude.com/docs/ru/agent-sdk/cost-tracking.md#accumulate-costs-across-multiple-calls). См. [Отслеживание затрат в режиме потоковой передачи входных данных](https://code.claude.com/docs/ru/agent-sdk/cost-tracking.md#track-costs-in-streaming-input-mode) для сбросов и [Восстановление итогов после сбоя сеанса](https://code.claude.com/docs/ru/agent-sdk/cost-tracking.md#recover-totals-after-a-session-crash) для обнуленных результатов.
+
+Каждое значение в `model_usage` - это TypedDict `ModelUsage`, импортируемый через `from claude_agent_sdk.types import ModelUsage`. Его ключи используют camelCase, потому что SDK передает значение без изменений из базового процесса CLI, соответствуя типу TypeScript [`ModelUsage`](https://code.claude.com/docs/ru/agent-sdk/typescript#modelusage):
+
+| Ключ | Тип | Описание |
+| - | - | - |
+| `inputTokens` | `int` | Входные токены для этой модели. |
+| `outputTokens` | `int` | Выходные токены для этой модели. |
+| `cacheReadInputTokens` | `int` | Токены чтения кэша для этой модели. |
+| `cacheCreationInputTokens` | `int` | Токены создания кэша для этой модели. |
+| `webSearchRequests` | `int` | Запросы веб-поиска, сделанные этой моделью. |
+| `thinkingTokens` | `int` | Токены мышления, созданные этой моделью, уже подсчитанные в `outputTokens`. Отсутствуют до тех пор, пока ход не запустится на версии Claude Code, которая его записывает, и не объявлены в TypedDict, поэтому читайте его с `.get()`. Требуется Python Agent SDK 0.2.150 или позже, чей поставляемый CLI его записывает. |
+| `costUSD` | `float` | Предполагаемая стоимость в USD для этой модели, вычисленная на стороне клиента. См. [Отслеживание затрат и использования](https://code.claude.com/docs/ru/agent-sdk/cost-tracking.md) для предостережений выставления счетов. |
+| `contextWindow` | `int` | Размер окна контекста для этой модели. |
+| `maxOutputTokens` | `int` | Максимальный лимит выходных токенов для этой модели. |
+| `canonicalModel` | `str` | Канонический ID модели, используемый для поиска цены. Может отличаться от необработанной строки модели, по которой индексируется запись, такой как ID или псевдоним, специфичный для поставщика. Не всегда присутствует. |
+| `provider` | `str` | Поставщик API, который обслуживал эту модель, такой как `firstParty`, `bedrock`, `vertex`, `foundry`, `anthropicAws`, `mantle` или `gateway`. Не всегда присутствует. |
+| `costBasis` | `str` | Таблица цен, по которой была рассчитана стоимость последнего запроса этой модели: `list` для прейскурантной цены, `managed` для таблицы [`modelPricing`](https://code.claude.com/docs/ru/settings-reference#modelpricing) или `unknown`, если ни одна из них не соответствует ID модели. Не всегда присутствует и не объявлено в TypedDict, поэтому читайте его с помощью `.get()`. Требуется Claude Code v2.1.246 или позже. |
+
+### `StreamEvent`
+
+Событие потока для частичных обновлений сообщений во время потоковой передачи. Получается только когда `include_partial_messages=True` в `ClaudeAgentOptions`. Импортируйте через `from claude_agent_sdk.types import StreamEvent`.
+</code></pre>
+<p>@dataclass
+class StreamEvent:
+    uuid: str
+    session_id: str
+    event: dict[str, Any]  # The raw Claude API stream event
+    parent_tool_use_id: str | None = None</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `uuid` | `str` | Уникальный идентификатор для этого события |
+| `session_id` | `str` | Идентификатор сеанса |
+| `event` | `dict[str, Any]` | Необработанные данные события потока Claude API |
+| `parent_tool_use_id` | `str \| None` | Всегда `None`. События потока выдаются только для основного сеанса. Для атрибуции подагента используйте полные сообщения, такие как [`AssistantMessage`](#assistantmessage) |
+
+### `RateLimitEvent`
+
+Выдается при изменении статуса ограничения скорости (например, с `&quot;allowed&quot;` на `&quot;allowed_warning&quot;`). Используйте это для предупреждения пользователей перед достижением жесткого лимита или для отката, когда статус `&quot;rejected&quot;`.
+</code></pre>
+<p>@dataclass
+class RateLimitEvent:
+    rate_limit_info: RateLimitInfo
+    uuid: str
+    session_id: str</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `rate_limit_info` | [`RateLimitInfo`](#ratelimitinfo) | Текущее состояние ограничения скорости |
+| `uuid` | `str` | Уникальный идентификатор события |
+| `session_id` | `str` | Идентификатор сеанса |
+
+### `RateLimitInfo`
+
+Состояние ограничения скорости, переносимое [`RateLimitEvent`](#ratelimitevent).
+</code></pre>
+<p>RateLimitStatus = Literal[&quot;allowed&quot;, &quot;allowed_warning&quot;, &quot;rejected&quot;]
+RateLimitType = Literal[
+    &quot;five_hour&quot;, &quot;seven_day&quot;, &quot;seven_day_opus&quot;, &quot;seven_day_sonnet&quot;, &quot;overage&quot;
+]</p>
+<p>@dataclass
+class RateLimitInfo:
+    status: RateLimitStatus
+    resets_at: int | None = None
+    rate_limit_type: RateLimitType | None = None
+    utilization: float | None = None
+    overage_status: RateLimitStatus | None = None
+    overage_resets_at: int | None = None
+    overage_disabled_reason: str | None = None
+    raw: dict[str, Any] = field(default_factory=dict)</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `status` | `RateLimitStatus` | Текущий статус, один из `&quot;allowed&quot;`, `&quot;allowed_warning&quot;` или `&quot;rejected&quot;`. `&quot;allowed_warning&quot;` означает приближение к лимиту; `&quot;rejected&quot;` означает, что лимит был достигнут |
+| `resets_at` | `int \| None` | Временная метка Unix, когда окно ограничения скорости сбрасывается |
+| `rate_limit_type` | `RateLimitType \| None` | Какое окно ограничения скорости применяется |
+| `utilization` | `float \| None` | Доля потребленного ограничения скорости (0,0 до 1,0) |
+| `overage_status` | `RateLimitStatus \| None` | Статус использования переплаты по мере использования, если применимо |
+| `overage_resets_at` | `int \| None` | Временная метка Unix, когда окно переплаты сбрасывается |
+| `overage_disabled_reason` | `str \| None` | Почему переплата недоступна, если статус `&quot;rejected&quot;` |
+| `raw` | `dict[str, Any]` | Полный необработанный словарь из CLI, включая поля, не смоделированные выше |
+
+### `ConversationResetMessage`
+
+Выдается при замене разговора без завершения соединения, например после `/clear`. См. [Отслеживание затрат в режиме потоковой передачи входных данных](https://code.claude.com/docs/ru/agent-sdk/cost-tracking.md#track-costs-in-streaming-input-mode) для того, как сброс влияет на текущие итоги на последующих объектах `ResultMessage`. Требуется Python Agent SDK 0.2.137 или позже.
+</code></pre>
+<p>@dataclass
+class ConversationResetMessage:
+    new_conversation_id: str
+    uuid: str
+    session_id: str</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `new_conversation_id` | `str` | Непрозрачный идентификатор для свежего разговора. Не `session_id` последующих сообщений; читайте это из следующего сообщения |
+| `uuid` | `str` | Уникальный идентификатор сообщения |
+| `session_id` | `str` | ID сеанса, который был сброшен. Сообщения после сброса содержат новый `session_id` |
+
+### `TaskStartedMessage`
+
+Выдается при запуске фоновой задачи. Фоновая задача - это все, что отслеживается вне основного хода: фоновая команда Bash, наблюдение [Monitor](#monitor), субагент, порожденный через инструмент Agent, или удаленный агент. Это именование не связано с переименованием инструмента `Task` на `Agent`.
+</code></pre>
+<p>@dataclass
+class TaskStartedMessage(SystemMessage):
+    task_id: str
+    description: str
+    uuid: str
+    session_id: str
+    tool_use_id: str | None = None
+    task_type: str | None = None</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `task_id` | `str` | Уникальный идентификатор для задачи |
+| `description` | `str` | Описание задачи |
+| `uuid` | `str` | Уникальный идентификатор сообщения |
+| `session_id` | `str` | Идентификатор сеанса |
+| `tool_use_id` | `str \| None` | Связанный ID использования инструмента |
+| `task_type` | `str \| None` | Какой вид фоновой задачи: `&quot;local_bash&quot;` для фонового Bash и наблюдений Monitor, `&quot;local_agent&quot;` для субагентов, `&quot;mcp_task&quot;` для [фоновых вызовов инструментов MCP](https://code.claude.com/docs/ru/mcp.md#automatic-backgrounding-of-long-tool-calls) или `&quot;remote_agent&quot;` |
+
+### `TaskUsage`
+
+Данные токенов и времени для фоновой задачи.
+</code></pre>
+<p>class TaskUsage(TypedDict):
+    total_tokens: int
+    tool_uses: int
+    duration_ms: int</p>
+<pre><code>
+### `TaskProgressMessage`
+
+Выдается периодически с обновлениями прогресса для выполняющейся фоновой задачи.
+</code></pre>
+<p>@dataclass
+class TaskProgressMessage(SystemMessage):
+    task_id: str
+    description: str
+    usage: TaskUsage
+    uuid: str
+    session_id: str
+    tool_use_id: str | None = None
+    last_tool_name: str | None = None</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `task_id` | `str` | Уникальный идентификатор для задачи |
+| `description` | `str` | Описание текущего статуса |
+| `usage` | `TaskUsage` | Использование токенов для этой задачи до сих пор |
+| `uuid` | `str` | Уникальный идентификатор сообщения |
+| `session_id` | `str` | Идентификатор сеанса |
+| `tool_use_id` | `str \| None` | Связанный ID использования инструмента |
+| `last_tool_name` | `str \| None` | Имя последнего инструмента, который использовала задача |
+
+### `TaskNotificationMessage`
+
+Выдается при завершении, сбое или остановке фоновой задачи. Фоновые задачи включают команды Bash `run_in_background`, наблюдения Monitor и фоновые подагенты.
+</code></pre>
+<p>@dataclass
+class TaskNotificationMessage(SystemMessage):
+    task_id: str
+    status: TaskNotificationStatus  # &quot;completed&quot; | &quot;failed&quot; | &quot;stopped&quot;
+    output_file: str
+    summary: str
+    uuid: str
+    session_id: str
+    tool_use_id: str | None = None
+    usage: TaskUsage | None = None</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `task_id` | `str` | Уникальный идентификатор для задачи |
+| `status` | `TaskNotificationStatus` | Один из `&quot;completed&quot;`, `&quot;failed&quot;` или `&quot;stopped&quot;` |
+| `output_file` | `str` | Путь к файлу вывода задачи |
+| `summary` | `str` | Резюме результата задачи |
+| `uuid` | `str` | Уникальный идентификатор сообщения |
+| `session_id` | `str` | Идентификатор сеанса |
+| `tool_use_id` | `str \| None` | Связанный ID использования инструмента |
+| `usage` | `TaskUsage \| None` | Финальное использование токенов для задачи |
+
+Когда CLI [перемещает длительный вызов инструмента MCP в фон](https://code.claude.com/docs/ru/mcp.md#automatic-backgrounding-of-long-tool-calls), результат инструмента для этого вызова содержит только заполнитель, и реальный результат вызова поступает в это сообщение. При уведомлении `&quot;completed&quot;` для такого вызова CLI добавляет ключ `resource_links`, перечисляющий файлы, возвращенные инструментом по ссылке, с теми же записями и ограничениями, что и ключ `resourceLinks` на [`UserMessage.tool_use_result`](#usermessage). Ключ `resource_links` требует Python Agent SDK 0.2.150 или позже и Claude Code v2.1.257 или позже; CLI, поставляемый с этой версией SDK, удовлетворяет требованию Claude Code.
+
+Dataclass не имеет поля для `resource_links`. Читайте его из словаря `data`, который сообщение наследует от [`SystemMessage`](#systemmessage): `message.data.get(&quot;resource_links&quot;)`. Сопоставьте уведомление с вызовом, используя `tool_use_id`. CLI опускает ключ, когда результат не содержал ссылок и при уведомлениях для задач, которые не являются вызовами инструментов MCP.
+
+## Типы блоков содержимого
+
+### `ContentBlock`
+
+Тип объединения всех блоков содержимого.
+</code></pre>
+<p>ContentBlock = (
+    TextBlock
+    | ThinkingBlock
+    | ToolUseBlock
+    | ToolResultBlock
+    | ServerToolUseBlock
+    | ServerToolResultBlock
+)</p>
+<pre><code>
+### `TextBlock`
+
+Блок содержимого текста.
+</code></pre>
+<p>@dataclass
+class TextBlock:
+    text: str</p>
+<pre><code>
+### `ThinkingBlock`
+
+Блок содержимого мышления (для моделей с возможностью мышления).
+</code></pre>
+<p>@dataclass
+class ThinkingBlock:
+    thinking: str
+    signature: str</p>
+<pre><code>
+### `ToolUseBlock`
+
+Блок запроса использования инструмента.
+</code></pre>
+<p>@dataclass
+class ToolUseBlock:
+    id: str
+    name: str
+    input: dict[str, Any]</p>
+<pre><code>
+### `ToolResultBlock`
+
+Блок результата выполнения инструмента.
+</code></pre>
+<p>@dataclass
+class ToolResultBlock:
+    tool_use_id: str
+    content: str | list[dict[str, Any]] | None = None
+    is_error: bool | None = None</p>
+<pre><code>
+## Типы ошибок
+
+Типы ниже определяют, что ваш код перехватывает. Для записей, привязанных к сообщениям об ошибках, которые эти типы вызывают, с причиной и исправлением для каждого, см. [Troubleshooting](https://code.claude.com/docs/ru/agent-sdk/troubleshooting.md).
+
+### `ClaudeSDKError`
+
+Базовый класс исключения для всех ошибок SDK.
+</code></pre>
+<p>class ClaudeSDKError(Exception):
+    &quot;&quot;&quot;Base error for Claude SDK.&quot;&quot;&quot;</p>
+<pre><code>
+Когда одноразовый `query()` заканчивается результатом ошибки, например ошибкой превышения лимита ходов, SDK вызывает [`ResultError`](#resulterror).
+
+### `CLINotFoundError`
+
+Вызывается, когда Claude Code CLI не установлен или не найден.
+</code></pre>
+<p>class CLINotFoundError(CLIConnectionError):
+    def __init__(
+        self, message: str = &quot;Claude Code not found&quot;, cli_path: str | None = None
+    ):
+        &quot;&quot;&quot;
+        Args:
+            message: Error message (default: &quot;Claude Code not found&quot;)
+            cli_path: Optional path to the CLI that was not found
+        &quot;&quot;&quot;</p>
+<pre><code>
+### `CLIConnectionError`
+
+Вызывается, когда соединение с Claude Code не удается.
+</code></pre>
+<p>class CLIConnectionError(ClaudeSDKError):
+    &quot;&quot;&quot;Failed to connect to Claude Code.&quot;&quot;&quot;</p>
+<pre><code>
+### `ProcessError`
+
+Вызывается, когда процесс Claude Code не работает.
+</code></pre>
+<p>class ProcessError(ClaudeSDKError):
+    def __init__(
+        self, message: str, exit_code: int | None = None, stderr: str | None = None
+    ):
+        self.exit_code = exit_code
+        self.stderr = stderr</p>
+<pre><code>
+### `ResultError`
+
+Вызывается, когда процесс Claude Code завершается, потому что запуск закончился [сообщением результата](#resultmessage) с ошибкой, таким как ошибка превышения лимита ходов или ошибка API. `ResultError` является подклассом `ProcessError`, поэтому существующий обработчик `except ProcessError` также его перехватывает. Его атрибуты содержат поля этого сообщения результата, поэтому вы можете разветвляться в зависимости от причины сбоя запуска без анализа текста сообщения. Требуется Python Agent SDK версии 0.2.140 или позже.
+</code></pre>
+<p>class ResultError(ProcessError):
+    subtype: str | None  # &quot;error_max_turns&quot;, &quot;error_during_execution&quot;, ...; &quot;success&quot; when the run ended on a failed request
+    errors: list[str]  # an empty list when the result message reported none
+    result: str | None
+    api_error_status: int | None
+    terminal_reason: str | None  # &quot;max_turns&quot;, &quot;api_error&quot;, ...; check after data[&quot;stop_reason&quot;], before subtype
+    session_id: str | None
+    data: dict[str, Any]  # the raw result message payload</p>
+<pre><code>
+Чтобы различить сбои, сначала проверьте `data[&quot;stop_reason&quot;]`, затем `terminal_reason`, затем `subtype`. Отклоненный ответ имеет `stop_reason` `&quot;refusal&quot;`, обычно с `subtype` `&quot;success&quot;`; его `terminal_reason` не выделяет его и может иметь значение `&quot;completed&quot;` или `&quot;api_error&quot;`. Неудавшийся финальный запрос имеет `subtype` `&quot;success&quot;` и причину в `terminal_reason`, например `&quot;api_error&quot;` для ошибки API. Когда запуск достигает установленного вами лимита, такого как `max_turns` или `max_budget_usd`, вы получаете подтип `error_*`.
+
+### `CLIJSONDecodeError`
+
+Вызывается, когда разбор JSON не удается или когда одно сообщение от CLI длиннее `max_buffer_size`. Чтобы увеличить лимит и продолжить остановленную работу, см. [Большие вызовы инструментов и результаты](https://code.claude.com/docs/ru/agent-sdk/troubleshooting.md#large-tool-calls-and-results).
+</code></pre>
+<p>class CLIJSONDecodeError(ClaudeSDKError):
+    def __init__(self, line: str, original_error: Exception):
+        &quot;&quot;&quot;
+        Args:
+            line: The line that failed to parse
+            original_error: The original JSON decode exception
+        &quot;&quot;&quot;
+        self.line = line
+        self.original_error = original_error</p>
+<pre><code>
+## Типы hooks
+
+Для полного руководства по использованию hooks с примерами и общими шаблонами см. [Hooks guide](https://code.claude.com/docs/ru/agent-sdk/hooks.md).
+
+### `HookEvent`
+
+Поддерживаемые типы событий hooks.
+</code></pre>
+<p>HookEvent = Literal[
+    &quot;PreToolUse&quot;,  # Called before tool execution
+    &quot;PostToolUse&quot;,  # Called after tool execution
+    &quot;PostToolUseFailure&quot;,  # Called when a tool execution fails
+    &quot;UserPromptSubmit&quot;,  # Called when a prompt is submitted
+    &quot;Stop&quot;,  # Called when stopping execution
+    &quot;SubagentStop&quot;,  # Called when a subagent stops
+    &quot;PreCompact&quot;,  # Called before message compaction
+    &quot;Notification&quot;,  # Called for notification events
+    &quot;SubagentStart&quot;,  # Called when a subagent starts
+    &quot;PermissionRequest&quot;,  # Called when a permission decision is needed
+]</p>
+<pre><code>
+&gt; [!NOTE]
+&gt;
+&gt; TypeScript SDK поддерживает дополнительные события hooks, которые еще недоступны в Python. См. [таблицу доступности hooks](https://code.claude.com/docs/ru/agent-sdk/hooks.md#available-hooks) для поддержки по SDK.
+
+### `HookCallback`
+
+Определение типа для функций обратного вызова hooks.
+</code></pre>
+<p>HookCallback = Callable[[HookInput, str | None, HookContext], Awaitable[HookJSONOutput]]</p>
+<pre><code>
+Параметры:
+
+* `input`: Строго типизированные входные данные хука с дискриминированными объединениями на основе `hook_event_name` (см. [`HookInput`](#hookinput))
+* `tool_use_id`: Дополнительный идентификатор использования инструмента (для hooks, связанных с инструментами)
+* `context`: Контекст hooks с дополнительной информацией
+
+Возвращает [`HookJSONOutput`](#hookjsonoutput).
+
+### `HookContext`
+
+Информация контекста, передаваемая в обратные вызовы hooks.
+</code></pre>
+<p>class HookContext(TypedDict):
+    signal: Any | None  # Future: abort signal support</p>
+<pre><code>
+### `HookMatcher`
+
+Конфигурация для сопоставления hooks с определенными событиями или инструментами.
+</code></pre>
+<p>@dataclass
+class HookMatcher:
+    matcher: str | None = (
+        None  # Tool name or pattern to match (e.g., &quot;Bash&quot;, &quot;Write|Edit&quot;)
+    )
+    hooks: list[HookCallback] = field(
+        default_factory=list
+    )  # List of callbacks to execute
+    timeout: float | None = (
+        None  # Timeout in seconds. When omitted, the per-event default applies:
+        # 600 for most events, 30 for UserPromptSubmit
+    )
+    on_failure: Literal[&quot;continue&quot;, &quot;block&quot;] | None = (
+        None  # &quot;block&quot; blocks the action when a callback fails
+    )</p>
+<pre><code>
+Чтобы решить, на что должен распространяться `on_failure`, см. [Блокировка действия при сбое обратного вызова](https://code.claude.com/docs/ru/agent-sdk/hooks.md#block-the-action-when-a-callback-fails).
+
+### `HookInput`
+
+Тип объединения всех типов ввода hooks. Фактический тип зависит от поля `hook_event_name`.
+</code></pre>
+<p>HookInput = (
+    PreToolUseHookInput
+    | PostToolUseHookInput
+    | PostToolUseFailureHookInput
+    | UserPromptSubmitHookInput
+    | StopHookInput
+    | SubagentStopHookInput
+    | PreCompactHookInput
+    | NotificationHookInput
+    | SubagentStartHookInput
+    | PermissionRequestHookInput
+)</p>
+<pre><code>
+### `BaseHookInput`
+
+Базовые поля, присутствующие во всех типах ввода hooks.
+</code></pre>
+<p>class BaseHookInput(TypedDict):
+    session_id: str
+    transcript_path: str
+    cwd: str
+    permission_mode: NotRequired[str]</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `session_id` | `str` | Текущий идентификатор сеанса |
+| `transcript_path` | `str` | Путь к файлу стенограммы сеанса |
+| `cwd` | `str` | Текущий рабочий каталог |
+| `permission_mode` | `str` (опционально) | Текущий режим разрешений |
+
+### `PreToolUseHookInput`
+
+Входные данные для событий hooks `PreToolUse`.
+</code></pre>
+<p>class PreToolUseHookInput(BaseHookInput):
+    hook_event_name: Literal[&quot;PreToolUse&quot;]
+    tool_name: str
+    tool_input: dict[str, Any]
+    tool_use_id: str
+    agent_id: NotRequired[str]
+    agent_type: NotRequired[str]</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `hook_event_name` | `Literal[&quot;PreToolUse&quot;]` | Всегда &quot;PreToolUse&quot; |
+| `tool_name` | `str` | Имя инструмента, который вот-вот будет выполнен |
+| `tool_input` | `dict[str, Any]` | Входные параметры для инструмента |
+| `tool_use_id` | `str` | Уникальный идентификатор для этого использования инструмента |
+| `agent_id` | `str` (опционально) | Идентификатор подагента, присутствует, когда hooks срабатывает внутри подагента |
+| `agent_type` | `str` (опционально) | Тип подагента, присутствует, когда hooks срабатывает внутри подагента |
+
+### `PostToolUseHookInput`
+
+Входные данные для событий hooks `PostToolUse`.
+</code></pre>
+<p>class PostToolUseHookInput(BaseHookInput):
+    hook_event_name: Literal[&quot;PostToolUse&quot;]
+    tool_name: str
+    tool_input: dict[str, Any]
+    tool_response: Any
+    tool_use_id: str
+    agent_id: NotRequired[str]
+    agent_type: NotRequired[str]</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `hook_event_name` | `Literal[&quot;PostToolUse&quot;]` | Всегда &quot;PostToolUse&quot; |
+| `tool_name` | `str` | Имя выполненного инструмента |
+| `tool_input` | `dict[str, Any]` | Использованные входные параметры |
+| `tool_response` | `Any` | Ответ от выполнения инструмента |
+| `tool_use_id` | `str` | Уникальный идентификатор для этого использования инструмента |
+| `agent_id` | `str` (опционально) | Идентификатор подагента, присутствует, когда hooks срабатывает внутри подагента |
+| `agent_type` | `str` (опционально) | Тип подагента, присутствует, когда hooks срабатывает внутри подагента |
+
+### `PostToolUseFailureHookInput`
+
+Входные данные для событий hooks `PostToolUseFailure`. Вызывается, когда выполнение инструмента не удается.
+</code></pre>
+<p>class PostToolUseFailureHookInput(BaseHookInput):
+    hook_event_name: Literal[&quot;PostToolUseFailure&quot;]
+    tool_name: str
+    tool_input: dict[str, Any]
+    tool_use_id: str
+    error: str
+    is_interrupt: NotRequired[bool]
+    agent_id: NotRequired[str]
+    agent_type: NotRequired[str]</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `hook_event_name` | `Literal[&quot;PostToolUseFailure&quot;]` | Всегда &quot;PostToolUseFailure&quot; |
+| `tool_name` | `str` | Имя инструмента, который не удался |
+| `tool_input` | `dict[str, Any]` | Использованные входные параметры |
+| `tool_use_id` | `str` | Уникальный идентификатор для этого использования инструмента |
+| `error` | `str` | Сообщение об ошибке из неудачного выполнения |
+| `is_interrupt` | `bool` (опционально) | True, когда ошибка достигла Claude Code как прерывание, а не как ошибка, которую сообщил инструмент. Отмена выполняющегося инструмента с помощью `interrupt()` не срабатывает этот hooks; результат инструмента содержит сообщение о прерывании вместо этого |
+| `agent_id` | `str` (опционально) | Идентификатор подагента, присутствует, когда hooks срабатывает внутри подагента |
+| `agent_type` | `str` (опционально) | Тип подагента, присутствует, когда hooks срабатывает внутри подагента |
+
+### `UserPromptSubmitHookInput`
+
+Входные данные для событий hooks `UserPromptSubmit`.
+</code></pre>
+<p>class UserPromptSubmitHookInput(BaseHookInput):
+    hook_event_name: Literal[&quot;UserPromptSubmit&quot;]
+    prompt: str</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `hook_event_name` | `Literal[&quot;UserPromptSubmit&quot;]` | Всегда &quot;UserPromptSubmit&quot; |
+| `prompt` | `str` | Отправленный промпт |
+
+### `StopHookInput`
+
+Входные данные для событий hooks `Stop`.
+</code></pre>
+<p>class StopHookInput(BaseHookInput):
+    hook_event_name: Literal[&quot;Stop&quot;]
+    stop_hook_active: bool</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `hook_event_name` | `Literal[&quot;Stop&quot;]` | Всегда &quot;Stop&quot; |
+| `stop_hook_active` | `bool` | Активен ли hooks остановки |
+
+### `SubagentStopHookInput`
+
+Входные данные для событий hooks `SubagentStop`.
+</code></pre>
+<p>class SubagentStopHookInput(BaseHookInput):
+    hook_event_name: Literal[&quot;SubagentStop&quot;]
+    stop_hook_active: bool
+    agent_id: str
+    agent_transcript_path: str
+    agent_type: str</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `hook_event_name` | `Literal[&quot;SubagentStop&quot;]` | Всегда &quot;SubagentStop&quot; |
+| `stop_hook_active` | `bool` | Активен ли hooks остановки |
+| `agent_id` | `str` | Уникальный идентификатор подагента |
+| `agent_transcript_path` | `str` | Путь к файлу стенограммы подагента |
+| `agent_type` | `str` | Тип подагента |
+
+### `PreCompactHookInput`
+
+Входные данные для событий hooks `PreCompact`.
+</code></pre>
+<p>class PreCompactHookInput(BaseHookInput):
+    hook_event_name: Literal[&quot;PreCompact&quot;]
+    trigger: Literal[&quot;manual&quot;, &quot;auto&quot;]
+    custom_instructions: str | None</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `hook_event_name` | `Literal[&quot;PreCompact&quot;]` | Всегда &quot;PreCompact&quot; |
+| `trigger` | `Literal[&quot;manual&quot;, &quot;auto&quot;]` | Что вызвало уплотнение |
+| `custom_instructions` | `str \| None` | Пользовательские инструкции для уплотнения |
+
+### `NotificationHookInput`
+
+Входные данные для событий hooks `Notification`.
+</code></pre>
+<p>class NotificationHookInput(BaseHookInput):
+    hook_event_name: Literal[&quot;Notification&quot;]
+    message: str
+    title: NotRequired[str]
+    notification_type: str</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `hook_event_name` | `Literal[&quot;Notification&quot;]` | Всегда &quot;Notification&quot; |
+| `message` | `str` | Содержимое сообщения уведомления |
+| `title` | `str` (опционально) | Название уведомления |
+| `notification_type` | `str` | Тип уведомления |
+
+### `SubagentStartHookInput`
+
+Входные данные для событий hooks `SubagentStart`.
+</code></pre>
+<p>class SubagentStartHookInput(BaseHookInput):
+    hook_event_name: Literal[&quot;SubagentStart&quot;]
+    agent_id: str
+    agent_type: str</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `hook_event_name` | `Literal[&quot;SubagentStart&quot;]` | Всегда &quot;SubagentStart&quot; |
+| `agent_id` | `str` | Уникальный идентификатор подагента |
+| `agent_type` | `str` | Тип подагента |
+
+### `PermissionRequestHookInput`
+
+Входные данные для событий hooks `PermissionRequest`. Позволяет hooks программно обрабатывать решения разрешений.
+</code></pre>
+<p>class PermissionRequestHookInput(BaseHookInput):
+    hook_event_name: Literal[&quot;PermissionRequest&quot;]
+    tool_name: str
+    tool_input: dict[str, Any]
+    permission_suggestions: NotRequired[list[Any]]
+    agent_id: NotRequired[str]
+    agent_type: NotRequired[str]</p>
+<pre><code>
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `hook_event_name` | `Literal[&quot;PermissionRequest&quot;]` | Всегда &quot;PermissionRequest&quot; |
+| `tool_name` | `str` | Имя инструмента, запрашивающего разрешение |
+| `tool_input` | `dict[str, Any]` | Входные параметры для инструмента |
+| `permission_suggestions` | `list[Any]` (опционально) | Предложенные обновления разрешений из CLI |
+| `agent_id` | `str` (опционально) | Идентификатор подагента, присутствует, когда hooks срабатывает внутри подагента |
+| `agent_type` | `str` (опционально) | Тип подагента, присутствует, когда hooks срабатывает внутри подагента |
+
+### `HookJSONOutput`
+
+Тип объединения для возвращаемых значений обратного вызова hooks.
+</code></pre>
+<p>HookJSONOutput = AsyncHookJSONOutput | SyncHookJSONOutput</p>
+<pre><code>
+#### `SyncHookJSONOutput`
+
+Синхронный вывод hooks с полями управления и решения.
+</code></pre>
+<p>class SyncHookJSONOutput(TypedDict):
+    # Control fields
+    continue_: NotRequired[bool]  # Whether to proceed (default: True)
+    suppressOutput: NotRequired[bool]  # Has no effect
+    stopReason: NotRequired[str]  # Message when continue is False</p>
+<p># Decision fields
+    decision: NotRequired[Literal[&quot;block&quot;]]
+    systemMessage: NotRequired[str]  # Warning message for user
+    reason: NotRequired[str]  # Feedback for Claude</p>
+<p># Hook-specific output
+    hookSpecificOutput: NotRequired[HookSpecificOutput]</p>
+<pre><code>
+&gt; [!NOTE]
+&gt;
+&gt; Используйте `continue_` (с подчеркиванием) в коде Python. Он автоматически преобразуется в `continue` при отправке в CLI.
+
+#### `HookSpecificOutput`
+
+Дискриминированное объединение типов вывода `TypedDict`, специфичных для событий. Поле `hookEventName` определяет, какие поля допустимы. Полные сведения о доступных полях для каждого события хука см. в разделе [Управление выполнением с помощью хуков](https://code.claude.com/docs/ru/agent-sdk/hooks.md#outputs).
+</code></pre>
+<p>class PreToolUseHookSpecificOutput(TypedDict):
+    hookEventName: Literal[&quot;PreToolUse&quot;]
+    permissionDecision: NotRequired[Literal[&quot;allow&quot;, &quot;deny&quot;, &quot;ask&quot;, &quot;defer&quot;]]
+    permissionDecisionReason: NotRequired[str]
+    updatedInput: NotRequired[dict[str, Any]]
+    additionalContext: NotRequired[str]</p>
+<p>class PostToolUseHookSpecificOutput(TypedDict):
+    hookEventName: Literal[&quot;PostToolUse&quot;]
+    additionalContext: NotRequired[str]
+    updatedToolOutput: NotRequired[Any]
+    updatedMCPToolOutput: NotRequired[Any]  # MCP tools only. Prefer updatedToolOutput, which works for all tools</p>
+<p>class PostToolUseFailureHookSpecificOutput(TypedDict):
+    hookEventName: Literal[&quot;PostToolUseFailure&quot;]
+    additionalContext: NotRequired[str]</p>
+<p>class UserPromptSubmitHookSpecificOutput(TypedDict):
+    hookEventName: Literal[&quot;UserPromptSubmit&quot;]
+    additionalContext: NotRequired[str]</p>
+<p>class NotificationHookSpecificOutput(TypedDict):
+    hookEventName: Literal[&quot;Notification&quot;]
+    additionalContext: NotRequired[str]</p>
+<p>class SubagentStartHookSpecificOutput(TypedDict):
+    hookEventName: Literal[&quot;SubagentStart&quot;]
+    additionalContext: NotRequired[str]</p>
+<p>class PermissionRequestHookSpecificOutput(TypedDict):
+    hookEventName: Literal[&quot;PermissionRequest&quot;]
+    decision: dict[str, Any]</p>
+<p>HookSpecificOutput = (
+    PreToolUseHookSpecificOutput
+    | PostToolUseHookSpecificOutput
+    | PostToolUseFailureHookSpecificOutput
+    | UserPromptSubmitHookSpecificOutput
+    | NotificationHookSpecificOutput
+    | SubagentStartHookSpecificOutput
+    | PermissionRequestHookSpecificOutput
+)</p>
+<pre><code>
+#### `AsyncHookJSONOutput`
+
+Асинхронный вывод hooks, который откладывает выполнение hooks.
+</code></pre>
+<p>class AsyncHookJSONOutput(TypedDict):
+    async_: Literal[True]  # Set to True to defer execution
+    asyncTimeout: NotRequired[int]  # Timeout in milliseconds</p>
+<pre><code>
+&gt; [!NOTE]
+&gt;
+&gt; Используйте `async_` (с подчеркиванием) в коде Python. Он автоматически преобразуется в `async` при отправке в CLI.
+
+### Пример использования hooks
+
+Этот пример регистрирует два хука: один блокирует опасные команды Bash, такие как `rm -rf /`, а другой записывает в лог всё использование инструментов для аудита. Благодаря [matcher `Bash`](https://code.claude.com/docs/ru/agent-sdk/hooks#matchers) хук безопасности выполняется при вызовах инструмента Bash. У хука логирования нет matcher, поэтому он срабатывает для каждого инструмента.
+</code></pre>
+<p>import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions, HookMatcher, HookContext
+from typing import Any</p>
+<p>async def validate_bash_command(
+    input_data: dict[str, Any], tool_use_id: str | None, context: HookContext
+) -&gt; dict[str, Any]:
+    &quot;&quot;&quot;Validate and potentially block dangerous bash commands.&quot;&quot;&quot;
+    if input_data[&quot;tool_name&quot;] == &quot;Bash&quot;:
+        command = input_data[&quot;tool_input&quot;].get(&quot;command&quot;, &quot;&quot;)
+        if &quot;rm -rf /&quot; in command:
+            return {
+                &quot;hookSpecificOutput&quot;: {
+                    &quot;hookEventName&quot;: &quot;PreToolUse&quot;,
+                    &quot;permissionDecision&quot;: &quot;deny&quot;,
+                    &quot;permissionDecisionReason&quot;: &quot;Dangerous command blocked&quot;,
+                }
+            }
+    return {}</p>
+<p>async def log_tool_use(
+    input_data: dict[str, Any], tool_use_id: str | None, context: HookContext
+) -&gt; dict[str, Any]:
+    &quot;&quot;&quot;Log all tool usage for auditing.&quot;&quot;&quot;
+    print(f&quot;Tool used: {input_data.get(&#x27;tool_name&#x27;)}&quot;)
+    return {}</p>
+<p>options = ClaudeAgentOptions(
+    hooks={
+        &quot;PreToolUse&quot;: [
+            HookMatcher(
+                matcher=&quot;Bash&quot;, hooks=[validate_bash_command], timeout=120
+            ),  # 2 min for validation
+            HookMatcher(
+                hooks=[log_tool_use]
+            ),  # Applies to all tools (per-event default timeout)
+        ],
+        &quot;PostToolUse&quot;: [HookMatcher(hooks=[log_tool_use])],
+    }
+)</p>
+<p>async def main():
+    async for message in query(prompt=&quot;Analyze this codebase&quot;, options=options):
+        print(message)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+## Типы ввода/вывода инструментов
+
+Документация схем ввода/вывода для встроенных инструментов Claude Code. Хотя Python SDK не экспортирует их как типы, они представляют структуру входов и выходов инструментов в сообщениях.
+
+Каждый показанный вывод — это значение, которое вы читаете из [`UserMessage.tool_use_result`](#usermessage) для этого инструмента. Названия ключей появляются точно так, как их выдает Claude Code. Ключ, аннотированный `| None` с комментарием &quot;present when&quot; или &quot;optional&quot;, опускается, когда он не применяется.
+
+### Agent
+
+**Имя инструмента:** `Agent`. Предыдущее имя `Task` по-прежнему принимается как псевдоним, когда этот инструмент доступен в сессии.
+
+Список `tools` в инициализации [`SystemMessage`](#systemmessage) сообщает об этом инструменте как `Task` для обратной совместимости.
+
+**Ввод:**
+</code></pre>
+<p>{
+    &quot;description&quot;: str,  # Краткое описание задачи (3-5 слов)
+    &quot;prompt&quot;: str,  # Задача для выполнения агентом
+    &quot;subagent_type&quot;: str | None,  # Тип специализированного агента для использования
+    &quot;model&quot;: &quot;sonnet&quot; | &quot;opus&quot; | &quot;haiku&quot; | &quot;fable&quot; | None,  # Переопределение модели для этого агента
+    &quot;effort&quot;: &quot;low&quot; | &quot;medium&quot; | &quot;high&quot; | &quot;xhigh&quot; | &quot;max&quot; | None,  # Уровень усилий рассуждения для этого агента
+    &quot;run_in_background&quot;: bool | None,  # По умолчанию, если не указано: вызов из вашего основного агента запускает нового агента в фоне, а вызов из субагента ожидает его
+    &quot;name&quot;: str | None,  # Имя для порожденного агента
+    &quot;team_name&quot;: str | None,  # Устарело; игнорируется
+    &quot;mode&quot;: &quot;acceptEdits&quot; | &quot;auto&quot; | &quot;bypassPermissions&quot; | &quot;default&quot; | &quot;dontAsk&quot; | &quot;plan&quot; | None,  # Устарело; игнорируется. Правила наследования субагента определяют режим разрешений субагента
+    &quot;isolation&quot;: &quot;worktree&quot; | &quot;remote&quot; | None,  # Режим изоляции для изменений агента
+}</p>
+<pre><code>
+Запускает нового агента для автономной обработки сложных многошаговых задач.
+
+Когда Claude не указывает `run_in_background` в вызове `Agent`, по умолчанию ваш основной агент не ждет нового агента, а субагент ждет:
+
+* **Из вашего основного агента**: новый агент выполняется в фоне, и результат имеет `status: &quot;async_launched&quot;`. Чтобы вместо этого ваш основной агент ждал нового агента, см. [Выбор того, ждет ли Claude субагентов](https://code.claude.com/docs/ru/agent-sdk/subagents.md#choose-whether-claude-waits-for-subagents).
+* **Из одного из ваших субагентов**: вызывающий субагент [ждет нового агента](https://code.claude.com/docs/ru/sub-agents.md#let-subagents-spawn-their-own-subagents). Вместо этого новый агент выполняется в фоне, если в его определении [`background`](#agentdefinition) установлено в `True` или если вы [отключаете режим fork](https://code.claude.com/docs/ru/sub-agents.md#turn-fork-mode-on-or-off), установив `CLAUDE_CODE_FORK_SUBAGENT` в `0`.
+
+До Python SDK v0.2.169 агенты, запущенные вашими субагентами, также по умолчанию выполнялись в фоне. Этот выпуск — первый, который поставляется с Claude Code v2.1.302 или позже.
+
+**Вывод (статус: `&quot;completed&quot;`):**
+</code></pre>
+<p>{
+    &quot;status&quot;: &quot;completed&quot;,
+    &quot;agentId&quot;: str,  # ID агента, который был запущен
+    &quot;agentType&quot;: str | None,  # Тип субагента, который обработал задачу
+    &quot;content&quot;: [  # Блоки содержимого результата
+        {
+            &quot;type&quot;: &quot;text&quot;,
+            &quot;text&quot;: str,
+            &quot;citations&quot;: list | None,
+        }
+    ],
+    &quot;resolvedModel&quot;: str | None,  # Модель, на которой запустился субагент
+    &quot;modelsUsed&quot;: list[str] | None,  # Модели, использованные по порядку, с коллапсированными последовательными повторениями
+    &quot;totalToolUseCount&quot;: int,  # Количество вызовов инструментов, которые сделал агент
+    &quot;totalDurationMs&quot;: int,  # Длительность выполнения в миллисекундах
+    &quot;totalTokens&quot;: int,  # Количество токенов из финального запроса API, не из всего запуска
+    &quot;usage&quot;: {  # Статистика использования токенов
+        &quot;input_tokens&quot;: int,
+        &quot;output_tokens&quot;: int,
+        &quot;cache_creation_input_tokens&quot;: int | None,
+        &quot;cache_read_input_tokens&quot;: int | None,
+        &quot;server_tool_use&quot;: {&quot;web_search_requests&quot;: int, &quot;web_fetch_requests&quot;: int} | None,
+        &quot;service_tier&quot;: str | None,
+        &quot;cache_creation&quot;: {&quot;ephemeral_1h_input_tokens&quot;: int, &quot;ephemeral_5m_input_tokens&quot;: int} | None,
+        &quot;inference_geo&quot;: str | None,
+        &quot;speed&quot;: str | None,
+        &quot;iterations&quot;: Any | None,
+        &quot;output_tokens_details&quot;: {&quot;thinking_tokens&quot;: int | None} | None,
+        &quot;fallback_credit&quot;: Any | None,
+    },
+    &quot;toolStats&quot;: {  # Совокупная активность инструментов для запуска
+        &quot;readCount&quot;: int,
+        &quot;searchCount&quot;: int,
+        &quot;bashCount&quot;: int,
+        &quot;editFileCount&quot;: int,
+        &quot;linesAdded&quot;: int,
+        &quot;linesRemoved&quot;: int,
+        &quot;otherToolCount&quot;: int,
+        &quot;frameCount&quot;: int | None,
+    } | None,
+    &quot;prompt&quot;: str,  # Промпт, который запустил агент
+    &quot;worktreePath&quot;: str | None,  # Присутствует, когда Claude Code сохранил worktree субагента
+    &quot;worktreeBranch&quot;: str | None,  # Присутствует, когда Claude Code создал этот worktree с git
+}</p>
+<pre><code>
+**Вывод (статус: `&quot;async_launched&quot;`):**
+</code></pre>
+<p>{
+    &quot;status&quot;: &quot;async_launched&quot;,
+    &quot;isAsync&quot;: bool | None,  # True при фоновых запусках
+    &quot;agentId&quot;: str,  # ID запущенного агента
+    &quot;description&quot;: str,  # Описание задачи
+    &quot;resolvedModel&quot;: str | None,  # Модель, используемая при переходе в фоновый режим
+    &quot;modelsUsed&quot;: list[str] | None,  # Модели, использованные перед фоновым режимом, по порядку, с коллапсированными последовательными повторениями
+    &quot;prompt&quot;: str,  # Промпт, который запускает агент
+    &quot;outputFile&quot;: str,  # Путь файла, где записывается вывод агента
+    &quot;canReadOutputFile&quot;: bool | None,  # Может ли выходной файл быть прочитан напрямую
+}</p>
+<pre><code>
+**Вывод (статус: `&quot;remote_launched&quot;`):**
+</code></pre>
+<p>{
+    &quot;status&quot;: &quot;remote_launched&quot;,
+    &quot;taskId&quot;: str,  # ID отправленной задачи
+    &quot;sessionUrl&quot;: str,  # Ссылка на облачную сессию
+    &quot;description&quot;: str,  # Описание задачи
+    &quot;prompt&quot;: str,  # Промпт, который запускает агент
+    &quot;outputFile&quot;: str,  # Путь файла, где записывается вывод агента
+}</p>
+<pre><code>
+Возвращает результат от субагента. Вывод различается по полю `status`: `&quot;completed&quot;` для завершенных задач, `&quot;async_launched&quot;` для фоновых задач и `&quot;remote_launched&quot;` для задач, которые Claude Code отправил в облачную сессию, где `sessionUrl` ссылается на эту сессию и `taskId` ее идентифицирует. Если Claude Code [сохранил изолированный worktree субагента](https://code.claude.com/docs/ru/worktrees.md#isolate-subagents-with-worktrees), `worktreePath` в варианте `completed` — это место, где его найти, и `worktreeBranch` — это его ветка, когда Claude Code создал worktree с git.
+
+В варианте `completed`, `resolvedModel` называет модель, на которой запустился субагент, которая может отличаться от запрошенного входа `model`, когда применяется [`availableModels`](https://code.claude.com/docs/ru/model-config#restrict-model-selection) или другое переопределение. Это поле требует Claude Code v2.1.174 или позже. В варианте `async_launched`, `resolvedModel` называет модель, используемую, когда агент перешел в фоновый режим, поэтому обмен, произошедший перед фоновым режимом, отражается там. Поле `modelsUsed` в обоих вариантах перечисляет использованные модели по порядку, с коллапсированными последовательными повторениями; оно устанавливается только при обмене модели во время выполнения. `modelsUsed` и поведение `resolvedModel` во время фонового режима требуют Claude Code v2.1.212 или позже.
+
+Claude Code заполняет `usage` и `totalTokens` из финального запроса API субагента, не из всего запуска. Когда присутствует, `thinking_tokens` под `output_tokens_details` в `usage` — это количество выходных токенов этого запроса, которые были токенами мышления. Ключ `output_tokens_details` требует Python SDK v0.2.136 или позже, который поставляется с Claude Code v2.1.228. Ключ `fallback_credit` требует Python SDK v0.2.162 или позже, который поставляется с Claude Code v2.1.285.
+
+### AskUserQuestion
+
+**Имя инструмента:** `AskUserQuestion`
+
+Задает пользователю уточняющие вопросы во время выполнения. См. [Обработка подтверждений и ввода пользователя](https://code.claude.com/docs/ru/agent-sdk/user-input.md#handle-clarifying-questions) для деталей использования.
+
+**Ввод:**
+</code></pre>
+<p>{
+    &quot;questions&quot;: [  # Вопросы для пользователя (1-4 вопроса)
+        {
+            &quot;question&quot;: str,  # Полный вопрос для пользователя
+            &quot;header&quot;: str,  # Очень короткая метка, отображаемая как чип/тег (макс 12 символов)
+            &quot;options&quot;: [  # Доступные варианты (2-4 варианта)
+                {
+                    &quot;label&quot;: str,  # Текст отображения для этого варианта (1-5 слов)
+                    &quot;description&quot;: str,  # Объяснение того, что означает этот вариант
+                    &quot;preview&quot;: str | None,  # Содержимое предпросмотра, отображаемое при фокусировке на варианте
+                }
+            ],
+            &quot;multiSelect&quot;: bool,  # Установите значение true, чтобы разрешить множественный выбор
+        }
+    ],
+    &quot;answers&quot;: dict[str, str] | None,
+    # Ответы пользователя, заполненные системой разрешений. Ответы с множественным выбором
+    # — это строка, объединенная запятыми из выбранных меток; список меток принимается
+    # на входе и приводится к этой форме
+    &quot;annotations&quot;: dict[str, dict] | None,
+    # Аннотации для каждого вопроса от пользователя, ключ — текст вопроса.
+    # Каждое значение может содержать &quot;preview&quot; (содержимое предпросмотра выбранного варианта)
+    # и &quot;notes&quot; (свободные заметки по выбору)
+    &quot;metadata&quot;: dict | None,  # Метаданные аналитики, такие как {&quot;source&quot;: &quot;remember&quot;}; не отображается пользователю
+}</p>
+<pre><code>
+**Вывод:**
+</code></pre>
+<p>{
+    &quot;questions&quot;: [  # Вопросы, которые были заданы
+        {
+            &quot;question&quot;: str,
+            &quot;header&quot;: str,
+            &quot;options&quot;: [{&quot;label&quot;: str, &quot;description&quot;: str, &quot;preview&quot;: str | None}],
+            &quot;multiSelect&quot;: bool,
+        }
+    ],
+    &quot;answers&quot;: dict[str, str],  # Сопоставляет текст вопроса со строкой ответа
+    # Ответы с множественным выбором разделены запятыми
+    &quot;response&quot;: str | None,
+    # Свободный ответ, введенный вместо ответа на вопросы; когда установлено,
+    # Claude получает &quot;The user responded: ...&quot; вместо списка ответов
+    &quot;annotations&quot;: dict[str, dict] | None,  # Аннотации &quot;preview&quot; и &quot;notes&quot; для каждого вопроса из выборов пользователя
+    &quot;afkTimeoutMs&quot;: int | None,  # Установлено, когда диалог автоматически разрешился после этого количества миллисекунд неактивности пользователя; отсутствует, когда пользователь ответил
+}</p>
+<pre><code>
+### Bash
+
+**Имя инструмента:** `Bash`
+
+Для информации о том, что устанавливает потолок переднего плана, см. [Таймаут и ограничения вывода](https://code.claude.com/docs/ru/tools-reference.md#timeout-and-output-limits). Для ограничения времени фонового режима см. [Ограничение времени для фоновых команд](https://code.claude.com/docs/ru/tools-reference.md#time-limit-for-background-commands).
+
+**Ввод:**
+</code></pre>
+<p>{
+    &quot;command&quot;: str,  # Команда для выполнения
+    &quot;timeout&quot;: int | None,  # Миллисекунды. Передний план: ограничен 600000 по умолчанию, более высокие значения зажимаются. С run_in_background (Claude Code v2.1.285 или позже): ограничение времени фонового режима, 1800000 при пропуске, ограничено 7200000, если не повышено
+    &quot;description&quot;: str | None,  # Четкое, краткое описание (5-10 слов)
+    &quot;run_in_background&quot;: bool | None,  # Установите значение true для выполнения в фоне
+}</p>
+<pre><code>
+**Вывод:**
+</code></pre>
+<p>{
+    &quot;stdout&quot;: str,  # Вывод команды; stdout и stderr поступают объединенными в этот один чередующийся поток
+    &quot;stderr&quot;: str,  # Уведомления, которые добавляет сам инструмент, не stderr команды
+    &quot;interrupted&quot;: bool,  # Была ли команда прервана
+    &quot;isImage&quot;: bool | None,  # Содержит ли stdout данные изображения
+    &quot;backgroundTaskId&quot;: str | None,  # ID фоновой задачи, если команда выполняется в фоне
+}</p>
+<pre><code>
+### Monitor
+
+**Имя инструмента:** `Monitor`
+
+Запускает фоновый источник и доставляет каждое событие в Claude, чтобы он мог реагировать без опроса: `command` запускает скрипт и выдает одно событие на строку stdout, а `ws` открывает WebSocket и выдает одно событие на текстовый фрейм. Укажите ровно один из `command` или `ws`.
+
+Источник `ws` требует Claude Code v2.1.195 или позже. Когда Monitor запускает команду, он следует тем же правилам разрешений, что и Bash. См. [Справочник инструмента Monitor](https://code.claude.com/docs/ru/tools-reference.md#monitor-tool) для информации о разрешениях WebSocket, поведении и доступности поставщика.
+
+**Ввод:**
+</code></pre>
+<p>{
+    &quot;command&quot;: str | None,  # Скрипт оболочки; каждая строка stdout является событием, выход завершает наблюдение
+    &quot;ws&quot;: dict | None,  # Источник WebSocket: {&quot;url&quot;: str, &quot;protocols&quot;: list[str] | None}; каждый текстовый фрейм является событием
+    &quot;description&quot;: str,  # Краткое описание, показываемое в уведомлениях
+    &quot;timeout_ms&quot;: int | None,  # Срок в миллисекундах (по умолчанию 300000, макс 3600000; эффективный срок составляет максимум 1800000)
+}</p>
+<pre><code>
+**Вывод:**
+</code></pre>
+<p>{
+    &quot;taskId&quot;: str,  # ID фоновой задачи мониторинга
+    &quot;timeoutMs&quot;: int,  # Эффективный срок наблюдения в миллисекундах
+    &quot;persistent&quot;: bool | None,  # False: каждое наблюдение имеет срок
+}</p>
+<pre><code>
+### Edit
+
+**Имя инструмента:** `Edit`
+
+**Ввод:**
+</code></pre>
+<p>{
+    &quot;file_path&quot;: str,  # Абсолютный путь к файлу для изменения
+    &quot;old_string&quot;: str,  # Текст для замены
+    &quot;new_string&quot;: str,  # Текст для замены на
+    &quot;replace_all&quot;: bool | None,  # Заменить все вхождения (по умолчанию False)
+}</p>
+<pre><code>
+**Вывод:**
+</code></pre>
+<p>{
+    &quot;filePath&quot;: str,  # Файл, который был отредактирован
+    &quot;oldString&quot;: str,  # Текст, который был заменен
+    &quot;newString&quot;: str,  # Текст, который его заменил
+    &quot;originalFile&quot;: str | None,  # Содержимое файла перед редактированием
+    &quot;structuredPatch&quot;: [  # Diff-блоки для изменения
+        {
+            &quot;oldStart&quot;: int,
+            &quot;oldLines&quot;: int,
+            &quot;newStart&quot;: int,
+            &quot;newLines&quot;: int,
+            &quot;lines&quot;: list[str],
+        }
+    ],
+    &quot;userModified&quot;: bool,  # Изменил ли пользователь предложенное редактирование перед его принятием
+    &quot;replaceAll&quot;: bool,  # Были ли заменены все вхождения
+    &quot;gitDiff&quot;: {  # Необязательное резюме git diff для файла
+        &quot;filename&quot;: str,
+        &quot;status&quot;: &quot;modified&quot; | &quot;added&quot;,
+        &quot;additions&quot;: int,
+        &quot;deletions&quot;: int,
+        &quot;changes&quot;: int,
+        &quot;patch&quot;: str,
+        &quot;repository&quot;: str | None,  # GitHub owner/repo, когда доступно
+    } | None,
+}</p>
+<pre><code>
+### Read
+
+**Имя инструмента:** `Read`
+
+**Ввод:**
+</code></pre>
+<p>{
+    &quot;file_path&quot;: str,  # Абсолютный путь к файлу для чтения
+    &quot;offset&quot;: int | None,  # Номер строки для начала чтения
+    &quot;limit&quot;: int | None,  # Количество строк для чтения
+}</p>
+<pre><code>
+Вывод принимает одну из следующих форм в зависимости от того, что прочитал Claude. Проверьте ключ `type`, чтобы их различить.
+
+**Вывод (type: `&quot;text&quot;`):**
+</code></pre>
+<p>{
+    &quot;type&quot;: &quot;text&quot;,
+    &quot;file&quot;: {
+        &quot;filePath&quot;: str,  # Файл, который был прочитан
+        &quot;content&quot;: str,  # Возвращенное содержимое
+        &quot;numLines&quot;: int,  # Количество строк в возвращенном содержимом
+        &quot;startLine&quot;: int,  # Номер строки, с которой начинается содержимое
+        &quot;totalLines&quot;: int,  # Общее количество строк в файле
+        &quot;truncatedByTokenCap&quot;: bool | None,  # Присутствует и True, когда чтение всего файла превысило лимит токенов и содержимое — это первая страница
+    },
+}</p>
+<pre><code>
+**Вывод (type: `&quot;image&quot;`):**
+</code></pre>
+<p>{
+    &quot;type&quot;: &quot;image&quot;,
+    &quot;file&quot;: {
+        &quot;base64&quot;: str,  # Данные изображения в кодировке Base64
+        &quot;type&quot;: &quot;image/jpeg&quot; | &quot;image/png&quot; | &quot;image/gif&quot; | &quot;image/webp&quot;,  # MIME-тип изображения
+        &quot;originalSize&quot;: int,  # Исходный размер файла в байтах
+        &quot;dimensions&quot;: {  # Необязательная информация о размерах для сопоставления координат
+            &quot;originalWidth&quot;: int | None,  # Необязательно; исходная ширина в пикселях
+            &quot;originalHeight&quot;: int | None,  # Необязательно; исходная высота в пикселях
+            &quot;displayWidth&quot;: int | None,  # Необязательно; ширина после изменения размера
+            &quot;displayHeight&quot;: int | None,  # Необязательно; высота после изменения размера
+        } | None,
+    },
+}</p>
+<pre><code>
+**Вывод (type: `&quot;notebook&quot;`):**
+</code></pre>
+<p>{
+    &quot;type&quot;: &quot;notebook&quot;,
+    &quot;file&quot;: {
+        &quot;filePath&quot;: str,  # Записная книжка, которая была прочитана
+        &quot;cells&quot;: list,  # Ячейки записной книжки
+    },
+}</p>
+<pre><code>
+**Вывод (type: `&quot;pdf&quot;`):**
+</code></pre>
+<p>{
+    &quot;type&quot;: &quot;pdf&quot;,
+    &quot;file&quot;: {
+        &quot;filePath&quot;: str,  # PDF, который был прочитан
+        &quot;base64&quot;: str,  # Данные PDF в кодировке Base64
+        &quot;originalSize&quot;: int,  # Размер файла в байтах
+    },
+}</p>
+<pre><code>
+**Вывод (type: `&quot;parts&quot;`):**
+</code></pre>
+<p>{
+    &quot;type&quot;: &quot;parts&quot;,
+    &quot;file&quot;: {
+        &quot;filePath&quot;: str,  # PDF, который был прочитан
+        &quot;originalSize&quot;: int,  # Размер файла в байтах
+        &quot;count&quot;: int,  # Количество страниц, извлеченных как изображения
+        &quot;outputDir&quot;: str,  # Каталог, содержащий извлеченные изображения страниц
+    },
+    &quot;firstPage&quot;: int | None,  # Необязательный номер страницы документа первой извлеченной страницы
+}</p>
+<pre><code>
+**Вывод (type: `&quot;file_unchanged&quot;`):**
+</code></pre>
+<p>{
+    &quot;type&quot;: &quot;file_unchanged&quot;,  # Файл не изменился с момента последнего чтения Claude в этой сессии, поэтому содержимое не повторяется
+    &quot;file&quot;: {
+        &quot;filePath&quot;: str,
+    },
+    &quot;source&quot;: &quot;seeded&quot; | None,  # Присутствует, когда более ранняя копия поступила из файла CLAUDE.md или памяти, загруженного при запуске, а не из вызова Read
+}</p>
+<pre><code>
+### Write
+
+**Имя инструмента:** `Write`
+
+**Ввод:**
+</code></pre>
+<p>{
+    &quot;file_path&quot;: str,  # Абсолютный путь к файлу для записи
+    &quot;content&quot;: str,  # Содержимое для записи в файл
+}</p>
+<pre><code>
+**Вывод:**
+</code></pre>
+<p>{
+    &quot;type&quot;: &quot;create&quot; | &quot;update&quot;,  # Создала ли запись новый файл или перезаписала существующий
+    &quot;filePath&quot;: str,  # Файл, который был записан
+    &quot;content&quot;: str,  # Содержимое, которое было записано
+    &quot;structuredPatch&quot;: [  # Diff-блоки; пусто для нового файла, когда ничего не изменилось или когда Claude Code пропустил diff
+        {
+            &quot;oldStart&quot;: int,
+            &quot;oldLines&quot;: int,
+            &quot;newStart&quot;: int,
+            &quot;newLines&quot;: int,
+            &quot;lines&quot;: list[str],
+        }
+    ],
+    &quot;originalFile&quot;: str | None,  # Предыдущее содержимое; None для нового файла или когда предыдущее содержимое было слишком большим для включения
+    &quot;gitDiff&quot;: {  # Необязательное резюме git diff для файла
+        &quot;filename&quot;: str,
+        &quot;status&quot;: &quot;modified&quot; | &quot;added&quot;,
+        &quot;additions&quot;: int,
+        &quot;deletions&quot;: int,
+        &quot;changes&quot;: int,
+        &quot;patch&quot;: str,
+        &quot;repository&quot;: str | None,  # GitHub owner/repo, когда доступно
+    } | None,
+    &quot;userModified&quot;: bool | None,  # Необязательно; изменил ли пользователь предложенное содержимое перед его принятием
+}</p>
+<pre><code>
+### Glob
+
+**Имя инструмента:** `Glob`
+
+**Ввод:**
+</code></pre>
+<p>{
+    &quot;pattern&quot;: str,  # Шаблон glob для сопоставления файлов
+    &quot;path&quot;: str | None,  # Каталог для поиска (по умолчанию текущий каталог)
+}</p>
+<pre><code>
+**Вывод:**
+</code></pre>
+<p>{
+    &quot;durationMs&quot;: int,  # Время, затраченное на выполнение поиска, в миллисекундах
+    &quot;numFiles&quot;: int,  # Количество возвращенных путей после любого усечения
+    &quot;filenames&quot;: list[str],  # Совпадающие пути файлов
+    &quot;truncated&quot;: bool,  # Были ли результаты усечены на лимите 100 файлов
+    &quot;totalMatches&quot;: int | None,  # Необязательное общее количество совпадающих файлов перед усечением; нижняя граница, когда countIsComplete равно False
+    &quot;countIsComplete&quot;: bool | None,  # Необязательно; является ли totalMatches точным
+}</p>
+<pre><code>
+`totalMatches` и `countIsComplete` требуют Claude Code v2.1.191 или позже.
+
+### Grep
+
+**Имя инструмента:** `Grep`
+
+**Ввод:**
+</code></pre>
+<p>{
+    &quot;pattern&quot;: str,  # Шаблон регулярного выражения
+    &quot;path&quot;: str | None,  # Файл или каталог для поиска
+    &quot;glob&quot;: str | None,  # Шаблон glob для фильтрации файлов
+    &quot;type&quot;: str | None,  # Тип файла для поиска
+    &quot;output_mode&quot;: str | None,  # &quot;content&quot;, &quot;files_with_matches&quot; или &quot;count&quot;
+    &quot;-i&quot;: bool | None,  # Поиск без учета регистра
+    &quot;-n&quot;: bool | None,  # Показать номера строк
+    &quot;-B&quot;: int | None,  # Строки для отображения перед каждым совпадением
+    &quot;-A&quot;: int | None,  # Строки для отображения после каждого совпадения
+    &quot;-C&quot;: int | None,  # Строки для отображения до и после
+    &quot;context&quot;: int | None,  # Строки для отображения до и после; -C является псевдонимом
+    &quot;-o&quot;: bool | None,  # Печать только совпадающих частей каждой строки
+    &quot;head_limit&quot;: int | None,  # Ограничить вывод первыми N строками/записями
+    &quot;offset&quot;: int | None,  # Пропустить первые N строк/записей перед применением head_limit
+    &quot;multiline&quot;: bool | None,  # Включить многострочный режим
+}</p>
+<pre><code>
+**Вывод:**
+</code></pre>
+<p>{
+    &quot;mode&quot;: &quot;content&quot; | &quot;files_with_matches&quot; | &quot;count&quot; | None,  # Использованный режим вывода
+    &quot;numFiles&quot;: int,  # Количество файлов в результате; всегда 0 в режиме content
+    &quot;filenames&quot;: list[str],  # Совпадающие файлы в режиме files_with_matches; пусто в других режимах
+    &quot;content&quot;: str | None,  # Совпадающие строки в режиме content или подсчеты для каждого файла в режиме count
+    &quot;numLines&quot;: int | None,  # Количество строк в содержимом, присутствует в режиме content
+    &quot;numMatches&quot;: int | None,  # Общее количество совпадений, присутствует в режиме count
+    &quot;totalFiles&quot;: int | None,  # Необязательное общее количество перед head_limit и offset в режиме files_with_matches
+    &quot;totalLines&quot;: int | None,  # Необязательное общее количество перед head_limit и offset в режиме content
+    &quot;appliedLimit&quot;: int | None,  # Присутствует, когда head_limit усек результат
+    &quot;appliedOffset&quot;: int | None,  # Присутствует, когда был применен offset
+    &quot;timedOut&quot;: bool | None,  # True, когда время поиска истекло, поэтому результаты могут быть неполными
+}</p>
+<pre><code>
+Grep возвращает эту форму dict в каждом режиме вывода. Какие необязательные ключи присутствуют, зависит от `output_mode`.
+
+`totalFiles` требует Claude Code v2.1.208 или позже. `totalLines` требует Claude Code v2.1.210 или позже. `timedOut` требует Claude Code v2.1.317 или позже.
+
+### NotebookEdit
+
+**Имя инструмента:** `NotebookEdit`
+
+**Ввод:**
+</code></pre>
+<p>{
+    &quot;notebook_path&quot;: str,  # Абсолютный путь к записной книжке Jupyter
+    &quot;cell_id&quot;: str | None,  # ID ячейки для редактирования
+    &quot;new_source&quot;: str,  # Новый исходный код для ячейки
+    &quot;cell_type&quot;: &quot;code&quot; | &quot;markdown&quot; | None,  # Тип ячейки
+    &quot;edit_mode&quot;: &quot;replace&quot; | &quot;insert&quot; | &quot;delete&quot; | None,  # Тип операции редактирования
+}</p>
+<pre><code>
+**Вывод:**
+</code></pre>
+<p>{
+    &quot;new_source&quot;: str,  # Исходный код, записанный в ячейку
+    &quot;old_source&quot;: str | None,  # Предыдущий исходный код ячейки, присутствует для replace и delete
+    &quot;cell_id&quot;: str | None,  # ID отредактированной ячейки, когда доступно
+    &quot;cell_type&quot;: &quot;code&quot; | &quot;markdown&quot;,  # Тип ячейки
+    &quot;language&quot;: str,  # Язык программирования записной книжки
+    &quot;edit_mode&quot;: str,  # Использованный режим редактирования
+    &quot;error&quot;: str | None,  # Сообщение об ошибке, когда операция не удалась
+    &quot;notebook_path&quot;: str,  # Файл записной книжки
+    &quot;original_file&quot;: str,  # Содержимое записной книжки перед редактированием
+    &quot;updated_file&quot;: str,  # Содержимое записной книжки после редактирования
+}</p>
+<pre><code>
+### WebFetch
+
+**Имя инструмента:** `WebFetch`
+
+**Ввод:**
+</code></pre>
+<p>{
+    &quot;url&quot;: str,  # URL для получения содержимого
+    &quot;prompt&quot;: str,  # Промпт для запуска на полученном содержимом
+    &quot;offset&quot;: int | None,  # Количество символов, пропускаемых от начала страницы. Требует Python Agent SDK 0.2.164 или позже
+}</p>
+<pre><code>
+**Вывод:**
+</code></pre>
+<p>{
+    &quot;bytes&quot;: int,  # Размер полученного содержимого в байтах
+    &quot;code&quot;: int,  # Код ответа HTTP
+    &quot;codeText&quot;: str,  # Текст кода ответа HTTP
+    &quot;result&quot;: str,  # Обработанный результат от применения промпта к содержимому
+    &quot;durationMs&quot;: int,  # Время получения и обработки содержимого в миллисекундах
+    &quot;url&quot;: str,  # URL, который был получен
+}</p>
+<pre><code>
+### WebSearch
+
+**Имя инструмента:** `WebSearch`
+
+**Ввод:**
+</code></pre>
+<p>{
+    &quot;query&quot;: str,  # Поисковый запрос для использования
+    &quot;allowed_domains&quot;: list[str] | None,  # Включать результаты только с этих доменов
+    &quot;blocked_domains&quot;: list[str] | None,  # Никогда не включать результаты с этих доменов
+}</p>
+<pre><code>
+**Вывод:**
+</code></pre>
+<p>{
+    &quot;query&quot;: str,  # Поисковый запрос
+    &quot;results&quot;: list[str | {&quot;tool_use_id&quot;: str, &quot;content&quot;: list[{&quot;title&quot;: str, &quot;url&quot;: str}]}],
+    &quot;durationSeconds&quot;: float,  # Длительность поиска в секундах
+}</p>
+<pre><code>
+### TodoWrite
+
+**Имя инструмента:** `TodoWrite`
+
+&gt; [!NOTE]
+&gt;
+&gt; Следующие инструменты доступны по умолчанию только на моделях Claude Opus 4.7, Claude Sonnet 4.6, Claude Haiku 4.5 и более ранних моделях. На всех остальных моделях, включая идентификаторы моделей, которые Claude Code не распознает, они недоступны, если вы не согласитесь на их использование:
+&gt;
+&gt; * `TodoWrite`
+&gt; * `TaskCreate`
+&gt; * `TaskGet`
+&gt; * `TaskUpdate`
+&gt; * `TaskList`
+&gt;
+&gt; Везде, где доступны инструменты, Claude Code предоставляет четыре инструмента Task, или `TodoWrite` вместо них, когда вы устанавливаете `CLAUDE_CODE_ENABLE_TASKS=0`.
+&gt;
+&gt; Этот набор по умолчанию применяется в Claude Code v2.1.268 и более поздних версиях, которые TypeScript Agent SDK поставляет начиная с версии v0.3.268.
+&gt;
+&gt; См. [Доступность модели](https://code.claude.com/docs/ru/agent-sdk/todo-tracking.md#model-availability) для подключения.
+
+**Ввод:**
+</code></pre>
+<p>{
+    &quot;todos&quot;: [
+        {
+            &quot;content&quot;: str,  # Описание задачи
+            &quot;status&quot;: &quot;pending&quot; | &quot;in_progress&quot; | &quot;completed&quot;,  # Статус задачи
+            &quot;activeForm&quot;: str,  # Активная форма описания
+        }
+    ]
+}</p>
+<pre><code>
+**Вывод:**
+</code></pre>
+<p>{
+    &quot;oldTodos&quot;: [  # Список задач перед обновлением
+        {
+            &quot;content&quot;: str,
+            &quot;status&quot;: &quot;pending&quot; | &quot;in_progress&quot; | &quot;completed&quot;,
+            &quot;activeForm&quot;: str,
+        }
+    ],
+    &quot;newTodos&quot;: [  # Список задач после обновления
+        {
+            &quot;content&quot;: str,
+            &quot;status&quot;: &quot;pending&quot; | &quot;in_progress&quot; | &quot;completed&quot;,
+            &quot;activeForm&quot;: str,
+        }
+    ],
+}</p>
+<pre><code>
+### TaskCreate
+
+**Имя инструмента:** `TaskCreate`
+
+**Ввод:**
+</code></pre>
+<p>{
+    &quot;subject&quot;: str,  # Краткое название задачи
+    &quot;description&quot;: str,  # Подробное описание задачи
+    &quot;activeForm&quot;: str | None,  # Метка в настоящем времени, показываемая во время выполнения
+    &quot;metadata&quot;: dict | None,  # Произвольные метаданные вызывающей стороны
+}</p>
+<pre><code>
+**Вывод:**
+</code></pre>
+<p>{
+    &quot;task&quot;: {&quot;id&quot;: str, &quot;subject&quot;: str},  # Созданная задача с назначенным ID
+}</p>
+<pre><code>
+### TaskUpdate
+
+**Имя инструмента:** `TaskUpdate`
+
+**Ввод:**
+</code></pre>
+<p>{
+    &quot;taskId&quot;: str,  # ID задачи для обновления
+    &quot;status&quot;: Literal[&quot;pending&quot;, &quot;in_progress&quot;, &quot;completed&quot;, &quot;deleted&quot;] | None,
+    &quot;subject&quot;: str | None,
+    &quot;description&quot;: str | None,
+    &quot;activeForm&quot;: str | None,
+    &quot;addBlocks&quot;: list[str] | None,  # ID задач, которые эта задача теперь блокирует
+    &quot;addBlockedBy&quot;: list[str] | None,  # ID задач, которые теперь блокируют эту задачу
+    &quot;owner&quot;: str | None,
+    &quot;metadata&quot;: dict | None,
+}</p>
+<pre><code>
+**Вывод:**
+</code></pre>
+<p>{
+    &quot;success&quot;: bool,
+    &quot;taskId&quot;: str,
+    &quot;updatedFields&quot;: list[str],  # Названия полей, которые изменились
+    &quot;error&quot;: str | None,
+    &quot;statusChange&quot;: {&quot;from&quot;: str, &quot;to&quot;: str} | None,
+}</p>
+<pre><code>
+### TaskGet
+
+**Имя инструмента:** `TaskGet`
+
+**Ввод:**
+</code></pre>
+<p>{
+    &quot;taskId&quot;: str,  # ID задачи для чтения
+}</p>
+<pre><code>
+**Вывод:**
+</code></pre>
+<p>{
+    &quot;task&quot;: {
+        &quot;id&quot;: str,
+        &quot;subject&quot;: str,
+        &quot;description&quot;: str,
+        &quot;status&quot;: Literal[&quot;pending&quot;, &quot;in_progress&quot;, &quot;completed&quot;],
+        &quot;blocks&quot;: list[str],
+        &quot;blockedBy&quot;: list[str],
+    } | None,  # None, когда ID не найден
+}</p>
+<pre><code>
+### TaskList
+
+**Имя инструмента:** `TaskList`
+
+**Ввод:**
+</code></pre>
+<p>{}</p>
+<pre><code>
+**Вывод:**
+</code></pre>
+<p>{
+    &quot;tasks&quot;: [
+        {
+            &quot;id&quot;: str,
+            &quot;subject&quot;: str,
+            &quot;status&quot;: Literal[&quot;pending&quot;, &quot;in_progress&quot;, &quot;completed&quot;],
+            &quot;owner&quot;: str | None,
+            &quot;blockedBy&quot;: list[str],
+        }
+    ],
+}</p>
+<pre><code>
+### TaskOutput
+
+Удалено в Claude Code v2.1.277. Ранее получало вывод из запущенной или завершенной фоновой задачи, с `BashOutput`, принимаемым как псевдоним; Claude читает выходной файл фоновой задачи с помощью `Read` вместо этого.
+
+Запись `disallowed_tools` или правило отказа, которое по-прежнему называет любое имя, игнорируется без предупреждения.
+
+### TaskStop
+
+**Имя инструмента:** `TaskStop`. Предыдущие имена `KillShell` и `KillBash` по-прежнему можно использовать в правилах разрешений, в matcher хуков и в параметрах `tools`, `allowed_tools` и `disallowed_tools`.
+
+**Ввод:**
+</code></pre>
+<p>{
+    &quot;task_id&quot;: str | None,  # ID фоновой задачи для остановки
+    &quot;shell_id&quot;: str | None,  # Устарело: используйте task_id вместо этого
+}</p>
+<pre><code>
+**Вывод:**
+</code></pre>
+<p>{
+    &quot;message&quot;: str,  # Сообщение о статусе операции
+    &quot;task_id&quot;: str,  # ID остановленной задачи
+    &quot;task_type&quot;: str,  # Тип остановленной задачи
+    &quot;command&quot;: str | None,  # Команда или описание остановленной задачи
+}</p>
+<pre><code>
+### ExitPlanMode
+
+**Имя инструмента:** `ExitPlanMode`
+
+**Ввод:**
+</code></pre>
+<p>{
+    &quot;plan&quot;: str  # План для запуска пользователем на одобрение
+}</p>
+<pre><code>
+**Вывод:**
+</code></pre>
+<p>{
+    &quot;plan&quot;: str | None,  # План, который был представлен пользователю
+    &quot;isAgent&quot;: bool,  # True, когда субагент вызвал инструмент
+    &quot;filePath&quot;: str | None,  # Присутствует, когда план был сохранен в файл
+    &quot;hasTaskTool&quot;: bool | None,  # Необязательно; доступен ли инструмент Agent в текущем контексте
+    &quot;planWasEdited&quot;: bool | None,  # Присутствует и True, когда пользователь отредактировал план перед одобрением
+    &quot;awaitingLeaderApproval&quot;: bool | None,  # Присутствует и True, когда товарищ по команде отправил план руководителю команды на одобрение
+    &quot;requestId&quot;: str | None,  # Необязательный ID этого запроса на одобрение
+}</p>
+<pre><code>
+### ListMcpResources
+
+**Имя инструмента:** `ListMcpResourcesTool`
+
+**Ввод:**
+</code></pre>
+<p>{
+    &quot;server&quot;: str | None  # Необязательное имя сервера для фильтрации ресурсов
+}</p>
+<pre><code>
+Результат — это список, а не dict, поэтому `tool_use_result` содержит `list` для этого инструмента.
+
+**Вывод:**
+</code></pre>
+<p>[  # Одна запись на ресурс
+    {
+        &quot;uri&quot;: str,  # URI ресурса
+        &quot;name&quot;: str,  # Имя ресурса
+        &quot;mimeType&quot;: str | None,  # Необязательный MIME-тип
+        &quot;description&quot;: str | None,  # Необязательное описание
+        &quot;server&quot;: str,  # Сервер, предоставляющий этот ресурс
+    }
+]</p>
+<pre><code>
+### ReadMcpResource
+
+**Имя инструмента:** `ReadMcpResourceTool`
+
+**Ввод:**
+</code></pre>
+<p>{
+    &quot;server&quot;: str,  # Имя сервера MCP
+    &quot;uri&quot;: str,  # URI ресурса для чтения
+}</p>
+<pre><code>
+**Вывод:**
+</code></pre>
+<p>{
+    &quot;contents&quot;: [
+        {
+            &quot;uri&quot;: str,  # URI ресурса
+            &quot;mimeType&quot;: str | None,  # Необязательный MIME-тип
+            &quot;text&quot;: str | None,  # Текстовое содержимое или примечание о двоичном содержимом
+            &quot;blobSavedTo&quot;: str | None,  # Присутствует, когда Claude Code сохранил двоичное содержимое на диск; путь сохраненного файла
+        }
+    ],
+    &quot;error&quot;: str | None,  # Присутствует, когда сервер не смог прочитать ресурс
+}</p>
+<pre><code>
+## Построение интерфейса непрерывного разговора
+
+Следующий пример сохраняет один `ClaudeSDKClient` подключённым на протяжении нескольких ходов, поэтому Claude помнит предыдущие сообщения. Введите `new` для отключения и повторного подключения для новой сессии или `exit` для завершения разговора.
+</code></pre>
+<p>from claude_agent_sdk import (
+    ClaudeSDKClient,
+    ClaudeAgentOptions,
+    AssistantMessage,
+    TextBlock,
+)
+import asyncio</p>
+<p>class ConversationSession:
+    &quot;&quot;&quot;Maintains a single conversation session with Claude.&quot;&quot;&quot;</p>
+<p>def __init__(self, options: ClaudeAgentOptions | None = None):
+        self.client = ClaudeSDKClient(options)
+        self.turn_count = 0</p>
+<p>async def start(self):
+        await self.client.connect()
+        print(&quot;Starting conversation session. Claude will remember context.&quot;)
+        print(
+            &quot;Commands: &#x27;exit&#x27; to quit, &#x27;interrupt&#x27; to stop current task, &#x27;new&#x27; for new session&quot;
+        )</p>
+<p>while True:
+            user_input = input(f&quot;\n[Turn {self.turn_count + 1}] You: &quot;)</p>
+<p>if user_input.lower() == &quot;exit&quot;:
+                break
+            elif user_input.lower() == &quot;interrupt&quot;:
+                await self.client.interrupt()
+                print(&quot;Task interrupted!&quot;)
+                continue
+            elif user_input.lower() == &quot;new&quot;:
+                # Disconnect and reconnect for a fresh session
+                await self.client.disconnect()
+                await self.client.connect()
+                self.turn_count = 0
+                print(&quot;Started new conversation session (previous context cleared)&quot;)
+                continue</p>
+<p># Send message - the session retains all previous messages
+            await self.client.query(user_input)
+            self.turn_count += 1</p>
+<p># Process response
+            print(f&quot;[Turn {self.turn_count}] Claude: &quot;, end=&quot;&quot;)
+            async for message in self.client.receive_response():
+                if isinstance(message, AssistantMessage):
+                    for block in message.content:
+                        if isinstance(block, TextBlock):
+                            print(block.text, end=&quot;&quot;)
+            print()  # New line after response</p>
+<p>await self.client.disconnect()
+        print(f&quot;Conversation ended after {self.turn_count} turns.&quot;)</p>
+<p>async def main():
+    options = ClaudeAgentOptions(
+        allowed_tools=[&quot;Read&quot;, &quot;Write&quot;, &quot;Bash&quot;], permission_mode=&quot;acceptEdits&quot;
+    )
+    session = ConversationSession(options)
+    await session.start()</p>
+<h1 id="example-conversation">Example conversation: <a class="h-anchor" href="#example-conversation" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="turn-1-you-create-a-file-called-hello-py">Turn 1 - You: &quot;Create a file called hello.py&quot; <a class="h-anchor" href="#turn-1-you-create-a-file-called-hello-py" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="turn-1-claude-i-ll-create-a-hello-py-file-for-you">Turn 1 - Claude: &quot;I&#x27;ll create a hello.py file for you...&quot; <a class="h-anchor" href="#turn-1-claude-i-ll-create-a-hello-py-file-for-you" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="turn-2-you-what-s-in-that-file">Turn 2 - You: &quot;What&#x27;s in that file?&quot; <a class="h-anchor" href="#turn-2-you-what-s-in-that-file" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="turn-2-claude-the-hello-py-file-i-just-created-contains-remembers">Turn 2 - Claude: &quot;The hello.py file I just created contains...&quot; (remembers!) <a class="h-anchor" href="#turn-2-claude-the-hello-py-file-i-just-created-contains-remembers" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="turn-3-you-add-a-main-function-to-it">Turn 3 - You: &quot;Add a main function to it&quot; <a class="h-anchor" href="#turn-3-you-add-a-main-function-to-it" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="turn-3-claude-i-ll-add-a-main-function-to-hello-py-knows-which-file">Turn 3 - Claude: &quot;I&#x27;ll add a main function to hello.py...&quot; (knows which file!) <a class="h-anchor" href="#turn-3-claude-i-ll-add-a-main-function-to-hello-py-knows-which-file" aria-label="Ссылка на раздел">#</a></h1>
+<p>asyncio.run(main())</p>
+<pre><code>
+## Обработка ошибок
+
+Следующий пример оборачивает вызов `query()` в обработчики для четырех из [типов ошибок](#error-types), которые вызывает SDK.
+
+Этот пример перехватывает [`ResultError`](#resulterror), что требует Python Agent SDK версии 0.2.140 или позже.
+</code></pre>
+<p>import asyncio</p>
+<p>from claude_agent_sdk import (
+    query,
+    CLINotFoundError,
+    ProcessError,
+    ResultError,
+    CLIJSONDecodeError,
+)</p>
+<p>async def main():
+    try:
+        async for message in query(prompt=&quot;Hello&quot;):
+            print(message)
+    except CLINotFoundError:
+        print(
+            &quot;Claude Code CLI not found. Try reinstalling: pip install --force-reinstall claude-agent-sdk&quot;
+        )
+    # Catch ResultError before ProcessError, which it subclasses. Its message
+    # carries the error text. A refusal and a failed final request both usually
+    # arrive with subtype &quot;success&quot;, so check stop_reason, then terminal_reason.
+    except ResultError as e:
+        if e.data.get(&quot;stop_reason&quot;) == &quot;refusal&quot;:
+            print(f&quot;Model declined to respond: {e}&quot;)
+        elif e.terminal_reason == &quot;api_error&quot;:
+            print(f&quot;API request failed: {e}&quot;)
+        else:
+            print(f&quot;Query ended with an error result ({e.terminal_reason or e.subtype}): {e}&quot;)
+    except ProcessError as e:
+        print(f&quot;Process failed with exit code: {e.exit_code}&quot;)
+    except CLIJSONDecodeError as e:
+        print(f&quot;Failed to parse response: {e}&quot;)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+## Конфигурация Sandbox
+
+### `SandboxSettings`
+
+Конфигурация для поведения sandbox. Используйте это для включения sandboxing команд и программной настройки ограничений сети.
+</code></pre>
+<p>class SandboxSettings(TypedDict, total=False):
+    enabled: bool
+    autoAllowBashIfSandboxed: bool
+    excludedCommands: list[str]
+    allowUnsandboxedCommands: bool
+    network: SandboxNetworkConfig
+    ignoreViolations: SandboxIgnoreViolations
+    enableWeakerNestedSandbox: bool</p>
+<pre><code>
+| Property | Type | Default | Description |
+| :- | :- | :- | :- |
+| `enabled` | `bool` | `False` | Включить режим sandbox для выполнения команд |
+| [`autoAllowBashIfSandboxed`](https://code.claude.com/docs/ru/settings-reference#sandbox-autoallowbashifsandboxed) | `bool` | `False` | Автоматически одобрять команды Bash, когда sandbox включен. Значение по умолчанию `False` требует Python SDK v0.2.182 или новее |
+| `excludedCommands` | `list[str]` | `[]` | Команды, которые обходят ограничения sandbox, такие как `[&quot;docker *&quot;]`. Они выполняются без sandbox автоматически без участия модели; [`sandbox.excludedCommands`](https://code.claude.com/docs/ru/settings-reference#sandbox-excludedcommands) описывает, когда применяется запись |
+| `allowUnsandboxedCommands` | `bool` | `True` | Разрешить модели запрашивать выполнение команд вне sandbox. Когда `True`, модель может установить `dangerouslyDisableSandbox` в входных данных инструмента, что переходит к [системе разрешений](#permissions-fallback-for-unsandboxed-commands) |
+| `network` | [`SandboxNetworkConfig`](#sandboxnetworkconfig) | `None` | Конфигурация sandbox для сети |
+| `ignoreViolations` | [`SandboxIgnoreViolations`](#sandboxignoreviolations) | `None` | Настройка того, какие нарушения sandbox игнорировать |
+| `enableWeakerNestedSandbox` | `bool` | `False` | Включить более слабый вложенный sandbox для совместимости |
+
+&gt; [!NOTE]
+&gt;
+&gt; Sandbox зависит от поддержки платформы и, на Linux, инструментов, таких как `bubblewrap` и `socat`. По умолчанию, когда `enabled` имеет значение `True`, но sandbox не может запуститься, команды выполняются без sandbox с предупреждением на stderr. Это поведение отличается от TypeScript SDK, где `failIfUnavailable` по умолчанию имеет значение `true`.
+&gt;
+&gt; Установите `&quot;failIfUnavailable&quot;: True` в настройках песочницы, чтобы вместо этого остановить выполнение. Если задан `failIfUnavailable`, `query()` вызывает исключение [`ResultError`](#resulterror), когда песочница не может запуститься, поэтому оберните цикл `async for` в блок `try`. Причина указана в списке `errors` исключения. SDK передаёт `failIfUnavailable` в Claude Code вместе с объявленными полями `SandboxSettings`.
+
+Чтобы запретить командам в песочнице запись в файл, укажите его абсолютный путь в [`denyWrite`](https://code.claude.com/docs/ru/settings-reference#sandbox-filesystem-denywrite) в настройках песочницы, например `&quot;filesystem&quot;: {&quot;denyWrite&quot;: [&quot;/home/user/project/.env&quot;]}`. SDK передаёт `filesystem` в Claude Code вместе с объявленными полями `SandboxSettings`. После запуска песочница блокирует запись по каждому указанному вами абсолютному пути.
+
+#### Пример использования
+</code></pre>
+<p>import asyncio</p>
+<p>from claude_agent_sdk import query, ClaudeAgentOptions</p>
+<p>sandbox_settings = {
+    &quot;enabled&quot;: True,
+    &quot;autoAllowBashIfSandboxed&quot;: True,
+    &quot;failIfUnavailable&quot;: True,
+    &quot;network&quot;: {&quot;allowLocalBinding&quot;: True},
+}</p>
+<p>async def main():
+    try:
+        async for message in query(
+            prompt=&quot;Build and test my project&quot;,
+            options=ClaudeAgentOptions(sandbox=sandbox_settings),
+        ):
+            print(message)
+    except Exception as error:
+        # query() raises, for example, when failIfUnavailable is set
+        # and the sandbox can&#x27;t start.
+        print(f&quot;Session ended with an error: {error}&quot;)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+&gt; [!WARNING]
+&gt;
+&gt; **Безопасность Unix socket**: Опция `allowUnixSockets` может предоставить доступ к системным сервисам, которые выходят за пределы sandbox. Например, разрешение `/var/run/docker.sock` фактически предоставляет полный доступ к хост-системе через Docker API, обходя изоляцию sandbox. Разрешайте только Unix sockets, которые строго необходимы, и поймите последствия безопасности каждого.
+
+### `SandboxNetworkConfig`
+
+Конфигурация для сети в режиме sandbox. Эти параметры применяются к sandboxed Bash командам, когда `enabled` имеет значение `True` в родительском [`SandboxSettings`](#sandboxsettings). Они не ограничивают инструмент WebFetch, который использует [правила разрешений](https://code.claude.com/docs/ru/permissions.md#webfetch) вместо этого.
+</code></pre>
+<p>class SandboxNetworkConfig(TypedDict, total=False):
+    allowedDomains: list[str]
+    deniedDomains: list[str]
+    allowManagedDomainsOnly: bool
+    allowUnixSockets: list[str]
+    allowAllUnixSockets: bool
+    allowLocalBinding: bool
+    allowMachLookup: list[str]
+    httpProxyPort: int
+    socksProxyPort: int</p>
+<pre><code>
+| Property | Type | Default | Description |
+| :- | :- | :- | :- |
+| `allowedDomains` | `list[str]` | `[]` | Имена доменов, к которым могут получить доступ процессы в sandbox |
+| `deniedDomains` | `list[str]` | `[]` | Имена доменов, к которым процессы в sandbox не могут получить доступ. Имеет приоритет над `allowedDomains` |
+| `allowManagedDomainsOnly` | `bool` | `False` | Только управляемые параметры: когда установлено в управляемых параметрах, игнорировать `allowedDomains` и `WebFetch(domain:...)` правила разрешений из источников неуправляемых параметров. Не имеет эффекта при установке через параметры SDK |
+| `allowUnixSockets` | `list[str]` | `[]` | Только macOS: пути Unix socket, к которым могут получить доступ процессы, например Docker socket. Игнорируется на Linux |
+| `allowAllUnixSockets` | `bool` | `False` | Разрешить доступ ко всем Unix sockets, а на Linux — к сокетам VM (`AF_VSOCK`) |
+| `allowLocalBinding` | `bool` | `False` | Разрешить процессам привязываться к локальным портам (например, для dev серверов) |
+| `allowMachLookup` | `list[str]` | `[]` | Только macOS: имена сервисов XPC/Mach для разрешения. Поддерживает завершающий подстановочный знак |
+| `httpProxyPort` | `int` | `None` | Порт HTTP прокси для сетевых запросов |
+| `socksProxyPort` | `int` | `None` | Порт SOCKS прокси для сетевых запросов |
+
+&gt; [!NOTE]
+&gt;
+&gt; Встроенный прокси sandbox применяет список разрешённых доменов сети на основе запрашиваемого имени хоста. По умолчанию прокси не завершает и не проверяет трафик TLS, поэтому такие методы, как [domain fronting](https://en.wikipedia.org/wiki/Domain_fronting), потенциально могут обойти список разрешённых доменов. См. [Ограничения безопасности sandboxing](https://code.claude.com/docs/ru/sandboxing.md#security-limitations) для деталей и [Безопасное развертывание](https://code.claude.com/docs/ru/agent-sdk/secure-deployment.md#traffic-forwarding) для настройки прокси, завершающего TLS.
+
+### `SandboxIgnoreViolations`
+
+Нарушения, которые не нужно включать в отчёт песочницы о нарушениях. Каждый ключ соответствует части команды или `*` для всех команд, а каждое значение перечисляет текст для поиска в строке нарушения: `{&quot;*&quot;: [&quot;/etc/hosts&quot;]}` скрывает нарушения, в которых упоминается `/etc/hosts`. Соответствующий доступ по-прежнему блокируется. См. [`sandbox.ignoreViolations`](https://code.claude.com/docs/ru/settings-reference#sandbox-ignoreviolations).
+</code></pre>
+<p>SandboxIgnoreViolations = dict[str, list[str]]</p>
+<pre><code>
+### Fallback системы разрешений для команд без Sandbox
+
+Когда `allowUnsandboxedCommands` включен, модель может запросить выполнение команд вне sandbox, установив `dangerouslyDisableSandbox: True` во входных данных инструмента. Эти запросы переходят к существующей системе разрешений, что означает, что ваш обработчик `can_use_tool` будет вызван, позволяя вам реализовать пользовательскую логику авторизации.
+
+Ваши записи `excludedCommands` вместо этого выводят команду из sandbox без участия модели; [`sandbox.excludedCommands`](https://code.claude.com/docs/ru/settings-reference#sandbox-excludedcommands) описывает, когда применяется запись.
+
+Следующий пример регистрирует каждый запрос без sandbox и отклоняет его, если только ваша собственная логика авторизации не разрешит это:
+</code></pre>
+<p>import asyncio
+from claude_agent_sdk import (
+    query,
+    ClaudeAgentOptions,
+    HookMatcher,
+    PermissionResultAllow,
+    PermissionResultDeny,
+    ToolPermissionContext,
+)</p>
+<p>def is_command_authorized(command: str | None) -&gt; bool:
+    # Replace with your own authorization logic
+    return False</p>
+<p>async def can_use_tool(
+    tool: str, input: dict, context: ToolPermissionContext
+) -&gt; PermissionResultAllow | PermissionResultDeny:
+    # Check if the model is requesting to bypass the sandbox
+    if tool == &quot;Bash&quot; and input.get(&quot;dangerouslyDisableSandbox&quot;):
+        # The model is requesting to run this command outside the sandbox
+        print(f&quot;Unsandboxed command requested: {input.get(&#x27;command&#x27;)}&quot;)</p>
+<p>if is_command_authorized(input.get(&quot;command&quot;)):
+            return PermissionResultAllow()
+        return PermissionResultDeny(
+            message=&quot;Command not authorized for unsandboxed execution&quot;
+        )
+    return PermissionResultAllow()</p>
+<h1 id="required-dummy-hook-keeps-the-stream-open-for-can_use_tool">Required: dummy hook keeps the stream open for can_use_tool <a class="h-anchor" href="#required-dummy-hook-keeps-the-stream-open-for-can_use_tool" aria-label="Ссылка на раздел">#</a></h1>
+<p>async def dummy_hook(input_data, tool_use_id, context):
+    return {&quot;continue_&quot;: True}</p>
+<p>async def prompt_stream():
+    yield {
+        &quot;type&quot;: &quot;user&quot;,
+        &quot;message&quot;: {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Deploy my application&quot;},
+    }</p>
+<p>async def main():
+    async for message in query(
+        prompt=prompt_stream(),
+        options=ClaudeAgentOptions(
+            sandbox={
+                &quot;enabled&quot;: True,
+                &quot;allowUnsandboxedCommands&quot;: True,  # Model can request unsandboxed execution
+            },
+            permission_mode=&quot;default&quot;,
+            can_use_tool=can_use_tool,
+            hooks={&quot;PreToolUse&quot;: [HookMatcher(matcher=None, hooks=[dummy_hook])]},
+        ),
+    ):
+        print(message)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+&gt; [!WARNING]
+&gt;
+&gt; Команды, выполняемые с `dangerouslyDisableSandbox: True`, имеют полный доступ к системе. Убедитесь, что ваш обработчик `can_use_tool` тщательно проверяет эти запросы.
+&gt;
+&gt; Если `permission_mode` установлен на `bypassPermissions` и `allowUnsandboxedCommands` включен, модель может автономно выполнять команды вне sandbox без запросов одобрения, кроме [действий, которые ни один режим не одобряет автоматически](https://code.claude.com/docs/ru/permission-modes.md#actions-no-mode-auto-approves). Эта комбинация фактически позволяет модели молча выходить из изоляции sandbox.
+
+## См. также
+
+* [Обзор SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md) - Общие концепции SDK
+* [Справочник TypeScript SDK](https://code.claude.com/docs/ru/agent-sdk/typescript.md) - Документация TypeScript SDK
+* [Пользовательские инструменты](https://code.claude.com/docs/ru/agent-sdk/custom-tools.md) - Определение внутрипроцессных инструментов MCP, которые может вызывать Claude
+* [Справочник CLI](https://code.claude.com/docs/ru/cli-reference.md) - Интерфейс командной строки
+* [Общие рабочие процессы](https://code.claude.com/docs/ru/common-workflows.md) - Пошаговые руководства
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Агентная разработка с Claude Code</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../materials/01-claude-code/community-guides/state-of-ai/index.html">state-of-ai</a></nav>
+<h1 id="агентная-разработка-с-claude-code">Агентная разработка с Claude Code <a class="h-anchor" href="#агентная-разработка-с-claude-code" aria-label="Ссылка на раздел">#</a></h1>
+<p><em>Актуально на 31 мая 2026 (v2.1.158). Всё проверено по официальной документации</em></p>
+<hr>
+<h3 id="h">Что такое агентная разработка <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code — это не чат-бот, которому ты задаёшь вопросы. Это агент: он сам читает файлы, запускает команды, вносит изменения и проверяет результат. Ты описываешь, что нужно сделать, а он разбирается как.</p>
+<p>Это меняет подход к работе. Вместо &quot;пишу код → прошу проверить&quot; — &quot;описываю задачу → агент реализует → я ревьюю результат&quot;.</p>
+<hr>
+<h3 id="часть-1-настройка-окружения">Часть 1. Настройка окружения <a class="h-anchor" href="#часть-1-настройка-окружения" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="1-1-claude-md-мозг-проекта">1.1 CLAUDE.md — мозг проекта <a class="h-anchor" href="#1-1-claude-md-мозг-проекта" aria-label="Ссылка на раздел">#</a></h4>
+<p>CLAUDE.md — файл, который Claude читает в начале каждой сессии. Это как онбординг-документ для нового разработчика, только для ИИ.</p>
+<p><strong>Создание:</strong> <code>/init</code> — Claude анализирует проект и генерирует стартовый файл. Дальше допиливаете руками.</p>
+<p><strong>Что включать:</strong></p>
+<ul>
+<li>Команды сборки и тестов, которые Claude не может угадать</li>
+<li>Стиль кода, если он отличается от стандартного</li>
+<li>Архитектурные решения, специфичные для проекта</li>
+<li>Инструкции по тестированию</li>
+<li>Конвенции по веткам и коммитам</li>
+<li>Переменные окружения и особенности dev-среды</li>
+<li>Частые грабли, которые не очевидны из кода</li>
+</ul>
+<p><strong>Что НЕ включать:</strong></p>
+<ul>
+<li>То, что Claude может понять из кода самостоятельно</li>
+<li>Стандартные конвенции языка (Claude их знает)</li>
+<li>Подробную API-документацию (лучше дать ссылку)</li>
+<li>Информацию, которая часто меняется</li>
+<li>Описание каждого файла в проекте</li>
+<li>Самоочевидные вещи вроде &quot;пиши чистый код&quot;</li>
+</ul>
+<p><strong>Пример:</strong></p>
+<pre><code class="language-markdown"># Стиль кода
+- ES modules (import/export), не CommonJS (require)
+- Деструктуризация импортов где возможно
+
+# Рабочий процесс
+- После серии изменений — запускай typecheck
+- Запускай отдельные тесты, не весь suite — для скорости
+
+# Тесты
+- Фреймворк: vitest
+- Команда: pnpm test
+- Для одного файла: pnpm test -- path/to/test.ts
+
+# Git
+- Ветки: feature/TASK-123-краткое-описание
+- Коммиты: conventional commits (feat:, fix:, refactor:)</code></pre>
+<p><strong>Правило:</strong> держите CLAUDE.md до ~200 строк. Если файл разбухает — Claude начинает игнорировать инструкции. Переносите справочные материалы в Skills.</p>
+<p><strong>Где размещать:</strong></p>
+<ul>
+<li><code>~/.claude/CLAUDE.md</code> — глобальные правила для всех проектов</li>
+<li><code>./CLAUDE.md</code> — правила проекта (коммитьте в git, чтобы шарить с командой)</li>
+<li>Поддиректории — Claude подгружает по мере работы с файлами в них</li>
+</ul>
+<h4 id="1-2-plugins-расширения-из-маркетплейса">1.2 Plugins — расширения из маркетплейса <a class="h-anchor" href="#1-2-plugins-расширения-из-маркетплейса" aria-label="Ссылка на раздел">#</a></h4>
+<p>Plugins — экосистема расширений для Claude Code. Плагины устанавливаются из маркетплейса и могут добавлять новые инструменты, skills и даже исполняемые файлы.</p>
+<p><strong>Ключевое:</strong></p>
+<ul>
+<li>Плагины могут поставлять executables в <code>bin/</code> и вызывать их из Bash</li>
+<li>Конфигурация через <code>manifest.userConfig</code> при включении</li>
+<li>Организации могут ограничивать доступные плагины через <code>allowedChannelPlugins</code></li>
+<li><code>CLAUDE_CODE_PLUGIN_KEEP_MARKETPLACE_ON_FAILURE</code> — сохранять кеш маркетплейса при проблемах с сетью (для offline-сред)</li>
+<li><strong>Background monitors</strong> — ключ <code>monitors</code> в манифесте плагина автоматически запускает фоновый мониторинг при старте сессии или вызове skill</li>
+<li><strong>Auto-install зависимостей</strong> (v2.1.116): <code>/reload-plugins</code> и фоновое авто-обновление доставят отсутствующие зависимости плагина из уже подключённых маркетплейсов — не нужно ставить руками</li>
+<li><code>claude plugin prune</code> (v2.1.121) — удаляет осиротевшие автоустановленные зависимости плагинов</li>
+<li><code>--plugin-dir</code> принимает <code>.zip</code>-архивы плагинов наряду с директориями (v2.1.128); <code>--plugin-url &lt;url&gt;</code> — загрузка и установка плагина из URL (v2.1.129)</li>
+<li><strong>Манифест плагина:</strong> <code>themes</code> и <code>monitors</code> теперь объявляются внутри ключа <code>&quot;experimental&quot;: { ... }</code> (v2.1.129)</li>
+<li><strong>Зависимости плагинов</strong> (v2.1.143): <code>claude plugin disable</code> отказывается выключать плагин, на который ссылается другой включённый, и показывает копируемую disable-chain. <code>claude plugin enable</code> авто-включает транзитивные зависимости</li>
+<li><strong><code>claude plugin details &lt;name&gt;</code></strong> (v2.1.139) и <code>/plugin</code>-браузер (v2.1.143) показывают компонент-инвентарь и projected per-session token cost — оценку расхода контекста до установки</li>
+<li>Плагин с корневым <code>SKILL.md</code> без папки <code>skills/</code> автоматически экспонируется как skill (v2.1.142)</li>
+<li><code>/plugin</code> browse и discover показывают дату последнего обновления плагина (v2.1.144) и компонент-инвентарь ещё до установки (v2.1.145); после enable/disable/uninstall возвращает к списку Installed. Discover tab (v2.1.154) закрепляет плагины с пометкой «suggested for this directory» по relevance-сигналам текущего каталога</li>
+<li><code>defaultEnabled: false</code> в <code>plugin.json</code> или marketplace entry (v2.1.154) — плагин ставится, но не включается, пока пользователь не сделает это вручную через <code>/plugin</code> или <code>claude plugin enable</code>; зависимости включённых плагинов по-прежнему подтягиваются автоматически</li>
+<li>Плагины в <code>.claude/skills/</code> автоматически загружаются без маркетплейса (v2.1.157); <code>claude plugin init &lt;name&gt;</code> — scaffold нового плагина в этой директории. Автодополнение для аргументов <code>/plugin</code>: subcommands, имена установленных плагинов и плагины из подключённых маркетплейсов</li>
+</ul>
+<h4 id="1-3-permissions-баланс-безопасности-и-скорости">1.3 Permissions — баланс безопасности и скорости <a class="h-anchor" href="#1-3-permissions-баланс-безопасности-и-скорости" aria-label="Ссылка на раздел">#</a></h4>
+<p>По умолчанию Claude спрашивает разрешение на каждое действие. После десятого &quot;yes&quot; вы уже не читаете, а просто жмёте.</p>
+<p><strong>Три решения:</strong></p>
+<ol>
+<li><strong>Allowlist через <code>/permissions</code></strong> — разрешаете безопасные команды:</li>
+<li><code>npm run lint</code>, <code>git commit</code>, <code>pnpm test</code> — спрашивать не будет</li>
+</ol>
+<ol>
+<li><strong><code>/sandbox</code></strong> — OS-уровень изоляции (seatbelt на macOS, bubblewrap на Linux). Агент работает в песочнице — значительно меньше вопросов, но безопасно.</li>
+<li><code>sandbox.failIfUnavailable</code> — exit с ошибкой, если sandbox не может запуститься (для CI/enterprise)</li>
+</ol>
+<ol>
+<li><strong>YOLO-режим</strong> (<code>--dangerously-skip-permissions</code>) — для одноразовых задач в изолированной ветке. Используйте только в sandbox без интернета.</li>
+</ol>
+<ol>
+<li><strong><code>--channels</code></strong> — relay запросов на разрешение на телефон. Для headless/remote сессий.</li>
+</ol>
+<ol>
+<li><strong><code>/less-permission-prompts</code></strong> (v2.1.111) — skill сканирует ваши транскрипты, находит часто используемые read-only Bash/MCP вызовы и предлагает добавить их в allowlist <code>.claude/settings.json</code>. Быстрый способ убрать рутинные prompts без разбора каждой команды руками.</li>
+</ol>
+<p><strong>Sandbox network filtering:</strong> <code>sandbox.network.deniedDomains</code> (v2.1.113) — блокирует конкретные домены, даже если они покрыты wildcard в <code>allowedDomains</code>. Нужно, когда хочется &quot;разрешить *.example.com, кроме eval.example.com&quot;.</p>
+<h4 id="1-3-hooks-автоматизация-без-вариантов">1.3 Hooks — автоматизация без вариантов <a class="h-anchor" href="#1-3-hooks-автоматизация-без-вариантов" aria-label="Ссылка на раздел">#</a></h4>
+<p>Hooks — это скрипты, которые запускаются автоматически на определённые события. В отличие от CLAUDE.md (советы), hooks — детерминистичные: действие гарантированно произойдёт.</p>
+<p><strong>Типы обработчиков:</strong></p>
+<ul>
+<li><strong>Command</strong> — запуск shell-команды (получает JSON через stdin)</li>
+<li><strong>Prompt</strong> — отправка промпта модели для одноразовой проверки</li>
+<li><strong>Agent</strong> — спавн субагента с доступом к Read, Grep, Glob</li>
+<li><strong>HTTP</strong> — HTTP-запрос (поддерживается для <code>WorktreeCreate</code> и других событий)</li>
+<li><strong>MCP tool</strong> (<code>type: &quot;mcp_tool&quot;</code>) — вызов MCP-инструмента напрямую из хука (v2.1.118)</li>
+</ul>
+<p><strong>События хуков:</strong></p>
+<ul>
+<li><code>PreToolUse</code> / <code>PostToolUse</code> — до/после вызова инструмента</li>
+<li><code>Notification</code> — когда Claude хочет привлечь внимание</li>
+<li><code>CwdChanged</code> — смена рабочей директории (полезно для direnv)</li>
+<li><code>FileChanged</code> — изменение файла на диске</li>
+<li><code>TaskCreated</code> — создание задачи через TaskCreate</li>
+<li><code>PermissionDenied</code> — после отказа auto mode классификатора (можно вернуть <code>{retry: true}</code>)</li>
+<li><code>PreCompact</code> — перед сжатием контекста. Вернуть exit code 2 или <code>{&quot;decision&quot;:&quot;block&quot;}</code> — заблокировать компакцию</li>
+<li><code>MessageDisplay</code> (v2.1.152) — преобразование или скрытие текста ответа ассистента в момент его отображения</li>
+</ul>
+<p><strong>Условные хуки:</strong> поле <code>if</code> фильтрует когда хук срабатывает (синтаксис как у permission rules).</p>
+<p><strong><code>&quot;defer&quot;</code> permission:</strong> <code>PreToolUse</code> хук может вернуть <code>permissionDecision: &quot;defer&quot;</code> — headless сессия паузится и продолжается через <code>--resume</code>.</p>
+<p><strong>Hooks в frontmatter агента</strong> (v2.1.116): ключ <code>hooks:</code> в frontmatter субагента теперь срабатывает и при запуске этого агента как main-thread через <code>--agent</code>. Раньше работало только в «вложенном» режиме.</p>
+<p><strong><code>duration_ms</code> в PostToolUse</strong> (v2.1.119): <code>PostToolUse</code> и <code>PostToolUseFailure</code> хуки получают поле <code>duration_ms</code> — длительность выполнения инструмента в миллисекундах.</p>
+<p><strong>Замена вывода инструмента</strong> (v2.1.121): <code>PostToolUse</code> хук может вернуть <code>hookSpecificOutput.updatedToolOutput</code> для любого инструмента — Claude увидит изменённый результат вместо оригинального.</p>
+<p><strong>Exec-форма команд</strong> (v2.1.139): поле <code>args: string[]</code> в хуке спавнит команду напрямую без shell — путь-плейсхолдеры не требуют квотинга.</p>
+<p><strong><code>continueOnBlock</code></strong> (v2.1.139): <code>PostToolUse</code> с этим флагом отдаёт reject reason обратно модели и продолжает turn, вместо того чтобы прерывать его.</p>
+<p><strong>Уровень эффорта в хуках</strong> (v2.1.133): поле <code>effort.level</code> в JSON input и переменная <code>$CLAUDE_EFFORT</code> доступны хукам; Bash-команды Claude тоже видят <code>$CLAUDE_EFFORT</code>.</p>
+<p><strong><code>terminalSequence</code> в JSON-выводе хука</strong> (v2.1.141): позволяет эмитить desktop-нотификации, заголовок окна и bell даже когда у хука нет controlling terminal.</p>
+<p><strong>Stop / SubagentStop input</strong> (v2.1.145): эти хуки получают поля <code>background_tasks</code> и <code>session_crons</code> — состояние фоновых задач и запланированных <code>/loop</code>-кронов на момент остановки. Полезно для cleanup-логики и репортинга «что осталось висеть».</p>
+<p><strong><code>SessionStart</code> hook</strong> (v2.1.152): может вернуть <code>reloadSkills: true</code> — пересканировать директории skills (skill, установленный самим хуком, станет доступен в той же сессии), и задать заголовок сессии через <code>hookSpecificOutput.sessionTitle</code> при старте и resume.</p>
+<p><strong>Практические примеры:</strong></p>
+<p>Auto-format после каждого редактирования:</p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;PostToolUse&quot;: [{
+      &quot;matcher&quot;: &quot;Write|Edit&quot;,
+      &quot;hooks&quot;: [{
+        &quot;type&quot;: &quot;command&quot;,
+        &quot;command&quot;: &quot;npx prettier --write $CLAUDE_FILE_PATH&quot;
+      }]
+    }]
+  }
+}</code></pre>
+<p>Десктоп-уведомление когда Claude закончил:</p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;Notification&quot;: [{
+      &quot;matcher&quot;: &quot;&quot;,
+      &quot;hooks&quot;: [{
+        &quot;type&quot;: &quot;command&quot;,
+        &quot;command&quot;: &quot;osascript -e &#x27;display notification \&quot;Claude нужно ваше внимание\&quot; with title \&quot;Claude Code\&quot;&#x27;&quot;
+      }]
+    }]
+  }
+}</code></pre>
+<p>Блокировка записи в папку миграций:</p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [{
+      &quot;matcher&quot;: &quot;Write|Edit&quot;,
+      &quot;hooks&quot;: [{
+        &quot;type&quot;: &quot;command&quot;,
+        &quot;command&quot;: &quot;echo $CLAUDE_FILE_PATH | grep -q &#x27;migrations/&#x27; &amp;&amp; exit 1 || exit 0&quot;
+      }]
+    }]
+  }
+}</code></pre>
+<p><strong>Настройка:</strong> Claude может сам написать hooks — попросите: &quot;Write a hook that runs eslint after every file edit&quot;.</p>
+<p>Файл: <code>.claude/settings.json</code> — коммитьте в репозиторий, тогда hooks автоматически применяются для всех членов команды.</p>
+<p><strong>Для enterprise:</strong> <code>managed-settings.d/</code> — drop-in директория для фрагментов политик рядом с <code>managed-settings.json</code>. Позволяет разным командам добавлять свои правила независимо. OS CA certificate store используется по умолчанию — корпоративные TLS-прокси работают без дополнительной настройки (<code>CLAUDE_CODE_CERT_STORE=bundled</code> для отката).</p>
+<p><strong>Лимиты:</strong> вывод хука &gt;50K символов сохраняется на диск (в контекст попадает путь + превью).</p>
+<h4 id="1-4-mcp-подключение-внешних-сервисов">1.4 MCP — подключение внешних сервисов <a class="h-anchor" href="#1-4-mcp-подключение-внешних-сервисов" aria-label="Ссылка на раздел">#</a></h4>
+<p>MCP (Model Context Protocol) — протокол для подключения внешних инструментов.</p>
+<p><strong>Подключение:</strong> <code>claude mcp add &lt;name&gt; -- &lt;command&gt;</code></p>
+<p><strong>Полезные MCP-серверы:</strong></p>
+<ul>
+<li><strong>GitHub</strong> — работа с issues, PR, code review прямо из Claude</li>
+<li><strong>PostgreSQL/MySQL</strong> — запросы к БД на естественном языке</li>
+<li><strong>Playwright</strong> — браузерная автоматизация и e2e-тесты</li>
+<li><strong>Context7</strong> — актуальная документация библиотек (нужная версия, не training data)</li>
+<li><strong>Figma</strong> — генерация кода из дизайна</li>
+<li><strong>Sentry</strong> — анализ ошибок в мониторинге</li>
+<li><strong>Slack</strong> — отправка уведомлений</li>
+</ul>
+<p><strong>MCP Tool Search</strong> — если у вас &gt;10 MCP-инструментов, они жрут контекст. Tool Search автоматически подгружает только нужные. Значительная экономия контекста. Включается автоматически (когда tool descriptions занимают &gt;10% контекста). Управляется через <code>ENABLE_TOOL_SEARCH=auto</code> (по умолчанию), <code>auto:N</code> (кастомный порог в %) или <code>false</code>. <code>alwaysLoad: true</code> в конфиге конкретного сервера — отключает deferral для него (v2.1.121).</p>
+<p><strong>Лимиты MCP:</strong> описания инструментов и серверных инструкций ограничены 2KB. Если MCP-сервер настроен и локально, и через claude.ai — дедупликация (локальная конфигурация побеждает).</p>
+<p><strong>Большие результаты MCP:</strong> аннотация <code>_meta[&quot;anthropic/maxResultSizeChars&quot;]</code> позволяет инструментам возвращать до 500K символов (для схем БД и т.п.).</p>
+<p><strong>MCP OAuth:</strong> теперь следует RFC 9728 (Protected Resource Metadata discovery).</p>
+<p><strong>Быстрый старт MCP</strong> (v2.1.116): при нескольких stdio-серверах запуск ускорен — <code>resources/templates/list</code> deferred до первого <code>@</code>-mention. Если у вас 5+ MCP-серверов, разница заметная.</p>
+<p><strong>Надёжность MCP</strong> (v2.1.121): серверы с временными ошибками авто-ретраят до 3 раз перед тем, как сообщить о сбое. <code>/mcp</code> показывает количество инструментов для каждого подключённого сервера и предупреждает о серверах с нулём инструментов (v2.1.128). Имя <code>workspace</code> зарезервировано — не называйте им свой MCP-сервер (v2.1.128).</p>
+<p><strong>MCP видит <code>CLAUDE_PROJECT_DIR</code></strong> (v2.1.139): stdio-серверы получают эту переменную в окружении (раньше — только хуки); плагины могут ссылаться на <code>${CLAUDE_PROJECT_DIR}</code> в командах MCP-конфигурации.</p>
+<p><strong><code>MCP_TOOL_TIMEOUT</code></strong> (v2.1.142): теперь реально поднимает per-request fetch timeout у remote HTTP/SSE серверов. Раньше всё капалось на 60с независимо от значения переменной.</p>
+<p><strong>Пагинация <code>tools/list</code></strong> (v2.1.144): MCP-серверы, возвращающие список инструментов несколькими страницами, больше не теряют всё, кроме первой. Если у вас был сервер с &gt;100 tools и часть пропадала — это была эта бага.</p>
+<p><strong>Окружение MCP-подпроцессов</strong> (v2.1.154): stdio-серверы получают переменные <code>CLAUDE_CODE_SESSION_ID</code> и <code>CLAUDECODE=1</code> — можно различать инвокацию из Claude Code и привязывать логи к сессии. <code>claude mcp list/get</code> (v2.1.154) показывает неподтверждённые <code>.mcp.json</code>-серверы как <code>⏸ Pending approval</code> вместо неявного автоконнекта, когда вывод пайпится.</p>
+<h4 id="1-5-skills-знания-по-запросу">1.5 Skills — знания по запросу <a class="h-anchor" href="#1-5-skills-знания-по-запросу" aria-label="Ссылка на раздел">#</a></h4>
+<p>Skills — это markdown-файлы с инструкциями и workflows, которые Claude подгружает по необходимости. В отличие от CLAUDE.md (грузится всегда), skills грузятся только когда нужны.</p>
+<p><strong>Встроенные skills:</strong></p>
+<ul>
+<li><code>/review</code> — код-ревью локально</li>
+<li><code>/ultrareview</code> (v2.1.111) — облачный код-ревью с параллельным мультиагентным анализом. Без аргументов — текущие изменения, <code>/ultrareview &lt;PR#&gt;</code> — конкретный GitHub PR. С v2.1.113 запускается быстрее (параллельные проверки) и показывает diffstat в launch-диалоге. <code>claude ultrareview [target]</code> (v2.1.120) — неинтерактивная версия для скриптов</li>
+<li><code>/debug</code> — автоматическая отладка</li>
+<li><code>/security-review</code> — аудит безопасности</li>
+<li><code>/batch</code> — массовые операции через worktrees (до 30 PR)</li>
+<li><code>/code-review</code> (v2.1.147, переименован из <code>/simplify</code>) — отчёт о correctness-багах на выбранном effort level (<code>/code-review high</code>). Флаг <code>--comment</code> постит находки как inline-review-комментарии в GitHub PR. Флаг <code>--fix</code> (v2.1.152) применяет находки прямо в рабочее дерево</li>
+<li><code>/simplify</code> (v2.1.154) — снова отдельный cleanup-only review (reuse, simplification, efficiency, altitude) с авто-применением фиксов; багов не ищет — для bug-hunting используйте <code>/code-review</code></li>
+<li><code>/workflows</code> (v2.1.154) — dynamic workflows: попросите Claude собрать workflow, и он оркестрирует от десятков до сотен фоновых агентов под одну крупную задачу. Команда показывает запущенные runs. Слово «workflow» в промпте триггерит создание; отключается настройкой «Workflow keyword trigger» в <code>/config</code></li>
+<li><code>/loop</code> — запуск промпта/команды по интервалу (<code>/loop 5m /foo</code>). С v2.1.113: Esc отменяет запланированные wakeups</li>
+<li><code>/recap</code> (v2.1.108) — краткое саммари сессии: что произошло с прошлого раза. Автоматически включается когда возвращаетесь к длительной сессии, управляется через <code>/config</code></li>
+<li><code>/tui fullscreen</code> (v2.1.110) — переключает текущий диалог в fullscreen-режим без мерцания (без пересоздания сессии)</li>
+<li><code>/focus</code> (v2.1.110) — toggle focus view (раньше был на <code>Ctrl+O</code>, теперь это отдельная команда; <code>Ctrl+O</code> теперь переключает verbose-транскрипт)</li>
+<li><code>/undo</code> (v2.1.108) — алиас для <code>/rewind</code></li>
+<li><code>/less-permission-prompts</code> (v2.1.111) — анализ транскриптов и предложение allowlist</li>
+<li><code>/powerup</code> — интерактивные уроки по фичам Claude Code с анимированными демо</li>
+<li><code>/release-notes</code> — интерактивный выбор версии для просмотра изменений</li>
+<li><code>/team-onboarding</code> — генерирует гайд по онбордингу для нового члена команды на основе локальной истории использования Claude Code</li>
+<li><code>/proactive</code> — алиас для <code>/loop</code></li>
+<li><code>/usage</code> (v2.1.118) — объединяет бывшие <code>/cost</code> и <code>/stats</code>: детализация расходов по моделям, cache-hit и статистика сессии</li>
+</ul>
+<p><strong>Удалённые команды:</strong> <code>/tag</code> и <code>/vim</code> — удалены. Vim mode теперь включается через <code>/config</code>.</p>
+<p><strong>Модель сама видит slash-команды</strong> (v2.1.108): Claude может обнаруживать и вызывать встроенные команды (<code>/init</code>, <code>/review</code>, <code>/security-review</code> и др.) через Skill tool — не нужно вручную командой запускать, если по контексту понятно, что стоит применить.</p>
+<p><strong><code>/skills</code> menu</strong> (v2.1.111): нажмите <code>t</code> чтобы сортировать скиллы по оценённому размеру в токенах — удобно искать кандидатов на удаление при переполненном контексте. С v2.1.121 — поиск по тексту прямо в меню (type-to-filter).</p>
+<p><strong>Skills и effort level</strong> (v2.1.120): в тексте skill можно использовать <code>${CLAUDE_EFFORT}</code> — подставляет текущий уровень усилий (low/medium/high/xhigh/max).</p>
+<p><strong><code>skillOverrides</code></strong> (v2.1.129): настройка в settings.json — <code>&quot;off&quot;</code> (отключить все skills), <code>&quot;user-invocable-only&quot;</code> (только по slash-команде пользователя), <code>&quot;name-only&quot;</code> (показывать без описания, экономит контекст).</p>
+<p><strong><code>/reload-skills</code></strong> (v2.1.152) — пересканировать директории skills без перезапуска сессии. <code>disallowed-tools</code> в frontmatter skill или slash-команды (v2.1.152) — убирает указанные инструменты у модели, пока skill активен.</p>
+<p><strong>Безопасность skills:</strong> настройка <code>disableSkillShellExecution</code> запрещает inline shell-выполнение в skills и плагинах.</p>
+<p><strong>Свои skills:</strong> создавайте в <code>.claude/skills/</code>:</p>
+<pre><code class="language-markdown"># .claude/skills/deploy/SKILL.md
+---
+name: deploy
+description: Deployment checklist for production
+---
+# Deploy Workflow
+1. Run full test suite
+2. Check for pending migrations
+3. Build production bundle
+4. ...</code></pre>
+<p>Вызов: <code>/deploy</code></p>
+<p><strong>Когда что использовать:</strong></p>
+<ul>
+<li>CLAUDE.md → &quot;всегда делай X&quot; (правила, конвенции)</li>
+<li>Skills → справочные материалы и workflows по запросу</li>
+<li>Hooks → &quot;обязательно делай X&quot; (гарантированная автоматизация)</li>
+<li>MCP → подключение к внешним сервисам</li>
+<li>Plugins → расширения из маркетплейса</li>
+</ul>
+<h4 id="1-6-субагенты-изоляция-контекста">1.6 Субагенты — изоляция контекста <a class="h-anchor" href="#1-6-субагенты-изоляция-контекста" aria-label="Ссылка на раздел">#</a></h4>
+<p>Субагенты — это агенты с собственным контекстным окном. Они исследуют, возвращают резюме, не засоряя вашу основную сессию.</p>
+<p><strong>Создание:</strong> <code>.claude/agents/security-reviewer.md</code></p>
+<pre><code class="language-markdown">---
+name: security-reviewer
+description: Reviews code for security vulnerabilities
+tools: Read, Grep, Glob, Bash
+model: opus
+initialPrompt: &quot;Scan all source files for OWASP Top 10 vulnerabilities&quot;
+---
+You are a senior security engineer. Review code for:
+- Injection vulnerabilities
+- Auth flaws
+- Secrets in code
+- Insecure data handling</code></pre>
+<p><code>initialPrompt</code> — автоматически отправляет первый промпт при запуске агента (без ручного ввода).</p>
+<p><code>paths:</code> в frontmatter — YAML-список глобов для ограничения скоупа (работает и для skills/rules).</p>
+<p><code>mcpServers:</code> в frontmatter агента (v2.1.117) — подгружается и при запуске агента как main-thread через <code>--agent</code>, не только в качестве субагента.</p>
+<p><strong>Использование:</strong> &quot;use a subagent to review this code for security&quot; или Claude сам делегирует задачу. Именованные субагенты доступны через <code>@</code> mention в typeahead.</p>
+<p><strong>Главная ценность:</strong> субагент может прочитать десятки файлов, но в ваш контекст вернётся только краткое резюме.</p>
+<p><strong><code>claude agents</code> — agent view (Research Preview, v2.1.139):</strong> единая панель со всеми сессиями Claude Code — running, blocked-on-you, done. Удобно, когда параллельно крутятся 5+ агентов и нужно быстро увидеть, кто ждёт ввода. Флаги (v2.1.141–143):</p>
+<ul>
+<li><code>--cwd &lt;path&gt;</code> — сузить дашборд до конкретной директории</li>
+<li><code>--add-dir</code>, <code>--settings</code>, <code>--mcp-config</code>, <code>--plugin-dir</code> — пробрасываются в фоновые сессии, диспатчируемые из вьюхи</li>
+<li><code>--permission-mode</code>, <code>--model</code>, <code>--effort</code>, <code>--dangerously-skip-permissions</code> — дефолты для дочерних сессий</li>
+</ul>
+<p>Идле-сессии в фоне ретайрятся демоном через 5 минут (v2.1.141), state модели/effort сохраняется между засыпаниями (v2.1.143).</p>
+<p><strong>Pinned background sessions</strong> (v2.1.147): <code>Ctrl+T</code> в <code>claude agents</code> закрепляет фоновую сессию — не засыпает по idle-таймауту, перезапускается in-place при обновлении Claude Code, выгружается под memory pressure только после непиннированных. Удобно для long-running babysit/CI-watch агентов.</p>
+<p><strong><code>claude agents --json</code></strong> (v2.1.145) — список живых сессий в JSON-формате для скриптов. Терминальный таб-заголовок процесса <code>claude agents</code> показывает количество сессий, ждущих ввода.</p>
+<p><strong><code>! &lt;command&gt;</code> и <code>claude --bg --exec &#x27;&lt;command&gt;&#x27;</code></strong> (v2.1.154): запуск shell-команды как фоновой сессии прямо из <code>claude agents</code> с возможностью attach/detach. <code>←←</code> для открытия agents view теперь работает на Bedrock/Vertex/Foundry и при отключённой телеметрии; <code>/logout</code> в этой вьюхе реально выходит из аккаунта (раньше отправлял в background-сессию).</p>
+<p><strong><code>agent</code>-дефолт</strong> (v2.1.157): поле <code>agent</code> в <code>settings.json</code> задаёт субагента по умолчанию для dispatched-сессий, <code>--agent &lt;name&gt;</code> — override per-launch.</p>
+<hr>
+<h3 id="часть-2-рабочие-паттерны">Часть 2. Рабочие паттерны <a class="h-anchor" href="#часть-2-рабочие-паттерны" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="2-1-главное-правило-контекстное-окно-ваш-главный-ресурс">2.1 Главное правило: контекстное окно — ваш главный ресурс <a class="h-anchor" href="#2-1-главное-правило-контекстное-окно-ваш-главный-ресурс" aria-label="Ссылка на раздел">#</a></h4>
+<p>Контекстное окно вмещает всю историю: ваши сообщения, прочитанные файлы, вывод команд. Когда оно заполняется — качество деградирует.</p>
+<p><strong>Мониторинг:</strong> настройте status line для отслеживания заполненности контекста. Токены &gt;=1M отображаются как &quot;1.5m&quot;. В JSON-инпут status line передаются GitHub-репозиторий и PR-информация текущего worktree (v2.1.145) — можно показывать PR-номер/статус прямо в строке статуса.</p>
+<p><strong>Что делать:</strong></p>
+<ul>
+<li><code>/clear</code> между несвязанными задачами</li>
+<li><code>/compact</code> чтобы сжать историю (можно с инструкцией: <code>/compact Фокус на API-изменениях</code>)</li>
+<li>Субагенты для исследований, которые читают много файлов</li>
+<li><code>/btw</code> для быстрых вопросов — ответ не попадает в историю</li>
+<li>Claude сам предложит <code>/clear</code> после 75+ минут бездействия</li>
+<li><code>/recap</code> — краткое саммари, что произошло в сессии. Удобно когда вернулись после паузы</li>
+<li><code>/resume</code> на больших сессиях: с v2.1.116 до 67% быстрее на файлах 40MB+, корректно обрабатывает dead-fork записи. Раньше <code>/branch</code> падал на транскриптах &gt;50MB, <code>/resume</code> мог молча показывать пустой диалог — теперь обе проблемы исправлены</li>
+</ul>
+<p><strong>Autocompact:</strong> если контекст заполняется снова после 3 подряд компакций — Claude детектирует thrash loop и предупреждает.</p>
+<p><strong><code>/goal &lt;условие&gt;</code></strong> (v2.1.139) — задаёте критерий завершения, Claude продолжает работать через несколько turns, пока условие не выполнено. Оверлей-панель с elapsed/turns/tokens. Работает в interactive, <code>-p</code> и Remote Control.</p>
+<p><strong>Rewind → &quot;Summarize up to here&quot;</strong> (v2.1.141): новый пункт в <code>/rewind</code>-меню — сжимает старый контекст, оставляя свежие turns нетронутыми. Альтернатива <code>/compact</code>, когда нужно убрать только хвост истории.</p>
+<p><strong>Рендеринг:</strong> <code>CLAUDE_CODE_NO_FLICKER=1</code> — alt-screen рендеринг без мерцания (виртуализированный scrollback). <code>CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1</code> (v2.1.132) — наоборот, отказаться от fullscreen alt-screen и оставить диалог в обычном scrollback терминала. <code>/scroll-speed</code> (v2.1.139) — настройка скорости mouse wheel с live preview. С v2.1.110: <code>Ctrl+O</code> теперь toggle между обычным и verbose-транскриптом, focus view вынесен в отдельную команду <code>/focus</code>. <code>/tui fullscreen</code> — переключить текущую сессию в fullscreen без перезапуска. Настройка <code>autoScrollEnabled</code> отключает авто-прокрутку. В fullscreen: <code>Shift+↑/↓</code> скроллит viewport при выделении, <code>Ctrl+A</code>/<code>Ctrl+E</code> — в начало/конец строки (v2.1.113). С v2.1.116: <code>/terminal-setup</code> настраивает чувствительность скролла в VS Code, Cursor, Windsurf — fullscreen-скролл стал плавным. Thinking-спиннер показывает прогресс инлайн (&quot;still thinking&quot; → &quot;thinking more&quot; → &quot;almost done&quot;), отдельная строка-хинт больше не нужна. С v2.1.121: набор текста в fullscreen больше не сбрасывает viewport к низу; диалоги (permissions, settings) теперь прокручиваемые. <code>CLAUDE_CODE_FORCE_SYNC_OUTPUT=1</code> (v2.1.129) — принудительная синхронизация terminal output для сред с буферизацией вывода.</p>
+<p><strong>Prompt cache TTL:</strong> <code>ENABLE_PROMPT_CACHING_1H=1</code> (v2.1.108) — 1-часовой TTL на API-key, Bedrock, Vertex, Foundry (раньше только на Bedrock). <code>FORCE_PROMPT_CACHING_5M=1</code> — форсировать 5 минут. Это существенно меняет экономику длинных сессий.</p>
+<h4 id="2-2-правильный-workflow-explore-plan-implement-verify">2.2 Правильный workflow: Explore → Plan → Implement → Verify <a class="h-anchor" href="#2-2-правильный-workflow-explore-plan-implement-verify" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Новая задача</strong> → Оцени размер → Простая? Сразу в Implement. Сложная? Начни с Explore.</p>
+<ol>
+<li><strong>Explore</strong> (Plan Mode, <code>Shift+Tab</code>) — прочитай код, разберись в архитектуре</li>
+<li><strong>Plan</strong> — опиши что хочешь, Claude предложит план, скорректируй (<code>Ctrl+G</code> или <code>Ctrl+X Ctrl+E</code> — редактировать промпт во внешнем редакторе)</li>
+<li><strong>Implement</strong> (Normal Mode) — Claude пишет код → запускает тесты → фиксит ошибки</li>
+<li><strong>Verify</strong> — тесты, линтер, <code>/review</code>, <code>/code-review high</code> после больших фич</li>
+<li><strong>Всё ок?</strong> Да → Commit &amp; PR. Нет → назад в Implement с фидбеком.</li>
+</ol>
+<blockquote>
+<p>Застрял 2 раза на одном месте? <code>/clear</code> + лучший промпт → назад к Plan. Не продолжай с загрязнённым контекстом.</p>
+</blockquote>
+<blockquote>
+<p>Очень большая фича? Interview-паттерн → SPEC.md → <code>/clear</code> → новая сессия для реализации по спеку.</p>
+</blockquote>
+<p><strong>Explore (Plan Mode):</strong></p>
+<pre><code>[Shift+Tab переключает в Plan Mode]
+Прочитай src/auth/ и разберись как работают сессии и логин.</code></pre>
+<p><strong>Plan:</strong></p>
+<pre><code>Я хочу добавить Google OAuth. Какие файлы нужно изменить?
+Какой будет flow? Составь план.</code></pre>
+<p><code>Ctrl+G</code> (или <code>Ctrl+X Ctrl+E</code>) — открыть текущий промпт во внешнем текстовом редакторе для правки.</p>
+<p><strong>Implement:</strong></p>
+<pre><code>[Switch back to Normal Mode]
+Реализуй OAuth flow по плану. Напиши тесты для callback handler,
+запусти тесты и исправь ошибки.</code></pre>
+<p><strong>Verify:</strong> всегда давайте Claude способ проверить свою работу — тесты, скриншоты, ожидаемый результат. Это самое важное, что можно сделать для качества.</p>
+<p><strong>Когда пропускать план:</strong> если задача маленькая и вы можете описать diff одним предложением — делайте напрямую.</p>
+<h4 id="2-3-параллельная-работа-git-worktrees">2.3 Параллельная работа: Git Worktrees <a class="h-anchor" href="#2-3-параллельная-работа-git-worktrees" aria-label="Ссылка на раздел">#</a></h4>
+<p><code>claude --worktree feature-auth</code> — создаёт изолированную копию репозитория с новой веткой.</p>
+<p><strong>Сценарий:</strong> запустили 5 задач параллельно, каждый агент в своём worktree, основная ветка чистая.</p>
+<pre><code class="language-bash"># Три параллельных задачи
+claude -w feature-auth
+claude -w bugfix-123
+claude -w refactor-api</code></pre>
+<p><strong>Для монорепо:</strong> <code>worktree.sparsePaths</code> — checkout только нужных директорий.</p>
+<p><strong>Субагенты тоже могут работать в worktrees:</strong> <code>isolation: worktree</code> в frontmatter агента.</p>
+<p><strong>Переключение в существующий worktree:</strong> инструмент <code>EnterWorktree</code> теперь принимает параметр <code>path</code> для перехода в уже существующий worktree репозитория. С v2.1.157 умеет переключаться между Claude-managed worktrees mid-session, а не только заходить в новый; managed-worktrees остаются unlocked после завершения, чтобы <code>git worktree remove/prune</code> могли их подобрать.</p>
+<p><strong>Очистка:</strong> при выходе без изменений — worktree удаляется автоматически. С изменениями — Claude спросит, оставить или удалить. Squash-merged PR worktrees тоже удаляются автоматически. С v2.1.143 при сбое <code>git worktree remove</code> Claude больше не делает fallback в <code>rm -rf</code> — gitignored и in-progress файлы не теряются.</p>
+<p><strong><code>worktree.baseRef</code></strong> (v2.1.133): <code>fresh</code> (от <code>origin/&lt;default&gt;</code>) или <code>head</code> (от локального HEAD). С v2.1.133 дефолт у <code>EnterWorktree</code> снова <code>fresh</code> — ставьте <code>&quot;head&quot;</code>, если хотите, чтобы новые worktree включали unpushed коммиты.</p>
+<p><strong><code>worktree.bgIsolation: &quot;none&quot;</code></strong> (v2.1.143) — фоновые сессии редактируют рабочую копию напрямую, без <code>EnterWorktree</code>. Для репозиториев, где worktrees неудобны (LFS, монорепо-симлинки).</p>
+<p>Добавьте <code>.claude/worktrees/</code> в <code>.gitignore</code>.</p>
+<h4 id="2-4-fan-out-массовая-обработка">2.4 Fan-out: массовая обработка <a class="h-anchor" href="#2-4-fan-out-массовая-обработка" aria-label="Ссылка на раздел">#</a></h4>
+<p>Для миграций и массовых операций:</p>
+<pre><code class="language-bash"># 1. Claude генерирует список файлов
+claude -p &quot;Список всех файлов для миграции на новый API&quot;
+
+# 2. Скрипт обрабатывает каждый (--bare для скорости — пропускает hooks/LSP/plugins)
+for file in $(cat files.txt); do
+  claude --bare -p &quot;Мигрируй $file с React на Vue. Верни OK или FAIL.&quot; \
+    --allowedTools &quot;Edit,Bash(git commit *)&quot;
+done</code></pre>
+<p><strong><code>--bare</code> флаг</strong> — для скриптовых <code>-p</code> вызовов. Пропускает hooks, LSP, plugin sync, skills. Требует <code>ANTHROPIC_API_KEY</code>. На ~14% быстрее до первого API-запроса.</p>
+<p>Или используйте <code>/batch</code> — встроенный skill, который сам разбивает задачу на до 30 единиц и обрабатывает параллельно в worktrees.</p>
+<h4 id="2-5-сессии-не-теряйте-контекст">2.5 Сессии: не теряйте контекст <a class="h-anchor" href="#2-5-сессии-не-теряйте-контекст" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">claude --continue        # продолжить последнюю сессию
+claude --resume          # выбрать из недавних (с фильтрами по проекту/ветке/worktree)
+claude -n oauth-refactor # дать имя сессии
+claude --resume oauth-refactor  # вернуться по имени</code></pre>
+<p>С v2.1.144 в <code>/resume</code>-пикере появляются и фоновые сессии (запущенные через <code>claude --bg</code> или из agent view) — помечены маркером <code>bg</code>. Уведомления о завершении фоновых субагентов теперь включают длительность (например, &quot;Agent completed · 3h 2m 5s&quot;).</p>
+<p><code>/rename</code> — переименовать текущую сессию. Используйте осмысленные имена.</p>
+<p><code>claude project purge [path]</code> (v2.1.126) — удалить весь project state Claude Code (сессии, транскрипты). Необратимо.</p>
+<p><code>Ctrl+R</code> history picker (v2.1.129) — по умолчанию ищет по промптам всех проектов, а не только текущего.</p>
+<h4 id="2-6-исправление-курса">2.6 Исправление курса <a class="h-anchor" href="#2-6-исправление-курса" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><code>Esc</code> — остановить Claude (контекст сохраняется)</li>
+<li><code>Esc + Esc</code>, <code>/rewind</code> или <code>/undo</code> (v2.1.108) — откатиться к предыдущему состоянию (и код, и диалог)</li>
+<li><code>/clear</code> — если Claude ошибается дважды на одну тему, начните заново с лучшим промптом</li>
+<li><code>Ctrl+X Ctrl+K</code> — остановить все фоновые агенты</li>
+<li><code>Ctrl+U</code> (v2.1.111) — теперь очищает весь input-буфер. <code>Ctrl+Y</code> — восстановить очищенный ввод</li>
+<li><code>Ctrl+L</code> (v2.1.111) — полная перерисовка экрана в дополнение к очистке prompt input</li>
+</ul>
+<p><strong>Правило:</strong> если вы исправили Claude больше двух раз по одному вопросу — контекст загрязнён неудачными подходами. <code>/clear</code> + лучший промпт работают лучше, чем продолжение.</p>
+<hr>
+<h3 id="часть-3-промптинг-для-агентной-разработки">Часть 3. Промптинг для агентной разработки <a class="h-anchor" href="#часть-3-промптинг-для-агентной-разработки" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="3-1-будьте-конкретны">3.1 Будьте конкретны <a class="h-anchor" href="#3-1-будьте-конкретны" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Плохо</th><th>Хорошо</th></tr></thead><tbody><tr><td>&quot;добавь тесты для foo.py&quot;</td><td>&quot;напиши тест для foo.py, покрывающий edge case когда пользователь не залогинен. без моков.&quot;</td></tr><tr><td>&quot;почёму странный API?&quot;</td><td>&quot;посмотри git history ExecutionFactory и объясни как его API стал таким&quot;</td></tr><tr><td>&quot;исправь баг логина&quot;</td><td>&quot;пользователи говорят, что логин падает после таймаута сессии. проверь auth flow в src/auth/, особенно token refresh. напиши failing test, потом исправь&quot;</td></tr></tbody></table></div>
+<h4 id="3-2-давайте-контекст">3.2 Давайте контекст <a class="h-anchor" href="#3-2-давайте-контекст" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><code>@file.ts</code> — ссылка на файл (Claude прочитает перед ответом)</li>
+<li>Вставка скриншотов — drag &amp; drop или Ctrl+V</li>
+<li><code>cat error.log | claude</code> — пайп данных напрямую</li>
+<li>URL — для документации (разрешите домены через <code>/permissions</code>)</li>
+</ul>
+<h4 id="3-3-interview-паттерн-для-больших-фич">3.3 Interview-паттерн для больших фич <a class="h-anchor" href="#3-3-interview-паттерн-для-больших-фич" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>Я хочу построить [краткое описание]. Задай мне детальные вопросы.
+
+Спрашивай про техническую реализацию, UI/UX, edge cases,
+компромиссы. Не задавай очевидные вопросы — копай в сложные части.
+
+Продолжай интервью пока не покроем всё, потом напиши полный
+спек в SPEC.md.</code></pre>
+<p>Затем — новая сессия (<code>/clear</code>) для реализации по спеку. Чистый контекст для имплементации.</p>
+<h4 id="3-4-writer-reviewer-паттерн">3.4 Writer/Reviewer паттерн <a class="h-anchor" href="#3-4-writer-reviewer-паттерн" aria-label="Ссылка на раздел">#</a></h4>
+<p>Два параллельных Claude:</p>
+<ul>
+<li><strong>Сессия A (Writer):</strong> &quot;Реализуй rate limiter для API&quot;</li>
+<li><strong>Сессия B (Reviewer):</strong> &quot;Проревьюй rate limiter в @src/middleware/rateLimiter.ts. Ищи edge cases, race conditions&quot;</li>
+<li><strong>Сессия A:</strong> &quot;Вот фидбек ревьюера: [вставка]. Исправь&quot;</li>
+</ul>
+<p>Свежий контекст ревьюера не предвзят — он не писал этот код.</p>
+<hr>
+<h3 id="часть-4-настройка-для-команды">Часть 4. Настройка для команды <a class="h-anchor" href="#часть-4-настройка-для-команды" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="4-1-что-коммитить-в-репозиторий">4.1 Что коммитить в репозиторий <a class="h-anchor" href="#4-1-что-коммитить-в-репозиторий" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>.claude/
+  settings.json    ← hooks, permissions (автоприменяются для всех)
+  agents/          ← кастомные субагенты
+  skills/          ← командные skills и workflows
+CLAUDE.md          ← конвенции проекта</code></pre>
+<p>Когда новый участник клонирует репозиторий — все настройки применяются автоматически.</p>
+<h4 id="4-2-thinking-summaries">4.2 Thinking summaries <a class="h-anchor" href="#4-2-thinking-summaries" aria-label="Ссылка на раздел">#</a></h4>
+<p>По умолчанию выключены (с v2.1.89). Если хотите видеть, что Claude думает — включите:</p>
+<pre><code class="language-json">{ &quot;showThinkingSummaries&quot;: true }</code></pre>
+<h4 id="4-3-effort-levels-экономия-токенов">4.3 Effort levels — экономия токенов <a class="h-anchor" href="#4-3-effort-levels-экономия-токенов" aria-label="Ссылка на раздел">#</a></h4>
+<p><code>--effort low|medium|high|xhigh|max</code></p>
+<ul>
+<li><strong>low</strong> — простые вопросы, быстрые правки</li>
+<li><strong>medium</strong> — лёгкая разработка</li>
+<li><strong>high</strong> — стандартная разработка (default для API-key, Bedrock/Vertex, Team и Enterprise с v2.1.94; для Opus 4.8 — дефолт всегда, с v2.1.154)</li>
+<li><strong>xhigh</strong> (v2.1.111, Opus 4.7/4.8) — между <code>high</code> и <code>max</code>. Другие модели падают на <code>high</code></li>
+<li><strong>max</strong> — архитектурные решения (только Opus)</li>
+</ul>
+<p>Настройка: слайдер в <code>/model</code>, флаг <code>--effort</code>, переменная <code>CLAUDE_CODE_EFFORT_LEVEL</code>, или <code>effortLevel</code> в settings. С v2.1.153 <code>/model</code> снова сохраняет выбор как дефолт для новых сессий (как в IDE); чтобы сменить модель только для текущей сессии — <code>s</code> в model picker (бывшая клавиша <code>d</code>/<code>modelPicker:setAsDefault</code> переименована в <code>s</code>/<code>modelPicker:thisSessionOnly</code>). С v2.1.111: <code>/effort</code> без аргументов — открывает интерактивный слайдер (стрелки + Enter). С v2.1.133 уровень эффорта виден хукам (<code>effort.level</code> в JSON input) и Bash-командам через <code>$CLAUDE_EFFORT</code>.</p>
+<p><strong>Auto mode</strong> (v2.1.111) — Claude сам выбирает effort по задаче. Флаг <code>--enable-auto-mode</code> больше не нужен, для Max-подписчиков включена для Opus 4.7. С v2.1.152 auto mode больше не требует отдельного opt-in согласия. С v2.1.158 доступен на Bedrock, Vertex и Foundry для Opus 4.7 и Opus 4.8 — opt-in через <code>CLAUDE_CODE_ENABLE_AUTO_MODE=1</code>.</p>
+<p><strong><code>--fallback-model</code></strong> (v2.1.152): если основная модель не найдена, Claude переключается на fallback-модель до конца сессии вместо того, чтобы заваливать каждый запрос ошибкой.</p>
+<p><strong>Opus 4.8</strong> (v2.1.154) — новая дефолтная модель. По умолчанию работает на <code>high</code>, для самых сложных задач — <code>/effort xhigh</code>. Вместе с ней включён <strong>lean system prompt</strong> как дефолт для всех моделей, кроме Haiku, Sonnet и Opus 4.7/ранее — заметно меньше baseline-расход контекста. Claude теперь задаёт multiple-choice вопрос только тогда, когда реально не может выбрать сам — раньше уточнял, даже имея достаточно контекста. Слайдер <code>/effort</code> подписан «Faster»/«Smarter» вместо «Speed»/«Intelligence».</p>
+<h4 id="4-4-контекстное-окно-1m-токенов">4.4 Контекстное окно: 1M токенов <a class="h-anchor" href="#4-4-контекстное-окно-1m-токенов" aria-label="Ссылка на раздел">#</a></h4>
+<p>Opus 4.6 и Sonnet 4.6 поддерживают 1M токенов по стандартной цене (GA с марта 2026). В Claude Code доступно для Max, Team и Enterprise планов. Это значит: можно работать с очень большими кодовыми базами в одной сессии.</p>
+<p><strong><code>/usage</code></strong> (v2.1.118, заменил <code>/cost</code> и <code>/stats</code>) — детализация по моделям, cache-hit и статистика сессии. С v2.1.144 <code>/extra-usage</code> переименован в <code>/usage-credits</code> (старое имя продолжает работать). С v2.1.149 показывает разбивку расхода лимитов по категориям — skills, субагенты, плагины и стоимость по каждому MCP-серверу.</p>
+<h4 id="4-5-agent-teams-экспериментально">4.5 Agent Teams (экспериментально) <a class="h-anchor" href="#4-5-agent-teams-экспериментально" aria-label="Ссылка на раздел">#</a></h4>
+<p>Требования: <code>CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1</code>, v2.1.32+. Рекомендуется Opus 4.6.</p>
+<p>Компоненты:</p>
+<ul>
+<li><strong>Team Lead</strong> — раздаёт задачи</li>
+<li><strong>Teammates</strong> — работают параллельно в worktrees</li>
+<li><strong>Task List</strong> — общий список задач</li>
+<li><strong>Mailbox</strong> — межагентное общение</li>
+</ul>
+<p>Отличие от субагентов: субагенты докладывают только родителю, teammates общаются между собой.</p>
+<p><strong>Когда использовать:</strong> если субагенты упираются в лимиты или им нужно обмениваться находками.</p>
+<h4 id="4-6-безопасность">4.6 Безопасность <a class="h-anchor" href="#4-6-безопасность" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><code>CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1</code> — убирает credentials Anthropic/облачных провайдеров из окружения subprocess&#x27;ов</li>
+<li><code>CLAUDE_CODE_SCRIPT_CAPS</code> — лимит вызовов скриптов за сессию</li>
+<li><code>forceRemoteSettingsRefresh</code> — блокирует запуск, пока managed settings не получены (fail-closed для enterprise)</li>
+<li>Subprocess sandboxing с PID namespace isolation на Linux (v2.1.98)</li>
+<li><code>sandbox.network.deniedDomains</code> (v2.1.113) — блокирует домены поверх wildcard из <code>allowedDomains</code></li>
+<li><strong>Bash allow-rules стали строже</strong> (v2.1.113): <code>Bash(find:*)</code> больше не авто-аппрувит <code>find -exec</code> / <code>-delete</code>. Deny rules теперь матчатся, даже если команду обернули в <code>env</code>/<code>sudo</code>/<code>watch</code>/<code>ionice</code>/<code>setsid</code>. На macOS пути <code>/private/{etc,var,tmp,home}</code> считаются опасными целями для <code>rm</code> под <code>Bash(rm:*)</code></li>
+<li>Исправлен <code>dangerouslyDisableSandbox</code> — Bash больше не запускается без permission prompt (v2.1.113)</li>
+<li><strong>Sandbox auto-allow и dangerous paths</strong> (v2.1.116): авто-аппрув в sandbox больше не пропускает <code>rm</code>/<code>rmdir</code>, нацеленные на <code>/</code>, <code>$HOME</code> и другие критические системные каталоги — проверка на опасные пути теперь выполняется всегда</li>
+<li><strong>PowerShell permission bypass</strong> (v2.1.149): встроенные <code>cd</code>-функции (<code>cd..</code>, <code>cd\</code>, <code>cd~</code>, <code>X:</code>) меняли рабочую директорию незаметно, позволяя последующей команде читать вне workspace. Также закрыт парсер, доверявший устаревшим значениям <code>PWD</code>/<code>OLDPWD</code>/<code>DIRSTACK</code> после <code>cd</code>/<code>pushd</code>/<code>popd</code></li>
+<li><strong>Sandbox write allowlist в worktrees</strong> (v2.1.149): в git worktree allowlist на запись покрывал весь корень основного репозитория вместо только shared <code>.git</code> (с запретом на <code>hooks/</code> и <code>config</code>)</li>
+<li><strong>Auto-mode classifier против data exfiltration</strong> (v2.1.154): улучшено детектирование bulk-переносов содержимого репозитория</li>
+<li><strong><code>rm -rf $HOME</code> с trailing slash</strong> (v2.1.154) — закрыт пропуск блокировки опасного пути, когда <code>HOME</code> оканчивается слэшем</li>
+<li><strong>Streaming tool execution всегда включён</strong> (v2.1.154) — в том числе при отключённой телеметрии и на Bedrock/Vertex/Foundry; раньше был за feature flag</li>
+</ul>
+<p><strong>Важно:</strong> продолжают выходить security-фиксы для Bash/PowerShell permission engine. Обновляйтесь до v2.1.149 — закрыты PowerShell <code>cd</code>-bypass и утечка sandbox write allowlist в worktrees; ранее в v2.1.126 была закрыта уязвимость с <code>allowManagedDomainsOnly</code> (игнорировалась при определённых конфигурациях).</p>
+<p><code>DISABLE_UPDATES=1</code> (v2.1.118) — блокирует все пути обновления Claude Code для managed-окружений.</p>
+<p><code>settings.autoMode.hard_deny</code> (v2.1.136) — правила auto-mode классификатора, которые блокируют безусловно: не имеет значения, какой intent у пользователя и какие allow-исключения совпали.</p>
+<p><code>ANTHROPIC_WORKSPACE_ID</code> (v2.1.141) — для workload identity federation: скоупит выписанный токен к конкретному workspace, когда federation rule покрывает несколько.</p>
+<p><strong><code>/doctor</code></strong> — диагностика окружения. Нажмите <code>f</code> — Claude автоматически исправит найденные проблемы. С v2.1.110 предупреждает, если MCP-сервер определён в нескольких конфиг-скоупах с разными эндпоинтами. С v2.1.116 <code>/doctor</code> можно открыть прямо во время ответа Claude — ждать окончания turn не нужно.</p>
+<p><strong><code>/config</code></strong> (v2.1.119): изменения теперь сохраняются в <code>~/.claude/settings.json</code> — настройки persist между сессиями. Поиск по значениям (v2.1.116): <code>vim</code> найдёт Editor mode, <code>dark</code> найдёт тему.</p>
+<p><strong><code>prUrlTemplate</code></strong> (v2.1.119) — настройка в settings.json: кастомный шаблон URL для code-review (полезно для GitLab, GitHub Enterprise, Bitbucket). <code>--from-pr</code> теперь принимает URL из GitLab, Bitbucket и GitHub Enterprise.</p>
+<p><strong>Custom themes</strong> (v2.1.118): создавать и переключаться между кастомными темами можно прямо из <code>/theme</code>.</p>
+<p><strong>Native binary</strong> (v2.1.113): CLI теперь спавнит платформенный нативный бинарник Claude Code (per-platform optional dependency) вместо bundled JavaScript. Быстрее старт, меньше потребление памяти.</p>
+<p><strong>Push-уведомления</strong> (v2.1.110): если включён Remote Control и &quot;Push when Claude decides&quot; в конфиге — Claude сам может слать push на мобильное, когда задача закончена или нужен ваш ввод.</p>
+<h4 id="4-7-3rd-party-провайдеры-и-платформы">4.7 3rd-party провайдеры и платформы <a class="h-anchor" href="#4-7-3rd-party-провайдеры-и-платформы" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude Code поддерживает сторонних провайдеров с интерактивными визардами настройки:</p>
+<ul>
+<li><strong>Amazon Bedrock</strong> — визард на экране логина. Поддержка Mantle (<code>CLAUDE_CODE_USE_MANTLE=1</code>). <code>ANTHROPIC_BEDROCK_SERVICE_TIER</code> (v2.1.122) — выбор Bedrock tier</li>
+<li><strong>Google Vertex AI</strong> — интерактивный визард (v2.1.98)</li>
+<li><strong>Perforce</strong> — <code>CLAUDE_CODE_PERFORCE_MODE</code> — Edit/Write/NotebookEdit блокируются на read-only файлах с подсказкой <code>p4 edit</code></li>
+</ul>
+<p><strong>Windows:</strong> PowerShell tool (v2.1.111) постепенно раскатывается. Включить/выключить — <code>CLAUDE_CODE_USE_POWERSHELL_TOOL=1</code>. На Linux/macOS тоже работает, если <code>pwsh</code> в PATH. Исправлены permission rules с drive-letter путями и case-insensitive матчинг путей. С v2.1.120 Git Bash больше не требуется — PowerShell используется как fallback shell. С v2.1.126 PowerShell 7 определяется и используется как основной shell. С v2.1.143 PowerShell tool по умолчанию включён на Windows для Bedrock/Vertex/Foundry — опт-аут через <code>CLAUDE_CODE_USE_POWERSHELL_TOOL=0</code>. PowerShell теперь передаёт <code>-ExecutionPolicy Bypass</code>; вернуть прежнее поведение — <code>CLAUDE_CODE_POWERSHELL_RESPECT_EXECUTION_POLICY=1</code>.</p>
+<p><strong>Fast mode</strong> (Claude Code Fast) с v2.1.154 по умолчанию использует Opus 4.8 — 2x от стандартной цены за 2.5x скорости. <code>CLAUDE_CODE_OPUS_4_6_FAST_MODE_OVERRIDE</code> deprecated (удалят 1 июня 2026); чтобы запустить Opus 4.6 в fast mode — <code>/model claude-opus-4-6[1m]</code>, затем <code>/fast on</code>.</p>
+<p><code>wslInheritsWindowsSettings: true</code> (v2.1.118) — WSL-сессии наследуют managed settings с Windows-стороны.</p>
+<p>Vim visual mode (v2.1.118): добавлены <code>v</code> (visual) и <code>V</code> (visual-line) режимы в vim mode.</p>
+<p><strong>Observability:</strong> <code>OTEL_LOG_RAW_API_BODIES=1</code> (v2.1.111) — эмитит полные тела API request/response как OpenTelemetry log events. Для отладки в enterprise. Спаны <code>claude_code.tool</code> (v2.1.145) дополнились атрибутами <code>agent_id</code> и <code>parent_agent_id</code> — можно строить trace-дерево по субагентам и teammates. С v2.1.157 <code>OTEL_LOG_TOOL_DETAILS=1</code> добавляет <code>tool_parameters</code> (bash-команды, имена MCP-инструментов и skills) в <code>tool_decision</code>-события.</p>
+<p><strong>Auto-updater</strong> (v2.1.147): ретраит транзиентные сетевые ошибки, на финальном фейле репортит конкретную категорию ошибки и OS error code, показывает текущую версию. Меньше тихих фейлов в managed-окружениях с нестабильной сетью.</p>
+<h4 id="4-8-superset-sh-ide-для-параллельных-агентов">4.8 Superset.sh — IDE для параллельных агентов <a class="h-anchor" href="#4-8-superset-sh-ide-для-параллельных-агентов" aria-label="Ссылка на раздел">#</a></h4>
+<p>Бесплатная open-source IDE (Apache 2.0) для запуска 10+ параллельных агентов через git worktrees. BYOK — ваши API-ключи, без наценки, данные остаются у вас. Только macOS. Pro $20/мес — опционально.</p>
+<hr>
+<h3 id="часть-5-антипаттерны-что-не-делать">Часть 5. Антипаттерны (что НЕ делать) <a class="h-anchor" href="#часть-5-антипаттерны-что-не-делать" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>&quot;Кухонная мойка&quot;</strong> — начали одну задачу, спросили про другое, вернулись к первой. Контекст забит нерелевантной информацией.
+→ <code>/clear</code> между несвязанными задачами.</p>
+<p><strong>&quot;Бесконечные правки&quot;</strong> — Claude ошибся, вы поправили, опять ошибся, опять поправили. Контекст загрязнён неудачными подходами.
+→ После двух неудачных правок — <code>/clear</code> и лучший промпт.</p>
+<p><strong>&quot;CLAUDE.md на 500 строк&quot;</strong> — Claude игнорирует половину, потому что важные правила тонут в шуме.
+→ Держите до ~200 строк. Остальное — в skills.</p>
+<p><strong>&quot;Без верификации&quot;</strong> — Claude выдал правдоподобный код, вы не проверили, задеплоили.
+→ Всегда давайте Claude способ проверить результат: тесты, скриншоты, linter.</p>
+<p><strong>&quot;Бесконечное исследование&quot;</strong> — попросили &quot;разберись&quot; без скоупа, Claude прочитал 100 файлов, контекст забит.
+→ Ограничивайте скоуп или используйте субагентов для исследований.</p>
+<hr>
+<p><em>Источники: code.claude.com/docs/en/best-practices, code.claude.com/docs/en/common-workflows, code.claude.com/docs/en/features-overview, code.claude.com/docs/en/changelog</em></p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

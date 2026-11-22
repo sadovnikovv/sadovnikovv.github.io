@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Лаба 6. Hooks: формат, защита, уведомления</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/index.html">claude-code-pro-course</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/labs/index.html">labs</a></nav>
+<h1 id="лаба-6-hooks-формат-защита-уведомления">Лаба 6. Hooks: формат, защита, уведомления <a class="h-anchor" href="#лаба-6-hooks-формат-защита-уведомления" aria-label="Ссылка на раздел">#</a></h1>
+<p><strong>Цель:</strong> сделать поведение детерминированным — то, что «должно происходить всегда».</p>
+<h3 id="h">Шаги <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li>Установите <code>jq</code>. Скопируйте <a href="../starter-kit/.claude/hooks/"><code>starter-kit/.claude/hooks/</code></a> и секцию <code>hooks</code> из <code>settings.json</code>.</li>
+<li><strong>Автоформат:</strong> попросите Claude написать функцию «в одну строку, без отступов». Проверьте файл — он отформатирован hook-ом.</li>
+<li><strong>Защита:</strong> попросите изменить <code>.env</code> или lock-файл. Claude должен получить отказ и объяснение.</li>
+<li><strong>Уведомления:</strong> подключите <code>notify.sh</code> на событие <code>Notification</code>, запустите долгую задачу, переключитесь в другое окно.</li>
+<li><strong>Контекст при старте:</strong> подключите <code>session-context.sh</code> на <code>SessionStart</code>, начните новую сессию и спросите «над чем я сейчас работаю?».</li>
+<li>Протестируйте hook вручную:</li>
+</ol>
+<pre><code class="language-bash">   echo &#x27;{&quot;tool_input&quot;:{&quot;file_path&quot;:&quot;.env&quot;}}&#x27; | bash .claude/hooks/protect-files.sh; echo &quot;exit=$?&quot;</code></pre>
+<ol>
+<li>Посмотрите <code>/hooks</code> и запустите <code>claude --debug</code>, найдите в логе выполнение hooks.</li>
+</ol>
+<h3 id="h-2">✅ Готово, если <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>[ ] Код форматируется без просьб</li>
+<li>[ ] Защищённые файлы нельзя изменить</li>
+<li>[ ] Вы получаете уведомление, когда Claude ждёт</li>
+<li>[ ] Вы можете объяснить, чем exit 2 отличается от exit 1</li>
+</ul>
+<h3 id="h-3">⭐ Со звёздочкой <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Hook на <code>Stop</code>, который запускает быстрые тесты и возвращает <code>exit 2</code> при падении, — Claude будет доделывать работу, пока тесты не пройдут. Не забудьте проверять <code>stop_hook_active</code>, чтобы не зациклиться.</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

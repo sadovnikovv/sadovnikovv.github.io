@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Безопасность</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Безопасность <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Узнайте о защитных механизмах Claude Code и лучших практиках безопасного использования.</p>
+</blockquote>
+<h3 id="h-2">Наш подход к безопасности <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-3">Основа безопасности <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Безопасность вашего кода имеет первостепенное значение. Claude Code построен с учетом безопасности, разработан в соответствии с комплексной программой безопасности Anthropic. Узнайте больше и получите доступ к ресурсам (отчет SOC 2 Type 2, сертификат ISO 27001 и т. д.) в <a href="https://trust.anthropic.com">Центре доверия Anthropic</a>.</p>
+<h4 id="h-4">Архитектура на основе разрешений <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<p>Режим разрешений сессии определяет, какие действия Claude может выполнять, не спрашивая вас заранее. Авторежим — это встроенный начальный режим разрешений для интерактивных сессий в терминале и VS Code. В разделе <a href="https://code.claude.com/docs/ru/permission-modes.md#which-mode-a-session-starts-in">В каком режиме начинается сессия</a> описаны более ранние версии, другие интерфейсы и настройки, которые изменяют начальный режим разрешений.</p>
+<ul>
+<li><strong>Авторежим</strong>: Отдельная модель классификатора проверяет действия вместо вас и блокирует те, которые она считает небезопасными. <a href="https://code.claude.com/docs/ru/permission-modes.md#how-the-classifier-evaluates-actions">Как классификатор оценивает действия</a> перечисляет, какие действия Claude Code одобряет сразу, какие отправляет классификатору и о каких Claude Code все еще вас спрашивает. Ваши явные правила ask и deny по-прежнему применяются, и ваша организация может <a href="https://code.claude.com/docs/ru/permission-modes.md#eliminate-prompts-with-auto-mode">отключить авторежим</a></li>
+<li><strong>Режим Manual</strong>: Claude Code начинает с разрешений только для чтения. Когда ему нужно отредактировать файлы, запустить тесты или выполнить команды, он сначала вас спрашивает, и вы выбираете, подтвердить ли действие один раз или разрешить его с этого момента. Он выполняет встроенный набор <a href="https://code.claude.com/docs/ru/permissions.md#read-only-commands">команд только для чтения</a>, таких как <code>ls</code>, <code>cat</code> и <code>git status</code>, без запроса</li>
+</ul>
+<p>Вы и ваша организация настраиваете эти разрешения напрямую. Для подробной конфигурации разрешений см. <a href="https://code.claude.com/docs/ru/permissions.md">Разрешения</a>.</p>
+<h4 id="h-5">Встроенные защиты <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<p>Для снижения рисков в агентных системах:</p>
+<ul>
+<li><strong>Изолированный инструмент Bash</strong>: Запускайте команды Bash в <a href="https://code.claude.com/docs/ru/sandboxing.md">песочнице</a> с изоляцией файловой системы и сети. Настройте с помощью <code>/sandbox</code></li>
+<li><strong>Ограничение рабочего каталога</strong>: В режиме Manual Claude Code спрашивает вас, прежде чем его файловые инструменты будут читать или записывать за пределами папки, в которой он был запущен, и её подпапок. Эта граница является запросом разрешения, поэтому подтвержденная вами команда Bash по-прежнему может записывать в любое место, доступное вашей учетной записи пользователя</li>
+<li>Чтобы читать папку без запроса, добавьте её как <a href="https://code.claude.com/docs/ru/permissions.md#working-directories">дополнительный каталог</a></li>
+<li>Чтобы ограничить команды Bash на уровне операционной системы, включите <a href="https://code.claude.com/docs/ru/sandboxing.md#filesystem-isolation">изоляцию в песочнице</a></li>
+<li><strong>Смягчение усталости от запросов</strong>: Поддержка списков разрешений часто используемых безопасных команд для каждого пользователя, кодовой базы или организации</li>
+<li><strong>Режим Accept Edits</strong>: Автоматически одобряет правки файлов и фиксированный набор команд Bash файловой системы, таких как <code>mkdir</code>, <code>touch</code>, <code>rm</code>, <code>mv</code>, <code>cp</code> и <code>sed</code> для путей в рабочей директории. Другие команды Bash и пути вне области действия по-прежнему запрашивают разрешение</li>
+</ul>
+<h4 id="h-6">Ответственность пользователя <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<p>Вы несете ответственность за проверку предложенного кода и команд на безопасность перед подтверждением.</p>
+<h3 id="h-7">Защита от инъекций в подсказки <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h3>
+<p>Инъекция в подсказку — это техника, при которой злоумышленник пытается переопределить или манипулировать инструкциями AI ассистента, вставляя вредоносный текст. Claude Code включает несколько защит от этих атак:</p>
+<h4 id="h-8">Основные защиты <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Система разрешений</strong>: В режиме Manual чувствительные операции требуют явного одобрения</li>
+<li><strong>Одобрение команд сетевого доступа</strong>: Команды, которые получают контент из веб-сети, такие как <code>curl</code> и <code>wget</code>, не одобряются автоматически по умолчанию. В режиме Manual они требуют одобрения, как и любая другая команда Bash, не предназначенная только для чтения, поэтому вы все еще можете одобрить их один раз или добавить явное правило разрешения, такое как <code>Bash(curl *)</code>. Чтобы заблокировать их полностью, добавьте их в <a href="https://code.claude.com/docs/ru/permissions#tool-specific-permission-rules"><code>permissions.deny</code></a>. Правило deny соответствует команде <a href="https://code.claude.com/docs/ru/permissions.md#bash-rule-limits">как написано</a>; для сетевого контроля, который не зависит от текста команды, см. <a href="https://code.claude.com/docs/ru/sandboxing.md#network-isolation">изоляцию сетевого доступа sandbox</a></li>
+</ul>
+<h4 id="h-9">Защита конфиденциальности <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<p>Мы реализовали несколько защит для защиты ваших данных, включая:</p>
+<ul>
+<li>Ограниченные периоды хранения конфиденциальной информации (см. <a href="https://privacy.anthropic.com/en/articles/10023548-how-long-do-you-store-my-data">Центр конфиденциальности</a> для получения дополнительной информации)</li>
+<li>Ограниченный доступ к данным сеанса пользователя</li>
+<li>Контроль пользователя над предпочтениями обучения данных. Пользователи потребительских версий могут изменить свои <a href="https://claude.ai/settings/privacy">параметры конфиденциальности</a> в любое время.</li>
+</ul>
+<p>Для полной информации, пожалуйста, ознакомьтесь с нашими <a href="https://www.anthropic.com/legal/commercial-terms">Коммерческими условиями обслуживания</a> (для пользователей Team, Enterprise и API) или <a href="https://www.anthropic.com/legal/consumer-terms">Условиями для потребителей</a> (для пользователей Free, Pro, Max и Ultra) и <a href="https://www.anthropic.com/legal/privacy">Политикой конфиденциальности</a>.</p>
+<h4 id="h-10">Дополнительные защиты <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Одобрение сетевых запросов</strong>: В режиме Manual большинство инструментов, которые делают сетевые запросы, требуют одобрения пользователя по умолчанию</li>
+<li><strong>Сводки веб-страниц</strong>: Для большинства запросов WebFetch выполняет отдельный вызов модели по содержимому страницы, и Claude получает ответ этого вызова вместо исходной страницы. См. <a href="https://code.claude.com/docs/ru/tools-reference.md#webfetch-tool-behavior">Поведение инструмента WebFetch</a></li>
+<li><strong>Проверка доверия</strong>: В интерактивной сессии Claude Code показывает диалог доверия к рабочему пространству, когда вы запускаете его в папке, которой вы ещё не доверяли. Для серверов из файла <code>.mcp.json</code> проекта есть собственный запрос подтверждения, а в разделе <a href="https://code.claude.com/docs/ru/mcp.md#project-scope">Область действия проекта</a> перечислены сессии, в которых он пропускается</li>
+<li>Примечание: Сессия с <code>-p</code> не показывает ни один из этих запросов. В разделе <a href="https://code.claude.com/docs/ru/permissions.md#what-runs-before-you-trust-a-folder">Что запускается до того, как вы доверите папке</a> перечислено, что файлы репозитория могут запустить в этом случае</li>
+<li>Примечание: Когда вы запускаете Claude Code непосредственно в вашем домашнем каталоге, принятие доверия сохраняется только для текущей сессии и не записывается на диск, поэтому запрос появляется снова при каждом запуске. Настройки, позволяющей сохранить его, нет. Вместо этого запускайте Claude Code из подкаталога проекта, где принятие доверия сохраняется для каждого каталога</li>
+<li><strong>Обнаружение инъекций команд</strong>: В режиме Manual Claude Code запрашивает подтверждение перед запуском команды Bash, которую он не может полностью проанализировать. Правило разрешения для части команды, например <code>Bash(git *)</code>, не отменяет этот запрос. <a href="https://code.claude.com/docs/ru/permissions.md#how-permissions-interact-with-sandboxing">Команды в песочнице</a> в <a href="https://code.claude.com/docs/ru/sandboxing.md#auto-allow-mode">режиме автоматического разрешения</a> могут выполняться без него</li>
+<li><strong>Сопоставление с отказом по умолчанию</strong>: В режиме Manual несопоставленные команды по умолчанию требуют ручного одобрения</li>
+<li><strong>Безопасное хранилище учётных данных</strong>: API-ключи и токены хранятся в macOS Keychain, когда это доступно. В Linux они хранятся в файле с правами доступа <code>0600</code>, а в Windows — в файле, который наследует средства контроля доступа каталога вашего профиля пользователя. См. <a href="https://code.claude.com/docs/ru/authentication.md#credential-management">Управление учётными данными</a></li>
+</ul>
+<blockquote>
+<p>[!WARNING]</p>
+<p><strong>Риск безопасности Windows WebDAV</strong>: При запуске Claude Code на Windows мы рекомендуем не включать WebDAV и не разрешать Claude Code доступ к путям, таким как <code>\\*</code>, которые могут содержать подпапки WebDAV. <a href="https://learn.microsoft.com/en-us/windows/whats-new/deprecated-features#:~:text=The%20Webclient%20\(WebDAV\">WebDAV был объявлен устаревшим Microsoft</a>%20service%20is%20deprecated) из-за рисков безопасности. Включение WebDAV может позволить Claude Code инициировать сетевые запросы к удаленным хостам, обходя систему разрешений.</p>
+</blockquote>
+<p><strong>Лучшие практики при работе с ненадежным контентом</strong>:</p>
+<ol>
+<li>Проверьте предложенные команды перед одобрением</li>
+<li>Избегайте прямого перенаправления ненадежного контента в Claude</li>
+<li>Проверьте предложенные изменения критических файлов</li>
+<li>Используйте виртуальные машины (ВМ) для запуска скриптов и вызовов инструментов, особенно при взаимодействии с внешними веб-сервисами</li>
+<li>Сообщайте о подозрительном поведении с помощью <code>/feedback</code></li>
+</ol>
+<blockquote>
+<p>[!WARNING]</p>
+<p>Хотя эти защиты значительно снижают риск, ни одна система не полностью
+защищена от всех атак. Всегда соблюдайте хорошие практики безопасности при работе
+с любым AI инструментом.</p>
+</blockquote>
+<h3 id="безопасность-mcp">Безопасность MCP <a class="h-anchor" href="#безопасность-mcp" aria-label="Ссылка на раздел">#</a></h3>
+<p>Вы можете подключить Claude Code к серверам Model Context Protocol (MCP). Серверы на уровне проекта определяются в <code>.mcp.json</code>, который можно добавить в систему контроля версий. Серверы с <a href="https://code.claude.com/docs/ru/mcp.md#mcp-installation-scopes">другими областями действия</a> и <a href="https://code.claude.com/docs/ru/mcp.md#how-connectors-reach-claude-code">коннекторы claude.ai</a> настраиваются вне репозитория, а плагины тоже могут добавлять серверы, поэтому просмотр <code>.mcp.json</code> не показывает все серверы, которые может загрузить сессия. Чтобы ограничить, какие серверы запускаются в вашей организации, см. раздел <a href="https://code.claude.com/docs/ru/managed-mcp.md">Управляемая конфигурация MCP</a>.</p>
+<p>Мы рекомендуем либо писать свои собственные MCP серверы, либо использовать MCP серверы от поставщиков, которым вы доверяете. Вы можете настроить разрешения Claude Code для MCP серверов. Anthropic проверяет соединители в соответствии с его <a href="https://claude.com/docs/connectors/building/review-criteria">критериями листинга</a> перед добавлением их в <a href="https://claude.ai/directory">Anthropic Directory</a>, но не проводит проверку безопасности и не управляет никакими MCP серверами.</p>
+<h3 id="безопасность-ide">Безопасность IDE <a class="h-anchor" href="#безопасность-ide" aria-label="Ссылка на раздел">#</a></h3>
+<p>См. <a href="https://code.claude.com/docs/ru/vs-code.md#the-built-in-ide-mcp-server">Встроенный MCP-сервер IDE</a> для получения дополнительной информации о запуске Claude Code в IDE.</p>
+<h3 id="h-11">Безопасность облачного выполнения <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h3>
+<p>При использовании <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">облачных сеансов</a> действуют дополнительные элементы управления безопасностью. Сеансы, которые ваша организация маршрутизирует в <a href="https://code.claude.com/docs/ru/self-hosted-environments">самостоятельно размещаемую среду</a>, работают на вашей собственной инфраструктуре, где изоляция, сетевой выход и учетные данные git являются ответственностью вашего развертывания. В средах, размещаемых Anthropic:</p>
+<ul>
+<li><strong>Изолированные виртуальные машины</strong>: Каждый облачный сеанс работает в изолированной ВМ, управляемой Anthropic</li>
+<li><strong>Элементы управления доступом в сети</strong>: Доступ в сеть ограничен по умолчанию и может быть настроен на отключение или разрешение только определенных доменов</li>
+<li><strong>Защита учетных данных</strong>: Учетные данные GitHub хранятся в зашифрованном виде на серверах Anthropic и никогда не попадают в ВМ сеанса. ВМ содержит краткосрочное учетное данное, ограниченное этим сеансом, и трафик GitHub проходит через <a href="https://code.claude.com/docs/ru/cloud-environments.md#github-proxy">прокси Anthropic</a>, который прикрепляет учетное данное GitHub на стороне сервера. См. <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md#github-authentication-options">Параметры аутентификации GitHub</a> для получения информации о том, как вы предоставляете доступ</li>
+<li><strong>Ограничения push</strong>: <a href="https://code.claude.com/docs/ru/cloud-environments.md#github-proxy">Прокси GitHub</a> отклоняет удаление веток и push всего, что не является веткой, например тега. GitHub определяет, какие ветки может обновлять сессия, применяя правила защиты веток и наборы правил вашего репозитория к подключённому вами доступу GitHub. Правило, которое этот доступ может обойти, не блокирует push из сессии</li>
+<li><strong>Логирование аудита</strong>: Все операции в облачных сеансах регистрируются в целях соответствия и аудита</li>
+<li><strong>Автоматическая очистка</strong>: Облачные ВМ сеансов высвобождаются после периода неактивности</li>
+<li><strong>Удаление</strong>: Вы можете <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md#delete-sessions">удалить сеанс</a> в любое время. См. <a href="https://code.claude.com/docs/ru/data-usage.md#cloud-execution-data-flow-and-dependencies">Поток данных облачного выполнения</a> для получения информации о том, что Anthropic хранит для облачного сеанса</li>
+</ul>
+<p>Для получения дополнительной информации о облачном выполнении см. <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">Использование Claude Code в облаке</a>; для настройки сетевого доступа к облачным сеансам см. <a href="https://code.claude.com/docs/ru/cloud-environments.md#network-access">Настройка облачных сред</a>.</p>
+<p>Сеансы <a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a> работают иначе: веб-интерфейс подключается к процессу Claude Code, работающему на вашей локальной машине. Все выполнение кода и доступ к файлам остаются локальными, и трафик сеанса проходит через API Anthropic по TLS; при подключении транскрипт сеанса хранится на серверах Anthropic для синхронизации разговора между устройствами, как описано в <a href="https://code.claude.com/docs/ru/remote-control.md#connection-and-security">Соединение и безопасность</a>. Никаких облачных ВМ или sandboxing не задействовано. Соединение использует несколько краткосрочных, узко ограниченных учетных данных, каждые ограниченные определенной целью и истекающие независимо, чтобы ограничить радиус поражения любого скомпрометированного учетного данного.</p>
+<h3 id="h-12">Лучшие практики безопасности <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-13">Работа с конфиденциальным кодом <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Проверьте все предложенные изменения перед одобрением</li>
+<li>Используйте параметры разрешений для конкретного проекта для конфиденциальных репозиториев</li>
+<li>Для дополнительной изоляции запускайте весь процесс Claude Code (в локальном режиме) внутри <a href="https://code.claude.com/docs/ru/sandbox-environments.md#sandbox-runtime">среды выполнения песочницы</a> или <a href="https://code.claude.com/docs/ru/devcontainer.md">dev container</a></li>
+<li>Регулярно проверяйте параметры разрешений с помощью <code>/permissions</code></li>
+</ul>
+<h4 id="h-14">Безопасность команды <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Используйте <a href="https://code.claude.com/docs/ru/settings.md#where-settings-live">управляемые параметры</a> для обеспечения организационных стандартов</li>
+<li>Делитесь одобренными конфигурациями разрешений через систему контроля версий</li>
+<li>Обучайте членов команды лучшим практикам безопасности</li>
+<li>Отслеживайте использование Claude Code через <a href="https://code.claude.com/docs/ru/monitoring-usage.md">метрики OpenTelemetry</a></li>
+<li>Проверяйте или блокируйте изменения параметров во время сеансов с помощью <a href="https://code.claude.com/docs/ru/hooks#configchange"><code>ConfigChange</code> hooks</a></li>
+</ul>
+<h4 id="h-15">Сообщение о проблемах безопасности <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если вы обнаружили уязвимость безопасности в Claude Code:</p>
+<ol>
+<li>Не раскрывайте её публично</li>
+<li>Сообщите об этом через нашу <a href="https://hackerone.com/4f1f16ba-10d3-4d09-9ecc-c721aad90f24/embedded_submissions/new">программу HackerOne</a></li>
+<li>Включите подробные шаги воспроизведения</li>
+<li>Дайте нам время для решения проблемы перед публичным раскрытием</li>
+</ol>
+<h3 id="h-16">Связанные ресурсы <a class="h-anchor" href="#h-16" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/security-guidance.md">Security guidance plugin</a>: позвольте Claude проверить и исправить уязвимости в собственных изменениях кода во время сеанса</li>
+<li><a href="https://code.claude.com/docs/ru/commands#all-commands"><code>/security-review</code></a>: запустить проверку безопасности по требованию для изменений в вашей текущей ветке</li>
+<li><a href="https://code.claude.com/docs/ru/sandbox-environments.md">Sandbox environments</a>: сравнение подходов к изоляции и выбор подходящего для вашей модели угроз</li>
+<li><a href="https://code.claude.com/docs/ru/sandboxing.md">Sandboxing</a>: изоляция файловой системы и сети для команд Bash</li>
+<li><a href="https://code.claude.com/docs/ru/permissions.md">Permissions</a>: настройка разрешений и элементов управления доступом</li>
+<li><a href="https://code.claude.com/docs/ru/monitoring-usage.md">Monitoring usage</a>: отслеживание и аудит активности Claude Code</li>
+<li><a href="https://code.claude.com/docs/ru/devcontainer.md">Development containers</a>: безопасные, изолированные среды</li>
+<li><a href="https://trust.anthropic.com">Anthropic Trust Center</a>: сертификаты безопасности и соответствие</li>
+<li><a href="https://claude.com/blog/ciso-guide-to-agentic-ai">CISO&#x27;s guide to agentic AI</a>: структура для руководителя по безопасности для оценки развертываний агентного ИИ</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

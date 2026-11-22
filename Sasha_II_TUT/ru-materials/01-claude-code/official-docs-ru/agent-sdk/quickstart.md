@@ -1,0 +1,358 @@
+> ## Documentation Index
+> Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Быстрый старт
+
+> Начните работу с Python или TypeScript Agent SDK для создания AI-агентов, которые работают автономно
+
+Используйте Agent SDK для создания AI-агента, который читает ваш код, находит ошибки и исправляет их, всё без ручного вмешательства.
+
+**Что вы будете делать:**
+
+1. Настроить проект с Agent SDK
+2. Создать файл с некорректным кодом
+3. Запустить агента, который автоматически находит и исправляет ошибки
+
+## Предварительные требования
+
+* **Node.js 18.14+** или **Python 3.10+**
+* **Учётная запись Anthropic**. Если у вас её нет, [зарегистрируйтесь здесь](https://platform.claude.com/).
+
+## Настройка
+
+**1. Создайте папку проекта**
+
+Создайте новый каталог для этого быстрого старта:
+
+```bash theme={null}
+mkdir my-agent
+cd my-agent
+```
+
+Для собственных проектов вы можете запустить SDK из любой папки; по умолчанию он будет иметь доступ к файлам в этом каталоге и его подкаталогах.
+
+**2. Установите SDK**
+
+Установите пакет Agent SDK для вашего языка:
+
+> [tab] TypeScript (новый проект)
+>
+> ```bash theme={null}
+> npm init -y
+> npm pkg set type=module
+> npm install @anthropic-ai/claude-agent-sdk
+> npm install --save-dev tsx
+> ```
+>
+> Установка `"type": "module"` в `package.json` позволяет вашему скрипту агента использовать верхнеуровневый `await`, а [tsx](https://tsx.hirok.io) запускает файлы TypeScript напрямую. npm выводит `added N packages` при успешной установке.
+
+> [tab] TypeScript (существующий проект)
+>
+> ```bash theme={null}
+> npm install @anthropic-ai/claude-agent-sdk
+> npm install --save-dev tsx
+> ```
+>
+> [tsx](https://tsx.hirok.io) запускает файлы TypeScript напрямую. Если ваш проект использует CommonJS, назовите ваш скрипт агента `agent.mts` вместо `agent.ts`. Расширение `.mts` заставляет tsx рассматривать файл как ES модуль, поэтому верхнеуровневый `await` работает без преобразования всего вашего проекта в ES модули. Используйте `agent.mts` вместо `agent.ts` на этапах создания и запуска далее в этом быстром старте.
+
+> [tab] Python (uv)
+>
+> [Установите uv](https://docs.astral.sh/uv/), быстрый менеджер пакетов Python, который автоматически управляет виртуальными окружениями. Затем инициализируйте проект и добавьте SDK:
+>
+> ```bash theme={null}
+> uv init
+> uv add claude-agent-sdk
+> ```
+
+> [tab] Python (pip)
+>
+> Создайте и активируйте виртуальное окружение, затем установите пакет.
+>
+> На macOS или Linux:
+>
+> ```bash theme={null}
+> python3 -m venv .venv
+> source .venv/bin/activate
+> pip install claude-agent-sdk
+> ```
+>
+> На Windows:
+>
+> ```powershell theme={null}
+> py -m venv .venv
+> .venv\Scripts\Activate.ps1
+> pip install claude-agent-sdk
+> ```
+>
+> Если PowerShell блокирует `Activate.ps1` с ошибкой политики выполнения, сначала выполните `Set-ExecutionPolicy -Scope Process RemoteSigned`.
+
+> [!NOTE]
+>
+> Оба SDK TypeScript и Python включают нативный бинарный файл Claude Code, поэтому большинству установок не требуется отдельная установка Claude Code. Некоторые установки не имеют встроенного бинарного файла:
+>
+> * Если pip устанавливает исходное распределение Python SDK вместо платформенного wheel, например на ARM64 Windows, бинарный файл не включается. [Установите Claude Code нативно](https://code.claude.com/docs/ru/setup.md#install-claude-code). Python SDK найдёт его в вашем `PATH`.
+> * TypeScript SDK устанавливает свой бинарный файл через опциональные зависимости npm, поэтому установка, которая их пропускает, например `npm ci --omit=optional`, не получает бинарный файл даже на поддерживаемой платформе. Переустановите без пропуска опциональных зависимостей или [установите Claude Code нативно](https://code.claude.com/docs/ru/setup.md#install-claude-code) и установите `pathToClaudeCodeExecutable` на его путь.
+
+**3. Установите ваш API ключ**
+
+Получите API ключ из [Claude Console](https://platform.claude.com/), затем установите его как переменную окружения в оболочке, где вы будете запускать вашего агента:
+
+> [tab] macOS / Linux
+>
+> ```bash theme={null}
+> export ANTHROPIC_API_KEY=your-api-key
+> ```
+
+> [tab] Windows (PowerShell)
+>
+> ```powershell theme={null}
+> $env:ANTHROPIC_API_KEY = "your-api-key"
+> ```
+
+SDK читает ключ из окружения процесса, который запускает вашего агента; он не загружает файлы `.env` автоматически. Если вы храните ключ в файле `.env`, загрузите его самостоятельно, например с помощью пакета `dotenv`, перед вызовом SDK.
+
+SDK также поддерживает аутентификацию через сторонних поставщиков API:
+
+* **Amazon Bedrock**: установите переменную окружения `CLAUDE_CODE_USE_BEDROCK=1` и настройте учётные данные AWS
+* **Claude Platform on AWS**: установите `CLAUDE_CODE_USE_ANTHROPIC_AWS=1` и `ANTHROPIC_AWS_WORKSPACE_ID`, затем настройте учётные данные AWS
+* **Google Cloud's Agent Platform**: установите переменную окружения `CLAUDE_CODE_USE_VERTEX=1` и настройте учётные данные Google Cloud
+* **Microsoft Foundry**: установите переменную окружения `CLAUDE_CODE_USE_FOUNDRY=1` и настройте учётные данные Azure
+
+Подробности см. в руководствах по настройке для [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md), [Claude Platform on AWS](https://code.claude.com/docs/ru/claude-platform-on-aws.md), [Google Cloud's Agent Platform](https://code.claude.com/docs/ru/google-vertex-ai.md), или [Microsoft Foundry](https://code.claude.com/docs/ru/microsoft-foundry.md).
+
+> [!NOTE]
+>
+> Если не было предварительного одобрения, Anthropic не разрешает сторонним разработчикам предлагать вход через claude.ai или ограничения частоты запросов для своих продуктов, включая агентов, созданных на основе Claude Agent SDK. Вместо этого используйте методы аутентификации через API-ключ, описанные в этом документе.
+
+## Создайте файл с ошибками
+
+Этот быстрый старт проведёт вас через создание агента, который может находить и исправлять ошибки в коде. Сначала вам нужен файл с некоторыми намеренными ошибками для исправления агентом. Создайте `utils.py` в каталоге `my-agent` и вставьте следующий код:
+
+```python theme={null}
+def calculate_average(numbers):
+    total = 0
+    for num in numbers:
+        total += num
+    return total / len(numbers)
+
+
+def get_user_name(user):
+    return user["name"].upper()
+```
+
+Этот код содержит две ошибки:
+
+1. `calculate_average([])` падает с ошибкой деления на ноль
+2. `get_user_name(None)` падает с TypeError
+
+## Создайте агента, который находит и исправляет ошибки
+
+Создайте `agent.py`, если вы используете Python SDK, или `agent.ts` для TypeScript. Используйте `agent.mts` вместо этого, если ваш существующий проект использует CommonJS:
+
+```python Python theme={null}
+import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions, AssistantMessage, ResultMessage
+
+
+async def main():
+    # Agentic loop: streams messages as Claude works
+    async for message in query(
+        prompt="Review utils.py for bugs that would cause crashes. Fix any issues you find.",
+        options=ClaudeAgentOptions(
+            allowed_tools=["Read", "Edit", "Glob"],  # Auto-approve these tools
+            permission_mode="acceptEdits",  # Auto-approve file edits
+        ),
+    ):
+        # Print human-readable output
+        if isinstance(message, AssistantMessage):
+            for block in message.content:
+                if hasattr(block, "text"):
+                    print(block.text)  # Claude's reasoning
+                elif hasattr(block, "name"):
+                    print(f"Tool: {block.name}")  # Tool being called
+        elif isinstance(message, ResultMessage):
+            print(f"Done: {message.subtype}")  # Final result
+
+
+asyncio.run(main())
+```
+
+```typescript TypeScript theme={null}
+import { query } from "@anthropic-ai/claude-agent-sdk";
+
+// Agentic loop: streams messages as Claude works
+for await (const message of query({
+  prompt: "Review utils.py for bugs that would cause crashes. Fix any issues you find.",
+  options: {
+    allowedTools: ["Read", "Edit", "Glob"], // Auto-approve these tools
+    permissionMode: "acceptEdits" // Auto-approve file edits
+  }
+})) {
+  // Print human-readable output
+  if (message.type === "assistant" && message.message?.content) {
+    for (const block of message.message.content) {
+      if ("text" in block) {
+        console.log(block.text); // Claude's reasoning
+      } else if ("name" in block) {
+        console.log(`Tool: ${block.name}`); // Tool being called
+      }
+    }
+  } else if (message.type === "result") {
+    console.log(`Done: ${message.subtype}`); // Final result
+  }
+}
+```
+
+Этот код состоит из трёх основных частей:
+
+1. **`query`**: основная точка входа, которая создаёт цикл агента. Она возвращает асинхронный итератор, поэтому вы используете `async for` для потоковой передачи сообщений по мере работы Claude. Полный API см. в справочнике [Python](https://code.claude.com/docs/ru/agent-sdk/python.md#query) или [TypeScript](https://code.claude.com/docs/ru/agent-sdk/typescript.md#query) SDK.
+
+2. **`prompt`**: то, что вы хотите, чтобы сделал Claude. Claude определяет, какие инструменты использовать, на основе задачи.
+
+3. **`options`**: конфигурация для агента. В этом примере используется `allowedTools` для предварительного одобрения `Read`, `Edit` и `Glob`, а также `permissionMode: "acceptEdits"` для автоматического одобрения изменений файлов. Другие опции включают `systemPrompt`, `mcpServers` и многое другое. Все опции для [Python](https://code.claude.com/docs/ru/agent-sdk/python.md#claudeagentoptions) или [TypeScript](https://code.claude.com/docs/ru/agent-sdk/typescript.md#options).
+
+Цикл `async for` продолжает работать, пока Claude думает, вызывает инструменты, наблюдает результаты и решает, что делать дальше. Каждая итерация выдаёт сообщение: рассуждение Claude, вызов инструмента, результат инструмента или окончательный результат. SDK обрабатывает оркестровку, выполнение инструментов, управление контекстом и повторные попытки, поэтому вы просто потребляете поток. Цикл заканчивается, когда Claude завершает задачу или возникает ошибка.
+
+Обработка сообщений внутри цикла фильтрует удобочитаемый вывод. Без фильтрации вы увидите необработанные объекты сообщений, включая инициализацию системы и внутреннее состояние, что полезно для отладки, но в остальном шумно.
+
+> [!NOTE]
+>
+> В этом примере текст Claude и вызовы инструментов выводятся по мере того, как цикл их получает. Если вам не нужен живой вывод, соберите сообщения в цикле и прочитайте их после завершения цикла. Чтобы выбрать между однократным `query()` и потоковым вводом, см. [Выбор однократного или потокового ввода](https://code.claude.com/docs/ru/agent-sdk/streaming-vs-single-mode.md#choose-single-shot-or-streaming-input).
+
+### Запустите вашего агента
+
+Ваш агент готов. Запустите его с помощью следующей команды:
+
+> [tab] TypeScript
+>
+> ```bash theme={null}
+> npx tsx agent.ts
+> ```
+>
+> Если вы назвали ваш скрипт `agent.mts`, запустите `npx tsx agent.mts` вместо этого.
+
+> [tab] Python (uv)
+>
+> ```bash theme={null}
+> uv run agent.py
+> ```
+
+> [tab] Python (pip)
+>
+> С активированной виртуальной средой:
+>
+> ```bash theme={null}
+> python agent.py
+> ```
+
+По мере работы агент выводит своё рассуждение и каждый инструмент, который он вызывает, заканчивая с `Done: success`. После запуска проверьте `utils.py`. Вы увидите защитный код, обрабатывающий пустые списки и нулевых пользователей. Ваш агент автономно:
+
+1. **Прочитал** `utils.py` для понимания кода
+2. **Проанализировал** логику и определил граничные случаи, которые вызовут сбой
+3. **Отредактировал** файл для добавления надлежащей обработки ошибок
+
+Это то, что отличает Agent SDK: Claude выполняет инструменты напрямую вместо того, чтобы просить вас их реализовать.
+
+> [!NOTE]
+>
+> Если вы видите ошибку аутентификации, такую как `Not logged in` или `Invalid API key`, убедитесь, что вы установили переменную окружения `ANTHROPIC_API_KEY` в оболочке, где вы запускаете вашего агента. SDK не загружает файлы `.env` автоматически.
+>
+> Для причин и исправлений этих и других ошибок аутентификации см. [Ошибки аутентификации](https://code.claude.com/docs/ru/errors.md#authentication-errors) в справочнике по ошибкам.
+
+### Попробуйте другие подсказки
+
+Теперь, когда ваш агент настроен, попробуйте некоторые другие подсказки:
+
+* `"Add docstrings to all functions in utils.py"`
+* `"Add type hints to all functions in utils.py"`
+* `"Create a README.md documenting the functions in utils.py"`
+
+### Настройте вашего агента
+
+Вы можете изменить поведение вашего агента, изменив опции. Вот несколько примеров:
+
+**Добавьте возможность веб-поиска:**
+
+```python Python theme={null}
+options = ClaudeAgentOptions(
+    allowed_tools=["Read", "Edit", "Glob", "WebSearch"], permission_mode="acceptEdits"
+)
+```
+
+```typescript TypeScript hidelines={1,-1} theme={null}
+const _ = {
+  options: {
+    allowedTools: ["Read", "Edit", "Glob", "WebSearch"],
+    permissionMode: "acceptEdits"
+  }
+};
+```
+
+**Дайте Claude пользовательскую системную подсказку:**
+
+```python Python theme={null}
+options = ClaudeAgentOptions(
+    allowed_tools=["Read", "Edit", "Glob"],
+    permission_mode="acceptEdits",
+    system_prompt="You are a senior Python developer. Always follow PEP 8 style guidelines.",
+)
+```
+
+```typescript TypeScript hidelines={1,-1} theme={null}
+const _ = {
+  options: {
+    allowedTools: ["Read", "Edit", "Glob"],
+    permissionMode: "acceptEdits",
+    systemPrompt: "You are a senior Python developer. Always follow PEP 8 style guidelines."
+  }
+};
+```
+
+**Запускайте команды в терминале:**
+
+```python Python theme={null}
+options = ClaudeAgentOptions(
+    allowed_tools=["Read", "Edit", "Glob", "Bash"], permission_mode="acceptEdits"
+)
+```
+
+```typescript TypeScript hidelines={1,-1} theme={null}
+const _ = {
+  options: {
+    allowedTools: ["Read", "Edit", "Glob", "Bash"],
+    permissionMode: "acceptEdits"
+  }
+};
+```
+
+С включённым `Bash` попробуйте: `"Write unit tests for utils.py, run them, and fix any failures"`
+
+Каждый из этих фрагментов устанавливает поля на одном и том же объекте опций. Для получения дополнительной информации см. [Настройте вашего агента](https://code.claude.com/docs/ru/agent-sdk/configuration.md).
+
+## Ключевые концепции
+
+**Инструменты** контролируют, что может делать ваш агент:
+
+| Инструменты | Что может делать агент |
+| - | - |
+| `Read`, `Glob`, `Grep` | Анализ только для чтения |
+| `Read`, `Edit`, `Glob` | Анализ и изменение кода |
+| `Read`, `Edit`, `Bash`, `Glob`, `Grep` | Полная автоматизация |
+
+Чтобы ограничить встроенные инструменты агента одним из этих наборов, передайте его как `tools`. Если вместо этого вы укажете набор в `allowedTools`, вы [заранее одобрите эти инструменты](https://code.claude.com/docs/ru/agent-sdk/custom-tools.md#configure-allowed-tools), и агент по-прежнему сможет вызывать остальные в соответствии с вашим режимом разрешений.
+
+**Режимы разрешений** контролируют, сколько человеческого надзора вы хотите. SDK оценивает активный режим вместе с вашими правилами разрешения и запрета в фиксированном порядке, описанном в [Как оцениваются разрешения](https://code.claude.com/docs/ru/agent-sdk/permissions.md#how-permissions-are-evaluated). Для полного списка режимов, их поведения и когда использовать каждый, см. [Режим разрешений в Как работает цикл агента](https://code.claude.com/docs/ru/agent-sdk/agent-loop.md#permission-mode).
+
+## Следующие шаги
+
+Теперь, когда вы создали своего первого агента, узнайте, как расширить его возможности и адаптировать его к вашему варианту использования:
+
+* **[Настройка вашего агента](https://code.claude.com/docs/ru/agent-sdk/configuration.md)**: составьте объект параметров и найдите страницу, которая охватывает каждый параметр
+* **[Разрешения](https://code.claude.com/docs/ru/agent-sdk/permissions.md)**: контролируйте, что может делать ваш агент и когда ему нужно одобрение
+* **[Hooks](https://code.claude.com/docs/ru/agent-sdk/hooks.md)**: запускайте пользовательский код до или после вызовов инструментов
+* **[Сессии](https://code.claude.com/docs/ru/agent-sdk/sessions.md)**: создавайте многооборотных агентов, которые сохраняют контекст
+* **[MCP servers](https://code.claude.com/docs/ru/agent-sdk/mcp.md)**: подключайтесь к базам данных, браузерам, API и другим внешним системам
+* **[Хостинг](https://code.claude.com/docs/ru/agent-sdk/hosting.md)**: развёртывайте агентов в Docker, облако и CI/CD
+* **[Примеры агентов](https://github.com/anthropics/claude-agent-sdk-demos)**: см. полные примеры: помощник по электронной почте, исследовательский агент и многое другое
+* **[Troubleshooting](https://code.claude.com/docs/ru/agent-sdk/troubleshooting.md)**: исправляйте ошибки, когда CLI не запускается или выходит, или результат приходит без структурированного вывода

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Ускорьте ответы с помощью быстрого режима</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Ускорьте ответы с помощью быстрого режима <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Получайте более быстрые ответы Opus и Fable в Claude Code, включая и отключая быстрый режим с помощью <code>/fast</code>.</p>
+</blockquote>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Быстрый режим для Claude Fable 5.2 и Claude Opus 5.5 доступен. Быстрый режим для Claude Opus 5 и Claude Opus 4.8 находится в <a href="#research-preview">research preview</a>.</p>
+</blockquote>
+<p>Быстрый режим — это высокоскоростная конфигурация для поддерживаемых моделей, которая делает модель до 2,5 раза быстрее при более высокой стоимости за токен. Включайте его с помощью <code>/fast</code>, когда вам нужна скорость для интерактивной работы, такой как быстрая итерация или живая отладка, и отключайте, когда стоимость важнее, чем задержка.</p>
+<p>Быстрый режим использует ту же модель с другой конфигурацией API, которая приоритизирует скорость над экономичностью, поэтому качество и возможности остаются прежними. В Anthropic API быстрый режим поддерживается на Fable 5.2, Opus 5.5, Opus 5 и Opus 4.8, но не на Sonnet, Haiku или других моделях. О моделях на Agent Platform от Google Cloud см. раздел <a href="#use-fast-mode-on-agent-platform">Использование быстрого режима на Agent Platform</a>.</p>
+<blockquote>
+<p>[!WARNING]</p>
+<p>Быстрый режим для Opus 4.8 был объявлен устаревшим 30 октября 2026 года и будет удален 30 ноября 2026 года. Если после этой даты вы по-прежнему используете Opus 4.8 с включенным быстрым режимом, API будет отклонять ваши запросы. До этой даты переключитесь на Opus 5.5 или отключите быстрый режим в своей сессии:</p>
+<ul>
+<li><strong>Чтобы сохранить быстрый режим</strong>: используйте <a href="https://code.claude.com/docs/ru/model-config#setting-your-model"><code>/model</code></a>, чтобы переключиться на <a href="https://code.claude.com/docs/ru/model-config.md#model-aliases">Opus 5.5</a>; для этого требуется Claude Code v2.1.280 или новее. После переключения быстрый режим остается включенным. Если новая сессия по-прежнему запускается на Opus 4.8, см. раздел <a href="https://code.claude.com/docs/ru/model-config.md#a-new-session-starts-on-a-different-model-than-you-picked">Новая сессия запускается на другой модели, чем вы выбрали</a>.</li>
+<li><strong>Чтобы остаться на Opus 4.8 со стандартной скоростью</strong>: выполните <a href="https://code.claude.com/docs/ru/commands"><code>/fast off</code></a></li>
+</ul>
+</blockquote>
+<p>Opus 4.7 не поддерживает быстрый режим, поэтому переключение на него отключает быстрый режим. Быстрый режим для Opus 4.7 был объявлен устаревшим 25 июня 2026 года и удален 24 июля 2026 года.</p>
+<p>Что нужно знать:</p>
+<ul>
+<li>Используйте <code>/fast</code> для включения быстрого режима в Claude Code CLI. Расширение <a href="https://code.claude.com/docs/ru/vs-code.md">VS Code</a> предлагает команду <strong>Toggle fast mode</strong> при выборе модели, которая поддерживает быстрый режим. В Anthropic API Claude Code сохраняет этот переключатель в вашей настройке <a href="#toggle-fast-mode"><code>fastMode</code></a>.</li>
+<li>Цены Anthropic на быстрый режим составляют \$16/\$80 за MTok входа/выхода на Fable 5.2, \$8/\$40 на Opus 5.5 и \$10/\$50 на Opus 5 и Opus 4.8.</li>
+<li>Доступно пользователям Claude Code на планах подписки (Pro/Max/Ultra/Team/Enterprise), на Claude Console и на Agent Platform от Google Cloud <a href="#use-fast-mode-on-agent-platform">с условиями</a>. Организациям Team и Enterprise требуется, чтобы Owner сначала это включил, а организациям Console требуется сначала получить предоставленный доступ, чтобы использовать его с Opus 5 или Opus 4.8. Оба варианта описаны в разделе <a href="#requirements">Требования</a>.</li>
+<li>Для пользователей Claude Code на планах подписки (Pro/Max/Ultra/Team/Enterprise) быстрый режим доступен только через кредиты использования и не включен в ограничения частоты запросов подписки.</li>
+</ul>
+<h3 id="h-2">Включение быстрого режима <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>На Agent Platform <code>/fast</code> и настройка <code>fastMode</code> работают иначе, поэтому вместо этого следуйте разделу <a href="#use-fast-mode-on-agent-platform">Использование быстрого режима на Agent Platform</a>.</p>
+<p>В CLI включайте быстрый режим одним из следующих способов:</p>
+<ul>
+<li>Запустите <code>/fast</code>, нажмите Space для включения или отключения, затем нажмите Enter для подтверждения</li>
+<li>На модели, которая поддерживает быстрый режим, установите <code>&quot;fastMode&quot;: true</code> в вашем <a href="https://code.claude.com/docs/ru/settings.md">файле пользовательских настроек</a>. Если вы установите его на любой другой модели, вы останетесь на этой модели с отключенным быстрым режимом. На Fable 5.2 эта настройка сама по себе не действует, пока вы не запустите <code>/fast</code> во время использования Fable 5.2.</li>
+</ul>
+<p>По умолчанию в Anthropic API быстрый режим, который вы включаете в интерактивной сессии, сохраняется между сессиями на поддерживаемой модели. На Fable 5.2 он сохраняется, только если вы <a href="#switch-models-while-fast-mode-is-on">включили его во время использования Fable 5.2</a>. Вы можете настроить быстрый режим на сброс в каждой сессии. Подробности см. в разделе <a href="#require-per-session-opt-in">обязательное согласие за сессию</a>.</p>
+<p>Вне <a href="#use-fast-mode-in-cloud-sessions">облачного сеанса</a>, в <a href="https://code.claude.com/docs/ru/headless.md">неинтерактивном режиме</a> с флагом <code>-p</code> команда <code>/fast</code> работает только в сеансе, запущенном с быстрым режимом в его значении <a href="https://code.claude.com/docs/ru/cli-reference#cli-flags"><code>--settings</code></a>, например <code>claude -p --settings &#x27;{&quot;fastMode&quot;: true}&#x27;</code>; переключение затем применяется только к этому сеансу и не сохраняется как ваше значение по умолчанию. Форма <code>-p</code> требует Claude Code v2.1.205 или более поздней версии. В остальных случаях в неинтерактивном режиме команда сообщает, что быстрый режим недоступен.</p>
+<p>Вы можете запустить <code>/fast</code> во время работы Claude, и Claude Code переключает быстрый режим без ожидания завершения хода. Claude Code завершает текущий ход с его исходной скоростью, поэтому изменение скорости вступает в силу со следующего хода. Если ваша текущая модель не поддерживает быстрый режим, его включение также переключает вашу модель, и Claude Code использует новую модель со следующего запроса в этом ходе.</p>
+<p>Для лучшей экономичности включайте быстрый режим в начале сеанса, а не переключайтесь в середине разговора. Подробности см. в разделе <a href="#understand-the-cost-tradeoff">понимание компромисса стоимости</a>.</p>
+<p>Когда вы включаете быстрый режим с помощью <code>/fast</code>:</p>
+<ul>
+<li>В Anthropic API, если ваша текущая модель не поддерживает быстрый режим, Claude Code переключается на Opus</li>
+<li>Быстрый режим на Fable 5.2 требует Claude Code v2.1.321 или более поздней версии</li>
+<li>Вы увидите сообщение подтверждения: &quot;Fast mode ON&quot;</li>
+<li>Рядом с приглашением появляется небольшой значок <code>↯</code> во время активного быстрого режима</li>
+<li>Запустите <code>/fast</code> снова в любое время, чтобы проверить, включен или отключен быстрый режим</li>
+</ul>
+<p>В Anthropic API Opus 5.5 является моделью по умолчанию для быстрого режима в Claude Code v2.1.280 и позже. До версии v2.1.280 быстрый режим по умолчанию использовал Opus 5, начиная с версии v2.1.219.</p>
+<p>Когда вы отключаете быстрый режим с помощью <code>/fast</code> снова, вы остаетесь на текущей модели. Чтобы переключиться на другую модель, используйте <code>/model</code>.</p>
+<h4 id="h-3">Переключение моделей во время активного быстрого режима <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Быстрый режим следует вашим переключениям моделей:</p>
+<ul>
+<li><strong>Переключение в сторону</strong>: когда вы переключаетесь на модель, которая не поддерживает быстрый режим, Claude Code отключает быстрый режим. Это включает Opus 4.7; до версии v2.1.221 быстрый режим оставался включенным после переключения на Opus 4.7 и API отклонял запросы.</li>
+<li><strong>Переключение обратно</strong>: быстрый режим снова включается на поддерживаемой модели Opus, когда ваше сохраненное предпочтение включено. С <a href="#require-per-session-opt-in">обязательным согласием за сессию</a> вместо этого запустите <code>/fast</code>.</li>
+<li><strong>Переключение на Fable 5.2</strong>: быстрый режим отключается, если только вы не включили его во время использования Fable 5.2. Чтобы включить его, запустите <code>/fast</code> на Fable 5.2. Если вы не настроили <a href="#require-per-session-opt-in">обязательное согласие за сессию</a>, этот выбор сохраняется между сессиями в Anthropic API, пока вы не отключите быстрый режим или не включите его с другой моделью.</li>
+</ul>
+<p>Всякий раз, когда переключение модели включает или отключает быстрый режим, Claude Code показывает подтверждение <code>Fast mode ON</code> или <code>Fast mode OFF</code>, и значок <code>↯</code> появляется во время активного быстрого режима. Это применяется независимо от того, переключаетесь ли вы с помощью <code>/model</code>, с помощью <a href="https://code.claude.com/docs/ru/settings"><code>/config model=&lt;model&gt;</code></a> или с устройства, подключенного через <a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a>.</p>
+<h4 id="h-4">Использование быстрого режима в облачных сеансах <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<p>Быстрый режим работает в <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">облачных сессиях</a>, когда он доступен в вашей учетной записи, независимо от того, работает ли сессия на инфраструктуре, управляемой Anthropic, или на <a href="https://code.claude.com/docs/ru/self-hosted-environments">самостоятельно размещенном runner</a> в Anthropic API. Требует Claude Code v2.1.271 или более поздней версии в окружении сессии.</p>
+<p>Введите <code>/fast on</code> в сеансе, чтобы включить быстрый режим. Он остается включенным только для этого сеанса и не сохраняется как ваше значение по умолчанию. <a href="#requirements">Требования</a> применяются и в облачных сеансах.</p>
+<p>В браузере на <a href="https://claude.ai/code">claude.ai/code</a> вы также можете включать и отключать быстрый режим из меню модели в поле сообщения. Меню показывает переключатель, когда ваш план включает быстрый режим и выбранная модель его поддерживает.</p>
+<h3 id="h-5">Понимание компромисса стоимости <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<p>Быстрый режим имеет более высокую цену за токен, чем стандартная скорость. Вот тарифы Anthropic:</p>
+<p>| Модель | Входные данные (MTok) | Выходные данные (MTok) |
+| - | - | - |
+| Fable 5.2 | \$16 | \$80 |
+| Opus 5.5 | \$8 | \$40 |
+| Opus 5 | \$10 | \$50 |
+| Opus 4.8 | \$10 | \$50 |</p>
+<p>Цены на быстрый режим одинаковы по всему контекстному окну из 1M токенов. Для сравнения со стандартной ставкой см. <a href="https://platform.claude.com/docs/ru/about-claude/pricing">справочник по ценам Claude</a>.</p>
+<p>Когда вы впервые включаете быстрый режим в диалоге, вы платите полную цену быстрого режима за некэшированные входные токены для всего контекста диалога. Чем дальше вы продвинулись в диалоге, тем дороже это обходится, поэтому плата минимальна, если включить быстрый режим в самом начале. Быстрый режим и стандартная скорость используют <a href="https://code.claude.com/docs/ru/prompt-caching.md#turning-on-fast-mode">отдельные кэши</a>, поэтому при каждом последующем переключении часть диалога или весь диалог снова считывается без кэша.</p>
+<h4 id="h-6">Посмотрите, где появляются расходы быстрого режима <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<p>Вы видите расходы быстрого режима в разном месте в зависимости от того, как вы вошли, поэтому сначала запустите <a href="https://code.claude.com/docs/ru/commands"><code>/status</code></a> для проверки. Если это показывает строку <code>Login method</code> такую как <code>Claude Max account</code>, вы вошли с подпиской Claude. Если вместо этого это показывает строку <code>API key</code>, ваши запросы выставляются в счёт организации Claude Console.</p>
+<ul>
+<li><strong>Pro, Max и Ultra</strong>: вы платите за быстрый режим из своих кредитов использования. Перейдите на <a href="https://claude.ai/settings/usage"><strong>Settings &gt; Usage</strong></a> на claude.ai, где раздел <strong>Usage credits</strong> показывает, сколько вы потратили в кредитах использования в этом месяце. Эта цифра включает быстрый режим, но не разбивает его отдельно.</li>
+<li><strong>Team и Enterprise</strong>: ваша организация платит за использование быстрого режима из своих кредитов использования. Чтобы увидеть свои расходы в кредитах использования, запустите <a href="https://code.claude.com/docs/ru/costs#check-your-usage-credits-spend"><code>/usage</code></a>. Для того, где ваша организация видит эти расходы, см. <a href="https://code.claude.com/docs/ru/costs.md#claude-for-teams-and-enterprise">Claude для Teams и Enterprise</a>.</li>
+<li><strong>Claude Console</strong>: ваша организация платит за быстрый режим вместе с остальным использованием API. На страницах Console <a href="https://platform.claude.com/usage">Usage</a> и <a href="https://platform.claude.com/cost">Cost</a> выберите <strong>Speed</strong> в меню <strong>Group by</strong> для отделения быстрого режима от использования стандартной скорости. Вы видите эту опцию только когда выбранный диапазон дат включает использование быстрого режима.</li>
+</ul>
+<h3 id="h-7">Решение о том, когда использовать быстрый режим <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h3>
+<p>Быстрый режим лучше всего подходит для интерактивной работы, где задержка ответа важнее стоимости:</p>
+<ul>
+<li>Быстрая итерация изменений кода</li>
+<li>Сеансы живой отладки</li>
+<li>Работа, чувствительная ко времени, с жесткими сроками</li>
+</ul>
+<p>Стандартный режим лучше для:</p>
+<ul>
+<li>Долгих автономных задач, где скорость менее важна</li>
+<li>Пакетной обработки или конвейеров CI/CD</li>
+<li>Рабочих нагрузок, чувствительных к стоимости</li>
+</ul>
+<h4 id="h-8">Быстрый режим в сравнении с уровнем усилий <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<p>Быстрый режим и уровень усилий оба влияют на скорость ответа, но по-разному:</p>
+<p>| Параметр | Эффект |
+| - | - |
+| <strong>Быстрый режим</strong> | Одинаковое качество модели, меньшая задержка, более высокая стоимость |
+| <strong>Более низкий уровень усилий</strong> | Меньше времени на размышление, более быстрые ответы, потенциально более низкое качество на сложных задачах |</p>
+<p>Вы можете комбинировать оба: используйте быстрый режим с более низким <a href="https://code.claude.com/docs/ru/model-config.md#adjust-effort-level">уровнем усилий</a> для максимальной скорости на простых задачах.</p>
+<h3 id="h-9">Требования <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h3>
+<p>Быстрый режим требует всех следующих условий:</p>
+<ul>
+<li><strong>Поддерживаемый провайдер</strong>: быстрый режим доступен через Anthropic Console API, для планов подписки Claude с использованием кредитов использования, а также на Google Cloud&#x27;s Agent Platform <a href="#use-fast-mode-on-agent-platform">с определёнными условиями</a>. Он недоступен на Amazon Bedrock, Microsoft Foundry или Claude Platform на AWS, где <code>/fast</code> сообщает &quot;Fast mode is not available on this provider&quot;. Организации Console также должны иметь <a href="#enable-fast-mode-for-your-organization">предоставленный доступ к быстрому режиму</a>, чтобы использовать его с Opus 5 или Opus 4.8.</li>
+<li><strong>Кредиты использования включены для планов подписки</strong>: на плане Pro, Max, Ultra, Team или Enterprise в вашей учётной записи должны быть включены <a href="https://code.claude.com/docs/ru/costs.md#add-usage-credits-to-your-subscription">кредиты использования</a>, что позволяет оплату сверх включённого в ваш план использования. До их включения <code>/fast</code> сообщает &quot;Fast mode requires usage credits&quot;. Чтобы включить их, выполните шаг для вашего плана:</li>
+<li>На Pro, Max и Ultra включите их в разделе <strong>Usage credits</strong> на странице <a href="https://claude.ai/settings/usage"><strong>Settings &gt; Usage</strong></a> на claude.ai или запустите <code>/usage-credits</code>, чтобы открыть эту страницу.</li>
+<li>На Team и Enterprise участник с доступом к биллингу включает их для организации в <a href="https://claude.ai/admin-settings/usage"><strong>Organization settings &gt; Usage</strong></a>, а участник без такого доступа запускает <code>/usage-credits</code>, чтобы отправить запрос администраторам организации.</li>
+</ul>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Использование быстрого режима берет кредиты непосредственно из кредитов использования, даже если у вас остается использование в вашем плане.</p>
+</blockquote>
+<ul>
+<li><strong>Платная организация Console</strong>: учетные записи Claude Console не используют кредиты использования, и ваша организация платит за быстрый режим за токен вместе с остальным использованием API. На бесплатном плане Evaluation Console <code>/fast</code> показывает &quot;Fast mode unavailable during evaluation. Please purchase credits.&quot; Чтобы это исправить, приобретите кредиты в <a href="https://platform.claude.com/settings/billing">параметрах выставления счетов Console</a>.</li>
+</ul>
+<p>Быстрый режим с Fable 5.2 или Opus 5.5 также зависит от <a href="https://platform.claude.com/docs/en/api/rate-limits">уровня использования</a> вашей организации.</p>
+<ul>
+<li><strong>Включение владельцем для Team и Enterprise</strong>: быстрый режим отключен по умолчанию для организаций Team и Enterprise. Владелец должен явно <a href="#enable-fast-mode-for-your-organization">включить быстрый режим</a> перед тем, как пользователи смогут получить к нему доступ.</li>
+</ul>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Четыре параметра организации могут заблокировать включение быстрого режима с помощью <code>/fast</code>:</p>
+<ul>
+<li><strong>Быстрый режим не включен</strong>: если быстрый режим не был включен для вашей организации, включение быстрого режима с помощью <code>/fast</code> показывает &quot;Fast mode has been disabled by your organization.&quot;</li>
+<li><strong>Быстрый режим отключен управляемыми параметрами</strong>: если ваша организация развертывает <a href="https://code.claude.com/docs/ru/managed-settings.md">управляемые параметры</a>, которые устанавливают <a href="https://code.claude.com/docs/ru/settings-reference#fastmode"><code>fastMode: false</code></a>, включение быстрого режима с помощью <code>/fast</code> показывает то же сообщение &quot;Fast mode has been disabled by your organization&quot;.</li>
+<li><strong>Требуется явное согласие для каждого сеанса</strong>: управляемые параметры, которые устанавливают <a href="#require-per-session-opt-in"><code>fastModePerSessionOptIn: true</code></a>, отклоняют <code>/fast on</code> с тем же сообщением везде, кроме интерактивного сеанса терминала.</li>
+<li><strong>Модель быстрого режима не разрешена</strong>: если список разрешённых моделей <a href="https://code.claude.com/docs/ru/model-config#restrict-model-selection"><code>availableModels</code></a> вашей организации исключает модель, на которую переключает <code>/fast</code>, включение отклоняется с &quot;is not in your organization&#x27;s allowed models&quot;. В сессии, уже работающей на разрешенной модели, поддерживающей быстрый режим, <code>/fast</code> вместо этого включает быстрый режим на вашей текущей модели без переключения моделей.</li>
+</ul>
+</blockquote>
+<h4 id="h-10">Включение быстрого режима для вашей организации <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h4>
+<p>Место, где вы включаете быстрый режим, зависит от того, какой продукт использует ваша организация:</p>
+<ul>
+<li><strong>Console</strong> (клиенты API): администратор включает его в <a href="https://platform.claude.com/claude-code/preferences">Claude Code preferences</a></li>
+<li><strong>Claude AI</strong> (Team и Enterprise): Owner включает его в <a href="https://claude.ai/admin-settings/claude-code"><strong>Organization settings &gt; Claude Code</strong></a></li>
+</ul>
+<p>Организациям Console, которые используют Claude Opus 5 или Claude Opus 4.8, также нужен предоставленный доступ, как описано в <a href="https://platform.claude.com/docs/en/build-with-claude/fast-mode">быстром режиме на Claude API</a>. Без этого доступа запросы быстрого режима к этим моделям упираются в <a href="#handle-rate-limits">ограничение частоты запросов быстрого режима</a> и возвращаются к стандартной скорости, пока доступ не будет предоставлен.</p>
+<p>Другой вариант полного отключения быстрого режима — установить <code>CLAUDE_CODE_DISABLE_FAST_MODE=1</code>. См. <a href="https://code.claude.com/docs/ru/env-vars.md">Переменные окружения</a>.</p>
+<h4 id="использование-быстрого-режима-на-agent-platform">Использование быстрого режима на Agent Platform <a class="h-anchor" href="#использование-быстрого-режима-на-agent-platform" aria-label="Ссылка на раздел">#</a></h4>
+<p>На <a href="https://code.claude.com/docs/ru/google-vertex-ai.md">Google Cloud&#x27;s Agent Platform</a> вы можете включить быстрый режим для Fable 5.2 с помощью <code>/fast</code> в интерактивной сессии или с помощью флагов запуска в <a href="https://code.claude.com/docs/ru/headless.md">неинтерактивном режиме</a>. Требуется Claude Code v2.1.322 или новее.</p>
+<p>Для быстрого режима <a href="https://code.claude.com/docs/ru/google-vertex-ai.md#region-configuration">регион</a> для Fable 5.2 должен быть <code>global</code>, <code>us</code> или <code>eu</code>. В другом регионе <code>/fast</code> сообщает <code>Fast mode needs Vertex region global, us or eu</code>, а <code>claude -p</code> работает на стандартной скорости. Задайте регион в своей оболочке перед запуском Claude Code, например <code>global</code>:</p>
+<p>```bash theme={null}
+export VERTEX_REGION_CLAUDE_FABLE_5_2=global</p>
+<pre><code>
+Затем включите быстрый режим:
+
+* **В интерактивной сессии**: выполните `/fast`. Команда переключает вас на Fable 5.2 с модели Opus или другой модели без быстрого режима на Agent Platform. Быстрый режим не сохраняется как ваш режим по умолчанию.
+* **В неинтерактивном режиме**: передайте Fable 5.2 в [`--model`](https://code.claude.com/docs/ru/cli-reference#cli-flags) и быстрый режим в [`--settings`](https://code.claude.com/docs/ru/cli-reference#cli-flags), например `claude -p &quot;Summarize this project&quot; --model claude-fable-5-2 --settings &#x27;{&quot;fastMode&quot;: true}&#x27;`
+
+На Agent Platform `&quot;fastMode&quot;: true` в ваших пользовательских, проектных, локальных или управляемых настройках не действует.
+
+Если Agent Platform отклоняет быстрый режим, Claude Code возвращается к стандартной скорости. В этом случае интерактивная сессия показывает одно из следующих сообщений в терминале:
+
+* `Using standard speed on Fable 5.2 · fast mode wasn&#x27;t available`: выполните `/fast on`, чтобы снова попробовать быстрый режим
+* `Fast mode paused: your cloud provider refused a fast request · trying again in 30m`: Agent Platform ответила на запрос быстрого режима ошибкой 403 или 404. Чтобы попробовать раньше, выполните `/fast on`. Требуется Claude Code v2.1.323 или новее.
+
+### Использование быстрого режима за прокси и шлюзами LLM
+
+Перед предложением быстрого режима на Anthropic API Claude Code проверяет доступность быстрого режима вашей организации с помощью запроса непосредственно к `api.anthropic.com`. Проверка не следует [`ANTHROPIC_BASE_URL`](https://code.claude.com/docs/ru/llm-gateway-connect#set-the-base-url-and-credential), поэтому в сети, которая маршрутизирует трафик Claude через [шлюз LLM](https://code.claude.com/docs/ru/llm-gateway) и блокирует прямой исходящий трафик к `api.anthropic.com`, проверка не удается, даже если запросы вывода работают.
+
+Проверка использует настроенный [HTTP прокси](https://code.claude.com/docs/ru/network-config.md#proxy-configuration), поэтому сетевая блокировка приводит к неудаче проверки только там, где `api.anthropic.com` недостижим даже через прокси. Если в вашей организации быстрый режим включен, а `/fast` сообщает обратное, найдите показанное сообщение среди следующих случаев.
+
+#### Fast mode unavailable due to network connectivity issues
+
+Проверка доступности завершилась неудачей, например потому что ваша сеть блокирует `api.anthropic.com`, и запросы выполняются на стандартной скорости. Проверка, которая была успешной в прошлом, продолжает работать на основе своего кэшированного результата, поэтому заблокированная проверка в основном влияет на новые установки.
+
+Чтобы восстановить быстрый режим, добавьте прямой исходящий трафик к `api.anthropic.com` в список разрешённых или установите `CLAUDE_CODE_SKIP_FAST_MODE_NETWORK_ERRORS=1`, что заставляет считать неудачную проверку успешной и при этом по-прежнему учитывает ответ &quot;disabled by your organization&quot;.
+
+#### Fast mode is currently unavailable
+
+При работе через шлюз проверьте наличие следующих конфигураций, в которых Claude Code не отправляет проверку доступности и не имеет кэшированной ранее успешной проверки:
+
+* Вы указываете в `ANTHROPIC_BASE_URL` свой шлюз и задаете в [`ANTHROPIC_API_KEY`](https://code.claude.com/docs/ru/llm-gateway-connect#set-the-base-url-and-credential) ключ, выданный шлюзом, который не соответствует формату API-ключа Anthropic.
+* Вы устанавливаете [`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`](https://code.claude.com/docs/ru/env-vars), поэтому Claude Code пропускает проверку.
+
+Чтобы восстановить быстрый режим в любой из этих конфигураций, установите `CLAUDE_CODE_SKIP_FAST_MODE_NETWORK_ERRORS=1`.
+
+#### Fast mode has been disabled by your organization
+
+При работе через шлюз вы можете увидеть это сообщение, даже если в вашей организации быстрый режим включен, в любой из следующих конфигураций:
+
+* Вы аутентифицируетесь только с помощью [`ANTHROPIC_AUTH_TOKEN`](https://code.claude.com/docs/ru/llm-gateway-connect#set-the-base-url-and-credential), без входа в claude.ai, без API-ключа и без кэшированной успешной проверки. В этом случае Claude Code считает быстрый режим отключенным вашей организацией, не отправляя запрос.
+* Прокси перехватывает проверку и отвечает собственной страницей, например прокси с TLS-инспекцией возвращает страницу блокировки с HTTP 200. Claude Code воспринимает эту страницу как ответ о том, что в вашей организации быстрый режим отключен.
+
+В обоих случаях установите `CLAUDE_CODE_SKIP_FAST_MODE_ORG_CHECK=1`, что полностью пропускает проверку, а не `CLAUDE_CODE_SKIP_FAST_MODE_NETWORK_ERRORS`, которая ни к одному из этих случаев не применяется.
+
+&gt; [!NOTE]
+&gt;
+&gt; Переменные пропуска изменяют только проверку на стороне клиента. Когда в вашей организации быстрый режим отключен, API отклоняет запросы быстрого режима независимо от того, установлены ли они. В этом случае Claude Code повторяет запрос на стандартной скорости, отключает быстрый режим, а `/fast` сообщает, что ваша организация отключила быстрый режим.
+
+### Требование явного согласия для каждого сеанса
+
+По умолчанию на Anthropic API быстрый режим, который пользователь включает в интерактивной сессии, сохраняется между сессиями на поддерживаемой модели. На Fable 5.2 быстрый режим сохраняется, только если пользователь [включил его во время использования Fable 5.2](#switch-models-while-fast-mode-is-on).
+
+Чтобы каждая сессия начиналась с отключенным быстрым режимом, установите `fastModePerSessionOptIn` в значение `true` в любом [файле настроек](https://code.claude.com/docs/ru/settings.md#where-settings-live). Тогда пользователи включают его с помощью `/fast` в каждой сессии. Владельцы на планах [Team](https://claude.com/pricing?utm_source=claude_code\&amp;utm_medium=docs\&amp;utm_content=fast_mode_teams#team-&amp;-enterprise) или [Enterprise](https://anthropic.com/contact-sales?utm_source=claude_code\&amp;utm_medium=docs\&amp;utm_content=fast_mode_enterprise) могут развернуть его на уровне организации через [настройки, управляемые сервером](https://code.claude.com/docs/ru/server-managed-settings.md).
+</code></pre>
+<p>{
+  &quot;fastModePerSessionOptIn&quot;: true
+}</p>
+<pre><code>
+Это полезно для контроля затрат в организациях, где пользователи запускают несколько одновременных сеансов. Предпочтение быстрого режима пользователя все еще сохраняется, поэтому удаление этого параметра восстанавливает поведение по умолчанию с сохранением.
+
+Когда управляемые параметры устанавливают ключ, `/fast on` работает только в интерактивном сеансе терминала. Везде еще, включая [неинтерактивный режим](https://code.claude.com/docs/ru/headless.md), [расширение VS Code](https://code.claude.com/docs/ru/vs-code.md) и [облачные сеансы](#use-fast-mode-in-cloud-sessions), это отклоняется с сообщением, что ваша организация отключила быстрый режим.
+
+## Обработка лимитов скорости
+
+Быстрый режим имеет отдельные ограничения частоты запросов, отличные от стандартной скорости; для организаций Console они описаны на странице [ограничений частоты запросов](https://platform.claude.com/docs/en/api/rate-limits) Claude Platform. Когда вы достигаете лимита запросов быстрого режима:
+
+1. Быстрый режим автоматически переключается на стандартную скорость
+2. Значок `↯` становится серым, указывая на охлаждение
+3. Вы продолжаете работать со стандартной скоростью и ценами
+4. Когда охлаждение истекает, быстрый режим автоматически повторно включается
+
+Чтобы вместо этого отключить быстрый режим вручную, запустите `/fast` снова.
+
+Если вы исчерпаете кредиты использования во время сеанса, Claude Code повторно пытается выполнить каждый отклоненный запрос быстрого режима со стандартной скоростью и ценами, поэтому вы продолжаете работать, и охлаждение отсутствует. То, как вы видите отклонение, зависит от типа сеанса:
+
+* В интерактивной сессии Claude Code показывает уведомление &quot;Fast mode disabled · Out of usage credits&quot; и отключает быстрый режим. Ваше сохраненное предпочтение быстрого режима не изменяется; запустите `/fast`, чтобы снова включить быстрый режим.
+* В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) с `--output-format stream-json` и через Agent SDK Claude Code выдает тот же текст в потоке сообщений как `system` сообщение с подтипом `notification`. Сообщение приходит один раз за ход, пока у вас закончились кредиты использования. Быстрый режим остается включенным.
+
+## Исследовательское превью
+
+Быстрый режим для Claude Opus 5 и Claude Opus 4.8 — это функция исследовательского превью. Это означает:
+
+* Функция может измениться на основе отзывов
+* Доступность и цены могут измениться
+* Базовая конфигурация API может развиваться
+
+Сообщайте о проблемах или отзывах через ваши обычные каналы поддержки Anthropic.
+
+## См. также
+
+* [Конфигурация модели](https://code.claude.com/docs/ru/model-config.md): переключение моделей и регулировка уровней усилий
+* [Эффективное управление затратами](https://code.claude.com/docs/ru/costs.md): отслеживание использования токенов и снижение затрат
+* [Конфигурация строки состояния](https://code.claude.com/docs/ru/statusline.md): отображение информации о модели и контексте
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

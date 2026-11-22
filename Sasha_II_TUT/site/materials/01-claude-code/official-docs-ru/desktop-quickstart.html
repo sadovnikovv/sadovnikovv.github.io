@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Начало работы с настольным приложением</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Начало работы с настольным приложением <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Установите настольное приложение Claude, откройте вкладку Code и начните свой первый сеанс Claude Code в папке проекта на вашем компьютере.</p>
+</blockquote>
+<p>Настольное приложение предоставляет вам Claude Code с графическим интерфейсом. Вы можете попросить Claude работать с кодом в папке на вашем компьютере, а затем самостоятельно просмотреть изменения без использования терминала.</p>
+<p>Claude Code находится на вкладке <strong>Code</strong> в верхней части боковой панели приложения. На этой странице описывается установка приложения и начало вашей первой сессии на этой вкладке. Claude Code требует <a href="https://claude.com/pricing?utm_source=claude_code\&amp;utm_medium=docs\&amp;utm_content=desktop_quickstart_pricing">подписку Pro, Max, Ultra, Team или Enterprise</a>.</p>
+<blockquote>
+<p>[card] <a href="https://claude.ai/api/desktop/darwin/universal/dmg/latest/redirect?utm_source=claude_code\&amp;utm_medium=docs">Скачать для macOS</a></p>
+<p>Универсальная сборка для Intel и Apple Silicon</p>
+</blockquote>
+<blockquote>
+<p>[card] <a href="https://claude.ai/api/desktop/win32/x64/setup/latest/redirect?utm_source=claude_code\&amp;utm_medium=docs">Скачать для Windows</a></p>
+<p>Для процессоров x64</p>
+</blockquote>
+<blockquote>
+<p>[card] <a href="https://code.claude.com/docs/ru/desktop-linux.md">Получить Claude для Linux (бета)</a></p>
+<p>apt или .deb для Ubuntu и Debian</p>
+</blockquote>
+<p>Для Windows ARM64 скачайте <a href="https://claude.ai/api/desktop/win32/arm64/setup/latest/redirect?utm_source=claude_code\&amp;utm_medium=docs">установщик ARM64</a>. На Linux установите с помощью apt; см. <a href="https://code.claude.com/docs/ru/desktop-linux.md">Claude Desktop на Linux</a>.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Следующие случаи рассматриваются на других страницах:</p>
+<ul>
+<li><strong>Уже настроено</strong>: см. <a href="https://code.claude.com/docs/ru/desktop.md">Использование Claude Code Desktop</a> для всех возможностей вкладки Code</li>
+<li><strong>Хотите <code>claude</code> в вашем терминале</strong>: <a href="https://code.claude.com/docs/ru/quickstart.md">установите CLI</a> отдельно</li>
+<li><strong>Используете чат или Cowork</strong>: см. <a href="https://support.claude.com/">Центр справки Claude</a></li>
+<li><strong>Нужна дополнительная информация об установке или развёртывании настольного приложения</strong>: см. <a href="https://support.claude.com/en/collections/16163169-claude-desktop">статьи поддержки Claude Desktop</a></li>
+</ul>
+</blockquote>
+<h3 id="h-2">Установка <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>1. Установка и вход в систему</strong></p>
+<p>На macOS и Windows загрузите установщик по ссылкам выше и запустите его. На Linux следуйте инструкциям по установке в разделе <a href="https://code.claude.com/docs/ru/desktop-linux.md">Claude Desktop на Linux</a>. Запустите Claude из папки Applications на macOS, из меню Start на Windows или из средства запуска приложений на Linux, затем войдите со своей учетной записью Anthropic.</p>
+<p><strong>2. Откройте вкладку Code</strong></p>
+<p>Нажмите на вкладку <strong>Code</strong> в верхней части боковой панели. Если на вкладках отображаются только значки, наведите курсор на один из них, чтобы увидеть его название. Если после нажатия на <strong>Code</strong> появляется запрос или ошибка, воспользуйтесь соответствующим решением:</p>
+<ul>
+<li><strong>Запрос на обновление</strong>: вам необходимо сначала <a href="https://claude.com/pricing?utm_source=claude_code\&amp;utm_medium=docs\&amp;utm_content=desktop_quickstart_upgrade">подписаться на платный план</a></li>
+<li><strong>Запрос на вход в систему онлайн</strong>: завершите вход и перезапустите приложение</li>
+<li><strong>Ошибка 403</strong>: см. <a href="https://code.claude.com/docs/ru/desktop.md#403-or-authentication-errors-in-the-code-tab">устранение неполадок аутентификации</a></li>
+</ul>
+<p>Настольное приложение включает Claude Code, поэтому вам не нужно устанавливать Node.js или CLI для использования вкладки Code.</p>
+<h3 id="h-3">Начните свой первый сеанс <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>С открытой вкладкой Code выберите проект и дайте Claude что-нибудь сделать.</p>
+<p><strong>1. Выберите окружение и папку</strong></p>
+<p>В <a href="https://code.claude.com/docs/ru/desktop.md#start-a-session">строке под полем ввода промпта</a> нажмите первый элемент управления — селектор окружения — и выберите верхний пункт в группе <strong>Local</strong>. Затем нажмите элемент управления папкой проекта рядом с селектором окружения, выберите <strong>Open folder…</strong> и укажите директорию вашего проекта.</p>
+<p>Если в новой сессии под полем ввода промпта не отображается окружение, у вас более ранняя версия интерфейса. См. <a href="https://code.claude.com/docs/ru/desktop.md#check-which-layout-you-have">Проверьте, какая у вас версия интерфейса</a>.</p>
+<blockquote>
+<p>[!TIP]</p>
+<p>Начните с небольшого проекта, который вы хорошо знаете. Это самый быстрый способ увидеть, что может делать Claude Code.</p>
+</blockquote>
+<p>Вы также можете выбрать:</p>
+<ul>
+<li><strong>Cloud</strong>: Запускайте сеансы в облаке, которые продолжают работу даже если вы закроете приложение. См. <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">Use Claude Code in the cloud</a> для информации о том, как работают облачные сеансы.</li>
+<li><strong>SSH</strong>: Подключитесь к удаленной машине через SSH, например к вашим собственным серверам, облачным виртуальным машинам или контейнерам разработки. Сначала <a href="https://code.claude.com/docs/ru/desktop.md#ssh-sessions">добавьте подключение</a>. Desktop автоматически устанавливает Claude Code на удаленную машину при первом подключении. Выполняющаяся задача может <a href="https://code.claude.com/docs/ru/desktop.md#keep-a-task-running-while-desktop-is-disconnected">продолжать работу, пока Desktop отключен</a>, но при использовании аккаунта Claude она может остановиться, когда истечет срок ее входа в систему.</li>
+<li><strong>WSL</strong> (Windows): Запустите сессию внутри <a href="https://code.claude.com/docs/ru/desktop-wsl.md">WSL 2 дистрибутива</a>; Claude Code, инструменты и git выполняются на стороне Linux с собственными путями.</li>
+</ul>
+<p><strong>2. Выберите модель</strong></p>
+<p>Выберите модель в селекторе моделей ближе к правому краю строки под полем ввода промпта. См. <a href="https://code.claude.com/docs/ru/model-config.md#available-models">models</a> для сравнения доступных моделей. Вы можете изменить модель позже в селекторе моделей.</p>
+<p><strong>3. Скажите Claude, что делать</strong></p>
+<p>Введите, что вы хотите, чтобы Claude сделал:</p>
+<ul>
+<li><code>Find a TODO comment and fix it</code></li>
+<li><code>Add tests for the main function</code></li>
+<li><code>Create a CLAUDE.md with instructions for this codebase</code></li>
+</ul>
+<p><a href="https://code.claude.com/docs/ru/desktop.md#work-in-parallel-with-sessions">Сессия</a> — это диалог с Claude о вашем коде. Каждая сессия отслеживает свой собственный контекст и изменения.</p>
+<p><strong>4. Проверьте и примите изменения</strong></p>
+<p>Проверьте ваш <a href="https://code.claude.com/docs/ru/desktop.md#choose-a-permission-mode">режим разрешений</a> в строке под полем ввода промпта, чтобы узнать, ждет ли Claude вашего подтверждения:</p>
+<ul>
+<li><strong>Auto или Accept edits</strong>: Claude применяет изменения файлов, и появляется индикатор, такой как <code>+12 -1</code>, чтобы вы могли просмотреть их в <a href="https://code.claude.com/docs/ru/desktop.md#review-changes-with-diff-view">представлении diff</a></li>
+<li><strong>Manual</strong>: Claude предлагает каждое изменение и ждет вашего подтверждения перед его применением</li>
+</ul>
+<p>В режиме Manual вы увидите:</p>
+<ol>
+<li>Diff, показывающий точно, что изменится</li>
+<li>Кнопки для подтверждения или отклонения каждого изменения</li>
+<li>Обновления в реальном времени по мере того, как Claude работает над вашим запросом</li>
+</ol>
+<h3 id="h-4">Что дальше? <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Вы сделали первое редактирование. Полный справочник по всем возможностям Desktop см. в разделе <a href="https://code.claude.com/docs/ru/desktop.md">Use Claude Code Desktop</a>. Вот несколько вещей, которые стоит попробовать дальше.</p>
+<p><strong>Прерывание и управление.</strong> Вы можете перенаправить Claude в любой момент. Нажмите кнопку остановки, чтобы прервать немедленно, или введите исправление и нажмите <strong>Enter</strong>, чтобы отправить его без остановки выполняемого действия. В любом случае вам не нужно ждать завершения или начинать заново.</p>
+<p><strong>Предоставьте Claude больше контекста.</strong> Введите <code>@filename</code> в поле промпта, чтобы добавить конкретный файл в диалог. Чем больше контекста у Claude, тем лучше результаты. См. <a href="https://code.claude.com/docs/ru/desktop.md#add-files-and-context-to-prompts">Add files and context</a>.</p>
+<p><strong>Используйте skills для повторяющихся задач.</strong> Введите <code>/</code> или нажмите <strong>+</strong> → <strong>Slash commands</strong>, чтобы просмотреть <a href="https://code.claude.com/docs/ru/commands.md">built-in commands</a>, <a href="https://code.claude.com/docs/ru/skills.md">custom skills</a> и skills плагинов. Skills — это многократно используемые подсказки, которые вы можете вызывать всякий раз, когда они вам нужны, например контрольные списки проверки кода или этапы развертывания.</p>
+<p><strong>Проверьте изменения перед фиксацией.</strong> После редактирования файлов Claude появляется индикатор <code>+12 -1</code>. Нажмите на него, чтобы открыть <a href="https://code.claude.com/docs/ru/desktop.md#review-changes-with-diff-view">diff view</a>, просмотрите изменения файл за файлом и оставляйте комментарии к конкретным строкам. Claude читает ваши комментарии и вносит исправления. Чтобы Claude сам проверил изменения, введите <a href="https://code.claude.com/docs/ru/desktop#review-your-code"><code>/code-review</code></a> в поле промпта.</p>
+<p><strong>Отрегулируйте объем контроля.</strong> Ваш <a href="https://code.claude.com/docs/ru/desktop.md#choose-a-permission-mode">permission mode</a> определяет, сколько Claude может делать без запроса одобрения:</p>
+<ul>
+<li><strong>Auto</strong>: классификатор проверяет действия в фоновом режиме и блокирует рискованные вместо того, чтобы просить вас.</li>
+<li><strong>Manual</strong>: Claude запрашивает разрешение перед редактированием файлов или запуском команд.</li>
+<li><strong>Accept edits</strong>: Claude автоматически принимает редактирование файлов для более быстрой итерации.</li>
+<li><strong>Plan</strong>: Claude предлагает подход без редактирования каких-либо файлов, что полезно перед крупным рефакторингом.</li>
+</ul>
+<p><strong>Добавьте плагины для дополнительных возможностей.</strong> Установите <a href="https://code.claude.com/docs/ru/desktop.md#install-plugins">плагины</a>, которые добавляют скиллы, агентов, MCP-серверы и многое другое.</p>
+<p><strong>Организуйте рабочее пространство.</strong> Перетащите панели чата, diff, терминала, файла и браузера в любой нужный вам макет. Откройте терминал с помощью <strong>Ctrl+\`</strong>, чтобы запускать команды параллельно с вашей сессией, или нажмите на путь файла, чтобы открыть его. См. <a href="https://code.claude.com/docs/ru/desktop.md#arrange-your-workspace">Arrange your workspace</a>.</p>
+<p><strong>Предпросмотр вашего приложения.</strong> Когда вы запускаете сервер разработки на рабочем столе, ваше приложение открывается в панели Browser, которая также может <a href="https://code.claude.com/docs/ru/desktop.md#browse-external-sites">открывать внешние сайты</a>. Claude может просматривать работающее приложение, тестировать конечные точки, проверять журналы и повторять итерации на основе того, что он видит. См. <a href="https://code.claude.com/docs/ru/desktop.md#preview-your-app">Preview your app</a>.</p>
+<p><strong>Отслеживайте ваш pull request.</strong> После открытия PR Claude Code отслеживает результаты проверок CI и может автоматически исправлять сбои. См. <a href="https://code.claude.com/docs/ru/desktop.md#monitor-pull-request-status">Monitor pull request status</a>.</p>
+<p><strong>Поставьте Claude по расписанию.</strong> Установите <a href="https://code.claude.com/docs/ru/desktop-scheduled-tasks.md">scheduled tasks</a> для автоматического запуска Claude на регулярной основе: ежедневная проверка кода каждое утро, еженедельный аудит зависимостей или брифинг, который извлекает данные из ваших подключенных инструментов.</p>
+<p><strong>Масштабируйте, когда будете готовы.</strong> Откройте <a href="https://code.claude.com/docs/ru/desktop.md#work-in-parallel-with-sessions">параллельные сессии</a> на боковой панели, чтобы работать над несколькими задачами одновременно, при желании каждая в своем Git worktree, и откройте <a href="https://code.claude.com/docs/ru/desktop.md#watch-background-tasks">панель задач</a>, чтобы наблюдать за субагентами и фоновыми командами, которые запускает сессия. Откройте <a href="https://code.claude.com/docs/ru/desktop.md#ask-a-side-question-without-derailing-the-session">боковой чат</a>, чтобы задать вопрос без отвлечения основного потока. Отправьте <a href="https://code.claude.com/docs/ru/desktop.md#run-long-running-tasks-in-the-cloud">долгие задачи в облако</a>, чтобы работа продолжалась, даже если вы закроете приложение, или <a href="https://code.claude.com/docs/ru/desktop.md#continue-in-another-surface">перенесите уже начатую сессию в облако</a>, если задача займет больше времени, чем ожидалось. <a href="https://code.claude.com/docs/ru/desktop.md#extend-claude-code">Подключите внешние инструменты</a>, такие как GitHub, Slack и Linear, чтобы объединить ваш рабочий процесс.</p>
+<h3 id="h-5">Что дальше <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/desktop.md">Используйте Claude Code Desktop</a>: режимы разрешений, параллельные сеансы, представление различий, соединители и конфигурация для предприятий</li>
+<li><a href="https://code.claude.com/docs/ru/desktop.md#coming-from-the-cli">Переходите с CLI?</a>: запустите Desktop и CLI в одном проекте и сравните функции, эквиваленты флагов и то, что недоступно в Desktop</li>
+<li><a href="https://code.claude.com/docs/ru/desktop.md#troubleshooting">Troubleshooting</a>: решения распространённых ошибок и проблем с настройкой</li>
+<li><a href="https://code.claude.com/docs/ru/best-practices.md">Best practices</a>: советы по написанию эффективных подсказок и максимальному использованию Claude Code</li>
+<li><a href="https://code.claude.com/docs/ru/common-workflows.md">Common workflows</a>: учебные материалы по отладке, рефакторингу, тестированию и многому другому</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

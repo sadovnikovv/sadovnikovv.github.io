@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Модуль 09. Плагины и маркетплейсы</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/index.html">claude-code-pro-course</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/course/index.html">course</a></nav>
+<h1 id="модуль-09-плагины-и-маркетплейсы">Модуль 09. Плагины и маркетплейсы <a class="h-anchor" href="#модуль-09-плагины-и-маркетплейсы" aria-label="Ссылка на раздел">#</a></h1>
+<p><strong>Плагин</strong> — пакет, объединяющий skills, subagents, hooks, MCP-серверы (и старые commands). Это способ <strong>раздать всю вашу настройку команде одной командой</strong>.</p>
+<h3 id="h">Структура плагина <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>my-plugin/
+├── .claude-plugin/
+│   └── plugin.json         # манифест (обязателен)
+├── skills/
+│   └── review/SKILL.md
+├── agents/
+│   └── security-auditor.md
+├── commands/               # (опционально, старый формат)
+├── hooks/
+│   └── hooks.json
+└── .mcp.json</code></pre>
+<blockquote>
+<p>Важно: в <code>.claude-plugin/</code> лежит только <code>plugin.json</code>. Остальные папки — в корне плагина.</p>
+</blockquote>
+<p>Пример: <a href="../plugin-example/"><code>plugin-example/</code></a></p>
+<h3 id="plugin-json">plugin.json <a class="h-anchor" href="#plugin-json" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;team-toolkit&quot;,
+  &quot;description&quot;: &quot;Стандарты команды: ревью, коммиты, защита файлов&quot;,
+  &quot;version&quot;: &quot;1.0.0&quot;,
+  &quot;author&quot;: { &quot;name&quot;: &quot;Your Team&quot; }
+}</code></pre>
+<h3 id="hooks-hooks-json">hooks/hooks.json <a class="h-anchor" href="#hooks-hooks-json" aria-label="Ссылка на раздел">#</a></h3>
+<p>Тот же формат, что в settings. Для путей внутри плагина — <code>${CLAUDE_PLUGIN_ROOT}</code>:</p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [{
+      &quot;matcher&quot;: &quot;Edit|Write&quot;,
+      &quot;hooks&quot;: [{ &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;${CLAUDE_PLUGIN_ROOT}/scripts/protect.sh&quot; }]
+    }]
+  }
+}</code></pre>
+<h3 id="h-2">Локальная разработка <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-bash">claude --plugin-dir ./plugin-example     # загрузить плагин на одну сессию
+claude plugin validate ./plugin-example  # проверить манифест
+/reload-plugins                          # перечитать после правок (если доступно)</code></pre>
+<p>Skills плагина вызываются с префиксом: <code>/team-toolkit:review</code>.</p>
+<h3 id="h-3">Маркетплейс <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Маркетплейс — git-репозиторий с каталогом плагинов в <code>.claude-plugin/marketplace.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;acme-tools&quot;,
+  &quot;owner&quot;: { &quot;name&quot;: &quot;Acme&quot; },
+  &quot;plugins&quot;: [
+    {
+      &quot;name&quot;: &quot;team-toolkit&quot;,
+      &quot;source&quot;: &quot;./plugins/team-toolkit&quot;,
+      &quot;description&quot;: &quot;Стандарты команды&quot;
+    }
+  ]
+}</code></pre>
+<p>Использование:</p>
+<pre><code>/plugin marketplace add acme/claude-plugins     # GitHub owner/repo, URL или путь
+/plugin install team-toolkit@acme-tools
+/plugin                                          # менеджер: установленные, включить/выключить</code></pre>
+<h3 id="h-4">Автоподключение для команды <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>В <code>.claude/settings.json</code> проекта:</p>
+<pre><code class="language-json">{
+  &quot;extraKnownMarketplaces&quot;: {
+    &quot;acme-tools&quot;: { &quot;source&quot;: { &quot;source&quot;: &quot;github&quot;, &quot;repo&quot;: &quot;acme/claude-plugins&quot; } }
+  },
+  &quot;enabledPlugins&quot;: {
+    &quot;team-toolkit@acme-tools&quot;: true
+  }
+}</code></pre>
+<p>Когда коллега откроет проект и доверит папке, ему предложат установить маркетплейс и плагины.</p>
+<h3 id="h-5">Что упаковывать в плагин, а что нет <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>В плагин</th><th>В репозиторий проекта</th></tr></thead><tbody><tr><td>Общие стандарты для многих репо</td><td>Специфика одного проекта</td></tr><tr><td>Ревью, коммиты, безопасность</td><td>Команды сборки, архитектура</td></tr><tr><td>Интеграции (MCP) компании</td><td>CLAUDE.md проекта</td></tr></tbody></table></div>
+<h3 id="h-6">Практика <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li>Запустите <code>claude --plugin-dir ./plugin-example</code>, вызовите его skill.</li>
+<li>Добавьте в плагин свой skill из модуля 05.</li>
+<li>Создайте репозиторий-маркетплейс и установите из него плагин.</li>
+</ol>
+<p>➡️ Далее: <a href="10-headless-ci.md">10. Headless, CI и GitHub Actions</a></p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

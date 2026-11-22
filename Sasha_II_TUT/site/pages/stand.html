@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ru" data-book-src="../book.html">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Глава 2 — Claude Code для инженера</title>
+<meta name="description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
+<link rel="canonical" href="https://sadovnikovv.github.io/pages/">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:site_name" content="Claude Code для инженера">
+<meta property="og:title" content="Глава 2 — Claude Code для инженера">
+<meta property="og:description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
+<meta property="og:url" content="https://sadovnikovv.github.io/pages/">
+<meta property="og:image" content="https://sadovnikovv.github.io/assets/favicon.svg">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="../assets/fonts/serif-regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/sans-regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="alternate" type="text/html" href="../book.html#stand">
+<meta name="page-index" content="3">
+</head>
+<body>
+<a class="skip-link" href="#book">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../index.html">Claude Code для инженера</a></strong>
+    <a href="../materials/index.html">Материалы</a>
+    <a href="../about.html">О книге</a>
+    <a href="../download/Книга-Claude-Code.epub" download>EPUB</a>
+  </div>
+</header>
+<div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+<main class="wrap" id="book">
+<section class="chapter"><h2 id="stand"><span class="chapter">Глава 2</span>Ваш стенд: Claude Code → OmniRoute → DeepSeek</h2>
+
+<p class="lead-in">Прежде чем изучать команды, разберёмся с архитектурой. Инженеру важно понимать, где проходит сигнал и где искать неисправность, если что-то не работает.</p>
+
+<h3>2.1. Три звена</h3>
+
+<div class="flow" role="img" aria-label="Подробная схема связки">
+  <div class="node"><b>1. Клиент</b><span>Claude Code CLI<br>Windows, PowerShell</span></div>
+  <div class="arrow">→</div>
+  <div class="node"><b>2. Шлюз</b><span>OmniRoute<br>localhost:20128</span></div>
+  <div class="arrow">→</div>
+  <div class="node"><b>3. Провайдер</b><span>DeepSeek API<br>облако</span></div>
+</div>
+
+<p><strong>Claude Code</strong> — клиент. Он читает файлы, выполняет команды, ведёт диалог и обращается к модели по протоколу Anthropic Messages API. <strong>OmniRoute</strong> — локальный шлюз. Он принимает запросы на <code>/v1/messages</code>, проверяет ключ, выбирает провайдера и модель, ведёт учёт. <strong>DeepSeek</strong> — облачная модель, которая фактически генерирует ответ.</p>
+
+<p>Такое разделение даёт практические преимущества:</p>
+
+<ul>
+  <li>один адрес и один ключ для разных моделей и провайдеров;</li>
+  <li>переключение модели без переустановки клиента;</li>
+  <li>автоматический резерв при исчерпании квоты;</li>
+  <li>учёт токенов и расходов в одном месте;</li>
+  <li>возможность позже подключить локальную модель через тот же шлюз.</li>
+</ul>
+
+<h3>2.2. Что именно делает cc.txt</h3>
+
+<p>Файл <code>cc.txt</code> — это не конфигурация Claude Code, а сценарий запуска PowerShell. Он задаёт переменные окружения и вызывает <code>claude</code>. Разберём строки по смыслу (значение ключа намеренно заменено).</p>
+
+<pre><code>Set-Location "C:\Users\SMDWORKS\Downloads\Sasha_II_TUT"
+
+$env:ANTHROPIC_BASE_URL = "http://localhost:20128"
+
+Remove-Item Env:ANTHROPIC_API_KEY -ErrorAction SilentlyContinue
+Remove-Item Env:CLAUDE_CODE_OAUTH_TOKEN -ErrorAction SilentlyContinue
+
+$env:ANTHROPIC_AUTH_TOKEN = 'sk-ВАШ_КЛЮЧ_OMNIROUTE'
+
+$env:ANTHROPIC_MODEL = "combo/DeepSeek"
+$env:ANTHROPIC_SMALL_FAST_MODEL = "combo/DeepSeek"
+$env:CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = "1"
+$env:CLAUDE_CODE_AUTO_MODE_SERVER = "0"
+
+claude --model "combo/DeepSeek" --permission-mode auto</code></pre>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Строка</th><th>Что делает</th><th>Что будет, если убрать</th></tr></thead>
+  <tbody>
+    <tr><td><code>Set-Location</code></td><td>Переходит в рабочую папку</td><td>Claude Code запустится в другой папке и не увидит проект</td></tr>
+    <tr><td><code>ANTHROPIC_BASE_URL</code></td><td>Указывает адрес шлюза</td><td>Клиент пойдёт на серверы Anthropic и не найдёт ваш ключ</td></tr>
+    <tr><td><code>Remove-Item Env:ANTHROPIC_API_KEY</code></td><td>Убирает конкурирующий ключ</td><td>Возможен конфликт авторизации и ошибка 401</td></tr>
+    <tr><td><code>Remove-Item Env:CLAUDE_CODE_OAUTH_TOKEN</code></td><td>Убирает OAuth-токен</td><td>Клиент может выбрать не тот способ входа</td></tr>
+    <tr><td><code>ANTHROPIC_AUTH_TOKEN</code></td><td>Ключ доступа к OmniRoute</td><td>Шлюз отклонит запрос</td></tr>
+    <tr><td><code>ANTHROPIC_MODEL</code></td><td>Фиксирует модель</td><td>Будет выбрана модель по умолчанию, которой может не быть в шлюзе</td></tr>
+    <tr><td><code>ANTHROPIC_SMALL_FAST_MODEL</code></td><td>Модель для служебных задач</td><td>Служебные запросы пойдут на основную модель — дороже</td></tr>
+    <tr><td><code>DISABLE_NONESSENTIAL_TRAFFIC</code></td><td>Отключает необязательный трафик</td><td>Больше фоновых запросов</td></tr>
+    <tr><td><code>CLAUDE_CODE_AUTO_MODE_SERVER</code></td><td>Отключает серверный авто-режим</td><td>Поведение разрешений может отличаться</td></tr>
+    <tr><td><code>--permission-mode auto</code></td><td>Снижает число подтверждений</td><td>Claude будет спрашивать разрешение чаще</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout warn">
+  <span class="label">Осторожно</span>
+  <p><code>--permission-mode auto</code> уменьшает количество запросов подтверждения. Для первых сессий безопаснее <code>--permission-mode default</code>: вы увидите каждое действие. Переходите на <code>auto</code>, когда освоитесь и работаете в отдельной папке.</p>
+</div>
+
+<h3>2.3. Переменные, которые полезно знать</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Переменная</th><th>Назначение</th><th>Типичное значение</th></tr></thead>
+  <tbody>
+    <tr><td><code>ANTHROPIC_BASE_URL</code></td><td>Корень API. Claude Code сам добавляет <code>/v1/messages</code></td><td><code>http://localhost:20128</code></td></tr>
+    <tr><td><code>ANTHROPIC_AUTH_TOKEN</code></td><td>Ключ в заголовке <code>Authorization: Bearer</code></td><td><code>sk-…</code> из панели OmniRoute</td></tr>
+    <tr><td><code>ANTHROPIC_API_KEY</code></td><td>Альтернативный ключ в заголовке <code>x-api-key</code></td><td>Обычно не задавать при работе через шлюз</td></tr>
+    <tr><td><code>ANTHROPIC_MODEL</code></td><td>Основная модель</td><td><code>combo/DeepSeek</code></td></tr>
+    <tr><td><code>ANTHROPIC_SMALL_FAST_MODEL</code></td><td>Быстрая модель для мелких задач</td><td><code>combo/DeepSeek</code></td></tr>
+    <tr><td><code>CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY</code></td><td>Разрешает список моделей шлюза в <code>/model</code></td><td><code>1</code></td></tr>
+    <tr><td><code>CLAUDE_CODE_MAX_OUTPUT_TOKENS</code></td><td>Ограничение длины ответа</td><td>например, <code>65536</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Переменные читаются один раз при запуске. Изменили значение — перезапустите <code>claude</code>. Это частая причина «настройки не применились».</p>
+
+<h3>2.4. Проверка стенда по шагам</h3>
+
+<ol>
+  <li><strong>Шлюз запущен.</strong> Откройте <code>http://localhost:20128</code>. Если панель не открывается — OmniRoute не работает или слушает другой порт.</li>
+  <li><strong>Ключ есть.</strong> В панели: <em>Dashboard → API-ключи</em>. Создайте ключ и сохраните: он показывается один раз.</li>
+  <li><strong>API отвечает.</strong> Выполните в PowerShell:
+    <pre><code>curl.exe -H "Authorization: Bearer sk-ВАШ_КЛЮЧ" http://localhost:20128/v1/models</code></pre>
+    Должен вернуться список моделей. Если ошибка здесь — проблема в шлюзе, а не в Claude Code.
+  </li>
+  <li><strong>Claude Code видит шлюз.</strong> Запустите сценарий из <code>cc.txt</code> (удобнее переименовать файл в <code>cc.ps1</code> и выполнить <code>.\cc.ps1</code>) и введите <code>/status</code>. Проверьте адрес и модель.</li>
+  <li><strong>Модель отвечает.</strong> Задайте простой вопрос: «Ответь одним словом: работает». Если ответ есть — стенд собран.</li>
+</ol>
+
+<h3>2.5. Где искать неисправность</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Симптом</th><th>Где искать</th><th>Что проверить</th></tr></thead>
+  <tbody>
+    <tr><td>Панель OmniRoute не открывается</td><td>Шлюз</td><td>Запущен ли процесс, не занят ли порт 20128</td></tr>
+    <tr><td><code>/v1/models</code> даёт 401</td><td>Ключ</td><td>Тот ли ключ, нет ли лишних кавычек, не истёк ли срок</td></tr>
+    <tr><td><code>/v1/models</code> даёт 404</td><td>Адрес</td><td>Нет ли <code>/v1</code> в <code>ANTHROPIC_BASE_URL</code></td></tr>
+    <tr><td>Claude Code пишет <code>Connection refused</code></td><td>Сеть</td><td>Запущен ли шлюз, тот ли порт, не блокирует ли брандмауэр</td></tr>
+    <tr><td><code>model not found</code></td><td>Маршрут</td><td>Есть ли <code>combo/DeepSeek</code> в панели, включён ли провайдер</td></tr>
+    <tr><td>Ответы пустые или обрываются</td><td>Провайдер</td><td>Квота DeepSeek, лимиты, логи OmniRoute</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>2.6. Безопасность и данные</h3>
+
+<p>В схеме есть два чувствительных места: ключ доступа и содержимое запросов.</p>
+
+<ul>
+  <li><strong>Ключ в <code>cc.txt</code> лежит открытым текстом.</strong> Любой, кто получил файл, получил доступ к шлюзу. Не отправляйте файл в мессенджеры и не коммитьте в git. При утечке перевыпустите ключ в панели.</li>
+  <li><strong>Запросы уходят в DeepSeek.</strong> Всё, что вы отправите агенту — код, фрагменты схем, тексты, — может попасть на серверы провайдера. Для чужих проектов, коммерческой тайны и персональных данных это надо учитывать.</li>
+  <li><strong>VPN.</strong> Если провайдер недоступен напрямую, используется VPN. Он влияет на сетевой маршрут, но не отменяет вопрос доверия к провайдеру.</li>
+  <li><strong>Для закрытых проектов</strong> разумная альтернатива — локальная модель через тот же OmniRoute. Скорость и качество будут ниже, зато данные не покидают машину.</li>
+</ul>
+
+<div class="callout">
+  <span class="label">Опыт</span>
+  <p>Заведите отдельную папку для экспериментов и отдельную — для рабочих проектов. В рабочей папке держите <code>CLAUDE.md</code> с правилами: какие команды можно запускать, какие файлы нельзя трогать, где лежат даташиты и стандарты.</p>
+</div>
+
+<!-- ============================================================
+     ЧАСТЬ II. ОСНОВЫ
+     ============================================================ -->
+
+</section>
+</main>
+<footer class="site-footer">
+  <nav class="chapter-nav" aria-label="Навигация по главам">
+    <span><a data-rel="prev" href="../pages/how-to-read.html">← Глава 1</a></span>
+    <a data-rel="toc" href="../index.html">Оглавление</a>
+    <span><a data-rel="next" href="../pages/what-is-ai.html">Глава 3 →</a></span>
+  </nav>
+  <p>Источник — <a href="../book.html">книга одним файлом</a>,
+  <a href="../download/Книга-Claude-Code.epub">EPUB</a>.</p>
+</footer>
+<script type="application/json" id="page-list">[{"title":"Глава 0 История этой книги","short":"Глава 0","url":"pages/history.html"},{"title":"Глава 1 Как читать эту книгу","short":"Глава 1","url":"pages/how-to-read.html"},{"title":"Глава 2 Ваш стенд: Claude Code → OmniRoute → DeepSeek","short":"Глава 2","url":"pages/stand.html"},{"title":"Глава 3 Что такое ИИ","short":"Глава 3","url":"pages/what-is-ai.html"},{"title":"Глава 4 Как работает языковая модель","short":"Глава 4","url":"pages/how-llm-works.html"},{"title":"Глава 5 Промпт как техническое задание","short":"Глава 5","url":"pages/prompt.html"},{"title":"Глава 6 Что такое агент","short":"Глава 6","url":"pages/agent.html"},{"title":"Глава 6A История нейронных сетей","short":"Глава 6A","url":"pages/history-nn.html"},{"title":"Глава 6B Анатомия трансформера","short":"Глава 6B","url":"pages/transformer-anatomy.html"},{"title":"Глава 6C Веса, биты и точность","short":"Глава 6C","url":"pages/weights-bits.html"},{"title":"Глава 6D Ландшафт моделей 2026","short":"Глава 6D","url":"pages/model-landscape.html"},{"title":"Глава 6E Локальные модели","short":"Глава 6E","url":"pages/local-models.html"},{"title":"Глава 6F Токены, контекст и сжатие","short":"Глава 6F","url":"pages/tokens-compression.html"},{"title":"Глава 6G Железо и вычислительность","short":"Глава 6G","url":"pages/hardware.html"},{"title":"Глава 6H Агенты и их экосистема","short":"Глава 6H","url":"pages/agents-ecosystem.html"},{"title":"Глава 6I Оптимизация: что пишут на Хабре и Пикабу","short":"Глава 6I","url":"pages/optimization-posts.html"},{"title":"Глава 6J Вопросы и ответы","short":"Глава 6J","url":"pages/faq.html"},{"title":"Глава 6K (не публикуется)","short":"Глава 6K (не публикуется)","url":"pages/deepseek-billing.html"},{"title":"Глава 7 Установка и первый запуск","short":"Глава 7","url":"pages/install.html"},{"title":"Глава 7A (не публикуется)","short":"Глава 7A (не публикуется)","url":"pages/migration.html"},{"title":"Глава 7B (не публикуется)","short":"Глава 7B (не публикуется)","url":"pages/new-pc.html"},{"title":"Глава 8 Интерфейс и команды","short":"Глава 8","url":"pages/interface.html"},{"title":"Глава 9 Память и CLAUDE.md","short":"Глава 9","url":"pages/memory.html"},{"title":"Глава 9A Память, обучение и превращение в скилл","short":"Глава 9A","url":"pages/memory-training.html"},{"title":"Глава 10 Разрешения и безопасность","short":"Глава 10","url":"pages/permissions.html"},{"title":"Глава 11 Контекст, стоимость, сессии","short":"Глава 11","url":"pages/context-cost.html"},{"title":"Глава 12 Расширения: skills, субагенты, hooks, MCP","short":"Глава 12","url":"pages/extensions.html"},{"title":"Глава 13 Принцип интеграции","short":"Глава 13","url":"pages/integration-principle.html"},{"title":"Глава 14 Схемотехника и симуляция","short":"Глава 14","url":"pages/circuit.html"},{"title":"Глава 15 EDA и трассировка плат","short":"Глава 15","url":"pages/pcb.html"},{"title":"Глава 16 Микроконтроллеры","short":"Глава 16","url":"pages/mcu.html"},{"title":"Глава 17 Отладка и измерения","short":"Глава 17","url":"pages/debug.html"},{"title":"Глава 18 Машиностроение и CAD","short":"Глава 18","url":"pages/cad.html"},{"title":"Глава 19 Документация и traceability","short":"Глава 19","url":"pages/docs.html"},{"title":"Глава 20 Карта связок","short":"Глава 20","url":"pages/integration-map.html"},{"title":"Глава 21 Десять заданий","short":"Глава 21","url":"pages/labs.html"},{"title":"Глава 22 Итоговый проект: термостат лабораторной печи","short":"Глава 22","url":"pages/capstone.html"},{"title":"Глава 23 Как проверять ИИ","short":"Глава 23","url":"pages/verify.html"},{"title":"Глава 24 Команды и флаги","short":"Глава 24","url":"pages/commands.html"},{"title":"Глава 25 Переменные, файлы, настройки","short":"Глава 25","url":"pages/files-settings.html"},{"title":"Глава 26 Шаблоны промптов","short":"Глава 26","url":"pages/prompt-templates.html"},{"title":"Глава 27 Диагностика","short":"Глава 27","url":"pages/troubleshooting.html"},{"title":"Глава 28 Файлы и папки","short":"Глава 28","url":"pages/library.html"},{"title":"Глава 29 Литература","short":"Глава 29","url":"pages/literature.html"},{"title":"Глава 29A Открытая хрестоматия","short":"Глава 29A","url":"pages/open-books.html"},{"title":"Глава 30 План на восемь недель","short":"Глава 30","url":"pages/plan.html"},{"title":"Глава 31 Словарь","short":"Глава 31","url":"pages/glossary.html"},{"title":"Глава 32 Источники","short":"Глава 32","url":"pages/sources.html"}]</script>
+<script src="../assets/app.js" defer></script>
+</body>
+</html>

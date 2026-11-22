@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Быстрый старт</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Быстрый старт <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Установите Claude Code в терминале, войдите в систему и используйте CLI, чтобы изучить кодовую базу и внести первое изменение в код.</p>
+</blockquote>
+<p>Это руководство по быстрому старту посвящено Claude Code в терминале: установке CLI, входу в систему в первой сессии и использованию инструмента для типичных задач разработки в вашем собственном проекте.</p>
+<h3 id="h-2">Перед началом <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Убедитесь, что у вас есть:</p>
+<ul>
+<li>Открытый терминал или командная строка</li>
+<li>Проект кода для работы</li>
+<li><a href="https://claude.com/pricing?utm_source=claude_code\&amp;utm_medium=docs\&amp;utm_content=quickstart_prereq">Подписка Claude</a> (Pro, Max, Ultra, Team или Enterprise), учётная запись <a href="https://platform.claude.com/">Claude Console</a> или доступ через <a href="https://code.claude.com/docs/ru/third-party-integrations.md">поддерживаемого облачного провайдера</a></li>
+</ul>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Эти случаи рассматриваются на других страницах:</p>
+<ul>
+<li><strong>Вы никогда раньше не использовали терминал</strong>: начните с <a href="https://code.claude.com/docs/ru/terminal-guide">руководства по терминалу</a></li>
+<li><strong>Вы хотите использовать Claude Code не в терминале</strong>: Claude Code также доступен в <a href="https://claude.ai/code">веб-версии</a>, как <a href="https://code.claude.com/docs/ru/desktop.md">настольное приложение</a>, в <a href="https://code.claude.com/docs/ru/vs-code.md">VS Code</a> и <a href="https://code.claude.com/docs/ru/jetbrains.md">JetBrains IDEs</a>, в <a href="https://code.claude.com/docs/ru/slack.md">Slack</a> и в CI/CD с <a href="https://code.claude.com/docs/ru/github-actions.md">GitHub Actions</a> и <a href="https://code.claude.com/docs/ru/gitlab-ci-cd.md">GitLab</a>. Смотрите <a href="https://code.claude.com/docs/ru/overview.md#use-claude-code-everywhere">все интерфейсы</a>.</li>
+</ul>
+</blockquote>
+<h3 id="шаг-1-установите-claude-code">Шаг 1: Установите Claude Code <a class="h-anchor" href="#шаг-1-установите-claude-code" aria-label="Ссылка на раздел">#</a></h3>
+<p>Для установки Claude Code откройте терминал и выполните команду для вашей системы. Если вы раньше не использовали терминал, <a href="https://code.claude.com/docs/ru/terminal-guide">руководство по терминалу</a> показывает, как его открыть и вставить команду.</p>
+<blockquote>
+<p>[tab] Встроенная установка (рекомендуется)</p>
+<p><strong>macOS, Linux, WSL:</strong></p>
+<p>```bash theme={null}
+curl -fsSL https://claude.ai/install.sh | bash</p>
+<pre><code>
+В Windows приглашение командной строки показывает `PS C:\`, когда вы находитесь в PowerShell, и `C:\` без `PS`, когда вы находитесь в CMD.
+
+**Windows PowerShell:**
+</code></pre>
+<p>irm https://claude.ai/install.ps1 | iex</p>
+<pre><code>
+**Windows CMD:**
+</code></pre>
+<p>curl -fsSL https://claude.ai/install.cmd -o install.cmd &amp;&amp; install.cmd &amp;&amp; del install.cmd</p>
+<pre><code>
+Команда установки не показывает прогресс во время загрузки Claude Code. Когда установщик завершит работу, откройте новое окно терминала и выполните `claude --version`. Работающая установка выводит номер версии. Если ваша оболочка говорит, что `claude` не найден или не распознан, каталог установки еще не находится в вашем PATH: см. [Исправьте ваш PATH](https://code.claude.com/docs/ru/troubleshoot-install.md#command-not-found-claude-after-installation).
+
+Если вы видите `The token &#x27;&amp;&amp;&#x27; is not a valid statement separator`, вы находитесь в PowerShell, а не в CMD. Если вы видите `&#x27;irm&#x27; is not recognized as an internal or external command`, вы находитесь в CMD, а не в PowerShell.
+
+Если команда установки завершается с ошибкой `syntax error near unexpected token &#x27;&lt;&#x27;`, `403` или любой другой ошибкой, см. [Устранение неполадок при установке](https://code.claude.com/docs/ru/troubleshoot-install.md#find-your-error), чтобы сопоставить ошибку с исправлением и для альтернативных методов установки.
+
+[Git for Windows](https://git-scm.com/downloads/win) рекомендуется на встроенной Windows, чтобы Claude Code мог использовать инструмент Bash. Если Git for Windows не установлен, Claude Code использует PowerShell в качестве инструмента оболочки. Установки WSL не требуют Git for Windows.
+
+&gt; [!NOTE]
+&gt;
+&gt; Встроенные установки автоматически обновляются в фоновом режиме, чтобы вы всегда использовали последнюю версию.</code></pre>
+</blockquote>
+<blockquote>
+<p>[tab] Homebrew</p>
+<p>```bash theme={null}
+brew install --cask claude-code</p>
+<pre><code>
+Homebrew предлагает два пакета. `claude-code` отслеживает канал стабильного выпуска, который обычно отстает примерно на неделю и пропускает выпуски с серьезными регрессиями. `claude-code@latest` отслеживает последний канал и получает новые версии сразу после их выпуска.
+
+&gt; [!NOTE]
+&gt;
+&gt; Установки Homebrew не обновляются автоматически. Запустите `brew upgrade claude-code` или `brew upgrade claude-code@latest`, в зависимости от того, какой пакет вы установили, чтобы получить последние функции и исправления безопасности.</code></pre>
+</blockquote>
+<blockquote>
+<p>[tab] WinGet</p>
+<p>```powershell theme={null}
+winget install Anthropic.ClaudeCode</p>
+<pre><code>
+&gt; [!NOTE]
+&gt;
+&gt; Установки WinGet не обновляются автоматически. Периодически запускайте `winget upgrade Anthropic.ClaudeCode` чтобы получить последние функции и исправления безопасности.</code></pre>
+</blockquote>
+<p>Вы также можете установить с помощью <a href="https://code.claude.com/docs/ru/setup.md#install-with-linux-package-managers">apt, dnf или apk</a> на Debian, Fedora, RHEL и Alpine.</p>
+<p>Чтобы подтвердить, что установка прошла успешно, выполните:</p>
+<p>```bash theme={null}
+claude --version</p>
+<pre><code>
+Команда выводит номер версии, за которым следует `(Claude Code)`.
+
+## Шаг 2: Начните свою первую сессию
+
+Откройте терминал в любом каталоге проекта и запустите Claude Code:
+</code></pre>
+<p>cd /path/to/your/project
+claude</p>
+<pre><code>
+Замените `/path/to/your/project` на путь к проекту, над которым вы хотите работать.
+
+При первом использовании Claude Code предложит вам войти в систему. Для подписки Claude или учётных записей Console следуйте инструкциям, чтобы завершить аутентификацию в браузере. Если вы задали переменную окружения `ANTHROPIC_API_KEY` и подтвердили использование ключа, когда Claude Code спросит об этом, Claude Code пропустит запрос на вход.
+
+Вы можете войти, используя любой из следующих типов учётных записей:
+
+* [Claude Pro, Max, Ultra, Team или Enterprise](https://claude.com/pricing?utm_source=claude_code\&amp;utm_medium=docs\&amp;utm_content=quickstart_login) (рекомендуется)
+* [Claude Console](https://platform.claude.com/) (доступ к API с предоплаченными кредитами). При первом входе в Console автоматически создаётся рабочее пространство «Claude Code» для централизованного отслеживания расходов.
+* [Amazon Bedrock, Google Cloud&#x27;s Agent Platform или Microsoft Foundry](https://code.claude.com/docs/ru/third-party-integrations.md) (корпоративные облачные провайдеры)
+* Самостоятельно размещённый [шлюз приложений Claude](https://code.claude.com/docs/ru/claude-apps-gateway), если ваша организация его использует: администратор заранее настраивает URL шлюза, и `/login` сразу открывается на экране **Cloud gateway**, где вы можете войти с помощью корпоративного SSO
+
+После входа ваши учётные данные сохраняются, и вам не придётся входить повторно. Подробнее читайте в разделе [Управление учётными данными](https://code.claude.com/docs/ru/authentication.md#credential-management).
+
+Появится промпт Claude Code, над которым отображаются версия, текущая модель и рабочий каталог. Введите `/help`, чтобы увидеть доступные команды, или `/resume`, чтобы продолжить предыдущий диалог. Чтобы позже сменить учётную запись или пройти аутентификацию повторно, введите `/login` внутри запущенной сессии.
+
+## Шаг 3: Задайте свой первый вопрос
+
+Попробуйте одну из этих команд:
+</code></pre>
+<p>what does this project do?</p>
+<pre><code>
+Claude проанализирует ваши файлы и предоставит краткое описание. Вы также можете задавать более конкретные вопросы:
+</code></pre>
+<p>what technologies does this project use?</p>
+<pre><code></code></pre>
+<p>where is the main entry point?</p>
+<pre><code></code></pre>
+<p>explain the folder structure</p>
+<pre><code>
+Вы также можете спросить Claude о его собственных возможностях:
+</code></pre>
+<p>what can Claude Code do?</p>
+<pre><code></code></pre>
+<p>how do I create custom skills in Claude Code?</p>
+<pre><code></code></pre>
+<p>can Claude Code work with Docker?</p>
+<pre><code>
+&gt; [!NOTE]
+&gt;
+&gt; Claude Code читает файлы вашего проекта по мере необходимости. Вам не нужно вручную добавлять контекст.
+
+## Шаг 4: Внесите первое изменение в код
+
+Попробуйте выполнить небольшую задачу:
+</code></pre>
+<p>add a hello world function to the main file</p>
+<pre><code>
+Claude Code найдёт подходящий файл и покажет вам изменение. Если он запросит подтверждение перед внесением изменения, выберите **Yes**, чтобы одобрить его.
+
+[Режим разрешений](https://code.claude.com/docs/ru/permission-modes.md) сессии определяет, какие действия Claude может выполнять, не спрашивая вас заранее. Нажмите `Shift+Tab` в любой момент, чтобы переключить режим разрешений текущей сессии.
+
+## Шаг 5: Используйте Git с Claude Code
+
+Claude Code превращает операции Git в диалог:
+</code></pre>
+<p>what files have I changed?</p>
+<pre><code></code></pre>
+<p>commit my changes with a descriptive message</p>
+<pre><code>
+Вы также можете использовать промпты для более сложных операций Git:
+</code></pre>
+<p>create a new branch called feature/quickstart</p>
+<pre><code></code></pre>
+<p>show me the last 5 commits</p>
+<pre><code></code></pre>
+<p>help me resolve merge conflicts</p>
+<pre><code>
+## Шаг 6: Исправьте ошибку или добавьте функцию
+
+Опишите, что вы хотите, на естественном языке:
+</code></pre>
+<p>add input validation to the user registration form</p>
+<pre><code>
+Или исправьте существующие проблемы:
+</code></pre>
+<p>there&#x27;s a bug where users can submit empty forms - fix it</p>
+<pre><code>
+## Шаг 7: Попробуйте другие распространённые рабочие процессы
+
+Попробуйте ещё несколько промптов. Вы можете попросить Claude выполнить рефакторинг кода, написать тесты, обновить документацию или проверить ваши изменения:
+</code></pre>
+<p>refactor the authentication module to use async/await instead of callbacks</p>
+<pre><code></code></pre>
+<p>write unit tests for the calculator functions</p>
+<pre><code></code></pre>
+<p>update the README with installation instructions</p>
+<pre><code></code></pre>
+<p>review my changes and suggest improvements</p>
+<pre><code>
+&gt; [!TIP]
+&gt;
+&gt; Общайтесь с Claude так же, как с отзывчивым коллегой. Опишите, чего вы хотите достичь, и Claude поможет вам в этом.
+
+## Основные команды
+
+Вот наиболее важные команды для ежедневного использования, сгруппированные по месту их запуска.
+
+### Команды оболочки
+
+Запускайте их из вашего терминала, чтобы запустить или возобновить Claude Code.
+
+| Команда | Что она делает | Пример |
+| - | - | - |
+| `claude` | Запустить интерактивный режим | `claude` |
+| `claude &quot;task&quot;` | Запустить интерактивный режим с начальным приглашением | `claude &quot;fix the build error&quot;` |
+| `claude -p &quot;query&quot;` | Запустить одноразовый запрос, затем выйти | `claude -p &quot;explain this function&quot;` |
+| `claude -c` | Продолжить самый последний разговор в текущем каталоге | `claude -c` |
+| `claude -r` | Возобновить предыдущий разговор | `claude -r` |
+
+Смотрите [справочник CLI](https://code.claude.com/docs/ru/cli-reference.md) для полного списка команд оболочки.
+
+### Команды сессии
+
+Запускайте их внутри Claude Code после его запуска.
+
+| Команда | Что она делает | Пример |
+| - | - | - |
+| `/clear` | Начать новый диалог. Вернуться к предыдущему можно с помощью `/resume`. | `/clear` |
+| `/help` | Показать доступные команды | `/help` |
+| `/exit` или Ctrl+D дважды | Выйти из Claude Code | `/exit` |
+
+Смотрите [справочник команд](https://code.claude.com/docs/ru/commands.md) для полного списка команд сессии.
+
+## Советы для начинающих
+
+Для большего, смотрите [лучшие практики](https://code.claude.com/docs/ru/best-practices.md) и [типичные рабочие процессы](https://code.claude.com/docs/ru/common-workflows.md).
+
+&gt; [accordion] Будьте конкретны в своих запросах
+&gt;
+&gt; Вместо: &quot;исправить ошибку&quot;
+&gt;
+&gt; Попробуйте: &quot;исправить ошибку входа, когда пользователи видят пустой экран после ввода неправильных учетных данных&quot;
+
+&gt; [accordion] Используйте пошаговые инструкции
+&gt;
+&gt; Разбейте сложные задачи на этапы:
+&gt;
+&gt; ```text wrap theme={null}
+&gt; 1. создать новую таблицу базы данных для профилей пользователей
+&gt; 2. создать конечную точку API для получения и обновления профилей пользователей
+&gt; 3. создать веб-страницу, которая позволяет пользователям просматривать и редактировать свою информацию
+&gt; ```
+
+&gt; [accordion] Позвольте Claude сначала исследовать
+&gt;
+&gt; Перед внесением изменений позвольте Claude понять ваш код:
+&gt;
+&gt; ```text wrap theme={null}
+&gt; проанализировать схему базы данных
+&gt; ```
+&gt;
+&gt; ```text wrap theme={null}
+&gt; создать панель управления, показывающую продукты, которые чаще всего возвращаются нашими клиентами из Великобритании
+&gt; ```
+
+&gt; [accordion] Сэкономьте время с помощью ярлыков
+&gt;
+&gt; * Введите `/` для просмотра всех команд и skills
+&gt; * Используйте Tab для завершения команды
+&gt; * Нажмите ↑ для истории команд
+&gt; * Нажмите `Shift+Tab` для переключения режимов разрешений
+
+## Что дальше?
+
+Теперь, когда вы изучили основы, исследуйте более продвинутые функции:
+
+* [Как работает Claude Code](https://code.claude.com/docs/ru/how-claude-code-works.md): поймите агентный цикл, встроенные инструменты и то, как Claude Code взаимодействует с вашим проектом
+* [Лучшие практики](https://code.claude.com/docs/ru/best-practices.md): получайте лучшие результаты с эффективными запросами и настройкой проекта
+* [Типичные рабочие процессы](https://code.claude.com/docs/ru/common-workflows.md): пошаговые руководства для типичных задач
+* [Расширьте Claude Code](https://code.claude.com/docs/ru/features-overview.md): настройте с помощью CLAUDE.md, скиллов, хуков, MCP и многого другого
+
+См. [расширенную настройку](https://code.claude.com/docs/ru/setup.md), чтобы узнать о вариантах установки, ручном обновлении или инструкциях по удалению.
+
+## Получение помощи
+
+* **В Claude Code**: Введите `/help` или спросите &quot;how do I&quot; вопрос
+* **Документация**: Просмотрите другие руководства на этом сайте
+* **Курсы**: Пройдите [Claude Code 101](https://academy.claude.com/courses/claude-code-101) и другие бесплатные самостоятельные курсы на [Claude Academy](https://academy.claude.com/)
+* **Сообщество**: Присоединитесь к [серверу Discord](https://www.anthropic.com/discord) для советов и поддержки
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

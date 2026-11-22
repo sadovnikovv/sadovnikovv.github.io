@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Создание мода</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../../materials/01-claude-code/official-docs-ru/plugins/index.html">plugins</a> / <a href="../../../../../materials/01-claude-code/official-docs-ru/plugins/mods/index.html">mods</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Создание мода <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Попросите Claude написать мод Claude Code из описания или напишите его сами, чтобы подсчитывать вызовы инструментов и добавить команду. Изучите цикл перезагрузки и валидации.</p>
+</blockquote>
+<p>Мод — это <a href="https://code.claude.com/docs/ru/plugins/overview.md">плагин</a> Claude Code с файлом входа, называемым модулем хуков: файл JavaScript или TypeScript, функции которого Claude Code вызывает при возникновении событий. Чтобы создать мод:</p>
+<ul>
+<li><strong>Попросите Claude написать его</strong>: <a href="#ask-claude-for-a-mod">опишите, что вы хотите</a> в сеансе Claude Code</li>
+<li><strong>Напишите его сами</strong>: <a href="#write-a-mod-yourself">следуйте руководству</a>, чтобы узнать, как работает код мода. Вам не нужны Node.js, бандлер или этап сборки, потому что Claude Code загружает файлы <code>.js</code> и <code>.ts</code> напрямую.</li>
+</ul>
+<p>Если вы еще не решили, является ли мод правильным инструментом, сначала прочитайте <a href="https://code.claude.com/docs/ru/plugins/mods/overview.md#compare-mods-settings-hooks-skills-and-mcp-servers">сравнение на странице обзора</a>.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Используйте Claude Code v2.1.287 или более позднюю версию. В вашей оболочке выполните <code>claude --version</code>, чтобы проверить. Чтобы узнать, могут ли моды загружаться для вас, см. <a href="https://code.claude.com/docs/ru/plugins/mods/troubleshoot.md#check-whether-mods-can-load">Проверка возможности загрузки модов</a>.</p>
+</blockquote>
+<h3 id="попросите-claude-написать-мод">Попросите Claude написать мод <a class="h-anchor" href="#попросите-claude-написать-мод" aria-label="Ссылка на раздел">#</a></h3>
+<p>Опишите нужный вам мод в интерактивном сеансе Claude Code, и Claude напишет его. Claude работает из встроенного <a href="https://code.claude.com/docs/ru/skills.md">skill</a> с именем <code>plugin-authoring</code>, который сообщает ему, где написать мод, какие события и методы есть в вашей версии, и как загружается мод. Claude может загрузить skill, когда вы попросите мод, или вы можете загрузить его сами, выполнив <code>/plugin-authoring</code> в приглашении Claude Code.</p>
+<p>В <a href="https://code.claude.com/docs/ru/permission-modes.md">режимах разрешений</a> <code>auto</code> и <code>bypassPermissions</code> Claude Code <a href="#sessions-that-skip-the-approval">может загрузить мод, не спрашивая вас</a>. Чтобы сначала получить запрос, запустите новую сессию в режиме <code>default</code> или <code>acceptEdits</code> либо <a href="https://code.claude.com/docs/ru/permission-modes.md#switch-permission-modes">переключитесь</a> на любой из этих режимов, прежде чем попросить первый мод в сессии. В <a href="#sessions-that-cant-load">некоторых сессиях</a> мод не может загрузиться.</p>
+<p><strong>1. Опишите мод</strong></p>
+<p>Попросите мод своими словами, например <code>make a mod that shows the current git branch above the prompt</code>. Claude пишет мод в отдельном каталоге в папке модов сеанса, которая находится в <code>~/.claude/dev-mods/</code>, за которой следует ID сеанса. Полный путь мода выглядит как <code>~/.claude/dev-mods/3f2a9c1e-5b7d-4e8a-9c21-6d0f4b8a7e13/git-branch/</code>.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>В <a href="https://code.claude.com/docs/ru/permission-modes.md">режимах разрешений</a> <code>default</code> и <code>acceptEdits</code> Claude Code просит вас одобрить каждый из файлов мода перед тем, как Claude его создаст, потому что папка модов — это <a href="https://code.claude.com/docs/ru/permission-modes.md#protected-paths">защищённый путь</a>. Одобрите каждый файл по мере его появления.</p>
+</blockquote>
+<p><strong>2. Одобрите мод</strong></p>
+<p>Когда Claude сохраняет первый файл, Claude Code спрашивает, следует ли включить горячую перезагрузку для сессии. Горячая перезагрузка запускает моды, написанные Claude в этой сессии, и подхватывает каждое последующее изменение. Вы не увидите этот вопрос в сессии, которая <a href="#sessions-that-skip-the-approval">загружает новые моды, не спрашивая</a> или <a href="#sessions-that-cant-load">не может их загрузить</a>.</p>
+<p>Выберите один из этих ответов:</p>
+<ul>
+<li><strong>Turn them on</strong>: моды в папке модов сессии загружаются при завершении хода и перезагружаются в конце каждого хода, который их изменяет. Ваш ответ действует для сессии, в том числе после её возобновления.</li>
+<li><strong>Not now</strong>: пока ничего не загружается. Файлы остаются там, где их написал Claude, и моды загружаются при следующем запуске этой сессии. Чтобы мод никогда не загружался, удалите его каталог.</li>
+</ul>
+<p><strong>3. Проверьте, что мод загрузился</strong></p>
+<p>Выполните <code>/plugin</code> в приглашении Claude Code и нажимайте Tab, пока не будет выбрана вкладка <strong>Installed</strong>. Она перечисляет мод, и вы можете отключить его там.</p>
+<p><strong>4. Попробуйте мод</strong></p>
+<p>Используйте то, что вы просили. Для примера промпта текущее имя ветки появляется над полем промпта. Если мод не делает то, что вы хотели, скажите Claude, что изменить. Мод перезагружается в конце каждого хода, который изменяет его файлы, поэтому вы можете попробовать изменение сразу после завершения Claude.</p>
+<p>Если строка транскрипта, начинающаяся с имени мода, сообщает, что <a href="https://code.claude.com/docs/ru/plugins/mods/troubleshoot.md#this-mods-change-didnt-load">изменение не загрузилось</a>, вставьте эту строку в следующее сообщение, когда будете просить Claude исправить проблему. Claude не видит эту строку, если вы её не вставите.</p>
+<h4 id="h-2">Используйте мод в других сеансах <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<p>Мод, написанный Claude, загружается только в сеансе, который его создал, и Claude Code удаляет папку модов этого сеанса после того, как она старше <a href="https://code.claude.com/docs/ru/settings-reference#cleanupperioddays"><code>cleanupPeriodDays</code></a>. Чтобы сохранить мод, скопируйте его каталог из папки модов в место по вашему выбору, например <code>~/mods/git-branch</code>. Затем выберите, как его загружать:</p>
+<ul>
+<li><strong>В сеансе, который вы запускаете</strong>: в вашей оболочке выполните <code>claude --plugin-dir ~/mods/git-branch</code></li>
+<li><strong>Для других людей</strong>: <a href="#share-your-mod">добавьте его на маркетплейс</a>, чтобы они могли его установить</li>
+</ul>
+<h4 id="h-3">Сессии, которые загружают мод, не спрашивая <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude Code может включить горячую перезагрузку, не спрашивая, в режимах <code>auto</code> и <code>bypassPermissions</code>, и моды загружаются при завершении хода.</p>
+<p>Когда вы возобновляете сессию, интерактивно или с <code>claude -p</code>, моды, уже находящиеся в её папке модов, <a href="#sessions-that-cant-load">могут загрузиться</a>, не спрашивая. Чтобы мод не загружался при возобновлении, удалите его каталог.</p>
+<h4 id="сессии-где-мод-написанный-claude-не-может-загрузиться">Сессии, где мод, написанный Claude, не может загрузиться <a class="h-anchor" href="#сессии-где-мод-написанный-claude-не-может-загрузиться" aria-label="Ссылка на раздел">#</a></h4>
+<p>Мод, написанный Claude, не загружается в следующих случаях, и Claude Code не спрашивает, загружать ли его:</p>
+<ul>
+<li><strong>Никого нет, чтобы одобрить</strong>: сессия находится в <a href="https://code.claude.com/docs/ru/permission-modes">режиме <code>dontAsk</code></a>, или это запуск <code>claude -p</code>, который пишет мод, в режиме <code>default</code> или <code>acceptEdits</code>, который не может показать вам вопрос о горячей перезагрузке.</li>
+<li><strong>Интерактивная сессия, где рабочее пространство не доверено</strong>: вы не приняли запрос доверия для каталога</li>
+<li><strong>Моды отключены</strong>: вы запустили с <code>--safe-mode</code> или <code>--bare</code>, вы задали <code>disableAllHooks</code>, или <a href="https://code.claude.com/docs/ru/plugins/mods/admin.md#choose-how-much-to-allow">управляемые настройки</a> вашей организации это блокируют</li>
+</ul>
+<h3 id="h-4">Напишите мод сами <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>В этом руководстве вы создаёте мод с именем <code>first-mod</code>, который подсчитывает вызовы инструментов, которые делает Claude, показывает счётчик рядом со спиннером во время работы Claude и добавляет команду <code>/tally</code>, которая его выводит. Затем вы читаете объявления типов, которые Claude Code пишет рядом с вашим модом, и выполняете <code>claude plugin validate</code>. Вместе они показывают вам события и методы, которые предлагает ваша версия, и что Claude Code читает из вашего кода.</p>
+<p>Эта запись показывает готовый мод. Спиннер подсчитывает вызовы инструментов, <code>/tally</code> выводит счётчик, и редактирование кода вступает в силу во время работы сеанса:</p>
+<p>&lt;video autoPlay muted loop playsInline controls src=&quot;https://mintcdn.com/claude-code/dgiVO_Od1X1faduV/images/mods-first-mod-light.mp4?fit=max&amp;auto=format&amp;n=dgiVO_Od1X1faduV&amp;q=85&amp;s=eb561134afa90375777408453ba51c77&quot; aria-label=&quot;In a Claude Code session, the prompt &#x27;list the files here and read the README&#x27; is typed and sent. The spinner reads &#x27;Thinking · tool calls: 1&#x27; and the count rises as Claude works. The /tally command prints &#x27;first-mod: Claude has made 3 tool calls since this mod loaded&#x27;. A line says first-mod reloaded and lists its four hooks. On the next prompt the spinner reads &#x27;Thinking · tools used: 1&#x27;.&quot; /&gt;</p>
+<p>Вы пишете три файла:</p>
+<p>```text theme={null}
+first-mod/
+├── .claude-plugin/
+│   └── plugin.json
+└── hooks/
+    ├── hooks.json
+    └── register.js</p>
+<pre><code>
+* **`plugin.json`**: [манифест](https://code.claude.com/docs/ru/plugins/manifest-reference.md) плагина
+* **`hooks.json`**: [указывает на ваш файл кода](https://code.claude.com/docs/ru/plugins/mods/reference.md#files)
+* **`register.js`**: ваш код, называемый модулем hooks
+
+**1. Создайте каталог плагина**
+
+Создайте два каталога, которые содержат файлы:
+
+&gt; [tab] Bash или Zsh
+&gt;
+&gt; ```bash theme={null}
+&gt; mkdir -p first-mod/.claude-plugin first-mod/hooks
+&gt; ```
+
+&gt; [tab] PowerShell
+&gt;
+&gt; ```powershell theme={null}
+&gt; New-Item -ItemType Directory -Force first-mod\.claude-plugin, first-mod\hooks
+&gt; ```
+
+**2. Напишите манифест**
+
+Мод — это плагин, и моду нужен [манифест](https://code.claude.com/docs/ru/plugins/manifest-reference.md). Манифест этого мода не имеет специальных полей. Сохраните это как `first-mod/.claude-plugin/plugin.json`:
+</code></pre>
+<p>{
+  &quot;name&quot;: &quot;first-mod&quot;,
+  &quot;version&quot;: &quot;0.1.0&quot;,
+  &quot;description&quot;: &quot;Counts Claude&#x27;s tool calls, shows the count beside the spinner, and adds a /tally command&quot;,
+  &quot;author&quot;: { &quot;name&quot;: &quot;Your Name&quot; }
+}</p>
+<pre><code>
+**3. Скажите Claude Code, где находится ваш код**
+
+Когда Claude Code загружает плагин, он читает `hooks/hooks.json` плагина. Ключ `modules` в этом файле указывает путь к вашему коду, и его наличие делает плагин модом. Перечислите один путь, относительный к `hooks.json`. Здесь он указывает на `register.js`, который вы напишете на следующем шаге.
+
+Сохраните это как `first-mod/hooks/hooks.json`:
+</code></pre>
+<p>{
+  &quot;description&quot;: &quot;The first-mod hooks module&quot;,
+  &quot;modules&quot;: [&quot;./register.js&quot;]
+}</p>
+<pre><code>
+**4. Напишите код**
+
+Этот файл — это код мода, называемый модулем hooks. Когда мод загружается, Claude Code вызывает функцию `register`, которую экспортирует файл, и передаёт ей функцию с именем [`on`](https://code.claude.com/docs/ru/plugins/mods/reference#the-hook-function). Каждый вызов `on` регистрирует обработчик события, называемый hook, для события, которое он называет.
+
+Сохраните это как `first-mod/hooks/register.js`:
+</code></pre>
+<p>// The count, shared by the hooks below
+let calls = 0</p>
+<p>// Claude Code calls this once when the mod loads
+export function register(on) {
+  // Runs when the session starts, before your first prompt
+  on(&#x27;session.start&#x27;, async ($, e, next) =&gt; {
+    // Add the /tally command
+    await $.command.register({
+      name: &#x27;tally&#x27;,
+      description: &#x27;Show how many tool calls Claude has made&#x27;,
+    })
+    // Let the session start as usual
+    return next(e)
+  })</p>
+<p>// Runs each time Claude is about to use a tool
+  on(&#x27;tool.call&#x27;, async ($, e, next) =&gt; {
+    calls += 1
+    // Ask Claude Code to draw the interface again, so the new count shows
+    $.ui.invalidate(&#x27;ui.render&#x27;)
+    // Let the tool run as usual
+    return next(e)
+  })</p>
+<p>// Runs when you type /tally, and only then, because of the matcher
+  on(&#x27;command.run&#x27;, { command: &#x27;tally&#x27; }, async () =&gt; {
+    // The text to print in the transcript
+    return { text: &#x27;Claude has made &#x27; + calls + &#x27; tool calls since this mod loaded&#x27; }
+  })</p>
+<p>// Runs each time Claude Code draws the spinner
+  on(&#x27;ui.render&#x27;, { component: &#x27;Spinner&#x27; }, async ($, e, next) =&gt; {
+    // Keep Claude Code&#x27;s spinner, with the count added after its word
+    return next({ ...e, props: { ...e.props, suffix: &#x27; · tool calls: &#x27; + calls + &#x27;…&#x27; } })
+  })
+}</p>
+<pre><code>
+Файл хранит счётчик в `calls` и регистрирует четыре hook:
+
+* **[`session.start`](https://code.claude.com/docs/ru/plugins/mods/reference#session)** запускается при запуске сеанса, перед вашим первым приглашением, и снова каждый раз, когда мод перезагружается. Он добавляет команду `/tally` в Claude Code.
+* **[`tool.call`](https://code.claude.com/docs/ru/plugins/mods/reference#tools)** запускается каждый раз, когда Claude собирается использовать инструмент. Он добавляет один к `calls` и просит Claude Code нарисовать интерфейс снова.
+* **[`command.run`](https://code.claude.com/docs/ru/plugins/mods/reference#commands-and-configuration)** запускается, когда вы вводите `/tally`. Он возвращает текст для вывода.
+* **[`ui.render`](https://code.claude.com/docs/ru/plugins/mods/reference#interface)** запускается каждый раз, когда Claude Code рисует спиннер. Он добавляет счётчик после слова спиннера.
+
+[Как работает пример мода](#how-the-example-mod-works) объясняет три аргумента, которые принимает каждый hook, и что каждый из них возвращает.
+
+**5. Загрузите мод**
+
+Запустите Claude Code с флагом `--plugin-dir`, который загружает каталог плагина для одного сеанса без его установки:
+</code></pre>
+<p>claude --plugin-dir ./first-mod</p>
+<pre><code>
+**6. Попробуйте мод**
+
+Попросите Claude сделать что-то, что требует нескольких вызовов инструментов, например `list the files here and read the README`. Пока Claude работает, слово спиннера сопровождается счётчиком, который растёт, как в `Thinking · tool calls: 2…`. Когда Claude закончит, введите `/tally` и нажмите Enter. Транскрипт показывает `first-mod: Claude has made 2 tool calls since this mod loaded` с вашим собственным счётчиком. Claude Code ставит имя плагина перед текстом команды.
+
+Чтобы проверить команду без интерактивного сеанса, выполните её в неинтерактивном режиме:
+</code></pre>
+<p>claude -p &quot;/tally&quot; --plugin-dir ./first-mod</p>
+<pre><code></code></pre>
+<p>first-mod: Claude has made 0 tool calls since this mod loaded</p>
+<pre><code>
+Если `/tally` не в списке команд, модуль не загрузился. См. [Узнайте, почему мод ничего не делает](https://code.claude.com/docs/ru/plugins/mods/troubleshoot.md#find-out-why-a-mod-does-nothing).
+
+**7. Измените код во время работы сеанса**
+
+Оставьте сеанс открытым. В `register.js` измените `&#x27; · tool calls: &#x27;` на `&#x27; · tools used: &#x27;` в hook `ui.render` и сохраните. Выделенная строка — это та, которая изменяется:
+</code></pre>
+<p>// Runs each time Claude Code draws the spinner
+  on(&#x27;ui.render&#x27;, { component: &#x27;Spinner&#x27; }, async ($, e, next) =&gt; {
+    // Keep Claude Code&#x27;s spinner, with the count added after its word
+    return next({ ...e, props: { ...e.props, suffix: &#x27; · tools used: &#x27; + calls + &#x27;…&#x27; } })
+  })</p>
+<pre><code>
+Строка в транскрипте говорит, что `first-mod` перезагрузился и перечисляет его hooks, и следующий спиннер использует новый текст, как в `Thinking · tools used: 1…`.
+
+### Как работает пример мода
+
+Каждая функция, которую вы передаёте `on`, — это hook, который является обработчиком события. Claude Code передаёт каждому hook одни и те же три аргумента:
+
+* **API модов**, названный `$`: каждый метод, который мод может вызвать, чтобы выйти за пределы себя, в [пространствах имён](https://code.claude.com/docs/ru/plugins/mods/reference.md#mods-api-methods) таких как `$.ui` и `$.command`
+* **Событие**, названное `e`: [входные данные события](https://code.claude.com/docs/ru/plugins/mods/reference.md#events) как простые данные, такие как имя и аргументы вызова инструмента
+* **Следующий обработчик**, названный [`next`](https://code.claude.com/docs/ru/plugins/mods/events#how-a-hook-handles-an-event): функция, которая передаёт событие другим модам, а затем собственному поведению Claude Code, и возвращает результат
+
+Хуки в `first-mod` обрабатывают свои события следующими способами:
+
+* **Observe**: hook `session.start` регистрирует команду, и hook `tool.call` подсчитывает вызов и просит перерисовку. Оба возвращают `next(e)`, поэтому сеанс запускается и инструмент работает как обычно.
+* **Answer**: hook `command.run` возвращает свой собственный результат и никогда не вызывает `next`. Второй аргумент `on`, `{ command: &#x27;tally&#x27; }`, — это фильтр, называемый [matcher](https://code.claude.com/docs/ru/plugins/mods/events.md#filter-which-events-a-hook-handles), поэтому hook запускается только для `/tally`.
+* **Rewrite**: hook `ui.render` вызывает `next` с копией `e`, чей `suffix` содержит счётчик, поэтому Claude Code рисует свой обычный спиннер с вашим текстом после слова
+
+Claude Code следит за каталогом, загруженным с `--plugin-dir`, и горячо перезагружает модуль хуков при изменении файла в нём. Каждая перезагрузка запускает `register` снова, поэтому `calls` возвращается к `0` и `/tally` начинает считать снова. Чтобы сохранить значение между перезагрузками, см. [Сохранение состояния](https://code.claude.com/docs/ru/plugins/mods/interface.md#keep-state).
+
+## Продолжайте работать над модом
+
+После загрузки мода вы можете попросить Claude изменить его, проверить ваш код против определений типов для вашей версии, перечислить события и вызовы, которые Claude Code находит в нём, и протестировать его.
+
+### Измените мод с помощью Claude
+
+Чтобы изменить мод, который у вас уже есть, запустите сеанс с `--plugin-dir`, указывающим на каталог мода, чтобы то, что пишет Claude, загружалось в том же сеансе:
+</code></pre>
+<p>claude --plugin-dir ./first-mod</p>
+<pre><code>
+Затем попросите изменение, например `add a /tally-reset command to this mod that sets the tally back to zero`. Claude редактирует модуль hooks, выполняет `claude plugin validate` и исправляет то, что он сообщает. Каталог, который вы загружаете с `--plugin-dir`, — это [защищённый путь](https://code.claude.com/docs/ru/permission-modes.md#protected-paths), поэтому в режимах `default` и `acceptEdits` вас просят одобрить каждое редактирование Claude мода. Таблица защищённых путей даёт результат для других режимов разрешений.
+
+Файлы, которые Claude сохраняет во время его хода, перезагружаются при завершении хода, поэтому вы можете попробовать `/tally-reset` сразу после завершения Claude.
+
+### Получите определения типов для вашей версии
+
+Когда Claude Code загружает мод из `--plugin-dir` в интерактивной сессии или мод, который [Claude написал для вас](#ask-claude-for-a-mod), он записывает файлы объявлений TypeScript в каталог `.claude-plugin/types/` мода. Они описывают точные события, методы API модов и элементы в версии Claude Code, которую вы запускаете, поэтому ваш редактор может автодополнять и проверять типы ваших хуков. Каталог содержит эти файлы:
+
+| Путь | Что он объявляет |
+| :- | :- |
+| `claude-code/index.d.ts` | Каждое событие и его входные данные и результат, каждое пространство имён API модов и метод, и элементы, которые каждая поверхность может рисовать |
+| `claude-code-tools/index.d.ts` | Входные данные встроенных инструментов и результаты, поэтому проверка `e.tool === &#x27;Bash&#x27;` сужает `e` |
+| `claude-code-mcp/index.d.ts` | Входные данные инструментов MCP, которые были подключены в последний раз, когда вы сохранили файл в модо |
+| `index.d.ts` в каталоге, названном в честь плагина | Что этот плагин добавляет в API модов. Есть один каталог для каждого плагина, который ваш `plugin.json` перечисляет в `dependencies`. |
+| `tsconfig.json` | Параметры компилятора, которые подходят для модуля hooks |
+
+Если ваш мод не имеет собственного `tsconfig.json`, Claude Code добавляет один в корень мода, который расширяет сгенерированный, поэтому ваш редактор и `tsc -p ./first-mod` проверяют тип мода без дополнительной настройки.
+
+События и методы могут изменяться между выпусками, поэтому доверяйте этим файлам больше, чем любой странице, включая эту, когда они не согласны.
+
+`claude-code/index.d.ts` — это самый полный справочник для вашей сборки, с комментарием и примером для каждого метода API модов. Чтобы что-то найти, поищите в файле его имя, например `&#x27;tool.call&#x27;`.
+
+### Проверьте, что Claude Code читает из вашего мода
+
+Чтобы увидеть ваш мод так, как Claude Code его видит, без запуска вашего кода или запуска сеанса, используйте `claude plugin validate`. Он проверяет манифест и выполняет тот же статический анализ на исходном коде модуля hooks, который Claude Code выполняет при загрузке мода. В вашей оболочке выполните его на каталоге мода:
+</code></pre>
+<p>claude plugin validate ./first-mod</p>
+<pre><code>
+Для `first-mod` вывод включает эти строки.
+</code></pre>
+<p>❯ ./register.js hooks: session.start, tool.call, command.run{command=tally}, ui.render{component=Spinner}
+  ❯ ./register.js calls: $.command.register, $.ui.invalidate</p>
+<p>✔ Validation passed</p>
+<pre><code>
+Найдите в строке `hooks:` события, на которые ваш модуль устанавливает хуки, каждое с его фильтром в фигурных скобках, а в строке `calls:` — каждый метод API модов, который он вызывает. Если ваш модуль читает или устанавливает переменные окружения, ищите также строки `env reads:` и `env writes:`, а если он использует [`$.state`](https://code.claude.com/docs/ru/plugins/mods/interface#keep-state) — строки `state reads:` и `state writes:`. Вы также видите по одной строке для каждого хука, который может отклонить действие, например `gating hook without .catch: tool.call`, которая сообщает, есть ли у этого хука [обработчик `.catch`](https://code.claude.com/docs/ru/plugins/mods/events#handle-a-hook-that-fails).
+
+Если событие, которое вы хотели обработать, отсутствует в строках `hooks:`, Claude Code также не будет вызывать этот хук. Обычная причина — неправильное написание имени события, которое команда сообщает как ошибку, такую как `&quot;tool.calls&quot; is not an event`.
+
+Следуйте этим правилам, чтобы статический анализ мог найти каждый hook и вызов:
+
+* Напишите каждый вызов API модов полностью: `$`, пространство имён, затем метод, как в `$.store.get(&#x27;notes&#x27;)`. Вы можете передать `$` функции, объявленной на верхнем уровне того же файла, и для функции вашей с именем `loadNotes` строка `calls:` затем читает `$.store.get (via loadNotes)`. Передача `$` методу, функции, определённой внутри хука, или функции, которую вы импортируете из другого из ваших файлов, не проходит валидацию. Функции `read` и `update`, которые использует [`$.state`](https://code.claude.com/docs/ru/plugins/mods/interface#keep-state), — это импорты, которые могут её принять. Не присваивайте `$` или одно из его пространств имён переменной, не деструктурируйте его и не индексируйте его с вычисленным именем. `const ui = $.ui` не проходит с `$.ui is used as a value`.
+* Напишите имя события в каждом вызове `on` как строковый литерал, например `&#x27;tool.call&#x27;`. Переменная или цикл по списку имён не проходит с `the event name passed to on() is not a string literal`.
+* Внутри `register` не объявляйте вторую переменную или параметр с именем `on`. Валидация не проходит с `&quot;on&quot; is declared again (shadowed)`.
+* Импортируйте только из файлов внутри каталога плагина, по относительному пути. Единственный разрешённый голый импорт — это `claude-code`, для типов и нескольких помощников.
+* Используйте объявления `import` в верхней части файла, как в `import { name } from &#x27;./file.js&#x27;`. Динамический `import()` не проходит с `a dynamic import(); a hooks module imports its own files with an import declaration`.
+* Напишите каждый файл как модуль ES, с `import`, а не `require`. [Справочник](https://code.claude.com/docs/ru/plugins/mods/reference.md#files) перечисляет расширения файлов, которые загружает Claude Code.
+
+### Протестируйте мод
+
+Вы можете написать автоматизированные тесты для мода и запустить их из вашей оболочки с `claude plugin test`, без сессии, входа или сети. Тест вызывает события, которые обрабатывают ваши хуки, и проверяет, что сделали хуки.
+
+Этот тест вызывает два вызова инструментов, запускает `/tally` и проверяет, что ответ считает оба. Сохраните это как `first-mod/tests/first-mod.test.ts`:
+</code></pre>
+<p>import { expect, test } from &#x27;claude-code/testing&#x27;</p>
+<p>test(&#x27;/tally reports the tool calls the mod has seen&#x27;, async ($, on) =&gt; {
+  // Answer each tool call in Claude Code&#x27;s place, so no tool runs
+  on(&#x27;tool.call&#x27;, () =&gt; ({ result: &#x27;ok&#x27; }))</p>
+<p>// Fire two tool calls, which the mod&#x27;s tool.call hook counts
+  await $.tool.call({ tool: &#x27;Bash&#x27;, command: &#x27;ls&#x27; })
+  await $.tool.call({ tool: &#x27;Read&#x27;, file_path: &#x27;README.md&#x27; })</p>
+<p>// Run /tally and check the text its hook returns
+  const answer = await $.command.run({ command: &#x27;tally&#x27;, args: &#x27;&#x27; })
+  expect(answer.text).toBe(&#x27;Claude has made 2 tool calls since this mod loaded&#x27;)
+})</p>
+<pre><code>
+В вашей оболочке выполните тесты из каталога `first-mod`:
+</code></pre>
+<p>claude plugin test</p>
+<pre><code>
+Вывод называет каждый тест и прошёл ли он, с временем, которое варьируется от запуска к запуску:
+</code></pre>
+<p>tests/first-mod.test.ts:
+(pass) /tally reports the tool calls the mod has seen [22.87ms]</p>
+<p>1 pass
+ 0 fail
+Ran 1 test across 1 file. [0.19s]</p>
+<pre><code>
+[Протестируйте мод](https://code.claude.com/docs/ru/plugins/mods/test.md) охватывает заглушку вызова модели или хранилища, и тестирование таймеров и рисунков.
+
+## Поделитесь своим модом
+
+Мод — это плагин, поэтому вы версионируете его в манифесте, и люди устанавливают и обновляют его с помощью команд `/plugin`. Способ распространения зависит от того, для кого он предназначен:
+
+* **Несколько человек**: отправьте им каталог плагина или его `.zip`-архив. См. [Поделиться плагином без маркетплейса](https://code.claude.com/docs/ru/plugins/publish.md#share-a-plugin-without-a-marketplace)
+* **Ваша команда**: добавьте его в [собственный маркетплейс](https://code.claude.com/docs/ru/plugins/publish.md#publish-through-your-own-marketplace), например в приватный репозиторий с отдельным каталогом для каждого плагина. Чтобы добавить этот маркетплейс для всех, кто работает в репозитории, [зарегистрируйте его в настройках репозитория](https://code.claude.com/docs/ru/plugins/host-marketplace.md#register-the-marketplace-for-everyone-in-a-repository)
+* **Вся ваша организация**: администратор может [установить моды вашей организации](https://code.claude.com/docs/ru/plugins/mods/admin.md#install-your-organizations-mods) через управляемые настройки
+* **Кто угодно**: сделайте репозиторий вашего маркетплейса публичным или [отправьте плагин в каталог Anthropic](https://code.claude.com/docs/ru/plugins/publish.md#submit-to-anthropics-directory)
+
+Перед этим проверьте `name` плагина: `claude plugin validate` не проходит имя, которое [выглядит как одно из собственных Anthropic](https://code.claude.com/docs/ru/plugins/manifest-reference.md#name), например то, которое начинается с `claude-`. События и методы могут изменяться между выпусками, поэтому ваш README — это место, где нужно сказать, какую версию Claude Code вы тестировали.
+
+Продолжайте разработку против каталога с `--plugin-dir`, а не против установленной копии. Claude Code кэширует установленный плагин по версии, поэтому ваши редактирования не достигают установленной копии, пока вы не повысите версию и не установите снова.
+
+## Следующие шаги
+
+* [Рисуйте в интерфейсе](https://code.claude.com/docs/ru/plugins/mods/interface.md): откройте панель, рисуйте над приглашением и добавляйте кнопки и текстовые поля
+* [Реагируйте на события](https://code.claude.com/docs/ru/plugins/mods/events.md): hook вызовы инструментов, приглашения и ходы
+* [Используйте API модов](https://code.claude.com/docs/ru/plugins/mods/api.md): добавляйте команды и инструменты, вызывайте модель и запускайте работу по таймеру
+* [Протестируйте мод](https://code.claude.com/docs/ru/plugins/mods/test.md): заглушка того, что Claude Code ответит, и тестирование таймеров и рисунков
+* [Устраняйте неполадки мода](https://code.claude.com/docs/ru/plugins/mods/troubleshoot.md): причины, по которым мод ничего не делает, и журнал отладки
+* [Прочитайте исходный код встроенных модов](https://code.claude.com/docs/ru/plugins/mods/overview.md#read-the-source-of-built-in-mods): полные плагины, каждый со своим модулем hooks и тестами
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

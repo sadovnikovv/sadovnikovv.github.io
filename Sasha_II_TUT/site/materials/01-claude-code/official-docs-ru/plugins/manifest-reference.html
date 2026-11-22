@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Справочник манифеста плагина</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/plugins/index.html">plugins</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Справочник манифеста плагина <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Полный справочник по plugin.json: поля с типами и значениями по умолчанию, принятые формы путей и схемы userConfig и переменных окружения.</p>
+</blockquote>
+<p>Манифест плагина — это файл <code>plugin.json</code> в директории <code>.claude-plugin/</code> плагина. Он содержит метаданные плагина и значения <a href="#user-configuration"><code>userConfig</code></a>, которые Claude Code запрашивает у пользователя. Он также объявляет любой компонент, который вы определяете встроенным образом или храните вне его <a href="#standard-layout">расположения по умолчанию</a>.</p>
+<p>Этот справочник предназначен для создателей плагинов и для владельцев маркетплейсов, которые размещают поля компонентов в записи маркетплейса.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Эти случаи рассматриваются на других страницах:</p>
+<ul>
+<li><strong>Обучение созданию плагина</strong>: начните с <a href="https://code.claude.com/docs/ru/plugins/create.md">Создание плагина</a></li>
+<li><strong>Что каждый компонент делает во время выполнения</strong>: см. <a href="https://code.claude.com/docs/ru/plugins/components.md">Компоненты плагина</a></li>
+</ul>
+</blockquote>
+<p>Начните с раздела, который соответствует тому, что вы ищете:</p>
+<ul>
+<li>Поле: таблица <a href="#fields">Поля</a> дает тип каждого поля, является ли оно обязательным, его значение по умолчанию и что оно принимает. <a href="#path-rules">Правила путей</a> охватывает префикс <code>./</code> и содержание для каждого пути компонента</li>
+<li>Опция <code>userConfig</code> или запись <code>channels</code>: схемы <a href="#user-configuration">Конфигурация пользователя</a> и <a href="#channels">Каналы</a></li>
+<li><code>${CLAUDE_PLUGIN_ROOT}</code> или другая переменная, на которую может ссылаться плагин: <a href="#environment-variables">Переменные окружения</a></li>
+<li>Где находятся файлы каждого компонента: <a href="#standard-layout">Стандартное расположение</a></li>
+<li>Сообщение от <code>claude plugin validate</code>: на <a href="https://code.claude.com/docs/ru/plugins/troubleshooting.md">странице устранения неполадок</a> перечислены все сообщения с их исправлениями и ссылками на соответствующие разделы этой страницы</li>
+</ul>
+<h3 id="h-2">Файл манифеста <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Манифест является необязательным. Без него Claude Code загружает компоненты, которые находит в <a href="#standard-layout">стандартном расположении</a>. Имя плагина затем берется из записи маркетплейса или из имени директории при загрузке плагина с помощью <code>--plugin-dir</code>.</p>
+<p>Напишите манифест, когда вам нужны метаданные, компонент вне его директории по умолчанию, <code>userConfig</code> или встроенное определение компонента.</p>
+<p>Сохраните манифест в <code>.claude-plugin/plugin.json</code> в корне плагина. Поместите все остальные файлы плагина в корень плагина, а не внутри <code>.claude-plugin/</code>. Это включает <code>skills/</code>, <code>commands/</code> и <code>hooks/</code>.</p>
+<p>Следующий пример устанавливает большинство ключей в таблице <a href="#fields">Поля</a>. Он проходит проверку в директории плагина, которая содержит каждый указанный путь.</p>
+<p>```json theme={null}
+{
+  &quot;name&quot;: &quot;deploy-tools&quot;,
+  &quot;displayName&quot;: &quot;Deploy Tools&quot;,
+  &quot;version&quot;: &quot;1.2.0&quot;,
+  &quot;description&quot;: &quot;Deployment commands, a review agent, and a status monitor&quot;,
+  &quot;author&quot;: {
+    &quot;name&quot;: &quot;Example Team&quot;,
+    &quot;email&quot;: &quot;dev@example.com&quot;,
+    &quot;url&quot;: &quot;https://example.com&quot;
+  },
+  &quot;homepage&quot;: &quot;https://example.com/docs/deploy-tools&quot;,
+  &quot;repository&quot;: &quot;https://github.com/example/deploy-tools&quot;,
+  &quot;license&quot;: &quot;MIT&quot;,
+  &quot;keywords&quot;: [&quot;deployment&quot;, &quot;ci&quot;],
+  &quot;defaultEnabled&quot;: true,
+  &quot;dependencies&quot;: [&quot;secrets-vault&quot;],
+  &quot;metadata&quot;: { &quot;catalogId&quot;: &quot;cat-123&quot; },
+  &quot;skills&quot;: [&quot;./extra-skills/&quot;],
+  &quot;commands&quot;: {
+    &quot;status&quot;: {
+      &quot;source&quot;: &quot;./commands/status.md&quot;,
+      &quot;description&quot;: &quot;Show the current deployment status&quot;
+    },
+    &quot;about&quot;: {
+      &quot;content&quot;: &quot;Explain what the deploy-tools plugin provides.&quot;,
+      &quot;description&quot;: &quot;Describe this plugin&quot;
+    }
+  },
+  &quot;agents&quot;: [&quot;./agents/reviewer.md&quot;],
+  &quot;hooks&quot;: &quot;./config/extra-hooks.json&quot;,
+  &quot;mcpServers&quot;: {
+    &quot;deploy-api&quot;: {
+      &quot;command&quot;: &quot;node&quot;,
+      &quot;args&quot;: [&quot;${CLAUDE_PLUGIN_ROOT}/server.js&quot;]
+    }
+  },
+  &quot;lspServers&quot;: &quot;./.lsp.json&quot;,
+  &quot;outputStyles&quot;: &quot;./styles/&quot;,
+  &quot;experimental&quot;: {
+    &quot;themes&quot;: &quot;./themes/&quot;,
+    &quot;monitors&quot;: &quot;./config/monitors.json&quot;
+  },
+  &quot;userConfig&quot;: {
+    &quot;api_token&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;title&quot;: &quot;API token&quot;,
+      &quot;description&quot;: &quot;Token for the deployment API&quot;,
+      &quot;sensitive&quot;: true
+    }
+  }
+}</p>
+<pre><code>
+### Нераспознанные поля
+
+Нераспознанный ключ верхнего уровня удаляется, а нераспознанный ключ внутри опции `userConfig`, записи `channels`, конфигурации `lspServers` или записи `monitors` отклоняется:
+
+* **Поля верхнего уровня**: поле удаляется и плагин загружается. `claude plugin validate` сообщает о каждом нераспознанном поле верхнего уровня как о предупреждении
+* **Строгие объекты**: опции `userConfig`, записи `channels`, конфигурации `lspServers` и записи `monitors` являются строгими. Неизвестный ключ внутри одного из них — это ошибка, и плагин не загружается
+
+### Проверка манифеста
+
+`claude plugin validate` — это авторитетная проверка манифеста. Запустите его из вашей оболочки для директории плагина:
+</code></pre>
+<p>claude plugin validate ./my-plugin</p>
+<pre><code>
+Команда сообщает один из этих результатов:
+
+* **`Validation passed`**: манифест загружается
+* **`Validation passed with warnings`**: манифест загружается, но валидатор нашел что-то для исправления, например неизвестное поле верхнего уровня, которое Claude Code удаляет, `name`, который не в kebab-case, или отсутствующие `version`, `description` или `author`. Передайте `--strict`, чтобы превратить предупреждения в ошибки в CI
+* **`Validation failed`**: манифест имеет несоответствие типов, путь, который отсутствует или выходит за пределы корня плагина, или неизвестный ключ внутри опции `userConfig`, записи `channels`, конфигурации `lspServers` или записи `monitors`. Claude Code сообщает о той же проблеме при загрузке плагина
+
+Команда также проверяет каждую запись MCP-сервера, которую плагин объявляет в `.mcp.json`, в файле `.json`, который называет [`mcpServers`](#mcpservers), или встроенную в `plugin.json`. Эти проверки MCP требуют Claude Code v2.1.281 или более поздней версии и включают:
+
+* **Ошибки**: запись, которую Claude Code удалит при загрузке плагина, ссылка `${user_config.KEY}` на опцию, которую манифест не объявляет, и удаленный `url`, который не является действительным абсолютным URL
+* **Предупреждения**: URL `http://` или `ws://` на хост, не являющийся loopback, и значение заголовка, которое выглядит как буквальные учетные данные
+
+## Поля
+
+В таблице перечислены ключи верхнего уровня в `plugin.json`. `name` — единственный обязательный ключ. Если имя поля является ссылкой, в связанном разделе приведены полные правила для него.
+
+Для ключей компонентов, таких как `commands` и `hooks`, [Формы путей компонентов](#component-path-forms) показывает каждую принятую форму с примером, и каждый путь следует [правилам путей](#path-rules) для префикса `./`, расширений и содержания.
+
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `$schema` | String | URL JSON Schema для автодополнения редактора. Claude Code игнорирует его при загрузке |
+| [`name`](#name) | String | Идентификатор плагина, обязательный. Используйте kebab-case. Каждый компонент находится в пространстве имен под ним |
+| [`displayName`](#displayname) | String | Имя, показываемое в UI вместо `name` |
+| [`version`](#version) | String | Строка версии. Установка ее удерживает пользователей на этой версии, пока вы не измените ее |
+| `description` | String | Краткое объяснение того, что предоставляет плагин |
+| `author` | Object | `name`, который является обязательным, плюс необязательные `email` и `url` |
+| `homepage` | String | URL документации. Должен анализироваться как URL, иначе плагин не загружается |
+| `repository` | String | URL исходного репозитория. Не проверяется |
+| `license` | String | Идентификатор SPDX, такой как `MIT` или `Apache-2.0` |
+| `keywords` | Array of strings | Теги обнаружения |
+| [`metadata`](#metadata) | Object | Объект произвольной формы для ваших собственных данных. Claude Code не читает его |
+| [`icon`](#directory-listing-fields) | String | Значок для страницы плагина в каталоге Anthropic. Claude Code не читает его |
+| [`documentationUrl`](#directory-listing-fields) | String | Ссылка на документацию для страницы плагина в каталоге Anthropic. Claude Code не читает его |
+| [`supportUrl`](#directory-listing-fields) | String | Ссылка на поддержку для страницы плагина в каталоге Anthropic. Claude Code не читает его |
+| [`privacyPolicyUrl`](#directory-listing-fields) | String | Ссылка на политику конфиденциальности для страницы плагина в каталоге Anthropic. Claude Code не читает его |
+| [`termsOfServiceUrl`](#directory-listing-fields) | String | Ссылка на условия использования для страницы плагина в каталоге Anthropic. Claude Code не читает его |
+| [`defaultEnabled`](#defaultenabled) | Boolean | Включен ли плагин при запуске, когда пользователь не установил его. По умолчанию `true` |
+| `engines` | Object | Версии Claude Code, на которых работает плагин, в виде [диапазона semver](https://github.com/npm/node-semver#ranges) под ключом `claude-code`, например `&quot;engines&quot;: { &quot;claude-code&quot;: &quot;&gt;=2.1.400&quot; }`. Требуется Claude Code v2.1.323 или новее. Чтобы плагин продолжал работать в версиях с v2.0.15 по v2.1.75, не указывайте `engines`. Эти версии отклоняют манифест с ошибкой `Unrecognized key`, если в нем есть это поле |
+| [`dependencies`](#dependencies) | Array of strings or objects | Плагины, которые должны быть включены для работы этого |
+| [`userConfig`](#user-configuration) | Object | Значения, которые Claude Code запрашивает у пользователя при включении плагина |
+| `types` | Path | Файл `.d.ts`, который объявляет значения `$.state` и существительные `$` [mod](https://code.claude.com/docs/ru/plugins/mods/reference.md#files) |
+| [`channels`](#channels) | Array of objects | Каналы сообщений, которые предоставляет плагин, каждый привязан к одному из его MCP серверов |
+| `skills` | Path, or array of paths | Директории для сканирования skills, каждая — директория папок `&lt;name&gt;/SKILL.md` или одна папка, содержащая `SKILL.md` напрямую. `&quot;.&quot;` обозначает корень плагина. Добавляет к сканированию по умолчанию `skills/` |
+| [`commands`](#commands) | Path, array of paths, or object | Плоские файлы команд `.md`, директории с ними или объект-карта имени команды на `source` или `content`. Заменяет сканирование по умолчанию `commands/` |
+| `agents` | Path, or array of paths | Файлы агентов `.md`. Директории не принимаются. Заменяет сканирование по умолчанию `agents/` |
+| [`hooks`](#hooks) | Path, object, or array of either | Файлы hook `.json` или встроенная конфигурация hook. Загружаются вместе с `hooks/hooks.json` |
+| [`mcpServers`](#mcpservers) | Path, object, or array of either | Файлы конфигурации MCP `.json`, пакеты `.mcpb` или `.dxt`, или встроенные конфигурации серверов с ключами по имени. Загружаются вместе с `.mcp.json`; имя сервера, объявленное позже, заменяет более раннее |
+| [`lspServers`](#lspservers) | Path, object, or array of either | Файлы конфигурации LSP `.json` или встроенные конфигурации серверов с ключами по имени. Загружаются вместе с `.lsp.json` |
+| `outputStyles` | Path, or array of paths | Файлы стилей вывода или директории. Заменяет сканирование по умолчанию `output-styles/` |
+| `workflows` | Path, or array of paths | Файлы [Workflow](https://code.claude.com/docs/ru/workflows.md#distribute-a-workflow-in-a-plugin) `.js` или директории. Заменяет сканирование по умолчанию `workflows/` |
+| `experimental` | Object | Контейнер для `themes`, `monitors` и `evals`, чья форма манифеста может еще измениться |
+| `experimental.themes` | Path, or array of paths | Файлы тем или директории. Заменяет сканирование по умолчанию `themes/`. Ключ `themes` верхнего уровня все еще загружается с предупреждением `claude plugin validate` |
+| [`experimental.monitors`](#monitors) | Path, or inline array | Файл `.json`, содержащий массив monitors, или сам массив. По умолчанию `monitors/monitors.json`. Ключ `monitors` верхнего уровня все еще загружается с предупреждением `claude plugin validate`. Мониторы [не запускаются с флагом `-p`](https://code.claude.com/docs/ru/plugins/components#monitors) |
+| `experimental.evals` | Path, or array of paths | Директория, которая содержит [eval cases](https://code.claude.com/docs/ru/plugin-evals.md#use-a-different-eval-directory) плагина, когда это не директория по умолчанию `evals/`. `claude plugin eval --eval-dir` переопределяет ее |
+
+В столбце Type путь — это строка относительно корня плагина, например `&quot;./custom/commands&quot;`.
+
+### `name`
+
+Идентификатор плагина. Он должен быть непустым, без пробелов, `@`, `:`, разделителей пути, управляющих символов или символов двунаправленного форматирования; используйте kebab-case.
+
+Claude Code помещает каждый компонент в пространство имен под ним, поэтому агент `reviewer` в плагине `deploy-tools` появляется как `deploy-tools:reviewer`.
+
+`claude plugin validate` также проверяет, что имя не проходит как один из собственных плагинов Anthropic. Проверка игнорирует регистр и рассматривает любой набор разделителей как один:
+
+| Имя | Результат |
+| :- | :- |
+| Начинается с `claude-`, `anthropic-`, `anthropics-` или `cc-plugin-` | Ошибка |
+| Это `claude`, `anthropic`, `anthropics`, `claude-code` или `claude-mods` | Ошибка |
+| Ставит `official` рядом с `claude` или `anthropic`, например `official-claude-tools` | Ошибка |
+| Имеет `claude`, `anthropic` или `anthropics` как целое слово где-либо еще, например `mcp-for-claude` | Предупреждение |
+
+Ошибка читается как `Plugin name &quot;&lt;name&gt;&quot; is reserved: it passes as one of Anthropic&#x27;s own`, а предупреждение читается как `Plugin name &quot;&lt;name&gt;&quot; reads as one of Anthropic&#x27;s own`. `claude plugin init` и `claude plugin tag` отказывают в имени, которое вызывает ошибку. Claude Code все еще устанавливает и загружает плагин, имя которого они отказывают.
+
+### `displayName`
+
+Имя, показываемое в UI вместо `name`. Оно может содержать пробелы и любой регистр, и оно не используется для пространства имен или поиска.
+
+Для плагина, установленного из маркетплейса, `displayName` в [записи маркетплейса](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#plugin-entries) имеет приоритет над этим значением.
+
+### `version`
+
+Строка версии, не проверяемая против semver. Установка ее закрепляет плагин на этой версии, пока вы не измените ее; см. [Версии и обновления](https://code.claude.com/docs/ru/plugins/loading.md#versions-and-updates). Плагин с [`command` source](https://code.claude.com/docs/ru/plugins/marketplace-reference), плагин из [маркетплейса, размещенного на claude.ai](https://code.claude.com/docs/ru/plugins/install.md#add-from-claude-ai), и плагин [загруженный на месте](https://code.claude.com/docs/ru/plugins/loading.md#find-plugins-on-disk) из маркетплейса, добавленного по локальному пути, не закреплены этим полем.
+
+### `metadata`
+
+Объект произвольной формы для ваших собственных данных, таких как поля каталога или прав. Claude Code не читает его.
+
+### Поля для страницы в каталоге
+
+Каталог Anthropic считывает поля `icon`, `documentationUrl`, `supportUrl`, `privacyPolicyUrl` и `termsOfServiceUrl` из `plugin.json` для страницы вашего плагина, когда вы [отправляете плагин](https://code.claude.com/docs/ru/plugins/publish.md#submit-to-anthropics-directory). Claude Code игнорирует их при загрузке. Задавайте их только в `plugin.json`. В [записи маркетплейса](#marketplace-entries-and-the-manifest) `claude plugin validate` сообщает о каждом из них как о неизвестном поле.
+
+Укажите в `icon` путь к файлу изображения внутри плагина, например `./logo.png`, а в каждом из четырех полей URL — URL вида `https://`.
+
+&gt; [!NOTE]
+&gt;
+&gt; `claude plugin validate` не сообщает об этих полях в `plugin.json` как о неизвестных в Claude Code v2.1.281 или позже. Более ранние версии выводят предупреждение `Unknown field` для каждого из них, поэтому запуск с `--strict` в этих версиях завершается ошибкой.
+
+### `defaultEnabled`
+
+Включен ли плагин при запуске, когда пользователь не установил его в [`enabledPlugins`](https://code.claude.com/docs/ru/settings-reference#enabledplugins). По умолчанию `true`. Плагин, от которого зависит включенный плагин, запускается включенным независимо. То же поле в записи маркетплейса переопределяет это.
+
+После того как запись `enabledPlugins` пользователя написана, она сохраняется при обновлениях плагина, поэтому изменение `defaultEnabled` в более позднем выпуске не изменяет параметр для существующего пользователя.
+
+### `dependencies`
+
+Плагины, которые должны быть включены для работы этого. Каждая запись — это `&quot;name&quot;`, `&quot;name@marketplace&quot;` или `{ &quot;name&quot;: &quot;...&quot;, &quot;marketplace&quot;: &quot;...&quot;, &quot;version&quot;: &quot;...&quot; }`. Простые имена разрешаются против собственного маркетплейса этого плагина. См. [ограничения зависимостей](https://code.claude.com/docs/ru/plugins/dependencies.md).
+
+## Формы путей компонентов
+
+Каждый ключ компонента принимает путь относительно корня плагина. `hooks`, `mcpServers`, `lspServers` и `experimental.monitors` также принимают встроенную конфигурацию, `commands` также принимает объект-карту, и `mcpServers` также принимает пути пакетов MCP и URL. Примеры, которые следуют, показывают каждую принятую форму один раз. Для того, что каждый компонент делает во время выполнения, см. [Компоненты плагина](https://code.claude.com/docs/ru/plugins/components.md).
+
+### Поля только с путями
+
+`agents`, `skills`, `outputStyles`, `workflows` и `experimental.themes` принимают один путь или массив путей. Записи `agents` должны быть файлами `.md`, а записи `skills` должны быть директориями. Остальные три принимают директорию или файл.
+</code></pre>
+<p>{
+  &quot;agents&quot;: [&quot;./custom-agents/reviewer.md&quot;, &quot;./custom-agents/tester.md&quot;],
+  &quot;skills&quot;: [&quot;./extra-skills/&quot;, &quot;.&quot;],
+  &quot;outputStyles&quot;: &quot;./styles/&quot;
+}</p>
+<pre><code>
+### `commands`
+
+`commands` принимает путь, массив путей или объект-карту. Путь обозначает плоский файл команды `.md` или директорию. В объект-карте каждый ключ становится именем команды после префикса плагина. Например, `&quot;about&quot;` в плагине `deploy-tools` запускается как `/deploy-tools:about`.
+
+Каждое значение устанавливает ровно один из `source` или `content`, и запись, которая устанавливает оба или ни один, не проходит проверку. Остальные поля в этой таблице являются необязательными:
+
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `source` | string | Путь к файлу Markdown команды относительно корня плагина |
+| `content` | string | Встроенный Markdown для тела команды вместо `source` |
+| `description` | string | Описание, показываемое для команды |
+| `argumentHint` | string | Подсказка аргумента, показываемая после имени команды, например `[file]` |
+| `model` | string | Модель по умолчанию для команды |
+| `allowedTools` | array of strings | Инструменты, которые команда может использовать без запроса |
+
+Эта карта объявляет одну команду из файла и одну из встроенного содержимого:
+</code></pre>
+<p>{
+  &quot;commands&quot;: {
+    &quot;status&quot;: { &quot;source&quot;: &quot;./commands/status.md&quot;, &quot;argumentHint&quot;: &quot;[env]&quot; },
+    &quot;about&quot;: { &quot;content&quot;: &quot;Explain what this plugin provides.&quot; }
+  }
+}</p>
+<pre><code>
+### `hooks`
+
+`hooks` принимает путь файла `.json`, встроенный объект hooks в той же форме, что и [`hooks` в `settings.json`](https://code.claude.com/docs/ru/hooks#configuration), или массив, смешивающий оба. Для событий hook и полей обработчика см. [справочник hooks](https://code.claude.com/docs/ru/hooks.md#hook-events).
+
+Файл хуков оборачивает карту событий в ключ верхнего уровня `&quot;hooks&quot;` — это та же форма, которую использует [`hooks/hooks.json`](https://code.claude.com/docs/ru/plugins/components#hooks). Файл, содержащий только карту событий без этой обёртки, не загружается. Встроенный объект — это сама карта событий, без обёртки.
+
+Claude Code объединяет все, что вы объявляете, с `hooks/hooks.json`, когда этот файл существует. Этот массив загружает один файл хуков и объявляет один встроенный хук `PostToolUse`:
+</code></pre>
+<p>{
+  &quot;hooks&quot;: [
+    &quot;./config/extra-hooks.json&quot;,
+    {
+      &quot;PostToolUse&quot;: [
+        {
+          &quot;matcher&quot;: &quot;Write|Edit&quot;,
+          &quot;hooks&quot;: [
+            { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;\&quot;${CLAUDE_PLUGIN_ROOT}\&quot;/scripts/format.sh&quot; }
+          ]
+        }
+      ]
+    }
+  ]
+}</p>
+<pre><code>
+Файл, указанный в этом массиве, содержит обёртку `&quot;hooks&quot;` вокруг собственной карты событий:
+</code></pre>
+<p>{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Bash&quot;,
+        &quot;hooks&quot;: [
+          { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;\&quot;${CLAUDE_PLUGIN_ROOT}\&quot;/scripts/check-command.sh&quot; }
+        ]
+      }
+    ]
+  }
+}</p>
+<pre><code>
+### `mcpServers`
+
+`mcpServers` принимает путь файла `.json`, путь пакета MCP или URL, встроенную карту или массив, смешивающий их. Для полей конфигурации сервера см. [MCP серверы, предоставляемые плагином](https://code.claude.com/docs/ru/mcp.md#plugin-provided-mcp-servers).
+
+Claude Code загружает `.mcp.json` в корне плагина первым, затем каждую объявленную форму по порядку. Имя сервера, объявленное позже, заменяет более раннее.
+
+Значение `mcpServers` принимает одну из этих форм:
+
+| Форма | Пример значения | Что делает Claude Code |
+| :- | :- | :- |
+| Путь файла `.json` | `&quot;./mcp/servers.json&quot;` | Читает файл как карту `mcpServers` |
+| Путь пакета MCP | `&quot;./bundle.mcpb&quot;` | Извлекает пакет `.mcpb` или `.dxt` в `mcpb/` внутри [корневого каталога плагинов](https://code.claude.com/docs/ru/plugins/loading.md#find-plugins-on-disk) и читает его конфигурацию сервера |
+| URL пакета MCP | `&quot;https://example.com/server.mcpb&quot;` | Загружает пакет, затем извлекает и читает его тем же способом |
+| Встроенная карта | `{ &quot;deploy-api&quot;: { &quot;command&quot;: &quot;node&quot;, &quot;args&quot;: [&quot;${CLAUDE_PLUGIN_ROOT}/server.js&quot;] } }` | Использует карту как конфигурации серверов с ключами по имени |
+
+Путь пакета или URL должен заканчиваться на `.mcpb` или `.dxt`. Любое другое расширение не проходит проверку.
+
+### `lspServers`
+
+`lspServers` принимает путь файла `.json`, встроенную карту имени сервера на конфигурацию или массив любого из них.
+
+Claude Code загружает `.lsp.json` в корне плагина первым, затем каждую объявленную конфигурацию по порядку. Имя сервера, объявленное позже, заменяет более раннее.
+
+Каждая конфигурация сервера — это строгий объект с этими полями. Неизвестный ключ не проходит проверку.
+
+| Поле | Обязательное | Описание |
+| :- | :- | :- |
+| `command` | Yes | Бинарный файл языкового сервера. Без пробелов, если значение не начинается с `/`; поместите аргументы в `args` |
+| `extensionToLanguage` | Yes | Карта расширения файла на ID языка LSP, по крайней мере одна запись. Ключи начинаются с точки, например `&quot;.go&quot;` |
+| `args` | No | Аргументы, передаваемые серверу |
+| `transport` | No | Транспорт связи: `stdio` (по умолчанию) или `socket`. Claude Code принимает `socket`, но запускает каждый сервер через stdio, поэтому правила протокола stdout применяются ко всем серверам |
+| `env` | No | Переменные окружения для процесса сервера |
+| `initializationOptions` | No | Опции, отправляемые в запросе инициализации |
+| `settings` | No | Параметры, отправляемые `workspace/didChangeConfiguration` |
+| `workspaceFolder` | No | Путь папки рабочего пространства для сервера |
+| `startupTimeout` | No | Миллисекунды для ожидания запуска, положительное целое число |
+| `shutdownTimeout` | No | Миллисекунды для ожидания корректного завершения, положительное целое число. Когда истекает время ожидания, Claude Code завершает процесс сервера. Если не установлено, время ожидания не применяется |
+| `requestTimeout` | No | Миллисекунды для ожидания ответа сервера на запрос, положительное целое число. По умолчанию `60000`, поэтому запрос, на который сервер так и не ответил, завершается ошибкой через 60 секунд. Требуется версия v2.1.288 или новее |
+| `restartOnCrash` | No | Перезапускать ли сервер после сбоя. По умолчанию `true`. Установите `false`, чтобы оставить упавший сервер остановленным вместо перезапуска |
+| `maxRestarts` | No | Попытки перезапуска перед отказом, ноль или больше |
+| `diagnostics` | No | Отправлять ли диагностику в контекст после редактирования. По умолчанию `true` |
+
+Эта встроенная конфигурация запускает `gopls` для файлов `.go`:
+</code></pre>
+<p>{
+  &quot;lspServers&quot;: {
+    &quot;go&quot;: {
+      &quot;command&quot;: &quot;gopls&quot;,
+      &quot;args&quot;: [&quot;serve&quot;],
+      &quot;extensionToLanguage&quot;: { &quot;.go&quot;: &quot;go&quot; }
+    }
+  }
+}</p>
+<pre><code>
+Для языковых серверов, которые Anthropic публикует как плагины, и того, как серверы ведут себя во время выполнения, см. [Интеллект кода](https://code.claude.com/docs/ru/plugins/code-intelligence.md).
+
+### `monitors`
+
+`experimental.monitors` принимает путь файла `.json` или встроенный массив. Когда вы опускаете ключ, Claude Code загружает `monitors/monitors.json`, если он существует.
+
+Каждая запись — это строгий объект с этими полями.
+
+| Поле | Обязательное | Описание |
+| :- | :- | :- |
+| `name` | Yes | Идентификатор, уникальный в пределах плагина |
+| `command` | Yes | Команда оболочки, которую Claude Code запускает как постоянный фоновый процесс в директории работы сеанса |
+| `description` | Yes | Краткое резюме, показываемое в панели задач и сводках уведомлений |
+| `when` | No | С `&quot;always&quot;`, по умолчанию, монитор запускается при запуске сеанса и при перезагрузке плагина. С `&quot;on-skill-invoke:&lt;skill&gt;&quot;`, он запускается в первый раз, когда запускается этот skill |
+
+Этот встроенный массив объявляет один монитор, который запускается в первый раз, когда запускается skill `deploy`:
+</code></pre>
+<p>{
+  &quot;experimental&quot;: {
+    &quot;monitors&quot;: [
+      {
+        &quot;name&quot;: &quot;deploy-status&quot;,
+        &quot;command&quot;: &quot;\&quot;${CLAUDE_PLUGIN_ROOT}\&quot;/scripts/poll-deploy.sh&quot;,
+        &quot;description&quot;: &quot;Deployment status changes&quot;,
+        &quot;when&quot;: &quot;on-skill-invoke:deploy&quot;
+      }
+    ]
+  }
+}</p>
+<pre><code>
+Команда монитора `command` не может ссылаться на `${user_config.*}`. См. [Поля, которые работают через оболочку](#fields-that-run-through-a-shell).
+
+## Правила путей
+
+Каждый путь компонента в манифесте относителен корню плагина и должен начинаться с `./`. Путь, такой как `commands/foo.md`, не проходит проверку. `skills` и `mcpServers` каждый принимают одну форму вне этого правила:
+
+* **`skills`**: также принимает `&quot;.&quot;`. Оба `&quot;.&quot;` и `&quot;./&quot;` обозначают корень плагина
+* **`mcpServers`**: также принимает URL пакета `https://`
+
+`experimental.evals` не является путем компонента, поэтому правила этого раздела на него не распространяются, и вместо этого `claude plugin eval` проверяет значение при запуске. Оно указывает директорию внутри корня плагина, например `&quot;quality/evals&quot;`, с префиксом `./` или без него. Если задан массив, используется только первый элемент. О том, какие значения допустимы и что происходит с непригодным значением, см. [Использование другой директории для eval](https://code.claude.com/docs/ru/plugin-evals.md#use-a-different-eval-directory).
+
+### Содержание и существование
+
+Каждый путь компонента должен разрешаться внутри корня плагина и должен существовать. `claude plugin validate` проверяет пути под каждым ключом компонента:
+
+* **Содержание**: путь, который разрешается вне корня плагина, не загружается, и вкладка `/plugin` **Errors** показывает `&lt;component&gt; path escapes plugin directory: &lt;path&gt;`. Путь, содержащий `..`, — обычный случай, и `claude plugin validate` сообщает об ошибке `Path contains &quot;..&quot; which could be a path traversal attempt`. Для файла `mcpServers` или `lspServers` сообщение [`path not read`](https://code.claude.com/docs/ru/errors#server-file-path-not-read) означает, что путь абсолютный или содержит `..`
+* **Существование**: путь, который не существует, не загружается, и вкладка `/plugin` **Errors** показывает `&lt;component&gt; path not found: &lt;path&gt;`. `claude plugin validate` сообщает об ошибке `Path not found`
+
+Для путей `outputStyles`, `lspServers`, `monitors` и `themes` проверка `claude plugin validate` требует Claude Code v2.1.283 или более поздней версии.
+
+### Как каждый ключ объединяется с его расположением по умолчанию
+
+Каждый ключ компонента либо заменяет его расположение по умолчанию, добавляет к нему, либо объединяется с ним:
+
+* **Заменяет по умолчанию**: `commands`, `agents`, `outputStyles`, `workflows`, `experimental.themes`, `experimental.monitors`. Когда вы устанавливаете `commands`, директория по умолчанию `commands/` не сканируется. Чтобы сохранить по умолчанию и добавить больше, перечислите его явно: `&quot;commands&quot;: [&quot;./commands/&quot;, &quot;./extras/&quot;]`
+* **Добавляет к по умолчанию**: `skills`. Директория `skills/` все еще сканируется, и перечисленные директории загружаются вместе с ней
+* **Объединяет**: `hooks`, `mcpServers`, `lspServers`. Файл по умолчанию загружается первым, и то, что объявляет манифест, объединяется в него, как описано в [Формы путей компонентов](#component-path-forms)
+
+Если плагин имеет папку по умолчанию, такую как `commands/`, и также устанавливает ключ манифеста, который ее заменяет, Claude Code загружает пути манифеста, а не папку. `claude plugin list` и интерфейс `/plugin` затем показывают предупреждение `Default &lt;folder&gt;/ folder is ignored because the manifest sets &quot;&lt;key&gt;&quot;`.
+
+Чтобы избежать предупреждения, установите ключ на путь внутри этой папки: `&quot;commands&quot;: [&quot;./commands/deploy.md&quot;]` обозначает файл в папке по умолчанию и не производит предупреждение.
+
+## Конфигурация пользователя
+
+`userConfig` объявляет значения, которые Claude Code запрашивает у пользователя при включении плагина, поэтому пользователи не редактируют `settings.json` сами.
+
+Ключи — это идентификаторы, состоящие из букв, цифр и подчеркиваний, и не могут начинаться с цифры.
+
+Каждое значение — это строгий объект с этими полями. Неизвестный ключ не проходит проверку.
+
+| Поле | Обязательное | Описание |
+| :- | :- | :- |
+| `type` | Yes | Один из `string`, `number`, `boolean`, `directory` или `file` |
+| `title` | Yes | Метка, показываемая в диалоге конфигурации |
+| `description` | Yes | Справочный текст, показываемый под полем |
+| `required` | No | Если `true`, диалог конфигурации не принимает пустое значение |
+| `default` | No | Значение, используемое, когда пользователь ничего не предоставляет: строка, число, логическое значение или массив строк |
+| `options` | No | Для `string`, значения, которые принимает поле, показываемые как выбор в `/config`. См. [Ограничить поле фиксированными опциями](#limit-a-field-to-fixed-options). Требует Claude Code v2.1.271 или позже |
+| `multiple` | No | Для `string`, позволяет массив строк |
+| `sensitive` | No | Если `true`, маскирует ввод и сохраняет значение в безопасном хранилище вместо `settings.json` |
+| `min` / `max` | No | Границы для `number` |
+
+Каждая опция каждого включенного плагина также появляется как строка в панели `/config`, кроме `sensitive` опций и `multiple` списков. Строки `/config` требуют Claude Code v2.1.269 или позже.
+
+Этот `userConfig` объявляет конечную точку и замаскированный токен:
+</code></pre>
+<p>{
+  &quot;userConfig&quot;: {
+    &quot;api_endpoint&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;title&quot;: &quot;API endpoint&quot;,
+      &quot;description&quot;: &quot;Your team&#x27;s API endpoint&quot;
+    },
+    &quot;api_token&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;title&quot;: &quot;API token&quot;,
+      &quot;description&quot;: &quot;API authentication token&quot;,
+      &quot;sensitive&quot;: true
+    }
+  }
+}</p>
+<pre><code>
+### Ограничить поле фиксированными опциями
+
+Установите `options` на поле `userConfig`, чтобы пользователи выбирали его значение из фиксированного списка.
+
+Чтобы ограничить поле `tone` тремя опциями, перечислите их в `options` и установите `default` на одну из них:
+</code></pre>
+<p>{
+  &quot;userConfig&quot;: {
+    &quot;tone&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;title&quot;: &quot;Tone&quot;,
+      &quot;description&quot;: &quot;Voice for generated replies&quot;,
+      &quot;options&quot;: [&quot;neutral&quot;, &quot;warm&quot;, &quot;formal&quot;],
+      &quot;default&quot;: &quot;neutral&quot;
+    }
+  }
+}</p>
+<pre><code>
+Если вы объявляете `options` на любом поле, пользователи на версиях Claude Code до v2.1.271 не могут загрузить плагин.
+
+`options` применяется к полю `string`, которое не является `multiple` или `sensitive`. Установите `default` на одно из перечисленных значений или установите `required: true`, чтобы пользователь выбрал одно. Каждая опция — это простая метка от 1 до 64 символов, и `claude plugin validate`, который вы запускаете в вашей оболочке, сообщает обо всем остальном, что он отклоняет. Плагин, чьи `options` нарушают эти правила, не загружается.
+
+### Где сохраняются значения
+
+Нечувствительные значения сохраняются в [`pluginConfigs`](https://code.claude.com/docs/ru/settings-reference#pluginconfigs) в `settings.json` пользователя. Чувствительные значения идут в безопасное хранилище учетных данных платформы вместо этого. На [странице параметров](https://code.claude.com/docs/ru/settings-reference.md#pluginconfigs) указано, из каких файлов параметров читается `pluginConfigs`.
+
+### Ссылка на сохраненное значение
+
+Ссылайтесь на сохраненное значение, где плагин его нужен, в одной из двух форм:
+
+* **`${user_config.KEY}`**: подставляется в конфигурацию MCP сервера, конфигурацию LSP сервера, [exec-form](https://code.claude.com/docs/ru/hooks.md#exec-form-and-shell-form) hook `args` и содержимое skill и agent. В содержимом skill и agent подставляются только нечувствительные значения, и чувствительное значение там становится заполнителем
+* **`CLAUDE_PLUGIN_OPTION_&lt;KEY&gt;`**: экспортируется в процессы hook для каждой опции, с `&lt;KEY&gt;` в верхнем регистре. Shell-form hook читает `$CLAUDE_PLUGIN_OPTION_API_TOKEN` для `api_token`
+
+### Поля, которые работают через оболочку
+
+Shell-form hook команды, команды монитора и MCP [`headersHelper`](https://code.claude.com/docs/ru/mcp#use-dynamic-headers-for-custom-authentication) отклоняют `${user_config.*}`. Компонент, который ссылается на него в одном из этих полей, не работает с [ошибкой](https://code.claude.com/docs/ru/errors.md#plugin-command-references-user-config) вместо запуска, потому что значение поля передается оболочке, которая переанализирует подставленное значение.
+
+Таблица показывает, как значение может достичь каждого из этих полей вместо этого.
+
+| Поле | Как значение может достичь его |
+| :- | :- |
+| Shell-form hook команды | Используйте [exec form](https://code.claude.com/docs/ru/hooks.md#exec-form-and-shell-form) с `args` или читайте `CLAUDE_PLUGIN_OPTION_&lt;KEY&gt;` из окружения hook |
+| Команды монитора | Не через Claude Code. Процессы монитора не получают `CLAUDE_PLUGIN_OPTION_&lt;KEY&gt;`, поэтому скрипт монитора должен получить значение самостоятельно |
+| MCP `headersHelper` | Не через Claude Code. Окружение помощника содержит `CLAUDE_PLUGIN_ROOT`, `CLAUDE_CODE_MCP_SERVER_NAME` и `CLAUDE_CODE_MCP_SERVER_URL`, но не значения опций, поэтому скрипт помощника должен получить значение самостоятельно |
+
+## Каналы
+
+`channels` объявляет каналы сообщений, которые предоставляет плагин, такие как мост к приложению чата. Когда вы объявляете один, Claude Code может запросить конфигурацию канала при включении плагина. Для того, как сервер внедряет сообщения, см. [справочник каналов](https://code.claude.com/docs/ru/channels-reference.md#package-as-a-plugin).
+
+Каждая запись — это строгий объект, привязанный к одному из MCP серверов плагина, с этими полями:
+
+| Поле | Обязательное | Описание |
+| :- | :- | :- |
+| `server` | Yes | Ключ MCP сервера в `mcpServers` этого плагина, к которому привязан канал |
+| `displayName` | No | Имя, показываемое в заголовке диалога конфигурации. По умолчанию имя сервера |
+| `userConfig` | No | Опции для запроса, в той же форме, что и [верхнего уровня `userConfig`](#user-configuration). Сохраненные значения подставляются в ссылки `${user_config.KEY}` в `env` сервера |
+
+Этот манифест привязывает канал к MCP серверу `telegram` плагина и запрашивает токен бота, который подставляется в `env` сервера:
+</code></pre>
+<p>{
+  &quot;mcpServers&quot;: {
+    &quot;telegram&quot;: {
+      &quot;command&quot;: &quot;node&quot;,
+      &quot;args&quot;: [&quot;${CLAUDE_PLUGIN_ROOT}/server.js&quot;],
+      &quot;env&quot;: { &quot;BOT_TOKEN&quot;: &quot;${user_config.bot_token}&quot; }
+    }
+  },
+  &quot;channels&quot;: [
+    {
+      &quot;server&quot;: &quot;telegram&quot;,
+      &quot;displayName&quot;: &quot;Telegram&quot;,
+      &quot;userConfig&quot;: {
+        &quot;bot_token&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;title&quot;: &quot;Bot token&quot;,
+          &quot;description&quot;: &quot;Telegram bot token&quot;,
+          &quot;sensitive&quot;: true
+        }
+      }
+    }
+  ]
+}</p>
+<pre><code>
+## Переменные окружения
+
+Claude Code предоставляет три переменные пути компонентам плагина. Ссылайтесь на них как `${NAME}` в полях, перечисленных в [Где каждая переменная разрешается](#where-each-variable-resolves), и читайте их как переменные окружения в процессах, которые их получают.
+
+| Переменная | Разрешается в | Используйте для |
+| :- | :- | :- |
+| `${CLAUDE_PLUGIN_ROOT}` | Абсолютный путь установленной версии плагина | Скрипты, бинарные файлы и файлы конфигурации, поставляемые с плагином |
+| `${CLAUDE_PLUGIN_DATA}` | `~/.claude/plugins/data/&lt;id&gt;/`, создается при первой ссылке и сохраняется при обновлениях плагина. `&lt;id&gt;` — это идентификатор плагина с каждым символом, отличным от буквы, цифры, `_` или `-`, замененным на `-` | Установленные зависимости, такие как `node_modules`, сгенерированный код и кэши |
+| `${CLAUDE_PROJECT_DIR}` | Корень проекта | Скрипты и файлы конфигурации, локальные для проекта |
+
+`${CLAUDE_PLUGIN_ROOT}` изменяется при обновлении плагина, поэтому не записывайте состояние туда. Для того, где корень перемещается и когда старая директория очищается, см. [страницу загрузки](https://code.claude.com/docs/ru/plugins/loading.md).
+
+По умолчанию Claude Code удаляет директорию `${CLAUDE_PLUGIN_DATA}` при удалении плагина из последнего места, где он установлен. Для `--keep-data` и других случаев, когда она сохраняется, см. [удаление плагина](https://code.claude.com/docs/ru/plugins/cli-reference.md#plugin-uninstall).
+
+### Где каждая переменная разрешается
+
+В каждом компоненте плагина ссылки `${...}` разрешаются встроенным образом в определенных полях, и некоторые компоненты также получают переменные в окружении их процесса:
+
+| Компонент плагина | Поля, где `${...}` разрешается | Экспортируется в процесс |
+| :- | :- | :- |
+| Hook команды | Где угодно в `command` и `args` | `CLAUDE_PLUGIN_ROOT`, `CLAUDE_PLUGIN_DATA`, `CLAUDE_PROJECT_DIR` и `CLAUDE_PLUGIN_OPTION_&lt;KEY&gt;` |
+| Monitor команды | Где угодно в `command` | Не экспортируется |
+| MCP `stdio` серверы | `command`, `args`, `env` | `CLAUDE_PLUGIN_ROOT`, `CLAUDE_PLUGIN_DATA`, `CLAUDE_PROJECT_DIR` |
+| MCP `http`, `sse`, `ws` серверы | `url`, `headers`, `headersHelper` | Не применимо |
+| LSP серверы | `command`, `args`, `env`, `workspaceFolder` | `CLAUDE_PLUGIN_ROOT`, `CLAUDE_PLUGIN_DATA`, `CLAUDE_PROJECT_DIR` |
+| Skill, команда и содержимое агента | Где угодно в теле Markdown | Не применимо |
+
+Переменные отсутствуют в окружении команд, которые Claude запускает через инструмент Bash, в основном сеансе или в подагенте. В содержимом skill, команды и агента напишите ссылку `${...}` в теле Markdown вместо этого, и Claude Code подставляет путь встроенным образом при загрузке содержимого.
+
+### Кавычки и разделители пути
+
+Сохраняйте каждый подставленный путь одним аргументом:
+
+* **Hook команды**: используйте [exec form](https://code.claude.com/docs/ru/hooks.md#exec-form-and-shell-form) с `args`, чтобы каждый путь был одним аргументом без кавычек
+* **Shell-form hooks и monitor команды**: оберните переменную в двойные кавычки, чтобы путь с пробелами оставался одним словом
+
+Если вы оставите одну из этих переменных вне кавычек в shell-form команде в файле hooks, `claude plugin validate` выдаст предупреждение, если только hook не устанавливает [`shell`](https://code.claude.com/docs/ru/hooks#command-hook-fields) на `&quot;powershell&quot;`.
+
+Этот shell-form hook запускает скрипт, поставляемый с плагином:
+</code></pre>
+<p>{
+  &quot;hooks&quot;: {
+    &quot;PostToolUse&quot;: [
+      {
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;\&quot;${CLAUDE_PLUGIN_ROOT}\&quot;/scripts/process.sh&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</p>
+<pre><code>
+На Windows большинство подставленных путей используют прямые слэши, например `C:/Users/you/...`. Собственные обратные слэши сохраняются в [хуке в exec form](https://code.claude.com/docs/ru/hooks.md#exec-form-and-shell-form) и в хуке, который выполняется через PowerShell — оболочку по умолчанию на Windows, когда Git Bash не установлен.
+
+## Стандартное расположение
+
+Каждый тип компонента имеет расположение по умолчанию в корне плагина, используемое, когда манифест не указывает иное.
+
+| Компонент | Расположение по умолчанию | Содержимое |
+| :- | :- | :- |
+| Манифест | `.claude-plugin/plugin.json` | Метаданные и конфигурация плагина. Необязательно |
+| Skills | `skills/` | Один `&lt;name&gt;/SKILL.md` на skill. Плагин с `SKILL.md` в корне, без `skills/` и без ключа `skills` загружается как один skill |
+| Команды | `commands/` | Плоские файлы команд Markdown. Предпочитайте `skills/` для новых плагинов |
+| Агенты | `agents/` | Файлы Markdown агентов. Подпапки являются частью [имени агента](https://code.claude.com/docs/ru/plugins/components.md#agents) |
+| Hooks | `hooks/hooks.json` | Конфигурация hook |
+| MCP серверы | `.mcp.json` | Определения MCP сервера |
+| LSP серверы | `.lsp.json` | Конфигурации LSP сервера |
+| Стили вывода | `output-styles/` | Файлы стилей вывода Markdown |
+| Workflows | `workflows/` | Файлы Workflow `.js` |
+| Темы | `themes/` | Файлы темы JSON |
+| Мониторы | `monitors/monitors.json` | Массив мониторов |
+| Исполняемые файлы | `bin/` | Файлы здесь находятся на `PATH` инструмента Bash при включении плагина, поэтому Claude запускает их как простые команды. claude.ai и Cowork не устанавливают плагин, который имеет эту директорию, включая тот, который вы [распространяете через параметры организации claude.ai](https://claude.com/docs/plugins/org-sync#keep-executables-out-of-the-top-level-bin-directory) |
+
+Плагин, который использует расположения по умолчанию, плюс папку `scripts/`, которую вызывают его хуки, расположен следующим образом:
+</code></pre>
+<p>deploy-tools/
+├── .claude-plugin/
+│   └── plugin.json
+├── skills/
+│   └── deploy/
+│       └── SKILL.md
+├── commands/
+│   └── status.md
+├── agents/
+│   └── reviewer.md
+├── hooks/
+│   └── hooks.json
+├── monitors/
+│   └── monitors.json
+├── output-styles/
+│   └── terse.md
+├── themes/
+│   └── dracula.json
+├── workflows/
+│   └── release-audit.js
+├── bin/
+│   └── deploy-tool
+├── scripts/
+│   └── format.sh
+├── .mcp.json
+└── .lsp.json</p>
+<pre><code>
+Чтобы щелкнуть по этому расположению и прочитать, что делает каждый файл, откройте [обозреватель плагинов](https://code.claude.com/docs/ru/plugins/components.md#explore-the-plugin-directory).
+
+`CLAUDE.md` в корне плагина не загружается как контекст, и `claude plugin validate` предупреждает, когда находит его. Чтобы включить инструкции, которые загружаются в контекст Claude, поместите их в skill.
+
+## Записи маркетплейса и манифест
+
+[Запись маркетплейса](https://code.claude.com/docs/ru/plugins/marketplace-reference.md) принимает [свои собственные поля](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#plugin-entries), включая `strict`, а также каждое поле на этой странице, кроме [полей листинга в каталоге](#directory-listing-fields).
+
+Поле `strict` решает, может ли запись добавлять компоненты к плагину, который имеет свой `plugin.json`. По умолчанию `true`.
+
+### Как поля записи объединяются с `plugin.json`
+
+Запись либо служит манифестом, добавляет компоненты к нему, либо конфликтует с ним:
+
+* **Нет `plugin.json`**: запись — это манифест, независимо от `strict`. Hooks записи загружаются только в встроенной форме объекта. Для пути файла или массива там вкладка `/plugin` **Errors** показывает ошибку `not yet supported in a marketplace entry`
+* **`plugin.json` присутствует, `strict` не установлен или `true`**: Claude Code загружает манифест и добавляет `commands`, `agents`, `skills`, `outputStyles` и `themes` записи к нему. Для `hooks`, matchers записи для события заменяют matchers манифеста для того же события, и события, которые объявляет только манифест, сохраняют свои
+* **`plugin.json` присутствует, `strict: false`**: запись, которая объявляет любой из `commands`, `agents`, `skills`, `hooks`, `outputStyles` или `themes`, — это конфликт, и плагин не загружается с `Plugin &lt;name&gt; has conflicting manifests`
+
+Когда [запись маркетплейса, чей `source` — корень маркетплейса](https://code.claude.com/docs/ru/plugins/marketplace-reference), перечисляет определенные поддиректории `skills`, загружаются только эти поддиректории, и директория по умолчанию `skills/` плагина не сканируется. Ключ `skills` в манифесте вместо этого [добавляет к по умолчанию](#how-each-key-combines-with-its-default-location).
+
+### Приоритет метаданных
+
+Некоторые поля метаданных имеют фиксированный приоритет независимо от `strict`:
+
+* **`defaultEnabled` и поля отображения**: `defaultEnabled` записи и ее [поля отображения](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#entry-and-plugin-json), такие как `displayName`, переопределяют манифеста
+* **`version`**: `version` манифеста переопределяет запись
+* **`name`**: когда запись перечисляет плагин под другим `name`, чем манифест, `enabledPlugins` использует имя записи, и компоненты находятся в пространстве имен под именем манифеста
+
+Для полной таблицы приоритета см. [Строгий режим](https://code.claude.com/docs/ru/plugins/marketplace-reference.md).
+
+## Следующие шаги
+
+* [Добавить компоненты к плагину](https://code.claude.com/docs/ru/plugins/components.md): что каждый компонент делает во время выполнения, с примером, который проходит проверку
+* [Справочник маркетплейса](https://code.claude.com/docs/ru/plugins/marketplace-reference.md): поля записи, которые маркетплейс может установить для вашего плагина
+* [Справочник команд плагина](https://code.claude.com/docs/ru/plugins/cli-reference.md#plugin-validate): флаги и вывод `claude plugin validate`
+* [Устранение неполадок плагинов](https://code.claude.com/docs/ru/plugins/troubleshooting.md#claude-plugin-validate-reports-errors): каждое сообщение проверки с его исправлением
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Обзор корпоративного развертывания</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Обзор корпоративного развертывания <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Узнайте, как Claude Code может интегрироваться с различными сторонними сервисами и инфраструктурой для удовлетворения требований корпоративного развертывания.</p>
+</blockquote>
+<p>Организации могут развертывать Claude Code непосредственно через Anthropic или через поставщика облачных услуг. Эта страница поможет вам выбрать правильную конфигурацию.</p>
+<p><strong>Deploying Claude Code across your organization?</strong> Talk to sales about enterprise plans, SSO, and centralized billing.</p>
+<p>View plans
+Contact sales</p>
+<h3 id="h-2">Сравнение вариантов развертывания <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Для большинства организаций Claude for Teams или Claude for Enterprise обеспечивает лучший опыт. Члены команды получают доступ как к Claude Code, так и к Claude в веб-версии с одной подпиской, централизованным выставлением счетов и без необходимости настройки инфраструктуры.</p>
+<p><strong>Claude for Teams</strong> — это самообслуживаемое решение, которое включает функции сотрудничества, инструменты администратора, SSO, управление выставлением счетов и <a href="https://code.claude.com/docs/ru/server-managed-settings.md">управляемые параметры сервера</a> для конфигурации Claude Code на уровне организации. Лучше всего подходит для небольших команд, которым нужно быстро начать работу.</p>
+<p><strong>Claude for Enterprise</strong> добавляет захват домена, разрешения на основе ролей и доступ к API соответствия требованиям. Лучше всего подходит для крупных организаций с требованиями безопасности и соответствия требованиям.</p>
+<p>Узнайте больше о <a href="https://support.claude.com/en/articles/9266767-what-is-the-team-plan">планах Team</a> и <a href="https://support.claude.com/en/articles/9797531-what-is-the-enterprise-plan">планах Enterprise</a>.</p>
+<p>Варианты развертывания, сравниваемые ниже, охватывают место, где выполняется вывод модели. Для запуска сеансов <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">Claude Code в веб-версии</a> на вычислительных ресурсах, которыми управляет ваша организация, см. <a href="https://code.claude.com/docs/ru/self-hosted-environments">самостоятельно размещаемые окружения</a>.</p>
+<p>Если ваша организация имеет специфические требования к инфраструктуре, сравните варианты ниже:</p>
+<p>&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Функция&lt;/th&gt;
+      &lt;th&gt;Claude for Teams/Enterprise&lt;/th&gt;
+      &lt;th&gt;Anthropic Console&lt;/th&gt;
+      &lt;th&gt;Amazon Bedrock&lt;/th&gt;
+      &lt;th&gt;Claude Platform on AWS&lt;/th&gt;
+      &lt;th&gt;Google Cloud&#x27;s Agent Platform, ранее Vertex AI&lt;/th&gt;
+      &lt;th&gt;Microsoft Foundry&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;</p>
+<p>&lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Лучше всего подходит для&lt;/td&gt;
+      &lt;td&gt;Большинства организаций (рекомендуется)&lt;/td&gt;
+      &lt;td&gt;Отдельных разработчиков&lt;/td&gt;
+      &lt;td&gt;Развертываний, собственных для AWS&lt;/td&gt;
+      &lt;td&gt;Выставление счетов AWS Marketplace с функциями Claude API&lt;/td&gt;
+      &lt;td&gt;Развертываний, собственных для GCP&lt;/td&gt;
+      &lt;td&gt;Развертываний, собственных для Azure&lt;/td&gt;
+    &lt;/tr&gt;</p>
+<p>&lt;tr&gt;
+      &lt;td&gt;Выставление счетов&lt;/td&gt;
+      &lt;td&gt;<strong>Teams:</strong> подписка за место с доступной оплатой по мере использования, см. <a href="https://claude.com/pricing?utm_source=claude_code\&amp;utm_medium=docs\&amp;utm_content=third_party_pricing#team-&amp;-enterprise">цены</a>\
+      <strong>Enterprise:</strong> <a href="https://claude.com/contact-sales?utm_source=claude_code\&amp;utm_medium=docs\&amp;utm_content=third_party_enterprise">Свяжитесь с отделом продаж</a>&lt;/td&gt;
+      &lt;td&gt;Оплата по мере использования&lt;/td&gt;
+      &lt;td&gt;Оплата по мере использования через AWS&lt;/td&gt;
+      &lt;td&gt;Оплата по мере использования через AWS Marketplace&lt;/td&gt;
+      &lt;td&gt;Оплата по мере использования через GCP&lt;/td&gt;
+      &lt;td&gt;Оплата по мере использования через Azure&lt;/td&gt;
+    &lt;/tr&gt;</p>
+<p>&lt;tr&gt;
+      &lt;td&gt;Регионы&lt;/td&gt;
+      &lt;td&gt;Поддерживаемые <a href="https://www.anthropic.com/supported-countries">страны</a>&lt;/td&gt;
+      &lt;td&gt;Поддерживаемые <a href="https://www.anthropic.com/supported-countries">страны</a>&lt;/td&gt;
+      &lt;td&gt;Несколько AWS <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html">регионов</a>&lt;/td&gt;
+      &lt;td&gt;Несколько регионов AWS&lt;/td&gt;
+      &lt;td&gt;Несколько GCP <a href="https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations">регионов</a>&lt;/td&gt;
+      &lt;td&gt;Несколько Azure <a href="https://azure.microsoft.com/en-us/explore/global-infrastructure/products-by-region/">регионов</a>&lt;/td&gt;
+    &lt;/tr&gt;</p>
+<p>&lt;tr&gt;
+      &lt;td&gt;Prompt caching&lt;/td&gt;
+      &lt;td&gt;Включено по умолчанию&lt;/td&gt;
+      &lt;td&gt;Включено по умолчанию&lt;/td&gt;
+      &lt;td&gt;Включено по умолчанию&lt;/td&gt;
+      &lt;td&gt;Включено по умолчанию&lt;/td&gt;
+      &lt;td&gt;Включено по умолчанию&lt;/td&gt;
+      &lt;td&gt;Включено по умолчанию&lt;/td&gt;
+    &lt;/tr&gt;</p>
+<p>&lt;tr&gt;
+      &lt;td&gt;Аутентификация&lt;/td&gt;
+      &lt;td&gt;claude.ai SSO или электронная почта&lt;/td&gt;
+      &lt;td&gt;API ключ или <a href="https://code.claude.com/docs/ru/authentication.md#sign-in-without-an-api-key">вход в Console без него</a>&lt;/td&gt;
+      &lt;td&gt;API ключ или учетные данные AWS&lt;/td&gt;
+      &lt;td&gt;API ключ или учетные данные AWS&lt;/td&gt;
+      &lt;td&gt;Учетные данные GCP&lt;/td&gt;
+      &lt;td&gt;API ключ или Microsoft Entra ID&lt;/td&gt;
+    &lt;/tr&gt;</p>
+<p>&lt;tr&gt;
+      &lt;td&gt;Отслеживание затрат&lt;/td&gt;
+      &lt;td&gt;Панель использования&lt;/td&gt;
+      &lt;td&gt;Панель использования&lt;/td&gt;
+      &lt;td&gt;AWS Cost Explorer&lt;/td&gt;
+      &lt;td&gt;AWS Cost Explorer&lt;/td&gt;
+      &lt;td&gt;GCP Billing&lt;/td&gt;
+      &lt;td&gt;Azure Cost Management&lt;/td&gt;
+    &lt;/tr&gt;</p>
+<p>&lt;tr&gt;
+      &lt;td&gt;Включает Claude в веб-версии&lt;/td&gt;
+      &lt;td&gt;Да&lt;/td&gt;
+      &lt;td&gt;Нет&lt;/td&gt;
+      &lt;td&gt;Нет&lt;/td&gt;
+      &lt;td&gt;Нет&lt;/td&gt;
+      &lt;td&gt;Нет&lt;/td&gt;
+      &lt;td&gt;Нет&lt;/td&gt;
+    &lt;/tr&gt;</p>
+<p>&lt;tr&gt;
+      &lt;td&gt;Функции Enterprise&lt;/td&gt;
+      &lt;td&gt;Управление командой, SSO, мониторинг использования&lt;/td&gt;
+      &lt;td&gt;Нет&lt;/td&gt;
+      &lt;td&gt;Политики IAM, CloudTrail&lt;/td&gt;
+      &lt;td&gt;Политики IAM, CloudTrail&lt;/td&gt;
+      &lt;td&gt;Роли IAM, Cloud Audit Logs&lt;/td&gt;
+      &lt;td&gt;Политики RBAC, Azure Monitor&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;</p>
+<p>Для подробного сравнения функций, доступных в каждом варианте, см. <a href="https://code.claude.com/docs/ru/feature-availability.md">Доступность функций</a>.</p>
+<p>Выберите вариант развертывания для просмотра инструкций по настройке:</p>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/authentication.md#claude-for-teams-or-enterprise">Claude for Teams или Enterprise</a></li>
+<li><a href="https://code.claude.com/docs/ru/authentication.md#claude-console-authentication">Anthropic Console</a></li>
+<li><a href="https://code.claude.com/docs/ru/claude-apps-gateway">Claude apps gateway</a>, самостоятельно размещаемый шлюз, который добавляет вход через IdP перед Amazon Bedrock, Claude Platform on AWS, Google Cloud&#x27;s Agent Platform, Microsoft Foundry или Anthropic API</li>
+<li><a href="https://code.claude.com/docs/ru/amazon-bedrock.md">Amazon Bedrock</a></li>
+<li><a href="https://code.claude.com/docs/ru/claude-platform-on-aws.md">Claude Platform on AWS</a></li>
+<li><a href="https://code.claude.com/docs/ru/claude-models-on-google-cloud-anthropic-managed.md">Claude Models on Google Cloud (под управлением Anthropic)</a></li>
+<li><a href="https://code.claude.com/docs/ru/google-vertex-ai.md">Google Cloud&#x27;s Agent Platform</a></li>
+<li><a href="https://code.claude.com/docs/ru/microsoft-foundry.md">Microsoft Foundry</a></li>
+</ul>
+<p>Для Amazon Bedrock и Google Vertex AI вы также можете запустить <code>claude</code> и выбрать <strong>3rd-party platform</strong> в приглашении входа для запуска интерактивного мастера настройки.</p>
+<h3 id="h-3">Настройка прокси и шлюзов <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Большинство организаций могут использовать поставщика облачных услуг напрямую без дополнительной конфигурации. Однако вам может потребоваться настроить корпоративный прокси или шлюз LLM, если ваша организация имеет специфические требования к сети или управлению. Это разные конфигурации, которые можно использовать вместе:</p>
+<ul>
+<li><strong>Корпоративный прокси</strong>: маршрутизирует трафик через прокси HTTP/HTTPS. Используйте это, если ваша организация требует, чтобы весь исходящий трафик проходил через прокси-сервер для мониторинга безопасности, соответствия требованиям или обеспечения политики сети. Настройте с помощью переменных окружения <code>HTTPS_PROXY</code> или <code>HTTP_PROXY</code>. Узнайте больше в разделе <a href="https://code.claude.com/docs/ru/network-config.md">Конфигурация корпоративной сети</a>.</li>
+<li><strong>Шлюз LLM</strong>: сервис, который находится между Claude Code и поставщиком облачных услуг для обработки аутентификации и маршрутизации. Используйте это, если вам нужно централизованное отслеживание использования между командами, пользовательское ограничение скорости или бюджеты, или централизованное управление аутентификацией. Настройте с помощью переменных окружения <code>ANTHROPIC_BASE_URL</code>, <code>ANTHROPIC_BEDROCK_BASE_URL</code>, <code>ANTHROPIC_AWS_BASE_URL</code>, <code>ANTHROPIC_VERTEX_BASE_URL</code> или <code>ANTHROPIC_FOUNDRY_BASE_URL</code>. Узнайте больше в разделе <a href="https://code.claude.com/docs/ru/llm-gateway">Шлюзы LLM</a>.</li>
+</ul>
+<p>Для переменных окружения для каждого поставщика, которые маршрутизируют Amazon Bedrock, Microsoft Foundry или Google Cloud&#x27;s Agent Platform через шлюз LLM, см. раздел <a href="https://code.claude.com/docs/ru/llm-gateway-connect.md#route-to-a-cloud-provider-through-a-gateway">маршрутизация к поставщику облачных услуг через шлюз</a>. Запустите <code>/status</code> в Claude Code для проверки того, какой поставщик, базовый URL и прокси использует сеанс.</p>
+<p>Если ваша организация использует <a href="https://platform.claude.com/docs/en/manage-claude/cmek">ключи шифрования, управляемые клиентом</a> (CMEK) и маршрутизирует Claude Code через шлюз LLM или пользовательский <code>ANTHROPIC_BASE_URL</code>, CMEK не применяется к операционной телеметрии Claude Code в этих сеансах. Чтобы отключить телеметрию для каждого разработчика, доставьте <code>DISABLE_TELEMETRY</code> через управляемые параметры, как показано в разделе <a href="https://code.claude.com/docs/ru/managed-settings.md#turn-telemetry-off-for-your-organization">Отключение телеметрии для вашей организации</a>.</p>
+<h3 id="h-4">Лучшие практики для организаций <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-5">Инвестируйте в документацию и память <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<p>Инвестируйте в документацию, чтобы Claude Code понимал вашу кодовую базу. Организации могут развёртывать файлы CLAUDE.md на нескольких уровнях. См. <a href="https://code.claude.com/docs/ru/memory.md#choose-where-to-put-claude-md-files">где могут находиться файлы CLAUDE.md</a> и <a href="https://code.claude.com/docs/ru/memory.md#deploy-organization-wide-claude-md">как развернуть организационный файл CLAUDE.md</a>.</p>
+<h4 id="h-6">Упростите развертывание <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если у вас есть пользовательская среда разработки, создание способа установки Claude Code «в один клик» является ключом к расширению внедрения в организации.</p>
+<h4 id="h-7">Начните с управляемого использования <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<p>Поощряйте новых пользователей попробовать Claude Code для вопросов и ответов по кодовой базе, или на небольших исправлениях ошибок или запросах функций. Попросите Claude Code составить план. Проверьте предложения Claude и дайте обратную связь, если что-то не так. Со временем, по мере того как пользователи лучше поймут эту новую парадигму, они будут более эффективны в том, чтобы позволить Claude Code работать более агентивно.</p>
+<h4 id="h-8">Закрепите версии моделей для поставщиков облачных услуг <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если вы развертываете через <a href="https://code.claude.com/docs/ru/amazon-bedrock.md">Amazon Bedrock</a>, <a href="https://code.claude.com/docs/ru/google-vertex-ai.md">Google Cloud&#x27;s Agent Platform</a>, <a href="https://code.claude.com/docs/ru/microsoft-foundry.md">Microsoft Foundry</a> или <a href="https://code.claude.com/docs/ru/claude-platform-on-aws.md">Claude Platform on AWS</a>, закрепите конкретные версии моделей, используя <code>ANTHROPIC_DEFAULT_FABLE_MODEL</code>, <code>ANTHROPIC_DEFAULT_OPUS_MODEL</code>, <code>ANTHROPIC_DEFAULT_SONNET_MODEL</code> и <code>ANTHROPIC_DEFAULT_HAIKU_MODEL</code>. Без закрепления, псевдонимы моделей разрешаются на встроенное значение по умолчанию Claude Code для этого поставщика, что может отставать от последнего выпуска и может быть еще не включено в вашей учетной записи. Закрепление позволяет вам контролировать, когда ваши пользователи переходят на новую модель. См. раздел <a href="https://code.claude.com/docs/ru/model-config.md#pin-models-for-third-party-deployments">Конфигурация модели</a> для получения информации о том, что делает каждый поставщик, когда значение по умолчанию недоступно.</p>
+<h4 id="h-9">Настройте политики безопасности <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<p>Команды безопасности могут настроить управляемые разрешения для того, что Claude Code может и не может делать, которые не могут быть переопределены локальной конфигурацией. <a href="https://code.claude.com/docs/ru/security.md">Узнайте больше</a>.</p>
+<p>Чтобы ограничить, какие из этих вариантов развертывания может использовать управляемая машина, установите <a href="https://code.claude.com/docs/ru/settings-reference#allowedproviders"><code>allowedProviders</code></a> в управляемых параметрах. Например, <code>[&quot;bedrock&quot;]</code> разрешает Amazon Bedrock и ничего больше; флот Bedrock, который также включает конечную точку Mantle, также указывает <code>&quot;mantle&quot;</code>. Запись указывает, какие переменные конечной точки также требуют управляемого закрепления <code>env</code>. Требуется Claude Code v2.1.285 или более поздняя версия.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Если в Desktop выполнен вход в claude.ai, сессия Cowork на компьютере пользователя считается как <a href="https://code.claude.com/docs/ru/settings-reference#allowedproviders"><code>&quot;anthropic&quot;</code></a>. Если вы не включите это значение в список в политике MDM или файле управляемых настроек, такая сессия будет отклонена. Если оно включено, сессии, отправляемые напрямую в Anthropic, также проходят проверку по этому списку.</p>
+</blockquote>
+<h4 id="используйте-mcp-для-интеграций">Используйте MCP для интеграций <a class="h-anchor" href="#используйте-mcp-для-интеграций" aria-label="Ссылка на раздел">#</a></h4>
+<p>MCP — это отличный способ предоставить Claude Code больше информации, такую как подключение к системам управления тикетами или логам ошибок. Пусть одна центральная команда настроит MCP-серверы и добавит конфигурацию <code>.mcp.json</code> в кодовую базу, чтобы все пользователи получали выгоду. <a href="https://code.claude.com/docs/ru/mcp.md">Узнайте больше</a>.</p>
+<h3 id="h-10">Следующие шаги <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h3>
+<p>После того как вы выбрали вариант развертывания и настроили доступ для вашей команды:</p>
+<ol>
+<li><strong>Развертывание в вашей команде</strong>: поделитесь инструкциями по установке и попросите членов команды <a href="https://code.claude.com/docs/ru/setup.md">установить Claude Code</a> и аутентифицироваться с помощью своих учетных данных.</li>
+<li><strong>Настройте общую конфигурацию</strong>: создайте <a href="https://code.claude.com/docs/ru/memory.md">файл CLAUDE.md</a> в ваших репозиториях, чтобы помочь Claude Code понять вашу кодовую базу и стандарты кодирования.</li>
+<li><strong>Настройте разрешения</strong>: просмотрите <a href="https://code.claude.com/docs/ru/security.md">параметры безопасности</a> для определения того, что Claude Code может и не может делать в вашей среде.</li>
+</ol>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

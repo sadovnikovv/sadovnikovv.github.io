@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Отладка конфигурации</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Отладка конфигурации <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Диагностируйте, почему CLAUDE.md, параметры, hooks, MCP серверы или skills не вступают в силу. Используйте /context, /doctor, /hooks и /mcp, чтобы увидеть, что действительно загрузилось.</p>
+</blockquote>
+<p>Когда Claude игнорирует инструкцию или функция, которую вы настроили, не появляется, причина обычно в том, что файл не загрузился, загрузился из другого места, чем вы ожидали, или его переопределил другой файл. Это руководство показывает, как проверить, что Claude Code действительно загрузил, чтобы вы могли сузить, какой из этих вариантов применяется.</p>
+<p>Для проблем с установкой, аутентификацией и подключением см. <a href="https://code.claude.com/docs/ru/troubleshoot-install.md">Troubleshooting установки и входа</a> вместо этого.</p>
+<h3 id="h-2">Посмотрите, что загрузилось в контекст <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Команда <code>/context</code> показывает всё, что занимает контекстное окно в текущей сессии, разбитое по категориям: системный промпт, системные инструменты, инструменты MCP, пользовательские субагенты с указанием источника, из которого загружен каждый, файлы памяти, скиллы и сообщения диалога. Запустите её в первую очередь, чтобы убедиться, присутствуют ли вообще ваши <code>CLAUDE.md</code>, правила или описания скиллов. Раздел скиллов в <code>/context</code> также включает <a href="https://code.claude.com/docs/ru/skills.md#bundled-skills">встроенные скиллы</a>, которые <code>/skills</code> не перечисляет.</p>
+<p>В <a href="https://code.claude.com/docs/ru/fullscreen.md">полноэкранном режиме</a> <code>/context</code> сворачивает поэлементную разбивку, поэтому выполните <code>/context all</code>, чтобы развернуть её.</p>
+<p>Для деталей по конкретной категории используйте специализированную команду:</p>
+<p>| Команда | Показывает |
+| :- | :- |
+| <code>/memory</code> | Расположение файлов памяти в области пользователя и проекта с возможностью открыть каждый в вашем редакторе, плюс доступ к папке auto memory и переключатель auto memory |
+| <code>/skills</code> | Доступные skills из проекта, пользователя и источников плагинов |
+| <code>/hooks</code> | Активные конфигурации hooks |
+| <code>/mcp</code> | Подключённые MCP серверы и их статус |
+| <code>/permissions</code> | Разрешённые и запрещённые правила, которые в настоящее время действуют |
+| <code>/doctor</code> | Диагностика конфигурации: здоровье установки, неверные файлы параметров, неиспользуемые расширения, дублирующиеся имена <a href="https://code.claude.com/docs/ru/sub-agents.md">subagent</a> в одной папке и проверенное содержимое <code>CLAUDE.md</code>, которое Claude может вывести из кодовой базы, с предложенными исправлениями |
+| <code>/debug [issue]</code> | Включает логирование отладки для сессии и предлагает Claude диагностировать, используя вывод журнала и пути параметров |
+| <code>/status</code> | Активные источники параметров, включая то, действуют ли управляемые параметры |</p>
+<p>Если файл памяти отсутствует в разбивке <code>/context</code>, сверьте его расположение с разделом <a href="https://code.claude.com/docs/ru/memory.md#how-claude-md-files-load">как загружаются файлы CLAUDE.md</a>. Файлы <code>CLAUDE.md</code> в подпапках загружаются по требованию, а не при запуске сессии, поэтому они не отображаются в этой разбивке.</p>
+<p>Если <code>/context</code> подтверждает, что файл загрузился, но Claude всё ещё не следует конкретной инструкции, проблема, вероятно, в том, как написана инструкция, а не в том, загрузилась ли она. CLAUDE.md хорошо работает для типов рекомендаций, которые вы дали бы новому коллеге, таких как соглашения проекта, команды сборки и где находятся файлы.</p>
+<p>Соответствие снижается, когда инструкция достаточно расплывчата, чтобы интерпретировать несколькими способами, когда два файла дают противоречивые указания или когда файл вырос настолько, что отдельные правила получают меньше внимания. <a href="https://code.claude.com/docs/ru/memory.md#write-effective-instructions">Напишите эффективные инструкции</a> охватывает специфичность, размер и структурные паттерны, которые поддерживают высокое соответствие.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>CLAUDE.md и permissions решают разные проблемы. CLAUDE.md говорит Claude, как работает ваш проект, чтобы он принимал хорошие решения. <a href="https://code.claude.com/docs/ru/permissions.md">Permissions</a> и <a href="https://code.claude.com/docs/ru/hooks.md">hooks</a> обеспечивают ограничения независимо от того, что решит Claude. Используйте CLAUDE.md для &quot;мы делаем это так здесь&quot;. Используйте permissions или hooks для границ безопасности и всего, что никогда не должно происходить, когда вам нужна гарантия вместо рекомендации.</p>
+</blockquote>
+<h3 id="h-3">Проверьте разрешённые параметры <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Параметры объединяются в управляемых, пользовательских, проектных и локальных областях. Управляемые параметры применяются в первую очередь, когда присутствуют. Среди остальных, более близкая область переопределяет более широкую в порядке локальная, затем проект, затем пользователь. Некоторые параметры также можно устанавливать флагами командной строки или <a href="https://code.claude.com/docs/ru/env-vars.md">переменными окружения</a>, которые действуют как ещё один слой переопределения. Когда параметр не кажется применяемым, значение, которое вы установили, обычно переопределяется другой областью или переменной окружения.</p>
+<p>Чтобы найти неверные файлы параметров, запустите <code>claude doctor</code> из вашего терминала. Он выводит диагностику установки и параметров только для чтения без запуска сеанса. Для полной проверки, которая также предлагает исправления и запрашивает подтверждение перед их применением, запустите <a href="https://code.claude.com/docs/ru/commands#all-commands"><code>/doctor</code></a> внутри сеанса.</p>
+<p>Запустите <code>/status</code>, чтобы увидеть, какие источники параметров активны, включая то, действуют ли управляемые параметры. Чтобы понять, какую область Claude Code использует для данного ключа, см. <a href="https://code.claude.com/docs/ru/settings.md#settings-precedence">Приоритет параметров</a>.</p>
+<h3 id="проверьте-mcp-серверы">Проверьте MCP серверы <a class="h-anchor" href="#проверьте-mcp-серверы" aria-label="Ссылка на раздел">#</a></h3>
+<p>Запустите <code>/mcp</code>, чтобы увидеть ваши серверы и их статус подключения. Сервер может быть определён правильно, но всё ещё не предоставлять инструменты по нескольким распространённым причинам:</p>
+<ul>
+<li>Серверы с областью действия проекта в <code>.mcp.json</code> требуют одноразового подтверждения. Если вы отклонили запрос, сервер остаётся отключённым. Чтобы снова увидеть запрос, выполните <code>claude mcp reset-project-choices</code> и перезапустите Claude Code. Он снова запросит подтверждение для каждого сервера проекта.</li>
+<li>Сервер, который не запускается, отображается как failed в <code>/mcp</code>. Относительные пути к файлам в <code>command</code> или <code>args</code> — частая причина, так как они разрешаются относительно каталога, из которого вы запустили Claude Code, а не расположения <code>.mcp.json</code>.</li>
+<li>Сервер, который показывает как connected, но перечисляет нулевые tools, успешно запустился, но не возвращает список tools. Выберите <strong>Reconnect</strong> из <code>/mcp</code>. Если количество остаётся нулевым, запустите <code>claude --debug=mcp</code> и прочитайте stderr сервера в журнале отладки по адресу <code>~/.claude/debug/&lt;session-id&gt;.txt</code>.</li>
+</ul>
+<p>Для расположений конфигурации и правил области см. <a href="https://code.claude.com/docs/ru/mcp.md">MCP</a>.</p>
+<h3 id="проверьте-hooks">Проверьте hooks <a class="h-anchor" href="#проверьте-hooks" aria-label="Ссылка на раздел">#</a></h3>
+<p>Запустите <code>/hooks</code>, чтобы перечислить каждый хук, зарегистрированный для текущей сессии, сгруппированный по событиям. Если хук, который вы определили, не появляется, Claude Code его не загрузил. Проверьте следующие причины:</p>
+<ul>
+<li>Хук определён в отдельном файле. Хуки размещаются под ключом <code>&quot;hooks&quot;</code> в <a href="https://code.claude.com/docs/ru/settings.md#settings-files">файле настроек</a>.</li>
+<li>Значение <code>matcher</code> — это массив, а не одна строка. Claude Code отображает эту запись как недопустимую настройку при запуске интерактивной сессии и в <code>claude doctor</code>. Если массив находится под <code>PreToolUse</code> или <code>PermissionRequest</code>, ни один из остальных хуков этого файла также не загружается.</li>
+<li>Хук находится во frontmatter скилла, и ни вы, ни Claude ещё не вызывали этот скилл в текущей сессии. Вызовите его или попросите Claude это сделать, затем снова запустите <code>/hooks</code>. Если хук всё ещё не появляется, проверьте другие причины, например <a href="https://code.claude.com/docs/ru/skills.md#skill-not-triggering">frontmatter, который не удалось разобрать</a>, или одно из <a href="https://code.claude.com/docs/ru/hooks.md#limits-on-skill-hooks">ограничений для хуков скиллов</a>.</li>
+</ul>
+<p>Если hook появляется, но не срабатывает, обычно причина в matcher. Проверьте его на эти ошибки:</p>
+<ul>
+<li>Поле <code>matcher</code> — это одна строка, которая использует <code>|</code> для соответствия нескольким именам tools, например <code>&quot;Edit|Write&quot;</code>. Разделитель <code>,</code> эквивалентен, поэтому <code>&quot;Edit,Write&quot;</code> соответствует тем же tools. До v2.1.191 запятая переходила к оценке regex и matcher никогда не совпадал, поэтому используйте <code>|</code>, если вы ещё не на v2.1.191.</li>
+<li>Неправильное имя tool создаёт matcher, который ничему не соответствует, поэтому hook молча не срабатывает.</li>
+</ul>
+<p>Когда вы редактируете <code>settings.json</code>, изменение вступает в силу в работающей сессии после краткой задержки стабильности файла, даже если вы создали файл или папку <code>.claude/</code> проекта после начала сессии. Вам не нужно перезагружаться. До v2.1.257 Claude Code не обнаруживал правки в папке <code>.claude/</code>, созданной после начала сессии.</p>
+<p>Если <code>/hooks</code> всё ещё показывает старое определение через несколько секунд после сохранения, запустите <code>/hooks</code> снова, чтобы обновить представление. Если <code>/hooks</code> показывает хук, но он всё ещё не срабатывает, следующий шаг — наблюдать оценку хука в реальном времени. Запустите сессию с <code>claude --debug</code> и инициируйте вызов инструмента. См. <a href="https://code.claude.com/docs/ru/hooks.md#debug-hooks">Отладка хуков</a>, чтобы узнать формат лога, и <a href="https://code.claude.com/docs/ru/hooks-guide.md#limitations-and-troubleshooting">устранение неполадок хуков</a>, чтобы узнать о распространённых паттернах сбоев.</p>
+<h3 id="h-4">Протестируйте с чистой конфигурацией <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Начните с <a href="https://code.claude.com/docs/ru/cli-reference#cli-flags"><code>claude --safe-mode</code></a>, который запускает сессию с отключёнными пользовательскими настройками, включая:</p>
+<ul>
+<li><code>CLAUDE.md</code></li>
+<li>Скиллы, плагины и хуки</li>
+<li>MCP-серверы</li>
+<li>Пользовательские команды и агенты</li>
+<li>Пользовательские стили вывода</li>
+<li>Пользовательские сочетания клавиш</li>
+</ul>
+<p>Аутентификация, выбор модели, встроенные инструменты и разрешения работают нормально. Если проблема исчезает в безопасном режиме, вы сузили круг причин до одного из отключённых элементов. Чтобы найти его, используйте проверку для соответствующего элемента, например <a href="#see-what-loaded-into-context">Посмотрите, что загружено в контекст</a>, <a href="#check-mcp-servers">Проверьте MCP-серверы</a> или <a href="#check-hooks">Проверьте хуки</a>.</p>
+<p>Безопасный режим по-прежнему применяет управляемые хуки и политику настроек от вашей организации. Управляемые плагины, скиллы, <code>CLAUDE.md</code> и MCP-серверы отключены.</p>
+<p>Если проблема сохраняется в безопасном режиме или ваши настройки сами по себе вызывают подозрения, запустите сессию без какой-либо вашей собственной конфигурации и проверьте, сохраняется ли проблема.</p>
+<p><strong>1. Создайте пустой каталог и перейдите в него</strong></p>
+<p>В оболочке, когда ни одна сессия Claude Code не запущена, создайте каталог и перейдите в него:</p>
+<blockquote>
+<p>[tab] Bash или Zsh</p>
+<p>```bash theme={null}
+mkdir -p ~/claude-clean/empty &amp;&amp; cd ~/claude-clean/empty</p>
+<pre><code></code></pre>
+</blockquote>
+<blockquote>
+<p>[tab] PowerShell</p>
+<p>```powershell theme={null}
+New-Item -ItemType Directory -Force &quot;$HOME/claude-clean/empty&quot; | Out-Null
+Set-Location &quot;$HOME/claude-clean/empty&quot;</p>
+<pre><code></code></pre>
+</blockquote>
+<p><strong>2. Запустите Claude Code с чистым каталогом конфигурации</strong></p>
+<p>В той же оболочке задайте <a href="https://code.claude.com/docs/ru/env-vars"><code>CLAUDE_CONFIG_DIR</code></a> на новый каталог вместо <code>~/.claude</code> и передайте <a href="https://code.claude.com/docs/ru/cli-reference#cli-flags"><code>--setting-sources user</code></a>, чтобы отключить конфигурацию проекта, такую как <code>.claude/settings.json</code>, <code>CLAUDE.md</code> и <code>.mcp.json</code>:</p>
+<blockquote>
+<p>[tab] Bash или Zsh</p>
+<p>Переменная применяется только к этому запуску.</p>
+<p>```bash theme={null}
+CLAUDE_CONFIG_DIR=~/claude-clean/config claude --setting-sources user</p>
+<pre><code></code></pre>
+</blockquote>
+<blockquote>
+<p>[tab] PowerShell</p>
+<p>Переменная остаётся заданной до конца этой сессии PowerShell, поэтому последующие запуски <code>claude</code> в том же окне продолжат использовать чистый каталог. Чтобы вернуться к обычному каталогу, выполните <code>Remove-Item Env:CLAUDE_CONFIG_DIR</code> перед следующим запуском.</p>
+<p>```powershell theme={null}
+$env:CLAUDE_CONFIG_DIR = &quot;$HOME/claude-clean/config&quot;
+claude --setting-sources user</p>
+<pre><code></code></pre>
+</blockquote>
+<p>При первом запуске вы снова пройдёте экраны первоначальной настройки — это признак того, что чистый каталог конфигурации действует. Управляемые настройки по-прежнему применяются, а <a href="https://code.claude.com/docs/ru/mcp.md#use-mcp-servers-from-claude-ai">коннекторы</a> по-прежнему загружаются, если вы входите с учётной записью claude.ai.</p>
+<p><strong>3. Воспроизведите проблему</strong></p>
+<p>Повторите в чистой сессии то, что вызвало проблему:</p>
+<ul>
+<li><strong>Проблема исчезла</strong>: причина находится в вашей пользовательской или проектной конфигурации. Копируйте <code>~/.claude.json</code> и файлы из <code>~/.claude</code> в <code>~/claude-clean/config</code> по одному. Если ни один из них не возвращает проблему, перейдите в каталог проекта в той же оболочке и запустите Claude Code без <code>--setting-sources user</code>. В Bash или Zsh выполните <code>CLAUDE_CONFIG_DIR=~/claude-clean/config claude</code>. В PowerShell переменная по-прежнему задана, поэтому выполните <code>claude</code>.</li>
+<li><strong>Проблема сохраняется</strong>: причина находится вне вашей пользовательской и проектной конфигурации. Выполните <code>/status</code> в сессии, чтобы проверить наличие управляемых настроек, проверьте <a href="https://code.claude.com/docs/ru/env-vars.md">переменные окружения</a> в вашей оболочке, затем см. <a href="https://code.claude.com/docs/ru/troubleshooting.md">Устранение неполадок</a>.</li>
+</ul>
+<h3 id="h-5">Проверьте распространённые причины <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<p>Большинство сюрпризов конфигурации восходят к небольшому набору правил расположения и синтаксиса. Проверьте их перед тем, как предположить ошибку:</p>
+<p>| Симптом | Причина | Исправление |
+| :- | :- | :- |
+| Hook никогда не срабатывает | <code>matcher</code> — это JSON массив вместо строки | Используйте одну строку с <code>\|</code> для соответствия нескольким tools, например <code>&quot;Edit\|Write&quot;</code>. См. <a href="https://code.claude.com/docs/ru/hooks.md#matcher-patterns">matcher patterns</a>. |
+| Hook никогда не срабатывает | <code>matcher</code> использует <code>,</code> как разделитель в версии до v2.1.191 | Claude Code v2.1.191 или позже рассматривает <code>,</code> как разделитель списка, как <code>\|</code>. Более ранние версии оценивают запятую как буквальный символ, поэтому <code>&quot;Edit,Write&quot;</code> ничему не соответствует. Используйте <code>\|</code> вместо этого или обновите Claude Code. |
+| Hook никогда не срабатывает | значение <code>matcher</code> в нижнем регистре, например <code>&quot;bash&quot;</code> | Соответствие чувствительно к регистру. Имена tools написаны с заглавной буквы: <code>Bash</code>, <code>Edit</code>, <code>Write</code>, <code>Read</code>. |
+| Hook никогда не срабатывает | Hooks находятся в отдельном файле вместо <code>settings.json</code> | Нет отдельного файла hooks для конфигурации проекта или пользователя. Определите hooks под ключом <code>&quot;hooks&quot;</code> в <code>settings.json</code>. Только <a href="https://code.claude.com/docs/ru/plugins/components.md#hooks">plugins</a> загружают отдельный <code>hooks/hooks.json</code>. См. <a href="https://code.claude.com/docs/ru/hooks.md">hook configuration</a>. |
+| Permissions или hooks, установленные глобально, игнорируются | Конфигурация была добавлена в <code>~/.claude.json</code> | <code>~/.claude.json</code> содержит состояние приложения и переключатели UI. <code>permissions</code>, <code>hooks</code> и <code>env</code> принадлежат <code>~/.claude/settings.json</code>. Это два разных файла. |
+| Значение <code>settings.json</code> кажется игнорируемым | Тот же ключ установлен в <code>settings.local.json</code> | <code>settings.local.json</code> переопределяет <code>settings.json</code>, и оба переопределяют <code>~/.claude/settings.json</code>. См. <a href="https://code.claude.com/docs/ru/settings.md#settings-precedence">settings precedence</a>. |
+| Skill не появляется в <code>/skills</code> | Файл skill находится в <code>.claude/skills/name.md</code> вместо папки | Используйте папку с <code>SKILL.md</code> внутри: <code>.claude/skills/name/SKILL.md</code>. |
+| Skill появляется в <code>/skills</code>, но Claude никогда его не вызывает | Skill имеет <code>disable-model-invocation: true</code> в своём frontmatter или его описание не совпадает с тем, как вы формулируете запрос | Проверьте значок в <code>/skills</code>: метка &quot;user-only&quot; означает, что Claude не будет его запускать самостоятельно. См. <a href="https://code.claude.com/docs/ru/skills.md">skill invocation</a>. |
+| Инструкции в <code>CLAUDE.md</code> подпапки кажутся игнорируемыми | Файлы подпапок загружаются по требованию, а не при запуске сессии | Чтобы загрузить <code>CLAUDE.md</code> подпапки, попросите Claude прочитать другой файл в этой подпапке. См. <a href="https://code.claude.com/docs/ru/memory.md#how-claude-md-files-load">когда загружаются файлы подпапок</a>. |
+| Субагент игнорирует инструкции <code>CLAUDE.md</code> | Встроенные агенты Explore и Plan пропускают <code>CLAUDE.md</code> при запуске. Пользовательский субагент загружает его так же, как основной диалог, если только в его определении не задано <a href="https://code.claude.com/docs/ru/sub-agents#supported-frontmatter-fields"><code>omitClaudeMd</code></a> | Для Explore или Plan переформулируйте инструкцию в своём делегирующем промпте. Для субагента, который устанавливает <code>omitClaudeMd</code>, удалите это поле. Для любого другого пользовательского субагента поместите критические инструкции в тело файла агента, которое становится системным промптом агента. См. <a href="https://code.claude.com/docs/ru/sub-agents.md#what-loads-at-startup">что загружается при запуске</a>. |
+| Логика очистки никогда не запускается в конце сессии | Нет настроенного <code>SessionEnd</code> hook | Добавьте <code>SessionEnd</code> hook в <code>settings.json</code>. См. <a href="https://code.claude.com/docs/ru/hooks.md#hook-events">hook events list</a>. |
+| MCP серверы в <code>.mcp.json</code> никогда не загружаются | Файл находится под <code>.claude/</code> или его серверы находятся под ключом верхнего уровня <code>servers</code>, как в VS Code <code>mcp.json</code>, вместо <code>mcpServers</code> | Конфигурация MCP проекта находится в корне репозитория как <code>.mcp.json</code>, а не внутри <code>.claude/</code>, с серверами под ключом <code>mcpServers</code>. См. <a href="https://code.claude.com/docs/ru/mcp.md">MCP configuration</a>. |
+| MCP серверы добавлены под <code>mcpServers</code> в <code>settings.json</code>, но никогда не появляются | <code>settings.json</code> не читает ключ <code>mcpServers</code> | Определите серверы проекта в <code>.mcp.json</code> в корне репозитория или запустите <code>claude mcp add --scope user</code> для серверов с областью пользователя. См. <a href="https://code.claude.com/docs/ru/mcp.md">MCP configuration</a>. |
+| Добавлен MCP-сервер проекта, но не появляется | Одноразовый запрос подтверждения был отклонён | Серверы с областью проекта требуют подтверждения. Выполните <code>claude mcp reset-project-choices</code>, перезапустите Claude Code и подтвердите сервер. |
+| MCP сервер не запускается из некоторых каталогов | <code>command</code> или <code>args</code> использует относительный путь к файлу | Используйте абсолютные пути для локальных скриптов. Исполняемые файлы в вашем <code>PATH</code> как <code>npx</code> или <code>uvx</code> работают как есть. |
+| MCP сервер запускается без ожидаемых переменных окружения | Конфигурация сервера не устанавливает их, и они не находятся в окружении, которое Claude Code передаёт серверам stdio: его собственное окружение минус <a href="https://code.claude.com/docs/ru/monitoring-usage.md#administrator-configuration">переменные, которые он удаляет из подпроцессов</a> | Установите <code>env</code> для каждого сервера внутри записи сервера <code>.mcp.json</code>, что не зависит от окружения запуска или доверия рабочей области. |
+| Правило отрицания <code>Bash(rm *)</code> не блокирует <code>/bin/rm</code> или <code>find -delete</code> | Правила Bash совпадают с буквальной строкой команды, а не с базовым исполняемым файлом; см. <a href="https://code.claude.com/docs/ru/permissions.md#bash-rule-limits">что правило Bash не совпадает</a> | Используйте <a href="https://code.claude.com/docs/ru/hooks-guide.md">PreToolUse hook</a> или <a href="https://code.claude.com/docs/ru/sandboxing.md">sandbox</a> для жёсткой гарантии. |</p>
+<h3 id="h-6">Связанные ресурсы <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<p>Для полного справочника по каждой поверхности конфигурации см. специализированную страницу:</p>
+<ul>
+<li><strong><a href="https://code.claude.com/docs/ru/claude-directory">Справочник каталога <code>.claude</code></a></strong>: каждое расположение файла конфигурации и что его читает</li>
+<li><strong><a href="https://code.claude.com/docs/ru/settings.md">Settings</a></strong>: какой файл использовать и какое значение использует Claude Code; <a href="https://code.claude.com/docs/ru/settings-reference.md">справочник параметров</a> содержит полный список ключей</li>
+<li><strong><a href="https://code.claude.com/docs/ru/hooks.md">Справочник Hooks</a></strong>: имена событий, payload и формат вывода <code>--debug</code></li>
+<li><strong><a href="https://code.claude.com/docs/ru/mcp.md">MCP</a></strong>: конфигурация сервера, одобрение и вывод <code>/mcp</code></li>
+<li><strong><a href="https://code.claude.com/docs/ru/troubleshoot-install.md">Troubleshooting установки и входа</a></strong>: <code>command not found</code>, PATH и проблемы аутентификации</li>
+<li><strong><a href="https://code.claude.com/docs/ru/troubleshooting.md">Troubleshooting</a></strong>: производительность, зависания и проблемы поиска</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Модуль 00. Установка и первый запуск</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/index.html">claude-code-pro-course</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/course/index.html">course</a></nav>
+<h1 id="модуль-00-установка-и-первый-запуск">Модуль 00. Установка и первый запуск <a class="h-anchor" href="#модуль-00-установка-и-первый-запуск" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="что-такое-claude-code">Что такое Claude Code <a class="h-anchor" href="#что-такое-claude-code" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code — агент для разработки, который работает в терминале (а также в IDE, десктоп-приложении и вебе). Он читает код, запускает команды, редактирует файлы, делает коммиты — всё с вашего разрешения. Это не автодополнение, а <strong>агент</strong>: вы ставите задачу, он планирует и выполняет шаги.</p>
+<h3 id="h">Установка <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-bash"># Нативный установщик (рекомендуется)
+curl -fsSL https://claude.ai/install.sh | bash
+
+# Windows (PowerShell)
+irm https://claude.ai/install.ps1 | iex
+
+# Через npm (Node 18+)
+npm install -g @anthropic-ai/claude-code</code></pre>
+<p>Проверка:</p>
+<pre><code class="language-bash">claude --version
+claude doctor      # диагностика установки</code></pre>
+<h3 id="h-2">Авторизация <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>При первом запуске <code>claude</code> предложит войти:</p>
+<ul>
+<li><strong>Подписка Claude (Pro / Max / Team / Enterprise)</strong> — самый простой вариант.</li>
+<li><strong>API-ключ Anthropic Console</strong> — оплата по токенам, удобно для CI.</li>
+<li><strong>Облачные провайдеры</strong> — Amazon Bedrock, Google Vertex AI (через переменные окружения).</li>
+</ul>
+<p>Сменить аккаунт: <code>/login</code>, выйти: <code>/logout</code>.</p>
+<h3 id="где-работает-claude-code">Где работает Claude Code <a class="h-anchor" href="#где-работает-claude-code" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Поверхность</th><th>Когда использовать</th></tr></thead><tbody><tr><td>Терминал (<code>claude</code>)</td><td>Основной режим, максимум возможностей</td></tr><tr><td>VS Code / JetBrains</td><td>Диффы в IDE, выделенный код как контекст</td></tr><tr><td>Десктоп-приложение</td><td>Несколько сессий параллельно, визуальный интерфейс</td></tr><tr><td>Веб (claude.ai/code)</td><td>Задачи в облаке, работа с телефона</td></tr><tr><td>GitHub Actions / <code>claude -p</code></td><td>Автоматизация (модуль 10)</td></tr></tbody></table></div>
+<h3 id="h-3">Первая сессия <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-bash">cd your-project
+claude</code></pre>
+<p>Попробуйте:</p>
+<pre><code>&gt; расскажи, как устроен этот проект: стек, точки входа, как запускать тесты</code></pre>
+<p>Claude сам найдёт файлы, прочитает их и ответит. Ничего не изменит без разрешения.</p>
+<h3 id="h-4">Интерфейс: что важно знать сразу <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Клавиша / команда</th><th>Действие</th></tr></thead><tbody><tr><td><code>Enter</code></td><td>Отправить</td></tr><tr><td><code>Shift+Enter</code> / <code>\</code> + <code>Enter</code></td><td>Перенос строки (настраивается через <code>/terminal-setup</code>)</td></tr><tr><td><code>Esc</code></td><td>Прервать Claude</td></tr><tr><td><code>Esc</code> <code>Esc</code></td><td>Откатиться к предыдущему сообщению (rewind)</td></tr><tr><td><code>Shift+Tab</code></td><td>Переключить режим: обычный → auto-accept → plan</td></tr><tr><td><code>@путь/к/файлу</code></td><td>Добавить файл в контекст</td></tr><tr><td><code>!команда</code></td><td>Выполнить shell-команду напрямую (bash mode)</td></tr><tr><td><code>#</code> в начале</td><td>Быстро добавить правило в память (CLAUDE.md)</td></tr><tr><td><code>/</code></td><td>Список команд и skills</td></tr><tr><td><code>↑</code></td><td>История промптов</td></tr><tr><td><code>Ctrl+R</code></td><td>Поиск по истории</td></tr></tbody></table></div>
+<h3 id="h-5">Основные слэш-команды <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>/help        список команд
+/init        создать CLAUDE.md
+/clear       очистить контекст (новая задача — новый /clear)
+/compact     сжать историю
+/context     что сейчас занимает контекст
+/cost        расход токенов
+/model       сменить модель
+/permissions управление разрешениями
+/resume      вернуться к прошлой сессии
+/config      настройки</code></pre>
+<h3 id="h-6">Практика <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li>Установите Claude Code и выполните <code>claude doctor</code>.</li>
+<li>Откройте любой свой проект, попросите Claude объяснить архитектуру.</li>
+<li>Попробуйте <code>Shift+Tab</code> — посмотрите, как меняется режим внизу экрана.</li>
+<li>Выполните <code>/context</code> и <code>/cost</code> — привыкайте следить за ресурсами.</li>
+</ol>
+<p>➡️ Далее: <a href="01-basics-prompting.md">01. Основы работы и промптинг</a></p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Самостоятельно размещаемые окружения</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Самостоятельно размещаемые окружения <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Запускайте сеансы Claude Code в облаке на инфраструктуре, которой вы управляете: настройте самостоятельно размещаемое окружение, разверните runners и маршрутизируйте сеансы на собственные вычислительные ресурсы.</p>
+</blockquote>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Самостоятельно размещаемые окружения находятся в публичной бета-версии для планов Team и Enterprise и отключены по умолчанию. Смотрите <a href="#availability-and-limitations">Доступность и ограничения</a> для пути включения и того, что исключено.</p>
+</blockquote>
+<p>Самостоятельно размещаемое окружение выполняет облачные сессии Claude Code на инфраструктуре, которой управляет ваша организация. <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">Облачная сессия</a> — это любая сессия, которая выполняется не на машине разработчика. Разработчики запускают их из claude.ai, мобильных и настольных приложений, терминала с помощью <a href="https://code.claude.com/docs/ru/claude-code-on-the-web#from-terminal-to-cloud"><code>claude --cloud</code></a> и <a href="https://code.claude.com/docs/ru/routines.md">облачных запланированных задач</a>. По умолчанию облачные сессии выполняются на инфраструктуре Anthropic.</p>
+<p>В самостоятельно размещаемом окружении эти же сессии выполняются внутри вашей сети. В остальном опыт разработчика остается прежним, за исключением различий, описанных в разделе <a href="#availability-and-limitations">Доступность и ограничения</a>, и <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#known-issues-and-limitations">известных проблем</a> на странице развертывания.</p>
+<ul>
+<li>Если ваша команда не использует облачные сессии, здесь нечего настраивать: сессии в терминале или IDE всегда выполняются на собственной машине разработчика</li>
+<li>Чтобы запустить Claude Code на собственной постоянно работающей машине и управлять ею с других устройств, используйте <a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a>, который также доступен на планах Pro, Max и Ultra</li>
+<li>Когда вы будете готовы к настройке, переходите прямо к <a href="https://code.claude.com/docs/ru/self-hosted-environments-quickstart.md">быстрому старту</a>; чтобы сначала проверить позицию безопасности, начните с <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md">Развертывание в production</a></li>
+</ul>
+<p>Чтобы узнать, как работает самостоятельное размещение и когда его выбирать, прочитайте разделы <a href="#how-self-hosted-environments-work">Как работают самостоятельно размещаемые окружения</a> и <a href="#why-self-host">Зачем использовать самостоятельное размещение</a>.</p>
+<h3 id="h-2">Как работают самостоятельно размещаемые окружения <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Самостоятельное размещение состоит из трех частей:</p>
+<ul>
+<li><strong>Environment</strong>: именованное место назначения, на которое можно отправлять облачные сеансы. Ваша организация создает окружения в параметрах администратора claude.ai, и каждое группирует набор runners.</li>
+<li><strong>Runner</strong>: программа, работающая на хостах внутри вашей сети. Runners выполняют сеансы; идея такая же, как у self-hosted CI runner.</li>
+<li><strong>Session</strong>: одна задача Claude Code, запущенная разработчиком.</li>
+</ul>
+<p>Когда разработчик запускает облачную сессию, интерфейс запуска сессии показывает средство выбора окружения, в котором перечислены окружения, размещаемые Anthropic, наряду с любыми созданными вашей организацией. Если они выбирают ваше, плоскость управления Anthropic помещает сессию в очередь вашего окружения, где runner берёт её в работу, клонирует репозиторий, выбранный разработчиком, и запускает процесс Claude Code на вашем хосте для её выполнения. Runner аутентифицируется на вашем git-хосте с учётными данными, которые вы настраиваете; <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#configure-git">Настройка git</a> описывает варианты. Сессии достигают ваших внутренних сервисов изнутри вашей сети, и вашего git-хоста таким же образом, когда он внутренний; трафик к Anthropic (опрос очереди, поток событий сессии и по умолчанию вывод модели) — это исходящий HTTPS к <code>api.anthropic.com</code>, а короткий список дополнительных хостов, к которым могут обращаться сессии, приведён в разделе <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#network-requirements">Требования к сети</a>. Anthropic никогда не подключается к вашей сети.</p>
+<p><img src="https://mintcdn.com/claude-code/Y0sJ2uDoOVbOVZrQ/images/self-hosted-network-paths.svg?fit=max\&amp;auto=format\&amp;n=Y0sJ2uDoOVbOVZrQ\&amp;q=85\&amp;s=8056103fc1c5564c7f0ef219d260b99d" alt="Architecture diagram of a self-hosted environment: your network boundary contains a runner, two Claude Code session processes inside it, and your git host, with api.anthropic.com outside holding queue, session stream, and inference. The runner polls the queue and reaches the git host, each session process opens its own stream, inference, and git connections, and every connection is outbound from your network, with none inbound." loading="lazy"></p>
+<p>Два поля Claude Code на диаграмме — это процессы сеанса: один runner, выполняющий два сеанса одновременно, до его настроенной емкости. Runner служит одному <a href="#key-concepts">владельцу</a> за раз и закрепляется за этим владельцем, когда берёт в работу свой первый сеанс, поэтому проверенный код никогда не смешивается между владельцами; <a href="#runner-lifecycle">Жизненный цикл runner</a> охватывает правило.</p>
+<p>Вы можете запустить runners самостоятельно и держать их работающими, или запустить <a href="https://code.claude.com/docs/ru/self-hosted-environments-configuration.md#on-demand-runners">автомасштабирующийся оркестратор</a> — второй процесс, который вы размещаете и который запускает runners по мере постановки сессий в очередь. В любом случае вы настраиваете окружение один раз, и оно появляется в средстве выбора в каждом поддерживаемом интерфейсе.</p>
+<h3 id="h-3">Доступность и ограничения <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Проверьте это перед планированием развертывания:</p>
+<ul>
+<li><strong>Plans</strong>: публичная бета для организаций Team и Enterprise. Самостоятельно размещаемые окружения отключены по умолчанию; <a href="https://code.claude.com/docs/ru/cloud-environments.md#organization-shared-environments">Owner</a> включает <strong>Allow self-hosted environments</strong> на <a href="https://claude.ai/admin-settings/cloud-environments">странице администратора <strong>Cloud environments</strong></a>, что требует <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">cloud sessions</a> для включения для организации.</li>
+<li><strong>Zero Data Retention and HIPAA</strong>: недоступно для организаций с включенным <a href="https://code.claude.com/docs/ru/zero-data-retention.md">Zero Data Retention</a> или с примененной <a href="https://code.claude.com/docs/ru/hipaa-setup.md">конфигурацией HIPAA</a>.</li>
+<li><strong>Model inference</strong>: сессии используют Anthropic API, если только вы не настроите раннер для <a href="https://code.claude.com/docs/ru/self-hosted-environments-configuration.md#send-model-requests-to-bedrock-or-agent-platform">отправки запросов модели в Amazon Bedrock или Google Cloud&#x27;s Agent Platform</a>. В обоих случаях содержимое сессий передается в Anthropic. На раннере, настроенном таким образом, <a href="https://code.claude.com/docs/ru/server-managed-settings.md">управляемые сервером настройки</a> и политики организации из claude.ai не применяются к сессиям.</li>
+<li><strong>Surfaces</strong>: сессии, запущенные из <a href="https://claude.ai/code">claude.ai/code</a>, мобильных и настольных приложений, <a href="https://code.claude.com/docs/ru/routines.md">облачных запланированных задач</a> и терминала с помощью <a href="https://code.claude.com/docs/ru/claude-code-on-the-web#from-terminal-to-cloud"><code>claude --cloud</code></a> или <a href="https://code.claude.com/docs/ru/self-hosted-environments-testing#run-the-test-loop"><code>--environment</code> dispatch</a>, могут работать в самостоятельно размещаемых окружениях. Сессии <a href="https://claude.com/docs/claude-tag/overview">Claude Tag</a> тоже могут работать в них, но Claude пока не может использовать <a href="https://claude.com/docs/claude-tag/concepts/glossary#access-bundle">Access bundles</a> в этих сессиях. Сессии <a href="https://code.claude.com/docs/ru/claude-security.md">Claude Security</a> и <a href="https://code.claude.com/docs/ru/code-review.md">Code Review</a> пока не направляются в них. Поддержка этих двух интерфейсов появится отдельно.</li>
+<li><strong>Repositories</strong>: сессии извлекают репозитории из GitHub или GitHub Enterprise Server. Сессии, запущенные с помощью <code>--environment</code> dispatch, также могут использовать другой git-хост:</li>
+<li><strong>GitHub</strong>: смотрите <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md#github-authentication-options">Варианты аутентификации GitHub</a>.</li>
+<li><strong>GitHub Enterprise Server</strong>: смотрите его <a href="https://code.claude.com/docs/ru/github-enterprise-server.md#network-requirements">требования к сети</a>.</li>
+<li><strong>Another git host</strong>: смотрите <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy#start-a-session-on-a-repository-outside-github">требования для запуска сессии с <code>--environment</code></a>.</li>
+<li><strong>Billing</strong>: сеансы в самостоятельно размещаемом окружении потребляют использование Claude Code вашей организации так же, как сеансы в окружениях, размещаемых Anthropic.</li>
+</ul>
+<h3 id="h-4">Почему самостоятельное размещение <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Большинство команд лучше обслуживаются окружениями, размещаемыми Anthropic, которые не требуют инфраструктуры для запуска или обслуживания. Самостоятельное размещение предназначено для команд, чьи требования к сети, инструментам или соответствию требуют сохранения выполнения сеанса на инфраструктуре, которой они управляют. Если это вы, планируйте оперативное владение, которое оно несет: вы создаете и поддерживаете образ runner, управляете флотом и контролируете его сеть.</p>
+<p>В обмен самостоятельное размещение дает вам доступ к сети, пользовательские инструменты и контроль соответствия:</p>
+<ul>
+<li><strong>Network access</strong>: сеансы работают внутри вашей сети и могут достичь внутренних сервисов, баз данных и реестров без их раскрытия в общедоступный интернет</li>
+<li><strong>Custom tooling</strong>: предварительно установите компиляторы, SDK и внутренние CLI в образ runner, чтобы каждый сеанс начинался готовым к сборке</li>
+<li><strong>Соответствие требованиям</strong>: извлечённые копии репозиториев и артефакты сборки остаются на инфраструктуре, которой вы управляете. Содержимое сессий по-прежнему отправляется на <code>api.anthropic.com</code>.</li>
+</ul>
+<h3 id="окружения-runners-и-сеансы">Окружения, runners и сеансы <a class="h-anchor" href="#окружения-runners-и-сеансы" aria-label="Ссылка на раздел">#</a></h3>
+<p>Окружения управляются на странице <strong>Cloud environments</strong> в параметрах администратора claude.ai; runners — это процессы, которые вы запускаете и управляете на собственной инфраструктуре.</p>
+<h4 id="h-5">Ключевые концепции <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<p>Эти термины появляются на всех страницах self-hosted:</p>
+<p>| Термин | Что это |
+| :- | :- |
+| Environment | Именованная группа ваших runners, созданная в параметрах claude.ai. Сеансы маршрутизируются на окружение, а не на отдельный runner. |
+| Environment secret | Единственное общее учетное данные, которое runners используют для аутентификации и регистрации в окружении. Показано один раз при создании окружения, помечено как <strong>environment key</strong> в пользовательском интерфейсе администратора. |
+| Runner | Долгоживущий процесс, который вы развертываете. Runner регистрируется в окружении, получает токен runner и опрашивает сеансы. |
+| Session | Одна задача Claude Code, запущенная из claude.ai, мобильного приложения или другого интерфейса Anthropic, например запланированной задачи или агента. Каждая сессия работает как дочерний процесс Claude Code, порождаемый runner. |</p>
+<p>В полях API, утверждениях токенов и названиях метрик окружение отображается как <code>pool</code>, а ID окружения — это <code>pool_id</code>. <a href="https://code.claude.com/docs/ru/self-hosted-environments-reference.md">Справка</a> отображает два написания, включая устаревшие названия флагов <code>pool</code>.</p>
+<p>Runner служит одному владельцу за раз. Первый сеанс, который runner берёт в работу, закрепляет runner за владельцем этого сеанса, и runner затем запускает сеансы только для этого владельца, до настроенной емкости. Кто владелец, зависит от того, как был запущен сеанс:</p>
+<ul>
+<li><strong>Сеансы, запущенные пользователем</strong>: владелец — это учетная запись этого пользователя.</li>
+<li><strong>Сеансы канала Claude Tag</strong>: Claude запускает их без прикрепленной учетной записи пользователя, поэтому владелец — это <a href="https://claude.com/docs/claude-tag/concepts/glossary#agent-identity">агент Claude Tag</a>, который запустил сеанс. Каждый сеанс канала, который запускает этот агент, имеет одного владельца, кто бы ни отправил сообщение Slack, поэтому runner, закреплённый за ним, обслуживает сеансы, которые разные люди запустили, когда вы запускаете его с <code>--capacity</code> выше одного или с положительным <code>--drain-grace-sec</code>.</li>
+</ul>
+<p>Минимальный размер флота — это количество владельцев, которых вы ожидаете быть активными одновременно, считая пользователей и агентов Claude Tag.</p>
+<h4 id="h-6">Жизненный цикл сеанса <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<p>Когда разработчик запускает сеанс и выбирает ваше окружение, плоскость управления Anthropic помещает сеанс в очередь окружения. Отсюда:</p>
+<ol>
+<li>Runner со свободной емкостью требует сеанс и держит аренду на нем.</li>
+<li>Runner клонирует репозиторий в свой рабочий каталог и порождает дочерний процесс Claude Code.</li>
+<li>Дочерний процесс передает события обратно по HTTPS, пока runner продолжает опрашивать; каждый опрос обновляет аренду и служит сердцебиением.</li>
+<li>Если runner прекращает опрос, его аренда истекает примерно через 60 секунд. После этого серверу может потребоваться несколько минут, а иногда и больше, чтобы повторно поставить сессию в очередь для другого runner.</li>
+</ol>
+<p>Runner дает каждому запросу опроса 10 секунд. Когда запрос истекает, теряется или получает ответ, который runner не может разобрать, runner продолжает служить своим активным сеансам и повторяет попытку через секунду или две вместо ожидания следующего запланированного опроса. Например, перехватывающий прокси, который отвечает на опрос своей собственной страницей, производит ответ, который runner не может разобрать. Каждый раз, когда другой запрос не удается одним из этих способов, runner удваивает промежуток перед следующей повторной попыткой, до 20 секунд, и сокращает промежуток, когда аренда близка к истечению.</p>
+<h4 id="жизненный-цикл-runner">Жизненный цикл runner <a class="h-anchor" href="#жизненный-цикл-runner" aria-label="Ссылка на раздел">#</a></h4>
+<p>Первый сеанс, который runner берёт в работу, закрепляет runner за владельцем этого сеанса, и runner запускает до <code>--capacity</code> одновременных сеансов для этого владельца. Пока runner имеет активные сеансы и не получил сигнал завершения или не достиг времени выхода, runner продолжает забирать из очереди работу владельца, за которым он закреплён. Что происходит после их завершения, зависит от <a href="https://code.claude.com/docs/ru/self-hosted-environments-reference#runner-cli-flags"><code>--drain-grace-sec</code></a>:</p>
+<ul>
+<li><strong>По умолчанию <code>0</code></strong>: runner выходит, как только его активные сеансы завершаются, без опроса дополнительно, поэтому оркестратор, под которым вы его развертываете, такой как Kubernetes, может перезапустить его со свежим диском, готовым служить любому владельцу.</li>
+<li><strong>При положительном значении</strong>: runner продолжает опрашивать очередь владельца, за которым он закреплён в течение этого количества секунд перед выходом.</li>
+</ul>
+<p>Этот жизненный цикл изолирует проверенный код каждого владельца без необходимости runner удалять состояние диска между владельцами.</p>
+<p>То, как ваша инфраструктура останавливает runner, решает, нужен ли вам <code>--retire-at</code>. Убийство, которое доставляет <code>SIGTERM</code>, не требует флага: runner дренирует как <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#shutdown-timing">Timing shutdown</a> описывает, или продолжает служить сеансам, которые он уже держит, когда вы устанавливаете <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy#defer-the-drain-past-the-first-signal"><code>--defer-shutdown-max-min</code></a>. Если ваша инфраструктура вместо этого уничтожает хосты в известное время по стене без сигнала, или с периодом благодати слишком коротким для дренирования, такой как ограничение времени жизни песочницы или отзыв spot-instance, передайте <code>--retire-at &lt;epoch-seconds&gt;</code> установленный на несколько минут раньше этого времени. В момент выхода:</p>
+<ol>
+<li>Runner перестает принимать новую работу.</li>
+<li>Runner освобождает каждую активную сессию тем же способом, который использует флаг <a href="https://code.claude.com/docs/ru/self-hosted-environments-reference#runner-cli-flags"><code>--release-idle-session-min</code></a>, поэтому сессия возобновляется на новом runner, когда пользователь отправляет следующее сообщение. Когда runner освобождает каждую сессию, зависит от её состояния:</li>
+<li>Runner освобождает сессию, находящуюся в середине хода, после завершения этого хода. Сначала он ждёт, пока процесс сессии сообщит Anthropic о завершении хода, но не дольше <a href="https://code.claude.com/docs/ru/self-hosted-environments-reference#environment-variable-only-settings"><code>SELF_HOSTED_RUNNER_POST_TURN_SETTLE_MS</code></a>. До версии v2.1.280 runner освобождал сессию сразу после завершения хода.</li>
+<li>Когда ход завершается, оставляя работающие фоновые задачи, runner ждёт их до 60 секунд, а затем освобождает сессию, даже если они ещё выполняются. Если задачи завершились, но последующий ход, который читает их результаты, ещё не запустился, runner удерживает сессию до завершения этого хода и ждёт начала этого хода не дольше <a href="https://code.claude.com/docs/ru/self-hosted-environments-reference#environment-variable-only-settings"><code>SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS</code></a>.</li>
+<li>Runner выходит 0 после выпуска всех его сеансов.</li>
+</ol>
+<p>Ход, который переживает убийство, все еще потерян; <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#shutdown-timing">Timing shutdown</a> охватывает размер маржи. Без <code>--retire-at</code>, убийство хоста без сигнала неотличимо от краха: плоскость управления записывает потерянного worker вместо чистого выпуска, и сеанс повторно ставится в очередь другому runner.</p>
+<h4 id="h-7">Сетевые пути <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<p>Runner и его сеансы делают несколько видов исходящего соединения, и входящее соединение от Anthropic не требуется:</p>
+<ul>
+<li><strong>Control plane</strong>: runner опрашивает <code>api.anthropic.com</code> для работы и публикует события прогресса установки и отказа, все исходящие HTTPS. Опрос служит сердцебиением runner.</li>
+<li><strong>Git</strong>: runner клонирует репозитории с вашего git-хоста и отправляет на него изменения по HTTPS или SSH, аутентифицируясь с помощью учётных данных, которые предоставляет ваше развёртывание. Варианты, включая учётные данные, выпускаемые для каждой сессии, описаны в разделе <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#configure-git">Настройка git</a>. При использовании <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#use-the-anthropic-git-proxy">git-прокси Anthropic</a> git-трафик для репозиториев на github.com вместо этого проходит через <code>api.anthropic.com</code>.</li>
+<li><strong>Session child</strong>: дочерний процесс Claude Code удерживает поток событий сессии к <code>api.anthropic.com</code> и выполняет собственные исходящие вызовы для инференса модели и для команд git, запускаемых во время сессии. В сессии, использующей <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#use-the-anthropic-git-proxy">git под управлением Anthropic</a>, дочерний процесс открывает WebSocket-соединение к <code>api.anthropic.com</code>, по которому передаётся трафик <code>git</code> и <code>gh</code> для github.com.</li>
+<li><strong>SCM connector</strong>: дополнительный <a href="https://code.claude.com/docs/ru/self-hosted-environments-reference.md#scm-connector-flags">SCM connector</a> оркестратора недоступен, поэтому его туннель не открывается. Туннель — это WebSocket-соединение с <code>api.anthropic.com</code>.</li>
+</ul>
+<p>Полный список исходящих адресов см. в разделе <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#network-requirements">Требования к сети</a>. <a href="#how-self-hosted-environments-work">Диаграмма выше</a> показывает эти пути, за исключением дополнительного SCM connector и соединения git под управлением Anthropic.</p>
+<p>По умолчанию инференс модели использует Anthropic API. Плоскость управления передаёт эндпоинт API каждой сессии, и сессия аутентифицируется с помощью выданного Anthropic токена OAuth с областью действия сессии. Чтобы вместо этого отправлять запросы к модели в собственную облачную учётную запись, см. раздел <a href="https://code.claude.com/docs/ru/self-hosted-environments-configuration.md#send-model-requests-to-bedrock-or-agent-platform">Отправка запросов к модели в Bedrock или Agent Platform</a>.</p>
+<p>Корпоративные прокси выхода поддерживаются. Runner и дополнительный <a href="https://code.claude.com/docs/ru/self-hosted-environments-configuration.md#on-demand-runners">автомасштабирующийся оркестратор</a> соблюдают прокси и переменные mTLS, описанные в <a href="https://code.claude.com/docs/ru/network-config.md">Конфигурация сети</a>, такие как <code>HTTPS_PROXY</code> и <code>NO_PROXY</code>; установите их в окружение каждого процесса. Переменные охватывают вызовы плоскости управления, WebSocket <a href="https://code.claude.com/docs/ru/self-hosted-environments-reference.md#scm-connector-flags">SCM connector</a> оркестратора и встроенный клон для HTTPS remotes, и сеансы наследуют их от runner. Потоковая передача сеанса использует события, отправляемые сервером, по HTTPS, поэтому прокси в пути не должен буферизировать ответы.</p>
+<ul>
+<li><strong>Аутентификация на прокси</strong>: если ваш прокси также требует заголовок <code>Proxy-Authorization</code>, runner может добавлять его к каждому соединению, которое он открывает к прокси; см. раздел <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#authenticate-to-an-egress-proxy">Аутентификация на прокси для исходящего трафика</a>.</li>
+<li><strong>Долгоживущие ответы</strong>: если runner берёт сессию в работу, но Claude так и не отвечает на её первое сообщение, причиной может быть ваш прокси. См. раздел <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#when-a-sessions-first-message-is-never-answered">Сессия взята в работу, но Claude так и не отвечает на её первое сообщение</a>.</li>
+</ul>
+<h3 id="h-8">Что остается на вашей инфраструктуре <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h3>
+<p>Рабочие копии репозиториев, артефакты сборки, секреты и любые файлы, которые сессия создает или изменяет, остаются на машинах, которые вы предоставляете. Сам диалог, включая промпты, ответы и результаты инструментов, передается на <code>api.anthropic.com</code>, и Anthropic хранит транскрипт сессии, чтобы вы могли возобновить сессию из другого <a href="#availability-and-limitations">поддерживаемого интерфейса</a>. Когда раннер <a href="https://code.claude.com/docs/ru/self-hosted-environments-configuration.md#send-model-requests-to-bedrock-or-agent-platform">отправляет запросы к модели в Amazon Bedrock или Google Cloud&#x27;s Agent Platform</a>, диалог по-прежнему передается на <code>api.anthropic.com</code> в потоке событий сессии.</p>
+<p>Самостоятельно размещаемое окружение перемещает выполнение сеанса в вашу сеть. Плоскость управления остается размещаемой Anthropic: оркестрация сеанса, очередь и интерфейс claude.ai продолжают работать на инфраструктуре Anthropic.</p>
+<h3 id="h-9">Начало работы <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h3>
+<p>Страницы самостоятельно размещаемых окружений организованы по тому, что вы делаете:</p>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/self-hosted-environments-quickstart.md">Quickstart</a>: установите Claude Code, создайте окружение, запустите runner и маршрутизируйте свой первый сеанс</li>
+<li><a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md">Deploy to production</a>: усиление безопасности, сетевой выход, учетные данные git, рецепты Kubernetes и Compose, известные проблемы и устранение неполадок</li>
+<li><a href="https://code.claude.com/docs/ru/self-hosted-environments-configuration.md">Customize sessions</a>: скрипты-обертки для учетных данных для каждого сеанса, hooks жизненного цикла, runners по требованию, MCP servers и разрешения</li>
+<li><a href="https://code.claude.com/docs/ru/self-hosted-environments-testing.md">Test end to end</a>: дымовой тест CI, который проверяет образ runner перед его продвижением</li>
+<li><a href="https://code.claude.com/docs/ru/self-hosted-environments-reference.md">Reference</a>: каждый флаг CLI, переменная окружения, метрика и конечная точка здоровья</li>
+<li><a href="https://code.claude.com/docs/ru/self-hosted-environments-identity.md">Verify session identity</a>: проверьте токен сеанса из ваших собственных сервисов перед предоставлением доступа</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

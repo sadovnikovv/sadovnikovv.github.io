@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Использование Claude Code с программой чтения с экрана</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="использование-claude-code-с-программой-чтения-с-экрана">Использование Claude Code с программой чтения с экрана <a class="h-anchor" href="#использование-claude-code-с-программой-чтения-с-экрана" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Настройте Claude Code для программ чтения с экрана, таких как VoiceOver и NVDA, а также параметры для увеличения экрана, уменьшения движения и тем, удобных для дальтоников.</p>
+</blockquote>
+<p>Claude Code имеет режим программы чтения с экрана, который заменяет его визуальный интерфейс терминала простым линейным текстом. Вместо прямоугольников, анимаций прогресса и перерисовок на месте Claude Code выводит помеченные строки, которые программа чтения с экрана, такая как VoiceOver или NVDA, читает по порядку. Вы можете вести полный диалог, одобрять разрешения инструментов и просматривать выходные данные от начала до конца.</p>
+<p>Режим программы чтения с экрана является дополнительным. Если вы используете увеличитель экрана, уменьшение движения или тему, удобную для дальтоников, вместо программы чтения с экрана, установите <code>CLAUDE_CODE_ACCESSIBILITY</code>, <code>prefersReducedMotion</code> или <code>theme</code> из таблицы <a href="#accessibility-settings">Параметры доступности</a>. Режим программы чтения с экрана адаптирует только интерфейс терминала, поэтому вам не нужен он в панели чата расширения VS Code. В Claude Code v2.1.236 или более поздней версии расширение <a href="https://code.claude.com/docs/ru/vs-code.md#use-a-screen-reader">объявляет активность диалога вашей программе чтения с экрана</a> там без каких-либо параметров.</p>
+<h3 id="h">Включение режима программы чтения с экрана <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Выберите метод, который соответствует тому, как часто вы используете программу чтения с экрана:</p>
+<ul>
+<li>Для одной сессии: запустите <code>claude --ax-screen-reader</code>.</li>
+<li>Для сессий, запущенных из одной оболочки: установите переменную окружения <code>CLAUDE_AX_SCREEN_READER</code> на <code>1</code>. В Bash или Zsh запустите <code>export CLAUDE_AX_SCREEN_READER=1</code>. В PowerShell запустите <code>$env:CLAUDE_AX_SCREEN_READER = &quot;1&quot;</code>. Добавьте эту строку в профиль оболочки, чтобы сохранить её для будущих оболочек.</li>
+<li>Для каждой сессии на машине: добавьте <code>&quot;axScreenReader&quot;: true</code> в ваш пользовательский <a href="https://code.claude.com/docs/ru/settings.md">файл настроек</a>. Настройка применяется в любом терминале, включая интегрированный терминал VS Code.</li>
+</ul>
+<p>Если вы комбинируете методы, Claude Code отдаёт приоритет флагу <a href="https://code.claude.com/docs/ru/cli-reference#cli-flags"><code>--ax-screen-reader</code></a> над переменной окружения <a href="https://code.claude.com/docs/ru/env-vars#variables"><code>CLAUDE_AX_SCREEN_READER</code></a>, а переменной — над настройкой <a href="https://code.claude.com/docs/ru/settings-reference#axscreenreader"><code>axScreenReader</code></a>.</p>
+<p>Если вы используете Claude Code через SSH, установите переменную окружения или настройку на удаленной машине, где работает Claude Code.</p>
+<p>Первая строка, которую выводит Claude Code, подтверждает режим: <code>[Screen Reader Mode: on via flag]</code>, <code>[Screen Reader Mode: on via env]</code> или <code>[Screen Reader Mode: on via settings]</code>.</p>
+<h4 id="h-2">Настройки проекта не могут включить режим программы чтения с экрана <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<p>Строка при запуске <code>Screen reader mode is off: project settings can&#x27;t turn it on</code> означает, что проект запросил режим программы чтения с экрана, но ничто другое его не включает. Claude Code игнорирует как ключ <code>axScreenReader</code>, так и значение <code>CLAUDE_AX_SCREEN_READER</code> в разделе <code>env</code> в файлах проекта <code>.claude/settings.json</code> и <code>.claude/settings.local.json</code>, каким бы ни было их значение.</p>
+<ul>
+<li><strong>Чтобы включить режим</strong>: запустите Claude Code с <code>--ax-screen-reader</code>, установите <code>CLAUDE_AX_SCREEN_READER</code> на <code>1</code> в вашей оболочке или добавьте <code>&quot;axScreenReader&quot;: true</code> в ваш пользовательский <a href="https://code.claude.com/docs/ru/settings.md">файл настроек</a> и перезапустите Claude Code. Изменять файлы проекта не нужно. После включения режима при запуске вместо этого появится <a href="#turn-on-screen-reader-mode">строка подтверждения</a>.</li>
+<li><strong>Если вы не используете программу чтения с экрана</strong>: ничего делать не нужно. Чтобы эта строка больше не появлялась, добавьте <code>&quot;axScreenReader&quot;: false</code> в ваш пользовательский файл настроек или удалите ключ <code>axScreenReader</code> и переменную <code>CLAUDE_AX_SCREEN_READER</code> из файлов настроек проекта.</li>
+</ul>
+<h3 id="h-3">Отключение режима программы чтения с экрана <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Отмените любой метод, который включил режим: запустите без флага, удалите переменную окружения или задайте для <code>axScreenReader</code> значение <code>false</code> в файле пользовательских настроек. Если вы установите <code>CLAUDE_AX_SCREEN_READER</code> на <code>0</code>, Claude Code сохраняет режим отключенным даже когда параметр имеет значение <code>true</code>.</p>
+<h3 id="h-4">Параметры доступности <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Таблица перечисляет каждый параметр доступности, устанавливаете ли вы его как флаг, переменную окружения или параметр, и что он изменяет.</p>
+<p>| Параметр | Тип | Что он изменяет |
+| :- | :- | :- |
+| <a href="https://code.claude.com/docs/ru/cli-reference#cli-flags"><code>--ax-screen-reader</code></a> | Флаг | Режим программы чтения с экрана для одного сеанса. |
+| <a href="https://code.claude.com/docs/ru/env-vars#variables"><code>CLAUDE_AX_SCREEN_READER</code></a> | Переменная окружения | Режим программы чтения с экрана для сеансов, запущенных из оболочки, где вы его установили. |
+| <a href="https://code.claude.com/docs/ru/settings-reference#axscreenreader"><code>axScreenReader</code></a> | Параметр | Режим программы чтения с экрана для каждого сеанса, когда <code>true</code>. |
+| <a href="https://code.claude.com/docs/ru/env-vars#variables"><code>CLAUDE_AX_STARTUP_QUIET_MS</code></a> | Переменная окружения | Как долго Claude Code ждёт после строки подтверждения перед тем, как нарисовать первую подсказку в режиме программы чтения с экрана. Требует Claude Code v2.1.217 или более поздней версии. |
+| <a href="https://code.claude.com/docs/ru/env-vars#variables"><code>CLAUDE_AX_PREPARK_MS</code></a> | Переменная окружения | Если задана, сколько миллисекунд Claude Code удерживает курсор терминала в начале текущей строки перед тем, как написать новую или изменённую строку в режиме программы чтения с экрана. Требует Claude Code v2.1.233 или более поздней версии. |
+| <a href="https://code.claude.com/docs/ru/env-vars#variables"><code>CLAUDE_CODE_ACCESSIBILITY</code></a> | Переменная окружения | Курсор терминала, который остаётся видимым для увеличителей экрана, таких как macOS Zoom, когда вы установите его на <code>1</code>. Курсор следует за кареткой ввода и, в Claude Code v2.1.218 или более поздней версии, за выделённой строкой в меню и панелях, таких как <code>/config</code> и <code>/plugin</code>. |
+| <a href="https://code.claude.com/docs/ru/settings-reference#prefersreducedmotion"><code>prefersReducedMotion</code></a> | Параметр | Уменьшенные или отсутствующие спиннеры, мерцание и другие анимации, когда <code>true</code>. |
+| <a href="https://code.claude.com/docs/ru/settings-reference#theme"><code>theme</code></a> | Параметр | Цвета интерфейса, включая удобные для дальтоников темы <code>dark-daltonized</code> и <code>light-daltonized</code>. Вы также можете выбрать одну с помощью <a href="https://code.claude.com/docs/ru/commands#all-commands"><code>/theme</code></a>. |
+| <a href="https://code.claude.com/docs/ru/settings-reference#preferrednotifchannel"><code>preferredNotifChannel</code></a> | Параметр | С значением <code>&quot;terminal_bell&quot;</code>, звонок терминала вне режима программы чтения с экрана, когда Claude ждёт вас. |</p>
+<h3 id="h-5">Что слышит ваша программа чтения с экрана <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<p>В режиме программы чтения с экрана Claude Code выводит плоский текст:</p>
+<ul>
+<li>Нет символов рисования прямоугольников для интерфейса</li>
+<li>Нет подсказок только по цвету</li>
+<li>Нет перерисовок содержимого, которое не изменилось. Спиннеры прогресса отображаются как статический текст</li>
+<li>Таблицы в ответах Claude читаются как предложения <code>Header: value</code> вместо сетки с символами рисования прямоугольников</li>
+<li>Diff читаются как обычный текст, построчно, где <code>+</code> и <code>-</code> обозначают добавленные и удалённые строки, поэтому вы можете прослушать предлагаемое изменение в запросе подтверждения редактирования файла, прежде чем ответить на него</li>
+</ul>
+<p>Claude Code оставляет всё, что он выводит, в буфере прокрутки вашего терминала, поэтому вы можете перечитать более ранние ходы с помощью команд просмотра вашей программы чтения с экрана или поиска вашего терминала. Claude Code игнорирует настройку <a href="https://code.claude.com/docs/ru/settings-reference#tui"><code>tui</code></a> в режиме программы чтения с экрана. Кроме присоединённых фоновых сессий, перечисленных в разделе <a href="#known-limitations">Известные ограничения</a>, он выводит прокручиваемый текст вместо <a href="https://code.claude.com/docs/ru/fullscreen.md">полноэкранного отображения</a>.</p>
+<p>После того как Claude Code выводит <a href="#turn-on-screen-reader-mode">строку подтверждения</a> при запуске, он ждёт 3 секунды, прежде чем отрисовать промпт, чтобы ваша программа чтения с экрана могла дочитать строку. Нажмите любую клавишу, чтобы завершить ожидание. Чтобы изменить длительность ожидания, задайте <a href="https://code.claude.com/docs/ru/env-vars#variables"><code>CLAUDE_AX_STARTUP_QUIET_MS</code></a>.</p>
+<p>Каждое сообщение в транскрипте начинается с метки, которую объявляет ваша программа чтения с экрана и которая называет, что это: ваши сообщения, ответы и размышления Claude, активность инструментов, ошибки и предупреждения, а также промпты. Метки также доступны для поиска, поэтому вы можете переходить между разделами транскрипта, выполняя поиск в буфере прокрутки вашего терминала:</p>
+<p>| Метка | Значение |
+| :- | :- |
+| <code>you:</code> | Ваши сообщения |
+| <code>claude:</code> | Ответы Claude |
+| <code>thinking:</code> | Размышления Claude |
+| <code>tool:</code> | Активность инструмента, такая как редактирование файла или запуск команды |
+| <code>tool error:</code> | Инструмент, завершившийся с ошибкой |
+| <code>error:</code> | Ошибка в диалоге, такая как неудачный запрос API |
+| <code>warning:</code> | Предупреждение от Claude Code, такое как переключение на резервную модель |
+| <code>Permission Required:</code> | Запрос разрешения, ожидающий вашего ответа |
+| <code>Cost:</code> | Сводка стоимости сессии при выходе Claude Code, если ваша учётная запись <a href="https://code.claude.com/docs/ru/costs.md">показывает затраты</a> |</p>
+<p>Claude Code удерживает курсор терминала на каретке ввода, поэтому команда чтения текущей строки вашей программы чтения с экрана читает промпт, который вы редактируете. Когда вы вводите текст в конце строки ввода или нажимаете <code>Backspace</code> там, Claude Code выводит только символы, которые изменились. Ваша программа чтения с экрана повторяет только эти символы.</p>
+<p>Когда вы удаляете слово или строку с помощью одного из <a href="https://code.claude.com/docs/ru/interactive-mode.md#text-editing">сочетаний клавиш редактирования текста</a>, Claude Code объявляет удалённый текст:</p>
+<ul>
+<li>Удаление слов с помощью <code>Ctrl+W</code> или <code>Alt+D</code>, или с помощью <code>Option+Delete</code> на macOS или <code>Ctrl+Backspace</code> на Windows</li>
+<li>Удаление до начала строки с помощью <code>Ctrl+U</code> или <code>Cmd+Backspace</code></li>
+<li>Удаление до конца строки с помощью <code>Ctrl+K</code></li>
+</ul>
+<p>Когда вы переключаете <a href="https://code.claude.com/docs/ru/permission-modes.md">режимы разрешений</a> с помощью <code>Shift+Tab</code>, Claude Code объявляет режим разрешений, на котором вы остановились, например <code>[plan mode on]</code> или <code>[accept edits on]</code>. Claude Code выводит объявление один раз и не повторяет его при последующих перерисовках.</p>
+<h4 id="h-6">Чтение более раннего вывода без потери позиции <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если ваша программа чтения с экрана перескакивает обратно к промпту, пока вы читаете более ранний вывод, значит, она следует за курсором терминала. Claude Code перемещает курсор терминала обратно к промпту каждый раз, когда выводит новый текст.</p>
+<p>Чтобы сохранить позицию во время чтения, отключите в программе чтения с экрана следование за курсором терминала. В NVDA нажмите <code>NVDA+6</code>, чтобы курсор просмотра перестал следовать за курсором терминала. Нажмите <code>NVDA+6</code> ещё раз, чтобы снова включить следование.</p>
+<h4 id="h-7">Переход между ходами <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude Code выводит маркеры интеграции оболочки OSC 133 на границах ходов, поэтому клавиша перехода к предыдущему промпту в вашем терминале перемещает между ходами без чтения всего транскрипта:</p>
+<ul>
+<li>iTerm2: Cmd+Shift+Up</li>
+<li>Терминал VS Code: Ctrl+Up на Windows, Cmd+Up на macOS</li>
+<li>Windows Terminal: нет клавиши по умолчанию; привяжите действие <code>scrollToMark</code> в его настройках</li>
+<li>Kitty и Ghostty: найдите в документации терминала его клавишу перехода к промпту</li>
+</ul>
+<p>macOS Terminal не реагирует на маркеры, а Claude Code не выводит их в WezTerm. В этих терминалах вместо этого выполните поиск в буфере прокрутки по метке <code>you:</code>.</p>
+<h3 id="h-8">Ответ на меню и подсказки <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h3>
+<p>В режиме программы чтения с экрана меню, которыми вы обычно навигируете с помощью клавиш со стрелками, включая подсказки разрешения, становятся нумерованными списками. Claude Code объявляет каждый параметр как нумерованную строку, затем подсказку <code>Select with numbers</code>, которая называет допустимый диапазон. Введите номер нужного параметра и нажмите Enter.</p>
+<ul>
+<li>Нажмите Escape, чтобы отменить меню, чья подсказка заканчивается на <code>or Escape to cancel</code>.</li>
+<li>Если вы введёте номер, которого нет в списке, Claude Code объявляет допустимый диапазон и позволяет вам попробовать снова.</li>
+</ul>
+<p>Селектор <a href="https://code.claude.com/docs/ru/model-config#adjust-effort-level"><code>/effort</code></a>, который является ползунком вне режима программы чтения с экрана, становится тем же видом нумерованного списка.</p>
+<p>Подсказки да-или-нет запрашивают введённый ответ вместо меню с двумя параметрами. Ответьте <code>y</code> или <code>n</code> и нажмите Enter. <code>yes</code> и <code>no</code> также работают.</p>
+<h3 id="услышьте-когда-claude-code-нуждается-в-вас">Услышьте, когда Claude Code нуждается в вас <a class="h-anchor" href="#услышьте-когда-claude-code-нуждается-в-вас" aria-label="Ссылка на раздел">#</a></h3>
+<p>В режиме программы чтения с экрана Claude Code звонит в звонок терминала, когда ему нужно ваше внимание, поэтому вам не нужно постоянно проверять стенограмму. Звонок звонит, когда:</p>
+<ul>
+<li>Claude завершает ответ</li>
+<li>Подсказка или диалог нуждается в вашем ответе, такой как подсказка разрешения</li>
+<li>Инструмент, который работал дольше 5 секунд, завершается</li>
+</ul>
+<p>Звонок - это стандартный сигнал тревоги вашего терминала. Чтобы отключить его, измените параметр звонка в приложении вашего терминала. Вне режима программы чтения с экрана установите <a href="https://code.claude.com/docs/ru/settings-reference#preferrednotifchannel"><code>preferredNotifChannel</code></a> на <code>&quot;terminal_bell&quot;</code>, чтобы получить <a href="https://code.claude.com/docs/ru/terminal-config.md#get-a-terminal-bell-or-notification">аналогичный звонок</a>, когда Claude ждёт вас.</p>
+<h3 id="h-9">Известные ограничения <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h3>
+<p>Некоторые поведения не адаптированы для режима программы чтения с экрана:</p>
+<ul>
+<li>Режим программы чтения с экрана не включается автоматически при запуске программы чтения с экрана.</li>
+<li>Claude Code не объявляет изменение режима разрешений, сделанное с помощью команды, например вход в <a href="https://code.claude.com/docs/ru/permission-modes.md#analyze-before-you-edit-with-plan-mode">режим планирования</a> с помощью <code>/plan</code>.</li>
+<li>Присоединение к <a href="https://code.claude.com/docs/ru/agent-view.md">фоновому сеансу</a> с помощью <code>claude attach</code> или из представления агента входит в альтернативный экран терминала, который не имеет собственного буфера прокрутки. Это <a href="https://code.claude.com/docs/ru/fullscreen.md">то же поведение, что и для других присоединённых сеансов</a>. Чтобы выйти, нажмите Left Arrow на пустой подсказке или Ctrl+Z, если диалог имеет фокус.</li>
+<li>Claude Code объявляет затраты в сводке, которую он выводит при выходе, а не за ход.</li>
+<li>Режим программы чтения с экрана не изменяет <a href="https://code.claude.com/docs/ru/headless.md">неинтерактивный режим</a> с флагом <code>-p</code>. Неинтерактивный режим уже выводит простой текст и остаётся альтернативой для написания скриптов.</li>
+</ul>
+<h3 id="h-10">Сообщить о проблеме <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h3>
+<p>Если что-то не работает с вашей программой чтения с экрана, увеличителем или терминалом, откройте проблему на <a href="https://github.com/anthropics/claude-code/issues">трекере проблем Claude Code</a> и упомяните вашу вспомогательную технологию в заголовке. Включите вашу операционную систему, приложение терминала и имя и версию вспомогательной технологии в отчёт.</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Claude Code Desktop в WSL</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="claude-code-desktop-в-wsl">Claude Code Desktop в WSL <a class="h-anchor" href="#claude-code-desktop-в-wsl" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Запуск сеансов Code внутри дистрибутива WSL 2 на Windows</p>
+</blockquote>
+<p>На Windows вкладка Code может запускать сеанс внутри дистрибутива WSL 2 вместо самой Windows. Процесс Claude Code сеанса, его инструменты и git выполняются внутри дистрибутива, используя его цепочку инструментов Linux и собственные пути Linux, ту же среду, на которую нацелен ваш проект.</p>
+<p>Используйте сеанс WSL, когда ваш репозиторий находится в файловой системе дистрибутива. Работа с этими файлами из Windows проходит через сетевую файловую систему, что медленно и нарушает отслеживание файлов; запуск сеанса внутри дистрибутива избегает обоих этих проблем.</p>
+<h3 id="h">Требования <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Windows 10 или 11 с <a href="https://learn.microsoft.com/windows/wsl/install">WSL 2</a>. WSL 1 не поддерживается.</li>
+<li>По крайней мере один установленный дистрибутив (например, Ubuntu).</li>
+<li><code>git</code> установлен внутри дистрибутива.</li>
+</ul>
+<h3 id="запуск-сеанса-wsl">Запуск сеанса WSL <a class="h-anchor" href="#запуск-сеанса-wsl" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>1. Выберите дистрибутив</strong></p>
+<p>Запустите новую сессию на вкладке Code и откройте <a href="https://code.claude.com/docs/ru/desktop.md#start-a-session">средство выбора среды</a> под полем ввода промпта или над ним в <a href="https://code.claude.com/docs/ru/desktop.md#check-which-layout-you-have">более раннем макете</a>. Ваши установленные дистрибутивы WSL 2 появляются в разделе <strong>WSL</strong>. Выберите один.</p>
+<p><strong>2. Выберите папку</strong></p>
+<p>Сессия запускается в домашнем каталоге дистрибутива. Используйте средство выбора папок для выбора папки проекта. Просмотр происходит внутри дистрибутива с путями Linux, такими как <code>/home/you/project</code>.</p>
+<p><strong>3. Доверьте папке</strong></p>
+<p>Первая сессия в папке показывает диалог доверия рабочему пространству. Доверие предоставляется для каждого дистрибутива и папки. Папка, которой вы доверяете в одном дистрибутиве, не является доверенной в другом дистрибутиве или по тому же пути на Windows.</p>
+<p>Первый сеанс в дистрибутиве занимает немного больше времени, пока Claude настраивается внутри него. Вы также можете открыть папку <code>\\wsl.localhost\...</code> из обычного средства выбора папок, и она снова откроется внутри этого дистрибутива.</p>
+<h3 id="что-работает-в-сеансе-wsl">Что работает в сеансе WSL <a class="h-anchor" href="#что-работает-в-сеансе-wsl" aria-label="Ссылка на раздел">#</a></h3>
+<p>Параллельные сеансы, боковые чаты, визуальный просмотр различий, статус ветви и запроса на слияние, а также worktrees работают, поддерживаемые git и цепочкой инструментов внутри дистрибутива. &quot;Открыть в редакторе&quot; открывает VS Code, подключенный к дистрибутиву через <a href="https://code.visualstudio.com/docs/remote/wsl">Remote - WSL</a>.</p>
+<p>Если функция Desktop недоступна или ограничена в сессии WSL, проверьте, не относится ли она к следующим:</p>
+<ul>
+<li><strong>Терминал и коннекторы</strong>: в вашей сессии может отсутствовать <a href="https://code.claude.com/docs/ru/desktop.md#run-commands-in-the-terminal">встроенный терминал</a>, <a href="https://code.claude.com/docs/ru/desktop.md#connect-external-tools">коннекторы</a> или и то, и другое. См. раздел <a href="#check-for-the-terminal-and-connectors">Если терминал или коннекторы недоступны</a>.</li>
+<li><strong><a href="https://code.claude.com/docs/ru/desktop.md#install-plugins">Плагины</a></strong>: недоступны в сессиях WSL</li>
+<li><strong>Редактирование файлов</strong>: вы можете просматривать файлы в <a href="https://code.claude.com/docs/ru/desktop.md#open-and-edit-files">панели файлов</a>, но не можете редактировать их там, поэтому попросите Claude внести изменения</li>
+<li><strong>Вложения</strong>: если в меню <strong>+</strong> вместо <strong>Add files or photos</strong> отображается <strong>Add image</strong>, вы можете прикреплять только изображения. См. раздел <a href="https://code.claude.com/docs/ru/desktop.md#add-files-and-context-to-prompts">Добавление файлов и контекста в промпты</a>.</li>
+</ul>
+<h4 id="h-2">Если терминал или коннекторы недоступны <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<p>Вы не можете самостоятельно включить встроенный терминал или коннекторы для сессии WSL:</p>
+<ul>
+<li><strong>Аккаунт Claude</strong>: эти две функции развертываются по отдельности. Выберите <strong>Help &gt; Check for Updates…</strong>, и если после обновления функция по-прежнему отсутствует, ничего делать не нужно.</li>
+<li><strong><a href="https://code.claude.com/docs/ru/third-party-integrations.md">Сторонний провайдер</a></strong>: сессии WSL не получают терминал и коннекторы, и обновление Desktop этого не меняет</li>
+</ul>
+<h3 id="h-3">Управляемые устройства <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>На устройствах, управляемых организацией, сеансы WSL могут быть недоступны. Если запуск сеанса завершается с сообщением об управлении устройством, это контролируется вашим администратором. Администраторы: см. <a href="https://code.claude.com/docs/ru/admin-setup.md#decide-how-settings-reach-devices">как параметры достигают устройств</a> в руководстве по развертыванию.</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

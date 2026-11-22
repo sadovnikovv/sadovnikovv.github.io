@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Продвинутые возможности</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/09-advanced-features/index.html">09-advanced-features</a></nav>
+<p>&lt;picture&gt;
+  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;../resources/logos/claude-howto-logo-dark.svg&quot;&gt;
+  &lt;img alt=&quot;Claude How To&quot; src=&quot;../resources/logos/claude-howto-logo.svg&quot;&gt;
+&lt;/picture&gt;</p>
+<h1 id="h">Продвинутые возможности <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<p>Подробное руководство по продвинутым возможностям Claude Code, включая planning mode, extended thinking, auto mode, background tasks, permission modes, print mode (non-interactive), session management, interactive features, channels, voice dictation, remote control, web sessions, desktop app, task list, prompt suggestions, git worktrees, sandboxing, managed settings и конфигурацию.</p>
+<h3 id="h-2">Содержание <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li><a href="#overview">Обзор</a></li>
+<li><a href="#planning-mode">Режим планирования</a></li>
+<li><a href="#extended-thinking">Расширенное мышление</a></li>
+<li><a href="#auto-mode">Автоматический режим</a></li>
+<li><a href="#background-tasks">Фоновые задачи</a></li>
+<li><a href="#scheduled-tasks">Запланированные задачи</a></li>
+<li><a href="#permission-modes">Режимы разрешений</a></li>
+<li><a href="#headless-mode">Безголовый режим</a></li>
+<li><a href="#session-management">Управление сессиями</a></li>
+<li><a href="#interactive-features">Интерактивные возможности</a></li>
+<li><a href="#voice-dictation">Голосовой ввод</a></li>
+<li><a href="#channels">Каналы</a></li>
+<li><a href="#chrome-integration">Интеграция с Chrome</a></li>
+<li><a href="#remote-control">Удалённое управление</a></li>
+<li><a href="#web-sessions">Веб-сессии</a></li>
+<li><a href="#desktop-app">Настольное приложение</a></li>
+<li><a href="#task-list">Список задач</a></li>
+<li><a href="#prompt-suggestions">Подсказки к промптам</a></li>
+<li><a href="#git-worktrees">Git Worktrees</a></li>
+<li><a href="#sandboxing">Песочница</a></li>
+<li><a href="#managed-settings-enterprise">Управляемые настройки (Enterprise)</a></li>
+<li><a href="#configuration-and-settings">Конфигурация и настройки</a></li>
+<li><a href="#best-practices">Лучшие практики</a></li>
+<li><a href="#related-concepts">Связанные концепции</a></li>
+</ol>
+<hr>
+<p>&lt;a id=&quot;overview&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-3">Обзор <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Продвинутые возможности Claude Code расширяют базовый набор функций за счёт планирования, рассуждения, автоматизации и механизмов управления. Они позволяют строить сложные workflows для нестандартных задач разработки, code review, автоматизации и работы с несколькими сессиями одновременно.</p>
+<p><strong>Ключевые продвинутые возможности включают:</strong></p>
+<ul>
+<li><strong>Режим планирования</strong>: создавать подробные планы реализации до начала кода</li>
+<li><strong>Расширенное мышление</strong>: глубокое рассуждение для сложных задач</li>
+<li><strong>Автоматический режим</strong>: фоновый классификатор безопасности проверяет каждое действие перед выполнением (Research Preview)</li>
+<li><strong>Фоновые задачи</strong>: запускать долгие операции, не блокируя разговор</li>
+<li><strong>Режимы разрешений</strong>: управлять тем, что может делать Claude (<code>default</code>, <code>acceptEdits</code>, <code>plan</code>, <code>auto</code>, <code>dontAsk</code>, <code>bypassPermissions</code>)</li>
+<li><strong>Режим печати</strong>: запускать Claude Code без интерактива для автоматизации и CI/CD (<code>claude -p</code>)</li>
+<li><strong>Управление сессиями</strong>: работать с несколькими сессиями</li>
+<li><strong>Интерактивные возможности</strong>: горячие клавиши, многострочный ввод и история команд</li>
+<li><strong>Голосовой ввод</strong>: вводить запросы голосом с поддержкой STT на 20 языках</li>
+<li><strong>Каналы</strong>: MCP-серверы отправляют сообщения в запущенные сессии (Research Preview)</li>
+<li><strong>Удалённое управление</strong>: управлять Claude Code из Claude.ai или приложения Claude</li>
+<li><strong>Веб-сессии</strong>: запускать Claude Code в браузере на claude.ai/code</li>
+<li><strong>Настольное приложение</strong>: отдельное приложение для визуального просмотра diff и нескольких сессий</li>
+<li><strong>Список задач</strong>: постоянный трекинг задач даже после сжатия контекста</li>
+<li><strong>Подсказки к промптам</strong>: умные подсказки команд на основе контекста</li>
+<li><strong>Git Worktrees</strong>: изолированные ветки worktree для параллельной работы</li>
+<li><strong>Песочница</strong>: изоляция файловой системы и сети на уровне ОС</li>
+<li><strong>Управляемые настройки</strong>: корпоративное развёртывание через plist, Registry или управляемые файлы</li>
+<li><strong>Конфигурация</strong>: настройка поведения через JSON-файлы конфигурации</li>
+</ul>
+<hr>
+<p>&lt;a id=&quot;planning-mode&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-4">Режим планирования <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Режим планирования позволяет Claude обдумать сложную задачу до реализации и создать подробный план, который можно проверить и одобрить.</p>
+<h4 id="h-5">Что такое режим планирования? <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<p>Режим планирования состоит из двух фаз:</p>
+<ol>
+<li><strong>Фаза планирования</strong>: Claude анализирует задачу и создаёт подробный план реализации</li>
+<li><strong>Фаза выполнения</strong>: После одобрения Claude выполняет план</li>
+</ol>
+<h4 id="h-6">Когда использовать режим планирования <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<p>✅ Используйте режим планирования для:</p>
+<ul>
+<li>Сложного многофайлового рефакторинга</li>
+<li>Реализации новых функций</li>
+<li>Архитектурных изменений</li>
+<li>Миграций базы данных</li>
+<li>Крупных переработок API</li>
+</ul>
+<p>❌ Не используйте режим планирования для:</p>
+<ul>
+<li>Простых исправлений ошибок</li>
+<li>Изменений форматирования</li>
+<li>Правок в одном файле</li>
+<li>Быстрых запросов</li>
+</ul>
+<h4 id="h-7">Как включить режим планирования <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Slash-команда</strong>:</p>
+<pre><code class="language-bash">/plan Implement user authentication system</code></pre>
+<p><strong>CLI-флаг</strong>:</p>
+<pre><code class="language-bash">claude --permission-mode plan</code></pre>
+<p><strong>Сделать по умолчанию</strong>:</p>
+<pre><code class="language-json">{
+  &quot;permissions&quot;: {
+    &quot;defaultMode&quot;: &quot;plan&quot;
+  }
+}</code></pre>
+<p><strong>Сочетание клавиш</strong>:</p>
+<ul>
+<li><code>Shift + Tab</code> - Переключать режимы разрешений (включая plan)</li>
+<li><code>Alt + M</code> - Переключать режимы разрешений (Windows/Linux)</li>
+</ul>
+<h4 id="h-8">Преимущества режима планирования <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Структурированный подход к реализации</strong>: детальная разбивка шагов реализации</li>
+<li><strong>Проверка и одобрение</strong>: можно утвердить или скорректировать план до выполнения</li>
+<li><strong>Выявление рисков</strong>: потенциальные проблемы видны до начала реализации</li>
+<li><strong>Понятные фазы</strong>: упорядоченные этапы внедрения и контрольные точки</li>
+</ul>
+<h4 id="h-9">Пример: реализация функции <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>Пользователь: /plan Добавь систему уведомлений в реальном времени
+
+Claude: Я составлю план внедрения уведомлений в реальном времени.
+
+## План реализации
+
+### Фаза 1: Настройка инфраструктуры
+1. Установить библиотеки WebSocket (socket.io)
+2. Поднять сервер WebSocket
+3. Настроить управление подключениями
+
+### Фаза 2: Реализация backend
+4. Создать сервис уведомлений
+5. Реализовать очередь уведомлений
+6. Добавить схему базы данных для уведомлений
+7. Создать API endpoints
+
+### Фаза 3: Интеграция frontend
+8. Настроить WebSocket client
+9. Создать UI-компоненты уведомлений
+10. Реализовать управление состоянием уведомлений
+11. Добавить разрешения на уведомления
+
+### Фаза 4: Тестирование и развёртывание
+12. Написать unit tests
+13. Написать integration tests
+14. Обновить документацию
+15. Развернуть в staging
+
+Оценка времени: 3-4 часа
+Файлов для изменения: 12
+Новых файлов для создания: 8
+
+Продолжить? (yes/no/modify plan)
+
+Пользователь: yes
+
+Claude: [Начинает реализацию по плану]</code></pre>
+<h4 id="h-10">Изменение плана <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>Пользователь: Измени план: пока пропусти очередь, добавим её позже
+
+Claude: Обновлённый план:
+[Показывает изменённый план без очереди]
+
+Пользователь: Всё хорошо, продолжай
+
+Claude: [Реализует изменённый план]</code></pre>
+<h4 id="h-11">Конфигурация режима планирования <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h4>
+<p>Режим планирования включается через CLI-флаг или slash-команду:</p>
+<pre><code class="language-bash"># Включить режим планирования через CLI
+claude --permission-mode plan
+
+# Или использовать slash-команду /plan внутри REPL
+/plan Implement user authentication system</code></pre>
+<p><strong>Алиас модели для планирования</strong>: используйте <code>opusplan</code>, чтобы применять Opus для планирования, а Sonnet для выполнения:</p>
+<pre><code class="language-bash">claude --model opusplan &quot;спроектируй и реализуй новый API&quot;</code></pre>
+<p><strong>Редактирование плана во внешнем редакторе</strong>: нажмите <code>Ctrl+G</code>, чтобы открыть текущий план во внешнем редакторе и внести подробные изменения.</p>
+<hr>
+<p>&lt;a id=&quot;extended-thinking&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-12">Расширенное мышление <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h3>
+<p>Расширенное мышление позволяет Claude тратить больше времени на рассуждение о сложных проблемах перед выдачей решения.</p>
+<h4 id="h-13">Что такое расширенное мышление? <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h4>
+<p>Расширенное мышление — это осознанный пошаговый процесс рассуждения, в котором Claude:</p>
+<ul>
+<li>разбирает сложные проблемы на части</li>
+<li>рассматривает несколько подходов</li>
+<li>оценивает компромиссы</li>
+<li>прогоняет крайние случаи</li>
+</ul>
+<h4 id="h-14">Как включить расширенное мышление <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Сочетание клавиш</strong>:</p>
+<ul>
+<li><code>Option + T</code> (macOS) / <code>Alt + T</code> (Windows/Linux) - Переключать расширенное мышление</li>
+</ul>
+<p><strong>Автоматическая активация</strong>:</p>
+<ul>
+<li>Включено по умолчанию для всех моделей (Opus 4.6, Sonnet 4.6, Haiku 4.5)</li>
+<li>Opus 4.6: адаптивное рассуждение с уровнями effort: <code>low</code> (○), <code>medium</code> (◐), <code>high</code> (●), <code>max</code> (только Opus 4.6)</li>
+<li>Другие модели: фиксированный бюджет до 31 999 токенов</li>
+</ul>
+<p><strong>Способы настройки</strong>:</p>
+<ul>
+<li>Переключение: <code>Alt+T</code> / <code>Option+T</code>, или через <code>/config</code></li>
+<li>Просмотр рассуждений: <code>Ctrl+O</code> (режим verbose)</li>
+<li>Установка effort: команда <code>/effort</code> или флаг <code>--effort</code></li>
+</ul>
+<p><strong>Пользовательский бюджет</strong>:</p>
+<pre><code class="language-bash">export MAX_THINKING_TOKENS=1024</code></pre>
+<p><strong>Уровень effort</strong> (только Opus 4.6):</p>
+<pre><code class="language-bash">export CLAUDE_CODE_EFFORT_LEVEL=high   # low (○), medium (◐), high (●), or max (Opus 4.6 only)</code></pre>
+<p><strong>CLI-флаг</strong>:</p>
+<pre><code class="language-bash">claude --effort high &quot;complex architectural review&quot;</code></pre>
+<p><strong>Slash-команда</strong>:</p>
+<pre><code>/effort high</code></pre>
+<blockquote>
+<p><strong>Примечание:</strong> ключевое слово <code>ultrathink</code> в промптах включает режим глубокого рассуждения. Уровни effort <code>low</code>, <code>medium</code>, <code>high</code> и <code>max</code> (только Opus 4.6) определяют, сколько рассуждений выполняет Claude.</p>
+</blockquote>
+<h4 id="h-15">Преимущества расширенного мышления <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Глубокое рассуждение</strong>: больше времени на обдумывание сложных проблем</li>
+<li><strong>Лучшие архитектурные решения</strong>: обоснованный выбор на основе полной оценки</li>
+<li><strong>Учёт крайних случаев</strong>: продумывание потенциальных проблем и сценариев</li>
+<li><strong>Тщательный анализ</strong>: структурированный подход к решению сложных задач</li>
+</ul>
+<h4 id="h-16">Пример: архитектурное решение <a class="h-anchor" href="#h-16" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>Пользователь: /think Стоит ли использовать микросервисы или монолит для нашей e-commerce платформы?
+
+Claude: Давайте тщательно обдумаю это архитектурное решение...
+
+&lt;extended_thinking&gt;
+## Анализ контекста
+- Размер команды: 5 разработчиков
+- Ожидаемая нагрузка: сначала 10 тыс. пользователей в день
+- Нужно масштабироваться до 100 тыс.+ пользователей
+- Ограниченные DevOps-ресурсы
+- Срок до MVP: 6 месяцев
+
+## Подход 1: Микросервисы
+Плюсы:
++ Независимое масштабирование
++ Гибкость в выборе технологий
++ Независимость команд
++ Изоляция сбоев
+
+Минусы:
+- Операционная сложность
+- Сетевые накладные расходы
+- Нужен distributed tracing
+- Требуется опыт DevOps
+- Более медленная начальная разработка
+
+## Подход 2: Монолит
+Плюсы:
++ Более простое развёртывание
++ Более быстрая начальная разработка
++ Более простая отладка
++ Меньше операционных накладных расходов
++ Единая кодовая база
+
+Минусы:
+- Сложности масштабирования позже
+- Развёртывания по принципу all-or-nothing
+- Привязка к технологиям
+- Риск тесной связности
+
+## Факторы решения
+1. Размер команды (5 разработчиков) → в пользу монолита
+2. DevOps-ресурсы (ограничены) → в пользу монолита
+3. Сроки (6 месяцев) → в пользу монолита
+4. Будущий масштаб (100 тыс. пользователей) → достижим с монолитом + кэшированием
+5. Бюджет на сложность → ограничен
+
+## Рекомендация
+Начните с **модульного монолита**:
+- Единица развёртывания одна
+- Чёткие границы модулей
+- Аккуратные интерфейсы между модулями
+- Подготовка к будущему выделению микросервисов при необходимости
+
+Это даст вам:
+✓ Быструю начальную разработку
+✓ Низкую операционную сложность
+✓ Возможность позже выделить сервисы
+✓ Понятную архитектуру
+
+Путь миграции: когда вы достигнете 50 тыс.+ пользователей или отдельным модулям потребуется независимое масштабирование, выделите эти модули в микросервисы.
+&lt;/extended_thinking&gt;
+
+**Рекомендация**: реализовать модульный монолит с чёткими границами между модулями.
+
+Этот подход балансирует текущие ограничения команды (размер, сроки, DevOps-ресурсы) и будущие потребности в масштабировании. Позже можно будет вынести отдельные модули в микросервисы, когда для этого появится явная бизнес-необходимость.</code></pre>
+<h4 id="h-17">Конфигурация расширенного мышления <a class="h-anchor" href="#h-17" aria-label="Ссылка на раздел">#</a></h4>
+<p>Расширенное мышление настраивается через переменные окружения, сочетания клавиш и CLI-флаги:</p>
+<pre><code class="language-bash"># Установить бюджет токенов на рассуждение
+export MAX_THINKING_TOKENS=16000
+
+# Установить уровень effort (только Opus 4.6): low (○), medium (◐), high (●) или max
+export CLAUDE_CODE_EFFORT_LEVEL=high</code></pre>
+<p>Переключайте режим во время сессии через <code>Alt+T</code> / <code>Option+T</code>, задавайте effort через <code>/effort</code> или настраивайте через <code>/config</code>.</p>
+<hr>
+<p>&lt;a id=&quot;auto-mode&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-18">Автоматический режим <a class="h-anchor" href="#h-18" aria-label="Ссылка на раздел">#</a></h3>
+<p>Автоматический режим — это режим разрешений из Research Preview (март 2026), который использует фоновый классификатор безопасности для проверки каждого действия перед выполнением. Он позволяет Claude работать автономно, блокируя опасные операции.</p>
+<h4 id="h-19">Требования <a class="h-anchor" href="#h-19" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>План</strong>: командный план (Enterprise и API внедряются постепенно)</li>
+<li><strong>Модель</strong>: Claude Sonnet 4.6 или Opus 4.6</li>
+<li><strong>Классификатор</strong>: работает на Claude Sonnet 4.6 (добавляет расход токенов)</li>
+</ul>
+<h4 id="h-20">Включение автоматического режима <a class="h-anchor" href="#h-20" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Включить автоматический режим через CLI-флаг
+claude --enable-auto-mode
+
+# Затем переключаться на него через Shift+Tab в REPL</code></pre>
+<p>Или сделать его режимом разрешений по умолчанию:</p>
+<pre><code class="language-bash">claude --permission-mode auto</code></pre>
+<p>Настройка через конфиг:</p>
+<pre><code class="language-json">{
+  &quot;permissions&quot;: {
+    &quot;defaultMode&quot;: &quot;auto&quot;
+  }
+}</code></pre>
+<h4 id="h-21">Как работает классификатор <a class="h-anchor" href="#h-21" aria-label="Ссылка на раздел">#</a></h4>
+<p>Фоновый классификатор оценивает каждое действие в следующем порядке:</p>
+<ol>
+<li><strong>Правила allow/deny</strong> -- сначала проверяются явные правила разрешений</li>
+<li><strong>Авторазрешение для чтения/правок</strong> -- операции чтения файлов и правок проходят автоматически</li>
+<li><strong>Классификатор</strong> -- фоновый классификатор проверяет действие</li>
+<li><strong>Запасной сценарий</strong> -- после 3 подряд или 20 всего блокировок возвращается запрос пользователю</li>
+</ol>
+<h4 id="h-22">Действия, блокируемые по умолчанию <a class="h-anchor" href="#h-22" aria-label="Ссылка на раздел">#</a></h4>
+<p>Автоматический режим по умолчанию блокирует следующее:</p>
+<div class="table-wrap"><table><thead><tr><th>Заблокированное действие</th><th>Пример</th></tr></thead><tbody><tr><td>Установки через pipe в shell</td><td><code>curl | bash</code></td></tr><tr><td>Отправка чувствительных данных наружу</td><td>API-ключи и учётные данные, отправляемые по сети</td></tr><tr><td>Развёртывание в production</td><td>Команды развёртывания, нацеленные на production</td></tr><tr><td>Массовое удаление</td><td><code>rm -rf</code> в больших каталогах</td></tr><tr><td>Изменения IAM</td><td>Изменения разрешений и ролей</td></tr><tr><td>Принудительный push в <code>main</code></td><td><code>git push --force origin main</code></td></tr></tbody></table></div>
+<h4 id="h-23">Действия, разрешённые по умолчанию <a class="h-anchor" href="#h-23" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Разрешённое действие</th><th>Пример</th></tr></thead><tbody><tr><td>Локальные файловые операции</td><td>Чтение, запись и редактирование файлов проекта</td></tr><tr><td>Установка объявленных зависимостей</td><td><code>npm install</code>, <code>pip install</code> из манифеста</td></tr><tr><td>HTTP только для чтения</td><td><code>curl</code> для получения документации</td></tr><tr><td>Push в текущую ветку</td><td><code>git push origin feature-branch</code></td></tr></tbody></table></div>
+<h4 id="h-24">Настройка автоматического режима <a class="h-anchor" href="#h-24" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Вывести правила по умолчанию в JSON</strong>:</p>
+<pre><code class="language-bash">claude auto-mode defaults</code></pre>
+<p><strong>Настройка доверенной инфраструктуры</strong> выполняется через managed setting <code>autoMode.environment</code> для корпоративных развёртываний. Это позволяет администраторам задавать доверенные CI/CD-среды, цели деплоя и шаблоны инфраструктуры.</p>
+<h4 id="h-25">Поведение при запасном сценарии <a class="h-anchor" href="#h-25" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если классификатор не уверен, автоматический режим возвращается к запросу у пользователя:</p>
+<ul>
+<li>после <strong>3 подряд</strong> блокировок классификатора</li>
+<li>после <strong>20 всего</strong> блокировок классификатора в одной сессии</li>
+</ul>
+<p>Это гарантирует, что пользователь всегда сохраняет контроль, когда классификатор не может уверенно одобрить действие.</p>
+<hr>
+<p>&lt;a id=&quot;background-tasks&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-26">Фоновые задачи <a class="h-anchor" href="#h-26" aria-label="Ссылка на раздел">#</a></h3>
+<p>Фоновые задачи позволяют длительным операциям выполняться, не блокируя разговор.</p>
+<h4 id="h-27">Что такое фоновые задачи? <a class="h-anchor" href="#h-27" aria-label="Ссылка на раздел">#</a></h4>
+<p>Фоновые задачи выполняются асинхронно, пока вы продолжаете работать:</p>
+<ul>
+<li>длинные тестовые прогоны</li>
+<li>сборки</li>
+<li>миграции базы данных</li>
+<li>скрипты деплоя</li>
+<li>инструменты анализа</li>
+</ul>
+<p><strong>Базовое использование:</strong></p>
+<pre><code class="language-bash">Пользователь: Запусти тесты в фоне
+
+Claude: Задача bg-1234 запущена
+
+/task list           # Показать все задачи
+/task status bg-1234 # Проверить прогресс
+/task show bg-1234   # Посмотреть вывод
+/task cancel bg-1234 # Отменить задачу</code></pre>
+<h4 id="h-28">Запуск фоновых задач <a class="h-anchor" href="#h-28" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>Пользователь: Запусти полный тестовый набор в фоне
+
+Claude: Запускаю тесты в фоне (task-id: bg-1234)
+Вы можете продолжать работать, пока тесты идут.
+
+[Вы можете продолжить разговор]
+
+Пользователь: А пока давай отрефакторим модуль auth
+
+Claude: [Работает над модулем auth, пока тесты выполняются в фоне]
+
+[Позже, когда тесты завершатся]
+
+Claude: 📢 Фоновая задача bg-1234 завершена:
+✅ Успешно пройдено 245 тестов
+❌ Упало 3 теста
+Результаты: /task show bg-1234</code></pre>
+<h4 id="h-29">Управление фоновыми задачами <a class="h-anchor" href="#h-29" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Показать активные задачи</strong>:</p>
+<pre><code>Пользователь: /task list
+
+Активные фоновые задачи:
+1. [bg-1234] Выполняются тесты (50% завершено, осталось 2 мин)
+2. [bg-1235] Собирается Docker-образ (25% завершено, осталось 8 мин)
+3. [bg-1236] Идёт деплой в staging (90% завершено, осталось 30 сек)</code></pre>
+<p><strong>Проверить статус задачи</strong>:</p>
+<pre><code>Пользователь: /task status bg-1234
+
+Задача bg-1234: тесты выполняются
+Статус: в процессе
+Прогресс: 120/245 тестов (49%)
+Запущено: 2025-11-08 10:30:15
+Ожидаемое завершение: 2025-11-08 10:34:22</code></pre>
+<p><strong>Посмотреть вывод задачи</strong>:</p>
+<pre><code>Пользователь: /task show bg-1234
+
+[Показывает живой вывод тестового прогона]</code></pre>
+<p><strong>Отменить задачу</strong>:</p>
+<pre><code>Пользователь: /task cancel bg-1234
+
+Фоновая задача bg-1234 отменена</code></pre>
+<h4 id="h-30">Пример: параллельная разработка <a class="h-anchor" href="#h-30" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>Пользователь: Запусти сборку в фоне
+
+Claude: Запускаю сборку... (task-id: bg-5001)
+
+Пользователь: И ещё линтер в фоне
+
+Claude: Запускаю линтер... (task-id: bg-5002)
+
+Пользователь: Пока они идут, давай реализуем новый API endpoint
+
+Claude: [Реализует API endpoint, пока идут сборка и линтер]
+
+[10 минут спустя]
+
+Claude: 📢 Сборка успешно завершена (bg-5001)
+📢 Линтер нашёл 12 проблем (bg-5002)
+
+Пользователь: Покажи проблемы линтера
+
+Claude: [Показывает вывод линтера из bg-5002]</code></pre>
+<h4 id="h-31">Конфигурация <a class="h-anchor" href="#h-31" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-json">{
+  &quot;backgroundTasks&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;maxConcurrentTasks&quot;: 5,
+    &quot;notifyOnCompletion&quot;: true,
+    &quot;autoCleanup&quot;: true,
+    &quot;logOutput&quot;: true
+  }
+}</code></pre>
+<hr>
+<p>&lt;a id=&quot;scheduled-tasks&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-32">Запланированные задачи <a class="h-anchor" href="#h-32" aria-label="Ссылка на раздел">#</a></h3>
+<p>Запланированные задачи позволяют запускать промпты автоматически по повторяющемуся расписанию или как одноразовые напоминания. Эти задачи привязаны к сессии: они работают, пока Claude Code запущен, и очищаются при завершении сессии. Доступно начиная с v2.1.72+.</p>
+<h4 id="команда-loop">Команда <code>/loop</code> <a class="h-anchor" href="#команда-loop" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Явный интервал
+/loop 5m проверь, завершился ли деплой
+
+# Естественный язык
+/loop проверяй статус сборки каждые 30 минут</code></pre>
+<p>Для точного планирования также поддерживаются стандартные 5-полевые cron-выражения.</p>
+<h4 id="h-33">Одноразовые напоминания <a class="h-anchor" href="#h-33" aria-label="Ссылка на раздел">#</a></h4>
+<p>Задавайте напоминания, которые срабатывают один раз в конкретное время:</p>
+<pre><code>напомни мне в 3 дня запушить release-ветку
+через 45 минут запусти integration tests</code></pre>
+<h4 id="h-34">Управление запланированными задачами <a class="h-anchor" href="#h-34" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Инструмент</th><th>Описание</th></tr></thead><tbody><tr><td><code>CronCreate</code></td><td>Создать новую запланированную задачу</td></tr><tr><td><code>CronList</code></td><td>Показать все активные запланированные задачи</td></tr><tr><td><code>CronDelete</code></td><td>Удалить запланированную задачу</td></tr></tbody></table></div>
+<p><strong>Ограничения и поведение</strong>:</p>
+<ul>
+<li>до <strong>50 запланированных задач</strong> на одну сессию</li>
+<li>привязка к сессии — всё очищается при её завершении</li>
+<li>повторяющиеся задачи автоматически истекают через <strong>3 дня</strong></li>
+<li>задачи срабатывают только пока Claude Code запущен — пропущенные срабатывания не догоняются</li>
+</ul>
+<h4 id="h-35">Детали поведения <a class="h-anchor" href="#h-35" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Аспект</th><th>Детали</th></tr></thead><tbody><tr><td><strong>Джиттер повторения</strong></td><td>До 10% интервала (максимум 15 минут)</td></tr><tr><td><strong>Джиттер одноразового запуска</strong></td><td>До 90 секунд на границах :00/:30</td></tr><tr><td><strong>Пропущенные срабатывания</strong></td><td>Без догонки — пропускаются, если Claude Code не работал</td></tr><tr><td><strong>Сохранность</strong></td><td>Не сохраняется между перезапусками</td></tr></tbody></table></div>
+<h4 id="h-36">Облачные запланированные задачи <a class="h-anchor" href="#h-36" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте <code>/schedule</code>, чтобы создавать облачные запланированные задачи, которые выполняются на инфраструктуре Anthropic:</p>
+<pre><code>/schedule daily at 9am run the test suite and report failures</code></pre>
+<p>Облачные запланированные задачи сохраняются между перезапусками и не требуют, чтобы Claude Code был запущен локально.</p>
+<h4 id="h-37">Отключение запланированных задач <a class="h-anchor" href="#h-37" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">export CLAUDE_CODE_DISABLE_CRON=1</code></pre>
+<h4 id="h-38">Пример: мониторинг деплоя <a class="h-anchor" href="#h-38" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>/loop 5m check the deployment status of the staging environment.
+        If the deploy succeeded, notify me and stop looping.
+        If it failed, show the error logs.</code></pre>
+<blockquote>
+<p><strong>Совет</strong>: запланированные задачи привязаны к сессии. Для постоянной автоматизации, которая переживает перезапуски, используйте CI/CD-пайплайны, GitHub Actions или запланированные задачи в Desktop App.</p>
+</blockquote>
+<hr>
+<p>&lt;a id=&quot;permission-modes&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-39">Режимы разрешений <a class="h-anchor" href="#h-39" aria-label="Ссылка на раздел">#</a></h3>
+<p>Режимы разрешений определяют, какие действия Claude может выполнять без явного одобрения.</p>
+<h4 id="h-40">Доступные режимы разрешений <a class="h-anchor" href="#h-40" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Режим</th><th>Поведение</th></tr></thead><tbody><tr><td><code>default</code></td><td>Только чтение файлов; для всех остальных действий запрашивает подтверждение</td></tr><tr><td><code>acceptEdits</code></td><td>Чтение и правка файлов; для команд запрашивает подтверждение</td></tr><tr><td><code>plan</code></td><td>Только чтение файлов (режим исследования, без правок)</td></tr><tr><td><code>auto</code></td><td>Все действия проходят проверки фонового классификатора безопасности (Research Preview)</td></tr><tr><td><code>bypassPermissions</code></td><td>Все действия без проверок разрешений (опасно)</td></tr><tr><td><code>dontAsk</code></td><td>Выполняются только заранее одобренные инструменты; все остальные отклоняются</td></tr></tbody></table></div>
+<p>Переключайтесь между режимами с помощью <code>Shift+Tab</code> в CLI. Режим по умолчанию задаётся флагом <code>--permission-mode</code> или настройкой <code>permissions.defaultMode</code>.</p>
+<h4 id="h-41">Способы включения <a class="h-anchor" href="#h-41" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Сочетание клавиш</strong>:</p>
+<pre><code class="language-bash">Shift + Tab  # Переключать все 6 режимов</code></pre>
+<p><strong>Slash-команда</strong>:</p>
+<pre><code class="language-bash">/plan                  # Войти в режим планирования</code></pre>
+<p><strong>CLI-флаг</strong>:</p>
+<pre><code class="language-bash">claude --permission-mode plan
+claude --permission-mode auto</code></pre>
+<p><strong>Настройка</strong>:</p>
+<pre><code class="language-json">{
+  &quot;permissions&quot;: {
+    &quot;defaultMode&quot;: &quot;auto&quot;
+  }
+}</code></pre>
+<h4 id="h-42">Примеры режимов разрешений <a class="h-anchor" href="#h-42" aria-label="Ссылка на раздел">#</a></h4>
+<h5 id="режим-default">Режим <code>default</code> <a class="h-anchor" href="#режим-default" aria-label="Ссылка на раздел">#</a></h5>
+<p>Claude запрашивает подтверждение для значимых действий:</p>
+<pre><code>Пользователь: Исправь баг в auth.ts
+
+Claude: Мне нужно изменить src/auth.ts, чтобы исправить баг.
+Изменение обновит логику проверки пароля.
+
+Одобрить это изменение? (yes/no/show)</code></pre>
+<h5 id="режим-plan">Режим <code>plan</code> <a class="h-anchor" href="#режим-plan" aria-label="Ссылка на раздел">#</a></h5>
+<p>Сначала просмотрите план реализации, затем выполняйте:</p>
+<pre><code>Пользователь: /plan Реализуй систему аутентификации пользователей
+
+Claude: Я составлю план реализации аутентификации.
+
+## План реализации
+[Подробный план с фазами и шагами]
+
+Готовы продолжить? (yes/no/modify)</code></pre>
+<h5 id="режим-acceptedits">Режим <code>acceptEdits</code> <a class="h-anchor" href="#режим-acceptedits" aria-label="Ссылка на раздел">#</a></h5>
+<p>Автоматически принимать изменения файлов:</p>
+<pre><code>Пользователь: acceptEdits
+Пользователь: Исправь баг в auth.ts
+
+Claude: [Вносит изменения без запроса подтверждения]</code></pre>
+<h4 id="h-43">Сценарии использования <a class="h-anchor" href="#h-43" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Code Review</strong>:</p>
+<pre><code>Пользователь: claude --permission-mode plan
+Пользователь: Проверь этот PR и предложи улучшения
+
+Claude: [Читает код, даёт обратную связь, но не может вносить изменения]</code></pre>
+<p><strong>Параллельное программирование</strong>:</p>
+<pre><code>Пользователь: claude --permission-mode default
+Пользователь: Давай реализуем эту функцию вместе
+
+Claude: [Запрашивает подтверждение перед каждым изменением]</code></pre>
+<p><strong>Автоматизированные задачи</strong>:</p>
+<pre><code>Пользователь: claude --permission-mode acceptEdits
+Пользователь: Исправь все linting-ошибки в кодовой базе
+
+Claude: [Автоматически принимает правки файлов без запроса]</code></pre>
+<hr>
+<p>&lt;a id=&quot;headless-mode&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-44">Безголовый режим <a class="h-anchor" href="#h-44" aria-label="Ссылка на раздел">#</a></h3>
+<p>Режим печати (<code>claude -p</code>) позволяет запускать Claude Code без интерактивного ввода — идеально для автоматизации и CI/CD. Это неинтерактивный режим, пришедший на смену старому флагу <code>--headless</code>.</p>
+<h4 id="h-45">Что такое режим печати? <a class="h-anchor" href="#h-45" aria-label="Ссылка на раздел">#</a></h4>
+<p>Режим печати позволяет:</p>
+<ul>
+<li>автоматизировать выполнение скриптов</li>
+<li>интегрировать CI/CD</li>
+<li>обрабатывать пакеты задач</li>
+<li>запускать запланированные задачи</li>
+</ul>
+<h4 id="h-46">Запуск в режиме печати (без интерактива) <a class="h-anchor" href="#h-46" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Запустить конкретную задачу
+claude -p &quot;Запусти все тесты&quot;
+
+# Обработать данные из пайпа
+cat error.log | claude -p &quot;Analyze these errors&quot;
+
+# Интеграция с CI/CD (GitHub Actions)
+- name: AI Code Review
+  run: claude -p &quot;Review PR&quot;</code></pre>
+<h4 id="h-47">Дополнительные примеры режима печати <a class="h-anchor" href="#h-47" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Запустить конкретную задачу с захватом вывода
+claude -p &quot;Запусти все тесты и сгенерируй отчёт о покрытии&quot;
+
+# Со структурированным выводом
+claude -p --output-format json &quot;Проанализируй качество кода&quot;
+
+# С вводом из stdin
+echo &quot;Проанализируй качество кода&quot; | claude -p &quot;объясни это&quot;</code></pre>
+<h4 id="пример-интеграция-с-ci-cd">Пример: интеграция с CI/CD <a class="h-anchor" href="#пример-интеграция-с-ci-cd" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>GitHub Actions</strong>:</p>
+<pre><code class="language-yaml"># .github/workflows/code-review.yml
+name: AI Code Review
+
+on: [pull_request]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run Claude Code Review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          claude -p --output-format json \
+            --max-turns 3 \
+            &quot;Review this PR for:
+            - Code quality issues
+            - Security vulnerabilities
+            - Performance concerns
+            - Test coverage
+            Output results as JSON&quot; &gt; review.json
+
+      - name: Post Review Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require(&#x27;fs&#x27;);
+            const review = JSON.parse(fs.readFileSync(&#x27;review.json&#x27;, &#x27;utf8&#x27;));
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: JSON.stringify(review, null, 2)
+            });</code></pre>
+<h4 id="h-48">Конфигурация режима печати <a class="h-anchor" href="#h-48" aria-label="Ссылка на раздел">#</a></h4>
+<p>Режим печати (<code>claude -p</code>) поддерживает несколько флагов для автоматизации:</p>
+<pre><code class="language-bash"># Ограничить число автономных ходов
+claude -p --max-turns 5 &quot;refactor this module&quot;
+
+# Структурированный JSON-вывод
+claude -p --output-format json &quot;analyze this codebase&quot;
+
+# С проверкой схемы
+claude -p --json-schema &#x27;{&quot;type&quot;:&quot;object&quot;,&quot;properties&quot;:{&quot;issues&quot;:{&quot;type&quot;:&quot;array&quot;}}}&#x27; \
+  &quot;find bugs in this code&quot;
+
+# Отключить сохранение сессии
+claude -p --no-session-persistence &quot;one-off analysis&quot;</code></pre>
+<hr>
+<p>&lt;a id=&quot;session-management&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-49">Управление сессиями <a class="h-anchor" href="#h-49" aria-label="Ссылка на раздел">#</a></h3>
+<p>Эффективно управляйте несколькими сессиями Claude Code.</p>
+<h4 id="h-50">Команды управления сессиями <a class="h-anchor" href="#h-50" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Команда</th><th>Описание</th></tr></thead><tbody><tr><td><code>/resume</code></td><td>Возобновить разговор по ID или имени</td></tr><tr><td><code>/rename</code></td><td>Назвать текущую сессию</td></tr><tr><td><code>/fork</code></td><td>Разветвить текущую сессию в новую ветку</td></tr><tr><td><code>claude -c</code></td><td>Продолжить самый последний разговор</td></tr><tr><td><code>claude -r &quot;session&quot;</code></td><td>Возобновить сессию по имени или ID</td></tr></tbody></table></div>
+<h4 id="h-51">Возобновление сессий <a class="h-anchor" href="#h-51" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Продолжить последний разговор</strong>:</p>
+<pre><code class="language-bash">claude -c</code></pre>
+<p><strong>Возобновить именованную сессию</strong>:</p>
+<pre><code class="language-bash">claude -r &quot;auth-refactor&quot; &quot;finish this PR&quot;</code></pre>
+<p><strong>Переименовать текущую сессию</strong> (внутри REPL):</p>
+<pre><code>/rename auth-refactor</code></pre>
+<h4 id="h-52">Форк сессий <a class="h-anchor" href="#h-52" aria-label="Ссылка на раздел">#</a></h4>
+<p>Создайте форк сессии, чтобы попробовать альтернативный подход, не теряя исходную:</p>
+<pre><code>/fork</code></pre>
+<p>Or from the CLI:</p>
+<pre><code class="language-bash">claude --resume auth-refactor --fork-session &quot;try OAuth instead&quot;</code></pre>
+<h4 id="h-53">Сохранение сессии <a class="h-anchor" href="#h-53" aria-label="Ссылка на раздел">#</a></h4>
+<p>Сессии автоматически сохраняются и могут быть возобновлены:</p>
+<pre><code class="language-bash"># Продолжить последний разговор
+claude -c
+
+# Возобновить конкретную сессию по имени или ID
+claude -r &quot;auth-refactor&quot;
+
+# Возобновить и форкнуть для экспериментов
+claude --resume auth-refactor --fork-session &quot;alternative approach&quot;</code></pre>
+<hr>
+<p>&lt;a id=&quot;interactive-features&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-54">Интерактивные возможности <a class="h-anchor" href="#h-54" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-55">Сочетания клавиш <a class="h-anchor" href="#h-55" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude Code поддерживает горячие клавиши для удобной работы. Ниже приведена полная справка из официальной документации:</p>
+<div class="table-wrap"><table><thead><tr><th>Сочетание</th><th>Описание</th></tr></thead><tbody><tr><td><code>Ctrl+C</code></td><td>Отменить текущий ввод/генерацию</td></tr><tr><td><code>Ctrl+D</code></td><td>Выйти из Claude Code</td></tr><tr><td><code>Ctrl+G</code></td><td>Редактировать план во внешнем редакторе</td></tr><tr><td><code>Ctrl+L</code></td><td>Очистить экран терминала</td></tr><tr><td><code>Ctrl+O</code></td><td>Переключить подробный вывод (просмотр рассуждений)</td></tr><tr><td><code>Ctrl+R</code></td><td>Обратный поиск по истории</td></tr><tr><td><code>Ctrl+T</code></td><td>Показать или скрыть список задач</td></tr><tr><td><code>Ctrl+B</code></td><td>Фоновые выполняющиеся задачи</td></tr><tr><td><code>Esc+Esc</code></td><td>Откат кода/разговора</td></tr><tr><td><code>Shift+Tab</code> / <code>Alt+M</code></td><td>Переключать режимы разрешений</td></tr><tr><td><code>Option+P</code> / <code>Alt+P</code></td><td>Переключать модель</td></tr><tr><td><code>Option+T</code> / <code>Alt+T</code></td><td>Переключать расширенное мышление</td></tr></tbody></table></div>
+<p><strong>Редактирование строк (стандартные сочетания readline):</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Сочетание</th><th>Действие</th></tr></thead><tbody><tr><td><code>Ctrl + A</code></td><td>Перейти в начало строки</td></tr><tr><td><code>Ctrl + E</code></td><td>Перейти в конец строки</td></tr><tr><td><code>Ctrl + K</code></td><td>Вырезать до конца строки</td></tr><tr><td><code>Ctrl + U</code></td><td>Вырезать до начала строки</td></tr><tr><td><code>Ctrl + W</code></td><td>Удалить слово назад</td></tr><tr><td><code>Ctrl + Y</code></td><td>Вставить (yank)</td></tr><tr><td><code>Tab</code></td><td>Автодополнение</td></tr><tr><td><code>↑ / ↓</code></td><td>История команд</td></tr></tbody></table></div>
+<h4 id="h-56">Настройка привязок клавиш <a class="h-anchor" href="#h-56" aria-label="Ссылка на раздел">#</a></h4>
+<p>Создавайте собственные сочетания клавиш через <code>/keybindings</code>, которая открывает <code>~/.claude/keybindings.json</code> для редактирования (v2.1.18+).</p>
+<p><strong>Configuration format</strong>:</p>
+<pre><code class="language-json">{
+  &quot;$schema&quot;: &quot;https://www.schemastore.org/claude-code-keybindings.json&quot;,
+  &quot;bindings&quot;: [
+    {
+      &quot;context&quot;: &quot;Chat&quot;,
+      &quot;bindings&quot;: {
+        &quot;ctrl+e&quot;: &quot;chat:externalEditor&quot;,
+        &quot;ctrl+u&quot;: null,
+        &quot;ctrl+k ctrl+s&quot;: &quot;chat:stash&quot;
+      }
+    },
+    {
+      &quot;context&quot;: &quot;Confirmation&quot;,
+      &quot;bindings&quot;: {
+        &quot;ctrl+a&quot;: &quot;confirmation:yes&quot;
+      }
+    }
+  ]
+}</code></pre>
+<p>Чтобы снять стандартную привязку, задайте <code>null</code>.</p>
+<h4 id="h-57">Доступные контексты <a class="h-anchor" href="#h-57" aria-label="Ссылка на раздел">#</a></h4>
+<p>Привязки клавиш работают в рамках конкретных UI-контекстов:</p>
+<div class="table-wrap"><table><thead><tr><th>Контекст</th><th>Основные действия</th></tr></thead><tbody><tr><td><strong>Chat</strong></td><td><code>submit</code>, <code>cancel</code>, <code>cycleMode</code>, <code>modelPicker</code>, <code>thinkingToggle</code>, <code>undo</code>, <code>externalEditor</code>, <code>stash</code>, <code>imagePaste</code></td></tr><tr><td><strong>Confirmation</strong></td><td><code>yes</code>, <code>no</code>, <code>previous</code>, <code>next</code>, <code>nextField</code>, <code>cycleMode</code>, <code>toggleExplanation</code></td></tr><tr><td><strong>Global</strong></td><td><code>interrupt</code>, <code>exit</code>, <code>toggleTodos</code>, <code>toggleTranscript</code></td></tr><tr><td><strong>Автодополнение</strong></td><td><code>accept</code>, <code>dismiss</code>, <code>next</code>, <code>previous</code></td></tr><tr><td><strong>HistorySearch</strong></td><td><code>search</code>, <code>previous</code>, <code>next</code></td></tr><tr><td><strong>Settings</strong></td><td>Навигация по настройкам, зависящая от контекста</td></tr><tr><td><strong>Tabs</strong></td><td>Переключение и управление вкладками</td></tr><tr><td><strong>Help</strong></td><td>Навигация по панели справки</td></tr></tbody></table></div>
+<p>Всего доступно 18 контекстов, включая <code>Transcript</code>, <code>Task</code>, <code>ThemePicker</code>, <code>Attachments</code>, <code>Footer</code>, <code>MessageSelector</code>, <code>DiffDialog</code>, <code>ModelPicker</code> и <code>Select</code>.</p>
+<h4 id="поддержка-chord-последовательностей">Поддержка chord-последовательностей <a class="h-anchor" href="#поддержка-chord-последовательностей" aria-label="Ссылка на раздел">#</a></h4>
+<p>Привязки клавиш поддерживают chord-последовательности (многоклавишные комбинации):</p>
+<pre><code>&quot;ctrl+k ctrl+s&quot;   → Двухклавишная последовательность: нажмите ctrl+k, затем ctrl+s
+&quot;ctrl+shift+p&quot;    → Одновременные клавиши-модификаторы</code></pre>
+<p><strong>Синтаксис сочетаний клавиш</strong>:</p>
+<ul>
+<li><strong>Modifiers</strong>: <code>ctrl</code>, <code>alt</code> (or <code>opt</code>), <code>shift</code>, <code>meta</code> (or <code>cmd</code>)</li>
+<li><strong>Uppercase implies Shift</strong>: <code>K</code> is equivalent to <code>shift+k</code></li>
+<li><strong>Special keys</strong>: <code>escape</code>, <code>enter</code>, <code>return</code>, <code>tab</code>, <code>space</code>, <code>backspace</code>, <code>delete</code>, arrow keys</li>
+</ul>
+<h4 id="h-58">Зарезервированные и конфликтующие клавиши <a class="h-anchor" href="#h-58" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Клавиша</th><th>Статус</th><th>Примечания</th></tr></thead><tbody><tr><td><code>Ctrl+C</code></td><td>Зарезервирована</td><td>Нельзя переназначить (interrupt)</td></tr><tr><td><code>Ctrl+D</code></td><td>Зарезервирована</td><td>Нельзя переназначить (exit)</td></tr><tr><td><code>Ctrl+B</code></td><td>Конфликт с терминалом</td><td>tmux prefix key</td></tr><tr><td><code>Ctrl+A</code></td><td>Конфликт с терминалом</td><td>Клавиша префикса GNU Screen</td></tr><tr><td><code>Ctrl+Z</code></td><td>Конфликт с терминалом</td><td>Приостановка процесса</td></tr></tbody></table></div>
+<blockquote>
+<p><strong>Совет</strong>: если сочетание не работает, проверьте конфликты с терминальным эмулятором или мультиплексором.</p>
+</blockquote>
+<h4 id="завершение-по-tab">Завершение по Tab <a class="h-anchor" href="#завершение-по-tab" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude Code предоставляет интеллектуальное завершение по Tab:</p>
+<pre><code>User: /rew&lt;TAB&gt;
+→ /rewind
+
+User: /plu&lt;TAB&gt;
+→ /plugin
+
+User: /plugin &lt;TAB&gt;
+→ /plugin install
+→ /plugin enable
+→ /plugin disable</code></pre>
+<h4 id="h-59">История команд <a class="h-anchor" href="#h-59" aria-label="Ссылка на раздел">#</a></h4>
+<p>Доступ к предыдущим командам:</p>
+<pre><code>User: &lt;↑&gt;  # Previous command
+User: &lt;↓&gt;  # Next command
+User: Ctrl+R  # Search history
+
+(reverse-i-search)`test&#x27;: run all tests</code></pre>
+<h4 id="h-60">Многострочный ввод <a class="h-anchor" href="#h-60" aria-label="Ссылка на раздел">#</a></h4>
+<p>Для сложных запросов используйте многострочный режим:</p>
+<pre><code class="language-bash">Пользователь: \
+&gt; Длинный сложный промпт
+&gt; на несколько строк
+&gt; \end</code></pre>
+<p><strong>Пример:</strong></p>
+<pre><code>Пользователь: \
+&gt; Реализуй систему аутентификации пользователей
+&gt; со следующими требованиями:
+&gt; - JWT tokens
+&gt; - проверка email
+&gt; - сброс пароля
+&gt; - поддержка 2FA
+&gt; \end
+
+Claude: [Обрабатывает многострочный запрос]</code></pre>
+<h4 id="h-61">Встроенное редактирование <a class="h-anchor" href="#h-61" aria-label="Ссылка на раздел">#</a></h4>
+<p>Редактируйте команды перед отправкой:</p>
+<pre><code>User: Deploy to prodcution&lt;Backspace&gt;&lt;Backspace&gt;uction
+
+[Редактирование на месте перед отправкой]</code></pre>
+<h4 id="режим-vim">Режим Vim <a class="h-anchor" href="#режим-vim" aria-label="Ссылка на раздел">#</a></h4>
+<p>Включите привязки клавиш Vi/Vim для редактирования текста:</p>
+<p><strong>Activation</strong>:</p>
+<ul>
+<li>Используйте команду <code>/vim</code> или <code>/config</code>, чтобы включить</li>
+<li>Переключение режимов через <code>Esc</code> для NORMAL и <code>i/a/o</code> для INSERT</li>
+</ul>
+<p><strong>Клавиши навигации</strong>:</p>
+<ul>
+<li><code>h</code> / <code>l</code> - Влево/вправо</li>
+<li><code>j</code> / <code>k</code> - Вниз/вверх</li>
+<li><code>w</code> / <code>b</code> / <code>e</code> - По словам</li>
+<li><code>0</code> / <code>$</code> - В начало/конец строки</li>
+<li><code>gg</code> / <code>G</code> - В начало/конец текста</li>
+</ul>
+<p><strong>Текстовые объекты</strong>:</p>
+<ul>
+<li><code>iw</code> / <code>aw</code> - Внутри/вокруг слова</li>
+<li><code>i&quot;</code> / <code>a&quot;</code> - Внутри/вокруг строки в кавычках</li>
+<li><code>i(</code> / <code>a(</code> - Внутри/вокруг скобок</li>
+</ul>
+<h4 id="режим-bash">Режим Bash <a class="h-anchor" href="#режим-bash" aria-label="Ссылка на раздел">#</a></h4>
+<p>Выполняйте shell-команды напрямую с префиксом <code>!</code>:</p>
+<pre><code class="language-bash">! npm test
+! git status
+! cat src/index.js</code></pre>
+<p>Используйте это для быстрого запуска команд без переключения контекста.</p>
+<hr>
+<p>&lt;a id=&quot;voice-dictation&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-62">Голосовой ввод <a class="h-anchor" href="#h-62" aria-label="Ссылка на раздел">#</a></h3>
+<p>Голосовой ввод предоставляет режим push-to-talk для Claude Code, позволяя диктовать промпты вместо ввода с клавиатуры.</p>
+<h4 id="h-63">Активация голосового ввода <a class="h-anchor" href="#h-63" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>/voice</code></pre>
+<h4 id="h-64">Возможности <a class="h-anchor" href="#h-64" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Возможность</th><th>Описание</th></tr></thead><tbody><tr><td><strong>Нажал и говори</strong></td><td>Удерживайте клавишу для записи, отпустите для отправки</td></tr><tr><td><strong>20 языков</strong></td><td>Распознавание речи поддерживает 20 языков</td></tr><tr><td><strong>Пользовательская привязка клавиш</strong></td><td>Настраивается через <code>/keybindings</code></td></tr><tr><td><strong>Требуется аккаунт</strong></td><td>Для обработки STT нужен аккаунт Claude.ai</td></tr></tbody></table></div>
+<h4 id="h-65">Конфигурация <a class="h-anchor" href="#h-65" aria-label="Ссылка на раздел">#</a></h4>
+<p>Настройте привязку push-to-talk в файле keybindings (<code>/keybindings</code>). Голосовой ввод использует ваш аккаунт Claude.ai для распознавания речи.</p>
+<hr>
+<p>&lt;a id=&quot;channels&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-66">Каналы <a class="h-anchor" href="#h-66" aria-label="Ссылка на раздел">#</a></h3>
+<p>Каналы (Research Preview) позволяют MCP-серверам отправлять сообщения в запущенные сессии Claude Code, обеспечивая интеграции с внешними сервисами в реальном времени.</p>
+<h4 id="h-67">Подписка на каналы <a class="h-anchor" href="#h-67" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Подписаться на плагины каналов при запуске
+claude --channels discord,telegram</code></pre>
+<h4 id="h-68">Поддерживаемые интеграции <a class="h-anchor" href="#h-68" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Интеграция</th><th>Описание</th></tr></thead><tbody><tr><td><strong>Discord</strong></td><td>Получать и отвечать на сообщения Discord в вашей сессии</td></tr><tr><td><strong>Telegram</strong></td><td>Получать и отвечать на сообщения Telegram в вашей сессии</td></tr></tbody></table></div>
+<h4 id="h-69">Конфигурация <a class="h-anchor" href="#h-69" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Managed setting</strong> для корпоративных развёртываний:</p>
+<pre><code class="language-json">{
+  &quot;allowedChannelPlugins&quot;: [&quot;discord&quot;, &quot;telegram&quot;]
+}</code></pre>
+<p>Managed setting <code>allowedChannelPlugins</code> определяет, какие плагины каналов разрешены в организации.</p>
+<h4 id="h-70">Как это работает <a class="h-anchor" href="#h-70" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>MCP-серверы выступают как плагины каналов, подключённые к внешним сервисам</li>
+<li>Входящие сообщения отправляются в активную сессию Claude Code</li>
+<li>Claude может читать сообщения и отвечать на них в контексте сессии</li>
+<li>Плагины каналов должны быть разрешены через managed setting <code>allowedChannelPlugins</code></li>
+</ol>
+<hr>
+<p>&lt;a id=&quot;chrome-integration&quot;&gt;&lt;/a&gt;</p>
+<h3 id="интеграция-с-chrome">Интеграция с Chrome <a class="h-anchor" href="#интеграция-с-chrome" aria-label="Ссылка на раздел">#</a></h3>
+<p>Интеграция с Chrome подключает Claude Code к браузеру Chrome или Microsoft Edge для живой веб-автоматизации и отладки. Это beta-функция, доступная с v2.0.73+ (поддержка Edge добавлена в v1.0.36+).</p>
+<h4 id="включение-интеграции-с-chrome">Включение интеграции с Chrome <a class="h-anchor" href="#включение-интеграции-с-chrome" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>At startup</strong>:</p>
+<pre><code class="language-bash">claude --chrome      # Включить подключение к Chrome
+claude --no-chrome   # Отключить подключение к Chrome</code></pre>
+<p><strong>Within a session</strong>:</p>
+<pre><code>/chrome</code></pre>
+<p>Выберите &quot;Enabled by default&quot;, чтобы включить интеграцию с Chrome для всех будущих сессий. Claude Code использует состояние входа в браузере, поэтому может работать с веб-приложениями, где уже выполнена аутентификация.</p>
+<h4 id="h-71">Возможности <a class="h-anchor" href="#h-71" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Возможность</th><th>Описание</th></tr></thead><tbody><tr><td><strong>Живая отладка</strong></td><td>Читать логи консоли, инспектировать DOM и отлаживать JavaScript в реальном времени</td></tr><tr><td><strong>Проверка дизайна</strong></td><td>Сравнивать отрисованные страницы с макетами</td></tr><tr><td><strong>Проверка форм</strong></td><td>Тестировать отправку форм, валидацию ввода и обработку ошибок</td></tr><tr><td><strong>Тестирование веб-приложений</strong></td><td>Взаимодействовать с аутентифицированными приложениями (Gmail, Google Docs, Notion и т. д.)</td></tr><tr><td><strong>Извлечение данных</strong></td><td>Собирать и обрабатывать контент со страниц</td></tr><tr><td><strong>Запись сессии</strong></td><td>Записывать взаимодействия с браузером в GIF-файлы</td></tr></tbody></table></div>
+<h4 id="h-72">Разрешения на уровне сайта <a class="h-anchor" href="#h-72" aria-label="Ссылка на раздел">#</a></h4>
+<p>Расширение Chrome управляет доступом по сайтам. Разрешайте или отзывайте доступ для конкретных сайтов в любой момент через popup расширения. Claude Code взаимодействует только с теми сайтами, которые вы явно разрешили.</p>
+<h4 id="h-73">Как это работает <a class="h-anchor" href="#h-73" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude Code управляет браузером в видимом окне — вы можете наблюдать действия в реальном времени. Когда браузер встречает страницу входа или CAPTCHA, Claude ставит выполнение на паузу и ждёт, пока вы решите это вручную.</p>
+<h4 id="h-74">Известные ограничения <a class="h-anchor" href="#h-74" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Поддержка браузеров</strong>: только Chrome и Edge — Brave, Arc и другие браузеры на Chromium не поддерживаются</li>
+<li><strong>WSL</strong>: недоступно в Windows Subsystem for Linux</li>
+<li><strong>Сторонние провайдеры</strong>: не поддерживаются с Bedrock, Vertex или Foundry API providers</li>
+<li><strong>Простой service worker</strong>: service worker расширения Chrome может переходить в idle во время длительных сессий</li>
+</ul>
+<blockquote>
+<p><strong>Совет</strong>: интеграция с Chrome — beta-функция. Поддержка браузеров может расшириться в будущих релизах.</p>
+</blockquote>
+<hr>
+<p>&lt;a id=&quot;remote-control&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-75">Удалённое управление <a class="h-anchor" href="#h-75" aria-label="Ссылка на раздел">#</a></h3>
+<p>Удалённое управление позволяет продолжить локально запущенную сессию Claude Code с телефона, планшета или любого браузера. Локальная сессия продолжает работать на вашей машине — ничего не уходит в облако. Доступно на планах Pro, Max, Team и Enterprise (v2.1.51+).</p>
+<h4 id="h-76">Запуск удалённого управления <a class="h-anchor" href="#h-76" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>From the CLI</strong>:</p>
+<pre><code class="language-bash"># Запустить с именем сессии по умолчанию
+claude remote-control
+
+# Запустить с собственным именем
+claude remote-control --name &quot;Auth Refactor&quot;</code></pre>
+<p><strong>From within a session</strong>:</p>
+<pre><code>/remote-control
+/remote-control &quot;Auth Refactor&quot;</code></pre>
+<p><strong>Available flags</strong>:</p>
+<div class="table-wrap"><table><thead><tr><th>Флаг</th><th>Описание</th></tr></thead><tbody><tr><td><code>--name &quot;title&quot;</code></td><td>Пользовательский заголовок сессии для удобной идентификации</td></tr><tr><td><code>--verbose</code></td><td>Показывать подробные журналы подключения</td></tr><tr><td><code>--sandbox</code></td><td>Включить изоляцию файловой системы и сети</td></tr><tr><td><code>--no-sandbox</code></td><td>Отключить sandboxing (по умолчанию)</td></tr></tbody></table></div>
+<h4 id="h-77">Подключение к сессии <a class="h-anchor" href="#h-77" aria-label="Ссылка на раздел">#</a></h4>
+<p>Есть три способа подключиться с другого устройства:</p>
+<ol>
+<li><strong>Session URL</strong> — выводится в терминал при старте сессии; откройте в любом браузере</li>
+<li><strong>QR code</strong> — нажмите <code>spacebar</code> после запуска, чтобы показать сканируемый QR-код</li>
+<li><strong>По имени</strong> — найдите сессию на claude.ai/code или в мобильном приложении Claude (iOS/Android)</li>
+</ol>
+<h4 id="h-78">Безопасность <a class="h-anchor" href="#h-78" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Нет входящих портов</strong> на вашей машине</li>
+<li><strong>Только исходящий HTTPS</strong> поверх TLS</li>
+<li><strong>Scoped credentials</strong> — несколько краткоживущих токенов с узкой областью действия</li>
+<li><strong>Изоляция сессий</strong> — каждая удалённая сессия независима</li>
+</ul>
+<h4 id="удаленное-управление-vs-claude-code-в-вебе">Удалённое управление vs Claude Code в вебе <a class="h-anchor" href="#удаленное-управление-vs-claude-code-в-вебе" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Аспект</th><th>Удалённое управление</th><th>Claude Code в вебе</th></tr></thead><tbody><tr><td><strong>Выполнение</strong></td><td>Работает на вашей машине</td><td>Работает в облаке Anthropic</td></tr><tr><td><strong>Локальные инструменты</strong></td><td>Полный доступ к локальным MCP-серверам, файлам и CLI</td><td>Без локальных зависимостей</td></tr><tr><td><strong>Сценарий</strong></td><td>Продолжить локальную работу с другого устройства</td><td>Начать с нуля из любого браузера</td></tr></tbody></table></div>
+<h4 id="h-79">Ограничения <a class="h-anchor" href="#h-79" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Одна удалённая сессия на экземпляр Claude Code</li>
+<li>Терминал должен оставаться открытым на хост-машине</li>
+<li>Сессия завершается примерно через 10 минут, если сеть недоступна</li>
+</ul>
+<h4 id="h-80">Сценарии использования <a class="h-anchor" href="#h-80" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Управлять Claude Code с телефона или планшета, находясь вдали от рабочего места</li>
+<li>Использовать более насыщенный интерфейс claude.ai, сохраняя локальное выполнение инструментов</li>
+<li>Быстро делать проверку кода на ходу, сохраняя полную локальную среду разработки</li>
+</ul>
+<hr>
+<h3 id="h-81">Веб-сессии <a class="h-anchor" href="#h-81" aria-label="Ссылка на раздел">#</a></h3>
+<p>Веб-сессии позволяют запускать Claude Code прямо в браузере на claude.ai/code или создавать веб-сессии из CLI.</p>
+<h4 id="h-82">Создание веб-сессии <a class="h-anchor" href="#h-82" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Создать новую веб-сессию из CLI
+claude --remote &quot;implement the new API endpoints&quot;</code></pre>
+<p>Это создаёт сессию Claude Code на claude.ai, к которой можно получить доступ из любого браузера.</p>
+<h4 id="h-83">Возобновление веб-сессий локально <a class="h-anchor" href="#h-83" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если вы начали сессию в вебе и хотите продолжить её локально:</p>
+<pre><code class="language-bash"># Возобновить веб-сессию в локальном терминале
+claude --teleport</code></pre>
+<p>Или из интерактивного REPL:</p>
+<pre><code>/teleport</code></pre>
+<h4 id="h-84">Сценарии использования <a class="h-anchor" href="#h-84" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Начать работу на одной машине и продолжить на другой</li>
+<li>Поделиться URL сессии с участниками команды</li>
+<li>Использовать веб-интерфейс для визуального просмотра diff, а затем переключиться в терминал для выполнения</li>
+</ul>
+<hr>
+<h3 id="h-85">Настольное приложение <a class="h-anchor" href="#h-85" aria-label="Ссылка на раздел">#</a></h3>
+<p>Настольное приложение Claude Code — это отдельное приложение с визуальным просмотром diff, параллельными сессиями и встроенными коннекторами. Доступно для macOS и Windows (планы Pro, Max, Team и Enterprise).</p>
+<h4 id="h-86">Установка <a class="h-anchor" href="#h-86" aria-label="Ссылка на раздел">#</a></h4>
+<p>Скачайте приложение на <a href="https://claude.ai">claude.ai</a> для своей платформы:</p>
+<ul>
+<li><strong>macOS</strong>: универсальная сборка (Apple Silicon и Intel)</li>
+<li><strong>Windows</strong>: доступны установщики x64 и ARM64</li>
+</ul>
+<p>Инструкции по установке см. в <a href="https://code.claude.com/docs/en/desktop-quickstart">Desktop Quickstart</a>.</p>
+<h4 id="передача-из-cli">Передача из CLI <a class="h-anchor" href="#передача-из-cli" aria-label="Ссылка на раздел">#</a></h4>
+<p>Перенесите текущую CLI-сессию в настольное приложение:</p>
+<pre><code>/desktop</code></pre>
+<h4 id="h-87">Основные возможности <a class="h-anchor" href="#h-87" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Возможность</th><th>Описание</th></tr></thead><tbody><tr><td><strong>Просмотр diff</strong></td><td>Визуальный обзор по файлам с inline-комментариями; Claude читает комментарии и вносит правки</td></tr><tr><td><strong>Предпросмотр приложения</strong></td><td>Автоматически запускает dev-серверы со встроенным браузером для живой проверки</td></tr><tr><td><strong>Мониторинг PR</strong></td><td>Интеграция с GitHub CLI, автоисправление падений CI и auto-merge после успешных проверок</td></tr><tr><td><strong>Параллельные сессии</strong></td><td>Несколько сессий в боковой панели с автоматической изоляцией Git worktree</td></tr><tr><td><strong>Запланированные задачи</strong></td><td>Повторяющиеся задачи (почасовые, ежедневные, по будням, еженедельные), которые выполняются, пока приложение открыто</td></tr><tr><td><strong>Богатый рендеринг</strong></td><td>Отрисовка кода, markdown и диаграмм с подсветкой синтаксиса</td></tr></tbody></table></div>
+<h4 id="h-88">Конфигурация предпросмотра приложения <a class="h-anchor" href="#h-88" aria-label="Ссылка на раздел">#</a></h4>
+<p>Настройте поведение dev-сервера в <code>.claude/launch.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;command&quot;: &quot;npm run dev&quot;,
+  &quot;port&quot;: 3000,
+  &quot;readyPattern&quot;: &quot;ready on&quot;,
+  &quot;persistCookies&quot;: true
+}</code></pre>
+<h4 id="h-89">Коннекторы <a class="h-anchor" href="#h-89" aria-label="Ссылка на раздел">#</a></h4>
+<p>Подключайте внешние сервисы для более богатого контекста:</p>
+<div class="table-wrap"><table><thead><tr><th>Коннектор</th><th>Возможность</th></tr></thead><tbody><tr><td><strong>GitHub</strong></td><td>Мониторинг PR, отслеживание задач, проверка кода</td></tr><tr><td><strong>Slack</strong></td><td>Уведомления, контекст каналов</td></tr><tr><td><strong>Linear</strong></td><td>Отслеживание задач, управление спринтами</td></tr><tr><td><strong>Notion</strong></td><td>Документация, доступ к базе знаний</td></tr><tr><td><strong>Asana</strong></td><td>Управление задачами, отслеживание проектов</td></tr><tr><td><strong>Calendar</strong></td><td>Понимание расписания, контекст встреч</td></tr></tbody></table></div>
+<blockquote>
+<p><strong>Примечание</strong>: коннекторы недоступны для удалённых (cloud) сессий.</p>
+</blockquote>
+<h4 id="удаленные-и-ssh-сессии">Удалённые и SSH-сессии <a class="h-anchor" href="#удаленные-и-ssh-сессии" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Удалённые сессии</strong>: работают на облачной инфраструктуре Anthropic; продолжают работать даже после закрытия приложения. Доступны с claude.ai/code или из мобильного приложения Claude</li>
+<li><strong>SSH-сессии</strong>: подключение к удалённым машинам по SSH с полным доступом к файловой системе и инструментам. На удалённой машине должен быть установлен Claude Code</li>
+</ul>
+<h4 id="h-90">Режимы разрешений в настольном приложении <a class="h-anchor" href="#h-90" aria-label="Ссылка на раздел">#</a></h4>
+<p>Настольное приложение поддерживает те же 4 режима разрешений, что и CLI:</p>
+<div class="table-wrap"><table><thead><tr><th>Режим</th><th>Поведение</th></tr></thead><tbody><tr><td><strong>Запрашивать разрешение</strong> (по умолчанию)</td><td>Проверять и одобрять каждую правку и команду</td></tr><tr><td><strong>Авто-приём правок</strong></td><td>Изменения файлов принимаются автоматически; команды требуют ручного подтверждения</td></tr><tr><td><strong>Режим планирования</strong></td><td>Сначала просмотреть подход, затем вносить изменения</td></tr><tr><td><strong>Обход разрешений</strong></td><td>Автоматическое выполнение (только в песочнице, под контролем администратора)</td></tr></tbody></table></div>
+<h4 id="h-91">Корпоративные возможности <a class="h-anchor" href="#h-91" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Admin console</strong>: управление доступом к вкладке Code и настройками разрешений для организации</li>
+<li><strong>MDM deployment</strong>: развёртывание через MDM на macOS или MSIX на Windows</li>
+<li><strong>SSO integration</strong>: обязательный единый вход для участников организации</li>
+<li><strong>Managed settings</strong>: централизованное управление конфигурацией команды и доступными моделями</li>
+</ul>
+<hr>
+<p>&lt;a id=&quot;task-list&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-92">Список задач <a class="h-anchor" href="#h-92" aria-label="Ссылка на раздел">#</a></h3>
+<p>Функция Task List обеспечивает постоянное отслеживание задач, которое переживает сжатие контекста (когда история разговора урезается, чтобы поместиться в окно контекста).</p>
+<h4 id="переключение-task-list">Переключение Task List <a class="h-anchor" href="#переключение-task-list" aria-label="Ссылка на раздел">#</a></h4>
+<p>Нажмите <code>Ctrl+T</code>, чтобы включать или отключать список задач во время сессии.</p>
+<h4 id="h-93">Постоянные задачи <a class="h-anchor" href="#h-93" aria-label="Ссылка на раздел">#</a></h4>
+<p>Задачи сохраняются между сжатиями контекста, поэтому долгие рабочие элементы не теряются, когда история разговора сокращается. Это особенно полезно для сложных многосоставных реализаций.</p>
+<h4 id="h-94">Именованные каталоги задач <a class="h-anchor" href="#h-94" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте переменную окружения <code>CLAUDE_CODE_TASK_LIST_ID</code>, чтобы создавать именованные каталоги задач, общие между сессиями:</p>
+<pre><code class="language-bash">export CLAUDE_CODE_TASK_LIST_ID=my-project-sprint-3</code></pre>
+<p>Это позволяет нескольким сессиям использовать один и тот же список задач, что полезно для командных процессов и проектов с несколькими сессиями.</p>
+<hr>
+<p>&lt;a id=&quot;prompt-suggestions&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-95">Подсказки к промптам <a class="h-anchor" href="#h-95" aria-label="Ссылка на раздел">#</a></h3>
+<p>Подсказки к промптам показывают серым цветом примеры команд на основе вашей git-истории и текущего контекста разговора.</p>
+<h4 id="h-96">Как это работает <a class="h-anchor" href="#h-96" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Подсказки появляются серым текстом под строкой ввода</li>
+<li>Нажмите <code>Tab</code>, чтобы принять подсказку</li>
+<li>Нажмите <code>Enter</code>, чтобы принять и сразу отправить</li>
+<li>Подсказки учитывают контекст, используя git-историю и состояние разговора</li>
+</ul>
+<h4 id="h-97">Отключение подсказок к промптам <a class="h-anchor" href="#h-97" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">export CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION=false</code></pre>
+<hr>
+<p>&lt;a id=&quot;git-worktrees&quot;&gt;&lt;/a&gt;
+&lt;a id=&quot;git-worktrees&quot;&gt;&lt;/a&gt;</p>
+<h3 id="изолированные-worktree">Изолированные worktree <a class="h-anchor" href="#изолированные-worktree" aria-label="Ссылка на раздел">#</a></h3>
+<p>Git Worktrees позволяют запускать Claude Code в изолированном worktree, чтобы параллельно работать в разных ветках без stash и переключения.</p>
+<h4 id="запуск-в-worktree">Запуск в worktree <a class="h-anchor" href="#запуск-в-worktree" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Запустить Claude Code в изолированном worktree
+claude --worktree
+# или
+claude -w</code></pre>
+<h4 id="расположение-worktree">Расположение worktree <a class="h-anchor" href="#расположение-worktree" aria-label="Ссылка на раздел">#</a></h4>
+<p>Worktree создаются в:</p>
+<pre><code>&lt;repo&gt;/.claude/worktrees/&lt;name&gt;</code></pre>
+<h4 id="избирательная-выборка-для-monorepo">Избирательная выборка для monorepo <a class="h-anchor" href="#избирательная-выборка-для-monorepo" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте настройку <code>worktree.sparsePaths</code>, чтобы выполнять sparse-checkout в monorepo и уменьшать расход диска и время клонирования:</p>
+<pre><code class="language-json">{
+  &quot;worktree&quot;: {
+    &quot;sparsePaths&quot;: [&quot;packages/my-package&quot;, &quot;shared/&quot;]
+  }
+}</code></pre>
+<h4 id="инструменты-и-хуки-worktree">Инструменты и хуки worktree <a class="h-anchor" href="#инструменты-и-хуки-worktree" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Элемент</th><th>Описание</th></tr></thead><tbody><tr><td><code>ExitWorktree</code></td><td>Инструмент для выхода и очистки текущего worktree</td></tr><tr><td><code>WorktreeCreate</code></td><td>Событие hook, срабатывающее при создании worktree</td></tr><tr><td><code>WorktreeRemove</code></td><td>Событие hook, срабатывающее при удалении worktree</td></tr></tbody></table></div>
+<h4 id="h-98">Автоочистка <a class="h-anchor" href="#h-98" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если в worktree не было изменений, он автоматически очищается при завершении сессии.</p>
+<h4 id="h-99">Сценарии использования <a class="h-anchor" href="#h-99" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Работайте в feature-ветке, не затрагивая <code>main</code></li>
+<li>Запускайте тесты изолированно, не влияя на рабочий каталог</li>
+<li>Пробуйте экспериментальные изменения в одноразовой среде</li>
+<li>Выполняйте sparse-checkout только нужных пакетов в monorepo для более быстрого старта</li>
+</ul>
+<hr>
+<p>&lt;a id=&quot;sandboxing&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-100">Песочница <a class="h-anchor" href="#h-100" aria-label="Ссылка на раздел">#</a></h3>
+<p>Песочница предоставляет изоляцию файловой системы и сети на уровне ОС для Bash-команд, выполняемых Claude Code. Это дополняет правила разрешений и добавляет ещё один уровень защиты.</p>
+<h4 id="h-101">Включение песочницы <a class="h-anchor" href="#h-101" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Slash-команда</strong>:</p>
+<pre><code>/sandbox</code></pre>
+<p><strong>CLI-флаги</strong>:</p>
+<pre><code class="language-bash">claude --sandbox       # Включить песочницу
+claude --no-sandbox    # Отключить песочницу</code></pre>
+<h4 id="h-102">Параметры конфигурации <a class="h-anchor" href="#h-102" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Параметр</th><th>Описание</th></tr></thead><tbody><tr><td><code>sandbox.enabled</code></td><td>Включить или отключить sandboxing</td></tr><tr><td><code>sandbox.failIfUnavailable</code></td><td>Завершать с ошибкой, если sandboxing нельзя активировать</td></tr><tr><td><code>sandbox.filesystem.allowWrite</code></td><td>Пути, которым разрешена запись</td></tr><tr><td><code>sandbox.filesystem.allowRead</code></td><td>Пути, которым разрешено чтение</td></tr><tr><td><code>sandbox.filesystem.denyRead</code></td><td>Пути, которым запрещено чтение</td></tr><tr><td><code>sandbox.enableWeakerNetworkIsolation</code></td><td>Включить более слабую изоляцию сети на macOS</td></tr></tbody></table></div>
+<h4 id="h-103">Пример конфигурации <a class="h-anchor" href="#h-103" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-json">{
+  &quot;sandbox&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;failIfUnavailable&quot;: true,
+    &quot;filesystem&quot;: {
+      &quot;allowWrite&quot;: [&quot;/Users/me/project&quot;],
+      &quot;allowRead&quot;: [&quot;/Users/me/project&quot;, &quot;/usr/local/lib&quot;],
+      &quot;denyRead&quot;: [&quot;/Users/me/.ssh&quot;, &quot;/Users/me/.aws&quot;]
+    },
+    &quot;enableWeakerNetworkIsolation&quot;: true
+  }
+}</code></pre>
+<h4 id="h-104">Как это работает <a class="h-anchor" href="#h-104" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Bash-команды выполняются в изолированной среде с ограниченным доступом к файловой системе</li>
+<li>Доступ к сети можно изолировать, чтобы предотвратить нежелательные внешние подключения</li>
+<li>Работает вместе с правилами разрешений по принципу многоуровневой защиты</li>
+<li>На macOS для сетевых ограничений используйте <code>sandbox.enableWeakerNetworkIsolation</code> (полная изоляция сети на macOS недоступна)</li>
+</ul>
+<h4 id="h-105">Сценарии использования <a class="h-anchor" href="#h-105" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Безопасный запуск недоверенного или сгенерированного кода</li>
+<li>Предотвращение случайных изменений файлов вне проекта</li>
+<li>Ограничение доступа к сети во время автоматизированных задач</li>
+</ul>
+<hr>
+<p>&lt;a id=&quot;managed-settings-enterprise&quot;&gt;&lt;/a&gt;</p>
+<h3 id="управляемые-настройки-enterprise">Управляемые настройки (Enterprise) <a class="h-anchor" href="#управляемые-настройки-enterprise" aria-label="Ссылка на раздел">#</a></h3>
+<p>Управляемые настройки позволяют корпоративным администраторам разворачивать конфигурацию Claude Code по всей организации с помощью нативных средств управления платформы.</p>
+<h4 id="h-106">Способы развёртывания <a class="h-anchor" href="#h-106" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Платформа</th><th>Способ</th><th>С версии</th></tr></thead><tbody><tr><td>macOS</td><td>Управляемые plist-файлы (MDM)</td><td>v2.1.51+</td></tr><tr><td>Windows</td><td>Реестр Windows</td><td>v2.1.51+</td></tr><tr><td>Кроссплатформенно</td><td>Управляемые файлы конфигурации</td><td>v2.1.51+</td></tr><tr><td>Кроссплатформенно</td><td>Управляемые drop-in-файлы (<code>managed-settings.d/</code>)</td><td>v2.1.83+</td></tr></tbody></table></div>
+<h4 id="управляемые-drop-in-файлы">Управляемые drop-in-файлы <a class="h-anchor" href="#управляемые-drop-in-файлы" aria-label="Ссылка на раздел">#</a></h4>
+<p>Начиная с v2.1.83 администраторы могут размещать несколько файлов managed settings в каталоге <code>managed-settings.d/</code>. Файлы объединяются в алфавитном порядке, что позволяет строить модульную конфигурацию для разных команд:</p>
+<pre><code>~/.claude/managed-settings.d/
+  00-org-defaults.json
+  10-team-policies.json
+  20-project-overrides.json</code></pre>
+<h4 id="h-107">Доступные управляемые настройки <a class="h-anchor" href="#h-107" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Параметр</th><th>Описание</th></tr></thead><tbody><tr><td><code>disableBypassPermissionsMode</code></td><td>Запретить пользователям включать bypass permissions</td></tr><tr><td><code>availableModels</code></td><td>Ограничить набор моделей, которые могут выбирать пользователи</td></tr><tr><td><code>allowedChannelPlugins</code></td><td>Управлять разрешёнными channel plugins</td></tr><tr><td><code>autoMode.environment</code></td><td>Настроить доверенную инфраструктуру для auto mode</td></tr><tr><td>Пользовательские политики</td><td>Политики разрешений и инструментов, специфичные для организации</td></tr></tbody></table></div>
+<h4 id="пример-macos-plist">Пример: macOS Plist <a class="h-anchor" href="#пример-macos-plist" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;!DOCTYPE plist PUBLIC &quot;-//Apple//DTD PLIST 1.0//EN&quot;
+  &quot;http://www.apple.com/DTDs/PropertyList-1.0.dtd&quot;&gt;
+&lt;plist version=&quot;1.0&quot;&gt;
+&lt;dict&gt;
+  &lt;key&gt;disableBypassPermissionsMode&lt;/key&gt;
+  &lt;true/&gt;
+  &lt;key&gt;availableModels&lt;/key&gt;
+  &lt;array&gt;
+    &lt;string&gt;claude-sonnet-4-6&lt;/string&gt;
+    &lt;string&gt;claude-haiku-4-5&lt;/string&gt;
+  &lt;/array&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;</code></pre>
+<hr>
+<p>&lt;a id=&quot;configuration-and-settings&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-108">Конфигурация и настройки <a class="h-anchor" href="#h-108" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-109">Расположение файлов конфигурации <a class="h-anchor" href="#h-109" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li><strong>Глобальная конфигурация</strong>: <code>~/.claude/config.json</code></li>
+<li><strong>Конфигурация проекта</strong>: <code>./.claude/config.json</code></li>
+<li><strong>Пользовательская конфигурация</strong>: <code>~/.config/claude-code/settings.json</code></li>
+</ol>
+<h4 id="h-110">Полный пример конфигурации <a class="h-anchor" href="#h-110" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Базовая конфигурация продвинутых возможностей:</strong></p>
+<pre><code class="language-json">{
+  &quot;permissions&quot;: {
+    &quot;mode&quot;: &quot;default&quot;
+  },
+  &quot;hooks&quot;: {
+    &quot;PreToolUse:Edit&quot;: &quot;eslint --fix ${file_path}&quot;,
+    &quot;PostToolUse:Write&quot;: &quot;~/.claude/hooks/security-scan.sh&quot;
+  },
+  &quot;mcp&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;servers&quot;: {
+      &quot;github&quot;: {
+        &quot;command&quot;: &quot;npx&quot;,
+        &quot;args&quot;: [&quot;-y&quot;, &quot;@modelcontextprotocol/server-github&quot;]
+      }
+    }
+  }
+}</code></pre>
+<p><strong>Расширенный пример конфигурации:</strong></p>
+<pre><code class="language-json">{
+  &quot;permissions&quot;: {
+    &quot;mode&quot;: &quot;default&quot;,
+    &quot;allowedTools&quot;: [&quot;Bash(git log:*)&quot;, &quot;Read&quot;],
+    &quot;disallowedTools&quot;: [&quot;Bash(rm -rf:*)&quot;]
+  },
+
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [{ &quot;matcher&quot;: &quot;Edit&quot;, &quot;hooks&quot;: [&quot;eslint --fix ${file_path}&quot;] }],
+    &quot;PostToolUse&quot;: [{ &quot;matcher&quot;: &quot;Write&quot;, &quot;hooks&quot;: [&quot;~/.claude/hooks/security-scan.sh&quot;] }],
+    &quot;Stop&quot;: [{ &quot;hooks&quot;: [&quot;~/.claude/hooks/notify.sh&quot;] }]
+  },
+
+  &quot;mcp&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;servers&quot;: {
+      &quot;github&quot;: {
+        &quot;command&quot;: &quot;npx&quot;,
+        &quot;args&quot;: [&quot;-y&quot;, &quot;@modelcontextprotocol/server-github&quot;],
+        &quot;env&quot;: {
+          &quot;GITHUB_TOKEN&quot;: &quot;${GITHUB_TOKEN}&quot;
+        }
+      }
+    }
+  }
+}</code></pre>
+<h4 id="h-111">Переменные окружения <a class="h-anchor" href="#h-111" aria-label="Ссылка на раздел">#</a></h4>
+<p>Переопределяйте конфигурацию через переменные окружения:</p>
+<pre><code class="language-bash"># Выбор модели
+export ANTHROPIC_MODEL=claude-opus-4-6
+export ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-4-6
+export ANTHROPIC_DEFAULT_SONNET_MODEL=claude-sonnet-4-6
+export ANTHROPIC_DEFAULT_HAIKU_MODEL=claude-haiku-4-5
+
+# Конфигурация API
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# Конфигурация thinking
+export MAX_THINKING_TOKENS=16000
+export CLAUDE_CODE_EFFORT_LEVEL=high
+
+# Переключатели функций
+export CLAUDE_CODE_DISABLE_AUTO_MEMORY=true
+export CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=true
+export CLAUDE_CODE_DISABLE_CRON=1
+export CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS=true
+export CLAUDE_CODE_DISABLE_TERMINAL_TITLE=true
+export CLAUDE_CODE_DISABLE_1M_CONTEXT=true
+export CLAUDE_CODE_DISABLE_NONSTREAMING_FALLBACK=true
+export CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION=false
+export CLAUDE_CODE_ENABLE_TASKS=true
+export CLAUDE_CODE_SIMPLE=true              # Set by --bare flag
+
+# Конфигурация MCP
+export MAX_MCP_OUTPUT_TOKENS=50000
+export ENABLE_TOOL_SEARCH=true
+
+# Управление задачами
+export CLAUDE_CODE_TASK_LIST_ID=my-project-tasks
+
+# Команды агентов (экспериментально)
+export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=true
+
+# Конфигурация subagent и плагинов
+export CLAUDE_CODE_SUBAGENT_MODEL=sonnet
+export CLAUDE_CODE_PLUGIN_SEED_DIR=./my-plugins
+export CLAUDE_CODE_NEW_INIT=true
+
+# Подпроцессы и потоковая передача
+export CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=&quot;SECRET_KEY,DB_PASSWORD&quot;
+export CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=80
+export CLAUDE_STREAM_IDLE_TIMEOUT_MS=30000
+export ANTHROPIC_CUSTOM_MODEL_OPTION=my-custom-model
+export SLASH_COMMAND_TOOL_CHAR_BUDGET=50000</code></pre>
+<h4 id="h-112">Команды управления конфигурацией <a class="h-anchor" href="#h-112" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>User: /config
+[Opens interactive configuration menu]</code></pre>
+<p>Команда <code>/config</code> открывает интерактивное меню, где можно переключать такие настройки, как:</p>
+<ul>
+<li>Extended thinking вкл./выкл.</li>
+<li>Подробный вывод</li>
+<li>Режим разрешений</li>
+<li>Выбор модели</li>
+</ul>
+<h4 id="h-113">Конфигурация на уровне проекта <a class="h-anchor" href="#h-113" aria-label="Ссылка на раздел">#</a></h4>
+<p>Создайте <code>.claude/config.json</code> в своём проекте:</p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [{ &quot;matcher&quot;: &quot;Bash&quot;, &quot;hooks&quot;: [&quot;npm test &amp;&amp; npm run lint&quot;] }]
+  },
+  &quot;permissions&quot;: {
+    &quot;mode&quot;: &quot;default&quot;
+  },
+  &quot;mcp&quot;: {
+    &quot;servers&quot;: {
+      &quot;project-db&quot;: {
+        &quot;command&quot;: &quot;mcp-postgres&quot;,
+        &quot;env&quot;: {
+          &quot;DATABASE_URL&quot;: &quot;${PROJECT_DB_URL}&quot;
+        }
+      }
+    }
+  }
+}</code></pre>
+<hr>
+<p>&lt;a id=&quot;best-practices&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-114">Лучшие практики <a class="h-anchor" href="#h-114" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-115">Режим планирования <a class="h-anchor" href="#h-115" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>✅ Используйте для сложных многошаговых задач</li>
+<li>✅ Просматривайте планы перед одобрением</li>
+<li>✅ При необходимости изменяйте планы</li>
+<li>❌ Не используйте для простых задач</li>
+</ul>
+<h4 id="h-116">Расширенное мышление <a class="h-anchor" href="#h-116" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>✅ Используйте для архитектурных решений</li>
+<li>✅ Используйте для сложных задач поиска решения</li>
+<li>✅ Просматривайте ход рассуждений</li>
+<li>❌ Не используйте для простых запросов</li>
+</ul>
+<h4 id="h-117">Фоновые задачи <a class="h-anchor" href="#h-117" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>✅ Используйте для долгих операций</li>
+<li>✅ Следите за прогрессом задач</li>
+<li>✅ Корректно обрабатывайте сбои задач</li>
+<li>❌ Не запускайте слишком много параллельных задач</li>
+</ul>
+<h4 id="h-118">Режимы разрешений <a class="h-anchor" href="#h-118" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>✅ Используйте <code>plan</code> для code review (только чтение)</li>
+<li>✅ Используйте <code>default</code> для интерактивной разработки</li>
+<li>✅ Используйте <code>acceptEdits</code> для автоматизированных процессов</li>
+<li>✅ Используйте <code>auto</code> для автономной работы с защитными ограничителями</li>
+<li>❌ Не используйте <code>bypassPermissions</code>, если это не абсолютно необходимо</li>
+</ul>
+<h4 id="h-119">Сессии <a class="h-anchor" href="#h-119" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>✅ Используйте отдельные сессии для разных задач</li>
+<li>✅ Сохраняйте важные состояния сессий</li>
+<li>✅ Очищайте старые сессии</li>
+<li>❌ Не смешивайте несвязанные задачи в одной сессии</li>
+</ul>
+<hr>
+<p>&lt;a id=&quot;additional-resources&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h-120">Связанные концепции <a class="h-anchor" href="#h-120" aria-label="Ссылка на раздел">#</a></h3>
+<p>Подробнее о Claude Code и связанных возможностях:</p>
+<ul>
+<li><a href="https://code.claude.com/docs/en/interactive-mode">Официальная документация по интерактивному режиму</a></li>
+<li><a href="https://code.claude.com/docs/en/headless">Официальная документация по headless-режиму</a></li>
+<li><a href="https://code.claude.com/docs/en/cli-reference">Справочник CLI</a></li>
+<li><a href="../08-checkpoints/">Гайд по Checkpoints</a> - Управление сессиями и откат</li>
+<li><a href="../01-slash-commands/">Slash Commands</a> - Справочник команд</li>
+<li><a href="../02-memory/">Гайд по Memory</a> - Постоянный контекст</li>
+<li><a href="../03-skills/">Гайд по Skills</a> - Автономные возможности</li>
+<li><a href="../04-subagents/">Гайд по Subagents</a> - Делегированное выполнение задач</li>
+<li><a href="../05-mcp/">Гайд по MCP</a> - Доступ к внешним данным</li>
+<li><a href="../06-hooks/">Гайд по Hooks</a> - Автоматизация, основанная на событиях</li>
+<li><a href="../07-plugins/">Гайд по Plugins</a> - Встроенные расширения</li>
+<li><a href="https://code.claude.com/docs/en/scheduled-tasks">Официальная документация по запланированным задачам</a></li>
+<li><a href="https://code.claude.com/docs/en/chrome">Официальная документация по интеграции с Chrome</a></li>
+<li><a href="https://code.claude.com/docs/en/remote-control">Официальная документация по Remote Control</a></li>
+<li><a href="https://code.claude.com/docs/en/keybindings">Официальная документация по сочетаниям клавиш</a></li>
+<li><a href="https://code.claude.com/docs/en/desktop">Официальная документация по Desktop App</a></li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

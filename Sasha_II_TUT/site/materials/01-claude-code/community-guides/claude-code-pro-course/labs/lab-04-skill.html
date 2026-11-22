@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Лаба 4. Свой skill</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/index.html">claude-code-pro-course</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/labs/index.html">labs</a></nav>
+<h1 id="лаба-4-свой-skill">Лаба 4. Свой skill <a class="h-anchor" href="#лаба-4-свой-skill" aria-label="Ссылка на раздел">#</a></h1>
+<p><strong>Цель:</strong> превратить ваш самый частый длинный промпт в skill, который Claude вызывает сам.</p>
+<h3 id="h">Шаги <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li>Вспомните промпт, который вы писали 3+ раз (ревью, миграция, описание PR, отчёт…).</li>
+<li>Создайте <code>.claude/skills/&lt;имя&gt;/SKILL.md</code>:</li>
+</ol>
+<pre><code class="language-markdown">   ---
+   name: &lt;имя&gt;
+   description: &lt;Что делает&gt;. Используй, когда &lt;в каких ситуациях / на какие слова&gt;.
+   allowed-tools: Read, Grep, Glob
+   ---
+   # Шаги
+   1. ...
+   # Формат результата
+   ...</code></pre>
+<ol>
+<li>Вызовите вручную: <code>/&lt;имя&gt;</code>.</li>
+<li>Проверьте авто-вызов: сформулируйте задачу своими словами, не называя skill. Если не сработал — улучшите <code>description</code> (добавьте слова, которыми вы обычно формулируете такую задачу).</li>
+<li>Добавьте аргументы (<code>$ARGUMENTS</code>) и динамический контекст (`<code> !</code>git status --short<code> </code>`).</li>
+<li>Вынесите шаблон результата в отдельный файл рядом со SKILL.md и сошлитесь на него.</li>
+</ol>
+<h3 id="h-2">✅ Готово, если <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>[ ] Skill работает через <code>/имя</code> и через обычную фразу</li>
+<li>[ ] Принимает аргумент</li>
+<li>[ ] Результат стабилен при 3 запусках подряд</li>
+<li>[ ] Skill закоммичен, коллега может им воспользоваться</li>
+</ul>
+<h3 id="идеи-для-skills">Идеи для skills <a class="h-anchor" href="#идеи-для-skills" aria-label="Ссылка на раздел">#</a></h3>
+<p><code>pr-description</code>, <code>release-notes</code>, <code>migrate-component</code>, <code>add-endpoint</code>, <code>explain-for-newbie</code>, <code>postmortem</code>, <code>db-migration</code>.
+Примеры — в <a href="../starter-kit/.claude/skills/"><code>starter-kit/.claude/skills/</code></a>.</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

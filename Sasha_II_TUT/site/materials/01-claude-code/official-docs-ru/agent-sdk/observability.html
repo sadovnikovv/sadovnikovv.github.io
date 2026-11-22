@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Наблюдаемость с OpenTelemetry</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/agent-sdk/index.html">agent-sdk</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="наблюдаемость-с-opentelemetry">Наблюдаемость с OpenTelemetry <a class="h-anchor" href="#наблюдаемость-с-opentelemetry" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Экспортируйте трассировки, метрики и события из Agent SDK в ваш бэкенд наблюдаемости с помощью OpenTelemetry.</p>
+</blockquote>
+<p>Когда вы запускаете агентов в production, вам нужна видимость того, что они делали:</p>
+<ul>
+<li>какие инструменты они вызывали</li>
+<li>сколько времени заняла каждый запрос к модели</li>
+<li>сколько токенов было потрачено</li>
+<li>где произошли сбои</li>
+</ul>
+<p>Agent SDK может экспортировать эти данные как трассировки OpenTelemetry, метрики и события логов в любой бэкенд, который принимает OpenTelemetry Protocol (OTLP), будь то размещённая платформа наблюдаемости или самостоятельно размещённый сборщик.</p>
+<p>Это руководство объясняет, как SDK излучает телеметрию, как настроить экспорт и как помечать и фильтровать данные после их поступления на ваш бэкенд. Чтобы прочитать использование токенов и стоимость непосредственно из потока ответов SDK вместо экспорта на бэкенд, см. <a href="https://code.claude.com/docs/ru/agent-sdk/cost-tracking.md">Отслеживание затрат и использования</a>.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Для Claude API или Managed Agents см. <a href="https://platform.claude.com/docs/en/manage-claude/opentelemetry">OpenTelemetry для Claude API</a>.</p>
+</blockquote>
+<h3 id="как-телеметрия-поступает-из-sdk">Как телеметрия поступает из SDK <a class="h-anchor" href="#как-телеметрия-поступает-из-sdk" aria-label="Ссылка на раздел">#</a></h3>
+<p>Agent SDK запускает Claude Code CLI как дочерний процесс и взаимодействует с ним через локальный канал. CLI имеет встроенную инструментацию OpenTelemetry: он записывает spans вокруг каждого запроса к модели и выполнения инструмента, излучает метрики для счётчиков токенов и стоимости и излучает структурированные события логов для подсказок и результатов инструментов. SDK не производит телеметрию самостоятельно. Вместо этого он передаёт конфигурацию в процесс CLI, и CLI экспортирует непосредственно в ваш сборщик.</p>
+<p>Конфигурация передаётся как переменные окружения. По умолчанию дочерний процесс наследует окружение вашего приложения, поэтому вы можете настроить телеметрию в одном из двух мест:</p>
+<ul>
+<li><strong>Окружение процесса:</strong> установите переменные в вашей оболочке, контейнере или оркестраторе перед запуском вашего приложения. Каждый вызов <code>query()</code> автоматически их подхватывает без изменения кода. Это рекомендуемый подход для production развёртываний.</li>
+<li><strong>Параметры для каждого вызова:</strong> установите переменные в <code>ClaudeAgentOptions.env</code> (Python) или <code>options.env</code> (TypeScript). Используйте это, когда разные агенты в одном процессе нуждаются в разных параметрах телеметрии. В Python <code>env</code> объединяется поверх унаследованного окружения. В TypeScript <code>env</code> полностью заменяет унаследованное окружение, поэтому включите <code>...process.env</code> в объект, который вы передаёте.</li>
+</ul>
+<p>CLI экспортирует три независимых сигнала OpenTelemetry. Каждый имеет свой переключатель включения и свой экспортер, поэтому вы можете включить только те, которые вам нужны.</p>
+<p>| Сигнал | Что он содержит | Включить с помощью |
+| - | - | - |
+| Metrics | Счётчики для токенов, стоимости, сессий, строк кода и решений по инструментам | <code>OTEL_METRICS_EXPORTER</code> |
+| Log events | Структурированные записи для каждой подсказки, запроса API, ошибки API и результата инструмента | <code>OTEL_LOGS_EXPORTER</code> |
+| Traces | Spans для каждого взаимодействия, запроса к модели, вызова инструмента и hook (бета) | <code>OTEL_TRACES_EXPORTER</code> плюс <code>CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1</code> |</p>
+<p>Для полного списка имён метрик, имён событий и атрибутов см. справочник Claude Code <a href="https://code.claude.com/docs/ru/monitoring-usage.md">Monitoring</a>. Agent SDK излучает те же данные, потому что запускает тот же CLI. Имена spans перечислены в разделе <a href="#read-agent-traces">Чтение трассировок агента</a> ниже.</p>
+<h3 id="h">Включение экспорта телеметрии <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Телеметрия отключена до тех пор, пока вы не установите <code>CLAUDE_CODE_ENABLE_TELEMETRY=1</code> и не выберете хотя бы один экспортер. Наиболее распространённая конфигурация отправляет все три сигнала через OTLP HTTP на сборщик.</p>
+<p>Следующий пример устанавливает переменные в словарь и передаёт их через <code>options.env</code>. Агент выполняет одну задачу, и CLI экспортирует spans, метрики и события на сборщик по адресу <code>collector.example.com</code> пока цикл потребляет поток ответов:</p>
+<p>```python Python theme={null}
+import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions</p>
+<p>OTEL_ENV = {
+    &quot;CLAUDE_CODE_ENABLE_TELEMETRY&quot;: &quot;1&quot;,
+    # Требуется для traces, которые находятся в бета-версии. Metrics и log events этого не требуют.
+    &quot;CLAUDE_CODE_ENHANCED_TELEMETRY_BETA&quot;: &quot;1&quot;,
+    # Выберите экспортер для каждого сигнала. Используйте otlp для SDK; см. примечание ниже.
+    &quot;OTEL_TRACES_EXPORTER&quot;: &quot;otlp&quot;,
+    &quot;OTEL_METRICS_EXPORTER&quot;: &quot;otlp&quot;,
+    &quot;OTEL_LOGS_EXPORTER&quot;: &quot;otlp&quot;,
+    # Стандартная конфигурация транспорта OTLP.
+    &quot;OTEL_EXPORTER_OTLP_PROTOCOL&quot;: &quot;http/protobuf&quot;,
+    &quot;OTEL_EXPORTER_OTLP_ENDPOINT&quot;: &quot;http://collector.example.com:4318&quot;,
+    &quot;OTEL_EXPORTER_OTLP_HEADERS&quot;: &quot;Authorization=Bearer your-token&quot;,
+}</p>
+<p>async def main():
+    options = ClaudeAgentOptions(env=OTEL_ENV)
+    async for message in query(
+        prompt=&quot;List the files in this directory&quot;, options=options
+    ):
+        print(message)</p>
+<p>asyncio.run(main())</p>
+<pre><code></code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>const otelEnv = {
+  CLAUDE_CODE_ENABLE_TELEMETRY: &quot;1&quot;,
+  // Требуется для traces, которые находятся в бета-версии. Metrics и log events этого не требуют.
+  CLAUDE_CODE_ENHANCED_TELEMETRY_BETA: &quot;1&quot;,
+  // Выберите экспортер для каждого сигнала. Используйте otlp для SDK; см. примечание ниже.
+  OTEL_TRACES_EXPORTER: &quot;otlp&quot;,
+  OTEL_METRICS_EXPORTER: &quot;otlp&quot;,
+  OTEL_LOGS_EXPORTER: &quot;otlp&quot;,
+  // Стандартная конфигурация транспорта OTLP.
+  OTEL_EXPORTER_OTLP_PROTOCOL: &quot;http/protobuf&quot;,
+  OTEL_EXPORTER_OTLP_ENDPOINT: &quot;http://collector.example.com:4318&quot;,
+  OTEL_EXPORTER_OTLP_HEADERS: &quot;Authorization=Bearer your-token&quot;,
+};</p>
+<p>for await (const message of query({
+  prompt: &quot;List the files in this directory&quot;,
+  // env заменяет унаследованное окружение в TypeScript, поэтому сначала распределите
+  // process.env, чтобы сохранить PATH, ANTHROPIC_API_KEY и другие переменные.
+  options: { env: { ...process.env, ...otelEnv } },
+})) {
+  console.log(message);
+}</p>
+<pre><code>
+Поскольку дочерний процесс по умолчанию наследует окружение вашего приложения, вы можете достичь того же результата, экспортировав эти переменные в Dockerfile, манифесте Kubernetes или профиле оболочки и полностью опустив `options.env`.
+
+Чтобы подтвердить, что экспорт работает, проверьте журналы вашего сборщика на наличие входящих spans, метрик и log events после завершения задачи. CLI молча завершается при ошибках экспорта по умолчанию: если конечная точка недоступна или отклоняет данные, агент всё ещё работает нормально и CLI отбрасывает телеметрию без отображения ошибки в вашем приложении. Чтобы отобразить ошибки экспортера, установите [`CLAUDE_CODE_OTEL_DIAG_STDERR=1`](https://code.claude.com/docs/ru/env-vars) вместе с переменными экспортера и прочитайте диагностику через обратный вызов `stderr` SDK (Python) или опцию `stderr` (TypeScript). Требуется Claude Code v2.1.179 или позже.
+
+&gt; [!NOTE]
+&gt;
+&gt; Экспортер `console` записывает телеметрию в стандартный вывод, который SDK использует
+&gt; как свой канал сообщений. Не устанавливайте `console` как значение экспортера при запуске
+&gt; через SDK. Чтобы проверить телеметрию локально, направьте
+&gt; `OTEL_EXPORTER_OTLP_ENDPOINT` на локальный сборщик OpenTelemetry вместо этого.
+
+### Сброс телеметрии из короткоживущих вызовов
+
+CLI группирует телеметрию и экспортирует по интервалу. При чистом выходе процесса он пытается сбросить ожидающие данные, но сброс ограничен коротким таймаутом, поэтому spans всё ещё могут быть потеряны, если сборщик медленно реагирует. Если ваш процесс убит до того, как CLI завершит работу, всё, что остаётся в буфере пакета, теряется. Снижение интервалов экспорта сокращает оба окна.
+
+По умолчанию метрики экспортируются каждые 60 секунд, а traces и logs экспортируются каждые 5 секунд. Следующий пример сокращает все три интервала, чтобы данные достигли сборщика пока короткая задача всё ещё выполняется:
+</code></pre>
+<p>OTEL_ENV = {
+    # ... конфигурация экспортера из предыдущего примера ...
+    &quot;OTEL_METRIC_EXPORT_INTERVAL&quot;: &quot;1000&quot;,
+    &quot;OTEL_LOGS_EXPORT_INTERVAL&quot;: &quot;1000&quot;,
+    &quot;OTEL_TRACES_EXPORT_INTERVAL&quot;: &quot;1000&quot;,
+}</p>
+<pre><code></code></pre>
+<p>const otelEnv = {
+  // ... конфигурация экспортера из предыдущего примера ...
+  OTEL_METRIC_EXPORT_INTERVAL: &quot;1000&quot;,
+  OTEL_LOGS_EXPORT_INTERVAL: &quot;1000&quot;,
+  OTEL_TRACES_EXPORT_INTERVAL: &quot;1000&quot;,
+};</p>
+<pre><code>
+## Чтение трассировок агента
+
+Traces дают вам наиболее детальный вид запуска агента. С установленным `CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1`, каждый шаг цикла агента становится span, который вы можете проверить в вашем бэкенде трассировки:
+
+* **`claude_code.interaction`:** оборачивает один оборот цикла агента, от получения подсказки до создания ответа.
+* **`claude_code.llm_request`:** оборачивает каждый вызов API Claude с именем модели, задержкой и подсчётом токенов как атрибутами.
+* **`claude_code.tool`:** оборачивает каждый вызов инструмента с дочерними spans для ожидания разрешения (`claude_code.tool.blocked_on_user`) и самого выполнения (`claude_code.tool.execution`).
+* **`claude_code.hook`:** оборачивает каждое выполнение [hook](https://code.claude.com/docs/ru/agent-sdk/hooks.md). Требует детальную бета-трассировку (`ENABLE_BETA_TRACING_DETAILED=1` и `BETA_TRACING_ENDPOINT`), пара, которая также [изменяет, куда идут ваши логи и трассировки](https://code.claude.com/docs/ru/env-vars.md#variables).
+
+Spans `llm_request`, `tool` и `hook` являются дочерними элементами охватывающего span `claude_code.interaction`. Когда агент порождает подагента через инструмент Agent, spans `llm_request` и `tool` подагента вложены под span `claude_code.tool` родительского агента, поэтому полная цепочка делегирования появляется как одна трассировка.
+
+Spans по умолчанию несут атрибут `session.id`. Когда вы делаете несколько вызовов `query()` для одной и той же [сессии](https://code.claude.com/docs/ru/agent-sdk/sessions.md), фильтруйте по `session.id` в вашем бэкенде, чтобы увидеть их как одну временную шкалу. Claude Code опускает атрибут, если вы установите `OTEL_METRICS_INCLUDE_SESSION_ID` на ложное значение.
+
+&gt; [!NOTE]
+&gt;
+&gt; Трассировка находится в бета-версии. Имена spans и атрибуты могут измениться между выпусками. См.
+&gt; [Traces (beta)](https://code.claude.com/docs/ru/monitoring-usage.md#traces-beta) в справочнике Monitoring
+&gt; для переменных конфигурации экспортера трассировки.
+
+## Связывание трассировок с вашим приложением
+
+SDK автоматически распространяет контекст трассировки W3C в подпроцесс CLI. Когда вы вызываете `query()` пока в вашем приложении активен span OpenTelemetry, SDK внедряет `TRACEPARENT` и `TRACESTATE` в окружение дочернего процесса, и CLI читает их, так что его span `claude_code.interaction` становится дочерним элементом вашего span. Запуск агента затем появляется внутри трассировки вашего приложения вместо отключённого корня.
+
+Записи журнала событий OTLP, излучаемые во время запуска, несут тот же контекст трассировки: с установленным `TRACEPARENT`, `trace_id` и `span_id` каждой записи совпадают с трассировкой вашего приложения, поэтому вы можете связать [события](https://code.claude.com/docs/ru/monitoring-usage.md#events) с spans в вашем бэкенде. До версии 2.1.212 записи событий, излучаемые вне активного span, не содержали `trace_id` или `span_id`.
+
+Когда распространение контекста трассировки включено, CLI также пересылает `TRACEPARENT` каждой команде Bash и PowerShell, которую он запускает. Если команда, запущенная через инструмент Bash, излучает свои собственные spans OpenTelemetry, эти spans вложены под span `claude_code.tool.execution`, который оборачивает команду.
+
+Автоматическое внедрение пропускается, когда вы явно устанавливаете `TRACEPARENT` в `options.env`, поэтому вы можете закрепить определённый контекст родителя, если необходимо. Интерактивные сессии CLI полностью игнорируют входящий `TRACEPARENT`; только запуски Agent SDK и `claude -p` его соблюдают. См. [Traces (beta)](https://code.claude.com/docs/ru/monitoring-usage.md#traces-beta) в справочнике Monitoring для полного справочника span и атрибутов.
+
+## Пометка телеметрии от вашего агента
+
+По умолчанию CLI сообщает `service.name` как `claude-code`. Если вы запускаете несколько агентов или запускаете SDK наряду с другими сервисами, которые экспортируют на один и тот же сборщик, переопределите имя сервиса и добавьте атрибуты ресурсов, чтобы вы могли фильтровать по агенту в вашем бэкенде.
+
+Следующий пример переименовывает сервис и прикрепляет метаданные развёртывания. Эти значения применяются как атрибуты ресурсов OpenTelemetry на каждом span, метрике и событии, которое излучает агент:
+</code></pre>
+<p>options = ClaudeAgentOptions(
+    env={
+        # ... конфигурация экспортера из примера Enable telemetry export ...
+        &quot;OTEL_SERVICE_NAME&quot;: &quot;support-triage-agent&quot;,
+        &quot;OTEL_RESOURCE_ATTRIBUTES&quot;: &quot;service.version=1.4.0,deployment.environment=production&quot;,
+    },
+)</p>
+<pre><code></code></pre>
+<p>const options = {
+  env: {
+    ...process.env,
+    // ... конфигурация экспортера из примера Enable telemetry export ...
+    OTEL_SERVICE_NAME: &quot;support-triage-agent&quot;,
+    OTEL_RESOURCE_ATTRIBUTES:
+      &quot;service.version=1.4.0,deployment.environment=production&quot;,
+  },
+};</p>
+<pre><code>
+## Атрибуция действий вашим конечным пользователям
+
+CLI прикрепляет [атрибуты идентичности](https://code.claude.com/docs/ru/monitoring-usage.md#standard-attributes) к каждому событию на основе учётных данных, которые он использует для вызова Anthropic. Когда вы создаёте приложение, которое обслуживает многих конечных пользователей из одного развёртывания, эти атрибуты идентифицируют учётные данные вашего сервиса, а не конечного пользователя, от имени которого действовал агент.
+
+Чтобы сделать вызовы инструментов и активность MCP атрибутируемыми конечным пользователям вашего приложения, внедрите идентичность конечного пользователя как атрибуты ресурсов при каждом вызове `query()`. Процентно-кодируйте значения перед интерполяцией, так как `OTEL_RESOURCE_ATTRIBUTES` [зарезервирует запятые, пробелы и знаки равенства](https://code.claude.com/docs/ru/monitoring-usage.md#multi-team-organization-support). Следующий пример прикрепляет запрашивающего пользователя и тенанта к каждому span и событию из одного запроса. Он предполагает наличие объекта `request` из вашего веб-фреймворка, содержащего идентификаторы пользователя и тенанта:
+</code></pre>
+<p>from urllib.parse import quote</p>
+<p>options = ClaudeAgentOptions(
+    env={
+        # ... конфигурация экспортера из примера Enable telemetry export ...
+        # request — это входящий объект запроса из вашего веб-фреймворка.
+        &quot;OTEL_RESOURCE_ATTRIBUTES&quot;: f&quot;enduser.id={quote(request.user_id)},tenant.id={quote(request.tenant_id)}&quot;,
+    },
+)</p>
+<pre><code></code></pre>
+<p>const options = {
+  env: {
+    ...process.env,
+    // ... конфигурация экспортера из примера Enable telemetry export ...
+    // request — это входящий объект запроса из вашего веб-фреймворка.
+    OTEL_RESOURCE_ATTRIBUTES: <code>enduser.id=${encodeURIComponent(request.userId)},tenant.id=${encodeURIComponent(request.tenantId)}</code>,
+  },
+};</p>
+<pre><code>
+После того как вы прикрепите идентичность конечного пользователя, следующие события становятся журналом аудита для каждого пользователя, который вы можете переслать на платформу Security Information and Event Management (SIEM):
+
+* `tool_decision` и `tool_result`: каждый вызов инструмента, был ли он разрешён или отклонён, и его результат
+* `mcp_server_connection`: подключения к MCP-серверам и сбои подключения
+* `permission_mode_changed`: изменения режима разрешений
+
+Эти события экспортируются как записи журнала с префиксом `claude_code.` в имени, например `claude_code.tool_decision`. См. [Аудит событий безопасности](https://code.claude.com/docs/ru/monitoring-usage.md#audit-security-events) в справочнике Monitoring для полного списка событий, связанных с безопасностью, и атрибутов, которые несёт каждое из них.
+
+## Контроль конфиденциальных данных в экспортах
+
+Телеметрия по умолчанию структурирована. Длительности, имена моделей и имена инструментов записываются на каждом span; подсчёты токенов записываются, когда базовый запрос API возвращает данные об использовании, поэтому spans для неудачных или прерванных запросов могут их опускать. Содержимое, которое читает и записывает ваш агент, по умолчанию не записывается. Эти переменные opt-in добавляют содержимое в экспортируемые данные:
+
+| Переменная | Добавляет |
+| - | - |
+| `OTEL_LOG_USER_PROMPTS=1` | Текст подсказки на событиях `claude_code.user_prompt` и на span `claude_code.interaction` |
+| `OTEL_LOG_TOOL_DETAILS=1` | Аргументы входных данных инструмента, такие как пути файлов, команды оболочки и шаблоны поиска, на событиях `claude_code.tool_result`, а также реальные имена агентов, скиллов, плагинов и MCP-серверов на [метриках стоимости и токенов](https://code.claude.com/docs/ru/monitoring-usage.md#cost-counter). Встроенное правило, которое назвал классификатор авторежима при блокировке вызова, в виде [`classifier_category`](https://code.claude.com/docs/ru/monitoring-usage#tool-decision-event) на событиях `claude_code.tool_decision` |
+| `OTEL_LOG_TOOL_CONTENT=1` | Событие span [`tool.output`](https://code.claude.com/docs/ru/monitoring-usage#tool-output-span-event) на `claude_code.tool` с содержимым файлов, выводом Bash и тем, что возвращают инструменты MCP, WebFetch и WebSearch, усечённое на 60 КБ по умолчанию, настраиваемое через `CLAUDE_CODE_OTEL_CONTENT_MAX_LENGTH`, что требует Claude Code v2.1.214 или более поздней версии. Результаты от инструментов MCP, WebFetch и WebSearch требуют Claude Code v2.1.283 или более поздней версии. Требует, чтобы [трассировка](#read-agent-traces) была включена. Атрибуты span содержат содержимое инструмента в соответствии с [их собственными шлюзами](https://code.claude.com/docs/ru/monitoring-usage.md#new-context-gates) |
+| `OTEL_LOG_RAW_API_BODIES` | Полный JSON запроса и ответа Anthropic Messages API как события логов `claude_code.api_request_body` и `claude_code.api_response_body`. Установите на `1` для встроенных тел, усечённых на 60 КБ по умолчанию, или `file:&lt;dir&gt;` для неусечённых тел на диске с путём `body_ref` в событии. `CLAUDE_CODE_OTEL_CONTENT_MAX_LENGTH` настраивает лимит встроенного усечения, и требует Claude Code v2.1.214 или более поздней версии. Тела включают всю историю разговора и имеют содержимое расширенного мышления отредактировано. Включение этого подразумевает согласие на всё, что раскроют три переменные выше |
+
+Оставьте эти переменные неустановленными, если ваш конвейер наблюдаемости не одобрен для хранения данных, которые обрабатывает ваш агент. См. [Безопасность и конфиденциальность](https://code.claude.com/docs/ru/monitoring-usage.md#security-and-privacy) в справочнике Monitoring для полного списка атрибутов и поведения редактирования.
+
+## Связанная документация
+
+Эти руководства охватывают смежные темы для мониторинга и развёртывания агентов:
+
+* [Отслеживание затрат и использования](https://code.claude.com/docs/ru/agent-sdk/cost-tracking.md): читайте данные о токенах и стоимости из потока сообщений без внешнего бэкенда.
+* [Размещение Agent SDK](https://code.claude.com/docs/ru/agent-sdk/hosting.md): развёртывайте агентов в контейнерах, где вы можете установить переменные OpenTelemetry на уровне окружения.
+* [Monitoring](https://code.claude.com/docs/ru/monitoring-usage.md): полный справочник для каждой переменной окружения, метрики и события, которые излучает CLI.
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Code Review Checklist</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../../../materials/index.html">Материалы</a> / <a href="../../../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/03-skills/index.html">03-skills</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/03-skills/code-review/index.html">code-review</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/03-skills/code-review/templates/index.html">templates</a></nav>
+<h1 id="code-review-checklist">Code Review Checklist <a class="h-anchor" href="#code-review-checklist" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="security-checklist">Security Checklist <a class="h-anchor" href="#security-checklist" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>[ ] No hardcoded credentials or secrets</li>
+<li>[ ] Input validation on all user inputs</li>
+<li>[ ] SQL injection prevention (parameterized queries)</li>
+<li>[ ] CSRF protection on state-changing operations</li>
+<li>[ ] XSS prevention with proper escaping</li>
+<li>[ ] Authentication checks on protected endpoints</li>
+<li>[ ] Authorization checks on resources</li>
+<li>[ ] Secure password hashing (bcrypt, argon2)</li>
+<li>[ ] No sensitive data in logs</li>
+<li>[ ] HTTPS enforced</li>
+</ul>
+<h3 id="performance-checklist">Performance Checklist <a class="h-anchor" href="#performance-checklist" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>[ ] No N+1 queries</li>
+<li>[ ] Appropriate use of indexes</li>
+<li>[ ] Caching implemented where beneficial</li>
+<li>[ ] No blocking operations on main thread</li>
+<li>[ ] Async/await used correctly</li>
+<li>[ ] Large datasets paginated</li>
+<li>[ ] Database connections pooled</li>
+<li>[ ] Regular expressions optimized</li>
+<li>[ ] No unnecessary object creation</li>
+<li>[ ] Memory leaks prevented</li>
+</ul>
+<h3 id="quality-checklist">Quality Checklist <a class="h-anchor" href="#quality-checklist" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>[ ] Functions &lt; 50 lines</li>
+<li>[ ] Clear variable naming</li>
+<li>[ ] No duplicate code</li>
+<li>[ ] Proper error handling</li>
+<li>[ ] Comments explain WHY, not WHAT</li>
+<li>[ ] No console.logs in production</li>
+<li>[ ] Type checking (TypeScript/JSDoc)</li>
+<li>[ ] SOLID principles followed</li>
+<li>[ ] Design patterns applied correctly</li>
+<li>[ ] Self-documenting code</li>
+</ul>
+<h3 id="testing-checklist">Testing Checklist <a class="h-anchor" href="#testing-checklist" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>[ ] Unit tests written</li>
+<li>[ ] Edge cases covered</li>
+<li>[ ] Error scenarios tested</li>
+<li>[ ] Integration tests present</li>
+<li>[ ] Coverage &gt; 80%</li>
+<li>[ ] No flaky tests</li>
+<li>[ ] Mock external dependencies</li>
+<li>[ ] Clear test names</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

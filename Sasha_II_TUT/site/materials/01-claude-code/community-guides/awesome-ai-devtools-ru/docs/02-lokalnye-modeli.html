@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Урок 02. Бесплатно и приватно: локальные модели в VS Code и терминале</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/awesome-ai-devtools-ru/index.html">awesome-ai-devtools-ru</a> / <a href="../../../../../materials/01-claude-code/community-guides/awesome-ai-devtools-ru/docs/index.html">docs</a></nav>
+<h1 id="урок-02-бесплатно-и-приватно-локальные-модели-в-vs-code-и-терминале">Урок 02. Бесплатно и приватно: локальные модели в VS Code и терминале <a class="h-anchor" href="#урок-02-бесплатно-и-приватно-локальные-модели-в-vs-code-и-терминале" aria-label="Ссылка на раздел">#</a></h1>
+<p><a href="../README.md">← К оглавлению</a></p>
+<p>Связка «open-source агент + локальная модель» даёт ИИ-помощника, который работает без интернета, бесплатно и не отправляет код наружу.</p>
+<h3 id="1-установи-ollama">1. Установи Ollama <a class="h-anchor" href="#1-установи-ollama" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>ОС</th><th>Команда</th></tr></thead><tbody><tr><td>Windows / macOS</td><td>Скачай установщик с <a href="https://ollama.com/download">ollama.com/download</a></td></tr><tr><td>Linux</td><td><code>curl -fsSL https://ollama.com/install.sh | sh</code></td></tr></tbody></table></div>
+<p>Проверь: <code>ollama --version</code>.</p>
+<h3 id="2-выбери-модель-под-железо">2. Выбери модель под железо <a class="h-anchor" href="#2-выбери-модель-под-железо" aria-label="Ссылка на раздел">#</a></h3>
+<p>Названия и размеры моделей обновляются часто — смотри актуальный список в <a href="https://ollama.com/library">библиотеке Ollama</a> (поиск по слову <code>coder</code>).</p>
+<div class="table-wrap"><table><thead><tr><th>Память видеокарты / Mac</th><th>Ориентир</th><th>Для чего</th></tr></thead><tbody><tr><td>4–8 ГБ</td><td>модели 1.5–7B</td><td>Автодополнение</td></tr><tr><td>12–16 ГБ</td><td>модели ~14B</td><td>Чат, простые агентские задачи</td></tr><tr><td>24 ГБ</td><td>модели ~30B (в т. ч. MoE)</td><td>Агент в IDE и терминале</td></tr><tr><td>64+ ГБ (Mac, несколько GPU)</td><td>70B и крупные MoE</td><td>Близко к облачным моделям</td></tr></tbody></table></div>
+<pre><code class="language-bash">ollama pull qwen2.5-coder:7b      # пример модели для автодополнения
+ollama pull qwen2.5-coder:14b     # пример модели для чата и агента</code></pre>
+<p>💡 Агентам нужен большой контекст. Увеличь его: переменная окружения <code>OLLAMA_CONTEXT_LENGTH=32768</code>. Подробно о настройке Ollama и llama.cpp — в <a href="https://github.com/justxor/deepseek-local-guide-ru">deepseek-local-guide-ru</a>.</p>
+<h3 id="3-подключи-к-редактору">3. Подключи к редактору <a class="h-anchor" href="#3-подключи-к-редактору" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="continue-vs-code-jetbrains">Continue (VS Code / JetBrains) <a class="h-anchor" href="#continue-vs-code-jetbrains" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Установи расширение Continue.</li>
+<li>Открой настройки Continue → <strong>Add model</strong> → провайдер <strong>Ollama</strong> → выбери модель.</li>
+<li>Для автодополнения укажи отдельную маленькую модель — так подсказки будут быстрыми.</li>
+</ol>
+<h4 id="cline-kilo-code-vs-code">Cline / Kilo Code (VS Code) <a class="h-anchor" href="#cline-kilo-code-vs-code" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Установи расширение.</li>
+<li>В настройках: <strong>API Provider → Ollama</strong>, Base URL <code>http://localhost:11434</code>, выбери модель.</li>
+<li>Включи подтверждение команд и правок вручную, пока не привыкнешь к поведению агента.</li>
+</ol>
+<h4 id="zed">Zed <a class="h-anchor" href="#zed" aria-label="Ссылка на раздел">#</a></h4>
+<p>В настройках Zed (<code>settings.json</code>) добавь провайдер <code>ollama</code> — модели появятся в панели ассистента.</p>
+<h3 id="4-агент-в-терминале">4. Агент в терминале <a class="h-anchor" href="#4-агент-в-терминале" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-bash"># Aider
+pip install aider-chat
+aider --model ollama_chat/qwen2.5-coder:14b
+
+# Codex CLI с локальной моделью
+codex --oss
+
+# Goose: при первом запуске выбери провайдера Ollama
+goose configure</code></pre>
+<h3 id="5-любой-openai-совместимый-сервер">5. Любой OpenAI-совместимый сервер <a class="h-anchor" href="#5-любой-openai-совместимый-сервер" aria-label="Ссылка на раздел">#</a></h3>
+<p>Почти все инструменты принимают «OpenAI-compatible» эндпоинт. Значит, вместо Ollama можно использовать LM Studio (<code>http://localhost:1234/v1</code>), llama.cpp-сервер (<code>http://localhost:8080/v1</code>), vLLM (<code>http://localhost:8000/v1</code>) — например, на мощном сервере в локальной сети для всей команды.</p>
+<h3 id="h">Ограничения локальных моделей <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Ограничение</th><th>Что делать</th></tr></thead><tbody><tr><td>Слабее облачных флагманов на сложных задачах</td><td>Разбивай задачу на шаги, давай больше контекста</td></tr><tr><td>Медленнее на слабом железе</td><td>Модель поменьше для автодополнения, побольше — для чата</td></tr><tr><td>Хуже вызывают инструменты (tool calling)</td><td>Выбирай модели, явно обученные для агентов и кода</td></tr><tr><td>Маленький контекст по умолчанию</td><td>Увеличь <code>num_ctx</code> / <code>OLLAMA_CONTEXT_LENGTH</code></td></tr></tbody></table></div>
+<p>Гибридный вариант: локальная модель для автодополнения и рутинных вопросов, облачная (по своему ключу) — для сложных агентских задач.</p>
+<p><a href="01-kak-vybrat.md">← Урок 01</a> · <a href="03-mcp-i-agents-md.md">Урок 03 →</a></p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

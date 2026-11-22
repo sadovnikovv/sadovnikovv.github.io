@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Providers Guide: Connect AI Models to OmniRoute (Русский)</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/02-omniroute/index.html">02-omniroute</a> / <a href="../../../../../materials/02-omniroute/docs-ru/index.html">docs-ru</a> / <a href="../../../../../materials/02-omniroute/docs-ru/docs/index.html">docs</a> / <a href="../../../../../materials/02-omniroute/docs-ru/docs/getting-started/index.html">getting-started</a></nav>
+<h1 id="providers-guide-connect-ai-models-to-omniroute-русский">Providers Guide: Connect AI Models to OmniRoute (Русский) <a class="h-anchor" href="#providers-guide-connect-ai-models-to-omniroute-русский" aria-label="Ссылка на раздел">#</a></h1>
+<p>🌐 <strong>Languages:</strong> 🇺🇸 <a href="../../../../getting-started/PROVIDERS-GUIDE.md">English</a> · 🇪🇹 <a href="../../../am/docs/getting-started/PROVIDERS-GUIDE.md">am</a> · 🇸🇦 <a href="../../../ar/docs/getting-started/PROVIDERS-GUIDE.md">ar</a> · 🇦🇿 <a href="../../../az/docs/getting-started/PROVIDERS-GUIDE.md">az</a> · 🇧🇬 <a href="../../../bg/docs/getting-started/PROVIDERS-GUIDE.md">bg</a> · 🇧🇩 <a href="../../../bn/docs/getting-started/PROVIDERS-GUIDE.md">bn</a> · 🇧🇦 <a href="../../../bs/docs/getting-started/PROVIDERS-GUIDE.md">bs</a> · 🇨🇿 <a href="../../../cs/docs/getting-started/PROVIDERS-GUIDE.md">cs</a> · 🇩🇰 <a href="../../../da/docs/getting-started/PROVIDERS-GUIDE.md">da</a> · 🇩🇪 <a href="../../../de/docs/getting-started/PROVIDERS-GUIDE.md">de</a> · 🇬🇷 <a href="../../../el/docs/getting-started/PROVIDERS-GUIDE.md">el</a> · 🇪🇸 <a href="../../../es/docs/getting-started/PROVIDERS-GUIDE.md">es</a> · 🇪🇪 <a href="../../../et/docs/getting-started/PROVIDERS-GUIDE.md">et</a> · 🇮🇷 <a href="../../../fa/docs/getting-started/PROVIDERS-GUIDE.md">fa</a> · 🇫🇮 <a href="../../../fi/docs/getting-started/PROVIDERS-GUIDE.md">fi</a> · 🇫🇷 <a href="../../../fr/docs/getting-started/PROVIDERS-GUIDE.md">fr</a> · 🇮🇪 <a href="../../../ga/docs/getting-started/PROVIDERS-GUIDE.md">ga</a> · 🇮🇳 <a href="../../../gu/docs/getting-started/PROVIDERS-GUIDE.md">gu</a> · 🇳🇬 <a href="../../../ha/docs/getting-started/PROVIDERS-GUIDE.md">ha</a> · 🇮🇱 <a href="../../../he/docs/getting-started/PROVIDERS-GUIDE.md">he</a> · 🇮🇳 <a href="../../../hi/docs/getting-started/PROVIDERS-GUIDE.md">hi</a> · 🇭🇷 <a href="../../../hr/docs/getting-started/PROVIDERS-GUIDE.md">hr</a> · 🇭🇺 <a href="../../../hu/docs/getting-started/PROVIDERS-GUIDE.md">hu</a> · 🇦🇲 <a href="../../../hy/docs/getting-started/PROVIDERS-GUIDE.md">hy</a> · 🇮🇩 <a href="../../../id/docs/getting-started/PROVIDERS-GUIDE.md">id</a> · 🇳🇬 <a href="../../../ig/docs/getting-started/PROVIDERS-GUIDE.md">ig</a> · 🇮🇹 <a href="../../../it/docs/getting-started/PROVIDERS-GUIDE.md">it</a> · 🇯🇵 <a href="../../../ja/docs/getting-started/PROVIDERS-GUIDE.md">ja</a> · 🇬🇪 <a href="../../../ka/docs/getting-started/PROVIDERS-GUIDE.md">ka</a> · 🇰🇭 <a href="../../../km/docs/getting-started/PROVIDERS-GUIDE.md">km</a> · 🇮🇳 <a href="../../../kn/docs/getting-started/PROVIDERS-GUIDE.md">kn</a> · 🇰🇷 <a href="../../../ko/docs/getting-started/PROVIDERS-GUIDE.md">ko</a> · 🇱🇹 <a href="../../../lt/docs/getting-started/PROVIDERS-GUIDE.md">lt</a> · 🇱🇻 <a href="../../../lv/docs/getting-started/PROVIDERS-GUIDE.md">lv</a> · 🇮🇳 <a href="../../../ml/docs/getting-started/PROVIDERS-GUIDE.md">ml</a> · 🇮🇳 <a href="../../../mr/docs/getting-started/PROVIDERS-GUIDE.md">mr</a> · 🇲🇾 <a href="../../../ms/docs/getting-started/PROVIDERS-GUIDE.md">ms</a> · 🇲🇹 <a href="../../../mt/docs/getting-started/PROVIDERS-GUIDE.md">mt</a> · 🇲🇲 <a href="../../../my/docs/getting-started/PROVIDERS-GUIDE.md">my</a> · 🇳🇵 <a href="../../../ne/docs/getting-started/PROVIDERS-GUIDE.md">ne</a> · 🇳🇱 <a href="../../../nl/docs/getting-started/PROVIDERS-GUIDE.md">nl</a> · 🇳🇴 <a href="../../../no/docs/getting-started/PROVIDERS-GUIDE.md">no</a> · 🇮🇳 <a href="../../../or/docs/getting-started/PROVIDERS-GUIDE.md">or</a> · 🇮🇳 <a href="../../../pa/docs/getting-started/PROVIDERS-GUIDE.md">pa</a> · 🇵🇭 <a href="../../../phi/docs/getting-started/PROVIDERS-GUIDE.md">phi</a> · 🇵🇱 <a href="../../../pl/docs/getting-started/PROVIDERS-GUIDE.md">pl</a> · 🇵🇹 <a href="../../../pt/docs/getting-started/PROVIDERS-GUIDE.md">pt</a> · 🇧🇷 <a href="../../../pt-BR/docs/getting-started/PROVIDERS-GUIDE.md">pt-BR</a> · 🇷🇴 <a href="../../../ro/docs/getting-started/PROVIDERS-GUIDE.md">ro</a> · 🇱🇰 <a href="../../../si/docs/getting-started/PROVIDERS-GUIDE.md">si</a> · 🇸🇰 <a href="../../../sk/docs/getting-started/PROVIDERS-GUIDE.md">sk</a> · 🇸🇮 <a href="../../../sl/docs/getting-started/PROVIDERS-GUIDE.md">sl</a> · 🇷🇸 <a href="../../../sr/docs/getting-started/PROVIDERS-GUIDE.md">sr</a> · 🇸🇪 <a href="../../../sv/docs/getting-started/PROVIDERS-GUIDE.md">sv</a> · 🇰🇪 <a href="../../../sw/docs/getting-started/PROVIDERS-GUIDE.md">sw</a> · 🇮🇳 <a href="../../../ta/docs/getting-started/PROVIDERS-GUIDE.md">ta</a> · 🇮🇳 <a href="../../../te/docs/getting-started/PROVIDERS-GUIDE.md">te</a> · 🇹🇭 <a href="../../../th/docs/getting-started/PROVIDERS-GUIDE.md">th</a> · 🇹🇷 <a href="../../../tr/docs/getting-started/PROVIDERS-GUIDE.md">tr</a> · 🇺🇦 <a href="../../../uk-UA/docs/getting-started/PROVIDERS-GUIDE.md">uk-UA</a> · 🇵🇰 <a href="../../../ur/docs/getting-started/PROVIDERS-GUIDE.md">ur</a> · 🇺🇿 <a href="../../../uz/docs/getting-started/PROVIDERS-GUIDE.md">uz</a> · 🇻🇳 <a href="../../../vi/docs/getting-started/PROVIDERS-GUIDE.md">vi</a> · 🇳🇬 <a href="../../../yo/docs/getting-started/PROVIDERS-GUIDE.md">yo</a> · 🇨🇳 <a href="../../../zh-CN/docs/getting-started/PROVIDERS-GUIDE.md">zh-CN</a> · 🇹🇼 <a href="../../../zh-TW/docs/getting-started/PROVIDERS-GUIDE.md">zh-TW</a></p>
+<hr>
+<blockquote>
+<p><strong>Кратко</strong>: провайдер — это подключение к сервису ИИ (например, OpenAI, Anthropic или Google). Для использования OmniRoute необходим как минимум один провайдер.</p>
+</blockquote>
+<hr>
+<h3 id="h">Что такое провайдер? <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Представьте провайдера как <strong>оператора мобильной связи</strong>. Подобно тому как для совершения звонков вам нужен оператор мобильной связи, для использования моделей ИИ вам нужен провайдер ИИ. OmniRoute похож на телефон, который работает со <strong>всеми операторами</strong> — между ними можно переключаться автоматически.</p>
+<h4 id="h-2">Типы провайдеров <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Тип</th><th>Что это такое</th><th>Примеры</th><th>Стоимость</th></tr></thead><tbody><tr><td><strong>Бесплатный</strong></td><td>Оплата не требуется</td><td>Kiro, Pollinations</td><td>$0</td></tr><tr><td><strong>API-ключ</strong></td><td>Требуется API-ключ</td><td>OpenAI, Anthropic, Google</td><td>Оплата по мере использования</td></tr><tr><td><strong>OAuth</strong></td><td>Вход с помощью вашей учётной записи</td><td>Claude Code, GitHub Copilot</td><td>Подписка</td></tr><tr><td><strong>Веб-cookie</strong></td><td>Использует сессию вашего браузера</td><td>ChatGPT Web (Codex), Gemini Web</td><td>$0 (используется ваша учётная запись)</td></tr></tbody></table></div>
+<h4 id="провайдеры-с-веб-cookie">Провайдеры с веб-cookie <a class="h-anchor" href="#провайдеры-с-веб-cookie" aria-label="Ссылка на раздел">#</a></h4>
+<p>Общие инструкции по настройке, ограничения, устранение неполадок и рекомендации по аутентификации для конкретных провайдеров приведены в документе <strong><a href="./WEB-COOKIE-GUIDE.md">WEB-COOKIE-GUIDE.md</a></strong>.</p>
+<hr>
+<h3 id="h-3">Быстрый старт: подключите первого провайдера <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-4">Необязательная настройка бесплатных провайдеров при первом запуске <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<p>Мастер первого запуска предлагает отдельную карточку <strong>Настроить бесплатных провайдеров</strong>. Он формирует текущий
+список доступных вариантов на основе реестра провайдеров OmniRoute, не требующих аутентификации, а затем позволяет просмотреть список и отменить выбор отдельных
+провайдеров перед подтверждением. OmniRoute отображает предупреждение провайдера и ссылку на его сайт,
+чтобы вы могли заранее ознакомиться с условиями стороннего сервиса, политикой конфиденциальности, доступностью и ограничениями частоты запросов.</p>
+<p>Это действие необязательно: завершение работы мастера никогда не создаёт подключения к бесплатным провайдерам без вашего ведома.
+Он создаёт только подключения к отсутствующим провайдерам, не изменяет существующие настроенные подключения
+и отдельно сообщает о созданных, уже настроенных и не подключившихся провайдерах. В случае частичного успеха можно
+безопасно повторить попытку только для подключений, завершившихся ошибкой.</p>
+<h4 id="вариант-a-бесплатный-провайдер-без-банковской-карты">Вариант A: бесплатный провайдер (без банковской карты) <a class="h-anchor" href="#вариант-a-бесплатный-провайдер-без-банковской-карты" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Откройте панель управления по адресу <code>http://localhost:20128</code></li>
+<li>Перейдите в раздел <strong>Провайдеры</strong> → <strong>Добавить провайдера</strong></li>
+<li>Выберите одного из следующих бесплатных провайдеров:</li>
+<li><strong>Kiro AI</strong> — бесплатные модели Claude (аутентификация не требуется)</li>
+<li><strong>Pollinations</strong> — бесплатные GPT-5, Claude и Gemini (ключ не требуется)</li>
+<li><strong>LongCat</strong> — 10 млн бесплатных токенов (единоразовое начисление, требуется учётная запись и прохождение KYC)</li>
+<li><strong>Cloudflare AI</strong> — более 50 моделей, 10 тыс. нейронов в день</li>
+<li><strong>MLX Gemma 26B</strong> — локальная модель для Apple Silicon (~38,5 токена/с, ~15,9 ГБ ОЗУ)</li>
+<li><strong>MLX Qwen 3.8 27B</strong> — локальная модель для Apple Silicon (~9,1 токена/с, ~13,1 ГБ ОЗУ)</li>
+<li>Нажмите <strong>Подключить</strong></li>
+<li>Готово! Теперь у вас есть бесплатный доступ к ИИ.</li>
+</ol>
+<h4 id="вариант-b-провайдер-с-api-ключом-платный">Вариант B: провайдер с API-ключом (платный) <a class="h-anchor" href="#вариант-b-провайдер-с-api-ключом-платный" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Получите API-ключ на сайте провайдера:</li>
+<li><strong>OpenAI</strong>: https://platform.openai.com/api-keys</li>
+<li><strong>Anthropic</strong>: https://console.anthropic.com/</li>
+<li><strong>Google</strong>: https://aistudio.google.com/apikey</li>
+<li><strong>DeepSeek</strong>: https://platform.deepseek.com/</li>
+<li><strong>Groq</strong>: https://console.groq.com/</li>
+<li>Откройте панель управления по адресу <code>http://localhost:20128</code></li>
+<li>Перейдите в раздел <strong>Провайдеры</strong> → <strong>Добавить провайдера</strong></li>
+<li>Выберите своего провайдера</li>
+<li>Вставьте API-ключ</li>
+<li>Нажмите <strong>Подключить</strong></li>
+<li>Готово! Теперь у вас есть доступ к моделям этого провайдера.</li>
+</ol>
+<h4 id="вариант-c-oauth-провайдер-подписка">Вариант C: OAuth-провайдер (подписка) <a class="h-anchor" href="#вариант-c-oauth-провайдер-подписка" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Откройте панель управления по адресу <code>http://localhost:20128</code></li>
+<li>Перейдите в раздел <strong>Провайдеры</strong> → <strong>Добавить провайдера</strong></li>
+<li>Выберите своего провайдера (например, Claude Code или GitHub Copilot)</li>
+<li>Нажмите <strong>Подключиться через OAuth</strong></li>
+<li>Войдите в свою учётную запись</li>
+<li>Готово! Теперь у вас есть доступ к моделям, включённым в вашу подписку.</li>
+</ol>
+<h4 id="вариант-d-локальные-модели-mlx-apple-silicon">Вариант D: локальные модели MLX (Apple Silicon) <a class="h-anchor" href="#вариант-d-локальные-модели-mlx-apple-silicon" aria-label="Ссылка на раздел">#</a></h4>
+<p>На компьютерах Mac с Apple Silicon и объединённой памятью OmniRoute поддерживает подключение локальных моделей MLX, запущенных через <code>mlx-lm.server</code>, в качестве обычных локальных провайдеров, совместимых с OpenAI.</p>
+<h5 id="h-5">Предварительные требования <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li><strong>Компьютер Mac с Apple Silicon</strong> (M1/M2/M3/M4); рекомендуется не менее 24 ГБ объединённой памяти</li>
+<li>Менеджер пакетов <strong>uv</strong>: <code>curl -LsSf https://astral.sh/uv/install.sh | sh</code></li>
+<li><strong>mlx-lm</strong>: <code>uv pip install mlx-lm</code></li>
+</ul>
+<h5 id="h-6">Быстрый старт <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h5>
+<ol>
+<li><strong>Установите зависимости</strong>:</li>
+</ol>
+<pre><code class="language-bash">   # Установите uv, если он ещё не установлен
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+
+   # Установите mlx-lm
+   uv pip install mlx-lm</code></pre>
+<ol>
+<li><strong>Запустите серверы MLX вручную</strong> (в отдельных терминалах):</li>
+</ol>
+<pre><code class="language-bash">   # Терминал 1: Gemma 4 26B A4B IT-QAT (порт 11435)
+   uv run mlx_lm.server --model mlx-community/gemma-4-26B-A4B-it-qat-q4_0-mlx-aligned --port 11435 --host 127.0.0.1
+
+   # Терминал 2: Qwen 3.8 27B MLX Mixed (порт 11436)
+   uv run mlx_lm.server --model maglun/Qwen3.8-27B-MLX-Mixed-3.80bpw --port 11436 --host 127.0.0.1</code></pre>
+<ol>
+<li><strong>Подключите модель в панели управления OmniRoute</strong>:</li>
+<li>Перейдите в раздел <strong>Провайдеры</strong> → <strong>Добавить провайдера</strong></li>
+<li>Выберите <strong>MLX Gemma 26B</strong> или <strong>MLX Qwen 3.8 27B</strong></li>
+<li>Нажмите <strong>Подключить</strong> (API-ключ не требуется)</li>
+</ol>
+<ol>
+<li><strong>Используйте с OpenCode</strong>:</li>
+</ol>
+<pre><code class="language-bash">   # Настройте OpenCode для использования OmniRoute
+   opencode config set api.base_url http://localhost:20128/v1
+   opencode config set api.key &lt;your-omniroute-api-key&gt;
+
+   # Используйте модели MLX
+   opencode run --model mlx-gemma/gemma-4-26b
+   opencode run --model mlx-qwen/qwen3.8-27b</code></pre>
+<h5 id="h-7">Управление памятью <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Важно</strong>: при наличии 24 ГБ объединённой памяти одновременно может работать только <strong>одна большая модель MLX</strong>.</p>
+<ul>
+<li>Gemma 26B: пиковое потребление памяти ~15,9 ГБ</li>
+<li>Qwen 3.8 27B: пиковое потребление памяти ~13,1 ГБ</li>
+</ul>
+<p>Этим необходимо управлять вручную:</p>
+<ul>
+<li>Запускайте одновременно только один сервер MLX, или</li>
+<li>Запускайте их на разных компьютерах, или</li>
+<li>Останавливайте один сервер перед запуском другого</li>
+</ul>
+<p>OmniRoute не управляет процессами серверов MLX автоматически — он лишь направляет запросы к настроенным вами конечным точкам, совместимым с OpenAI.</p>
+<h5 id="h-8">Поддержка вызова инструментов <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h5>
+<p>Обе модели поддерживают вызов инструментов, совместимый с OpenAI. Проверьте с помощью:</p>
+<pre><code class="language-bash">curl -X POST http://localhost:20128/v1/chat/completions \
+  -H &quot;Authorization: Bearer &lt;key&gt;&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &#x27;{
+    &quot;model&quot;: &quot;mlx-gemma/gemma-4-26b&quot;,
+    &quot;messages&quot;: [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;What is 2+2? Use the calculator tool.&quot;}],
+    &quot;tools&quot;: [{&quot;type&quot;: &quot;function&quot;, &quot;function&quot;: {&quot;name&quot;: &quot;calculator&quot;, &quot;description&quot;: &quot;Calculate&quot;, &quot;parameters&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {&quot;expression&quot;: {&quot;type&quot;: &quot;string&quot;}}, &quot;required&quot;: [&quot;expression&quot;]}}}]
+  }&#x27;</code></pre>
+<h5 id="h-9">Устранение неполадок <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h5>
+<div class="table-wrap"><table><thead><tr><th>Проблема</th><th>Решение</th></tr></thead><tbody><tr><td>Сервер не запускается</td><td>Выполните <code>uv run mlx_lm.server --help</code> и проверьте идентификаторы моделей</td></tr><tr><td>Недостаточно памяти</td><td>Убедитесь, что запущена только одна модель; закройте другие приложения; проверьте «Мониторинг системы»</td></tr><tr><td>Отказано в подключении</td><td>Убедитесь, что сервер работает на правильном порту (11435/11436)</td></tr><tr><td>Медленные ответы</td><td>При первом запросе модель загружается в память (~30–60 с); последующие запросы выполняются быстро</td></tr><tr><td>Вызов инструментов не работает</td><td>Убедитесь, что модель поддерживает инструменты; проверьте журналы OmniRoute на наличие ошибок преобразования</td></tr></tbody></table></div>
+<hr>
+<h3 id="h-10">Лучшие бесплатные провайдеры <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h3>
+<p>Эти провайдеры предлагают <strong>бесплатный доступ</strong> без банковской карты:</p>
+<div class="table-wrap"><table><thead><tr><th>Провайдер</th><th>Бесплатная квота</th><th>Модели</th><th>Как подключиться</th></tr></thead><tbody><tr><td><strong>Kiro AI</strong></td><td>50 кредитов в месяц</td><td>Claude Sonnet 4.5, Haiku 4.5, Opus 4.6</td><td>Авторизация не требуется</td></tr><tr><td><strong>Pollinations</strong></td><td>Ключ не требуется</td><td>GPT-5, Claude, Gemini, DeepSeek, Llama 4</td><td>Авторизация не требуется</td></tr><tr><td><strong>LongCat</strong></td><td>10M единоразово</td><td>LongCat-2.0</td><td>API-ключ + KYC</td></tr><tr><td><strong>Cloudflare AI</strong></td><td>10K нейронов в день</td><td>Более 50 моделей</td><td>Авторизация не требуется</td></tr><tr><td><strong>NVIDIA NIM</strong></td><td>~40 запросов в минуту</td><td>129 моделей</td><td>Требуется API-ключ</td></tr><tr><td><strong>Cerebras</strong></td><td>$5 за регистрацию</td><td>GLM 4.7, GPT-OSS 120B</td><td>API-ключ + карта</td></tr></tbody></table></div>
+<p><strong>Совет</strong>: Подключите несколько бесплатных провайдеров, чтобы получить <strong>неограниченный бесплатный ИИ</strong> с автоматическим переключением на резервного провайдера!</p>
+<hr>
+<h3 id="h-11">Лучшие платные провайдеры <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h3>
+<p>Эти провайдеры предлагают <strong>высококачественные модели</strong> с доступом по API-ключам:</p>
+<div class="table-wrap"><table><thead><tr><th>Провайдер</th><th>Лучшие модели</th><th>Стоимость</th><th>Бесплатный уровень</th></tr></thead><tbody><tr><td><strong>OpenAI</strong></td><td>GPT-5, GPT-4o</td><td>$2.50-$10 за 1 млн токенов</td><td>$5 бесплатных кредитов</td></tr><tr><td><strong>Anthropic</strong></td><td>Claude Opus 4.6, Sonnet 4.6</td><td>$3-$15 за 1 млн токенов</td><td>$5 бесплатных кредитов</td></tr><tr><td><strong>Google</strong></td><td>Gemini 2.5 Pro, Flash</td><td>$0.075-$1.25 за 1 млн токенов</td><td>1 500 запросов в день бесплатно</td></tr><tr><td><strong>DeepSeek</strong></td><td>DeepSeek V4</td><td>$0.14-$0.28 за 1 млн токенов</td><td>5 млн бесплатных токенов</td></tr><tr><td><strong>Groq</strong></td><td>Llama 4, Mixtral</td><td>$0.05-$0.27 за 1 млн токенов</td><td>30 запросов в минуту бесплатно</td></tr><tr><td><strong>xAI</strong></td><td>Grok 3</td><td>$0.30-$0.60 за 1 млн токенов</td><td>—</td></tr></tbody></table></div>
+<hr>
+<h3 id="h-12">Как подключить провайдера (пошагово) <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="шаг-1-откройте-панель-управления">Шаг 1: откройте панель управления <a class="h-anchor" href="#шаг-1-откройте-панель-управления" aria-label="Ссылка на раздел">#</a></h4>
+<p>Перейдите по адресу <code>http://localhost:20128</code> в браузере.</p>
+<h4 id="шаг-2-перейдите-в-раздел-providers">Шаг 2: перейдите в раздел Providers <a class="h-anchor" href="#шаг-2-перейдите-в-раздел-providers" aria-label="Ссылка на раздел">#</a></h4>
+<p>Нажмите <strong>Providers</strong> на боковой панели.</p>
+<h4 id="шаг-3-нажмите-add-provider">Шаг 3: нажмите Add Provider <a class="h-anchor" href="#шаг-3-нажмите-add-provider" aria-label="Ссылка на раздел">#</a></h4>
+<p>Нажмите кнопку <strong>+ Add Provider</strong>.</p>
+<h4 id="шаг-4-выберите-провайдера">Шаг 4: выберите провайдера <a class="h-anchor" href="#шаг-4-выберите-провайдера" aria-label="Ссылка на раздел">#</a></h4>
+<p>Просмотрите список или найдите своего провайдера с помощью поиска. Нажмите на него.</p>
+<h4 id="шаг-5-введите-учетные-данные">Шаг 5: введите учётные данные <a class="h-anchor" href="#шаг-5-введите-учетные-данные" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Бесплатные провайдеры</strong>: учётные данные не требуются — просто нажмите <strong>Connect</strong></li>
+<li><strong>Провайдеры с API-ключом</strong>: вставьте свой API-ключ</li>
+<li><strong>Провайдеры с OAuth</strong>: нажмите <strong>Connect with OAuth</strong> и войдите в систему</li>
+</ul>
+<h4 id="шаг-6-проверьте-подключение">Шаг 6: проверьте подключение <a class="h-anchor" href="#шаг-6-проверьте-подключение" aria-label="Ссылка на раздел">#</a></h4>
+<p>Нажмите <strong>Test Connection</strong>, чтобы убедиться, что подключение работает.</p>
+<h4 id="шаг-7-готово">Шаг 7: готово! <a class="h-anchor" href="#шаг-7-готово" aria-label="Ссылка на раздел">#</a></h4>
+<p>Теперь ваш провайдер подключён. Вы можете использовать его с <code>model: &quot;auto&quot;</code> или указать провайдера напрямую.</p>
+<hr>
+<h3 id="h-13">Использование нескольких провайдеров <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h3>
+<p>OmniRoute лучше всего работает с <strong>несколькими провайдерами</strong>. Это обеспечивает:</p>
+<ul>
+<li><strong>Автоматическое переключение</strong> — если один провайдер недоступен, OmniRoute пробует следующий</li>
+<li><strong>Оптимизацию стоимости</strong> — OmniRoute выбирает самого дешёвого провайдера для каждого запроса</li>
+<li><strong>Оптимизацию скорости</strong> — OmniRoute выбирает самого быстрого провайдера для каждого запроса</li>
+<li><strong>Оптимизацию качества</strong> — OmniRoute выбирает лучшего провайдера для каждой задачи</li>
+</ul>
+<h4 id="h-14">Рекомендуемая конфигурация <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h4>
+<p>Для наилучшей работы подключите как минимум <strong>3 провайдера</strong>:</p>
+<ol>
+<li><strong>Один бесплатный провайдер</strong> (Kiro или Pollinations) — всегда доступен</li>
+<li><strong>Один быстрый провайдер</strong> (Groq, Cerebras) — для быстрых ответов</li>
+<li><strong>Один провайдер с высоким качеством</strong> (OpenAI, Anthropic, Google) — для сложных задач</li>
+</ol>
+<p>Затем используйте <code>model: &quot;auto&quot;</code>, и OmniRoute будет автоматически выбирать лучший вариант для каждого запроса.</p>
+<hr>
+<h3 id="h-15">Настройка для конкретных провайдеров <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="openai">OpenAI <a class="h-anchor" href="#openai" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Получите ключ API: https://platform.openai.com/api-keys</li>
+<li>В OmniRoute: Провайдеры → Добавить провайдера → OpenAI</li>
+<li>Вставьте ключ API → Подключить</li>
+</ol>
+<h4 id="anthropic">Anthropic <a class="h-anchor" href="#anthropic" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Получите ключ API: https://console.anthropic.com/</li>
+<li>В OmniRoute: Провайдеры → Добавить провайдера → Anthropic</li>
+<li>Вставьте ключ API → Подключить</li>
+</ol>
+<h4 id="google-gemini">Google (Gemini) <a class="h-anchor" href="#google-gemini" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Получите ключ API: https://aistudio.google.com/apikey</li>
+<li>В OmniRoute: Провайдеры → Добавить провайдера → Gemini</li>
+<li>Вставьте ключ API → Подключить</li>
+</ol>
+<h4 id="deepseek">DeepSeek <a class="h-anchor" href="#deepseek" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Получите ключ API: https://platform.deepseek.com/</li>
+<li>В OmniRoute: Провайдеры → Добавить провайдера → DeepSeek</li>
+<li>Вставьте ключ API → Подключить</li>
+</ol>
+<h4 id="qoder-выбор-способа-передачи-учетных-данных">Qoder: выбор способа передачи учётных данных <a class="h-anchor" href="#qoder-выбор-способа-передачи-учетных-данных" aria-label="Ссылка на раздел">#</a></h4>
+<p>Для Qoder требуются учётные данные. Два способа их передачи имеют разные возможности; одного имени модели
+недостаточно, чтобы определить возможности конкретного подключения.</p>
+<div class="table-wrap"><table><thead><tr><th>Учётные данные</th><th>Способ передачи OmniRoute</th><th>Вызов инструментов вызывающей стороной</th><th>Потоковая передача</th></tr></thead><tbody><tr><td>PAT, начинающийся с <code>pt-</code></td><td>Локальный процесс <code>qodercli</code> на хосте OmniRoute</td><td>Не поддерживается</td><td>Буферизованная: SSE отправляется только после возврата полного ответа CLI</td></tr><tr><td>Токен доступа не типа PAT или ключ API</td><td>HTTP-эндпоинт DashScope, совместимый с OpenAI</td><td>Передаётся без изменений с учётом модели/ключа источника</td><td>Восходящий путь HTTP/SSE</td></tr></tbody></table></div>
+<p>Для PAT установите Qoder CLI на том же хосте или в том же контейнере, где работает OmniRoute. Исполняемый файл
+должен быть доступен как <code>qodercli</code>; в противном случае задайте в <code>CLI_QODER_BIN</code> путь к нему. CLI,
+установленный только на Docker-хосте, не появляется в контейнере автоматически. При отсутствии
+исполняемого файла возвращается явная ошибка с указанием установить его или задать путь.</p>
+<p>Для обработки чата через PAT установлен 45-секундный тайм-аут процесса. Диалог преобразуется в единый
+промпт, после чего CLI вызывается в непотоковом режиме вывода. Указание <code>stream: true</code> изменяет
+формат ответа на SSE, но не обеспечивает постепенную передачу токенов от восходящего сервиса.
+Для проверки CLI и получения списка моделей используется отдельный 20-секундный тайм-аут. Это текущие
+значения по умолчанию в коде, а не настраиваемые параметры панели управления.</p>
+<p>Используйте подключения PAT для обычного чата. При выборе учётных данных для агентских запросов,
+содержащих <code>tools</code> или устаревший параметр <code>functions</code>, учётные записи PAT исключаются, в том числе
+для закреплённых комбинированных целей. В смешанном пуле Qoder по-прежнему может быть выбрана его
+HTTP-учётная запись. Прямые вызовы исполнителя PAT также завершаются явной ошибкой до запуска CLI,
+а не молча отбрасывают определения инструментов. Это ограничение относится к инструментам,
+переданным вызывающей API стороной, а не к внутренним инструментам, которые может использовать сам
+Qoder CLI. Наличие HTTP-ключа не гарантирует поддержку инструментов каждой моделью; стандартные
+проверки возможностей модели всё равно выполняются.</p>
+<p>Браузерная OAuth-аутентификация доступна только в том случае, если администратор настроит все пять параметров:
+<code>QODER_OAUTH_AUTHORIZE_URL</code>, <code>QODER_OAUTH_TOKEN_URL</code>, <code>QODER_OAUTH_USERINFO_URL</code>,
+<code>QODER_OAUTH_CLIENT_ID</code> и <code>QODER_OAUTH_CLIENT_SECRET</code>. По умолчанию они пусты; в ненастроенной
+установке следует импортировать поддерживаемые учётные данные, а не рассчитывать на готовность
+браузерного процесса входа.</p>
+<p>Ссылки на реализацию: <a href="../../open-sse/executors/qoder.ts">исполнитель Qoder</a>,
+<a href="../../open-sse/services/qoderCli.ts">среда выполнения CLI</a> и
+<a href="../../src/lib/oauth/constants/oauth.ts">конфигурация OAuth</a>. Постепенная потоковая передача через PAT
+и настраиваемый тайм-аут являются отдельными улучшениями; описанное поведение не гарантирует их наличия.</p>
+<h4 id="groq">Groq <a class="h-anchor" href="#groq" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Получите ключ API: https://console.groq.com/</li>
+<li>В OmniRoute: Провайдеры → Добавить провайдера → Groq</li>
+<li>Вставьте ключ API → Подключить</li>
+</ol>
+<hr>
+<h3 id="h-16">Часто задаваемые вопросы <a class="h-anchor" href="#h-16" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="нужно-ли-платить-за-использование-omniroute">«Нужно ли платить за использование OmniRoute?» <a class="h-anchor" href="#нужно-ли-платить-за-использование-omniroute" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Нет!</strong> OmniRoute — бесплатное программное обеспечение с открытым исходным кодом. Вы можете бесплатно пользоваться такими провайдерами, как Kiro и Pollinations. Платить нужно только в том случае, если вы решите использовать платных провайдеров.</p>
+<h4 id="h-17">«С какого провайдера лучше начать?» <a class="h-anchor" href="#h-17" aria-label="Ссылка на раздел">#</a></h4>
+<p>Начните с <strong>Kiro AI</strong> — он бесплатный, не требует ключа API и предоставляет доступ к моделям Claude. Затем при необходимости добавьте других провайдеров.</p>
+<h4 id="h-18">«Можно ли использовать несколько провайдеров одновременно?» <a class="h-anchor" href="#h-18" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Да!</strong> В этом и заключается основная идея OmniRoute. Подключите несколько провайдеров и используйте <code>model: &quot;auto&quot;</code>, чтобы OmniRoute выбирал оптимальный вариант для каждого запроса.</p>
+<h4 id="h-19">«Что произойдет, если провайдер перестанет работать?» <a class="h-anchor" href="#h-19" aria-label="Ссылка на раздел">#</a></h4>
+<p>OmniRoute автоматически пропустит недоступного провайдера и попробует использовать следующего. Вам не нужно ничего делать.</p>
+<h4 id="h-20">«Как отключить провайдера?» <a class="h-anchor" href="#h-20" aria-label="Ссылка на раздел">#</a></h4>
+<p>Перейдите в раздел Providers → нажмите на нужного провайдера → нажмите <strong>Disconnect</strong>.</p>
+<h4 id="можно-ли-использовать-имеющиеся-у-меня-ключи-api">«Можно ли использовать имеющиеся у меня ключи API?» <a class="h-anchor" href="#можно-ли-использовать-имеющиеся-у-меня-ключи-api" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Да!</strong> Если у вас уже есть ключи API для OpenAI, Anthropic, Google и других сервисов, вы можете использовать их в OmniRoute. Просто вставьте их при подключении провайдера.</p>
+<hr>
+<h3 id="h-21">Что дальше? <a class="h-anchor" href="#h-21" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong><a href="./AUTO-COMBO-GUIDE.md">Руководство по Auto-Combo</a></strong> — позвольте OmniRoute выбрать для вас оптимальный ИИ</li>
+<li><strong><a href="./FREE-TIERS-GUIDE.md">Руководство по бесплатным тарифам</a></strong> — получите бесплатный доступ к ИИ без банковской карты</li>
+<li><strong><a href="../guides/TROUBLESHOOTING.md">Устранение неполадок</a></strong> — решение распространённых проблем</li>
+<li><strong><a href="../reference/PROVIDER_REFERENCE.md">Справочник провайдеров</a></strong> — полный список из 226 провайдеров</li>
+</ul>
+<h3 id="изображения-cursor">Изображения Cursor <a class="h-anchor" href="#изображения-cursor" aria-label="Ссылка на раздел">#</a></h3>
+<p>Для изображений плана Cursor используется <code>IMAGE_PROVIDERS.cursor</code> (<code>cursor-agent-image</code>). См. <a href="../providers/CURSOR_IMAGE.md">CURSOR_IMAGE.md</a>.</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

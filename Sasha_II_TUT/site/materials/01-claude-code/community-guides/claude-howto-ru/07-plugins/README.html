@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Плагины Claude Code</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/07-plugins/index.html">07-plugins</a></nav>
+<p>&lt;picture&gt;
+  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;../resources/logos/claude-howto-logo-dark.svg&quot;&gt;
+  &lt;img alt=&quot;Claude How To&quot; src=&quot;../resources/logos/claude-howto-logo.svg&quot;&gt;
+&lt;/picture&gt;</p>
+<h1 id="плагины-claude-code">Плагины Claude Code <a class="h-anchor" href="#плагины-claude-code" aria-label="Ссылка на раздел">#</a></h1>
+<p>Эта папка содержит полные примеры плагинов, которые объединяют несколько возможностей Claude Code в цельные устанавливаемые пакеты.</p>
+<p>&lt;a id=&quot;overview&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h">Обзор <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Плагины Claude Code — это наборы настроек (slash commands, subagents, MCP servers и hooks), которые устанавливаются одной командой. Это самый высокий уровень механизма расширения, объединяющий несколько возможностей в цельные, удобные для распространения пакеты.</p>
+<h3 id="h-2">Архитектура плагина <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-mermaid">graph TB
+    A[&quot;Плагин&quot;]
+    B[&quot;Slash Commands&quot;]
+    C[&quot;Subagents&quot;]
+    D[&quot;MCP Servers&quot;]
+    E[&quot;Hooks&quot;]
+    F[&quot;Конфигурация&quot;]
+
+    A --&gt;|объединяет| B
+    A --&gt;|объединяет| C
+    A --&gt;|объединяет| D
+    A --&gt;|объединяет| E
+    A --&gt;|объединяет| F</code></pre>
+<h3 id="h-3">Процесс загрузки плагина <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant User
+    participant Claude as Claude Code
+    participant Plugin as Marketplace плагинов
+    participant Install as Установка
+    participant SlashCmds as Slash Commands
+    participant Subagents
+    participant MCPServers as MCP Servers
+    participant Hooks
+    participant Tools as Настроенные инструменты
+
+    User-&gt;&gt;Claude: /plugin install pr-review
+    Claude-&gt;&gt;Plugin: Скачать манифест плагина
+    Plugin--&gt;&gt;Claude: Вернуть определение плагина
+    Claude-&gt;&gt;Install: Извлечь компоненты
+    Install-&gt;&gt;SlashCmds: Настроить
+    Install-&gt;&gt;Subagents: Настроить
+    Install-&gt;&gt;MCPServers: Настроить
+    Install-&gt;&gt;Hooks: Настроить
+    SlashCmds--&gt;&gt;Tools: Готово к использованию
+    Subagents--&gt;&gt;Tools: Готово к использованию
+    MCPServers--&gt;&gt;Tools: Готово к использованию
+    Hooks--&gt;&gt;Tools: Готово к использованию
+    Tools--&gt;&gt;Claude: Плагин установлен ✅</code></pre>
+<h3 id="h-4">Типы и распространение плагинов <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Тип</th><th>Область</th><th>Общий доступ</th><th>Авторитет</th><th>Примеры</th></tr></thead><tbody><tr><td>Official</td><td>Глобально</td><td>Все пользователи</td><td>Anthropic</td><td>PR Review, Security Guidance</td></tr><tr><td>Community</td><td>Публично</td><td>Все пользователи</td><td>Сообщество</td><td>DevOps, Data Science</td></tr><tr><td>Organization</td><td>Внутренне</td><td>Члены команды</td><td>Компания</td><td>Внутренние стандарты, инструменты</td></tr><tr><td>Personal</td><td>Индивидуально</td><td>Один пользователь</td><td>Разработчик</td><td>Личные workflows</td></tr></tbody></table></div>
+<h3 id="h-5">Структура определения плагина <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<p>Манифест плагина использует JSON-формат в <code>.claude-plugin/plugin.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;my-first-plugin&quot;,
+  &quot;description&quot;: &quot;Плагин-приветствие&quot;,
+  &quot;version&quot;: &quot;1.0.0&quot;,
+  &quot;author&quot;: {
+    &quot;name&quot;: &quot;Ваше имя&quot;
+  },
+  &quot;homepage&quot;: &quot;https://example.com&quot;,
+  &quot;repository&quot;: &quot;https://github.com/user/repo&quot;,
+  &quot;license&quot;: &quot;MIT&quot;
+}</code></pre>
+<h3 id="h-6">Пример структуры плагина <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>my-plugin/
+├── .claude-plugin/
+│   └── plugin.json       # Манифест (name, description, version, author)
+├── commands/             # Команды в виде Markdown-файлов
+│   ├── task-1.md
+│   ├── task-2.md
+│   └── workflows/
+├── agents/               # Пользовательские определения агентов
+│   ├── specialist-1.md
+│   ├── specialist-2.md
+│   └── configs/
+├── skills/               # Skills агента с файлами SKILL.md
+│   ├── skill-1.md
+│   └── skill-2.md
+├── hooks/                # Обработчики событий в hooks.json
+│   └── hooks.json
+├── .mcp.json             # Конфигурации серверов MCP
+├── .lsp.json             # Конфигурации серверов LSP
+├── settings.json         # Настройки по умолчанию
+├── templates/
+│   └── issue-template.md
+├── scripts/
+│   ├── helper-1.sh
+│   └── helper-2.py
+├── docs/
+│   ├── README.md
+│   └── USAGE.md
+└── tests/
+    └── plugin.test.js</code></pre>
+<h4 id="конфигурация-lsp-сервера">Конфигурация LSP-сервера <a class="h-anchor" href="#конфигурация-lsp-сервера" aria-label="Ссылка на раздел">#</a></h4>
+<p>Плагины могут включать поддержку Language Server Protocol (LSP) для интеллектуальных подсказок кода в реальном времени. LSP-серверы предоставляют diagnostics, навигацию по коду и информацию о символах во время работы.</p>
+<p><strong>Расположение конфигурации</strong>:</p>
+<ul>
+<li>Файл <code>.lsp.json</code> в корне плагина</li>
+<li>Встроенный ключ <code>lsp</code> в <code>plugin.json</code></li>
+</ul>
+<h5 id="h-7">Описание полей <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h5>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Обязательно</th><th>Описание</th></tr></thead><tbody><tr><td><code>command</code></td><td>Да</td><td>Бинарник LSP-сервера (должен быть в PATH)</td></tr><tr><td><code>extensionToLanguage</code></td><td>Да</td><td>Сопоставляет расширения файлов с language IDs</td></tr><tr><td><code>args</code></td><td>Нет</td><td>Аргументы командной строки для сервера</td></tr><tr><td><code>transport</code></td><td>Нет</td><td>Способ связи: <code>stdio</code> (по умолчанию) или <code>socket</code></td></tr><tr><td><code>env</code></td><td>Нет</td><td>Переменные окружения для процесса сервера</td></tr><tr><td><code>initializationOptions</code></td><td>Нет</td><td>Параметры, отправляемые при инициализации LSP</td></tr><tr><td><code>settings</code></td><td>Нет</td><td>Конфигурация workspace, передаваемая серверу</td></tr><tr><td><code>workspaceFolder</code></td><td>Нет</td><td>Переопределение пути к папке workspace</td></tr><tr><td><code>startupTimeout</code></td><td>Нет</td><td>Максимальное время (мс) ожидания запуска сервера</td></tr><tr><td><code>shutdownTimeout</code></td><td>Нет</td><td>Максимальное время (мс) для корректного завершения</td></tr><tr><td><code>restartOnCrash</code></td><td>Нет</td><td>Автоматически перезапускать сервер при падении</td></tr><tr><td><code>maxRestarts</code></td><td>Нет</td><td>Максимальное число попыток перезапуска</td></tr></tbody></table></div>
+<h5 id="h-8">Примеры конфигурации <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Go (gopls)</strong>:</p>
+<pre><code class="language-json">{
+  &quot;go&quot;: {
+    &quot;command&quot;: &quot;gopls&quot;,
+    &quot;args&quot;: [&quot;serve&quot;],
+    &quot;extensionToLanguage&quot;: {
+      &quot;.go&quot;: &quot;go&quot;
+    }
+  }
+}</code></pre>
+<p><strong>Python (pyright)</strong>:</p>
+<pre><code class="language-json">{
+  &quot;python&quot;: {
+    &quot;command&quot;: &quot;pyright-langserver&quot;,
+    &quot;args&quot;: [&quot;--stdio&quot;],
+    &quot;extensionToLanguage&quot;: {
+      &quot;.py&quot;: &quot;python&quot;,
+      &quot;.pyi&quot;: &quot;python&quot;
+    }
+  }
+}</code></pre>
+<p><strong>TypeScript</strong>:</p>
+<pre><code class="language-json">{
+  &quot;typescript&quot;: {
+    &quot;command&quot;: &quot;typescript-language-server&quot;,
+    &quot;args&quot;: [&quot;--stdio&quot;],
+    &quot;extensionToLanguage&quot;: {
+      &quot;.ts&quot;: &quot;typescript&quot;,
+      &quot;.tsx&quot;: &quot;typescriptreact&quot;,
+      &quot;.js&quot;: &quot;javascript&quot;,
+      &quot;.jsx&quot;: &quot;javascriptreact&quot;
+    }
+  }
+}</code></pre>
+<h5 id="доступные-lsp-плагины">Доступные LSP-плагины <a class="h-anchor" href="#доступные-lsp-плагины" aria-label="Ссылка на раздел">#</a></h5>
+<p>Официальный marketplace включает заранее настроенные LSP-плагины:</p>
+<div class="table-wrap"><table><thead><tr><th>Плагин</th><th>Язык</th><th>Бинарник сервера</th><th>Команда установки</th></tr></thead><tbody><tr><td><code>pyright-lsp</code></td><td>Python</td><td><code>pyright-langserver</code></td><td><code>pip install pyright</code></td></tr><tr><td><code>typescript-lsp</code></td><td>TypeScript/JavaScript</td><td><code>typescript-language-server</code></td><td><code>npm install -g typescript-language-server typescript</code></td></tr><tr><td><code>rust-lsp</code></td><td>Rust</td><td><code>rust-analyzer</code></td><td>Установить через <code>rustup component add rust-analyzer</code></td></tr></tbody></table></div>
+<h5 id="возможности-lsp">Возможности LSP <a class="h-anchor" href="#возможности-lsp" aria-label="Ссылка на раздел">#</a></h5>
+<p>После настройки LSP-серверы предоставляют:</p>
+<ul>
+<li><strong>Мгновенные diagnostics</strong> — ошибки и предупреждения появляются сразу после правок</li>
+<li><strong>Навигация по коду</strong> — переход к определению, поиск ссылок и реализаций</li>
+<li><strong>Информация при наведении</strong> — сигнатуры типов и документация при наведении</li>
+<li><strong>Список символов</strong> — просмотр символов в текущем файле или рабочем пространстве</li>
+</ul>
+<h3 id="параметры-плагина-v2-1-83">Параметры плагина (v2.1.83+) <a class="h-anchor" href="#параметры-плагина-v2-1-83" aria-label="Ссылка на раздел">#</a></h3>
+<p>Плагины могут объявлять пользовательские параметры в манифесте через <code>userConfig</code>. Значения с <code>sensitive: true</code> хранятся в системном keychain, а не в текстовых файлах настроек:</p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;my-plugin&quot;,
+  &quot;version&quot;: &quot;1.0.0&quot;,
+  &quot;userConfig&quot;: {
+    &quot;apiKey&quot;: {
+      &quot;description&quot;: &quot;API-ключ для сервиса&quot;,
+      &quot;sensitive&quot;: true
+    },
+    &quot;region&quot;: {
+      &quot;description&quot;: &quot;Регион развёртывания&quot;,
+      &quot;default&quot;: &quot;us-east-1&quot;
+    }
+  }
+}</code></pre>
+<h3 id="постоянные-данные-плагина-claude_plugin_data-v2-1-78">Постоянные данные плагина (<code>${CLAUDE_PLUGIN_DATA}</code>) (v2.1.78+) <a class="h-anchor" href="#постоянные-данные-плагина-claude_plugin_data-v2-1-78" aria-label="Ссылка на раздел">#</a></h3>
+<p>Плагины имеют доступ к постоянному каталогу состояния через переменную окружения <code>${CLAUDE_PLUGIN_DATA}</code>. Этот каталог уникален для каждого плагина и сохраняется между сессиями, поэтому подходит для кешей, баз данных и другого постоянного состояния:</p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;PostToolUse&quot;: [
+      {
+        &quot;command&quot;: &quot;node ${CLAUDE_PLUGIN_DATA}/track-usage.js&quot;
+      }
+    ]
+  }
+}</code></pre>
+<p>Каталог создаётся автоматически при установке плагина. Файлы, сохранённые здесь, остаются до удаления плагина.</p>
+<h3 id="inline-плагин-через-settings-source-settings-v2-1-80">Inline-плагин через settings (<code>source: &#x27;settings&#x27;</code>) (v2.1.80+) <a class="h-anchor" href="#inline-плагин-через-settings-source-settings-v2-1-80" aria-label="Ссылка на раздел">#</a></h3>
+<p>Плагины можно определять прямо в файлах настроек как записи marketplace с помощью поля <code>source: &#x27;settings&#x27;</code>. Это позволяет встроить определение плагина напрямую, без отдельного repository или marketplace:</p>
+<pre><code class="language-json">{
+  &quot;pluginMarketplaces&quot;: [
+    {
+      &quot;name&quot;: &quot;inline-tools&quot;,
+      &quot;source&quot;: &quot;settings&quot;,
+      &quot;plugins&quot;: [
+        {
+          &quot;name&quot;: &quot;quick-lint&quot;,
+          &quot;source&quot;: &quot;./local-plugins/quick-lint&quot;
+        }
+      ]
+    }
+  ]
+}</code></pre>
+<h3 id="h-9">Настройки плагина <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h3>
+<p>Плагины могут поставляться с файлом <code>settings.json</code>, чтобы задавать конфигурацию по умолчанию. Сейчас это поддерживает ключ <code>agent</code>, который задаёт основной агент потока для плагина:</p>
+<pre><code class="language-json">{
+  &quot;agent&quot;: &quot;agents/specialist-1.md&quot;
+}</code></pre>
+<p>Когда плагин включает <code>settings.json</code>, его значения по умолчанию применяются при установке. Пользователи могут переопределить эти настройки в своей проектной или пользовательской конфигурации.</p>
+<h3 id="подход-standalone-против-плагина">Подход standalone против плагина <a class="h-anchor" href="#подход-standalone-против-плагина" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Подход</th><th>Имена команд</th><th>Конфигурация</th><th>Лучше всего подходит для</th></tr></thead><tbody><tr><td><strong>Standalone</strong></td><td><code>/hello</code></td><td>Ручная настройка в CLAUDE.md</td><td>Личных, проектных сценариев</td></tr><tr><td><strong>Plugins</strong></td><td><code>/plugin-name:hello</code></td><td>Автоматически через plugin.json</td><td>Совместного использования, распространения, командного использования</td></tr></tbody></table></div>
+<p>Используйте <strong>standalone slash commands</strong> для быстрых личных workflow. Используйте <strong>плагины</strong>, когда нужно объединить несколько возможностей, поделиться ими с командой или опубликовать их для распространения.</p>
+<h3 id="h-10">Практические примеры <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="пример-1-плагин-для-pr-review">Пример 1: плагин для PR Review <a class="h-anchor" href="#пример-1-плагин-для-pr-review" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Файл:</strong> <code>.claude-plugin/plugin.json</code></p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;pr-review&quot;,
+  &quot;version&quot;: &quot;1.0.0&quot;,
+  &quot;description&quot;: &quot;Полный workflow ревью pull request с проверками безопасности, тестов и документации&quot;,
+  &quot;author&quot;: {
+    &quot;name&quot;: &quot;Anthropic&quot;
+  },
+  &quot;repository&quot;: &quot;https://github.com/anthropic/pr-review&quot;,
+  &quot;license&quot;: &quot;MIT&quot;
+}</code></pre>
+<p><strong>Файл:</strong> <code>commands/review-pr.md</code></p>
+<pre><code class="language-markdown">---
+name: Review PR
+description: Начать комплексный PR review с проверками безопасности и тестов
+---
+
+# PR Review
+
+Эта команда запускает полный review pull request, включая:
+
+1. Анализ безопасности
+2. Проверку покрытия тестами
+3. Обновление документации
+4. Проверку качества кода
+5. Оценку влияния на производительность</code></pre>
+<p><strong>Файл:</strong> <code>agents/security-reviewer.md</code></p>
+<pre><code class="language-yaml">---
+name: security-reviewer
+description: Ревью кода с фокусом на безопасности
+tools: read, grep, diff
+---
+
+# Security Reviewer
+
+Специализируется на поиске уязвимостей безопасности:
+- Проблемы аутентификации и авторизации
+- Утечки данных
+- Инъекционные атаки
+- Безопасная конфигурация</code></pre>
+<p><strong>Установка:</strong></p>
+<pre><code class="language-bash">/plugin install pr-review
+
+# Результат:
+# ✅ 3 slash commands installed
+# ✅ 3 subagents configured
+# ✅ 2 MCP servers connected
+# ✅ 4 hooks registered
+# ✅ Ready to use!</code></pre>
+<h4 id="пример-2-devops-плагин">Пример 2: DevOps-плагин <a class="h-anchor" href="#пример-2-devops-плагин" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Компоненты:</strong></p>
+<pre><code>devops-automation/
+├── commands/
+│   ├── deploy.md
+│   ├── rollback.md
+│   ├── status.md
+│   └── incident.md
+├── agents/
+│   ├── deployment-specialist.md
+│   ├── incident-commander.md
+│   └── alert-analyzer.md
+├── mcp/
+│   ├── github-config.json
+│   ├── kubernetes-config.json
+│   └── prometheus-config.json
+├── hooks/
+│   ├── pre-deploy.js
+│   ├── post-deploy.js
+│   └── on-error.js
+└── scripts/
+    ├── deploy.sh
+    ├── rollback.sh
+    └── health-check.sh</code></pre>
+<h4 id="пример-3-плагин-для-документации">Пример 3: плагин для документации <a class="h-anchor" href="#пример-3-плагин-для-документации" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Встроенные компоненты:</strong></p>
+<pre><code>documentation/
+├── commands/
+│   ├── generate-api-docs.md
+│   ├── generate-readme.md
+│   ├── sync-docs.md
+│   └── validate-docs.md
+├── agents/
+│   ├── api-documenter.md
+│   ├── code-commentator.md
+│   └── example-generator.md
+├── mcp/
+│   ├── github-docs-config.json
+│   └── slack-announce-config.json
+└── templates/
+    ├── api-endpoint.md
+    ├── function-docs.md
+    └── adr-template.md</code></pre>
+<h3 id="plugin-marketplace">Plugin Marketplace <a class="h-anchor" href="#plugin-marketplace" aria-label="Ссылка на раздел">#</a></h3>
+<p>Официальный каталог plugin под управлением Anthropic - это <code>anthropics/claude-plugins-official</code>. Enterprise admins также могут создавать private plugin marketplaces для внутреннего распространения.</p>
+<pre><code class="language-mermaid">graph TB
+    A[&quot;Plugin Marketplace&quot;]
+    B[&quot;Official&lt;br/&gt;anthropics/claude-plugins-official&quot;]
+    C[&quot;Community&lt;br/&gt;Marketplace&quot;]
+    D[&quot;Enterprise&lt;br/&gt;Private Registry&quot;]
+
+    A --&gt; B
+    A --&gt; C
+    A --&gt; D
+
+    B --&gt;|Categories| B1[&quot;Development&quot;]
+    B --&gt;|Categories| B2[&quot;DevOps&quot;]
+    B --&gt;|Categories| B3[&quot;Documentation&quot;]
+
+    C --&gt;|Search| C1[&quot;DevOps Automation&quot;]
+    C --&gt;|Search| C2[&quot;Mobile Dev&quot;]
+    C --&gt;|Search| C3[&quot;Data Science&quot;]
+
+    D --&gt;|Internal| D1[&quot;Company Standards&quot;]
+    D --&gt;|Internal| D2[&quot;Legacy Systems&quot;]
+    D --&gt;|Internal| D3[&quot;Compliance&quot;]
+
+    style A fill:#e1f5fe,stroke:#333,color:#333
+    style B fill:#e8f5e9,stroke:#333,color:#333
+    style C fill:#f3e5f5,stroke:#333,color:#333
+    style D fill:#fff3e0,stroke:#333,color:#333</code></pre>
+<h4 id="конфигурация-marketplace">Конфигурация marketplace <a class="h-anchor" href="#конфигурация-marketplace" aria-label="Ссылка на раздел">#</a></h4>
+<p>Enterprise и advanced users могут управлять поведением marketplace через settings:</p>
+<div class="table-wrap"><table><thead><tr><th>Setting</th><th>Description</th></tr></thead><tbody><tr><td><code>extraKnownMarketplaces</code></td><td>Add additional marketplace sources beyond the defaults</td></tr><tr><td><code>strictKnownMarketplaces</code></td><td>Control which marketplaces users are allowed to add</td></tr><tr><td><code>deniedPlugins</code></td><td>Admin-managed blocklist to prevent specific plugins from being installed</td></tr></tbody></table></div>
+<h4 id="дополнительные-возможности-marketplace">Дополнительные возможности marketplace <a class="h-anchor" href="#дополнительные-возможности-marketplace" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Default git timeout</strong>: Increased from 30s to 120s for large plugin repositories</li>
+<li><strong>Custom npm registries</strong>: Plugins can specify custom npm registry URLs for dependency resolution</li>
+<li><strong>Version pinning</strong>: Lock plugins to specific versions for reproducible environments</li>
+</ul>
+<h4 id="схема-определения-marketplace">Схема определения marketplace <a class="h-anchor" href="#схема-определения-marketplace" aria-label="Ссылка на раздел">#</a></h4>
+<p>Plugin marketplaces определяются в <code>.claude-plugin/marketplace.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;my-team-plugins&quot;,
+  &quot;owner&quot;: &quot;my-org&quot;,
+  &quot;plugins&quot;: [
+    {
+      &quot;name&quot;: &quot;code-standards&quot;,
+      &quot;source&quot;: &quot;./plugins/code-standards&quot;,
+      &quot;description&quot;: &quot;Enforce team coding standards&quot;,
+      &quot;version&quot;: &quot;1.2.0&quot;,
+      &quot;author&quot;: &quot;platform-team&quot;
+    },
+    {
+      &quot;name&quot;: &quot;deploy-helper&quot;,
+      &quot;source&quot;: {
+        &quot;source&quot;: &quot;github&quot;,
+        &quot;repo&quot;: &quot;my-org/deploy-helper&quot;,
+        &quot;ref&quot;: &quot;v2.0.0&quot;
+      },
+      &quot;description&quot;: &quot;Deployment automation workflows&quot;
+    }
+  ]
+}</code></pre>
+<div class="table-wrap"><table><thead><tr><th>Field</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td>Yes</td><td>Marketplace name in kebab-case</td></tr><tr><td><code>owner</code></td><td>Yes</td><td>Organization or user who maintains the marketplace</td></tr><tr><td><code>plugins</code></td><td>Yes</td><td>Array of plugin entries</td></tr><tr><td><code>plugins[].name</code></td><td>Yes</td><td>Plugin name (kebab-case)</td></tr><tr><td><code>plugins[].source</code></td><td>Yes</td><td>Plugin source (path string or source object)</td></tr><tr><td><code>plugins[].description</code></td><td>No</td><td>Brief plugin description</td></tr><tr><td><code>plugins[].version</code></td><td>No</td><td>Semantic version string</td></tr><tr><td><code>plugins[].author</code></td><td>No</td><td>Plugin author name</td></tr></tbody></table></div>
+<h4 id="типы-источников-plugin">Типы источников plugin <a class="h-anchor" href="#типы-источников-plugin" aria-label="Ссылка на раздел">#</a></h4>
+<p>Plugins могут поступать из нескольких источников:</p>
+<div class="table-wrap"><table><thead><tr><th>Source</th><th>Syntax</th><th>Example</th></tr></thead><tbody><tr><td><strong>Relative path</strong></td><td>String path</td><td><code>&quot;./plugins/my-plugin&quot;</code></td></tr><tr><td><strong>GitHub</strong></td><td><code>{ &quot;source&quot;: &quot;github&quot;, &quot;repo&quot;: &quot;owner/repo&quot; }</code></td><td><code>{ &quot;source&quot;: &quot;github&quot;, &quot;repo&quot;: &quot;acme/lint-plugin&quot;, &quot;ref&quot;: &quot;v1.0&quot; }</code></td></tr><tr><td><strong>Git URL</strong></td><td><code>{ &quot;source&quot;: &quot;url&quot;, &quot;url&quot;: &quot;...&quot; }</code></td><td><code>{ &quot;source&quot;: &quot;url&quot;, &quot;url&quot;: &quot;https://git.internal/plugin.git&quot; }</code></td></tr><tr><td><strong>Git subdirectory</strong></td><td><code>{ &quot;source&quot;: &quot;git-subdir&quot;, &quot;url&quot;: &quot;...&quot;, &quot;path&quot;: &quot;...&quot; }</code></td><td><code>{ &quot;source&quot;: &quot;git-subdir&quot;, &quot;url&quot;: &quot;https://github.com/org/monorepo.git&quot;, &quot;path&quot;: &quot;packages/plugin&quot; }</code></td></tr><tr><td><strong>npm</strong></td><td><code>{ &quot;source&quot;: &quot;npm&quot;, &quot;package&quot;: &quot;...&quot; }</code></td><td><code>{ &quot;source&quot;: &quot;npm&quot;, &quot;package&quot;: &quot;@acme/claude-plugin&quot;, &quot;version&quot;: &quot;^2.0&quot; }</code></td></tr><tr><td><strong>pip</strong></td><td><code>{ &quot;source&quot;: &quot;pip&quot;, &quot;package&quot;: &quot;...&quot; }</code></td><td><code>{ &quot;source&quot;: &quot;pip&quot;, &quot;package&quot;: &quot;claude-data-plugin&quot;, &quot;version&quot;: &quot;&gt;=1.0&quot; }</code></td></tr></tbody></table></div>
+<p>Источники GitHub и git поддерживают необязательные поля <code>ref</code> (branch/tag) и <code>sha</code> (commit hash) для фиксации версии.</p>
+<h4 id="h-11">Способы распространения <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>GitHub (рекомендуется)</strong>:</p>
+<pre><code class="language-bash"># Users add your marketplace
+/plugin marketplace add owner/repo-name</code></pre>
+<p><strong>Другие git-сервисы</strong> (нужен полный URL):</p>
+<pre><code class="language-bash">/plugin marketplace add https://gitlab.com/org/marketplace-repo.git</code></pre>
+<p><strong>Private repositories</strong>: поддерживаются через git credential helpers или токены окружения. У пользователей должен быть доступ на чтение к repository.</p>
+<p><strong>Отправка в official marketplace</strong>: отправляйте plugins в curated marketplace от Anthropic для более широкого распространения.</p>
+<h4 id="h-12">Строгий режим <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h4>
+<p>Определяет, как marketplace definitions взаимодействуют с локальными файлами <code>plugin.json</code>:</p>
+<div class="table-wrap"><table><thead><tr><th>Setting</th><th>Behavior</th></tr></thead><tbody><tr><td><code>strict: true</code> (default)</td><td>Local <code>plugin.json</code> is authoritative; marketplace entry supplements it</td></tr><tr><td><code>strict: false</code></td><td>Marketplace entry is the entire plugin definition</td></tr></tbody></table></div>
+<p><strong>Ограничения организации</strong> с <code>strictKnownMarketplaces</code>:</p>
+<div class="table-wrap"><table><thead><tr><th>Value</th><th>Effect</th></tr></thead><tbody><tr><td>Not set</td><td>No restrictions — users can add any marketplace</td></tr><tr><td>Empty array <code>[]</code></td><td>Lockdown — no marketplaces allowed</td></tr><tr><td>Array of patterns</td><td>Allowlist — only matching marketplaces can be added</td></tr></tbody></table></div>
+<pre><code class="language-json">{
+  &quot;strictKnownMarketplaces&quot;: [
+    &quot;my-org/*&quot;,
+    &quot;github.com/trusted-vendor/*&quot;
+  ]
+}</code></pre>
+<blockquote>
+<p><strong>Предупреждение</strong>: в strict mode с <code>strictKnownMarketplaces</code> пользователи могут устанавливать plugins только из allowlist-ленных marketplaces. Это полезно для enterprise-сред, где нужен контролируемый вывод plugins.</p>
+</blockquote>
+<h3 id="установка-и-жизненный-цикл-plugin">Установка и жизненный цикл plugin <a class="h-anchor" href="#установка-и-жизненный-цикл-plugin" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-mermaid">graph LR
+    A[&quot;Discover&quot;] --&gt;|Browse| B[&quot;Marketplace&quot;]
+    B --&gt;|Select| C[&quot;Plugin Page&quot;]
+    C --&gt;|View| D[&quot;Components&quot;]
+    D --&gt;|Install| E[&quot;/plugin install&quot;]
+    E --&gt;|Extract| F[&quot;Configure&quot;]
+    F --&gt;|Activate| G[&quot;Use&quot;]
+    G --&gt;|Check| H[&quot;Update&quot;]
+    H --&gt;|Available| G
+    G --&gt;|Done| I[&quot;Disable&quot;]
+    I --&gt;|Later| J[&quot;Enable&quot;]
+    J --&gt;|Back| G</code></pre>
+<h3 id="сравнение-возможностей-plugin">Сравнение возможностей plugin <a class="h-anchor" href="#сравнение-возможностей-plugin" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Feature</th><th>Slash Command</th><th>Skill</th><th>Subagent</th><th>Plugin</th></tr></thead><tbody><tr><td><strong>Installation</strong></td><td>Ручное копирование</td><td>Ручное копирование</td><td>Ручная настройка</td><td>Одна команда</td></tr><tr><td><strong>Setup Time</strong></td><td>5 минут</td><td>10 минут</td><td>15 минут</td><td>2 минуты</td></tr><tr><td><strong>Bundling</strong></td><td>Один файл</td><td>Один файл</td><td>Один файл</td><td>Несколько</td></tr><tr><td><strong>Versioning</strong></td><td>Вручную</td><td>Вручную</td><td>Вручную</td><td>Автоматически</td></tr><tr><td><strong>Team Sharing</strong></td><td>Копирование файла</td><td>Копирование файла</td><td>Копирование файла</td><td>Install ID</td></tr><tr><td><strong>Updates</strong></td><td>Вручную</td><td>Вручную</td><td>Вручную</td><td>Доступны автоматически</td></tr><tr><td><strong>Dependencies</strong></td><td>Нет</td><td>Нет</td><td>Нет</td><td>Может включать</td></tr><tr><td><strong>Marketplace</strong></td><td>Нет</td><td>Нет</td><td>Нет</td><td>Да</td></tr><tr><td><strong>Distribution</strong></td><td>Repository</td><td>Repository</td><td>Repository</td><td>Marketplace</td></tr></tbody></table></div>
+<h3 id="cli-команды-plugin">CLI-команды plugin <a class="h-anchor" href="#cli-команды-plugin" aria-label="Ссылка на раздел">#</a></h3>
+<p>Все операции с plugin доступны как CLI-команды:</p>
+<pre><code class="language-bash">claude plugin install &lt;name&gt;@&lt;marketplace&gt;   # Install from a marketplace
+claude plugin uninstall &lt;name&gt;               # Remove a plugin
+claude plugin list                           # List installed plugins
+claude plugin enable &lt;name&gt;                  # Enable a disabled plugin
+claude plugin disable &lt;name&gt;                 # Disable a plugin
+claude plugin validate                       # Validate plugin structure</code></pre>
+<h3 id="h-13">Способы установки <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="из-marketplace">Из marketplace <a class="h-anchor" href="#из-marketplace" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">/plugin install plugin-name
+# or from CLI:
+claude plugin install plugin-name@marketplace-name</code></pre>
+<h4 id="h-14">Включить / отключить (с автоматически определяемой областью) <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">/plugin enable plugin-name
+/plugin disable plugin-name</code></pre>
+<h4 id="локальный-plugin-для-разработки">Локальный plugin (для разработки) <a class="h-anchor" href="#локальный-plugin-для-разработки" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># CLI flag for local testing (repeatable for multiple plugins)
+claude --plugin-dir ./path/to/plugin
+claude --plugin-dir ./plugin-a --plugin-dir ./plugin-b</code></pre>
+<h4 id="из-git-repository">Из Git repository <a class="h-anchor" href="#из-git-repository" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">/plugin install github:username/repo</code></pre>
+<h3 id="когда-создавать-plugin">Когда создавать plugin <a class="h-anchor" href="#когда-создавать-plugin" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-mermaid">graph TD
+    A[&quot;Нужно ли создавать плагин?&quot;]
+    A --&gt;|Нужно несколько компонентов| B{&quot;Несколько команд&lt;br/&gt;или subagents&lt;br/&gt;или MCP?&quot;}
+    B --&gt;|Да| C[&quot;✅ Создать плагин&quot;]
+    B --&gt;|Нет| D[&quot;Использовать отдельную возможность&quot;]
+    A --&gt;|Командный workflow| E{&quot;Поделиться с&lt;br/&gt;командой?&quot;}
+    E --&gt;|Да| C
+    E --&gt;|Нет| F[&quot;Оставить как локальную настройку&quot;]
+    A --&gt;|Сложная настройка| G{&quot;Нужна авто&lt;br/&gt;конфигурация?&quot;}
+    G --&gt;|Да| C
+    G --&gt;|Нет| D</code></pre>
+<h4 id="сценарии-использования-plugin">Сценарии использования plugin <a class="h-anchor" href="#сценарии-использования-plugin" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Сценарий использования</th><th>Рекомендация</th><th>Почему</th></tr></thead><tbody><tr><td><strong>Team Onboarding</strong></td><td>✅ Use Plugin</td><td>Мгновенная настройка, все конфигурации</td></tr><tr><td><strong>Framework Setup</strong></td><td>✅ Use Plugin</td><td>Bundles framework-specific commands</td></tr><tr><td><strong>Enterprise Standards</strong></td><td>✅ Use Plugin</td><td>Central distribution, version control</td></tr><tr><td><strong>Quick Task Automation</strong></td><td>❌ Use Command</td><td>Слишком громоздко</td></tr><tr><td><strong>Single Domain Expertise</strong></td><td>❌ Use Skill</td><td>Слишком тяжело, лучше skill</td></tr><tr><td><strong>Specialized Analysis</strong></td><td>❌ Use Subagent</td><td>Создайте вручную или используйте skill</td></tr><tr><td><strong>Live Data Access</strong></td><td>❌ Use MCP</td><td>Отдельно, не упаковывать</td></tr></tbody></table></div>
+<h3 id="тестирование-plugin">Тестирование plugin <a class="h-anchor" href="#тестирование-plugin" aria-label="Ссылка на раздел">#</a></h3>
+<p>Перед публикацией протестируйте plugin локально с помощью CLI-флага <code>--plugin-dir</code> (можно повторять для нескольких plugins):</p>
+<pre><code class="language-bash">claude --plugin-dir ./my-plugin
+claude --plugin-dir ./my-plugin --plugin-dir ./another-plugin</code></pre>
+<p>Это запускает Claude Code с загруженным plugin и позволяет:</p>
+<ul>
+<li>Проверить, что все slash commands доступны</li>
+<li>Убедиться, что subagents и agents работают корректно</li>
+<li>Подтвердить корректное подключение MCP servers</li>
+<li>Проверить выполнение hooks</li>
+<li>Проверить конфигурации LSP server</li>
+<li>Найти возможные ошибки конфигурации</li>
+</ul>
+<h3 id="hot-reload">Hot-reload <a class="h-anchor" href="#hot-reload" aria-label="Ссылка на раздел">#</a></h3>
+<p>Plugins поддерживают hot-reload во время разработки. Когда вы изменяете файлы plugin, Claude Code может автоматически обнаруживать изменения. Также можно принудительно перезагрузить их:</p>
+<pre><code class="language-bash">/reload-plugins</code></pre>
+<p>Это заново считывает все plugin manifests, commands, agents, skills, hooks и MCP/LSP configurations без перезапуска сессии.</p>
+<h3 id="managed-settings-для-plugin">Managed settings для plugin <a class="h-anchor" href="#managed-settings-для-plugin" aria-label="Ссылка на раздел">#</a></h3>
+<p>Administrators могут управлять поведением plugin во всей организации с помощью managed settings:</p>
+<div class="table-wrap"><table><thead><tr><th>Setting</th><th>Description</th></tr></thead><tbody><tr><td><code>enabledPlugins</code></td><td>Allowlist plugins, включённых по умолчанию</td></tr><tr><td><code>deniedPlugins</code></td><td>Blocklist plugins, которые нельзя установить</td></tr><tr><td><code>extraKnownMarketplaces</code></td><td>Добавить дополнительные источники marketplace помимо стандартных</td></tr><tr><td><code>strictKnownMarketplaces</code></td><td>Ограничить, какие marketplace пользователи могут добавлять</td></tr><tr><td><code>allowedChannelPlugins</code></td><td>Управлять тем, какие plugins разрешены в каждом release channel</td></tr></tbody></table></div>
+<p>Эти настройки можно применять на уровне организации через managed configuration files, и они имеют приоритет над пользовательскими настройками.</p>
+<h3 id="безопасность-plugin">Безопасность plugin <a class="h-anchor" href="#безопасность-plugin" aria-label="Ссылка на раздел">#</a></h3>
+<p>Subagents plugin работают в ограниченном sandbox. Следующие keys frontmatter <strong>не разрешены</strong> в определениях plugin subagent:</p>
+<ul>
+<li><code>hooks</code> -- subagents не могут регистрировать event handlers</li>
+<li><code>mcpServers</code> -- subagents не могут настраивать MCP servers</li>
+<li><code>permissionMode</code> -- subagents не могут переопределять permission model</li>
+</ul>
+<p>Это гарантирует, что plugins не смогут повышать привилегии или изменять host environment за пределами заявленной области.</p>
+<h3 id="публикация-plugin">Публикация plugin <a class="h-anchor" href="#публикация-plugin" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Шаги публикации:</strong></p>
+<ol>
+<li>Create plugin structure with all components</li>
+<li>Write <code>.claude-plugin/plugin.json</code> manifest</li>
+<li>Create <code>README.md</code> with documentation</li>
+<li>Test locally with <code>claude --plugin-dir ./my-plugin</code></li>
+<li>Submit to plugin marketplace</li>
+<li>Get reviewed and approved</li>
+<li>Published on marketplace</li>
+<li>Users can install with one command</li>
+</ol>
+<p><strong>Пример submission:</strong></p>
+<pre><code class="language-markdown"># PR Review Plugin
+
+## Description
+Полный workflow ревью pull request с проверками безопасности, тестов и документации.
+
+## What&#x27;s Included
+- 3 slash commands for different review types
+- 3 specialized subagents
+- GitHub and CodeQL MCP integration
+- Automated security scanning hooks
+
+## Installation</code></pre>
+<p>/plugin install pr-review</p>
+<pre><code>
+## Features
+✅ Security analysis
+✅ Test coverage checking
+✅ Documentation verification
+✅ Code quality assessment
+✅ Performance impact analysis
+
+## Usage</code></pre>
+<p>/review-pr
+/check-security
+/check-tests</p>
+<pre><code>
+## Requirements
+- Claude Code 1.0+
+- GitHub access
+- CodeQL (optional)</code></pre>
+<h3 id="plugin-vs-ручная-конфигурация">Plugin vs ручная конфигурация <a class="h-anchor" href="#plugin-vs-ручная-конфигурация" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Ручная настройка (2+ часа):</strong></p>
+<ul>
+<li>Install slash commands one by one</li>
+<li>Create subagents individually</li>
+<li>Configure MCPs separately</li>
+<li>Set up hooks manually</li>
+<li>Document everything</li>
+<li>Share with team (hope they configure correctly)</li>
+</ul>
+<p><strong>С plugin (2 минуты):</strong></p>
+<pre><code class="language-bash">/plugin install pr-review
+# ✅ Everything installed and configured
+# ✅ Ready to use immediately
+# ✅ Team can reproduce exact setup</code></pre>
+<h3 id="h-15">Лучшие практики <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-16">Что делать ✅ <a class="h-anchor" href="#h-16" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Используйте понятные, описательные names plugin</li>
+<li>Добавляйте исчерпывающий README</li>
+<li>Правильно version-ируйте plugin (semver)</li>
+<li>Тестируйте все components вместе</li>
+<li>Чётко документируйте requirements</li>
+<li>Приводите примеры использования</li>
+<li>Добавляйте обработку ошибок</li>
+<li>Правильно тегируйте для discovery</li>
+<li>Сохраняйте backward compatibility</li>
+<li>Держите plugins сфокусированными и цельными</li>
+<li>Добавляйте полные tests</li>
+<li>Документируйте все dependencies</li>
+</ul>
+<h4 id="h-17">Чего не делать ❌ <a class="h-anchor" href="#h-17" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Не объединяйте несвязанные возможности</li>
+<li>Не хардкодьте credentials</li>
+<li>Не пропускайте testing</li>
+<li>Не забывайте документацию</li>
+<li>Не создавайте дублирующие plugins</li>
+<li>Не игнорируйте versioning</li>
+<li>Не усложняйте dependencies компонентов</li>
+<li>Не забывайте корректно обрабатывать ошибки</li>
+</ul>
+<h3 id="installation-instructions">Installation Instructions <a class="h-anchor" href="#installation-instructions" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="installing-from-marketplace">Installing from Marketplace <a class="h-anchor" href="#installing-from-marketplace" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li><strong>Browse available plugins:</strong></li>
+</ol>
+<pre><code class="language-bash">   /plugin list</code></pre>
+<ol>
+<li><strong>View plugin details:</strong></li>
+</ol>
+<pre><code class="language-bash">   /plugin info plugin-name</code></pre>
+<ol>
+<li><strong>Install a plugin:</strong></li>
+</ol>
+<pre><code class="language-bash">   /plugin install plugin-name</code></pre>
+<h4 id="installing-from-local-path">Installing from Local Path <a class="h-anchor" href="#installing-from-local-path" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">/plugin install ./path/to/plugin-directory</code></pre>
+<h4 id="installing-from-github">Installing from GitHub <a class="h-anchor" href="#installing-from-github" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">/plugin install github:username/repo</code></pre>
+<h4 id="listing-installed-plugins">Listing Installed Plugins <a class="h-anchor" href="#listing-installed-plugins" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">/plugin list --installed</code></pre>
+<h4 id="updating-a-plugin">Updating a Plugin <a class="h-anchor" href="#updating-a-plugin" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">/plugin update plugin-name</code></pre>
+<h4 id="disabling-enabling-a-plugin">Disabling/Enabling a Plugin <a class="h-anchor" href="#disabling-enabling-a-plugin" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Temporarily disable
+/plugin disable plugin-name
+
+# Re-enable
+/plugin enable plugin-name</code></pre>
+<h4 id="uninstalling-a-plugin">Uninstalling a Plugin <a class="h-anchor" href="#uninstalling-a-plugin" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">/plugin uninstall plugin-name</code></pre>
+<h3 id="h-18">Связанные возможности <a class="h-anchor" href="#h-18" aria-label="Ссылка на раздел">#</a></h3>
+<p>С plugins хорошо работают следующие возможности Claude Code:</p>
+<ul>
+<li><strong><a href="../01-slash-commands/">Slash Commands</a></strong> - отдельные команды, упакованные в plugins</li>
+<li><strong><a href="../02-memory/">Memory</a></strong> - постоянный контекст для plugins</li>
+<li><strong><a href="../03-skills/">Skills</a></strong> - предметная экспертиза, которую можно упаковать в plugins</li>
+<li><strong><a href="../04-subagents/">Subagents</a></strong> - специализированные agents, включённые как компоненты plugin</li>
+<li><strong><a href="../05-mcp/">MCP Servers</a></strong> - интеграции Model Context Protocol, упакованные в plugins</li>
+<li><strong><a href="../06-hooks/">Hooks</a></strong> - обработчики событий, запускающие workflows plugin</li>
+</ul>
+<h3 id="complete-example-workflow">Complete Example Workflow <a class="h-anchor" href="#complete-example-workflow" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="pr-review-plugin-full-workflow">PR Review Plugin Full Workflow <a class="h-anchor" href="#pr-review-plugin-full-workflow" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>1. User: /review-pr
+
+2. Plugin executes:
+   ├── pre-review.js hook validates git repo
+   ├── GitHub MCP fetches PR data
+   ├── security-reviewer subagent analyzes security
+   ├── test-checker subagent verifies coverage
+   └── performance-analyzer subagent checks performance
+
+3. Results synthesized and presented:
+   ✅ Security: No critical issues
+   ⚠️  Testing: Coverage 65% (recommend 80%+)
+   ✅ Performance: No significant impact
+   📝 12 recommendations provided</code></pre>
+<h3 id="troubleshooting">Troubleshooting <a class="h-anchor" href="#troubleshooting" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="plugin-won-t-install">Plugin Won&#x27;t Install <a class="h-anchor" href="#plugin-won-t-install" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Check Claude Code version compatibility: <code>/version</code></li>
+<li>Verify <code>plugin.json</code> syntax with a JSON validator</li>
+<li>Check internet connection (for remote plugins)</li>
+<li>Review permissions: <code>ls -la plugin/</code></li>
+</ul>
+<h4 id="components-not-loading">Components Not Loading <a class="h-anchor" href="#components-not-loading" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Verify paths in <code>plugin.json</code> match actual directory structure</li>
+<li>Check file permissions: <code>chmod +x scripts/</code></li>
+<li>Review component file syntax</li>
+<li>Check logs: <code>/plugin debug plugin-name</code></li>
+</ul>
+<h4 id="mcp-connection-failed">MCP Connection Failed <a class="h-anchor" href="#mcp-connection-failed" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Verify environment variables are set correctly</li>
+<li>Check MCP server installation and health</li>
+<li>Test MCP connection independently with <code>/mcp test</code></li>
+<li>Review MCP configuration in <code>mcp/</code> directory</li>
+</ul>
+<h4 id="commands-not-available-after-install">Commands Not Available After Install <a class="h-anchor" href="#commands-not-available-after-install" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Ensure plugin was installed successfully: <code>/plugin list --installed</code></li>
+<li>Check if plugin is enabled: <code>/plugin status plugin-name</code></li>
+<li>Restart Claude Code: <code>exit</code> and reopen</li>
+<li>Check for naming conflicts with existing commands</li>
+</ul>
+<h4 id="hook-execution-issues">Hook Execution Issues <a class="h-anchor" href="#hook-execution-issues" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Verify hook files have correct permissions</li>
+<li>Check hook syntax and event names</li>
+<li>Review hook logs for error details</li>
+<li>Test hooks manually if possible</li>
+</ul>
+<h3 id="additional-resources">Additional Resources <a class="h-anchor" href="#additional-resources" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/en/plugins">Official Plugins Documentation</a></li>
+<li><a href="https://code.claude.com/docs/en/discover-plugins">Discover Plugins</a></li>
+<li><a href="https://code.claude.com/docs/en/plugin-marketplaces">Plugin Marketplaces</a></li>
+<li><a href="https://code.claude.com/docs/en/plugins-reference">Plugins Reference</a></li>
+<li><a href="https://modelcontextprotocol.io/">MCP Server Reference</a></li>
+<li><a href="../04-subagents/README.md">Subagent Configuration Guide</a></li>
+<li><a href="../06-hooks/README.md">Hook System Reference</a></li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

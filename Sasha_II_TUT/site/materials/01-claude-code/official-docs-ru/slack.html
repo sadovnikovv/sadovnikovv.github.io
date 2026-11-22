@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Claude Code в Slack</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="claude-code-в-slack">Claude Code в Slack <a class="h-anchor" href="#claude-code-в-slack" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Делегируйте задачи кодирования из Slack. Эта более ранняя версия отвечает на упоминания только от учетных записей Pro, Max и Ultra в рабочих пространствах, не подключенных к Claude Tag.</p>
+</blockquote>
+<blockquote>
+<p>[!WARNING]</p>
+<p>Эта более ранняя версия Claude Code в Slack отвечает на @упоминания в каналах только от учетных записей Pro, Max и Ultra и только в рабочем пространстве Slack, которое ни одна организация не подключила к <a href="https://claude.com/product/tag">Claude Tag</a>. Каждая сессия запускается под учетной записью отдельного пользователя. Claude Tag запускает @Claude как общую идентичность вашей организации с доступом, настроенным администратором.</p>
+<ul>
+<li><strong>Планы Pro, Max и Ultra:</strong> Claude Tag недоступен в индивидуальных планах, поэтому <a href="#setting-up-claude-code-in-slack">настройте эту версию</a> в рабочем пространстве, не подключенном к Claude Tag.</li>
+<li><strong>Планы Team и Enterprise:</strong> ваше существующее приложение Slack и дескриптор @Claude сохраняются. <a href="https://claude.com/docs/claude-tag/overview">Настройте Claude Tag</a> для нового рабочего пространства; чтобы перенести то, которое уже использует эту версию, см. <a href="https://claude.com/docs/claude-tag/admins/migrate-from-earlier">Миграция с более ранней версии Claude в Slack</a>.</li>
+<li><strong>Уведомление вместо ответа:</strong> найдите <a href="#this-workspace-isnt-set-up-for-claude-tag-yet">уведомление о настройке</a> или <a href="#the-legacy-claude-in-slack-bot-is-retired">уведомление о прекращении работы</a>, которым ответил @Claude.</li>
+</ul>
+</blockquote>
+<p>Claude Code в Slack приносит мощь Claude Code прямо в ваше рабочее пространство Slack. Когда вы упоминаете <code>@Claude</code> с задачей кодирования, Claude автоматически определяет намерение и создает облачную сессию Claude Code, позволяя вам делегировать работу по разработке, не покидая командные диалоги.</p>
+<p>Эта интеграция построена на существующем приложении Claude для Slack, но добавляет интеллектуальную маршрутизацию к облачным сессиям Claude Code для обращений, связанных с кодированием. Каждая сессия работает под вашей собственной учетной записью Claude, используя ваши подключенные репозитории и ограничения вашего плана.</p>
+<h3 id="h">Варианты использования <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong>Исследование и исправление ошибок</strong>: Опишите ошибку и попросите Claude исследовать и исправить её.</li>
+<li><strong>Быстрые код-ревью и модификации</strong>: Пусть Claude реализует небольшие функции или рефакторит код.</li>
+<li><strong>Параллельное выполнение задач</strong>: Запустите задачи кодирования в Slack, пока вы продолжаете другую работу, получая уведомления по завершении.</li>
+</ul>
+<h3 id="h-2">Предварительные требования <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Перед использованием Claude Code в Slack убедитесь, что у вас есть следующее:</p>
+<p>| Требование | Детали |
+| :- | :- |
+| План Claude | Pro, Max или Ultra |
+| Рабочее пространство Slack | Не подключено к <a href="https://claude.com/docs/claude-tag/overview">Claude Tag</a> ни одной организацией. Если @Claude отвечает <a href="#the-legacy-claude-in-slack-bot-is-retired">уведомлением о выводе из эксплуатации</a>, значит, рабочее пространство подключено |
+| Облачные сессии | <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">Облачные сессии</a> включены для вашей учетной записи |
+| Учетная запись GitHub | Подключена к <a href="https://claude.ai/code">claude.ai/code</a> с по крайней мере одним аутентифицированным репозиторием |
+| Аутентификация Slack | Ваша учетная запись Slack связана с вашей учетной записью Claude через приложение Claude |</p>
+<h3 id="настройка-claude-code-в-slack">Настройка Claude Code в Slack <a class="h-anchor" href="#настройка-claude-code-в-slack" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>1. Установите приложение Claude в Slack</strong></p>
+<p>Администратор рабочего пространства должен установить приложение Claude из Slack App Marketplace. Посетите <a href="https://slack.com/marketplace/A08SF47R6P4">Slack App Marketplace</a> и нажмите &quot;Add to Slack&quot;, чтобы начать процесс установки.</p>
+<p><strong>2. Подключите вашу учетную запись Claude</strong></p>
+<p>После установки приложения аутентифицируйте вашу индивидуальную учетную запись Claude:</p>
+<ol>
+<li>Откройте приложение Claude в Slack, нажав на &quot;Claude&quot; в разделе &quot;Apps&quot;</li>
+<li>Перейдите на вкладку App Home</li>
+<li>Нажмите <strong>Connect Claude account</strong>, чтобы связать вашу учетную запись Slack с вашей учетной записью Claude</li>
+<li>Завершите процесс аутентификации в вашем браузере</li>
+</ol>
+<p><strong>3. Настройте облачные сеансы</strong></p>
+<p>Убедитесь, что облачные сеансы правильно настроены для вашей учетной записи:</p>
+<ul>
+<li>Посетите <a href="https://claude.ai/code">claude.ai/code</a> и войдите с той же учетной записью, которую вы подключили к Slack</li>
+<li>Подключите вашу учетную запись GitHub, если она еще не подключена</li>
+<li>Аутентифицируйте по крайней мере один репозиторий, с которым вы хотите, чтобы Claude работал</li>
+</ul>
+<p><strong>4. Выберите режим маршрутизации</strong></p>
+<p>После подключения ваших учетных записей настройте, как Claude обрабатывает ваши сообщения в Slack. Откройте App Home Claude в Slack, чтобы найти параметр <strong>Режим маршрутизации</strong>.</p>
+<p>| Режим | Поведение |
+| :- | :- |
+| <strong>Только код</strong> | Claude маршрутизирует все @mentions к сеансам Claude Code. Лучше всего для команд, использующих Claude в Slack исключительно для задач разработки. |
+| <strong>Код + Чат</strong> | Claude анализирует каждое сообщение и интеллектуально маршрутизирует между Claude Code (для задач кодирования) и Claude Chat (для написания, анализа и общих вопросов). Лучше всего для команд, которые хотят единую точку входа @Claude для всех типов работы. |</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>В режиме &quot;Код + Чат&quot;, если Claude отвечает в Chat, но вы хотели сессию кодирования, нажмите <strong>Switch to code repo...</strong> в ответе и выберите репозиторий. После этого Claude вместо этого запустит сессию Claude Code с вашим сообщением.</p>
+</blockquote>
+<p><strong>5. Добавьте Claude в каналы</strong></p>
+<p>Claude не добавляется автоматически ни в какие каналы после установки. Чтобы использовать Claude в канале, пригласите его, введя <code>/invite @Claude</code> в этот канал. Claude может отвечать только на @mentions в каналах, где он был добавлен.</p>
+<h3 id="h-3">Как это работает <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-4">Автоматическое обнаружение <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<p>В режиме маршрутизации Code + Chat, когда вы упоминаете @Claude в канале или цепочке Slack, Claude автоматически определяет, является ли ваше сообщение задачей кодирования. Задачи кодирования переходят в Claude Code в облачный сеанс. Все остальное получает обычный ответ чата. В режиме только Code каждое упоминание @mention переходит в Claude Code.</p>
+<p>Вы также можете явно указать Claude обрабатывать запрос как задачу кодирования, даже если он не обнаружит это автоматически.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Claude Code в Slack работает только в каналах (публичных или приватных). Он не работает в прямых сообщениях (DM).</p>
+</blockquote>
+<h4 id="h-5">Сбор контекста <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Из цепочек</strong>: когда вы впервые упоминаете Claude через @mention в цепочке, он собирает контекст из ваших и своих собственных сообщений в этой цепочке.</li>
+<li><strong>Из каналов</strong>: когда вы упоминаете Claude через @mention непосредственно в канале, он просматривает ваши недавние сообщения и свои собственные в этом канале, а также название, тему и описание канала.</li>
+</ul>
+<p>Этот контекст помогает Claude понять проблему, выбрать соответствующий репозиторий и определить свой подход к задаче. Чтобы передать Claude то, что написал коллега, например отчет об ошибке, вставьте этот текст в сообщение, в котором вы упоминаете Claude через @mention.</p>
+<blockquote>
+<p>[!WARNING]</p>
+<p>Когда @Claude вызывается в Slack, Claude получает доступ к контексту беседы, чтобы лучше понять ваш запрос. Claude может следовать указаниям из других сообщений в контексте, поэтому пользователи должны убедиться, что используют Claude только в доверенных беседах Slack.</p>
+</blockquote>
+<h4 id="h-6">Поток сеанса <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li><strong>Инициирование</strong>: Вы упоминаете Claude с запросом кодирования</li>
+<li><strong>Обнаружение</strong>: Claude анализирует ваше сообщение и обнаруживает намерение кодирования</li>
+<li><strong>Создание сеанса</strong>: Новый сеанс Claude Code создается на claude.ai/code</li>
+<li><strong>Обновления прогресса</strong>: Claude публикует обновления статуса в вашу цепочку Slack по мере выполнения работы</li>
+<li><strong>Завершение</strong>: По завершении Claude обновляет свое сообщение в цепочке, добавляя окончательный ответ и кнопки действий, и отправляет вам личное сообщение со ссылкой на него</li>
+<li><strong>Проверка</strong>: Нажмите <strong>View session</strong>, чтобы увидеть полный транскрипт, или <strong>Create PR</strong>, чтобы открыть pull request</li>
+</ol>
+<h3 id="h-7">Элементы пользовательского интерфейса <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-8">Действия с сообщениями <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>View session</strong>: Открывает полную сессию Claude Code в вашем браузере, где вы можете увидеть всю выполненную работу, продолжить сессию или сделать дополнительные запросы.</li>
+<li><strong>Create PR</strong>: Открывает страницу сравнения GitHub для ветки сессии, где вы создаёте pull request. Кнопка появляется на статусном сообщении, которое Claude опубликовал при запуске сессии, после завершения сессии.</li>
+<li><strong>Switch to code repo...</strong>: Если Claude ответил в режиме Chat, но вы хотели сессию программирования, нажмите эту кнопку и выберите репозиторий, и Claude запустит сессию Claude Code с вашим исходным запросом.</li>
+</ul>
+<h4 id="h-9">Выбор репозитория <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude автоматически выбирает репозиторий на основе контекста из вашего диалога в Slack. Если Claude не может определить, какой репозиторий вы имеете в виду, он попросит вас выбрать: нажмите <strong>Select repository</strong> и выберите репозиторий из списка.</p>
+<h3 id="h-10">Доступ и разрешения <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-11">Доступ на уровне пользователя <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h4>
+<p>| Тип доступа | Требование |
+| :- | :- |
+| Сеансы Claude Code | Каждый пользователь запускает сеансы под своей учетной записью Claude |
+| Использование и ограничения скорости | Сеансы учитываются в отношении ограничений плана отдельного пользователя |
+| Доступ к репозиторию | Пользователи могут получать доступ только к репозиториям, которые они лично подключили |
+| История сеансов | Сеансы отображаются в вашей истории Claude Code на claude.ai/code |</p>
+<h4 id="h-12">Доступ на уровне рабочего пространства <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h4>
+<p>Администраторы рабочего пространства Slack контролируют, доступно ли приложение Claude в их рабочем пространстве:</p>
+<p>| Управление | Описание |
+| :- | :- |
+| Установка приложения | Администраторы рабочего пространства решают, устанавливать ли приложение Claude из Slack App Marketplace |
+| Распределение Enterprise Grid | Для организаций Enterprise Grid администраторы организации могут контролировать, какие рабочие пространства имеют доступ к приложению Claude |
+| Удаление приложения | Удаление приложения из рабочего пространства немедленно отзывает доступ для всех пользователей в этом рабочем пространстве |</p>
+<h4 id="h-13">Управление доступом на основе канала <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h4>
+<p>Установка приложения не добавляет Claude ни в какие каналы. Claude отвечает на @mentions только в каналах, где он был добавлен; пригласите его с помощью <code>/invite @Claude</code>. Он работает как в публичных, так и в приватных каналах. Администраторы могут контролировать использование Claude Code, управляя тем, в какие каналы приглашается Claude и кто имеет доступ к этим каналам. Это добавляет дополнительный уровень управления доступом помимо разрешений на уровне рабочего пространства.</p>
+<h3 id="h-14">Что доступно где <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>В Slack</strong>: Вы увидите обновления статуса, резюме завершения и кнопки действия. Полная стенограмма сохраняется и всегда доступна.</p>
+<p><strong>На claude.ai/code</strong>: Полный сеанс Claude Code с полной историей беседы, все изменения кода и операции с файлами. Сеансы остаются в истории Claude Code по адресу <a href="https://claude.ai/code">claude.ai/code</a>, где вы можете продолжить прошлые сеансы, ссылаться на них или создавать запросы на слияние.</p>
+<p>Для учетных записей Enterprise и Team сеансы, созданные из Claude в Slack, автоматически видны организации. Дополнительные сведения см. в разделе <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md#share-sessions">совместное использование сеансов</a>.</p>
+<h3 id="h-15">Лучшие практики <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-16">Написание эффективных запросов <a class="h-anchor" href="#h-16" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Будьте конкретны</strong>: Включайте имена файлов, имена функций или сообщения об ошибках, когда это уместно.</li>
+<li><strong>Предоставьте контекст</strong>: Упомяните репозиторий или проект.</li>
+<li><strong>Определите успех</strong>: Объясните, как выглядит &quot;готово&quot; — должен ли Claude писать тесты? Обновить документацию? Создать PR?</li>
+</ul>
+<h4 id="когда-использовать-slack-vs-веб-версию">Когда использовать Slack vs. веб-версию <a class="h-anchor" href="#когда-использовать-slack-vs-веб-версию" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Используйте Slack когда</strong>: Вы хотите запустить задачу асинхронно или сотрудничаете с товарищами по команде, которым нужна видимость.</p>
+<p><strong>Используйте веб-версию напрямую когда</strong>: Вам нужно загрузить файлы, вы хотите взаимодействие в реальном времени во время разработки или работаете над более длительными, более сложными задачами.</p>
+<h3 id="h-17">Устранение неполадок <a class="h-anchor" href="#h-17" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="this-workspace-isn-t-set-up-for-claude-tag-yet">&quot;This workspace isn&#x27;t set up for Claude Tag yet&quot; <a class="h-anchor" href="#this-workspace-isn-t-set-up-for-claude-tag-yet" aria-label="Ссылка на раздел">#</a></h4>
+<p>@Claude отвечает в ветке этим уведомлением вместо ответа, когда выполняются оба условия:</p>
+<ul>
+<li>Ни одна организация не подключила ваше рабочее пространство Slack к <a href="https://claude.com/docs/claude-tag/overview">Claude Tag</a>.</li>
+<li>Учетная запись Claude, которую вы привязали в Slack, не использует план Pro, Max или Ultra.</li>
+</ul>
+<p>Claude Tag доступен на планах Team и Enterprise. Чтобы подключить рабочее пространство, начните с команды <code>@Claude connect</code>, указанной в уведомлении, а затем следуйте инструкциям в разделе <a href="https://claude.com/docs/claude-tag/overview">Настройка Claude Tag</a>.</p>
+<h4 id="the-legacy-claude-in-slack-bot-is-retired">&quot;The legacy Claude in Slack bot is retired&quot; <a class="h-anchor" href="#the-legacy-claude-in-slack-bot-is-retired" aria-label="Ссылка на раздел">#</a></h4>
+<p>Уведомление начинается с <code>The legacy Claude in Slack bot is retired effective October 5, 2026 and no longer responds in channels.</code> Ваше рабочее пространство Slack подключено к организации Claude, а в настройках Claude Tag этой организации для канала, рабочего пространства или значения по умолчанию организации по-прежнему выбрана предыдущая версия. Уведомление не зависит от вашего собственного плана, поэтому его получают и учетные записи Pro, Max и Ultra.</p>
+<p>Если вы являетесь Owner этой организации, откройте <a href="https://claude.ai/admin-settings/claude-tag">настройки администратора Claude</a> и включите Claude Tag для канала. Чтобы исправить все каналы, наследующие эту настройку, измените ее на уровне рабочего пространства или значения по умолчанию организации. Полное описание перехода см. в разделе <a href="https://claude.com/docs/claude-tag/admins/migrate-from-earlier">Миграция с предыдущей версии Claude in Slack</a>. Если вы не являетесь Owner, отправьте эту запись одному из них.</p>
+<h4 id="claude-code-is-not-enabled-for-your-account">&quot;Claude Code is not enabled for your account&quot; <a class="h-anchor" href="#claude-code-is-not-enabled-for-your-account" aria-label="Ссылка на раздел">#</a></h4>
+<p>Эта ошибка означает, что ваша учетная запись Claude еще не имеет облачной среды. Войдите на <a href="https://claude.ai/code">claude.ai/code</a> один раз с той же учетной записью, которую вы подключили к Slack, и завершите <a href="https://code.claude.com/docs/ru/web-quickstart.md#connect-github">веб-подготовку</a>, которая создает вашу облачную среду по умолчанию или просит вас создать ее. Ошибка исчезает при следующем упоминании. Каждый пользователь должен сделать это индивидуально.</p>
+<h4 id="h-18">Сессии не запускаются <a class="h-anchor" href="#h-18" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Убедитесь, что ваша учетная запись Claude подключена в Claude App Home</li>
+<li>Проверьте, что облачные сессии включены для вашей учетной записи</li>
+<li>Убедитесь, что у вас подключен по крайней мере один репозиторий GitHub к Claude Code</li>
+</ol>
+<h4 id="сессии-из-канала-claude-tag-не-запускаются">Сессии из канала Claude Tag не запускаются <a class="h-anchor" href="#сессии-из-канала-claude-tag-не-запускаются" aria-label="Ссылка на раздел">#</a></h4>
+<p>Эта запись применяется к рабочим пространствам, использующим <a href="https://claude.com/docs/claude-tag/overview">Claude Tag</a>. Если вы создали облачную среду канала на <a href="https://claude.ai/code">claude.ai/code</a>, она принадлежит вашей личной учетной записи, и Claude не может запустить сессии канала в личной среде. Claude Code немедленно завершает сессию с ошибкой, и повторная попытка не помогает.</p>
+<p>Если вы являетесь Owner и среда принадлежит вам, <a href="https://code.claude.com/docs/ru/cloud-environments.md#organization-shared-environments">поделитесь ею с организацией</a> из селектора среды. В противном случае Owner пересоздает ее как организационно-общую среду со страницы <strong>Cloud environments</strong> в <a href="https://claude.ai/admin-settings">настройках администратора</a>.</p>
+<p>Вы можете применить ее двумя способами:</p>
+<ul>
+<li>Установите ее как организационное значение по умолчанию на <a href="https://claude.ai/admin-settings/claude-code">claude.ai/admin-settings/claude-code</a>.</li>
+<li><a href="https://claude.com/docs/claude-tag/admins/troubleshooting#channel-sessions-use-the-wrong-environment-or-can%E2%80%99t-find-one">Установите ее на канале</a> в настройках администратора Claude Tag.</li>
+</ul>
+<p>Если вы не являетесь Owner, отправьте эту запись одному из них.</p>
+<h4 id="h-19">Репозиторий не отображается <a class="h-anchor" href="#h-19" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Подключите репозиторий на <a href="https://claude.ai/code">claude.ai/code</a></li>
+<li>Проверьте ваши разрешения GitHub для этого репозитория</li>
+<li>Попробуйте отключить и повторно подключить вашу учетную запись GitHub</li>
+</ol>
+<h4 id="h-20">Выбран неправильный репозиторий <a class="h-anchor" href="#h-20" aria-label="Ссылка на раздел">#</a></h4>
+<p>Включите имя репозитория в ваш запрос для более точного выбора.</p>
+<h4 id="h-21">Ошибки аутентификации <a class="h-anchor" href="#h-21" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Отключите и повторно подключите вашу учетную запись Claude в App Home</li>
+<li>Убедитесь, что вы вошли в правильную учетную запись Claude в вашем браузере</li>
+</ol>
+<h3 id="h-22">Текущие ограничения <a class="h-anchor" href="#h-22" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong>Только GitHub</strong>: репозитории должны находиться на GitHub.</li>
+<li><strong>Один PR за раз</strong>: каждая сессия может создать один pull request.</li>
+<li><strong>Требуется доступ к облачным сессиям</strong>: пользователи должны иметь доступ к <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">облачным сессиям</a>.</li>
+</ul>
+<h3 id="h-23">Связанные ресурсы <a class="h-anchor" href="#h-23" aria-label="Ссылка на раздел">#</a></h3>
+<blockquote>
+<p>[card] <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">Claude Code в облаке</a></p>
+<p>Узнайте больше о облачных сеансах</p>
+</blockquote>
+<blockquote>
+<p>[card] <a href="https://claude.com/claude-and-slack">Claude для Slack</a></p>
+<p>Общая документация Claude для Slack</p>
+</blockquote>
+<blockquote>
+<p>[card] <a href="https://claude.com/docs/claude-tag/overview">Claude Tag</a></p>
+<p>Управляемый организацией @Claude в Slack с настраиваемым администратором доступом</p>
+</blockquote>
+<blockquote>
+<p>[card] <a href="https://slack.com/marketplace/A08SF47R6P4">Slack App Marketplace</a></p>
+<p>Установите приложение Claude из Slack Marketplace</p>
+</blockquote>
+<blockquote>
+<p>[card] <a href="https://support.claude.com">Центр помощи Claude</a></p>
+<p>Получите дополнительную поддержку</p>
+</blockquote>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

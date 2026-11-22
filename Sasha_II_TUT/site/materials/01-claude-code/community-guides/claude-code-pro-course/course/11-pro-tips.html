@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Модуль 11. Продвинутые приёмы и чек-лист профи</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/index.html">claude-code-pro-course</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/course/index.html">course</a></nav>
+<h1 id="модуль-11-продвинутые-приемы-и-чек-лист-профи">Модуль 11. Продвинутые приёмы и чек-лист профи <a class="h-anchor" href="#модуль-11-продвинутые-приемы-и-чек-лист-профи" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="1-параллельная-работа-git-worktrees">1. Параллельная работа: git worktrees <a class="h-anchor" href="#1-параллельная-работа-git-worktrees" aria-label="Ссылка на раздел">#</a></h3>
+<p>Несколько Claude одновременно над разными задачами без конфликтов:</p>
+<pre><code class="language-bash">git worktree add ../proj-feature-a -b feature-a
+git worktree add ../proj-bugfix-b  -b bugfix-b
+cd ../proj-feature-a &amp;&amp; claude     # терминал 1
+cd ../proj-bugfix-b  &amp;&amp; claude     # терминал 2</code></pre>
+<p>Во многих версиях есть встроенная поддержка: <code>claude --worktree</code> / <code>-w</code> создаёт изолированный worktree автоматически. Уберите за собой: <code>git worktree remove ../proj-feature-a</code>.</p>
+<h3 id="2-мульти-агентные-паттерны">2. Мульти-агентные паттерны <a class="h-anchor" href="#2-мульти-агентные-паттерны" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong>Писатель / ревьюер:</strong> Claude A пишет, Claude B (чистый контекст) ревьюит, Claude A исправляет по замечаниям.</li>
+<li><strong>Тестировщик / разработчик:</strong> один пишет тесты, другой — код, чтобы тесты прошли.</li>
+<li><strong>Фоновые задачи:</strong> долгие команды (dev-сервер, сборка) можно запускать в фоне — Claude продолжает работу и читает их вывод.</li>
+</ul>
+<h3 id="3-экономия-токенов-и-денег">3. Экономия токенов и денег <a class="h-anchor" href="#3-экономия-токенов-и-денег" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Приём</th><th>Эффект</th></tr></thead><tbody><tr><td><code>/clear</code> между задачами</td><td>Главная экономия</td></tr><tr><td>Короткий CLAUDE.md, правила в <code>.claude/rules/</code> с <code>paths</code></td><td>Меньше постоянного контекста</td></tr><tr><td>Skills вместо «простыней» в CLAUDE.md</td><td>Грузятся по требованию</td></tr><tr><td>Subagents на Haiku для поиска</td><td>Дешёвое исследование</td></tr><tr><td>Отключить неиспользуемые MCP</td><td>Меньше описаний инструментов</td></tr><tr><td>Конкретные промпты с <code>@файлами</code></td><td>Меньше блужданий по проекту</td></tr><tr><td><code>/cost</code>, <code>/context</code>, statusline</td><td>Видеть расход в реальном времени</td></tr></tbody></table></div>
+<h3 id="4-своя-статусная-строка">4. Своя статусная строка <a class="h-anchor" href="#4-своя-статусная-строка" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>/statusline покажи модель, ветку git и процент заполнения контекста</code></pre>
+<p>Claude сам напишет скрипт и пропишет его в настройках.</p>
+<h3 id="5-output-styles">5. Output styles <a class="h-anchor" href="#5-output-styles" aria-label="Ссылка на раздел">#</a></h3>
+<p>Меняют «манеру» Claude: например, режим обучения, где он объясняет решения и оставляет вам куски для самостоятельной реализации.</p>
+<pre><code>/output-style            # выбрать стиль</code></pre>
+<p>Свои стили — markdown-файлы в <code>~/.claude/output-styles/</code> или <code>.claude/output-styles/</code>.</p>
+<h3 id="6-безопасность-чек-лист">6. Безопасность — чек-лист <a class="h-anchor" href="#6-безопасность-чек-лист" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>[ ] <code>.env</code>, ключи, <code>secrets/</code> — в <code>deny</code> на чтение.</li>
+<li>[ ] Опасные команды (<code>rm -rf</code>, <code>git push --force</code>, <code>curl | sh</code>) — в <code>deny</code> или под hook.</li>
+<li>[ ] <code>bypassPermissions</code> — только в контейнере/devcontainer без доступа к секретам.</li>
+<li>[ ] MCP-серверы только из доверенных источников, БД — read-only.</li>
+<li>[ ] Hooks и skills из чужих репозиториев — прочитать перед использованием.</li>
+<li>[ ] Контент из интернета/issues считается недоверенным (prompt injection).</li>
+<li>[ ] Ревью диффов в критичных местах: auth, платежи, миграции, инфраструктура.</li>
+</ul>
+<h3 id="7-командная-настройка-чек-лист">7. Командная настройка — чек-лист <a class="h-anchor" href="#7-командная-настройка-чек-лист" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>[ ] <code>CLAUDE.md</code> в git, ревью через PR.</li>
+<li>[ ] <code>.claude/settings.json</code> с общим allowlist и deny.</li>
+<li>[ ] <code>.claude/settings.local.json</code> и <code>CLAUDE.local.md</code> в <code>.gitignore</code>.</li>
+<li>[ ] Общие skills в <code>.claude/skills/</code>, агенты в <code>.claude/agents/</code>.</li>
+<li>[ ] <code>.mcp.json</code> без секретов, через <code>${VAR}</code>.</li>
+<li>[ ] Hooks для форматирования и защиты файлов.</li>
+<li>[ ] GitHub Action для <code>@claude</code> и авто-ревью.</li>
+<li>[ ] Для нескольких репозиториев — свой плагин и маркетплейс.</li>
+</ul>
+<h3 id="8-типичные-ошибки-и-их-решения">8. Типичные ошибки и их решения <a class="h-anchor" href="#8-типичные-ошибки-и-их-решения" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Проблема</th><th>Решение</th></tr></thead><tbody><tr><td>Claude игнорирует правило из CLAUDE.md</td><td>Файл слишком длинный → сократить; добавить акцент; сделать hook</td></tr><tr><td>«Исправил», но не работает</td><td>Требовать запуск тестов/проверки в промпте</td></tr><tr><td>Уходит в сторону, трогает лишние файлы</td><td>Plan mode + явные границы «меняй только X»</td></tr><tr><td>Качество падает к концу сессии</td><td><code>/compact</code> или <code>/clear</code> + файл с планом</td></tr><tr><td>Слишком много вопросов о разрешениях</td><td>Allowlist в settings, <code>acceptEdits</code></td></tr><tr><td>Галлюцинирует API библиотеки</td><td>Context7 MCP / ссылка на доки / <code>@node_modules/.../*.d.ts</code></td></tr></tbody></table></div>
+<h3 id="9-итоговый-чек-лист-профи">9. Итоговый чек-лист профи <a class="h-anchor" href="#9-итоговый-чек-лист-профи" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>[ ] Использую Plan mode для задач сложнее одного файла</li>
+<li>[ ] Всегда даю Claude способ проверить результат</li>
+<li>[ ] <code>/clear</code> между задачами — привычка</li>
+<li>[ ] CLAUDE.md &lt; 200 строк и регулярно обновляется</li>
+<li>[ ] 3+ собственных skill для повторяющихся процессов</li>
+<li>[ ] 2+ субагента (ревьюер, дебаггер)</li>
+<li>[ ] Hook автоформата и защиты файлов</li>
+<li>[ ] Хотя бы один полезный MCP (GitHub / браузер / БД)</li>
+<li>[ ] <code>claude -p</code> в скриптах или CI</li>
+<li>[ ] Параллельные сессии через worktrees</li>
+</ul>
+<p>🎓 Поздравляем — курс пройден! Дальше: <a href="cheatsheet.md">шпаргалка</a>, <a href="faq.md">FAQ</a>, <a href="../recipes/prompts.md">библиотека промптов</a> и официальная документация https://code.claude.com/docs</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

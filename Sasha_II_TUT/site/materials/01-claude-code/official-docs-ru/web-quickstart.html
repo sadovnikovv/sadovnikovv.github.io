@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Начало работы с Claude Code в облаке</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="начало-работы-с-claude-code-в-облаке">Начало работы с Claude Code в облаке <a class="h-anchor" href="#начало-работы-с-claude-code-в-облаке" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Запустите Claude Code в облаке из браузера или мобильного приложения. Подключите репозиторий GitHub, отправьте задачу и просмотрите PR без локальной настройки.</p>
+</blockquote>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Облачные сессии доступны в планах Pro, Max, Ultra и Team, а также для пользователей Enterprise с премиум-местами или местами Chat + Claude Code.</p>
+</blockquote>
+<p>Облачный сеанс запускает Claude Code на облачной инфраструктуре вместо вашей машины, управляемой Anthropic по умолчанию. Этот краткий старт запускает один с <a href="https://claude.ai/code">claude.ai/code</a> в вашем браузере. Вы также можете запустить один из мобильного приложения Claude, приложения Desktop или вашего терминала с помощью <code>claude --cloud</code>.</p>
+<p>Claude клонирует выбранный вами <a href="#connect-github">репозиторий GitHub</a> в изолированную виртуальную машину, вносит изменения и отправляет ветку для вашего просмотра. Сессии сохраняются на всех устройствах, поэтому задача, которую вы начали на ноутбуке, готова к просмотру с телефона позже. Каждая сессия учитывается в лимитах использования вашего плана наряду с остальным использованием Claude и Claude Code, а за облачную виртуальную машину отдельная плата не взимается.</p>
+<p>Облачные сеансы хорошо подходят для:</p>
+<ul>
+<li><strong>Параллельные задачи</strong>: запускайте несколько независимых задач одновременно, каждую в своем сеансе и ветке, без управления несколькими worktrees</li>
+<li><strong>Репозитории, которые у вас нет локально</strong>: Claude клонирует репозиторий заново в каждом сеансе, поэтому вам не нужно его проверять</li>
+<li><strong>Задачи, которые не требуют частого управления</strong>: отправьте четко определенную задачу, займитесь чем-то другим и просмотрите результат, когда Claude закончит</li>
+<li><strong>Вопросы о коде и исследование</strong>: поймите кодовую базу или проследите, как реализована функция, без локального клона</li>
+</ul>
+<p>Для работы, которая требует вашей локальной конфигурации, инструментов или окружения, запуск Claude Code локально или использование <a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a> — лучший вариант.</p>
+<h3 id="h">Как работают сеансы <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Описанные ниже шаги относятся к сеансам, размещённым на серверах Anthropic. В <a href="https://code.claude.com/docs/ru/self-hosted-environments">самостоятельно размещённой среде</a> клонирование и всё остальное выполняется на собственных средствах выполнения вашей организации, где границы сети, настройка и поведение отправки настраиваются оператором. Когда вы отправляете задачу:</p>
+<ol>
+<li><strong>Клонирование и подготовка</strong>: ваш репозиторий клонируется на управляемую Anthropic ВМ, и ваш <a href="https://code.claude.com/docs/ru/cloud-environments.md#setup-scripts">скрипт настройки</a> запускается, если он настроен.</li>
+<li><strong>Настройка сети</strong>: доступ в интернет устанавливается на основе <a href="https://code.claude.com/docs/ru/cloud-environments.md#access-levels">уровня доступа</a> вашего окружения.</li>
+<li><strong>Работа</strong>: Claude анализирует код, вносит изменения, запускает тесты и проверяет свою работу. Вы можете наблюдать и управлять на протяжении всего процесса или отойти и вернуться, когда это будет сделано.</li>
+<li><strong>Отправка ветки</strong>: когда Claude достигает точки остановки, он отправляет свою ветку на GitHub. Вы просматриваете diff, оставляете встроенные комментарии, создаете PR или отправляете еще одно сообщение, чтобы продолжить.</li>
+</ol>
+<p>Сеанс не закрывается при отправке ветки. Создание PR и дальнейшие правки происходят в одном и том же разговоре.</p>
+<h3 id="сравнение-способов-запуска-claude-code">Сравнение способов запуска Claude Code <a class="h-anchor" href="#сравнение-способов-запуска-claude-code" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code работает одинаково везде. Различается лишь то, где выполняется сессия и доступна ли ваша локальная конфигурация:</p>
+<p>| | Облачная сессия | Локальная сессия | Локальная сессия с <a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a> |
+| :- | :- | :- | :- |
+| <strong>Где выполняется код</strong> | Облачная VM, по умолчанию управляемая Anthropic | Ваш компьютер | Ваш компьютер |
+| <strong>Откуда вы её запускаете</strong> | claude.ai/code, мобильное приложение Claude, приложение Desktop с выбранным режимом <strong>Cloud</strong> или <code>claude --cloud</code> | Ваш терминал, ваша IDE или приложение Desktop с выбранным режимом <strong>Local</strong> | Ваш терминал, расширение VS Code или приложение Desktop |
+| <strong>Откуда вы общаетесь</strong> | claude.ai, мобильное приложение или приложение Desktop | Там, где вы её запустили | claude.ai или мобильное приложение, а также там, где вы её запустили |
+| <strong>Использует вашу локальную конфигурацию</strong> | Нет, только репозиторий | Да | Да |
+| <strong>Требует GitHub</strong> | Да, для репозитория GitHub, если только <code>--cloud</code> не <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md#send-local-repositories-without-github">упаковывает ваш локальный репозиторий</a> | Нет | Нет |
+| <strong>Продолжает работу при отключении</strong> | Да | Нет | Пока сессия остаётся открытой на вашем компьютере |
+| <strong><a href="https://code.claude.com/docs/ru/permission-modes.md">Режимы разрешений</a></strong> | Accept edits, Plan, Auto | Все режимы в терминале; для IDE и приложения Desktop см. <a href="https://code.claude.com/docs/ru/permission-modes.md#switch-permission-modes">Переключение режимов разрешений</a> | Manual, Accept edits, Plan или Auto из claude.ai и мобильного приложения |
+| <strong>Доступ к сети</strong> | Настраивается для каждого окружения | Сеть вашего компьютера | Сеть вашего компьютера |</p>
+<p>Чтобы настроить локальные сессии, см. документацию по <a href="https://code.claude.com/docs/ru/quickstart.md">быстрому старту в терминале</a>, <a href="https://code.claude.com/docs/ru/desktop.md">приложению Desktop</a> или <a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a>.</p>
+<h3 id="подключение-github">Подключение GitHub <a class="h-anchor" href="#подключение-github" aria-label="Ссылка на раздел">#</a></h3>
+<p>Подключение GitHub — это одноразовый процесс. Если вы уже используете GitHub CLI, вы можете <a href="#connect-from-your-terminal">сделать это из терминала</a> вместо браузера.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>На планах Team и Enterprise шаг <strong>Sign in with GitHub</strong> работает только после того, как <a href="https://code.claude.com/docs/ru/server-managed-settings.md#access-control">Owner</a> вашей организации Claude включит коннектор GitHub в <a href="https://claude.ai/admin-settings/connectors"><strong>Organization settings &gt; Connectors</strong></a>. До этого момента этот шаг показывает &quot;GitHub access is required for Claude Code cloud sessions&quot; вместо кнопки входа. После включения коннектора перезагрузите <a href="https://claude.ai/code">claude.ai/code</a> и начните заново с первого шага. Второй переключатель, <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md#quick-setup-for-team-and-enterprise">Quick setup</a> в <a href="https://claude.ai/admin-settings/claude-code"><strong>Organization settings &gt; Claude Code</strong></a>, является необязательным: при его включении <code>/web-setup</code> работает и встроенная настройка создаёт окружение для участников.</p>
+</blockquote>
+<p><strong>1. Посетите claude.ai/code</strong></p>
+<p>Перейдите на <a href="https://claude.ai/code">claude.ai/code</a> и войдите со своей учётной записью claude.ai.</p>
+<p><strong>2. Войдите с помощью GitHub</strong></p>
+<p>После входа claude.ai/code предложит вам подключить GitHub. Следуйте промпту, и claude.ai/code отправит вас на страницу авторизации GitHub. Одобрите запрос авторизации, и GitHub вернёт вас на claude.ai/code. Облачные сессии работают с существующими репозиториями GitHub. Чтобы запустить новый проект, сначала <a href="https://github.com/new">создайте репозиторий с README на GitHub</a>.</p>
+<p>С этим подключением сеанс может клонировать любой открытый репозиторий, но может работать в приватном репозитории только когда приложение Claude GitHub установлено на нем. <a href="https://github.com/apps/claude/installations/new">Установите приложение Claude GitHub</a> на каждую учетную запись GitHub или организацию, чьи приватные репозитории вы хотите использовать. В организации GitHub владелец организации может потребоваться одобрить установку. Установка приложения также включает <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md#auto-fix-pull-requests">Auto-fix</a>, который позволяет Claude реагировать на сбои CI и комментарии рецензентов в pull requests в этих репозиториях.</p>
+<p>При подключении Claude также привязывает принадлежащие вам учётные записи GitHub к вашей организации Claude, если на них установлено приложение Claude GitHub. На планах Team и Enterprise пользователи с ролью Owner в вашей организации Claude видят эти учётные записи в <a href="https://code.claude.com/docs/ru/admin-setup.md#connected-github-accounts">списке подключённых учётных записей GitHub</a>.</p>
+<p>Если встроенная настройка предложит вам установить приложение Claude GitHub на этом этапе и вы предпочитаете сделать это позже, нажмите <strong>Skip</strong>.</p>
+<p><strong>3. Настройте ваше окружение по умолчанию</strong></p>
+<p><a href="https://code.claude.com/docs/ru/cloud-environments.md">Облачное окружение</a> — это сохраненная конфигурация, которая контролирует, какой доступ в сеть имеет Claude во время сеансов и что запускается при запуске сеанса. То, что происходит после подключения GitHub, зависит от вашего плана:</p>
+<ul>
+<li><strong>Pro, Max и Ultra</strong>: вы автоматически получаете окружение с именем <strong>Default</strong>.</li>
+<li><strong>Team и Enterprise</strong>: встроенная настройка показывает форму <strong>Create your first cloud environment</strong>. Оставьте предзаполненное имя и доступ в сеть без изменений и нажмите <strong>Create &amp; finish</strong>, чтобы создать окружение <strong>Default</strong>. Если Owner включил <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md#quick-setup-for-team-and-enterprise">Quick setup</a>, встроенная настройка создаёт <strong>Default</strong> для вас вместо этого.</li>
+</ul>
+<p><strong>Default</strong> использует <a href="https://code.claude.com/docs/ru/cloud-environments.md#access-levels">доступ в сеть <strong>Limited</strong></a>: сессии получают доступ к <a href="https://code.claude.com/docs/ru/cloud-environments.md#default-allowed-domains">общим реестрам пакетов</a> и другим доменам в списке разрешённых. Смотрите <a href="https://code.claude.com/docs/ru/cloud-environments.md#installed-tools">Installed tools</a> для того, что доступно без какой-либо конфигурации.</p>
+<p>Для первого проекта окружение <strong>Default</strong> работает как есть. Чтобы изменить его доступ в сеть, добавить переменные окружения или запустить <a href="https://code.claude.com/docs/ru/cloud-environments.md#setup-scripts">скрипт настройки</a> перед запуском сеансов, <a href="https://code.claude.com/docs/ru/cloud-environments.md#configure-your-environment">отредактируйте его или создайте дополнительные окружения</a>.</p>
+<h4 id="h-2">Подключение из терминала <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если вы уже используете GitHub CLI (<code>gh</code>), вы можете подключить GitHub для облачных сессий из терминала. Это требует <a href="https://code.claude.com/docs/ru/quickstart.md">Claude Code CLI</a>. На планах Team и Enterprise <code>/web-setup</code> доступен только после того, как Owner включит <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md#quick-setup-for-team-and-enterprise">Quick setup</a>.</p>
+<p>Когда вы запускаете <code>/web-setup</code>, Claude Code читает токен, который выводит <code>gh auth token</code>, просит вас подтвердить и отправляет токен в Anthropic. Anthropic хранит его в зашифрованном виде с вашей учетной записью claude.ai, и ваши облачные сеансы используют его для доступа к GitHub до тех пор, пока вы не <a href="#remove-the-web-setup-token">удалите его</a>. Облачный сеанс, который вы запускаете сами, может затем получить доступ к любому репозиторию, к которому может получить доступ этот токен, без установки приложения Claude GitHub. Потоки в <a href="https://code.claude.com/docs/ru/claude-projects.md#set-up-github-access">проекте</a> по-прежнему требуют приложение Claude GitHub.</p>
+<p>Если вы уже подключили GitHub в браузере, <code>/web-setup</code> предупредит вас, что продолжение заменит это подключение для ваших облачных сеансов.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Организации с включённым <a href="https://code.claude.com/docs/ru/zero-data-retention.md">Zero Data Retention</a> или с применённой <a href="https://code.claude.com/docs/ru/hipaa-setup.md">конфигурацией HIPAA</a> не могут использовать <code>/web-setup</code> или другие функции облачных сессий. Организации, использующие <a href="https://platform.claude.com/docs/en/manage-claude/cmek">ключи шифрования, управляемые клиентом</a> (CMEK), также не могут запускать облачные сессии. Если GitHub CLI не установлен или не аутентифицирован, Claude Code открывает поток встроенной настройки в браузере вместо этого.</p>
+</blockquote>
+<p><strong>1. Аутентификация с помощью GitHub CLI</strong></p>
+<p>В вашей оболочке аутентифицируйте GitHub CLI, если вы еще этого не сделали:</p>
+<p>```bash theme={null}
+gh auth login</p>
+<pre><code>
+**2. Войдите в Claude**
+
+В Claude Code CLI запустите `/login` для входа со своей учетной записью claude.ai. Пропустите этот шаг, если вы уже вошли со своей учетной записью claude.ai. Аутентификация с помощью ключа API не считается. Чтобы проверить, запустите `/status` и подтвердите, что строка **Login method** показывает учетную запись claude.ai.
+
+**3. Запустите /web-setup**
+
+В Claude Code CLI запустите:
+</code></pre>
+<p>/web-setup</p>
+<pre><code>
+Подтвердите запрос на отправку вашего токена `gh` в вашу учётную запись Claude. При успехе Claude Code выводит `Connected as &lt;your-github-username&gt;` и открывает [claude.ai/code](https://claude.ai/code) в вашем браузере.
+
+Если у вас ещё нет облачного окружения, `/web-setup` создаёт его с доступом в сеть по умолчанию **Limited** и без скрипта настройки. Вы можете [отредактировать окружение или добавить переменные](https://code.claude.com/docs/ru/cloud-environments.md#configure-your-environment) позже. После завершения `/web-setup` вы можете запускать облачные сессии из терминала с помощью [`--cloud`](https://code.claude.com/docs/ru/claude-code-on-the-web#from-terminal-to-cloud) или настроить повторяющиеся задачи с помощью [`/schedule`](https://code.claude.com/docs/ru/routines).
+
+#### Удалите токен `/web-setup`
+
+Чтобы удалить токен из вашей учетной записи Claude, отключите GitHub в [claude.ai/customize/connectors](https://claude.ai/customize/connectors). Отключение удаляет учетные данные GitHub, которые используют ваши облачные сеансы, независимо от того, поступили ли они из браузера или из `/web-setup`, поэтому облачные сеансы теряют доступ к GitHub до тех пор, пока вы не подключитесь снова. Ваш локальный `gh` остается вошедшим, и токен остается действительным на GitHub.
+
+Чтобы аннулировать сам токен, отозвите его на GitHub. Если вы вошли в `gh` через браузер, токен принадлежит записи **GitHub CLI** в разделе [**Settings &gt; Applications &gt; Authorized OAuth Apps**](https://github.com/settings/applications) на GitHub, и отзыв этой записи также выходит из GitHub CLI на ваших машинах. Облачные сеансы затем теряют доступ к GitHub до тех пор, пока вы не запустите `gh auth login` и `/web-setup` снова.
+
+## Начните задачу
+
+С подключенным GitHub и созданным окружением вы готовы отправлять задачи.
+
+**1. Выберите репозиторий и ветку**
+
+На [claude.ai/code](https://claude.ai/code) или на вкладке Code в мобильном приложении Claude нажмите селектор репозитория под полем ввода и выберите репозиторий для работы Claude. Вы можете добавить несколько репозиториев для работы с ними в одной сессии.
+
+На claude.ai/code, чтобы запустить Claude с ветки функции вместо ветки по умолчанию, измените ветку в элементе управления после селектора репозитория.
+
+**2. Выберите режим разрешений**
+
+[Элемент управления режимом разрешений](https://code.claude.com/docs/ru/permission-modes.md#switch-permission-modes) показывает режим разрешений, в котором будет работать сессия:
+
+* **Auto**: классификатор проверяет действия Claude вместо того, чтобы спрашивать вас. Отображается, если ваша организация не отключила [авторежим](https://code.claude.com/docs/ru/permission-modes.md#eliminate-prompts-with-auto-mode). Если на claude.ai/code этот вариант неактивен, выберите модель, которая поддерживает авторежим
+* **Accept edits**: Claude вносит изменения и отправляет ветку без остановки для одобрения
+* **Plan**: Claude предлагает подход и ждет вашего одобрения перед редактированием файлов
+
+Облачные сеансы не предлагают разрешения Manual или разрешения Bypass. Смотрите [полный список режимов разрешений](https://code.claude.com/docs/ru/permission-modes.md#available-modes) для того, что позволяет каждый из них.
+
+**3. Опишите задачу и отправьте**
+
+Введите описание того, что вы хотите, и нажмите Enter. Будьте конкретны:
+
+* Назовите файл или функцию: &quot;Add a README with setup instructions&quot; или &quot;Fix the failing auth test in `tests/test_auth.py`&quot; лучше, чем &quot;fix tests&quot;
+* Вставьте вывод ошибки, если у вас он есть
+* Опишите ожидаемое поведение, а не просто симптом
+
+Claude клонирует репозитории, запускает ваш скрипт настройки, если он настроен, и начинает работать. Каждая задача получает свой сеанс и свою ветку, поэтому вам не нужно ждать, пока одна закончится, прежде чем начать другую.
+
+## Предварительное заполнение сеансов
+
+Вы можете предварительно заполнить подсказку, репозитории и окружение для нового сеанса, добавив параметры запроса к URL [claude.ai/code](https://claude.ai/code). Используйте это для создания интеграций, таких как кнопка в вашем трекере проблем, которая открывает Claude Code с описанием проблемы в качестве подсказки.
+
+| Параметр | Описание |
+| :- | :- |
+| `prompt` | Текст подсказки для предварительного заполнения в поле ввода. Также принимается псевдоним `q`. |
+| `prompt_url` | URL для получения текста подсказки, для подсказок, которые слишком длинные для встраивания в строку запроса. URL должен разрешать кросс-источниковые запросы. Игнорируется, когда также установлен `prompt`. |
+| `repositories` | Разделенный запятыми список слагов `owner/repo` для предварительного выбора. Также принимается псевдоним `repo`. |
+| `environment` | Имя или ID [окружения](#connect-github) для предварительного выбора. |
+
+URL-кодируйте каждое значение. Пример ниже открывает форму с уже выбранной подсказкой и репозиторием:
+</code></pre>
+<p>https://claude.ai/code?prompt=Fix%20the%20login%20bug&amp;repositories=acme/webapp</p>
+<pre><code>
+## Просмотр и итерация
+
+Когда Claude закончит, просмотрите изменения, оставьте отзыв на конкретных строках и продолжайте, пока diff не будет выглядеть правильно.
+
+**1. Откройте представление diff**
+
+После того как Claude отправит свои изменения в ветку, карточка **Changes** на панели рядом с чатом показывает добавленные и удаленные строки во всей сессии, например `+42 -18`. Нажмите на эти числа, чтобы открыть представление diff.
+
+* Также можно нажать **Changes** в строке заголовка сессии или в меню **⋮** этой строки.
+* Чтобы показать панель, когда она скрыта, нажмите значок **Show session rail** в строке заголовка сессии или в меню **⋮** этой строки.
+
+Diff по умолчанию сравнивает изменения сессии с ее базовой веткой. Чтобы сравнить с другой веткой, выберите **Compare against** и выберите одну. При сравнении с базовой веткой diff может [не включать изменения, которые еще не отправлены](https://code.claude.com/docs/ru/claude-code-on-the-web.md#troubleshoot-a-missing-file-in-the-diff-view).
+
+**2. Оставляйте встроенные комментарии**
+
+Наведите указатель на строку в diff и нажмите **+**, который появляется рядом с номером строки, чтобы открыть поле комментария, затем введите свой отзыв и нажмите Enter. Комментарии накапливаются до тех пор, пока вы не отправите следующее сообщение, затем они объединяются с ним. Claude видит &quot;at `src/auth.ts:47`, don&#x27;t catch the error here&quot; вместе с вашей основной инструкцией, поэтому вам не нужно описывать, где проблема.
+
+**3. Создайте pull request**
+
+Когда diff выглядит правильно, [снова покажите панель](https://code.claude.com/docs/ru/claude-code-on-the-web.md#review-changes), если карточка **Changes** не видна, а затем создайте pull request или черновик из карточки:
+
+* Нажмите **Create PR**. Claude Code создаст pull request со сгенерированным названием и описанием.
+* Чтобы вместо этого открыть черновик, щелкните правой кнопкой мыши **Create PR**, выберите **Create draft PR**, чтобы изменить действие кнопки, затем нажмите на кнопку
+
+**4. Продолжайте итерацию после PR**
+
+Сессия остается активной после создания PR. Вставьте вывод ошибки CI или комментарии рецензента в чат и попросите Claude их решить. Чтобы Claude автоматически отслеживал PR, смотрите [Auto-fix pull requests](https://code.claude.com/docs/ru/claude-code-on-the-web.md#auto-fix-pull-requests).
+
+## Устранение неполадок при настройке
+
+### После подключения GitHub не появляются репозитории
+
+Если вы подключили GitHub в браузере, сеансы могут клонировать любой публичный репозиторий, но приватный репозиторий появляется только когда приложение Claude GitHub установлено на учетной записи или организации, которая его владеет, и доступ к репозиториям в установке включает его. [Установите приложение Claude GitHub](https://github.com/apps/claude/installations/new) там или попросите владельца организации установить или одобрить его.
+
+Если вы подключились с помощью `/web-setup`, сеансы получают доступ к каждому репозиторию, который может видеть ваш токен `gh`. Запустите `gh repo view OWNER/REPO` в вашей оболочке, чтобы проверить, что ваш вход GitHub CLI может видеть репозиторий, и запустите `/web-setup` снова, если вы переключили учетные записи `gh` с момента подключения.
+
+### На странице отображается только кнопка входа GitHub
+
+Чтобы работать с репозиторием GitHub в облачной сессии, [подключите свою учетную запись GitHub](#connect-github) или запустите `/web-setup` из терминала, если вы используете GitHub CLI. Если вы предпочитаете вообще не подключать GitHub, смотрите [Remote Control](https://code.claude.com/docs/ru/remote-control.md) для запуска Claude Code на вашей машине и мониторинга его из браузера или телефона.
+
+### &quot;Claude Code isn&#x27;t available on your account&quot;
+
+Ваше место в выбранной организации не включает Claude Code. Если вы принадлежите другой организации, нажмите **Switch organization** на этой странице. В противном случае попросите владельца организации назначить вам [место, которое включает Claude Code](https://support.claude.com/en/articles/11845131-use-claude-code-with-your-team-or-enterprise-plan).
+
+### `/web-setup` говорит &quot;Not signed in to Claude&quot;
+
+Если `/web-setup` отвечает &quot;Not signed in to Claude. Run /login first.&quot;, CLI не имеет действительного входа в claude.ai. Это также может произойти, когда предыдущий вход истек. Запустите `/login`, войдите со своей учетной записью claude.ai, затем снова запустите `/web-setup`.
+
+### `/web-setup` предупреждает, что ваш токен не имеет области `workflow`
+
+Если `/web-setup` говорит, что ваш токен GitHub CLI не имеет области `workflow`, вы можете продолжить, но GitHub может отклонить некоторые отправки, сделанные с этим токеном, такие как отправки, которые изменяют файлы рабочих процессов GitHub Actions. Чтобы добавить область, запустите `gh auth refresh -s workflow` в вашей оболочке, затем снова запустите `/web-setup`.
+
+### `/web-setup` показывает &quot;No commands match&quot; или &quot;Unknown command&quot;
+
+`/web-setup` работает внутри Claude Code CLI, а не в вашей оболочке. Сначала запустите `claude`, затем введите `/web-setup` в подсказке.
+
+Если вы ввели его внутри Claude Code и меню команд показывает `No commands match &quot;/web-setup&quot;`, или отправка возвращает `Unknown command: /web-setup`, команда скрыта, потому что требование не выполнено. Причина обычно в том, что вы аутентифицированы с помощью ключа API или поставщика третьей стороны вместо подписки claude.ai. Запустите `/login` для входа со своей учетной записью claude.ai.
+
+На планах Team и Enterprise команда скрыта по умолчанию: [переключатель быстрой настройки](https://code.claude.com/docs/ru/claude-code-on-the-web.md#quick-setup-for-team-and-enterprise) отключен, пока владелец его не включит. Пока он отключен, вместо этого [подключите GitHub из браузера](#connect-github).
+
+Команда также скрыта в двух других случаях:
+
+* Администратор отключил облачные сеансы для вашей организации. В этом случае отправка `/web-setup` возвращает [`Cloud sessions are disabled by your organization&#x27;s policy`](https://code.claude.com/docs/ru/errors#cloud-sessions-are-disabled-by-your-organizations-policy). До версии 2.1.268 этот случай также возвращал `Unknown command: /web-setup`.
+* В вашей организации Enterprise включен [Zero Data Retention](https://code.claude.com/docs/ru/zero-data-retention.md) или применена [конфигурация HIPAA](https://code.claude.com/docs/ru/hipaa-setup.md). Любой из этих вариантов делает облачные сессии недоступными.
+
+### &quot;Could not create a cloud environment&quot; или &quot;No cloud environment available&quot; при использовании `--cloud`
+
+Функции облачного сеанса автоматически создают облачное окружение по умолчанию, если у вас его нет. Если вы видите &quot;Could not create a cloud environment&quot;, автоматическое создание не удалось. Если вы видите &quot;No cloud environment available&quot;, ваш CLI предшествует автоматическому созданию. В любом случае запустите `/web-setup` в Claude Code CLI, или добавьте окружение из [селектора окружения](https://code.claude.com/docs/ru/cloud-environments.md#configure-your-environment) на [claude.ai/code](https://claude.ai/code).
+
+### Скрипт настройки не удался
+
+[Скрипт настройки](https://code.claude.com/docs/ru/cloud-environments.md#setup-scripts) завершился с ненулевым статусом, поэтому сессия не запустилась или запустилась без того, что скрипт не смог установить. Если сессия запустилась, вы можете продолжать работать в ней.
+
+Распространенные причины:
+
+* Установка пакета не удалась, потому что реестр не входит в ваш [уровень доступа к сети](https://code.claude.com/docs/ru/cloud-environments.md#access-levels). **Limited** с включенным флажком **Allow package managers** охватывает большинство менеджеров пакетов; **None** блокирует их все.
+* Скрипт ссылается на файл или путь, который не существует в свежем клоне.
+* Команда, которая работает локально, требует другого вызова на Ubuntu.
+
+Для отладки добавьте `set -x` в начало скрипта, чтобы увидеть, какая команда не удалась. Для некритических команд добавьте `|| true`, чтобы они не приводили к сбою скрипта. После устранения причины запустите новую сессию, чтобы скрипт выполнился снова. Если не удалось запустить выполнение [облачной запланированной задачи](https://code.claude.com/docs/ru/routines.md), нажмите **Run now** на странице сведений о задаче вместо запуска новой сессии.
+
+### Новые сеансы зависают или истекает время ожидания во время настройки
+
+Если новые сеансы зависают на шаге скрипта настройки или не удаются с общей ошибкой контейнера перед завершением скрипта, скрипт, вероятно, превышает примерно пятиминутный бюджет времени для построения [кэша окружения](https://code.claude.com/docs/ru/cloud-environments.md#environment-caching). Тяжелые шаги, такие как извлечение больших образов Docker, синхронизация полных деревьев зависимостей или загрузка весов модели, часто превышают лимит, особенно когда они выполняются один за другим.
+
+Чтобы исправить это, обрежьте скрипт так, чтобы он надежно завершался менее чем за пять минут:
+
+* Запускайте независимые установки параллельно с `&amp;` и финальным `wait` вместо их последовательного выполнения.
+* Переместите самые большие загрузки из скрипта настройки в [SessionStart hook](https://code.claude.com/docs/ru/cloud-environments.md#setup-scripts-vs-sessionstart-hooks), который запускает их в фоновом режиме, чтобы сеанс стал пригодным для использования, пока они завершаются.
+* Удалите длинные повторные попытки сна из скрипта настройки, так как зависший цикл повторных попыток учитывается в бюджете.
+
+### Сеанс продолжает работать после закрытия вкладки
+
+Это сделано специально. Закрытие вкладки или навигация не останавливает сеанс. Он продолжает работать в фоновом режиме до тех пор, пока Claude не закончит текущую задачу, затем переходит в режим ожидания. На боковой панели вы можете [архивировать сеанс](https://code.claude.com/docs/ru/claude-code-on-the-web.md#archive-sessions), чтобы скрыть его из списка, или [удалить его](https://code.claude.com/docs/ru/claude-code-on-the-web.md#delete-sessions), чтобы удалить его навсегда.
+
+## Следующие шаги
+
+Теперь, когда вы можете отправлять и просматривать задачи, эти страницы охватывают, что дальше: запуск облачных сеансов из терминала, планирование повторяющейся работы и предоставление Claude постоянных инструкций.
+
+* [Использование Claude Code в веб-версии](https://code.claude.com/docs/ru/claude-code-on-the-web.md): полный справочник, включая телепортацию сеансов в ваш терминал, совместное использование сеансов и автоматическое исправление pull-запросов
+* [Настройка облачных окружений](https://code.claude.com/docs/ru/cloud-environments.md): уровни сетевого доступа, переменные окружения и скрипты настройки для облачных сеансов
+* [Облачные запланированные задачи](https://code.claude.com/docs/ru/routines.md): автоматизируйте работу по расписанию, через вызов API или в ответ на события GitHub
+* [CLAUDE.md](https://code.claude.com/docs/ru/memory.md): дайте Claude постоянные инструкции и контекст, которые загружаются в начале каждого сеанса
+* Установите мобильное приложение Claude для [iOS](https://apps.apple.com/us/app/claude-by-anthropic/id6473753684) или [Android](https://play.google.com/store/apps/details?id=com.anthropic.claude) для мониторинга сеансов с телефона. Из Claude Code CLI `/mobile` показывает QR-код для [claude.ai/mobile](https://claude.ai/mobile), который открывает правильный магазин приложений для вашего телефона.
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

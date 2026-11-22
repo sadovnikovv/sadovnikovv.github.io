@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Устранение неполадок Agent SDK</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/agent-sdk/index.html">agent-sdk</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="устранение-неполадок-agent-sdk">Устранение неполадок Agent SDK <a class="h-anchor" href="#устранение-неполадок-agent-sdk" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Исправьте ошибки Agent SDK: Claude Code CLI не запускается или завершается, ваш генератор промптов выбрасывает исключение, сообщение инструмента слишком велико или результат приходит без структурированного вывода.</p>
+</blockquote>
+<p>Эта страница охватывает ошибки Agent SDK при запуске CLI, выходе процесса CLI, крупных вызовах инструментов и результатах, потоковом вводе и структурированных выводах. Записи на этой странице соответствуют ошибке, которую вы видите. Каждая указывает причину и что делать.</p>
+<p>Симптомы, связанные с функцией, такие как несрабатывающий хук или неиспользуемый скилл, имеют раздел устранения неполадок на странице этой функции. Найдите свой симптом в этой таблице, чтобы перейти к разделу или странице, которые его охватывают:</p>
+<p>| Симптом | Перейти к |
+| :- | :- |
+| Скиллы не найдены, скилл не используется, ошибка <code>Invalid skill name</code> | <a href="https://code.claude.com/docs/ru/agent-sdk/skills.md#troubleshooting">Устранение неполадок скиллов</a> |
+| MCP-сервер показывает статус <code>failed</code>, инструменты не вызываются, инструмент отсутствует в MCP-сервере SDK, таймауты соединения, вывод инструмента превышает максимально допустимое количество токенов | <a href="https://code.claude.com/docs/ru/agent-sdk/mcp.md#troubleshooting">Устранение неполадок MCP</a> |
+| Плагин не загружается, скиллы плагина не отображаются | <a href="https://code.claude.com/docs/ru/agent-sdk/plugins.md#troubleshooting">Устранение неполадок плагинов</a> |
+| Claude не делегирует задачи субагентам, агенты на основе файловой системы не загружаются | <a href="https://code.claude.com/docs/ru/agent-sdk/subagents.md#troubleshooting">Устранение неполадок субагентов</a> |
+| Параметры чекпоинтов не распознаются, пользовательские сообщения без UUID, <code>No file checkpoint found</code>, <code>File rewinding is not enabled</code>, <code>ProcessTransport is not ready for writing</code> | <a href="https://code.claude.com/docs/ru/agent-sdk/file-checkpointing.md#troubleshooting">Устранение неполадок чекпоинтов файлов</a> |
+| Хук не срабатывает, matcher фильтрует не так, как ожидается, таймаут хука, инструмент неожиданно заблокирован, изменённые входные данные не применяются, хуки сессии недоступны в Python, запросы разрешений субагентов множатся, рекурсивные циклы хуков с субагентами, <code>systemMessage</code> не отображается в выводе | <a href="https://code.claude.com/docs/ru/agent-sdk/hooks.md#fix-common-issues">Исправление распространённых проблем</a> на странице хуков |
+| Агент, который работает на вашей машине, не работает в развёрнутом сервисе или контейнере | <a href="https://code.claude.com/docs/ru/agent-sdk/hosting.md#troubleshoot-deployment-failures">Устранение сбоев развёртывания</a> |
+| <code>Not logged in</code>, <code>Invalid API key</code>, <code>API Error</code>, <code>429</code>, <code>There&#x27;s an issue with the selected model</code> | <a href="https://code.claude.com/docs/ru/errors.md#find-your-error">Справочник по ошибкам</a> |
+| <code>CLINotFoundError</code>, <code>CLIConnectionError</code>, <code>ProcessError</code>, <code>Claude Code process exited with code N</code>, <code>Claude Code returned an error result</code>, <code>CLIJSONDecodeError</code>, <code>structured_output</code> имеет значение <code>None</code> | <a href="#cli-startup">Запуск CLI</a>, <a href="#cli-process-exit">Выход процесса CLI</a>, <a href="#large-tool-calls-and-results">Крупные вызовы инструментов и результаты</a> и <a href="#structured-outputs">Структурированные выводы</a> на этой странице |
+| <code>Operation aborted</code>, <code>Claude Code process aborted by user</code>, <code>Prompt stream failed; closing stdin</code> или цикл <code>query()</code> в Python, который останавливается без исключения до того, как будут получены ответы на все ваши сообщения | <a href="#streaming-input">Потоковый ввод</a> на этой странице |
+| <code>Image could not be processed</code> | <a href="#image-could-not-be-processed">Image could not be processed</a> на этой странице |</p>
+<h3 id="запуск-cli">Запуск CLI <a class="h-anchor" href="#запуск-cli" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="clinotfounderror-claude-code-not-found">CLINotFoundError: Claude Code not found <a class="h-anchor" href="#clinotfounderror-claude-code-not-found" aria-label="Ссылка на раздел">#</a></h4>
+<p>Python SDK запускает Claude Code CLI как подпроцесс. Когда он не может найти исполняемый файл <code>claude</code>, подключение завершается с ошибкой <code>CLINotFoundError</code>:</p>
+<pre><code>Claude Code not found at: /your/configured/path</code></pre>
+<p>Сообщение включает настроенный путь, когда вы устанавливаете <code>ClaudeAgentOptions(cli_path=...)</code> и он указывает на отсутствующий файл. Без <code>cli_path</code> SDK ищет в вашем <code>PATH</code> и в общих местах установки, и сообщение включает инструкции по установке для вашей платформы.</p>
+<p>Чтобы исправить это:</p>
+<ul>
+<li>Установите Claude Code, если он не установлен. Смотрите <a href="https://code.claude.com/docs/ru/setup.md#install-claude-code">Установка Claude Code</a> для команды на вашей платформе.</li>
+<li>Если вы установили <code>cli_path</code>, убедитесь, что файл существует и это исполняемый файл <code>claude</code>.</li>
+<li>Если вы полагаетесь на разрешение <code>PATH</code>, убедитесь, что <code>claude --version</code> работает в той же среде, в которой работает ваше приложение. Процессы, которые вы запускаете вне вашей оболочки, например из IDE или менеджера служб, часто работают с другим <code>PATH</code>.</li>
+</ul>
+<p>TypeScript SDK ищет CLI в своем встроенном пакете платформы и в пути, который вы установили в <code>pathToClaudeCodeExecutable</code>. Сопоставьте сообщение, которое вы видите:</p>
+<ul>
+<li><code>Native CLI binary for &lt;platform&gt;-&lt;arch&gt; not found</code>: встроенный пакет платформы отсутствует, чаще всего потому, что установка пропустила дополнительные зависимости. Переустановите <code>@anthropic-ai/claude-agent-sdk</code> без пропуска дополнительных зависимостей или укажите <code>pathToClaudeCodeExecutable</code> на <a href="https://code.claude.com/docs/ru/setup.md#install-claude-code">собственную установку</a>. В однофайловом исполняемом файле, созданном с помощью <code>bun build --compile</code>, то же сообщение имеет другую причину и исправление. Смотрите <a href="https://code.claude.com/docs/ru/agent-sdk/typescript.md#compile-to-a-single-executable">Компиляция в один исполняемый файл</a>.</li>
+<li><code>Claude Code native binary not found at &lt;path&gt;</code> или <code>Claude Code executable not found at &lt;path&gt;. Is options.pathToClaudeCodeExecutable set?</code>: файл по разрешённому пути отсутствует или процесс не может получить к нему доступ. Убедитесь, что файл существует по этому пути и что процесс может получить к нему доступ.</li>
+</ul>
+<h4 id="cliconnectionerror-refusing-to-execute-batch-script">CLIConnectionError: Refusing to execute batch script <a class="h-anchor" href="#cliconnectionerror-refusing-to-execute-batch-script" aria-label="Ссылка на раздел">#</a></h4>
+<p>В Windows подключение завершается с ошибкой <code>CLIConnectionError</code>, когда путь CLI, который использует Python SDK, является пакетным скриптом <code>.bat</code> или <code>.cmd</code>, включая прокладку <code>claude.cmd</code>, которую создаёт установка npm:</p>
+<pre><code>Refusing to execute batch script &#x27;C:\\Users\\you\\AppData\\Roaming\\npm\\claude.cmd&#x27;: Windows runs .bat/.cmd files via cmd.exe, which can execute commands injected through CLI arguments, and no reliable escaping for cmd.exe exists. Use a native claude executable instead: install Claude Code natively (irm https://claude.ai/install.ps1 | iex), point ClaudeAgentOptions(cli_path=...) at a claude.exe, or install the claude-agent-sdk wheel for a platform that bundles claude.exe (e.g. Windows x64).</code></pre>
+<p>Отказ является преднамеренным усилением безопасности, а не сломанной установкой. Windows запускает пакетные скрипты, переписывая spawn в вызов <code>cmd.exe /c</code>, и <code>cmd.exe</code> переанализирует всю командную строку во время выполнения, поэтому значение аргумента может выполнить внедрённые команды.</p>
+<p>Большинство установок Windows никогда не достигают этой ошибки. Колесо Windows x64 <code>claude-agent-sdk</code> содержит <code>claude.exe</code>, и SDK предпочитает встроенный CLI, затем любой собственный <code>claude.exe</code>, который он может обнаружить, прежде чем вернуться к пакетной прокладке. Вы видите отказ в двух случаях:</p>
+<ul>
+<li>Вы установили <code>ClaudeAgentOptions(cli_path=...)</code> на файл <code>.bat</code> или <code>.cmd</code>, например прокладку npm <code>claude.cmd</code>.</li>
+<li>Ваша установка не имеет встроенного или собственного <code>claude.exe</code>, например исходная установка на ARM64 Windows, где единственный <code>claude</code> в вашем <code>PATH</code> — это прокладка npm.</li>
+</ul>
+<p>Чтобы исправить это, дайте SDK собственный исполняемый файл вместо пакетного скрипта:</p>
+<ul>
+<li>Если вы установили <code>ClaudeAgentOptions(cli_path=...)</code>, укажите его на <code>claude.exe</code> или удалите опцию. SDK пропускает обнаружение, пока установлен <code>cli_path</code>, поэтому собственная установка одна не может вступить в силу.</li>
+<li>Установите Claude Code собственно в PowerShell: <code>irm https://claude.ai/install.ps1 | iex</code></li>
+<li>На x64 Windows установите колесо <code>claude-agent-sdk</code>, которое содержит <code>claude.exe</code>.</li>
+</ul>
+<p>До <code>claude-agent-sdk</code> 0.2.124 Python SDK запускал пакетные скрипты через <code>cmd.exe</code> без этой проверки.</p>
+<h4 id="cliconnectionerror-failed-to-start-claude-code">CLIConnectionError: Failed to start Claude Code <a class="h-anchor" href="#cliconnectionerror-failed-to-start-claude-code" aria-label="Ссылка на раздел">#</a></h4>
+<p>SDK нашёл файл по разрешённому пути, но не смог его запустить. Python вызывает эти сбои как <code>CLIConnectionError</code>. TypeScript отклоняет итерацию сообщения с ошибкой, не имеющей класса SDK. Таблица ниже сопоставляет каждое сообщение с тем, что оно вам говорит. Сопоставьте сообщение, которое вы видите:</p>
+<p>| Сообщение | SDK | Что это вам говорит |
+| - | - | - |
+| <code>Failed to start Claude Code: &lt;detail&gt;</code> | Python | Остаток сообщения — это собственная ошибка операционной системы |
+| <code>Claude Code executable at &lt;path&gt; exists but failed to launch</code> | TypeScript | Скрипт по настроенному пути не может работать |
+| <code>Claude Code native binary at &lt;path&gt; exists but failed to launch</code> | TypeScript | Двоичный файл не может работать, с предложением libc, добавленным к сообщению |
+| <code>Failed to spawn Claude Code process: &lt;detail&gt;</code> | TypeScript | Любой другой сбой запуска |</p>
+<p>В обоих SDK обычная причина — разрешённый путь, который указывает на что-то, что не может работать, например текстовый файл, каталог или файл без разрешения на выполнение. Прочитайте предложение libc сообщения о собственном двоичном файле как одну возможную причину.</p>
+<p>Чтобы исправить это в любом SDK:</p>
+<ul>
+<li>Убедитесь, что настроенный путь указывает на сам исполняемый файл <code>claude</code> и что файл имеет разрешение на выполнение.</li>
+<li>Если вам не нужен пользовательский путь, удалите <code>cli_path</code> в Python или <code>pathToClaudeCodeExecutable</code> в TypeScript, чтобы SDK нашёл CLI самостоятельно, предпочитая его встроенную копию.</li>
+<li>Когда неработающий двоичный файл — это встроенная копия SDK в образе контейнера, переустановите SDK во время сборки образа, чтобы встроенный двоичный файл соответствовал платформе контейнера, или перестройте образ для архитектуры, на которой он работает. Обычная причина — двоичный файл, который не соответствует архитектуре или libc контейнера, или файл, который потерял разрешение на выполнение при сборке образа.</li>
+</ul>
+<h4 id="cliconnectionerror-not-connected">CLIConnectionError: Not connected <a class="h-anchor" href="#cliconnectionerror-not-connected" aria-label="Ссылка на раздел">#</a></h4>
+<p>Вызов метода <code>ClaudeSDKClient</code> в Python до подключения клиента или после его отключения вызывает <code>CLIConnectionError</code> с этим сообщением:</p>
+<pre><code>Not connected. Call connect() first.</code></pre>
+<p>Сделайте то, что говорит сообщение. Либо вызовите <code>await client.connect()</code> перед любым другим методом клиента, либо откройте клиент с помощью <code>async with ClaudeSDKClient() as client:</code>, который подключается при входе.</p>
+<h3 id="выход-процесса-cli">Выход процесса CLI <a class="h-anchor" href="#выход-процесса-cli" aria-label="Ссылка на раздел">#</a></h3>
+<p>Записи в этом разделе означают, что процесс Claude Code завершился, пока ваше приложение его использовало. Какую ошибку вы видите, зависит от языка SDK и от того, сообщил ли CLI об ошибке перед выходом.</p>
+<h4 id="processerror-command-failed-with-exit-code">ProcessError: Command failed with exit code <a class="h-anchor" href="#processerror-command-failed-with-exit-code" aria-label="Ссылка на раздел">#</a></h4>
+<p>Python SDK вызывает <code>ProcessError</code>, когда процесс Claude Code завершается с ненулевым кодом:</p>
+<pre><code>Command failed with exit code 1 (exit code: 1)
+Error output: Check stderr output for details</code></pre>
+<p>Сообщение указывает код выхода дважды, а строка <code>Error output</code> — это фиксированный текст, а не вывод ошибки вашего процесса. Тот же фиксированный текст заполняет атрибут <code>stderr</code> исключения. Атрибут <code>exit_code</code> исключения содержит код. Чтобы захватить то, что CLI фактически написал в stderr, передайте обратный вызов <code>stderr</code> в <code>ClaudeAgentOptions</code> и логируйте то, что он получает.</p>
+<p>Простой <code>ProcessError</code> означает, что CLI завершился без сообщения об ошибке. Когда CLI сообщил об ошибке, SDK вместо этого вызывает <a href="https://code.claude.com/docs/ru/agent-sdk/python#resulterror"><code>ResultError</code></a>, рассмотренный в <a href="#claude-code-returned-an-error-result">Claude Code returned an error result</a>. <code>ResultError</code> является подклассом <code>ProcessError</code>, поэтому <code>except ProcessError</code> ловит оба. Чтобы обработать их по-разному, поместите предложение <code>except ResultError</code> первым.</p>
+<p>До <code>claude-agent-sdk</code> 0.2.140 Python SDK вызывал выходы с результатом ошибки как простое <code>Exception</code> вместо <code>ResultError</code>.</p>
+<h4 id="claude-code-process-exited-with-code-n">Claude Code process exited with code N <a class="h-anchor" href="#claude-code-process-exited-with-code-n" aria-label="Ссылка на раздел">#</a></h4>
+<p>Обёртки IDE также печатают это сообщение, и <a href="https://code.claude.com/docs/ru/errors.md#claude-code-process-exited-with-code-n">справочник ошибок</a> охватывает его для VS Code и других средств запуска. Эта запись охватывает то, что получает ваш код TypeScript SDK. SDK отображает ненулевой выход CLI как простую <code>Error</code>, которая отклоняет цикл <code>for await</code> над сообщениями <code>query()</code>. Нет класса ошибки SDK для перехвата, поэтому оберните цикл в <code>try</code>/<code>catch</code> и сопоставьте сообщение:</p>
+<pre><code>Claude Code process exited with code 1. stderr: &lt;tail of the CLI&#x27;s stderr&gt;</code></pre>
+<p>Когда CLI писал в stderr, сообщение заканчивается хвостом этого. Чтобы захватить полный поток, передайте обратный вызов <code>stderr</code> в параметры запроса. Процесс, убитый сигналом, сообщает <code>Claude Code process terminated by signal &lt;name&gt;</code> в той же форме.</p>
+<h4 id="claude-code-returned-an-error-result">Claude Code returned an error result <a class="h-anchor" href="#claude-code-returned-an-error-result" aria-label="Ссылка на раздел">#</a></h4>
+<p>Оба SDK заменяют ошибку выхода процесса этим сообщением, когда CLI сообщил об ошибке перед выходом:</p>
+<pre><code>Claude Code returned an error result: &lt;the CLI&#x27;s own error report&gt;</code></pre>
+<p>Текст после двоеточия — это отчёт CLI о том, что пошло не так, поэтому начните с него, а не с самого выхода. Python вызывает это как <a href="https://code.claude.com/docs/ru/agent-sdk/python#resulterror"><code>ResultError</code></a>, атрибут <code>data</code> которого содержит полный результат ошибки. TypeScript отклоняет цикл сообщений простой <code>Error</code>, несущей ту же форму сообщения.</p>
+<h3 id="h">Большие вызовы инструментов и их результаты <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="clijsondecodeerror-json-message-exceeded-maximum-buffer-size">CLIJSONDecodeError: JSON message exceeded maximum buffer size <a class="h-anchor" href="#clijsondecodeerror-json-message-exceeded-maximum-buffer-size" aria-label="Ссылка на раздел">#</a></h4>
+<p>Python SDK выдаёт эту ошибку, когда одно сообщение от Claude Code длиннее значения параметра <a href="https://code.claude.com/docs/ru/agent-sdk/python#claudeagentoptions"><code>max_buffer_size</code></a>, которое по умолчанию равно 1 048 576 символам. В тексте ошибки они называются байтами:</p>
+<p>```text theme={null}
+Failed to decode JSON: JSON message exceeded maximum buffer size of 1048576 bytes...</p>
+<pre><code>
+Например, PDF-файлы, снимки экрана и текстовые файлы могут порождать сообщения, достигающие этого предела:
+
+* **PDF-файлы и снимки экрана**: когда Claude читает целиком PDF-файл размером около 393 КБ или больше с помощью инструмента Read, результат инструмента может достичь предела, поскольку он содержит base64-представление файла дважды. Результат инструмента со снимком экрана, полученный от Read или от инструмента MCP, также содержит base64 дважды.
+* **Текстовые файлы**: сообщения от инструментов Edit и Write могут достичь предела на файле размером значительно меньше 1 МБ в зависимости от того, какая часть файла изменяется.
+
+Чтобы устранить ошибку, задайте больший предел в `ClaudeAgentOptions`:
+</code></pre>
+<p>options = ClaudeAgentOptions(max_buffer_size=64 <em> 1024 </em> 1024)</p>
+<pre><code>
+Этого значения достаточно для снимка экрана и для чтения через Read целого PDF-файла вплоть до предела Read в 20 МБ. Если ошибка возникает снова, например при Edit очень большого файла, задайте более высокое значение.
+
+Любые изменения, уже внесённые инструментом, сохраняются, и вызов инструмента, сообщение которого оказалось слишком длинным, мог внести такое изменение. Чтобы продолжить прерванную работу:
+
+1. Если у вас открыт `ClaudeSDKClient`, вызовите `disconnect()`. После этой ошибки клиент больше не получает сообщений, но Claude Code продолжает работать и всё ещё может вносить изменения.
+2. Запустите новый `query()` или `ClaudeSDKClient` с увеличенным пределом и [`continue_conversation=True`](https://code.claude.com/docs/ru/agent-sdk/sessions#continue-resume-and-fork), что выберет самую последнюю сессию в рабочем каталоге. Чтобы выбрать конкретную сессию, задайте `resume` равным `data[&quot;session_id&quot;]` из инициализирующего [`SystemMessage`](https://code.claude.com/docs/ru/agent-sdk/python#systemmessage).
+
+## Потоковый ввод
+
+### Operation aborted
+
+В TypeScript ваш цикл `for await` по `query()` выбрасывает одно из этих сообщений как `AbortError`. Любое из них означает, что запрос был прерван:
+</code></pre>
+<p>Operation aborted
+Claude Code process aborted by user</p>
+<pre><code>
+Проверьте следующие причины:
+
+* **Ваш код прервал запрос**: если ваш код вызывает `abort()` у `AbortController`, который вы передали в качестве параметра [`abortController`](https://code.claude.com/docs/ru/agent-sdk/typescript#options), цикл выбрасывает одну из этих ошибок. Если вы не планировали прерывание, проверьте, где ваш код вызывает `abort()`.
+* **Ваш асинхронный генератор выбросил исключение**: ошибка не содержит собственного сообщения об ошибке вашего генератора. Чтобы увидеть это сообщение, оберните тело генератора в `try`/`catch`, запишите перехваченную ошибку в лог и выбросьте её повторно. Затем исправьте ошибку, которую вы записали в лог.
+
+### Prompt stream failed; closing stdin
+
+В Python, когда асинхронный генератор, который вы передали в функцию `query()`, выбрасывает исключение, ваш цикл `async for` по `query()` завершается без исключения. SDK записывает эту строку в лог с уровнем `ERROR`. Если вы не настроили логирование, Python выводит строку в stderr:
+</code></pre>
+<p>Prompt stream failed; closing stdin: &lt;your exception&#x27;s message&gt;</p>
+<pre><code>
+Чтобы увидеть трассировку стека исключения, оберните тело генератора в `try`/`except`. Запишите исключение в лог вместе с трассировкой стека и выбросьте его снова. Затем исправьте исключение, которое вы записали в лог.
+
+### Image could not be processed
+
+Когда у блока изображения в вашем сообщении нет объекта `source`, никакая ошибка до вашего кода не доходит. Вместо изображения Claude получает следующее текстовое примечание:
+</code></pre>
+<p>[Image could not be processed: image block has no source object]</p>
+<pre><code>
+Claude отвечает без изображения. Убедитесь, что у каждого блока изображения есть объект `source`, как в разделе [Отправка последующего сообщения с изображением](https://code.claude.com/docs/ru/agent-sdk/streaming-vs-single-mode.md#send-a-follow-up-with-an-image).
+
+## Структурированные выходы
+
+### structured\_output is None but the result says success
+
+Сообщение результата может заканчиваться `subtype: &quot;success&quot;`, пока `structured_output` равен `None` в Python или `undefined` в TypeScript. Запуск завершается, но проверенный выход не существует.
+
+Рассматривайте этот результат как сбой в коде приложения. Раздел [Error handling](https://code.claude.com/docs/ru/agent-sdk/structured-outputs.md#error-handling) показывает этот паттерн для обоих SDK. Затем проверьте следующие причины:
+
+* **Запрос, который Claude отклонил**: чтобы обнаружить этот случай в коде, проверьте, равен ли `stop_reason` в сообщении результата значению `&quot;refusal&quot;`. О том, что попробовать дальше, см. [Отказ по Usage Policy](https://code.claude.com/docs/ru/errors.md#usage-policy-refusal).
+* **Схема, которую не может удовлетворить никакой выход**: например, строка, у которой `minLength` больше, чем `maxLength`. Если `structured_output` повторно отсутствует со схемой, которую вы считаете правильной, поищите ограничения, противоречащие друг другу. Если таких нет, упрощайте схему до тех пор, пока выходы не начнут проходить проверку, а затем возвращайте ограничения по одному.
+
+## Сообщить о новой проблеме
+
+Если ваша ошибка не охвачена здесь, проверьте открытые проблемы или создайте новую в репозиториях SDK: [claude-agent-sdk-typescript](https://github.com/anthropics/claude-agent-sdk-typescript/issues) или [claude-agent-sdk-python](https://github.com/anthropics/claude-agent-sdk-python/issues). Включите полный текст ошибки и версию вашего SDK.
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Обработка одобрений и пользовательского ввода</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/agent-sdk/index.html">agent-sdk</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Обработка одобрений и пользовательского ввода <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Выводите запросы на одобрение Claude и уточняющие вопросы пользователям, а затем возвращайте их решения в SDK.</p>
+</blockquote>
+<p>Во время работы над задачей Claude иногда нужно проверить информацию у пользователей. Ему может потребоваться разрешение перед удалением файлов или нужно спросить, какую базу данных использовать для нового проекта. Ваше приложение должно выводить эти запросы пользователям, чтобы Claude мог продолжить работу с их вводом.</p>
+<p>Claude запрашивает пользовательский ввод в двух ситуациях: когда ему нужно <strong>разрешение на использование инструмента</strong> (например, удаление файлов или запуск команд) и когда у него есть <strong>уточняющие вопросы</strong> (через инструмент <code>AskUserQuestion</code>). Оба случая запускают ваш callback <code>canUseTool</code>, который приостанавливает выполнение до получения ответа. Это отличается от обычных диалоговых ходов, где Claude завершает работу и ждёт вашего следующего сообщения.</p>
+<p>Для уточняющих вопросов Claude генерирует вопросы и варианты ответов. Ваша роль — представить их пользователям и вернуть их выборы. Вы не можете добавлять свои собственные вопросы в этот процесс; если вам нужно что-то спросить у пользователей, сделайте это отдельно в логике вашего приложения.</p>
+<p>Callback может оставаться в ожидании неопределённо долго. Выполнение остаётся приостановленным до возврата вашего callback. Если пользователь может ответить дольше, чем ваш процесс может разумно оставаться запущенным, зарегистрируйте <a href="https://code.claude.com/docs/ru/agent-sdk/hooks"><code>PreToolUse</code> hook</a>, который возвращает решение <a href="https://code.claude.com/docs/ru/hooks#defer-a-tool-call-for-later"><code>defer</code></a> вместо ожидания в callback, чтобы процесс мог выйти и возобновиться позже из сохранённой сессии.</p>
+<p>Это руководство показывает, как обнаружить каждый тип запроса и ответить надлежащим образом.</p>
+<h3 id="обнаружение-когда-claude-нуждается-в-вводе">Обнаружение, когда Claude нуждается в вводе <a class="h-anchor" href="#обнаружение-когда-claude-нуждается-в-вводе" aria-label="Ссылка на раздел">#</a></h3>
+<p>Передайте callback <code>canUseTool</code> в параметры вашего запроса. Callback срабатывает всякий раз, когда Claude нуждается в пользовательском вводе, получая имя инструмента и ввод в качестве аргументов:</p>
+<p>```python Python theme={null}
+from claude_agent_sdk import ClaudeAgentOptions</p>
+<p>async def handle_tool_request(tool_name, input_data, context):
+    # Запросить у пользователя и вернуть разрешение или отказ
+    ...</p>
+<p>options = ClaudeAgentOptions(can_use_tool=handle_tool_request)</p>
+<pre><code></code></pre>
+<p>import type { CanUseTool } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>const handleToolRequest: CanUseTool = async (toolName, input, options) =&gt; {
+  // options включает { signal: AbortSignal, suggestions?: PermissionUpdate[] }
+  // Запросите решение у пользователя здесь, затем верните разрешение или отказ
+  return { behavior: &quot;deny&quot;, message: &quot;User declined&quot; };
+};</p>
+<p>const options = { canUseTool: handleToolRequest };</p>
+<pre><code>
+Callback срабатывает в двух случаях:
+
+1. **Инструмент требует одобрения**: Claude хочет использовать инструмент, который не одобрен автоматически [правилом разрешений](https://code.claude.com/docs/ru/agent-sdk/permissions.md) или режимом разрешений. Проверьте `tool_name` на имя инструмента (например, `&quot;Bash&quot;`, `&quot;Write&quot;`).
+2. **Claude задаёт вопрос**: Claude вызывает инструмент `AskUserQuestion`. Проверьте условие `tool_name == &quot;AskUserQuestion&quot;`, чтобы обработать этот случай отдельно. Если вы указываете массив `tools`, включите в него `AskUserQuestion`, чтобы это работало. Подробнее см. в разделе [Обработка уточняющих вопросов](#handle-clarifying-questions).
+
+&gt; [!WARNING]
+&gt;
+&gt; **Более ранний этап может разрешить или отклонить вызов до запуска `canUseTool`.** [Поток оценки разрешений](https://code.claude.com/docs/ru/agent-sdk/permissions.md#how-permissions-are-evaluated) проверяет запрещающие правила, режим разрешений и разрешающие правила до вашего callback.
+&gt;
+&gt; Чтобы выполнять свои проверки для вызовов, которые правило или режим разрешений уже разрешили, используйте [хук `PreToolUse`](https://code.claude.com/docs/ru/agent-sdk/hooks), который выполняется для таких вызовов и может разрешить, отклонить или изменить их.
+
+Вы также можете использовать [`PermissionRequest` hook](https://code.claude.com/docs/ru/agent-sdk/hooks#available-hooks) для отправки внешних уведомлений (Slack, email, push) когда Claude ждёт одобрения.
+
+## Обработка запросов на одобрение инструмента
+
+После передачи callback `canUseTool` в параметры вашего запроса он срабатывает, когда Claude хочет использовать инструмент, который не одобрен ранее в потоке разрешений. В некоторых конфигурациях, таких как режим `dontAsk`, Claude Code не вызывает его; последний шаг раздела [Как оцениваются разрешения](https://code.claude.com/docs/ru/agent-sdk/permissions.md#how-permissions-are-evaluated) перечисляет их и говорит, что происходит с вызовом вместо этого.
+
+Ваш callback получает три аргумента:
+
+| Аргумент | Описание |
+| - | - |
+| `toolName` | Имя инструмента, который Claude хочет использовать (например, `&quot;Bash&quot;`, `&quot;Write&quot;`, `&quot;Edit&quot;`) |
+| `input` | Параметры, которые Claude передаёт инструменту. Содержимое варьируется в зависимости от инструмента. |
+| `options` (TS) / `context` (Python) | Дополнительный контекст, включая опциональные `suggestions` (предложенные записи `PermissionUpdate` для избежания повторного запроса) и сигнал отмены. В TypeScript `signal` — это `AbortSignal`; в Python поле signal зарезервировано для будущего использования. Подробнее см. [`ToolPermissionContext`](https://code.claude.com/docs/ru/agent-sdk/python#toolpermissioncontext) для Python. |
+
+Объект `input` содержит параметры, специфичные для инструмента. Распространённые примеры:
+
+| Инструмент | Поля ввода |
+| - | - |
+| `Bash` | `command`, `description`, `timeout` |
+| `Write` | `file_path`, `content` |
+| `Edit` | `file_path`, `old_string`, `new_string` |
+| `Read` | `file_path`, `offset`, `limit` |
+
+Полные схемы ввода см. в справочнике SDK: [Python](https://code.claude.com/docs/ru/agent-sdk/python.md#tool-input%2Foutput-types) | [TypeScript](https://code.claude.com/docs/ru/agent-sdk/typescript.md#tool-input-types).
+
+Вы можете отобразить эту информацию пользователю, чтобы он мог решить, разрешить или отклонить действие, а затем вернуть соответствующий ответ.
+
+Следующий пример просит Claude создать и удалить тестовый файл. Когда Claude пытается выполнить каждую операцию, callback выводит запрос инструмента в терминал и запрашивает одобрение y/n.
+</code></pre>
+<p>import asyncio</p>
+<p>from claude_agent_sdk import ClaudeAgentOptions, ResultMessage, query
+from claude_agent_sdk.types import (
+    HookMatcher,
+    PermissionResultAllow,
+    PermissionResultDeny,
+    ToolPermissionContext,
+)</p>
+<p>async def can_use_tool(
+    tool_name: str, input_data: dict, context: ToolPermissionContext
+) -&gt; PermissionResultAllow | PermissionResultDeny:
+    # Отобразить запрос инструмента
+    print(f&quot;\nTool: {tool_name}&quot;)
+    if tool_name == &quot;Bash&quot;:
+        print(f&quot;Command: {input_data.get(&#x27;command&#x27;)}&quot;)
+        if input_data.get(&quot;description&quot;):
+            print(f&quot;Description: {input_data.get(&#x27;description&#x27;)}&quot;)
+    else:
+        print(f&quot;Input: {input_data}&quot;)</p>
+<p># Получить одобрение пользователя
+    response = input(&quot;Allow this action? (y/n): &quot;)</p>
+<p># Вернуть разрешение или отказ на основе ответа пользователя
+    if response.lower() == &quot;y&quot;:
+        # Разрешить: инструмент выполняется с исходным (или изменённым) вводом
+        return PermissionResultAllow(updated_input=input_data)
+    else:
+        # Отклонить: инструмент не выполняется, Claude видит сообщение
+        return PermissionResultDeny(message=&quot;User denied this action&quot;)</p>
+<h1 id="требуемый-обходной-путь-фиктивный-hook-держит-поток-открытым-для-can_use_tool">Требуемый обходной путь: фиктивный hook держит поток открытым для can_use_tool <a class="h-anchor" href="#требуемый-обходной-путь-фиктивный-hook-держит-поток-открытым-для-can_use_tool" aria-label="Ссылка на раздел">#</a></h1>
+<p>async def dummy_hook(input_data, tool_use_id, context):
+    return {&quot;continue_&quot;: True}</p>
+<p>async def prompt_stream():
+    yield {
+        &quot;type&quot;: &quot;user&quot;,
+        &quot;message&quot;: {
+            &quot;role&quot;: &quot;user&quot;,
+            &quot;content&quot;: &quot;Create a test file in /tmp and then delete it&quot;,
+        },
+    }</p>
+<p>async def main():
+    async for message in query(
+        prompt=prompt_stream(),
+        options=ClaudeAgentOptions(
+            can_use_tool=can_use_tool,
+            hooks={&quot;PreToolUse&quot;: [HookMatcher(matcher=None, hooks=[dummy_hook])]},
+        ),
+    ):
+        if isinstance(message, ResultMessage) and message.subtype == &quot;success&quot;:
+            print(message.result)</p>
+<p>asyncio.run(main())</p>
+<pre><code></code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;
+import * as readline from &quot;readline&quot;;</p>
+<p>// Вспомогательная функция для запроса ввода пользователя в терминале
+function prompt(question: string): Promise&lt;string&gt; {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+  return new Promise((resolve) =&gt;
+    rl.question(question, (answer) =&gt; {
+      rl.close();
+      resolve(answer);
+    })
+  );
+}</p>
+<p>for await (const message of query({
+  prompt: &quot;Create a test file in /tmp and then delete it&quot;,
+  options: {
+    canUseTool: async (toolName, input) =&gt; {
+      // Отобразить запрос инструмента
+      console.log(<code>\nTool: ${toolName}</code>);
+      if (toolName === &quot;Bash&quot;) {
+        console.log(<code>Command: ${input.command}</code>);
+        if (input.description) console.log(<code>Description: ${input.description}</code>);
+      } else {
+        console.log(<code>Input: ${JSON.stringify(input, null, 2)}</code>);
+      }</p>
+<p>// Получить одобрение пользователя
+      const response = await prompt(&quot;Allow this action? (y/n): &quot;);</p>
+<p>// Вернуть разрешение или отказ на основе ответа пользователя
+      if (response.toLowerCase() === &quot;y&quot;) {
+        // Разрешить: инструмент выполняется с исходным (или изменённым) вводом
+        return { behavior: &quot;allow&quot;, updatedInput: input };
+      } else {
+        // Отклонить: инструмент не выполняется, Claude видит сообщение
+        return { behavior: &quot;deny&quot;, message: &quot;User denied this action&quot; };
+      }
+    }
+  }
+})) {
+  if (&quot;result&quot; in message) console.log(message.result);
+}</p>
+<pre><code>
+Этот пример использует поток y/n, где любой ввод, отличный от `y`, рассматривается как отказ. На практике вы можете создать более богатый пользовательский интерфейс, который позволяет пользователям изменять запрос, предоставлять обратную связь или полностью перенаправлять Claude. Подробнее см. [Ответ на запросы инструментов](#respond-to-tool-requests).
+
+### Ответ на запросы инструментов
+
+Ваш callback возвращает один из двух типов ответов:
+
+| Ответ | Python | TypeScript |
+| - | - | - |
+| **Разрешить** | `PermissionResultAllow(updated_input=...)` | `{ behavior: &quot;allow&quot;, updatedInput }` |
+| **Отклонить** | `PermissionResultDeny(message=...)` | `{ behavior: &quot;deny&quot;, message }` |
+
+При разрешении инструмент выполняется с вводом, который запросил Claude, если вы не вернёте изменённый ввод, `updatedInput` в TypeScript или `updated_input` в Python. До версии 2.1.207 Claude Code отклонял результат разрешения, который опускал `updatedInput`, и отклонял вызов инструмента с ошибкой валидации.
+
+При отклонении предоставьте сообщение, объясняющее причину. Claude видит это сообщение и может скорректировать свой подход.
+
+Помимо разрешения или отклонения, вы можете изменить ввод инструмента или предоставить контекст, который помогает Claude скорректировать свой подход:
+
+* **Одобрить**: позволить инструменту выполниться так, как запросил Claude
+* **Одобрить с изменениями**: изменить ввод перед выполнением (например, санитизировать пути, добавить ограничения)
+* **Одобрить и запомнить**: отправить обратно предложенное правило разрешения, чтобы совпадающие вызовы пропускали запрос в следующий раз
+* **Отклонить**: заблокировать инструмент и объяснить Claude причину
+* **Предложить альтернативу**: заблокировать, но направить Claude к тому, что хочет пользователь
+* **Полностью перенаправить**: использовать [потоковый ввод](https://code.claude.com/docs/ru/agent-sdk/streaming-vs-single-mode.md) для отправки Claude совершенно новой инструкции
+
+Вспомогательные функции `ask_user` и `askUser` в следующих фрагментах кода служат заменой для собственного пользовательского интерфейса запроса вашего приложения.
+
+&gt; [tab] Одобрить
+&gt;
+&gt; Пользователь одобряет действие как есть. Пропустите `input` из вашего callback без изменений и инструмент выполнится ровно так, как запросил Claude.
+&gt;
+&gt; ```python Python theme={null}
+&gt; async def can_use_tool(tool_name, input_data, context):
+&gt;     print(f&quot;Claude wants to use {tool_name}&quot;)
+&gt;     approved = await ask_user(&quot;Allow this action?&quot;)
+&gt;
+&gt;     if approved:
+&gt;         return PermissionResultAllow(updated_input=input_data)
+&gt;     return PermissionResultDeny(message=&quot;User declined&quot;)
+&gt; ```
+&gt;
+&gt; ```typescript TypeScript theme={null}
+&gt; canUseTool: async (toolName, input) =&gt; {
+&gt;   console.log(`Claude wants to use ${toolName}`);
+&gt;   const approved = await askUser(&quot;Allow this action?&quot;);
+&gt;
+&gt;   if (approved) {
+&gt;     return { behavior: &quot;allow&quot;, updatedInput: input };
+&gt;   }
+&gt;   return { behavior: &quot;deny&quot;, message: &quot;User declined&quot; };
+&gt; };
+&gt; ```
+
+&gt; [tab] Одобрить с изменениями
+&gt;
+&gt; Пользователь одобряет, но хочет сначала изменить запрос. Вы можете изменить ввод перед выполнением инструмента. Claude видит результат, но не сообщается, что вы что-то изменили. Полезно для санитизации параметров, добавления ограничений или ограничения доступа.
+&gt;
+&gt; ```python Python theme={null}
+&gt; async def can_use_tool(tool_name, input_data, context):
+&gt;     if tool_name == &quot;Bash&quot;:
+&gt;         # Пользователь одобрил, но ограничить все команды песочницей
+&gt;         sandboxed_input = {**input_data}
+&gt;         sandboxed_input[&quot;command&quot;] = input_data[&quot;command&quot;].replace(
+&gt;             &quot;/tmp&quot;, &quot;/tmp/sandbox&quot;
+&gt;         )
+&gt;         return PermissionResultAllow(updated_input=sandboxed_input)
+&gt;     return PermissionResultAllow(updated_input=input_data)
+&gt; ```
+&gt;
+&gt; ```typescript TypeScript theme={null}
+&gt; canUseTool: async (toolName, input) =&gt; {
+&gt;   if (toolName === &quot;Bash&quot;) {
+&gt;     // Пользователь одобрил, но ограничить все команды песочницей
+&gt;     const sandboxedInput = {
+&gt;       ...input,
+&gt;       command: input.command.replace(&quot;/tmp&quot;, &quot;/tmp/sandbox&quot;)
+&gt;     };
+&gt;     return { behavior: &quot;allow&quot;, updatedInput: sandboxedInput };
+&gt;   }
+&gt;   return { behavior: &quot;allow&quot;, updatedInput: input };
+&gt; };
+&gt; ```
+
+&gt; [tab] Одобрить и запомнить
+&gt;
+&gt; Пользователь одобряет и не хочет, чтобы его спрашивали снова для этого вида вызова. Третий аргумент callback содержит `suggestions`, массив готовых записей [`PermissionUpdate`](https://code.claude.com/docs/ru/agent-sdk/typescript#permissionupdate). Отправьте одну обратно в `updatedPermissions` для её применения. Предложение с назначением `localSettings` записывает правило в `.claude/settings.local.json`, чтобы будущие сеансы пропускали запрос для совпадающих вызовов.
+&gt;
+&gt; В TypeScript пропустите вариант всегда разрешить для запроса, параметры которого содержат [`suppressAlwaysAllowRule: true`](https://code.claude.com/docs/ru/agent-sdk/typescript#canusetool). Подсказка требует Agent SDK версии 0.3.268 или позже, и Python `context` её не содержит.
+&gt;
+&gt; Пример Python требует `claude-agent-sdk` версии 0.1.80 или позже.
+&gt;
+&gt; ```python Python theme={null}
+&gt; async def can_use_tool(tool_name, input_data, context):
+&gt;     choice = await ask_user(f&quot;Allow {tool_name}?&quot;, [&quot;once&quot;, &quot;always&quot;, &quot;no&quot;])
+&gt;
+&gt;     if choice == &quot;always&quot;:
+&gt;         persist = [
+&gt;             s for s in context.suggestions if s.destination == &quot;localSettings&quot;
+&gt;         ]
+&gt;         return PermissionResultAllow(
+&gt;             updated_input=input_data, updated_permissions=persist
+&gt;         )
+&gt;     if choice == &quot;once&quot;:
+&gt;         return PermissionResultAllow(updated_input=input_data)
+&gt;     return PermissionResultDeny(message=&quot;User declined&quot;)
+&gt; ```
+&gt;
+&gt; ```typescript TypeScript theme={null}
+&gt; canUseTool: async (toolName, input, { suggestions = [] }) =&gt; {
+&gt;   const choice = await askUser(`Allow ${toolName}?`, [&quot;once&quot;, &quot;always&quot;, &quot;no&quot;]);
+&gt;
+&gt;   if (choice === &quot;always&quot;) {
+&gt;     const persist = suggestions.filter(
+&gt;       (s) =&gt; s.destination === &quot;localSettings&quot;
+&gt;     );
+&gt;     return {
+&gt;       behavior: &quot;allow&quot;,
+&gt;       updatedInput: input,
+&gt;       updatedPermissions: persist
+&gt;     };
+&gt;   }
+&gt;   if (choice === &quot;once&quot;) {
+&gt;     return { behavior: &quot;allow&quot;, updatedInput: input };
+&gt;   }
+&gt;   return { behavior: &quot;deny&quot;, message: &quot;User declined&quot; };
+&gt; };
+&gt; ```
+
+&gt; [tab] Отклонить
+&gt;
+&gt; Пользователь не хочет, чтобы это действие произошло. Заблокируйте инструмент и предоставьте сообщение, объясняющее причину. Claude видит это сообщение и может попробовать другой подход.
+&gt;
+&gt; ```python Python theme={null}
+&gt; async def can_use_tool(tool_name, input_data, context):
+&gt;     approved = await ask_user(f&quot;Allow {tool_name}?&quot;)
+&gt;
+&gt;     if not approved:
+&gt;         return PermissionResultDeny(message=&quot;User rejected this action&quot;)
+&gt;     return PermissionResultAllow(updated_input=input_data)
+&gt; ```
+&gt;
+&gt; ```typescript TypeScript theme={null}
+&gt; canUseTool: async (toolName, input) =&gt; {
+&gt;   const approved = await askUser(`Allow ${toolName}?`);
+&gt;
+&gt;   if (!approved) {
+&gt;     return {
+&gt;       behavior: &quot;deny&quot;,
+&gt;       message: &quot;User rejected this action&quot;
+&gt;     };
+&gt;   }
+&gt;   return { behavior: &quot;allow&quot;, updatedInput: input };
+&gt; };
+&gt; ```
+
+&gt; [tab] Предложить альтернативу
+&gt;
+&gt; Пользователь не хочет это конкретное действие, но имеет другую идею. Заблокируйте инструмент и включите рекомендацию в ваше сообщение. Claude прочитает это и решит, как действовать на основе вашей обратной связи.
+&gt;
+&gt; ```python Python theme={null}
+&gt; async def can_use_tool(tool_name, input_data, context):
+&gt;     if tool_name == &quot;Bash&quot; and &quot;rm&quot; in input_data.get(&quot;command&quot;, &quot;&quot;):
+&gt;         # Пользователь не хочет удалять, предложить архивирование вместо этого
+&gt;         return PermissionResultDeny(
+&gt;             message=&quot;User doesn&#x27;t want to delete files. They asked if you could compress them into an archive instead.&quot;
+&gt;         )
+&gt;     return PermissionResultAllow(updated_input=input_data)
+&gt; ```
+&gt;
+&gt; ```typescript TypeScript theme={null}
+&gt; canUseTool: async (toolName, input) =&gt; {
+&gt;   if (toolName === &quot;Bash&quot; &amp;&amp; input.command.includes(&quot;rm&quot;)) {
+&gt;     // Пользователь не хочет удалять, предложить архивирование вместо этого
+&gt;     return {
+&gt;       behavior: &quot;deny&quot;,
+&gt;       message:
+&gt;         &quot;User doesn&#x27;t want to delete files. They asked if you could compress them into an archive instead.&quot;
+&gt;     };
+&gt;   }
+&gt;   return { behavior: &quot;allow&quot;, updatedInput: input };
+&gt; };
+&gt; ```
+
+&gt; [tab] Полностью перенаправить
+&gt;
+&gt; Для полного изменения направления (не просто подсказка), используйте [потоковый ввод](https://code.claude.com/docs/ru/agent-sdk/streaming-vs-single-mode.md) для отправки Claude новой инструкции напрямую. Это обходит текущий запрос инструмента и даёт Claude совершенно новые инструкции для следования.
+
+## Обработка уточняющих вопросов
+
+Когда Claude нуждается в дополнительном направлении для задачи с несколькими допустимыми подходами, он вызывает инструмент `AskUserQuestion`. Это запускает ваш callback `canUseTool` с `toolName`, установленным на `AskUserQuestion`. Ввод содержит вопросы Claude в виде вариантов с множественным выбором, которые вы выводите пользователю и возвращаете их выборы.
+
+&gt; [!TIP]
+&gt;
+&gt; Уточняющие вопросы особенно распространены в [режиме `plan`](https://code.claude.com/docs/ru/agent-sdk/permissions#plan-mode-plan), где Claude исследует кодовую базу и задаёт вопросы перед предложением плана. Это делает режим plan идеальным для интерактивных рабочих процессов, где вы хотите, чтобы Claude собрал требования перед внесением изменений.
+
+Следующие шаги показывают, как обработать уточняющие вопросы:
+
+**1. Передайте callback canUseTool**
+
+Передайте callback `canUseTool` в параметры вашего запроса. По умолчанию `AskUserQuestion` доступен. Если вы указываете массив `tools` для ограничения возможностей Claude (например, агент только для чтения с только `Read`, `Glob` и `Grep`), включите `AskUserQuestion` в этот массив. В противном случае Claude не сможет задавать уточняющие вопросы:
+</code></pre>
+<p>async for message in query(
+    prompt=&quot;Analyze this codebase&quot;,
+    options=ClaudeAgentOptions(
+        # Включите AskUserQuestion в ваш список инструментов
+        tools=[&quot;Read&quot;, &quot;Glob&quot;, &quot;Grep&quot;, &quot;AskUserQuestion&quot;],
+        can_use_tool=can_use_tool,
+    ),
+):
+    print(message)</p>
+<pre><code></code></pre>
+<p>for await (const message of query({
+  prompt: &quot;Analyze this codebase&quot;,
+  options: {
+    // Включите AskUserQuestion в ваш список инструментов
+    tools: [&quot;Read&quot;, &quot;Glob&quot;, &quot;Grep&quot;, &quot;AskUserQuestion&quot;],
+    canUseTool: async (toolName, input) =&gt; {
+      // Заглушка, которая одобряет каждый вызов. Шаг «Обнаружьте AskUserQuestion» заменяет её.
+      return { behavior: &quot;allow&quot;, updatedInput: input };
+    }
+  }
+})) {
+  console.log(message);
+}</p>
+<pre><code>
+**2. Обнаружьте AskUserQuestion**
+
+В вашем callback проверьте, равен ли `toolName` `AskUserQuestion`, чтобы обработать его иначе, чем другие инструменты:
+</code></pre>
+<p>async def can_use_tool(tool_name: str, input_data: dict, context):
+    if tool_name == &quot;AskUserQuestion&quot;:
+        # Ваша реализация для сбора ответов от пользователя
+        return await handle_clarifying_questions(input_data)
+    # Обработайте другие инструменты нормально
+    return await prompt_for_approval(tool_name, input_data)</p>
+<pre><code></code></pre>
+<p>canUseTool: async (toolName, input) =&gt; {
+  if (toolName === &quot;AskUserQuestion&quot;) {
+    // Ваша реализация для сбора ответов от пользователя
+    return handleClarifyingQuestions(input);
+  }
+  // Обработайте другие инструменты нормально
+  return promptForApproval(toolName, input);
+};</p>
+<pre><code>
+**3. Разберите ввод вопроса**
+
+Ввод содержит вопросы Claude в массиве `questions`. Каждый вопрос имеет `question` (текст для отображения), `options` (варианты выбора) и `multiSelect` (разрешены ли множественные выборы):
+</code></pre>
+<p>{
+  &quot;questions&quot;: [
+    {
+      &quot;question&quot;: &quot;How should I format the output?&quot;,
+      &quot;header&quot;: &quot;Format&quot;,
+      &quot;options&quot;: [
+        { &quot;label&quot;: &quot;Summary&quot;, &quot;description&quot;: &quot;Brief overview&quot; },
+        { &quot;label&quot;: &quot;Detailed&quot;, &quot;description&quot;: &quot;Full explanation&quot; }
+      ],
+      &quot;multiSelect&quot;: false
+    },
+    {
+      &quot;question&quot;: &quot;Which sections should I include?&quot;,
+      &quot;header&quot;: &quot;Sections&quot;,
+      &quot;options&quot;: [
+        { &quot;label&quot;: &quot;Introduction&quot;, &quot;description&quot;: &quot;Opening context&quot; },
+        { &quot;label&quot;: &quot;Conclusion&quot;, &quot;description&quot;: &quot;Final summary&quot; }
+      ],
+      &quot;multiSelect&quot;: true
+    }
+  ]
+}</p>
+<pre><code>
+Полное описание полей см. в [Формат вопроса](#question-format).
+
+**4. Соберите ответы от пользователя**
+
+Представьте вопросы пользователю и соберите их выборы. Как вы это сделаете, зависит от вашего приложения: терминальный запрос, веб-форма, мобильный диалог и т. д.
+
+**5. Верните ответы Claude**
+
+Создайте объект `answers` как запись, где каждый ключ — это текст `question`, а каждое значение — это `label` выбранного варианта:
+
+| Из объекта вопроса | Используйте как |
+| - | - |
+| Поле `question` (например, `&quot;How should I format the output?&quot;`) | Ключ |
+| Поле `label` выбранного варианта (например, `&quot;Summary&quot;`) | Значение |
+
+Для вопросов с множественным выбором передайте массив меток или объедините их с `&quot;, &quot;`. Если вы [поддерживаете свободный ввод текста](#support-free-text-input), используйте пользовательский текст пользователя как значение.
+</code></pre>
+<p>return PermissionResultAllow(
+    updated_input={
+        &quot;questions&quot;: input_data.get(&quot;questions&quot;, []),
+        &quot;answers&quot;: {
+            &quot;How should I format the output?&quot;: &quot;Summary&quot;,
+            &quot;Which sections should I include?&quot;: [&quot;Introduction&quot;, &quot;Conclusion&quot;],
+        },
+    }
+)</p>
+<pre><code></code></pre>
+<p>return {
+  behavior: &quot;allow&quot;,
+  updatedInput: {
+    questions: input.questions,
+    answers: {
+      &quot;How should I format the output?&quot;: &quot;Summary&quot;,
+      &quot;Which sections should I include?&quot;: &quot;Introduction, Conclusion&quot;
+    }
+  }
+};</p>
+<pre><code>
+### Формат вопроса
+
+Ввод содержит сгенерированные Claude вопросы в массиве `questions`. Каждый вопрос имеет эти поля:
+
+| Поле | Описание |
+| - | - |
+| `question` | Полный текст вопроса для отображения |
+| `header` | Короткая метка для вопроса (максимум 12 символов) |
+| `options` | Массив из 2-4 вариантов выбора, каждый с `label` и `description`. TypeScript: опционально `preview`. См. [Предпросмотры вариантов](#option-previews-typescript). |
+| `multiSelect` | Если `true`, пользователи могут выбрать несколько вариантов |
+
+Структура, которую получает ваш callback:
+</code></pre>
+<p>{
+  &quot;questions&quot;: [
+    {
+      &quot;question&quot;: &quot;How should I format the output?&quot;,
+      &quot;header&quot;: &quot;Format&quot;,
+      &quot;options&quot;: [
+        { &quot;label&quot;: &quot;Summary&quot;, &quot;description&quot;: &quot;Brief overview of key points&quot; },
+        { &quot;label&quot;: &quot;Detailed&quot;, &quot;description&quot;: &quot;Full explanation with examples&quot; }
+      ],
+      &quot;multiSelect&quot;: false
+    }
+  ]
+}</p>
+<pre><code>
+#### Предпросмотры вариантов (TypeScript)
+
+`toolConfig.askUserQuestion.previewFormat` добавляет поле `preview` к каждому варианту, чтобы ваше приложение могло показать визуальный макет рядом с меткой. Без этого параметра Claude не генерирует предпросмотры и поле отсутствует.
+
+| `previewFormat` | `preview` содержит |
+| :- | :- |
+| не установлено (по умолчанию) | Поле отсутствует. Claude не генерирует предпросмотры. |
+| `&quot;markdown&quot;` | ASCII-арт и блоки кода в ограде |
+| `&quot;html&quot;` | Стилизованный фрагмент `&lt;div&gt;` (SDK отклоняет `&lt;script&gt;`, `&lt;style&gt;` и `&lt;!DOCTYPE&gt;` перед запуском вашего callback) |
+
+Формат применяется ко всем вопросам в сессии. Claude включает `preview` на варианты, где визуальное сравнение помогает (выбор макета, цветовые схемы) и опускает его, где оно не помогает (да/нет подтверждения, только текстовые варианты). Проверьте `undefined` перед рендерингом.
+</code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>for await (const message of query({
+  prompt: &quot;Help me choose a card layout&quot;,
+  options: {
+    toolConfig: {
+      askUserQuestion: { previewFormat: &quot;html&quot; }
+    },
+    canUseTool: async (toolName, input) =&gt; {
+      // input.questions[].options[].preview — это HTML-строка или undefined
+      return { behavior: &quot;allow&quot;, updatedInput: input };
+    }
+  }
+})) {
+  // ...
+}</p>
+<pre><code>
+Вариант с HTML-предпросмотром:
+</code></pre>
+<p>{
+  &quot;label&quot;: &quot;Compact&quot;,
+  &quot;description&quot;: &quot;Title and metric value only&quot;,
+  &quot;preview&quot;: &quot;&lt;div style=\&quot;padding:12px;border:1px solid #ddd;border-radius:8px\&quot;&gt;&lt;div style=\&quot;font-size:12px;color:#666\&quot;&gt;Active users&lt;/div&gt;&lt;div style=\&quot;font-size:28px;font-weight:600\&quot;&gt;1,284&lt;/div&gt;&lt;/div&gt;&quot;
+}</p>
+<pre><code>
+### Формат ответа
+
+Верните объект `answers`, сопоставляющий поле `question` каждого вопроса с `label` выбранного варианта:
+
+| Поле | Описание |
+| - | - |
+| `questions` | Пропустите исходный массив вопросов (требуется для обработки инструмента) |
+| `answers` | Объект, где ключи — это текст вопроса, а значения — это выбранные метки |
+| `response` | Опциональный свободный ответ, который пользователь ввёл вместо ответа на структурированные вопросы |
+
+Для вопросов с множественным выбором передайте массив меток или объедините их с `&quot;, &quot;`. Для свободного ввода текста для каждого вопроса, такого как опция &quot;Other&quot;, поместите пользовательский текст пользователя в `answers[question]`, как показано в [Поддержка свободного ввода текста](#support-free-text-input). Установите `response` только когда ваш пользовательский интерфейс позволяет пользователю закрыть карточку вопроса и ввести общий ответ, который не является ответом на какой-либо конкретный вопрос. Когда установлен `response`, Claude получает &quot;The user responded: …&quot; вместо списка ответов для каждого вопроса.
+</code></pre>
+<p>{
+  &quot;questions&quot;: [
+    // ...
+  ],
+  &quot;answers&quot;: {
+    &quot;How should I format the output?&quot;: &quot;Summary&quot;,
+    &quot;Which sections should I include?&quot;: [&quot;Introduction&quot;, &quot;Conclusion&quot;]
+  }
+}</p>
+<pre><code>
+#### Поддержка свободного ввода текста
+
+Предопределённые варианты Claude не всегда охватывают то, что хотят пользователи. Чтобы позволить пользователям вводить свой собственный ответ:
+
+* Отобразите дополнительный выбор &quot;Other&quot; после вариантов Claude, который принимает текстовый ввод
+* Используйте пользовательский текст пользователя как значение ответа (не слово &quot;Other&quot;)
+
+Полную реализацию см. в [полном примере](#complete-example) ниже.
+
+### Полный пример
+
+Claude задаёт уточняющие вопросы, когда ему нужен пользовательский ввод для продолжения. Например, когда его просят помочь решить, какой технологический стек использовать для мобильного приложения, Claude может спросить о кроссплатформенности vs нативности, предпочтениях бэкенда или целевых платформах. Эти вопросы помогают Claude принимать решения, которые соответствуют предпочтениям пользователя, а не угадывать.
+
+Этот пример обрабатывает эти вопросы в терминальном приложении. Вот что происходит на каждом шаге:
+
+1. **Маршрутизация запроса**: callback `canUseTool` проверяет, равно ли имя инструмента `&quot;AskUserQuestion&quot;` и маршрутизирует к выделенному обработчику
+2. **Отображение вопросов**: обработчик проходит по массиву `questions` и выводит каждый вопрос с пронумерованными вариантами
+3. **Сбор ввода**: пользователь может ввести номер для выбора варианта или ввести свободный текст напрямую (например, &quot;jquery&quot;, &quot;i don&#x27;t know&quot;)
+4. **Сопоставление ответов**: код проверяет, является ли ввод числовым (использует метку варианта) или свободным текстом (использует текст напрямую)
+5. **Возврат Claude**: ответ включает как исходный массив `questions`, так и сопоставление `answers`
+
+Сохраните версию TypeScript как `ask.ts` и запустите её с помощью `npx tsx ask.ts`, или сохраните версию Python как `ask.py` и запустите её с помощью `python ask.py`.
+</code></pre>
+<p>import asyncio</p>
+<p>from claude_agent_sdk import ClaudeAgentOptions, ResultMessage, query
+from claude_agent_sdk.types import HookMatcher, PermissionResultAllow</p>
+<p>def parse_response(response: str, options: list) -&gt; str:
+    &quot;&quot;&quot;Parse user input as option number(s) or free text.&quot;&quot;&quot;
+    try:
+        indices = [int(s.strip()) - 1 for s in response.split(&quot;,&quot;)]
+        labels = [options[i][&quot;label&quot;] for i in indices if 0 &lt;= i &lt; len(options)]
+        return &quot;, &quot;.join(labels) if labels else response
+    except ValueError:
+        return response</p>
+<p>async def handle_ask_user_question(input_data: dict) -&gt; PermissionResultAllow:
+    &quot;&quot;&quot;Display Claude&#x27;s questions and collect user answers.&quot;&quot;&quot;
+    answers = {}</p>
+<p>for q in input_data.get(&quot;questions&quot;, []):
+        print(f&quot;\n{q[&#x27;header&#x27;]}: {q[&#x27;question&#x27;]}&quot;)</p>
+<p>options = q[&quot;options&quot;]
+        for i, opt in enumerate(options):
+            print(f&quot;  {i + 1}. {opt[&#x27;label&#x27;]} - {opt[&#x27;description&#x27;]}&quot;)
+        if q.get(&quot;multiSelect&quot;):
+            print(&quot;  (Enter numbers separated by commas, or type your own answer)&quot;)
+        else:
+            print(&quot;  (Enter a number, or type your own answer)&quot;)</p>
+<p>response = input(&quot;Your choice: &quot;).strip()
+        answers[q[&quot;question&quot;]] = parse_response(response, options)</p>
+<p>return PermissionResultAllow(
+        updated_input={
+            &quot;questions&quot;: input_data.get(&quot;questions&quot;, []),
+            &quot;answers&quot;: answers,
+        }
+    )</p>
+<p>async def can_use_tool(
+    tool_name: str, input_data: dict, context
+) -&gt; PermissionResultAllow:
+    # Маршрутизируйте AskUserQuestion к нашему обработчику вопросов
+    if tool_name == &quot;AskUserQuestion&quot;:
+        return await handle_ask_user_question(input_data)
+    # Автоматически одобрите другие инструменты для этого примера
+    return PermissionResultAllow(updated_input=input_data)</p>
+<p>async def prompt_stream():
+    yield {
+        &quot;type&quot;: &quot;user&quot;,
+        &quot;message&quot;: {
+            &quot;role&quot;: &quot;user&quot;,
+            &quot;content&quot;: &quot;Help me decide on the tech stack for a new mobile app&quot;,
+        },
+    }</p>
+<h1 id="требуемый-обходной-путь-фиктивный-hook-держит-поток-открытым-для-can_use_tool-2">Требуемый обходной путь: фиктивный hook держит поток открытым для can_use_tool <a class="h-anchor" href="#требуемый-обходной-путь-фиктивный-hook-держит-поток-открытым-для-can_use_tool-2" aria-label="Ссылка на раздел">#</a></h1>
+<p>async def dummy_hook(input_data, tool_use_id, context):
+    return {&quot;continue_&quot;: True}</p>
+<p>async def main():
+    async for message in query(
+        prompt=prompt_stream(),
+        options=ClaudeAgentOptions(
+            can_use_tool=can_use_tool,
+            hooks={&quot;PreToolUse&quot;: [HookMatcher(matcher=None, hooks=[dummy_hook])]},
+        ),
+    ):
+        if isinstance(message, ResultMessage) and message.subtype == &quot;success&quot;:
+            print(message.result)</p>
+<p>asyncio.run(main())</p>
+<pre><code></code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;
+import type { PermissionResult } from &quot;@anthropic-ai/claude-agent-sdk&quot;;
+import * as readline from &quot;readline/promises&quot;;</p>
+<p>// Вспомогательная функция для запроса ввода пользователя в терминале
+async function prompt(question: string): Promise&lt;string&gt; {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const answer = await rl.question(question);
+  rl.close();
+  return answer;
+}</p>
+<p>// Разберите пользовательский ввод как номер(а) варианта или свободный текст
+function parseResponse(response: string, options: any[]): string {
+  const indices = response.split(&quot;,&quot;).map((s) =&gt; parseInt(s.trim()) - 1);
+  const labels = indices
+    .filter((i) =&gt; !isNaN(i) &amp;&amp; i &gt;= 0 &amp;&amp; i &lt; options.length)
+    .map((i) =&gt; options[i].label);
+  return labels.length &gt; 0 ? labels.join(&quot;, &quot;) : response;
+}</p>
+<p>// Отобразите вопросы Claude и соберите ответы пользователя
+async function handleAskUserQuestion(input: any): Promise&lt;PermissionResult&gt; {
+  const answers: Record&lt;string, string&gt; = {};</p>
+<p>for (const q of input.questions) {
+    console.log(<code>\n${q.header}: ${q.question}</code>);</p>
+<p>const options = q.options;
+    options.forEach((opt: any, i: number) =&gt; {
+      console.log(<code>  ${i + 1}. ${opt.label} - ${opt.description}</code>);
+    });
+    if (q.multiSelect) {
+      console.log(&quot;  (Enter numbers separated by commas, or type your own answer)&quot;);
+    } else {
+      console.log(&quot;  (Enter a number, or type your own answer)&quot;);
+    }</p>
+<p>const response = (await prompt(&quot;Your choice: &quot;)).trim();
+    answers[q.question] = parseResponse(response, options);
+  }</p>
+<p>// Верните ответы Claude (должны включать исходные вопросы)
+  return {
+    behavior: &quot;allow&quot;,
+    updatedInput: { questions: input.questions, answers }
+  };
+}</p>
+<p>async function main() {
+  for await (const message of query({
+    prompt: &quot;Help me decide on the tech stack for a new mobile app&quot;,
+    options: {
+      canUseTool: async (toolName, input) =&gt; {
+        // Маршрутизируйте AskUserQuestion к нашему обработчику вопросов
+        if (toolName === &quot;AskUserQuestion&quot;) {
+          return handleAskUserQuestion(input);
+        }
+        // Автоматически одобрите другие инструменты для этого примера
+        return { behavior: &quot;allow&quot;, updatedInput: input };
+      }
+    }
+  })) {
+    if (&quot;result&quot; in message) console.log(message.result);
+  }
+}</p>
+<p>main();</p>
+<pre><code>
+## Ограничения
+
+* **Подагенты**: `AskUserQuestion` в настоящее время недоступен в подагентах, порождённых через инструмент Agent
+* **Ограничения вопросов**: каждый вызов `AskUserQuestion` поддерживает 1-4 вопроса с 2-4 вариантами каждый
+
+## Другие способы получить пользовательский ввод
+
+Callback `canUseTool` и инструмент `AskUserQuestion` охватывают большинство сценариев одобрения и уточнения, но SDK предлагает другие способы получить ввод от пользователей:
+
+### Потоковый ввод
+
+Используйте [потоковый ввод](https://code.claude.com/docs/ru/agent-sdk/streaming-vs-single-mode.md) когда вам нужно:
+
+* **Прервать агента в середине задачи**: отправить сигнал отмены или изменить направление, пока Claude работает
+* **Предоставить дополнительный контекст**: добавить информацию, которая нужна Claude, без ожидания, пока он спросит
+* **Создать интерфейсы чата**: позволить пользователям отправлять последующие сообщения во время долгоживущих операций
+
+Потоковый ввод идеален для разговорных пользовательских интерфейсов, где пользователи взаимодействуют с агентом на протяжении всего выполнения, а не только в контрольных точках одобрения.
+
+### Пользовательские инструменты
+
+Используйте [пользовательские инструменты](https://code.claude.com/docs/ru/agent-sdk/custom-tools.md) когда вам нужно:
+
+* **Собрать структурированный ввод**: создать формы, мастера или многошаговые рабочие процессы, которые выходят за рамки формата множественного выбора `AskUserQuestion`
+* **Интегрировать внешние системы одобрения**: подключиться к существующим системам тикетов, рабочих процессов или одобрения
+* **Реализовать взаимодействия, специфичные для домена**: создать инструменты, адаптированные к потребностям вашего приложения, такие как интерфейсы проверки кода или контрольные списки развёртывания
+
+Пользовательские инструменты дают вам полный контроль над взаимодействием, но требуют больше работы по реализации, чем использование встроенного callback `canUseTool`.
+
+## Связанные ресурсы
+
+* [Настройка разрешений](https://code.claude.com/docs/ru/agent-sdk/permissions.md): установите режимы и правила разрешений
+* [Управление выполнением с помощью hooks](https://code.claude.com/docs/ru/agent-sdk/hooks.md): запустите пользовательский код в ключевых точках жизненного цикла агента
+* [Справочник TypeScript SDK](https://code.claude.com/docs/ru/agent-sdk/typescript.md#canusetool): полная документация API canUseTool
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

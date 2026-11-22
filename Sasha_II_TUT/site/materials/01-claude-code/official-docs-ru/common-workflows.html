@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Распространённые рабочие процессы</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Распространённые рабочие процессы <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Пошаговые руководства по изучению кодовых баз, исправлению ошибок, рефакторингу, тестированию и другим повседневным задачам с Claude Code.</p>
+</blockquote>
+<p>На этой странице собраны короткие рецепты для повседневной разработки. Для получения более высокоуровневого руководства по подсказкам и управлению контекстом см. <a href="https://code.claude.com/docs/ru/best-practices.md">Лучшие практики</a>.</p>
+<p>На этой странице рассматриваются:</p>
+<ul>
+<li><a href="#prompt-recipes">Рецепты подсказок</a> для изучения кода, исправления ошибок, рефакторинга, тестирования, PR и документации</li>
+<li><a href="#resume-previous-conversations">Возобновление предыдущих разговоров</a> для того, чтобы задача могла охватывать несколько сеансов</li>
+<li><a href="#run-parallel-sessions-with-worktrees">Запуск параллельных сеансов с worktrees</a> для того, чтобы одновременные редактирования не конфликтовали</li>
+<li><a href="#plan-before-editing">Планирование перед редактированием</a> для проверки изменений перед их записью на диск</li>
+<li><a href="#delegate-research-to-subagents">Делегирование исследований subagents</a> для сохранения чистоты вашего основного контекста</li>
+<li><a href="#pipe-claude-into-scripts">Передача Claude в скрипты</a> для CI и пакетной обработки</li>
+</ul>
+<h3 id="h-2">Рецепты подсказок <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Это паттерны подсказок для повседневных задач, таких как изучение незнакомого кода, отладка, рефакторинг, написание тестов и создание PR. Каждый работает на любой поверхности Claude Code; адаптируйте формулировку к вашему проекту.</p>
+<h4 id="h-3">Понимание новых кодовых баз <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Для настройки Claude Code в монорепозитории или большой кодовой базе см. <a href="https://code.claude.com/docs/ru/large-codebases.md">Монорепозитории и большие репозитории</a>.</p>
+<h5 id="h-4">Получение быстрого обзора кодовой базы <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h5>
+<p>Предположим, вы только что присоединились к новому проекту и вам нужно быстро понять его структуру.</p>
+<p><strong>1. Перейдите в корневой каталог проекта</strong></p>
+<p>```bash theme={null}
+cd /path/to/project</p>
+<pre><code>
+Замените `/path/to/project` на путь к вашему проекту.
+
+**2. Запустите Claude Code**
+</code></pre>
+<p>claude</p>
+<pre><code>
+**3. Попросите высокоуровневый обзор**
+</code></pre>
+<p>give me an overview of this codebase</p>
+<pre><code>
+**4. Углубитесь в конкретные компоненты**
+</code></pre>
+<p>explain the main architecture patterns used here</p>
+<pre><code></code></pre>
+<p>what are the key data models?</p>
+<pre><code></code></pre>
+<p>how is authentication handled?</p>
+<pre><code>
+&gt; [!TIP]
+&gt;
+&gt; Советы:
+&gt;
+&gt; * Начните с широких вопросов, затем сужайте до конкретных областей
+&gt; * Спросите о соглашениях кодирования и паттернах, используемых в проекте
+&gt; * Запросите глоссарий терминов, специфичных для проекта
+
+#### Поиск релевантного кода
+
+Предположим, вам нужно найти код, связанный с конкретной функцией или функциональностью.
+
+**1. Попросите Claude найти релевантные файлы**
+</code></pre>
+<p>find the files that handle user authentication</p>
+<pre><code>
+**2. Получите контекст о том, как компоненты взаимодействуют**
+</code></pre>
+<p>how do these authentication files work together?</p>
+<pre><code>
+**3. Поймите поток выполнения**
+</code></pre>
+<p>trace the login process from front-end to database</p>
+<pre><code>
+&gt; [!TIP]
+&gt;
+&gt; Советы:
+&gt;
+&gt; * Будьте конкретны в том, что вы ищете
+&gt; * Используйте предметный язык из проекта
+&gt; * Установите [плагин анализа кода](https://code.claude.com/docs/ru/plugins/code-intelligence.md) для вашего языка, чтобы дать Claude точную навигацию &quot;перейти к определению&quot; и &quot;найти ссылки&quot;
+
+***
+
+### Эффективное исправление ошибок
+
+Предположим, вы столкнулись с сообщением об ошибке и вам нужно найти и исправить его источник.
+
+**1. Поделитесь ошибкой с Claude**
+</code></pre>
+<p>I&#x27;m seeing an error when I run npm test</p>
+<pre><code>
+**2. Попросите рекомендации по исправлению**
+</code></pre>
+<p>suggest a few ways to fix the @ts-ignore in user.ts</p>
+<pre><code>
+**3. Примените исправление**
+</code></pre>
+<p>update user.ts to add the null check you suggested</p>
+<pre><code>
+&gt; [!TIP]
+&gt;
+&gt; Советы:
+&gt;
+&gt; * Скажите Claude команду для воспроизведения проблемы и получите трассировку стека
+&gt; * Упомяните любые шаги для воспроизведения ошибки
+&gt; * Дайте Claude знать, является ли ошибка прерывистой или постоянной
+
+***
+
+### Рефакторинг кода
+
+Предположим, вам нужно обновить старый код для использования современных паттернов и практик.
+
+Для переноса всей кодовой базы на новый язык см. [как Anthropic проводит крупномасштабные миграции кода с помощью Claude Code](https://claude.com/blog/ai-code-migration) в блоге.
+
+**1. Определите устаревший код для рефакторинга**
+</code></pre>
+<p>find deprecated API usage in our codebase</p>
+<pre><code>
+**2. Получите рекомендации по рефакторингу**
+</code></pre>
+<p>suggest how to refactor utils.js to use modern JavaScript features</p>
+<pre><code>
+**3. Примените изменения безопасно**
+</code></pre>
+<p>refactor utils.js to use ES2024 features while maintaining the same behavior</p>
+<pre><code>
+**4. Проверьте рефакторинг**
+</code></pre>
+<p>run tests for the refactored code</p>
+<pre><code>
+&gt; [!TIP]
+&gt;
+&gt; Советы:
+&gt;
+&gt; * Попросите Claude объяснить преимущества современного подхода
+&gt; * Запросите, чтобы изменения сохраняли обратную совместимость при необходимости
+&gt; * Выполняйте рефакторинг небольшими, тестируемыми шагами
+
+***
+
+### Работа с тестами
+
+Предположим, вам нужно добавить тесты для непокрытого кода.
+
+**1. Определите непротестированный код**
+</code></pre>
+<p>find functions in NotificationsService.swift that are not covered by tests</p>
+<pre><code>
+**2. Создайте каркас тестов**
+</code></pre>
+<p>add tests for the notification service</p>
+<pre><code>
+**3. Добавьте значимые тестовые случаи**
+</code></pre>
+<p>add test cases for edge conditions in the notification service</p>
+<pre><code>
+**4. Запустите и проверьте тесты**
+</code></pre>
+<p>run the new tests and fix any failures</p>
+<pre><code>
+Claude может создавать тесты, которые следуют существующим паттернам и соглашениям вашего проекта. При запросе тестов будьте конкретны в отношении поведения, которое вы хотите проверить. Claude изучает ваши существующие файлы тестов, чтобы соответствовать стилю, фреймворкам и паттернам утверждений, уже используемым в проекте.
+
+Чтобы улучшить покрытие, попросите Claude определить граничные случаи, которые вы могли пропустить. Claude может анализировать пути вашего кода и предлагать тесты для условий ошибок, граничных значений и неожиданных входных данных, которые часто упускают из виду.
+
+***
+
+### Создание pull requests
+
+Вы можете создавать pull requests, попросив Claude напрямую (&quot;create a pr for my changes&quot;), или направить Claude пошагово:
+
+**1. Суммируйте ваши изменения**
+</code></pre>
+<p>summarize the changes I&#x27;ve made to the authentication module</p>
+<pre><code>
+**2. Создайте pull request**
+</code></pre>
+<p>create a pr</p>
+<pre><code>
+**3. Просмотрите и уточните**
+</code></pre>
+<p>enhance the PR description with more context about the security improvements</p>
+<pre><code>
+Чтобы найти сеанс позже, запустите `claude --from-pr 1234` с номером вашего PR, который открывает средство выбора сеанса, отфильтрованное по сеансам, связанным с этим PR, или вставьте URL PR в средство выбора [`/resume`](https://code.claude.com/docs/ru/sessions#use-the-session-picker). Claude Code связывает сеанс с PR, когда Claude создает его с помощью `gh pr create` или `glab mr create`, и когда Claude [работает над существующим PR](https://code.claude.com/docs/ru/agent-view.md#pull-request-status).
+
+&gt; [!TIP]
+&gt;
+&gt; Просмотрите PR, созданный Claude, перед отправкой и попросите Claude выделить потенциальные риски или соображения.
+
+### Работа с документацией
+
+Предположим, вам нужно добавить или обновить документацию для вашего кода.
+
+**1. Определите недокументированный код**
+</code></pre>
+<p>find functions without proper JSDoc comments in the auth module</p>
+<pre><code>
+**2. Создайте документацию**
+</code></pre>
+<p>add JSDoc comments to the undocumented functions in auth.js</p>
+<pre><code>
+**3. Просмотрите и улучшите**
+</code></pre>
+<p>improve the generated documentation with more context and examples</p>
+<pre><code>
+**4. Проверьте документацию**
+</code></pre>
+<p>check if the documentation follows our project standards</p>
+<pre><code>
+&gt; [!TIP]
+&gt;
+&gt; Советы:
+&gt;
+&gt; * Укажите стиль документации, который вы хотите (JSDoc, docstrings и т.д.)
+&gt; * Попросите примеры в документации
+&gt; * Запросите документацию для публичных API, интерфейсов и сложной логики
+
+***
+
+### Работа с заметками и папками, не содержащими код
+
+Claude Code работает в любом каталоге. Запустите его внутри хранилища заметок, папки документации или любой коллекции файлов markdown для поиска, редактирования и переорганизации содержимого так же, как вы работаете с кодом.
+
+Каталог `.claude/` и `CLAUDE.md` находятся рядом с каталогами конфигурации других инструментов без конфликтов. Claude читает файлы заново при каждом вызове инструмента, поэтому он видит изменения, которые вы вносите в другом приложении при следующем чтении этого файла.
+
+***
+
+### Работа с изображениями
+
+Предположим, вам нужно работать с изображениями в вашей кодовой базе, и вы хотите помощь Claude в анализе содержимого изображения.
+
+**1. Добавьте изображение в разговор**
+
+Вы можете использовать любой из этих методов:
+
+1. Перетащите изображение в окно Claude Code
+2. Скопируйте изображение и вставьте его в CLI с помощью `Ctrl+V`, или с помощью [`Alt+V` на Windows и WSL](https://code.claude.com/docs/ru/interactive-mode#general-controls)
+3. Предоставьте Claude путь к изображению, например &quot;Analyze this image: /path/to/your/image.png&quot;
+
+**2. Попросите Claude проанализировать изображение**
+</code></pre>
+<p>What does this image show?</p>
+<pre><code></code></pre>
+<p>Describe the UI elements in this screenshot</p>
+<pre><code></code></pre>
+<p>Are there any problematic elements in this diagram?</p>
+<pre><code>
+**3. Используйте изображения для контекста**
+</code></pre>
+<p>Here&#x27;s a screenshot of the error. What&#x27;s causing it?</p>
+<pre><code></code></pre>
+<p>This is our current database schema. How should we modify it for the new feature?</p>
+<pre><code>
+**4. Получите предложения кода из визуального содержимого**
+</code></pre>
+<p>Generate CSS to match this design mockup</p>
+<pre><code></code></pre>
+<p>What HTML structure would recreate this component?</p>
+<pre><code>
+&gt; [!TIP]
+&gt;
+&gt; Советы:
+&gt;
+&gt; * Используйте изображения, когда текстовые описания были бы неясными или громоздкими
+&gt; * Включайте скриншоты ошибок, дизайны пользовательского интерфейса или диаграммы для лучшего контекста
+&gt; * Вы можете работать с несколькими изображениями в разговоре
+&gt; * Анализ изображений работает с диаграммами, скриншотами, макетами и многим другим
+&gt; * Когда Claude ссылается на изображения (например, `[Image #1]`), `Cmd+Click` (Mac) или `Ctrl+Click` (Windows/Linux) ссылку для открытия изображения в вашем средстве просмотра по умолчанию
+
+***
+
+### Ссылка на файлы и каталоги
+
+Используйте @ для быстрого включения файлов или каталогов без ожидания, пока Claude их прочитает.
+
+**1. Ссылка на один файл**
+</code></pre>
+<p>Explain the logic in @src/utils/auth.js</p>
+<pre><code>
+Это включает содержимое файла в диалог, если оно укладывается в лимит токенов [инструмента Read](https://code.claude.com/docs/ru/tools-reference.md#read-tool-behavior), по умолчанию 25 000 токенов. Текстовый файл размером более 256 КБ не включается.
+
+**2. Ссылка на каталог**
+</code></pre>
+<p>What&#x27;s the structure of @src/components?</p>
+<pre><code>
+**3. Ссылка на MCP ресурсы**
+</code></pre>
+<p>Show me the data from @github:repos/owner/repo/issues</p>
+<pre><code>
+См. [MCP ресурсы](https://code.claude.com/docs/ru/mcp.md#use-mcp-resources) для подробностей.
+
+&gt; [!TIP]
+&gt;
+&gt; Советы:
+&gt;
+&gt; * Пути к файлам могут быть относительными или абсолютными
+&gt; * Введите `@` для открытия меню предложений пути, затем нажмите Enter или Tab для принятия выделенного пути и снова Enter для отправки сообщения
+&gt; * Ссылки на файлы @ добавляют `CLAUDE.md` в каталог файла и родительские каталоги в контекст
+&gt; * Ссылки на каталоги показывают списки файлов, а не содержимое
+&gt; * Вы можете ссылаться на несколько файлов в одном сообщении (например, &quot;@file1.js and @file2.js&quot;)
+
+Чтобы ссылки `@` не включали содержимое файлов и списки каталогов, задайте для [`CLAUDE_CODE_DISABLE_FILE_MENTIONS`](https://code.claude.com/docs/ru/env-vars#variables) значение `1` в вашей оболочке или в [блоке `env`](https://code.claude.com/docs/ru/env-vars#set-variables-in-settings-files) пользовательских настроек или [управляемых настроек](https://code.claude.com/docs/ru/managed-settings.md). Тогда Claude получает указанные вами пути с пометкой прочитать их с помощью своих файловых инструментов. Для этой переменной требуется Claude Code v2.1.299 или новее, и Claude Code игнорирует её в настройках проекта и локальных настройках.
+
+Ваши [хуки `PreToolUse`](https://code.claude.com/docs/ru/hooks#pretooluse) не запускаются, когда Claude Code включает файл, на который вы ссылаетесь с помощью `@`, поскольку при этом не выполняется вызов инструмента. Если вы полагаетесь на эти хуки, чтобы контролировать, что читает Claude, заблокируйте определённые пути или запретите ссылкам `@` включать файлы:
+
+* **Заблокируйте определённые пути**: добавьте для них [правило запрета `Read`](https://code.claude.com/docs/ru/permissions#read-and-edit). Claude Code не включает файл, которому соответствует это правило.
+* **Запретите ссылкам `@` включать файлы**: задайте `CLAUDE_CODE_DISABLE_FILE_MENTIONS=1`, что не позволяет ссылкам `@` на файлы и каталоги в ваших сообщениях включать содержимое, даже для путей, которые ваши хуки не проверяют. Тогда соответствующие хуки запускаются до того, как Claude откроет указанный путь с помощью инструмента, такого как `Read`.
+
+***
+
+### Запуск Claude по расписанию
+
+Предположим, вы хотите, чтобы Claude автоматически выполнял задачу на повторяющейся основе, например просматривая открытые PR каждое утро, проверяя зависимости еженедельно или проверяя сбои CI в течение ночи.
+
+Выберите вариант планирования на основе того, где вы хотите, чтобы задача выполнялась:
+
+| Вариант | Где выполняется | Лучше всего для |
+| :- | :- | :- |
+| [Облачные запланированные задачи](https://code.claude.com/docs/ru/routines.md) | Облако, по умолчанию управляемое Anthropic | Задачи, которые должны выполняться даже когда ваш компьютер выключен. Также могут срабатывать на вызовы API или события GitHub в дополнение к расписанию. Настройте на [claude.ai/code/routines](https://claude.ai/code/routines). |
+| [Запланированные задачи рабочего стола](https://code.claude.com/docs/ru/desktop-scheduled-tasks.md) | Ваша машина, через настольное приложение | Задачи, которым нужен прямой доступ к локальным файлам, инструментам или незафиксированным изменениям. |
+| [GitHub Actions](https://code.claude.com/docs/ru/github-actions.md) | Ваш конвейер CI | Задачи, связанные с событиями репозитория, такими как открытые PR, или расписания cron, которые должны находиться рядом с конфигурацией рабочего процесса. |
+| [`/loop`](https://code.claude.com/docs/ru/scheduled-tasks) | Текущий сеанс CLI | Быстрый опрос во время открытого сеанса. `--resume` и `--continue` восстанавливают неистекшие циклы с фиксированным интервалом. |
+
+&gt; [!TIP]
+&gt;
+&gt; При написании подсказок для запланированных задач будьте явны в отношении того, что означает успех и что делать с результатами. Задача выполняется автономно, поэтому она не может задавать уточняющие вопросы. Например: &quot;Просмотрите открытые PR с меткой `needs-review`, оставьте встроенные комментарии по любым проблемам и опубликуйте сводку в канале `#eng-reviews` Slack.&quot;
+
+***
+
+### Спросите Claude о его возможностях
+
+Claude может ответить на вопросы о своих собственных функциях и ограничениях. Он ищет ответы в актуальной документации Claude Code, поэтому они не ограничены версией, которую вы используете.
+
+#### Примеры вопросов
+</code></pre>
+<p>can Claude Code create pull requests?</p>
+<pre><code></code></pre>
+<p>how does Claude Code handle permissions?</p>
+<pre><code></code></pre>
+<p>what skills are available?</p>
+<pre><code></code></pre>
+<p>how do I use MCP with Claude Code?</p>
+<pre><code></code></pre>
+<p>how do I configure Claude Code for Amazon Bedrock?</p>
+<pre><code></code></pre>
+<p>what are the limitations of Claude Code?</p>
+<pre><code>
+&gt; [!NOTE]
+&gt;
+&gt; Claude предоставляет ответы на основе документации на эти вопросы. Для исполняемых примеров запустите `/powerup` для интерактивных уроков с анимированными демонстрациями, или обратитесь к конкретным разделам рабочих процессов выше.
+
+&gt; [!TIP]
+&gt;
+&gt; Советы:
+&gt;
+&gt; * Задавайте конкретные вопросы для получения подробных ответов
+&gt; * Claude может объяснить сложные функции, такие как интеграция MCP, конфигурации предприятия и продвинутые рабочие процессы
+
+***
+
+## Возобновление предыдущих разговоров
+
+Когда задача охватывает несколько сеансов, продолжайте с того места, где вы остановились, вместо того чтобы переобъяснять контекст. Claude Code сохраняет каждый разговор локально.
+</code></pre>
+<p>claude --continue</p>
+<pre><code>
+Это возобновляет самый последний сеанс в текущем каталоге; если его ещё нет, выводится `No conversation found to continue` и программа выходит. Используйте `claude --resume` для выбора из списка, или `/resume` из активного сеанса. См. [Управление сеансами](https://code.claude.com/docs/ru/sessions.md) для именования, ветвления и полного справочника средства выбора.
+
+## Запуск параллельных сеансов с worktrees
+
+Работайте над функцией в одном терминале, пока Claude исправляет ошибку в другом, без конфликтов редактирования. Каждый [git worktree](https://git-scm.com/docs/git-worktree) — это отдельный checkout на своей собственной ветке, созданный из существующего коммита, поэтому репозиторий должен иметь хотя бы один коммит в первую очередь.
+</code></pre>
+<p>claude --worktree feature-auth</p>
+<pre><code>
+Запустите ту же команду с другим именем во втором терминале для запуска изолированной параллельной сессии. См. [Worktrees](https://code.claude.com/docs/ru/worktrees.md) для очистки, `.worktreeinclude` и поддержки VCS, не основанных на git. Для мониторинга параллельных сессий с одного экрана вместо отдельных терминалов см. [фоновые агенты](https://code.claude.com/docs/ru/agent-view.md).
+
+## Планирование перед редактированием
+
+Для изменений, которые вы хотите просмотреть перед их записью на диск, переключитесь в режим плана. Claude читает файлы и предлагает план, но не вносит изменения, пока вы не одобрите. Строка состояния показывает `⏸ plan mode on` во время активного режима плана.
+</code></pre>
+<p>claude --permission-mode plan</p>
+<pre><code>
+Вы также можете нажать `Shift+Tab` во время сеанса до тех пор, пока строка состояния не покажет `⏸ plan mode on`. См. [Plan mode](https://code.claude.com/docs/ru/permission-modes.md#analyze-before-you-edit-with-plan-mode) для потока одобрения и редактирования плана в вашем текстовом редакторе.
+
+## Делегирование исследований subagents
+
+Изучение большой кодовой базы заполняет ваш контекст чтением файлов. Делегируйте исследование, чтобы только результаты вернулись.
+</code></pre>
+<p>use a subagent to investigate how our auth system handles token refresh</p>
+<pre><code>
+Subagent читает файлы в своём собственном контекстном окне и сообщает сводку. См. [Subagents](https://code.claude.com/docs/ru/sub-agents.md) для определения пользовательских агентов с их собственными инструментами и подсказками.
+
+## Передача Claude в скрипты
+
+Запустите Claude неинтерактивно для CI, pre-commit хуков или пакетной обработки.
+</code></pre>
+<p>git log --oneline -20 | claude -p &quot;summarize these recent commits&quot;</p>
+<pre><code>
+См. [Неинтерактивный режим](https://code.claude.com/docs/ru/headless.md) для форматов вывода, флагов разрешений и паттернов fan-out.
+
+## Следующие шаги
+
+&gt; [card] [Лучшие практики](https://code.claude.com/docs/ru/best-practices.md)
+&gt;
+&gt; Паттерны для получения максимума от Claude Code
+
+&gt; [card] [Управление сеансами](https://code.claude.com/docs/ru/sessions.md)
+&gt;
+&gt; Возобновление, именование и ветвление разговоров
+
+&gt; [card] [Worktrees](https://code.claude.com/docs/ru/worktrees.md)
+&gt;
+&gt; Запуск изолированных параллельных сеансов
+
+&gt; [card] [Расширение Claude Code](https://code.claude.com/docs/ru/features-overview.md)
+&gt;
+&gt; Добавление skills, hooks, MCP, subagents и plugins
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

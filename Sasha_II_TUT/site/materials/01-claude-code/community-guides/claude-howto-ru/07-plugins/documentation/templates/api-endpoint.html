@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>METHOD /api/v1/endpoint</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../../../materials/index.html">Материалы</a> / <a href="../../../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/07-plugins/index.html">07-plugins</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/07-plugins/documentation/index.html">documentation</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/07-plugins/documentation/templates/index.html">templates</a></nav>
+<h1 id="method-api-v1-endpoint">[METHOD] /api/v1/[endpoint] <a class="h-anchor" href="#method-api-v1-endpoint" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="description">Description <a class="h-anchor" href="#description" aria-label="Ссылка на раздел">#</a></h3>
+<p>Brief explanation of what this endpoint does.</p>
+<h3 id="authentication">Authentication <a class="h-anchor" href="#authentication" aria-label="Ссылка на раздел">#</a></h3>
+<p>Required authentication method (e.g., Bearer token).</p>
+<h3 id="parameters">Parameters <a class="h-anchor" href="#parameters" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="path-parameters">Path Parameters <a class="h-anchor" href="#path-parameters" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Name</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td>id</td><td>string</td><td>Yes</td><td>Resource ID</td></tr></tbody></table></div>
+<h4 id="query-parameters">Query Parameters <a class="h-anchor" href="#query-parameters" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Name</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td>page</td><td>integer</td><td>No</td><td>Page number (default: 1)</td></tr><tr><td>limit</td><td>integer</td><td>No</td><td>Items per page (default: 20)</td></tr></tbody></table></div>
+<h4 id="request-body">Request Body <a class="h-anchor" href="#request-body" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-json">{
+  &quot;field&quot;: &quot;value&quot;
+}</code></pre>
+<h3 id="responses">Responses <a class="h-anchor" href="#responses" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="200-ok">200 OK <a class="h-anchor" href="#200-ok" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-json">{
+  &quot;success&quot;: true,
+  &quot;data&quot;: {
+    &quot;id&quot;: &quot;123&quot;,
+    &quot;name&quot;: &quot;Example&quot;
+  }
+}</code></pre>
+<h4 id="400-bad-request">400 Bad Request <a class="h-anchor" href="#400-bad-request" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-json">{
+  &quot;success&quot;: false,
+  &quot;error&quot;: {
+    &quot;code&quot;: &quot;VALIDATION_ERROR&quot;,
+    &quot;message&quot;: &quot;Invalid input&quot;
+  }
+}</code></pre>
+<h4 id="404-not-found">404 Not Found <a class="h-anchor" href="#404-not-found" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-json">{
+  &quot;success&quot;: false,
+  &quot;error&quot;: {
+    &quot;code&quot;: &quot;NOT_FOUND&quot;,
+    &quot;message&quot;: &quot;Resource not found&quot;
+  }
+}</code></pre>
+<h3 id="examples">Examples <a class="h-anchor" href="#examples" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="curl">cURL <a class="h-anchor" href="#curl" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">curl -X GET &quot;https://api.example.com/api/v1/endpoint&quot; \
+  -H &quot;Authorization: Bearer YOUR_TOKEN&quot; \
+  -H &quot;Content-Type: application/json&quot;</code></pre>
+<h4 id="javascript">JavaScript <a class="h-anchor" href="#javascript" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-javascript">const response = await fetch(&#x27;/api/v1/endpoint&#x27;, {
+  headers: {
+    &#x27;Authorization&#x27;: &#x27;Bearer token&#x27;,
+    &#x27;Content-Type&#x27;: &#x27;application/json&#x27;
+  }
+});
+const data = await response.json();</code></pre>
+<h4 id="python">Python <a class="h-anchor" href="#python" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-python">import requests
+
+response = requests.get(
+    &#x27;https://api.example.com/api/v1/endpoint&#x27;,
+    headers={&#x27;Authorization&#x27;: &#x27;Bearer token&#x27;}
+)
+data = response.json()</code></pre>
+<h3 id="rate-limits">Rate Limits <a class="h-anchor" href="#rate-limits" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>1000 requests per hour for authenticated users</li>
+<li>100 requests per hour for public endpoints</li>
+</ul>
+<h3 id="related-endpoints">Related Endpoints <a class="h-anchor" href="#related-endpoints" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="#">GET /api/v1/related</a></li>
+<li><a href="#">POST /api/v1/related</a></li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

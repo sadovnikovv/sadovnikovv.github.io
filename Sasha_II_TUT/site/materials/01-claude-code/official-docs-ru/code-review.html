@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Code Review</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="code-review">Code Review <a class="h-anchor" href="#code-review" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Находите ошибки в pull request на GitHub с помощью Code Review: Claude проводит ревью каждого изменения, проверяет свои результаты и оставляет встроенные комментарии. Для планов Team и Enterprise</p>
+</blockquote>
+<p>С Code Review Claude проводит ревью pull request в ваших репозиториях GitHub. Несколько агентов читают каждое изменение вместе с окружающим кодом и ищут такие проблемы, как логические ошибки, уязвимости безопасности или нарушенные граничные случаи. Прежде чем о результатах будет сообщено, этап верификации сверяет их с кодом.</p>
+<p>Результаты поступают в виде встроенных комментариев на соответствующих строках, ранжированные по <a href="https://code.claude.com/docs/ru/code-review-pull-requests.md#severity-levels">степени серьёзности</a>, вместе со сводкой и check run на pull request. Ревью никогда не одобряет и не блокирует pull request, поэтому решение о слиянии остаётся за вашей командой.</p>
+<p><img src="https://mintcdn.com/claude-code/gLJVaPQEgKC8ZyUD/images/code-review-pipeline.svg?fit=max\&amp;auto=format\&amp;n=gLJVaPQEgKC8ZyUD\&amp;q=85\&amp;s=0351c96df9efa3105172eb00a672f130" alt="Схема ревью в четыре этапа. Pull request на GitHub передаётся нескольким агентам, которые параллельно ведут поиск на инфраструктуре Anthropic. Этап верификации отбрасывает ложные срабатывания, оставшиеся результаты дедуплицируются и ранжируются по степени серьёзности, а ревью публикует встроенные комментарии, сводку и check run обратно на GitHub." loading="lazy"></p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Code Review использует ИИ для ревью кода и может пропустить ошибки, уязвимости безопасности или другие проблемы. Ревью без результатов не означает, что ваш код не содержит ошибок или безопасен.</p>
+</blockquote>
+<p>Чтобы включить Code Review, пользователь с ролью Owner в вашей организации Claude выполняет инструкции из раздела <a href="https://code.claude.com/docs/ru/code-review-setup.md">Настройка Code Review</a>. Claude также может проводить ревью кода без этого сервиса. Запустите <a href="https://code.claude.com/docs/ru/code-review-local"><code>/code-review</code></a> в своей сессии Claude Code на любом плане или <a href="#compare-ways-to-get-a-review">сравните все варианты</a>.</p>
+<h3 id="h">Доступность <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Прежде чем настраивать Code Review, убедитесь, что ваша организация соответствует требованиям:</p>
+<ul>
+<li><strong>Планы</strong>: <a href="https://code.claude.com/docs/ru/feature-availability.md">Team и Enterprise</a></li>
+<li><strong>Хостинги кода</strong>: репозитории, размещённые на GitHub, включая <a href="https://code.claude.com/docs/ru/github-enterprise-server.md">GitHub Enterprise Server</a> и GitHub Enterprise Cloud с резидентностью данных. Для резидентности данных попросите пользователя с ролью Owner выполнить <a href="https://code.claude.com/docs/ru/github-enterprise-server.md#admin-setup">настройку администратора GitHub Enterprise Server</a> и указать имя хоста <code>ghe.com</code> вашего предприятия.</li>
+<li><strong>Хранение данных</strong>: Code Review недоступен для организаций с включённым <a href="https://code.claude.com/docs/ru/zero-data-retention.md">Zero Data Retention</a> или с применённой <a href="https://code.claude.com/docs/ru/hipaa-setup.md">конфигурацией HIPAA</a>, и на него не распространяется Business Associate Agreement (BAA) Anthropic.</li>
+<li><strong>Ключи шифрования</strong>: Code Review пока недоступен для организаций, использующих ключи шифрования, управляемые клиентом (CMEK).</li>
+<li><strong>Облачные провайдеры</strong>: вам нужна организация Claude на одном из этих планов, даже если ваши разработчики используют Claude Code через Amazon Bedrock, Google Cloud&#x27;s Agent Platform или Microsoft Foundry</li>
+</ul>
+<h3 id="настройка-и-использование-code-review">Настройка и использование Code Review <a class="h-anchor" href="#настройка-и-использование-code-review" aria-label="Ссылка на раздел">#</a></h3>
+<p>Выберите страницу в зависимости от того, что вам нужно сделать:</p>
+<blockquote>
+<p>[card] <a href="https://code.claude.com/docs/ru/code-review-setup.md">Настройка Code Review</a></p>
+<p>Проверьте требования, установите Claude GitHub App и выберите репозитории, уровень ревью и момент запуска ревью</p>
+</blockquote>
+<blockquote>
+<p>[card] <a href="https://code.claude.com/docs/ru/code-review-customize.md">Кастомизация Code Review</a></p>
+<p>Настройте, что помечается, с помощью файлов <code>REVIEW.md</code> и <code>CLAUDE.md</code> в вашем репозитории</p>
+</blockquote>
+<blockquote>
+<p>[card] <a href="https://code.claude.com/docs/ru/code-review-pull-requests.md">Чтение и запрос ревью на pull request</a></p>
+<p>Читайте результаты и их степени серьёзности и запрашивайте повторное ревью с помощью комментария</p>
+</blockquote>
+<blockquote>
+<p>[card] <a href="https://code.claude.com/docs/ru/code-review-troubleshooting.md">Устранение неполадок Code Review</a></p>
+<p>Исправьте ревью, которое не запустилось, завершилось сбоем или было пропущено из-за бюджета</p>
+</blockquote>
+<blockquote>
+<p>[card] <a href="https://code.claude.com/docs/ru/code-review-costs.md">Стоимость и использование Code Review</a></p>
+<p>Узнайте, как тарифицируются ревью, оцените расходы, установите ежемесячный лимит расходов и отслеживайте активность ревью</p>
+</blockquote>
+<h3 id="h-2">Как работают ревью <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>По умолчанию Code Review сосредоточен на корректности: ошибках, которые нарушат работу production, а не на предпочтениях форматирования или отсутствии покрытия тестами. Чтобы изменить то, что он помечает, <a href="https://code.claude.com/docs/ru/code-review-customize.md">добавьте файлы с руководствами</a> в ваш репозиторий.</p>
+<p>Ревью выполняется на инфраструктуре Anthropic в четыре этапа:</p>
+<ol>
+<li><strong>Поиск</strong>: несколько агентов параллельно изучают diff и окружающий код.</li>
+<li><strong>Верификация</strong>: этап верификации сверяет кандидатов в результаты с кодом и отфильтровывает ложные срабатывания.</li>
+<li><strong>Ранжирование</strong>: оставшиеся результаты дедуплицируются и ранжируются по степени серьёзности.</li>
+<li><strong>Публикация</strong>: ревью публикует свои результаты на pull request.</li>
+</ol>
+<p>Каждое ревью оставляет на pull request следующее:</p>
+<ul>
+<li><strong>Результаты</strong>: встроенные комментарии на соответствующих строках со сводкой в теле ревью</li>
+<li><strong>Check run</strong>: с именем <strong>Claude Code Review</strong>, с результатами, перечисленными в его <a href="https://code.claude.com/docs/ru/code-review-pull-requests.md#check-run-output">подробностях</a>. Check run не завершается со статусом сбоя.</li>
+<li><strong>Заметка вместо результатов</strong>: публикуется, когда заголовок check run гласит <strong>Code review found no issues</strong></li>
+</ul>
+<p>Code Review сам выбирает модели Claude, на которых выполняются ревью, и его настройки администратора не предлагают выбора модели. Чтобы сделать ревью более или менее тщательными, измените <a href="#review-levels">уровень ревью</a>.</p>
+<p>После того как пользователь с ролью Owner включит Code Review, у каждого репозитория появляется настройка <a href="https://code.claude.com/docs/ru/code-review-setup.md#set-when-reviews-run">момента запуска ревью</a>: один раз при открытии pull request, после каждого push или только по запросу. Независимо от выбранного варианта, любой пользователь с доступом на запись к репозиторию может оставить комментарий <code>@claude review</code> на pull request, чтобы <a href="https://code.claude.com/docs/ru/code-review-pull-requests.md#comment-commands">запустить ревью</a>.</p>
+<h4 id="h-3">Уровни ревью <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Уровень ревью определяет, насколько тщательным будет каждое ревью, и более тщательное ревью стоит дороже:</p>
+<ul>
+<li><strong>Quick</strong>: более лёгкий проход. Самый быстрый уровень с наименьшей стоимостью.</li>
+<li><strong>Standard</strong>: сбалансированные глубина, скорость и стоимость. Уровень по умолчанию.</li>
+<li><strong>Deep</strong>: самый тщательный проход. Занимает больше всего времени и стоит дороже всего.</li>
+</ul>
+<p>Пользователь с ролью Owner <a href="https://code.claude.com/docs/ru/code-review-setup.md#set-the-default-review-level">выбирает один уровень для организации</a> и может задать отдельному репозиторию собственный уровень, например Quick для рутинной кодовой базы и Deep для критически важной. О том, что ещё влияет на стоимость каждого ревью, см. <a href="https://code.claude.com/docs/ru/code-review-costs.md">Стоимость и использование Code Review</a>.</p>
+<h4 id="h-4">К чему у ревью есть доступ <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<p>Ревью получает доступ к вашему репозиторию через Claude GitHub App, которое пользователь с ролью Owner <a href="https://code.claude.com/docs/ru/code-review-setup.md#turn-on-code-review">устанавливает во время настройки</a>:</p>
+<ul>
+<li><strong>Где оно выполняется</strong>: на инфраструктуре Anthropic, в управляемом окружении. Ревью не выполняются в <a href="https://code.claude.com/docs/ru/self-hosted-environments">self-hosted окружениях</a>.</li>
+<li><strong>Что оно читает и записывает</strong>: внутри ревью доступ к вашему репозиторию только для чтения, и ревью не отправляет коммиты. На pull request оно публикует комментарии и <a href="https://code.claude.com/docs/ru/code-review-pull-requests.md#check-run-output">check run</a>, разрешает собственные более ранние ветки комментариев и может отреагировать на команду в комментарии с помощью 👀. Само приложение обладает <a href="https://code.claude.com/docs/ru/github-actions.md#github-app-permissions">более широким набором разрешений</a>, который используется и другими функциями Claude.</li>
+<li><strong>Как оно изучает ваш код</strong>: ревью работает, читая diff и окружающий код, без сборки или запуска вашего кода.</li>
+</ul>
+<h4 id="h-5">Кто управляет ревью <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Кто может его запустить</strong>: там, где ревью запускаются автоматически, открытие pull request или push в него запускает ревью, <a href="https://code.claude.com/docs/ru/code-review-pull-requests.md#review-drafts-and-pull-requests-from-forks">кроме черновиков и форков</a>. После некоторых push Code Review вместо этого <a href="https://code.claude.com/docs/ru/code-review-pull-requests.md#when-a-push-keeps-the-earlier-result">сохраняет предыдущий результат</a>. <a href="https://code.claude.com/docs/ru/code-review-pull-requests.md#comment-commands">Команда в комментарии</a> запускает ревью, только если она исходит от человека с доступом на запись к репозиторию.</li>
+<li><strong>Каким инструкциям оно следует</strong>: <code>REVIEW.md</code> из базовой ветки или ветки по умолчанию и <a href="https://code.claude.com/docs/ru/code-review-customize.md#which-branch-review-md-is-read-from">никогда не из изменений самого pull request</a>.</li>
+</ul>
+<h3 id="h-6">Сравнение способов получить ревью <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<p>Чтобы найти доступные вам варианты, сопоставьте столбец <strong>Кто может использовать</strong> с вашим планом и хостингом кода:</p>
+<p>| Вариант | Что запускает ревью | Где выполняется | Кто может использовать |
+| :- | :- | :- | :- |
+| <a href="#how-reviews-work">Code Review</a> | Активность в pull request в соответствии с настройками каждого репозитория или комментарий <code>@claude review</code> | Инфраструктура Anthropic | Организации на плане Team или Enterprise с репозиториями GitHub, после того как пользователь с ролью Owner его включит |
+| <a href="https://code.claude.com/docs/ru/code-review-local"><code>/code-review</code></a> | Вы запускаете команду на своей ветке | Ваша сессия Claude Code | Кто угодно, на любом плане |
+| <a href="https://code.claude.com/docs/ru/ultrareview.md">Ultrareview</a> | Вы запускаете его из Claude Code | Облачная песочница | Требуется вход с аккаунтом claude.ai. О том, где он недоступен, см. <a href="https://code.claude.com/docs/ru/ultrareview.md">Ultrareview</a> |
+| Claude в вашем собственном CI, с <a href="https://code.claude.com/docs/ru/github-actions.md">GitHub Actions</a> или <a href="https://code.claude.com/docs/ru/gitlab-ci-cd.md">GitLab CI/CD</a> | События вашего конвейера, например каждый pull request или merge request | Ваши собственные раннеры CI | Любой, у кого есть API-ключ Claude или учётные данные облачного провайдера, на GitHub или GitLab |
+| Ваш собственный ревьюер в виде <a href="https://code.claude.com/docs/ru/sub-agents.md">субагента</a> или <a href="https://code.claude.com/docs/ru/skills.md">скилла</a> | Вы или Claude вызываете его во время сессии | Там, где вы запускаете Claude Code | Любой, кто его напишет |</p>
+<h3 id="h-7">Связанные ресурсы <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/github-enterprise-server.md">GitHub Enterprise Server</a>: используйте Code Review с self-hosted экземпляром GitHub</li>
+<li><a href="https://code.claude.com/docs/ru/github-actions.md#github-app-permissions">Разрешения GitHub App</a>: полный набор разрешений, который запрашивает Claude GitHub App</li>
+<li><a href="https://claude.com/blog/how-anthropic-secures-its-ai-native-software-development-lifecycle">How Anthropic secures its AI-native software development lifecycle</a>: как автоматизированная проверка встраивается в качестве одного из уровней безопасного процесса разработки Anthropic</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

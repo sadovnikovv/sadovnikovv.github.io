@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Планирование повторяющихся задач в Claude Code Desktop</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="планирование-повторяющихся-задач-в-claude-code-desktop">Планирование повторяющихся задач в Claude Code Desktop <a class="h-anchor" href="#планирование-повторяющихся-задач-в-claude-code-desktop" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Настройте запланированные задачи в Claude Code Desktop для автоматического запуска Claude на регулярной основе для ежедневных проверок кода, аудитов зависимостей или утренних брифингов.</p>
+</blockquote>
+<p>Запланированные задачи автоматически запускают новый сеанс в выбранное вами время и с выбранной частотой. Используйте их для повторяющейся работы, такой как ежедневные проверки кода, проверки обновлений зависимостей или утренние брифинги, которые извлекают информацию из вашего календаря и входящих сообщений.</p>
+<p>На странице <strong>Scheduled tasks</strong> приложения Desktop отображаются как локальные запланированные задачи, так и <a href="https://code.claude.com/docs/ru/routines.md">облачные запланированные задачи</a>, ранее называвшиеся routines:</p>
+<ul>
+<li><strong>Локальная задача</strong>: запускается на вашем компьютере с прямым доступом к вашим файлам и инструментам, но срабатывает, только пока приложение открыто, а компьютер не находится в спящем режиме</li>
+<li><strong>Облачная задача</strong>: запускается даже при выключенном компьютере и может также срабатывать при вызовах API или событиях GitHub</li>
+</ul>
+<p>На этой странице рассматриваются локальные запланированные задачи; для облачных запланированных задач и их параметров срабатывания см. <a href="https://code.claude.com/docs/ru/routines.md">Автоматизация работы с помощью запланированных задач</a>.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Если в вашем приложении эта функция отображается под <a href="https://code.claude.com/docs/ru/routines.md#where-the-name-routines-still-appears">прежним названием</a>, нажимайте <strong>Routines</strong> везде, где на этой странице указано <strong>Scheduled</strong>, и <strong>New routine</strong> там, где указано <strong>New task</strong>.</p>
+</blockquote>
+<h3 id="h">Сравнение параметров планирования <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code предлагает три способа планирования повторяющихся или одноразовых задач:</p>
+<p>| | <a href="https://code.claude.com/docs/ru/routines.md">Cloud</a> | <a href="https://code.claude.com/docs/ru/desktop-scheduled-tasks.md">Desktop</a> | <a href="https://code.claude.com/docs/ru/scheduled-tasks"><code>/loop</code></a> |
+| :- | :- | :- | :- |
+| Запускается на | Cloud, управляется Anthropic по умолчанию | Ваша машина | Ваша машина |
+| Требует включенную машину | Нет | Да | Да |
+| Требует открытую сессию | Нет | Нет | Да |
+| Сохраняется после перезагрузки | Да | Да | Восстанавливается при <code>--resume</code>, с <a href="https://code.claude.com/docs/ru/scheduled-tasks.md#limitations">исключениями</a> |
+| Доступ к локальным файлам | Нет (свежий клон) | Да | Да |
+| MCP servers | Connectors настроены для каждой задачи | <a href="https://code.claude.com/docs/ru/mcp.md">Config files</a> и connectors | Наследуется из сессии |
+| Запросы разрешений | <a href="https://code.claude.com/docs/ru/routines.md#permission-prompts-during-a-run">Авторежим</a> по умолчанию | Настраивается для каждой задачи | Наследуется из сессии |
+| Настраиваемое расписание | Да | Да | Да |
+| Минимальный интервал | 1 час | 1 минута, если его задаёт Claude, <a href="https://code.claude.com/docs/ru/desktop-scheduled-tasks.md#schedule-options">1 час в формах</a> | 1 минута |</p>
+<blockquote>
+<p>[!TIP]</p>
+<p>Используйте <strong>облачные задачи</strong> для работы, которая должна выполняться надежно без вашей машины. Используйте <strong>Desktop задачи</strong>, когда вам нужен доступ к локальным файлам и инструментам. Используйте <strong><code>/loop</code></strong> для быстрого опроса во время сессии.</p>
+</blockquote>
+<blockquote>
+<p>[!NOTE]</p>
+<p>По умолчанию локальные запланированные задачи запускаются в том состоянии, в котором находится ваш рабочий каталог, включая незафиксированные изменения. Чтобы вместо этого каждый запуск получал свой <a href="https://code.claude.com/docs/ru/desktop.md#run-a-session-in-its-own-worktree">изолированный Git worktree</a>, после создания задачи выберите <strong>Worktree</strong> в <a href="#manage-scheduled-tasks">форме <strong>Edit</strong></a> этой задачи. Флажок доступен, если папка задачи является Git-репозиторием.</p>
+</blockquote>
+<h3 id="h-2">Создание запланированной задачи <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Для локальных запланированных задач требуется Claude Desktop версии 1.1.5368 или выше.</p>
+<p><strong>1. Откройте страницу запланированных задач</strong></p>
+<p>На <a href="https://code.claude.com/docs/ru/desktop.md">вкладке <strong>Code</strong></a> нажмите <strong>Scheduled</strong> на боковой панели или в меню <strong>More</strong> боковой панели. Если на боковой панели вместо <strong>Scheduled</strong> отображается <strong>Routines</strong>, нажмите <strong>Routines</strong>, затем <strong>New routine</strong> и продолжите с раздела <a href="#full-page-form">Полностраничная форма</a>.</p>
+<p><strong>2. Создайте новую задачу</strong></p>
+<p>Нажмите <strong>New task</strong>, чтобы открыть диалоговое окно <strong>New scheduled task</strong>. Прежде чем продолжить, проверьте, не появился ли один из следующих экранов:</p>
+<ul>
+<li>Если откроется меню с пунктами <strong>Create with Claude</strong> и <strong>Set up manually</strong>, выберите <strong>Set up manually</strong>, чтобы открыть диалоговое окно.</li>
+<li>Если в верхней части диалогового окна находится <strong>Only on this computer</strong>, перейдите к разделу <a href="#dialog-with-only-on-this-computer-at-the-top">Диалоговое окно с Only on this computer вверху</a>, прежде чем что-либо вводить.</li>
+<li>Если откроется меню с пунктами <strong>Local</strong> и <strong>Cloud</strong> или вместо диалогового окна откроется целая страница, перейдите к разделу <a href="#full-page-form">Полностраничная форма</a>.</li>
+</ul>
+<p><strong>3. Задайте имя задачи</strong></p>
+<p>Введите имя в поле <strong>Name</strong>. Desktop преобразует его в нижний регистр kebab-case и использует как имя папки задачи на диске, поэтому имя должно быть уникальным среди ваших задач.</p>
+<p><strong>4. Напишите инструкции</strong></p>
+<p>В поле под именем введите, что должен делать Claude при запуске задачи.</p>
+<p><strong>5. Включите Only on this computer</strong></p>
+<p>Пока пропустите карточку <strong>Trigger</strong> и разверните расположенный под ней раздел <strong>Advanced settings</strong>. На вкладке <strong>General</strong> включите <strong>Only on this computer</strong>. Когда этот параметр включен, задача выполняется на вашем компьютере в локальной папке.</p>
+<p>Если переключатель недоступен, уберите репозиторий или триггер события GitHub либо API, поскольку они превращают задачу в <a href="https://code.claude.com/docs/ru/routines.md">облачную запланированную задачу</a>.</p>
+<p><strong>6. Выберите локальную папку</strong></p>
+<p>В строке <strong>Local folder</strong> выберите папку. Кнопка <strong>Create</strong> остается недоступной, пока вы ее не выберете.</p>
+<p><strong>7. Настройте расписание</strong></p>
+<p>Вернитесь к карточке <strong>Trigger</strong> и выберите <a href="#schedule-options">пресет расписания</a>.</p>
+<p><strong>8. Выберите режим разрешений и модель</strong></p>
+<p>На панели инструментов поля инструкций выберите <a href="#permissions-for-scheduled-tasks">режим разрешений</a> и модель.</p>
+<ul>
+<li><strong>Режим разрешений</strong>: если оставить его без изменений, запуски будут использовать ваши настройки Claude Code.</li>
+<li><strong>Модель</strong>: если в меню модели указано <strong>Default · Set by admin</strong> и вы не выберете другую модель, запуски будут использовать модель, заданную вашей организацией в <a href="https://code.claude.com/docs/ru/managed-settings.md">управляемых настройках</a>. <a href="#missed-runs">Запуск для наверстывания</a>, который начинается при открытии приложения, может вместо этого использовать <a href="https://code.claude.com/docs/ru/model-config.md#default-model-setting">модель по умолчанию для вашей учетной записи во время выполнения</a>.</li>
+</ul>
+<p><strong>9. Создайте задачу</strong></p>
+<p>Нажмите <strong>Create</strong>. Если вы еще не доверили эту папку, Desktop предложит вам доверить ее на этом этапе. Откроется страница с подробностями задачи.</p>
+<p>Чтобы узнать, какой модели соответствует <strong>Default · Set by admin</strong>, нажмите <strong>Run now</strong> на странице с подробностями, чтобы сразу запустить задачу. Затем <a href="#find-a-runs-session">откройте сессию этого запуска</a>: в строке под полем промпта отображается название модели.</p>
+<p>На странице с подробностями нажмите значок карандаша, чтобы открыть <a href="#manage-scheduled-tasks">форму <strong>Edit</strong></a>. В ней можно изменить <strong>Description</strong>, которое Desktop заполнил на основе ваших инструкций, выбрать <strong>Worktree</strong> или переключить расписание на <strong>Manual</strong> или <strong>Custom</strong>.</p>
+<p>Вы также можете создать задачу, описав то, что вы хотите, в любой сессии. Например, &quot;настрой ежедневное код-ревью, которое запускается каждое утро в 9:00&quot; создает повторяющуюся задачу. Сообщение вроде &quot;напомни мне завтра в 3 часа дня проверить развёртывание&quot; создает одноразовую задачу, которая отключается после срабатывания.</p>
+<h4 id="диалоговое-окно-с-only-on-this-computer-вверху">Диалоговое окно с Only on this computer вверху <a class="h-anchor" href="#диалоговое-окно-с-only-on-this-computer-вверху" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если при открытии диалогового окна <strong>New scheduled task</strong> в его верхней части находится <strong>Only on this computer</strong>, включите этот параметр, прежде чем что-либо вводить. Когда вы его включите, форма будет заменена отдельной пустой формой для локальной задачи.</p>
+<p>Затем заполните поля локальной формы:</p>
+<ul>
+<li><strong>Name</strong>: введите имя, как описано в <a href="#create-a-scheduled-task">шагах по созданию запланированной задачи</a>.</li>
+<li><strong>Description</strong>: введите описание. Кнопка <strong>Create</strong> остается недоступной, пока вы этого не сделаете.</li>
+<li><strong>Поле инструкций</strong>: введите, что должен делать Claude при запуске задачи. Выберите режим разрешений и модель в меню этого поля.</li>
+<li><strong>Working folder</strong>: выберите папку, в которой выполняется задача. Кнопка <strong>Create</strong> остается недоступной, пока вы ее не выберете.</li>
+<li><strong>Trigger</strong>: выберите расписание. Описание пресетов см. в разделе <a href="#schedule-options">Параметры расписания</a>.</li>
+</ul>
+<p>Нажмите <strong>Create</strong>. Откроется страница с подробностями задачи.</p>
+<h4 id="h-3">Полностраничная форма <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если откроется меню с пунктами <strong>Local</strong> и <strong>Cloud</strong>, выберите <strong>Local</strong>. Откроется страница с заголовком <strong>New local routine</strong> или <strong>New local scheduled task</strong>. Заполните ее поля:</p>
+<ul>
+<li><strong>Name</strong>: введите имя, уникальное среди ваших задач.</li>
+<li><strong>Description</strong>: введите описание.</li>
+<li><strong>Instructions</strong>: введите, что должен делать Claude при запуске задачи. В этом же поле выберите режим разрешений, модель и папку, в которой выполняется задача.</li>
+<li><strong>Schedule</strong>: выберите один из <a href="#schedule-options">параметров расписания</a>.</li>
+</ul>
+<p>Если кнопка <strong>Create</strong> недоступна, наведите на нее указатель, чтобы увидеть, что еще требуется заполнить в форме. Нажмите <strong>Create</strong>, и откроется страница с подробностями задачи.</p>
+<h3 id="h-4">Параметры расписания <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Когда вы включаете <strong>Only on this computer</strong> в разделе <strong>Advanced settings</strong>, карточка <strong>Trigger</strong> предлагает варианты Hourly, Daily, Weekdays и Weekly. Чтобы получить <strong>Manual</strong> или <strong>Custom</strong> для такой задачи, откройте её <a href="#manage-scheduled-tasks">форму <strong>Edit</strong></a> после создания. Эта форма, <a href="#dialog-with-only-on-this-computer-at-the-top">диалог с <strong>Only on this computer</strong> вверху</a> и <a href="#full-page-form">полностраничная форма</a> предлагают следующие шесть вариантов:</p>
+<ul>
+<li><strong>Hourly</strong>: запускается каждый час</li>
+<li><strong>Daily</strong>: запускается каждый день в выбранное вами местное время</li>
+<li><strong>Weekdays</strong>: то же самое, что Daily, но пропускает субботу и воскресенье</li>
+<li><strong>Weekly</strong>: показывает средство выбора времени и средство выбора дня</li>
+<li><strong>Manual</strong>: без расписания, запускается только при нажатии <strong>Run now</strong>. Полезно для сохранения промпта, который вы запускаете по требованию</li>
+<li><strong>Custom</strong>: запускается по введённому вами cron-выражению, которое вычисляется в вашем местном времени, например <code>0 9 * * *</code> для запуска в 9:00 каждый день. Указывайте дни недели и месяцы числами, так как их названия не принимаются. Воскресенье обозначается <code>0</code>, а не <code>7</code>. Форма отклоняет выражение, которое запускается чаще одного раза в час.</li>
+</ul>
+<p>Вы также можете попросить Claude в любой сессии Desktop установить расписание. На Claude не распространяется ограничение в один запуск в час, и он может назначить однократный запуск на определённое время в будущем. Например, попросите &quot;запускай набор тестов каждые 30 минут&quot; или &quot;в следующий понедельник в 9 утра подведи итоги по pull request, слитым с пятницы.&quot;</p>
+<h3 id="h-5">Как запускаются запланированные задачи <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<p>Локальные запланированные задачи запускаются на вашем компьютере. Desktop проверяет расписание каждую минуту при открытом приложении и запускает новую сессию, когда наступает время задачи, независимо от любых открытых вами ручных сессий. Каждая задача получает небольшую задержку в несколько минут после запланированного времени для распределения трафика API. Задержка детерминирована: одна и та же задача всегда запускается с одинаковым смещением.</p>
+<p>Задачи запускаются, только пока приложение Desktop работает, а компьютер не находится в спящем режиме. Если ваш компьютер находится в спящем режиме в запланированное время, запуск пропускается. Чтобы предотвратить переход в спящий режим при бездействии, включите <strong>Keep computer awake</strong> в <strong>Settings &gt; Desktop app</strong> или <strong>Settings &gt; This computer &gt; System</strong>. Закрытие крышки ноутбука все равно переводит его в спящий режим.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Для задач, которые должны запускаться даже при выключенном компьютере или должны срабатывать при вызове API или событии GitHub, создайте вместо этого <a href="https://code.claude.com/docs/ru/routines.md">облачную запланированную задачу</a>.</p>
+</blockquote>
+<h4 id="h-6">Поиск сессии запуска <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<p>Чтобы открыть сессию, запущенную при выполнении задачи, перейдите на <a href="#manage-scheduled-tasks">страницу сведений</a> задачи и нажмите на строку этого запуска в списке <strong>History</strong>.</p>
+<p>Список сессий на боковой панели также может отображать группу <strong>Scheduled</strong> с одной строкой для каждой задачи. Чтобы открыть сессию последнего запуска задачи, нажмите на строку задачи в этой группе. Чтобы отобразить группу, <a href="https://code.claude.com/docs/ru/desktop.md#check-which-layout-you-have">проверьте, какой у вас макет</a>:</p>
+<ul>
+<li><strong>Текущий макет</strong>: откройте <a href="https://code.claude.com/docs/ru/desktop.md#organize-and-find-sessions">меню <strong>Group and sort</strong></a>, выберите <strong>Show</strong>, затем выберите <strong>Scheduled</strong>. Группа изначально свернута, поэтому нажмите на её заголовок, чтобы развернуть её.</li>
+<li><strong>Предыдущий макет</strong>: группа находится в списке сессий, и ничего включать не нужно</li>
+</ul>
+<p>В сессии запуска, каким бы способом вы её ни открыли, вы можете увидеть, что сделал Claude, просмотреть изменения и ответить на запросы разрешений. Claude может редактировать файлы, запускать команды, создавать коммиты и открывать pull requests, так же как в сессии, которую вы запускаете сами.</p>
+<h3 id="h-7">Пропущенные запуски <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h3>
+<p>Когда приложение запускается или компьютер просыпается, Desktop проверяет, пропустила ли каждая задача какие-либо запуски за последние семь дней. Если да, Desktop запускает ровно один наверстывающий запуск для самого недавно пропущенного времени и отбрасывает все остальное. Ежедневная задача, которая пропустила шесть дней, запускается один раз при пробуждении. Desktop показывает уведомление при запуске наверстывающего запуска.</p>
+<p>Помните об этом при написании промптов. Задача, запланированная на 9 утра, может запуститься в 11 вечера, если ваш компьютер спал весь день. Если время имеет значение, добавьте защиту в сам промпт, например: &quot;Проверяй только сегодняшние коммиты. Если уже позже 5 вечера, пропусти проверку и опубликуй сводку того, что было пропущено.&quot;</p>
+<h3 id="h-8">Разрешения для запланированных задач <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h3>
+<p>Каждая задача имеет свой <a href="https://code.claude.com/docs/ru/desktop.md#choose-a-permission-mode">режим разрешений</a>, который вы устанавливаете при создании или редактировании задачи. Разрешающие правила из <code>~/.claude/settings.json</code> также применяются к сессиям запланированных задач. Если запуск завис на запросе разрешения, <a href="#find-a-runs-session">найдите сессию этого запуска</a> и ответьте там на запрос.</p>
+<p>Чтобы избежать зависания, нажмите <strong>Run now</strong> после создания задачи, следите за запросами разрешений и выберите &quot;always allow&quot; для каждого. Будущие запуски пропускают большинство этих запросов. Вы можете просмотреть и отозвать эти подтверждения со страницы деталей задачи. Если вы выберете &quot;always allow&quot; для редактирования файла в папке задачи, в режим <strong>Accept edits</strong> переключится только эта сессия, поэтому установите для задачи режим разрешений <strong>Accept edits</strong>.</p>
+<p>Инструменты MCP, отмеченные <a href="https://code.claude.com/docs/ru/mcp#require-approval-for-a-specific-tool"><code>requiresUserInteraction</code></a>, запрашивают разрешение при каждом вызове и не предлагают опцию &quot;always allow&quot;. Запуски, которые вызывают эти инструменты, зависают каждый раз.</p>
+<h3 id="h-9">Управление запланированными задачами <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h3>
+<p>На вкладке <strong>Code</strong> нажмите <strong>Scheduled</strong> на боковой панели, затем нажмите на задачу в списке, чтобы открыть ее страницу деталей. Отсюда вы можете:</p>
+<ul>
+<li><strong>Run now</strong>: запустить задачу немедленно без ожидания следующего запланированного времени</li>
+<li><strong>Status</strong>: переключаться между Active и Paused для приостановки или возобновления запланированных запусков без удаления задачи</li>
+<li><strong>Edit</strong>: изменить инструкции, расписание, папку или другие параметры</li>
+<li><strong>Review history</strong>: увидеть каждый прошлый запуск, включая пропущенные запуски. Наведите указатель на пропущенную запись, чтобы увидеть причину: ваш компьютер спал, предыдущий запуск все еще выполнялся, или другие запланированные задачи уже запускались. Нажмите <strong>Show more</strong>, чтобы загрузить более старые записи.</li>
+<li><strong>Review allowed permissions</strong>: увидеть и отозвать сохраненные одобрения инструментов для этой задачи из панели <strong>Always allowed</strong></li>
+<li><strong>Delete</strong>: удалить задачу. Сессии, созданные задачей, <a href="https://code.claude.com/docs/ru/desktop.md#organize-and-find-sessions">архивируются</a>, а не удаляются. Папка с файлом <code>SKILL.md</code> задачи остается на диске в <code>~/.claude/scheduled-tasks/&lt;task-name&gt;/</code> или в <code>scheduled-tasks/&lt;task-name&gt;/</code> внутри <a href="https://code.claude.com/docs/ru/env-vars"><code>CLAUDE_CONFIG_DIR</code></a>, если вы задали эту переменную. Чтобы удалить эту папку, удалите ее самостоятельно.</li>
+</ul>
+<p>Вы также можете управлять задачами, попросив Claude, позволив задаче обновлять саму себя или отредактировав промпт задачи на диске:</p>
+<ul>
+<li><strong>Попросить Claude</strong>: перечисляйте, создавайте, редактируйте и приостанавливайте задачи, попросив Claude в любой сессии Desktop. Например, «приостанови мою задачу dependency-audit» или «покажи мои запланированные задачи». Чтобы удалить задачу, используйте кнопку <strong>Delete</strong> на ее странице деталей.</li>
+<li><strong>Позволить задаче обновлять саму себя</strong>: чтобы задача могла изменить свое собственное расписание или промпт с помощью инструмента MCP <code>update_scheduled_task</code>, нажимайте <strong>Run now</strong> и подтверждайте вызов каждый раз</li>
+<li><strong>Отредактировать промпт на диске</strong>: откройте <code>~/.claude/scheduled-tasks/&lt;task-name&gt;/SKILL.md</code> или <code>scheduled-tasks/&lt;task-name&gt;/SKILL.md</code> внутри <a href="https://code.claude.com/docs/ru/env-vars"><code>CLAUDE_CONFIG_DIR</code></a>, если вы задали эту переменную. Файл использует YAML frontmatter для <code>name</code> и <code>description</code>, с промптом в качестве тела. Изменения вступают в силу при следующем запуске. Расписание, папка и состояние включения не находятся в этом файле: измените их через форму Edit или попросите Claude.</li>
+</ul>
+<p>Если локальная одноразовая задача, которая уже была выполнена, отсутствует на странице <strong>Scheduled tasks</strong>, нажмите значок сортировки над списком и выберите <strong>Include completed</strong>.</p>
+<h3 id="h-10">Связанные ресурсы <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/routines.md">Облачные запланированные задачи</a>: запускайте задачи в облаке по расписанию, через вызов API или в ответ на события GitHub, даже при выключенном компьютере</li>
+<li><a href="https://code.claude.com/docs/ru/scheduled-tasks.md">Run prompts on a schedule</a>: планирование с областью действия сеанса с <code>/loop</code> в CLI</li>
+<li><a href="https://code.claude.com/docs/ru/github-actions.md">Claude Code GitHub Actions</a>: запускайте Claude по расписанию в CI вместо на вашем компьютере</li>
+<li><a href="https://code.claude.com/docs/ru/desktop.md">Use Claude Code Desktop</a>: полное руководство приложения Desktop</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

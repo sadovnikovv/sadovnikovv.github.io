@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Настройка сессий в самостоятельно размещаемых окружениях</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Настройка сессий в самостоятельно размещаемых окружениях <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Настройте сессии самостоятельно размещаемого окружения с помощью скриптов-оболочек для учётных данных для каждой сессии, хуков жизненного цикла и порождения средств выполнения по требованию.</p>
+</blockquote>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Самостоятельно размещаемые окружения находятся в публичной бета-версии на планах Team и Enterprise; <a href="https://code.claude.com/docs/ru/cloud-environments.md#organization-shared-environments">Owner</a> включает их, активируя <strong>Allow self-hosted environments</strong> на <a href="https://claude.ai/admin-settings/cloud-environments">странице администратора <strong>Cloud environments</strong></a>. На этой странице предполагается наличие работающего средства выполнения; см. <a href="https://code.claude.com/docs/ru/self-hosted-environments-quickstart.md">быстрый старт</a> для настройки и <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md">Deploy to production</a> для рецептов флота.</p>
+</blockquote>
+<p><a href="https://code.claude.com/docs/ru/self-hosted-environments">Самостоятельно размещаемое окружение</a> запускает <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">облачные сессии</a> Claude Code на вашей собственной инфраструктуре, выполняемые процессом средства выполнения, который вы развёртываете. Без конфигурации это средство выполнения клонирует репозиторий сессии, порождает Claude Code и выполняет очистку. Эта страница предназначена для инженера платформы, управляющего средствами выполнения: она охватывает точки расширения для случаев, когда эти значения по умолчанию не подходят, от подготовки учётных данных для каждой сессии до полной замены checkout. Оболочки и хуки запускаются как исполняемые файлы на хосте средства выполнения, который работает на Linux или macOS, и примеры на этой странице предполагают оболочку POSIX.</p>
+<p>Несколько переменных окружения хука на этой странице по-прежнему используют <code>pool</code>, такие как <code>CLAUDE_RUNNER_POOL_ID</code>; флаги CLI и имена переменных окружения используют <code>environment</code>, такие как <code>--environment-secret-file</code>.</p>
+<h3 id="h-2">Скрипты-обёртки <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Используйте скрипт-обёртку, когда каждой сессии требуется настройка, которую средство выполнения не может выполнить самостоятельно:</p>
+<ul>
+<li>Подготовка краткосрочных учётных данных, ограниченных создателем сессии</li>
+<li>Экспорт секретов, специфичных для окружения</li>
+<li>Подготовка цепочек инструментов языка</li>
+<li>Применение ограничений ресурсов вокруг дочернего процесса</li>
+</ul>
+<p>Средство выполнения запускает вашу обёртку вместо двоичного файла Claude Code каждый раз, когда запускает сессию, в том числе когда сессия возобновляется или повторно ставится в очередь. Завершите обёртку, выполнив <code>exec</code> в <code>$CLAUDE_RUNNER_CLAUDE_BIN</code>, собственный двоичный файл средства выполнения, чтобы сигналы и коды выхода распространялись правильно.</p>
+<p>Укажите в <code>--exec-path</code> или <code>SELF_HOSTED_RUNNER_EXEC_PATH</code> путь к обёртке при запуске средства выполнения, заменив <code>&lt;writable-dir&gt;</code>, как описано в разделе <a href="https://code.claude.com/docs/ru/self-hosted-environments-quickstart.md#set-up-manually">быстрого старта</a>:</p>
+<p>```bash theme={null}
+claude self-hosted-runner --environment-secret-file /etc/claude/environment-secret --base-dir &#x27;&lt;writable-dir&gt;&#x27; --exec-path /etc/claude/session-wrapper.sh</p>
+<pre><code>
+Средство выполнения устанавливает следующие переменные в окружении обёртки:
+
+| Переменная | Описание |
+| :- | :- |
+| `CLAUDE_CODE_SESSION_ACCESS_TOKEN` | JWT сессии с префиксом `sk-ant-cc-`. Его утверждение `act` идентифицирует создателя сессии, вместе с электронной почтой создателя, если интерфейс, создавший сессию, её записал. Значение — это токен на момент порождения процесса; обновления поступают через stdin дочернего процесса, поэтому обёртка видит только начальное значение. См. [Проверка идентичности сессии](https://code.claude.com/docs/ru/self-hosted-environments-identity.md). |
+| `CCR_SESSION_ACCOUNT_EMAIL` | Электронная почта создателя сессии, предварительно извлечённая средством выполнения из утверждения `act.email` токена без проверки подписи. Подходит для маркировки, например для трейлеров коммитов. Когда электронная почта управляет выдачей учётных данных, вместо этого проверьте токен и прочитайте утверждение из него. См. [Подготовка учётных данных, ограниченных создателем сессии](#provision-credentials-scoped-to-the-session-creator). Не установлена, когда токен не содержит электронную почту создателя, например в сессиях, которые создаёт служебная учётная запись вашей организации. Рассматривайте как персональные данные. |
+| `CLAUDE_RUNNER_CLIENT_PLATFORM` | Клиентский интерфейс, который создал сессию, например `web_claude_ai`, `desktop_app`, `ios`, `claude_code_cli` или `scheduled_trigger`. Anthropic записывает значение один раз при создании сессии, поэтому обёртка и каждый хук жизненного цикла видят одно и то же значение. Используйте его только для аналитики внедрения и маркировки, а не как сигнал авторизации. Не установлена, когда у сессии нет записанного или распознанного интерфейса. Требует Claude Code v2.1.229 или новее. |
+| `CLAUDE_RUNNER_CLAUDE_BIN` | Абсолютный путь к собственному двоичному файлу Claude Code средства выполнения. Завершите вашу обёртку командой `exec &quot;$CLAUDE_RUNNER_CLAUDE_BIN&quot; &quot;$@&quot;`, чтобы передать управление закреплённому двоичному файлу без жёсткого кодирования пути установки. |
+| `CLAUDE_CODE_REMOTE_SESSION_ID` | ID сессии в форме с тегом `cse_...`. Это та же сессия, которую [хуки жизненного цикла](#lifecycle-hooks) видят как `CLAUDE_RUNNER_SESSION_ID` в форме `session_...`; переменные UUID совпадают в обоих случаях, а замена префикса `cse_` на `session_` даёт ID, показанный в URL сессии. |
+| `CLAUDE_CODE_REMOTE_SESSION_UUID` | Тот же ID сессии в канонической форме UUID для систем, которые используют UUID в качестве ключа. |
+| `CLAUDE_CODE_REMOTE_SLACK_THREAD_URL` | Для сессии [Claude Tag](https://claude.com/docs/claude-tag/overview), которая относится к одной ветке Slack, — ссылка на эту ветку. Не установлена для других сессий и может быть не установлена и для сессии ветки. |
+| `CLAUDE_CODE_REMOTE_SLACK_THREAD_TS` | Для сессии Claude Tag, которая относится к одной ветке Slack, — временная метка Slack этой ветки, например `1700000000.000100`. Может быть не установлена, а также может быть установлена, когда `CLAUDE_CODE_REMOTE_SLACK_THREAD_URL` не установлена, поэтому проверяйте каждую переменную отдельно. |
+| `CLAUDE_CODE_REMOTE_SLACK_CHANNEL_ID` | Для сессии Claude Tag — ID канала Slack или личного сообщения, которое обслуживает сессия или в котором находится её ветка, например `C0123ABCDE`. Временная метка Slack идентифицирует сообщение в пределах одного канала, поэтому записывайте этот ID вместе с `CLAUDE_CODE_REMOTE_SLACK_THREAD_TS`. Не установлена для других сессий и может быть не установлена и для сессии Claude Tag. |
+| `CLAUDE_SESSION_INGRESS_TOKEN_FILE` | Абсолютный путь к файлу для каждой сессии, содержащему текущий JWT сессии, который поддерживается в актуальном состоянии при обновлении токенов. Подпроцессы оболочки читают его для своего заголовка `Authorization` при загрузке вложений, которые пользователь добавил в сессию. `exec` сохраняет переменную автоматически; обёртка, которая перестраивает окружение дочернего процесса, должна перенести переменную, иначе загрузки вложений молча прекратятся. |
+| `CLAUDE_CONFIG_DIR` | Каталог конфигурации Claude для каждой сессии, записываемый при запуске сессии из снимка конфигурации хоста средства выполнения, который средство выполнения захватывает при запуске; см. [Разрешения и подтверждение инструментов](#permissions-and-tool-approval). Записи здесь изолированы для этой сессии. Каталог остаётся в `&lt;base-dir&gt;/_sessions/` после завершения сессии, если вы не запустите средство выполнения с [`--remove-session-state`](https://code.claude.com/docs/ru/self-hosted-environments-reference#runner-cli-flags); см. [Повторное использование предварительно подготовленного checkout](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#reuse-a-pre-warmed-checkout). |
+| `CLAUDE_CODE_REMOTE_MCP_CONFIG` | Путь к файлу в `CLAUDE_CONFIG_DIR`, содержащему MCP-серверы, доставленные плоскостью управления. Если ваша обёртка перестраивает окружение дочернего процесса, перенесите эту переменную, [`CLAUDE_CODE_REMOTE`](https://code.claude.com/docs/ru/env-vars#variables) и `CLAUDE_CODE_ENVIRONMENT_KIND` без изменений; средство выполнения устанавливает все три. Если `CLAUDE_CODE_REMOTE` поступает, а эта переменная или `CLAUDE_CODE_ENVIRONMENT_KIND` — нет, дочерний процесс останавливает серверы stdio, HTTP и SSE, добавленные вашей обёрткой с помощью [`--mcp-config`](https://code.claude.com/docs/ru/cli-reference#cli-flags), которых нет в обновлении доставленных серверов. Требует Claude Code v2.1.299 или новее. |
+| `ANTHROPIC_BASE_URL` | Базовый URL API, который будет использовать дочерний процесс, доставляемый плоскостью управления для каждой сессии; обычно `https://api.anthropic.com`. Не переопределяйте его: учётные данные вывода сессии — это выданный Anthropic токен OAuth, который другие поставщики не принимают. |
+| `CLAUDE_CODE_OAUTH_TOKEN` | Краткосрочный токен доступа OAuth, который дочерний процесс использует для вывода модели, со временем жизни около 30 минут. Средство выполнения перевыпускает его до истечения срока и доставляет ротацию через stdin дочернего процесса, поэтому обёртка, которая не [сохраняет stdin подключённым](#keep-stdin-and-file-descriptor-3-attached), видит только начальное значение. Не полагайтесь на список разрешённых IP-адресов вашей организации для ограничения использования этого токена: рассматривайте его как Bearer-токен, который остаётся пригодным для использования примерно 30 минут в случае утечки, и не записывайте его в лог, не сохраняйте на диск и не пересылайте за пределы контейнера сессии. |
+| `CLAUDE_RUNNER_ALIVE_EVERY_MS` | Средство выполнения задаёт, как часто (в миллисекундах) дочерний процесс сообщает, что он активен, когда [ход начинается до инициализации дочернего процесса](https://code.claude.com/docs/ru/self-hosted-environments-reference.md#session-startup-timeout). Если ваша обёртка перестраивает окружение дочернего процесса, перенесите эту переменную, иначе средство выполнения может освободить сессию во время этого хода и записать в лог `no child output for &lt;n&gt; — releasing`. Требует v2.1.309 или новее на средстве выполнения и в дочернем процессе. |
+
+Обёртка также наследует остальную часть управляемого окружения дочернего процесса, включая любые переменные окружения, предоставленные сервером. `exec` передаёт всё это автоматически; если ваша обёртка порождает дочерний процесс другим способом, пересылайте окружение полностью.
+
+Переменные `CLAUDE_CODE_REMOTE_SLACK_*` можно читать в вашей обёртке или [хуке `command`](#command), а также в том, что запускает сессия, например в shell-командах, хуках git и хуках Claude Code. Хуки `checkout`, `post-session` и `spawn-runner` их не получают.
+
+### Задавайте значение по умолчанию для переменных, которые могут быть не установлены
+
+Если ваш скрипт использует `set -u`, раскрывайте `CCR_SESSION_ACCOUNT_EMAIL`, `CLAUDE_RUNNER_CLIENT_PLATFORM`, `CLAUDE_CODE_REMOTE_SLACK_THREAD_URL`, `CLAUDE_CODE_REMOTE_SLACK_THREAD_TS` и `CLAUDE_CODE_REMOTE_SLACK_CHANNEL_ID` со значением по умолчанию, например `&quot;${CCR_SESSION_ACCOUNT_EMAIL:-}&quot;`. Каждая из них может быть не установлена, а при `set -u` Bash останавливается с ошибкой `unbound variable`, когда раскрывает неустановленную переменную.
+
+### Заключайте в кавычки аргументы и переменные, которые раскрывает ваш скрипт
+
+Заключайте в кавычки каждый аргумент и каждую переменную, которые средство выполнения передаёт вашей обёртке или [хуку `command`](#command). Некоторые значения содержат символы, на которые реагирует оболочка, поскольку в них находится JSON, целые предложения или [правило разрешений](https://code.claude.com/docs/ru/permissions.md#permission-rule-syntax), например `Bash(npm run test *)`.
+
+* **Аргументы**: передавайте их дальше как `&quot;$@&quot;`
+* **Переменные**: заключайте каждую в кавычки, как в `&quot;${CLAUDE_CODE_REMOTE_SLACK_THREAD_URL:-}&quot;`. Ссылка на ветку Slack, например, может содержать `?` и `&amp;`.
+* **Строки `eval` и `sh -c`**: не подставляйте значение в строку, которую выполняет `eval` или `sh -c`, даже внутри кавычек. Вместо этого пусть такая строка ссылается на саму переменную.
+
+### Сохраняйте stdin и дескриптор файла 3 подключёнными
+
+stdin дочернего процесса — это канал управления средства выполнения. Ротации токенов и сигналы завершения сессии поступают через него. Средство выполнения также открывает канал на дескрипторе файла 3 и читает из него сигналы активности дочернего процесса для управления таймаутами простоя и запуска. Простой `exec &quot;$CLAUDE_RUNNER_CLAUDE_BIN&quot; &quot;$@&quot;` сохраняет оба автоматически.
+
+Если ваша обёртка переводит дочерний процесс в фоновый режим с помощью простого `&amp;`, она разрывает stdin дочернего процесса. Сессия выглядит работоспособной до истечения примерно 30-минутного времени жизни начального токена OAuth, после чего каждый вызов API, использующий этот токен, завершается ошибкой `401 authentication_error`. Если ваша обёртка должна переводить дочерний процесс в фоновый режим, например чтобы сохранить ловушку очистки, сохраните stdin на дескрипторе файла 9 и явно подключите его заново:
+</code></pre>
+<p>exec 9&lt;&amp;0   # the runner uses 3, and from v2.1.309 reserves 4 and 5
+&quot;$CLAUDE_RUNNER_CLAUDE_BIN&quot; &quot;$@&quot; &lt;&amp;9 9&lt;&amp;- &amp;
+CHILD=$!
+trap &#x27;teardown&#x27; EXIT
+wait &quot;$CHILD&quot;</p>
+<pre><code>
+Перенаправлять stdout дочернего процесса можно. Дескриптор файла 3 и stderr должны оставаться подключёнными к средству выполнения:
+
+* **Дескриптор файла 3**: передаёт сигналы активности дочернего процесса средству выполнения. Не закрывайте и не переиспользуйте его в обёртке.
+* **Дескрипторы файлов 4 и 5**: средства выполнения на Claude Code v2.1.309 или новее резервируют их для дочернего процесса. Не закрывайте и не переиспользуйте их в обёртке. Если ваша обёртка использует какой-либо из них, например для сохранения stdin, перенесите это использование на дескриптор с 6 по 9 — более ранние версии также оставляют их свободными.
+* **stderr**: когда обёртка или дочерний процесс завершается с ненулевым кодом выхода, средство выполнения публикует последние строки stderr в сессию и выводит их в свой собственный лог. Пользователь сессии видит эти строки, поэтому не выводите секреты в stderr и удалите `set -x` перед развёртыванием обёртки. Если вы перенаправите stderr, сессии по-прежнему будут работать, но средство выполнения будет сообщать о сбое только с кодом выхода.
+
+### Передавайте флаги системного промпта дальше
+
+Системный промпт и дополнительный системный промпт, которые плоскость управления Anthropic отправляет для сессии, поступают в вашу обёртку в виде путей к файлам, а не встроенного текста. Средство выполнения записывает каждый промпт в файл в каталоге конфигурации сессии `CLAUDE_CONFIG_DIR` и передаёт его путь в аргументах, которые получает ваша обёртка, как [`--system-prompt-file &lt;path&gt;` или `--append-system-prompt-file &lt;path&gt;`](https://code.claude.com/docs/ru/cli-reference#system-prompt-flags).
+
+Средства выполнения на Claude Code v2.1.281 или новее передают промпты в виде файлов. До v2.1.281 средство выполнения передавало их как `--system-prompt &lt;text&gt;` и `--append-system-prompt &lt;text&gt;`.
+
+В вашем скрипте-обёртке или [хуке `command`](#command) обрабатывайте эти флаги следующим образом:
+
+* **Передавайте их дальше**: завершайте обёртку командой `exec &quot;$CLAUDE_RUNNER_CLAUDE_BIN&quot; &quot;$@&quot;`, которая передаёт файловые флаги вместе со всеми остальными аргументами. Не удаляйте и не переписывайте их. Если сессия теряет файловый флаг промпта, она работает без инструкций, которые для неё отправила плоскость управления.
+* **На средстве выполнения версии v2.1.281 или новее добавленный вами файловый флаг заменяет серверный, а не дополняет его**: каждый файловый флаг промпта принимает одно значение, и Claude Code использует последнее вхождение, поэтому если вы добавите `--append-system-prompt-file &lt;path&gt;` после `&quot;$@&quot;`, содержимое вашего файла заменит дополнительные инструкции сервера. Чтобы добавить инструкции поверх серверных, поместите их в `CLAUDE.md` образа средства выполнения, который средство выполнения [добавляет в пользовательскую конфигурацию каждой сессии](#how-each-session’s-config-is-assembled).
+
+#### Исправление `Argument list too long` при запуске сессии
+
+В Linux, если вы объединяете промпт плоскости управления и собственный текст в один аргумент `--append-system-prompt`, средство выполнения записывает в лог строку такого вида, как только аргумент достигает 128 КБ:
+</code></pre>
+<p>Session &lt;id&gt; finished: failed — reason: child exited 126: /opt/wrapper.sh: line 9: /usr/local/bin/claude: Argument list too long</p>
+<pre><code>
+Linux ограничивает каждый отдельный аргумент 32 страницами памяти, то есть 128 КБ при обычных страницах размером 4 КБ. Значение `getconf ARG_MAX`, часто равное 2 МБ, — это отдельное ограничение на все аргументы и окружение вместе.
+
+На Claude Code v2.1.283 или новее оставьте файловые флаги в `&quot;$@&quot;` и передавайте как `--append-system-prompt` только собственный текст. Claude Code [использует оба](https://code.claude.com/docs/ru/cli-reference.md#system-prompt-flags): сначала промпт плоскости управления, затем ваш собственный текст:
+</code></pre>
+<p>exec &quot;$CLAUDE_RUNNER_CLAUDE_BIN&quot; &quot;$@&quot; --append-system-prompt &quot;$(cat /opt/team-instructions.md)&quot;</p>
+<pre><code>
+В Linux, если ваш собственный текст достигает 128 КБ, перенесите его в `CLAUDE.md` образа средства выполнения, поскольку это по-прежнему один аргумент.
+
+На v2.1.281 или v2.1.282 эта команда завершается с ошибкой `Cannot use both --append-system-prompt and --append-system-prompt-file`. На более ранних версиях ваш текст без какой-либо ошибки заменяет промпт плоскости управления. В любом из этих случаев сначала обновитесь или перенесите собственный текст в `CLAUDE.md`.
+
+### Подготовка учётных данных, ограниченных создателем сессии
+
+Используйте подкоманду `decode-token` для чтения утверждений из JWT сессии. Она читает токен из аргумента, из `CLAUDE_CODE_SESSION_ACCESS_TOKEN` или из stdin, в этом порядке; о том, что она проверяет, см. [Проверка токена внутри сессии](https://code.claude.com/docs/ru/self-hosted-environments-identity.md#verify-the-token-inside-the-session). Пример ниже декодирует идентичность создателя, обменивает её на краткосрочные учётные данные AWS и выполняет exec в Claude Code:
+</code></pre>
+<p>#!/bin/bash</p>
+<h1 id="key-on-the-stable-anthropic-user-id-and-require-a-human-creator">Key on the stable Anthropic user ID and require a human creator. <a class="h-anchor" href="#key-on-the-stable-anthropic-user-id-and-require-a-human-creator" aria-label="Ссылка на раздел">#</a></h1>
+<p>CREATOR_SUB=$(&quot;$CLAUDE_RUNNER_CLAUDE_BIN&quot; self-hosted-runner decode-token \
+  | jq -re &#x27;.act.sub // &quot;&quot; | select(startswith(&quot;user:&quot;))&#x27;) \
+  || { echo &quot;decode-token: verification failed or no human creator&quot; &gt;&amp;2; exit 1; }</p>
+<p>creds=$(your-sts-helper assume-role --subject &quot;$CREATOR_SUB&quot;) \
+  || { echo &quot;credential exchange failed&quot; &gt;&amp;2; exit 1; }
+eval &quot;$creds&quot;</p>
+<p>exec &quot;$CLAUDE_RUNNER_CLAUDE_BIN&quot; &quot;$@&quot;</p>
+<pre><code>
+Используйте `jq -re` вместо `jq -r`, когда извлечённое утверждение определяет решение об авторизации, чтобы при отсутствии утверждения команда завершалась с ненулевым кодом выхода, а не передавала дальше буквальную строку `null`. Сессии, созданные служебной учётной записью организации, например сессии ботов и агентов, содержат субъект `agent:` вместо `user:`, поэтому этот пример отклоняет их; если ваше окружение обслуживает такие сессии, явно решите, должна ли обёртка для них переходить к учётным данным по умолчанию вместо завершения. Если вашему обмену учётными данными вместо этого нужна электронная почта, прочитайте `.act.email` и обработайте её отсутствие: токен содержит её только тогда, когда интерфейс, создавший сессию, её записал, а у [сессии, запущенной через CLI](https://code.claude.com/docs/ru/self-hosted-environments-testing.md#run-the-test-loop), её может не быть. Полный справочник по утверждениям и описание проверки из служб вне средства выполнения см. в разделе [Проверка идентичности сессии](https://code.claude.com/docs/ru/self-hosted-environments-identity.md).
+
+## Lifecycle hooks
+
+Lifecycle hooks заменяют этапы конвейера runner&#x27;а для каждой сессии вашими собственными скриптами. Укажите runner&#x27;у на директорию с hooks с помощью `--hooks-dir &lt;path&gt;` или `SELF_HOSTED_RUNNER_HOOKS_DIR`. Runner ищет исполняемые файлы с известными именами; любой hook, который отсутствует, переходит к встроенному поведению, поэтому вам нужно написать только те, которые вам нужны. Hooks запускаются с собственными привилегиями runner&#x27;а, и дочерние процессы сессии используют тот же UID, поэтому монтируйте директорию hooks в режиме только для чтения или встраивайте её в образ, чтобы код сессии не мог её изменять; см. [раздел об усилении безопасности](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#harden-your-deployment).
+
+Эти hooks отличаются от [Claude Code hooks](https://code.claude.com/docs/ru/hooks.md), которые запускаются внутри сессии; lifecycle hooks запускаются на runner&#x27;е, вокруг сессии.
+
+### checkout
+
+Запускается для каждого репозитория каждый раз, когда runner запускает сессию, в том числе когда сессия возобновляется или повторно ставится в очередь, вместо встроенного клонирования и получения данных runner&#x27;а. Используйте хук для клонирования из зеркала сквозного доступа, к которому вы обращаетесь по HTTPS или SSH, инициализации рабочего дерева из архива или применения аутентификации git для каждой сессии.
+
+Runner устанавливает эти переменные, а также может устанавливать другие переменные `CLAUDE_RUNNER_`, которых нет в таблице:
+
+| Variable | Description |
+| :- | :- |
+| `CLAUDE_RUNNER_REPO_URL` | URL репозитория для клонирования, после применения любых `--git-host-rewrite` и `--git-ssh-rewrite` |
+| `CLAUDE_RUNNER_REPO_REF` | Ревизия для checkout в том виде, в каком её запросила сессия: ветка, тег, SHA коммита или полное имя ссылки, например `refs/heads/&lt;branch&gt;` или `refs/pull/&lt;number&gt;/head`. Пустое значение означает ветку по умолчанию репозитория. |
+| `CLAUDE_RUNNER_CHECKOUT_PATH` | Абсолютный путь, где должно остаться рабочее дерево. См. [Имена папок checkout](#checkout-folder-names). |
+| `CLAUDE_RUNNER_SESSION_ID` | ID сессии в форме с тегом `session_...`, для логирования и корреляции |
+| `CLAUDE_RUNNER_SESSION_UUID` | Тот же ID сессии в канонической форме UUID |
+| `CLAUDE_RUNNER_API_BASE_URL` | Базовый URL API Anthropic для вызовов в области сессии |
+| `CLAUDE_RUNNER_CLIENT_PLATFORM` | Интерфейс клиента, который создал сессию, например `web_claude_ai`, `desktop_app` или `ios`. Не установлена, если у сессии нет записанного или распознанного интерфейса, поэтому при `set -u` ссылайтесь на неё как `&quot;${CLAUDE_RUNNER_CLIENT_PLATFORM:-}&quot;`. Требуется Claude Code v2.1.229 или новее. |
+| `CLAUDE_CODE_SESSION_ACCESS_TOKEN` | Токен доступа сессии для вызовов API в области сессии |
+| `GIT_CONFIG_COUNT`, `GIT_CONFIG_KEY_n`, `GIT_CONFIG_VALUE_n` | Настройки git, которые runner фиксирует для git, запускаемого вашим хуком. Они описаны в разделе [Конфигурация git внутри хуков жизненного цикла](#git-configuration-inside-lifecycle-hooks). Требуется Claude Code v2.1.280 или новее. |
+
+Скрипт должен оставить в `CLAUDE_RUNNER_CHECKOUT_PATH` рабочее дерево, переключённое на запрошенную ревизию. Отсоединённый HEAD подходит, потому что runner создаёт рабочую ветку сессии поверх него.
+
+После возврата вашего хука runner проверяет, что `CLAUDE_RUNNER_CHECKOUT_PATH` содержит `.git`. Если ваш хук материализует источник, не основанный на git, такой как Perforce или распакованный tarball, установите `CLAUDE_RUNNER_SKIP_GIT_VERIFY=1` в окружении runner&#x27;а, чтобы пропустить эту проверку. Потоки на основе Git, такие как создание рабочей ветки и отправка результатов, требуют checkout git, поэтому экспортируйте результаты из деревьев, не основанных на git, с помощью [хука `post-session`](#post-session).
+
+#### Имена папок checkout
+
+`CLAUDE_RUNNER_CHECKOUT_PATH` заканчивается папкой с именем `&lt;repo-owner&gt;-&lt;repo&gt;`, например `acme-api`. Два репозитория в одной сессии не могут использовать одну и ту же папку, даже если их имена различаются только регистром. Например, если в сессии указаны `acme/api`, а затем `Acme/API`, первый получает `acme-api`, а второй — `Acme-API-2`.
+
+#### Получение учётных данных git в хуке
+
+Runner не передаёт учётные данные git в хук. Подкоманда `decode-token` здесь тоже недоступна, потому что `CLAUDE_RUNNER_CLAUDE_BIN` не установлена в окружении хука checkout. Вместо этого создайте учётные данные клонирования для каждой сессии на основе идентичности сессии или вернитесь к собственной аутентификации git хоста:
+
+* **Учётные данные клонирования для каждой сессии**: проверьте `CLAUDE_CODE_SESSION_ACCESS_TOKEN` с помощью стандартной библиотеки JWT по эндпоинту JWKS под `CLAUDE_RUNNER_API_BASE_URL`, как описано в разделе [Verify the token from your service](https://code.claude.com/docs/ru/self-hosted-environments-identity.md#verify-the-token-from-your-service). Затем попросите вашу службу учётных данных выдать краткосрочные учётные данные клонирования для идентичности из утверждения `act` токена. Привязывайте эти учётные данные к `act.sub` и не требуйте `act.email`.
+* **Аутентификация git хоста**: используйте любую аутентификацию git, которая уже есть на хосте, например SSH-агент, помощник учётных данных или `.netrc`.
+
+#### Когда хук завершается ошибкой
+
+Хук считается завершившимся ошибкой, если он завершается с ненулевым кодом или завершается с кодом 0, не оставив пригодного для использования checkout:
+
+* **Репозиторий, в который сессия отправляет результаты**: runner отмечает сессию как неудачную, и при ненулевом выходе выводит пользователю конец stderr скрипта. Запишите причину в stderr одной короткой строкой, сделайте это последним действием, а затем завершите работу с ненулевым кодом. Не выводите секреты в stderr и удалите `set -x` перед развёртыванием хука.
+
+  Если сообщение git `couldn&#x27;t find remote ref` встречается примерно в последних 4 КБ stderr хука, runner вместо этого сообщает об отсутствующей ветке. Если эта ветка существует, см. [Сессия завершается ошибкой `couldn&#x27;t be found in the remote repository` или `couldn&#x27;t find remote ref`](https://code.claude.com/docs/ru/self-hosted-environments-deploy#no-longer-exists-on-the-remote).
+* **Репозиторий, из которого сессия только читает**, например репозиторий, добавленный к запущенной сессии: runner пропускает его и продолжает работу с оставшимися репозиториями. Runner отправляет в сессию шаг `Skipped` и удаляет всё, что хук оставил по пути checkout.
+
+  Если шаг `Skipped` упоминает хук checkout, подробности ошибки ищите в строке `[runner:warn] checkout hook failed` в логе runner&#x27;а. Если в шаге сказано, что исходная ссылка `no longer exists on remote`, см. [Сессия завершается ошибкой `couldn&#x27;t be found in the remote repository` или `couldn&#x27;t find remote ref`](https://code.claude.com/docs/ru/self-hosted-environments-deploy#no-longer-exists-on-the-remote). Если после пропуска у сессии не остаётся ни одного репозитория, runner всё равно отмечает сессию как неудачную.
+
+Если хук завершается успешно, runner удаляет путь checkout после завершения сессии.
+
+### post-session
+
+Запускается после выхода дочернего процесса Claude Code и перед тем, как runner разбирает рабочее пространство. Этот хук — ваш единственный шанс сохранить незафиксированную работу, потому что незафиксированные отслеживаемые изменения не сохраняются ни в одном из случаев:
+
+* **При `--capacity` выше одного**: runner удаляет worktree каждой сессии сразу после возврата хука
+* **При `--capacity 1`**: переиспользуемый [канонический клон](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#reuse-a-pre-warmed-checkout) жёстко сбрасывается при запуске следующей сессии
+
+Типичные применения — отправка ветки снимка незафиксированных изменений, архивирование логов или отправка события завершения сессии в ваши собственные системы.
+
+Hook срабатывает при каждом завершении сессии, где был порождён дочерний процесс, независимо от причины; значения `CLAUDE_RUNNER_EXIT_REASON` ниже перечисляют случаи. Он не может срабатывать, когда runner завершается неожиданно, такой как вытеснение VM или потеря питания; если вам нужны гарантии против неожиданного завершения, делайте снимки периодически изнутри сессии с помощью Claude Code `PostToolUse` hook вместо этого. Runner устанавливает:
+
+| Variable | Description |
+| :- | :- |
+| `CLAUDE_RUNNER_SESSION_ID` | ID сессии в форме с тегом `session_...` |
+| `CLAUDE_RUNNER_SESSION_UUID` | Тот же ID сессии в канонической форме UUID |
+| `CLAUDE_RUNNER_EXIT_REASON` | Как завершилась сессия; см. значения ниже таблицы |
+| `CLAUDE_RUNNER_WORKSPACE_PATHS` | Разделённые двоеточиями абсолютные пути рабочих деревьев сессии. Пусто для сессий с нулевым репозиторием. |
+| `CLAUDE_RUNNER_DEBUG_LOG_PATH` | Путь к логу отладки сессии, всё ещё на диске во время выполнения hook&#x27;а |
+| `CLAUDE_RUNNER_API_BASE_URL` | Базовый URL API Anthropic для вызовов в области сессии |
+| `CLAUDE_RUNNER_CLIENT_PLATFORM` | Интерфейс клиента, который создал сессию, например `web_claude_ai`, `desktop_app` или `ios`. Не установлена, если у сессии нет записанного или распознанного интерфейса, поэтому при `set -u` ссылайтесь на неё как `&quot;${CLAUDE_RUNNER_CLIENT_PLATFORM:-}&quot;`. Требуется Claude Code v2.1.229 или новее. |
+| `CLAUDE_CODE_SESSION_ACCESS_TOKEN` | Токен доступа сессии для вызовов API в области сессии |
+| `GIT_CONFIG_COUNT`, `GIT_CONFIG_KEY_n`, `GIT_CONFIG_VALUE_n` | Настройки git, которые runner фиксирует для git, запускаемого вашим хуком. Они описаны в разделе [Конфигурация git внутри хуков жизненного цикла](#git-configuration-inside-lifecycle-hooks). Требуется Claude Code v2.1.280 или новее. |
+
+`CLAUDE_RUNNER_EXIT_REASON` принимает одно из четырёх значений:
+
+* `completed`: сессия завершилась чисто. Процесс Claude Code завершился нормально или завершился сам после того, как сессия была архивирована или удалена.
+* `failed`: процесс Claude Code упал, или настройка не удалась после его запуска.
+* `interrupted`: runner остановил сессию в одном из следующих случаев:
+  * Runner освободил сессию, чтобы освободить слот.
+  * Истекло время ожидания сессии при запуске.
+  * Сервер переместил сессию с этого runner&#x27;а.
+  * Опрос runner&#x27;а обнаружил архивирование или удаление до завершения процесса.
+  * Runner был в режиме дренирования.
+  * Сессия превысила свой лимит [`--kill-session-after-min`](https://code.claude.com/docs/ru/self-hosted-environments-reference#runner-cli-flags).
+* `abandoned`: зарезервировано для сессии, которую заявил другой runner. Hook в настоящее время не срабатывает в этом случае.
+
+Если вы сравниваете квитанции хука со [счётчиками жизненного цикла сессии](https://code.claude.com/docs/ru/self-hosted-environments-reference.md#session-lifecycle-counter-semantics), ожидайте, что некоторые квитанции `interrupted` будут учтены там как `completed`. Счётчики считают освобождение, истечение времени при запуске, перемещение сервером, а также архивирование или удаление, которые первым обнаружил опрос runner&#x27;а, как `completed`, потому что runner чисто вернул слот.
+
+Статус выхода hook&#x27;а никогда не влияет на результат сессии; отказ логируется и игнорируется. Runner ждёт до `--post-session-hook-timeout-sec`, 60 секунд по умолчанию, при каждом завершении сессии, включая завершение runner&#x27;а. Этот пример сохраняет незафиксированную работу в ветку спасения:
+</code></pre>
+<p>#!/usr/bin/env bash
+set -u
+export GIT_ALLOW_PROTOCOL=${GIT_ALLOW_PROTOCOL:-https:http:ssh}
+IFS=&#x27;:&#x27;
+rc=0  # becomes 1 when a step fails; a non-zero exit makes the runner log it</p>
+<h1 id="c-overrides-beat-repo-local-settings-blocking-session-written-fsmonitor">-c overrides beat repo-local settings, blocking session-written fsmonitor, <a class="h-anchor" href="#c-overrides-beat-repo-local-settings-blocking-session-written-fsmonitor" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="hook-path-and-gpg-program-config-from-executing-code-with-the-hook-s">hook-path, and gpg-program config from executing code with the hook&#x27;s <a class="h-anchor" href="#hook-path-and-gpg-program-config-from-executing-code-with-the-hook-s" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="privileges-c-commit-gpgsign-false-also-leaves-these-rescue-commits">privileges. -c commit.gpgsign=false also leaves these rescue commits <a class="h-anchor" href="#privileges-c-commit-gpgsign-false-also-leaves-these-rescue-commits" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="unsigned-under-configure-git">unsigned under --configure-git. <a class="h-anchor" href="#unsigned-under-configure-git" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="repo-local-credential-helper-and-pushurl-still-apply-and-on-a-runner">Repo-local credential.helper and pushurl still apply, and on a runner <a class="h-anchor" href="#repo-local-credential-helper-and-pushurl-still-apply-and-on-a-runner" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="before-v2-1-280-so-does-core-sshcommand-see-the-note-below-the-script">before v2.1.280 so does core.sshCommand; see the note below the script <a class="h-anchor" href="#before-v2-1-280-so-does-core-sshcommand-see-the-note-below-the-script" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="before-you-give-this-push-a-credential">before you give this push a credential. <a class="h-anchor" href="#before-you-give-this-push-a-credential" aria-label="Ссылка на раздел">#</a></h1>
+<p>g() { git -c core.fsmonitor=false -c core.hooksPath=/dev/null \
+        -c commit.gpgsign=false &quot;$@&quot;; }
+for ws in $CLAUDE_RUNNER_WORKSPACE_PATHS; do
+  cd &quot;$ws&quot; || { rc=1; continue; }
+  g add -A || rc=1
+  g diff-index --cached --quiet HEAD &amp;&amp; continue  # nothing to save
+  g commit -q -m &quot;runner snapshot: $CLAUDE_RUNNER_SESSION_ID ($CLAUDE_RUNNER_EXIT_REASON)&quot; || { rc=1; continue; }
+  g push -q origin &quot;HEAD:refs/heads/rescue/$CLAUDE_RUNNER_SESSION_ID&quot; || rc=1
+done
+exit &quot;$rc&quot;</p>
+<pre><code>
+Строка `GIT_ALLOW_PROTOCOL` в скрипте ограничивает git удалёнными репозиториями по HTTPS, HTTP и SSH. Если окружение runner&#x27;а уже задаёт собственный непустой список `GIT_ALLOW_PROTOCOL`, скрипт сохраняет этот список.
+
+Хук выполняет push с любыми учётными данными git, доступными в его собственном окружении на хосте runner&#x27;а. При [подходе без учётных данных в образе](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#configure-git), в том числе когда встроенное клонирование проходит через git-прокси Anthropic, их нет, поэтому перед push создайте краткосрочные учётные данные для отправки внутри хука: обменяйте токен сессии, который хук получает в `CLAUDE_CODE_SESSION_ACCESS_TOKEN`, в вашей собственной службе токенов, предварительно проверив его, как описано в разделе [Проверка идентичности сессии](https://code.claude.com/docs/ru/self-hosted-environments-identity.md).
+
+Относитесь к любым учётным данным, которые ваш хук передаёт git, как к таким, которые может получить сессия, и создавайте их так, чтобы с их помощью можно было выполнить только этот push. Git в вашем хуке читает файлы конфигурации, в которые может записывать сессия, а помощник учётных данных или драйвер фильтра, указанный в одном из них, запускается с привилегиями вашего хука. Настройки в этих файлах также могут изменить, куда уходит push, независимо от того, какой удалённый репозиторий вы указываете. О настройках git, которые runner фиксирует в вашем хуке, и о тех, которые он оставляет на усмотрение этих файлов, см. раздел [Конфигурация git внутри хуков жизненного цикла](#git-configuration-inside-lifecycle-hooks).
+
+#### Hook timing when the runner releases a session
+
+Освобождённая сессия может возобновиться на другом runner&#x27;е. На runner&#x27;е версии 2.1.236 или позже то, что сессия делала при освобождении, решает, может ли она возобновиться до завершения этого hook&#x27;а:
+
+* **Неактивна после хода или истекла при запуске**: runner останавливает дочерний процесс и запускает этот hook до завершения. Только после этого он освобождает сессию. Сообщение пользователя, отправленное во время выполнения hook&#x27;а, не может возобновить сессию на другом runner&#x27;е до завершения hook&#x27;а.
+* **Ожидание ответа пользователя на подсказку, такую как подсказка разрешения**: runner сначала освобождает сессию, затем запускает этот hook. Сообщение пользователя, отправленное во время выполнения hook&#x27;а, может возобновить сессию на другом runner&#x27;е до завершения hook&#x27;а.
+
+Это применяется всякий раз, когда runner освобождает сессию: при истечении времени неактивности, при [`--retire-at`](https://code.claude.com/docs/ru/self-hosted-environments-reference#runner-cli-flags) времени и, на runner&#x27;е версии 2.1.260 или позже, при лимите [`--kill-session-after-min`](https://code.claude.com/docs/ru/self-hosted-environments-reference#runner-cli-flags) сессии. Сессия, чей ход закончился и которая содержит только фоновые задачи, считается неактивной здесь. До v2.1.236 runner сначала освобождал сессию, а затем запускал этот hook в обоих случаях.
+
+Во время дренирования `SIGTERM` runner держит аренду сессии до завершения hook&#x27;а; см. [Shutdown timing](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#shutdown-timing).
+
+### Git configuration inside lifecycle hooks
+
+Хуки `checkout` и `post-session` запускаются с токеном доступа сессии в своём окружении, а git, который они запускают, читает файлы конфигурации, в которые могут записывать сессии, например `~/.gitconfig` и `.git/config` в checkout. Перед запуском любого из этих хуков runner устанавливает в окружении хука настройки git, включая перечисленные ниже, в виде пар `GIT_CONFIG_COUNT`/`GIT_CONFIG_KEY_n`/`GIT_CONFIG_VALUE_n` и переменных окружения git. Git ставит их выше любого файла конфигурации, и они применяются только к git, который запускают ваши хуки, но не к собственному git сессии. При запуске runner выводит строку `[runner:git] lifecycle hooks:`, в которой показаны действующие путь к хукам, разрешённые протоколы, программы gpg и режим подписи. Требуется Claude Code v2.1.280 или новее.
+
+* **Хуки git**: если вы не укажете значение, `core.hooksPath` равен `/dev/null`, поэтому git пропускает хуки в `.git/hooks` репозитория и любую директорию хуков, указанную в `~/.gitconfig`. Чтобы указать своё значение, экспортируйте `core.hooksPath` как пару `GIT_CONFIG_KEY_n`/`GIT_CONFIG_VALUE_n` в окружении runner&#x27;а. Runner также читает `core.hooksPath` из системной конфигурации git и использует его, только если пользователь runner&#x27;а не может записывать в этот файл, в указанную в нём директорию или в файлы хуков в ней. Когда runner игнорирует значение, строка `[runner:warn]` при запуске называет это значение и причину.
+* **Монитор файловой системы**: `core.fsmonitor` пуст, поэтому git в вашем хуке не запускает программу-монитор, указанную в файле конфигурации.
+* **Удалённые протоколы**: `GIT_ALLOW_PROTOCOL` равна `https:http:ssh`. Clone, fetch или push с локальным путём, URL `file://` или URL `git://` завершается ошибкой `fatal: transport &#x27;file&#x27; not allowed` или `fatal: transport &#x27;git&#x27; not allowed`.
+* **Команда SSH и запрос учётных данных**: git в вашем хуке игнорирует `core.sshCommand` и `core.askPass` из файлов конфигурации. Чтобы использовать собственную команду SSH, установите `GIT_SSH_COMMAND` в окружении runner&#x27;а. Чтобы использовать программу запроса учётных данных, установите там `GIT_ASKPASS`. Сессии наследуют окружение runner&#x27;а, поэтому обе переменные также попадают в собственный git сессии. Не помещайте учётные данные ни в одну из них.
+* **Программы gpg**: `gpg.program`, `gpg.openpgp.program`, `gpg.x509.program` и `gpg.ssh.program` — это пути, которые устанавливает runner, а не значения из файла конфигурации.
+* **Подпись коммитов**: с [`--configure-git`](https://code.claude.com/docs/ru/self-hosted-environments-deploy#let-the-runner-configure-git) коммиты, которые вы делаете из хука, подписываются от имени сессии. Без этого флага `commit.gpgsign` и `tag.gpgsign` равны `false`.
+
+Чтобы изменить одну из этих настроек, используйте окружение runner&#x27;а или опцию `git -c` внутри хука:
+
+* **Пары конфигурации**: пара `GIT_CONFIG_KEY_n`/`GIT_CONFIG_VALUE_n`, которую вы экспортируете в окружении runner&#x27;а, заменяет значение runner&#x27;а для того же ключа. Нумеруйте свои пары с `0` и установите `GIT_CONFIG_COUNT` равной их количеству. Если последняя пара, заявленная этим количеством, отсутствует, runner игнорирует все ваши пары и при запуске записывает в лог строку `[runner:warn]`.
+* **Переменные окружения git**: runner оставляет `GIT_ALLOW_PROTOCOL`, `GIT_SSH_COMMAND` и `GIT_ASKPASS` такими, какими вы их установили в его окружении.
+* **Опции `git -c`**: опция `git -c` внутри хука переопределяет пару `GIT_CONFIG_KEY_n` — как runner&#x27;а, так и вашу. Она не изменяет `GIT_ALLOW_PROTOCOL`, `GIT_SSH_COMMAND` или `GIT_ASKPASS`, которые git читает раньше любой конфигурации.
+
+Git в вашем хуке по-прежнему читает все настройки, которые не устанавливает runner, например помощники учётных данных, перезаписи `url.*.insteadOf` и драйверы фильтров, из всех файлов конфигурации, включая те, в которые могут записывать сессии. Помощник учётных данных или драйвер фильтра, указанный в одном из этих файлов, запускается как программа с привилегиями вашего хука, а конфигурация в этих файлах по-прежнему может изменить, куда уходит push из вашего хука, в том числе push на URL, который вы передаёте в командной строке.
+
+До v2.1.280 runner не устанавливал ни одну из этих настроек, а при `--configure-git` коммит из хука завершался ошибкой, если хук не передавал `-c commit.gpgsign=false`.
+
+### command
+
+Запускается после checkout каждый раз, когда сессия запускается или возобновляется, вместо встроенного порождения дочернего процесса. Хук получает то же окружение, что и [wrapper script](#wrapper-scripts), и должен `exec` в `&quot;$CLAUDE_RUNNER_CLAUDE_BIN&quot;` таким же образом. Используйте хук `command`, чтобы держать всю настройку в одной директории хуков; используйте `--exec-path`, когда wrapper находится в другом месте. Если `--exec-path` также установлен, флаг имеет приоритет и хук `command` игнорируется.
+
+Всегда `exec` собственный бинарный файл runner&#x27;а вместо разрешённого PATH `claude`; иначе вы нарушите [закрепление версии](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#pin-the-version).
+
+## Средства выполнения по требованию
+
+Вместо запуска фиксированного флота вы можете загрузить одно средство выполнения за сеанс. Оркестратор — это отдельная, без состояния подкоманда, которая опрашивает Anthropic на предмет запросов на порождение, по одному за сеанс, который находится в очереди без доступного средства выполнения, и запускает ваш хук `spawn-runner` для каждого. Ваш хук отправляет рабочую нагрузку на вашу платформу: Kubernetes Job, экземпляр EC2, Nomad dispatch.
+
+Средства выполнения по требованию улучшают гигиену учетных данных. На фиксированном флоте секрет окружения находится на каждом хосте средства выполнения, который является тем же хостом, на котором запускается код пользователя. С оркестратором секрет окружения остается только на хосте оркестратора, который никогда не запускает код пользователя; каждое порожденное средство выполнения получает одноразовый наряд на работу, который регистрирует ровно одно средство выполнения и затем истекает.
+
+Чтобы запустить оркестратор, передайте секрет окружения и каталог хуков, содержащий исполняемый скрипт `spawn-runner`:
+</code></pre>
+<p>claude self-hosted-runner orchestrator \
+  --environment-secret-file /etc/claude/environment-secret \
+  --hooks-dir /etc/claude/hooks</p>
+<pre><code>
+Оркестратор не сохраняет состояние между опросами, поэтому вы можете запустить две или более реплик против одного и того же окружения для доступности. Каждый запрос на порождение заявляется на стороне сервера ровно одной репликой. Все реплики должны использовать одно и то же значение `--expected-spawn-seconds`; см. [контракт хука](#the-spawn-runner-hook).
+
+### Хук spawn-runner
+
+Оркестратор запускает `${hooks-dir}/spawn-runner` один раз за запрос на порождение. Хук должен отправить работу асинхронно, без ожидания загрузки средства выполнения, и вернуться в течение `--hook-timeout`, 60 секунд по умолчанию. Хук получает:
+
+| Переменная | Описание |
+| :- | :- |
+| `CLAUDE_RUNNER_WORK_ORDER_FILE` | Путь к временному файлу, содержащему подписанный JWT наряда на работу, с которым регистрируется новое средство выполнения. Удалено после выхода хука. Не логируйте содержимое файла. |
+| `CLAUDE_RUNNER_ORDER_ID` | Непрозрачный ключ идемпотентности, уникальный для каждого запроса на порождение и безопасный для имен ресурсов Kubernetes. Используйте только ID заказа как ключ дедупликации вашего провизионера. |
+| `CLAUDE_RUNNER_SESSION_ID` | Сессия, для которой предназначен этот запрос, в виде ID `session_...` из URL сессии. Он повторяется при каждом повторном запросе для сессии, поэтому используйте его для логирования и маршрутизации, а не как ключ дедупликации. Пусто для запросов предварительного прогрева, которые загружают резервное средство выполнения перед любой конкретной сессией, когда установлен [`--min-idle`](https://code.claude.com/docs/ru/self-hosted-environments-reference#orchestrator-cli-flags), поэтому не предполагайте, что переменная установлена. |
+| `CLAUDE_RUNNER_SESSION_UUID` | Тот же ID сеанса в канонической форме UUID. Пусто для запросов предварительного прогрева. |
+| `CLAUDE_RUNNER_ATTEMPT` | Счётчик для каждой сессии, предназначенный для логирования. Это не число повторных попыток и не число запросов. `0` для запросов предварительного прогрева, хотя запрос для сессии тоже может содержать `0`. |
+| `CLAUDE_RUNNER_ORDER_SERVER_TIME` | Время сервера из заголовка HTTP `Date` ответа опроса. Когда хук проверяет `exp` JWT наряда на работу, сравнивайте с этим значением вместо локальных часов, чтобы допустить перекос. Пусто, когда шлюз опустил заголовок. |
+| `CLAUDE_RUNNER_POOL_ID` | ID окружения, к которому должно присоединиться новое средство выполнения, в форме `ccpool_...` |
+| `CLAUDE_RUNNER_ACCOUNT_ID` | Помеченный ID учётной записи, которая поставила сессию в очередь. Используйте его для маршрутизации по учётной записи, квот или возврата средств, а не как ключ дедупликации. Пусто, когда недоступно. |
+| `CLAUDE_RUNNER_ACCOUNT_EMAIL` | Электронная почта учетной записи, которая поставила сеанс в очередь. Пусто, когда недоступно. Рассматривайте электронную почту как личную информацию и не логируйте ее. |
+| `CLAUDE_RUNNER_PRIMARY_REPO_URL` | URL первого источника git сеанса для маршрутизации на средство выполнения с этим репозиторием предварительно прогретым. Пусто, когда сеанс не имеет источников git. |
+| `CLAUDE_RUNNER_PRIMARY_REPO_REVISION` | Ревизия первого git-источника сессии: ветка, SHA, тег или полное имя ссылки. Пусто, когда не указано. |
+| `CLAUDE_RUNNER_REPO_SOURCES` | JSON массив `{url, revision}` для всех источников git сеанса для хуков, которые маршрутизируют на вторичный репозиторий. Пусто, когда нет источников. |
+| `CLAUDE_RUNNER_CORRELATION_ID` | ID корреляции, предоставленный при создании сеанса, повторно отправленный, чтобы хук мог сопоставить этот наряд на работу с запросом, который создал сеанс. Пусто, когда сеанс не имеет ни одного. |
+| `CLAUDE_RUNNER_CLIENT_PLATFORM` | Поверхность клиента, которая создала сеанс, такая как `web_claude_ai`, `desktop_app`, `ios` или `scheduled_trigger`, для аналитики внедрения. Не установлена, когда сеанс не имеет записанной или распознанной поверхности, и для запросов предварительного прогрева; проверьте ее с помощью `[ -n &quot;${CLAUDE_RUNNER_CLIENT_PLATFORM:-}&quot; ]`, что остается безопасным под `set -u`. |
+| `CLAUDE_RUNNER_SPAWN_REASON` | [Почему Anthropic отправил этот запрос на порождение](#find-out-why-a-spawn-request-was-sent), например `runner_lost` или `resumed`. Не установлена, если запрос не содержит корректно сформированной причины, поэтому читайте её как `&quot;${CLAUDE_RUNNER_SPAWN_REASON:-}&quot;`. Требуется Claude Code v2.1.318 или новее на оркестраторе |
+
+Порожденное средство выполнения регистрируется с нарядом на работу вместо секрета окружения:
+
+* **Запустите его с нарядом на работу**: укажите [`--environment-secret-file`](https://code.claude.com/docs/ru/self-hosted-environments-reference#runner-cli-flags) на файл, содержащий JWT наряда на работу, или установите `SELF_HOSTED_RUNNER_ENVIRONMENT_SECRET` на значение JWT.
+* **Скопируйте JWT перед выходом хука**: оркестратор удаляет файл наряда на работу после выхода хука, поэтому скопируйте JWT в рабочую нагрузку, которую вы отправляете, такую как Kubernetes Secret на порожденном Job, вместо передачи пути файла.
+* **Используйте `--capacity 1` на порожденных средствах выполнения**: наряд на работу, привязанный к сеансу, регистрирует ровно одно средство выполнения, привязанное к этому сеансу, поэтому более высокая емкость добавляет слоты, которые никогда не получают работу, и средство выполнения логирует предупреждение при запуске.
+* **Нарядные работы предварительного прогрева регистрируют без привязки**: резервное средство выполнения не привязано к сеансу и заявляет поставленную в очередь работу, как средство выполнения фиксированного флота.
+
+Контракт состоит из четырёх правил, независимо от того, на какой платформе ваш хук выделяет ресурсы:
+
+1. **Будьте идемпотентны по `CLAUDE_RUNNER_ORDER_ID`.** Повторная доставка одного и того же запроса должна порождать не более одного средства выполнения. Выведите детерминированное имя ресурса из ID заказа и позвольте вашей платформе отклонить дубликат. Не используйте вместо этого `CLAUDE_RUNNER_SESSION_ID` в качестве ключа. Каждый повторный запрос для сессии несёт тот же ID сессии с новым ID заказа. Рабочая нагрузка, названная или дедуплицированная по ID сессии, не создаётся снова, пока существует первая.
+2. **Не повторяйте рабочую нагрузку.** Один ID заказа означает не более одной созданной рабочей нагрузки. Если средство выполнения никогда не регистрируется, Anthropic повторно запрашивает с новым ID заказа после `--expected-spawn-seconds`.
+3. **Соблюдайте контракт кода выхода.** Завершайтесь со статусом, соответствующим результату:
+
+   * **Выход 0**: отправлено.
+   * **Выход 1 или хук всё ещё выполняется по истечении `--hook-timeout`**: сбой, допускающий повторную попытку. Сессия выжидает и предлагается снова. После 10 неудачных запросов подряд она блокируется так же, как после выхода 2 или выше.
+   * **Выход 2 или выше**: сбой, не допускающий повторной попытки. Сессия блокируется от повторного порождения до тех пор, пока пользователь не отправит ей новое сообщение или [Owner](https://code.claude.com/docs/ru/cloud-environments.md#organization-shared-environments) не выберет для неё **Retry** на вкладке **Activity** окружения.
+
+   Пока сессия выжидает, она отображается на вкладке **Activity** как **Queued** без ошибки порождения, поэтому читайте вывод хука в логе оркестратора. После блокировки сессия отображается как **Failed**. Разверните её, чтобы прочитать ошибку порождения, взятую из последних 512 символов stderr хука. Пишите в stderr понятную ошибку, указывающую, что делать, и никаких секретов. В shell-хуке [сохраняйте временные сбои повторяемыми](#keep-transient-failures-retryable-in-a-shell-hook).
+
+   У запроса предварительного прогрева нет сессии, которая могла бы завершиться сбоем: оркестратор записывает ненулевой выход только в локальный лог, а сервер повторно запрашивает порождение после истечения аренды `--expected-spawn-seconds`.
+4. **Установите `--expected-spawn-seconds` не меньше вашего времени p99 от запроса на порождение до регистрации средства выполнения.** Отсчитывайте от момента, когда оркестратор получает запрос на порождение, и учитывайте как ожидание ресурсов на вашей платформе, так и время загрузки. Это значение является арендой на стороне сервера, и наряд на работу истекает вместе с ней, поэтому средство выполнения, рабочая нагрузка которого запускается дольше, не сможет зарегистрироваться. Все реплики оркестратора должны использовать одно и то же значение.
+
+Все, что хук пишет в stdout или stderr, появляется в логе оркестратора с автоматически удаленными учетными данными. Если сеансы остаются в очереди, проверьте тело `/healthz` оркестратора на предмет количества в очереди, затем откройте вкладку **Activity** вашего окружения на [странице администратора **Cloud environments**](https://claude.ai/admin-settings/cloud-environments): разверните неудачный сеанс там для его ошибки порождения и выберите **Retry** для повторного запроса.
+
+#### Исправьте повторно открытые сессии, которые остаются в статусе Queued или отображаются как Failed
+
+Если повторно открытые сессии остаются в статусе **Queued** или отображаются как **Failed**, либо ваш хук завершается для них по таймауту, одна из возможных причин — хук, который называет или дедуплицирует рабочие нагрузки по ID сессии. Сессия открывается повторно, когда её пользователь отправляет ей сообщение после того, как её средство выполнения завершилось. Например, возьмём хук, который формирует имя каждой рабочей нагрузки так:
+</code></pre>
+<p>name=&quot;runner-${CLAUDE_RUNNER_SESSION_ID}&quot;</p>
+<pre><code>
+1. При первом запросе на порождение для сессии хук создаёт рабочую нагрузку с этим именем, и средство выполнения запускается
+2. Средство выполнения завершается, например после [`--release-idle-session-min`](#make-on-demand-runners-exit-when-idle), а позже пользователь повторно открывает сессию
+3. Следующий запрос на порождение для сессии содержит тот же ID сессии и новый ID заказа, поэтому хук формирует то же имя
+4. Если на вашей платформе всё ещё есть рабочая нагрузка от первого запроса, потому что ничто её не [удалило](#make-on-demand-runners-exit-when-idle) при завершении её средства выполнения, хук не создаёт новую рабочую нагрузку, и средство выполнения не запускается
+5. Каждый последующий запрос на порождение для сессии заканчивается так же
+
+Откройте свой хук и посмотрите, что он делает, когда рабочая нагрузка уже существует, например когда ваша платформа отклоняет дублирующееся имя. Найдите это поведение в первом столбце, чтобы узнать, что повторно открытая сессия показывает на вкладке **Activity**:
+
+| Когда рабочая нагрузка существует, ваш хук | **Queued** меняется на **Failed** | Ошибка порождения |
+| :- | :- | :- |
+| Завершается с кодом 0, ничего не создав | После 10 таких запросов подряд | `runner did not register within ETA after max attempts` |
+| Завершается с кодом 1 | После 10 таких запросов подряд | Последние строки stderr вашего хука или `exit 1`, если он ничего не записал в stderr |
+| Завершается с кодом 2 или выше | Сразу | Последние строки stderr вашего хука или `exit` и код, например `exit 2`, если он ничего не записал в stderr |
+| Ждёт, пока не истечёт `--hook-timeout` | После 10 таких запросов подряд | Последние строки stderr вашего хука или `spawn-runner hook timed out after 60000ms`, если он ничего не записал в stderr |
+
+В ошибке порождения из последней строки `60000` — это ваш `--hook-timeout` в миллисекундах. Когда хук ждёт, пока не истечёт `--hook-timeout`, в лог оркестратора также попадает строка `timed out after`.
+
+Чтобы исправить хук, формируйте каждое имя или ключ из `CLAUDE_RUNNER_ORDER_ID`, как требует [правило 1 контракта хука](#the-spawn-runner-hook). В примере имя становится таким:
+</code></pre>
+<p>name=&quot;runner-${CLAUDE_RUNNER_ORDER_ID}&quot;</p>
+<pre><code>
+Если ваш хук ждёт, также сделайте так, чтобы он завершался после отправки рабочей нагрузки, потому что ожидающий хук [задерживает следующие хуки своего оркестратора](https://code.claude.com/docs/ru/self-hosted-environments-reference.md#orchestrator-cli-flags). После изменения хука проверьте статус каждой зависшей сессии на вкладке **Activity**:
+
+* **Queued**: сессия получит следующий запрос на порождение самостоятельно
+* **Failed**: выберите для неё **Retry** как Owner или попросите её пользователя отправить ей новое сообщение
+
+#### Настройте завершение средств выполнения по требованию при простое
+
+По умолчанию средство выполнения, запущенное вашим хуком, не завершается, когда заканчивается ход его сессии, поэтому отправленная вами рабочая нагрузка продолжает работать. Чтобы средства выполнения завершались, пусть ваш хук передаёт следующие [флаги средства выполнения](https://code.claude.com/docs/ru/self-hosted-environments-reference.md#runner-cli-flags):
+
+| Флаг с примером значения | Кому передавать | Что он делает |
+| :- | :- | :- |
+| `--release-idle-session-min 30` | Каждому средству выполнения, которое запускает ваш хук | Средство выполнения освобождает свою сессию после указанного числа минут простоя, а затем завершается с кодом 0. Сессия возобновляется, когда её пользователь отправляет следующее сообщение, но [работа, которую она не успела отправить через push, теряется](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#resumed-sessions-lose-unpushed-work). [Удерживайте сессию](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#keep-an-idle-session-while-its-processes-run) для процессов, которые она оставила запущенными. |
+| `--kill-session-after-min 480` | Каждому средству выполнения, которое запускает ваш хук | Ограничивает каждую сессию указанным числом минут в качестве страховки для [сессий, которые не считаются простаивающими](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#some-sessions-don’t-count-as-idle), поэтому задайте значение больше самой длинной ожидаемой сессии |
+| `--exit-if-unused-min 60` | Резервным средствам выполнения, которые ваш хук запускает для запросов предварительного прогрева | Резервное средство выполнения, которое так и не получило сессию, завершается через указанное число минут. Если вы задали [`--min-idle`](https://code.claude.com/docs/ru/self-hosted-environments-reference#orchestrator-cli-flags), вы получите замену, если только резервное средство не было избыточным, поэтому используйте значение значительно больше времени загрузки. |
+
+Удаляйте рабочую нагрузку, когда средство выполнения завершается, например задав `ttlSecondsAfterFinished` для Kubernetes Job или настроив стартовый скрипт VM так, чтобы он затем удалял VM.
+
+#### Направляйте вывод фонового процесса в файл
+
+Если ваш хук `spawn-runner` оставляет процесс работать в фоне, направляйте вывод этого процесса в файл, который может создать пользователь хука. Например, добавьте `&gt;&gt; &quot;$HOME/claude-runner.log&quot; 2&gt;&amp;1` к команде, запускающей процесс, перед любым `&amp;`. Эта строка хука показывает, где находится перенаправление, где `your-background-command` заменяет команду, которую ваш хук запускает в фоне:
+</code></pre>
+<p>your-background-command &gt;&gt; &quot;$HOME/claude-runner.log&quot; 2&gt;&amp;1 &amp;</p>
+<pre><code>
+Без перенаправления процесс пишет в stdout и stderr хука:
+
+* Примерно через секунду после выхода хука оркестратор записывает в лог `exited, but a process it started still has the hook&#x27;s stdout or stderr open`. Начиная с этой строки, он записывает в лог до 64 КБ последующего вывода под `[runner:hook:spawn-runner:after-exit jti=&lt;order id&gt;]`, а остальное отбрасывает.
+* После завершения оркестратора запись процесса туда завершается сбоем.
+
+Средство выполнения, которое ваш хук запускает сам, выполняет сессии на хосте оркестратора, где хранится [секрет окружения](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#harden-your-deployment).
+
+До версии v2.1.305 хук, который уже завершился, всё равно достигал [`--hook-timeout`](https://code.claude.com/docs/ru/self-hosted-environments-reference#orchestrator-cli-flags), пока запущенный им процесс держал открытыми stdout или stderr хука, что отображалось так:
+
+* **Вкладка Activity**, в ошибке порождения неудачной сессии: `spawn-runner hook timed out after 60000ms` или последние строки stderr хука.
+* **Лог оркестратора**: `timed out after 60000ms, sending SIGTERM to process tree`.
+
+#### Завершайте хук, не дожидаясь средства выполнения
+
+Если каждое средство выполнения по требованию останавливается примерно через 60 секунд после запуска его хука, а ваш хук снова запускается для той же сессии, проверьте, не ждёт ли хук средство выполнения. 60 секунд — это значение [`--hook-timeout`](https://code.claude.com/docs/ru/self-hosted-environments-reference#orchestrator-cli-flags) по умолчанию, поэтому если вы задали собственное, средства выполнения останавливаются через это время после запуска хука.
+
+Хук, который запускает `claude self-hosted-runner` на хосте оркестратора и ждёт его, на переднем плане или с помощью `wait`, всё ещё выполняется, когда истекает `--hook-timeout`. Тогда оркестратор останавливает хук и процессы, выполняющиеся под ним, включая это средство выполнения и процесс Claude сессии, поэтому ещё не завершившийся ход обрывается.
+
+* **Чтобы убедиться, что ваши средства выполнения останавливает именно таймаут**: найдите в логе оркестратора `timed out after 60000ms, sending SIGTERM to process tree` для каждого запроса на порождение. `60000` — это ваш `--hook-timeout` в миллисекундах.
+* **Чтобы исправить это**: пусть хук отправляет средство выполнения на вашу платформу и завершается с кодом 0. Если вместо этого увеличить `--hook-timeout`, средство выполнения просто остановится позже.
+
+#### Сохраняйте временные сбои повторяемыми в shell-хуке
+
+В shell-хуке, использующем `set -e`, сбой, который могла бы устранить повторная попытка, может заблокировать сессию. Хук останавливается на сбойной команде и завершается с собственным статусом этой команды, а оркестратор применяет контракт кода выхода к этому статусу. Многие сбои возвращают статус 2 или выше, например `127`, когда команда не установлена, и `22` от `curl --fail` при ошибке HTTP, поэтому они блокируют сессию при первом же сбое.
+
+Сессия, которую хук уже заблокировал, остаётся заблокированной, пока пользователь не отправит ей новое сообщение или [Owner](https://code.claude.com/docs/ru/cloud-environments.md#organization-shared-environments) не выберет для неё **Retry** на вкладке **Activity** окружения.
+
+Чтобы вместо этого превращать такой сбой в выход 1, поместите эти строки сразу под строкой `#!` хука, перед всем, что может завершиться сбоем:
+</code></pre>
+<p>set -e
+PERMANENT=; permanent() { printf &#x27;%s\n&#x27; &quot;$*&quot; &gt;&amp;2; PERMANENT=1; exit 2; }
+trap &#x27;rc=$?; [ &quot;$rc&quot; -eq 0 ] || [ -n &quot;${PERMANENT:-}&quot; ] || exit 1&#x27; EXIT</p>
+<pre><code>
+Эти строки меняют поведение остальной части хука, поэтому после их добавления проверьте хук на каждый из следующих шаблонов:
+
+* **Просто `exit 2` или выше**: при установленной ловушке он превращается в выход 1. Для ошибки, которую не исправит никакая повторная попытка, вместо этого вызовите `permanent` с указанием причины, например `permanent &quot;namespace claude-runners does not exist&quot;`. Вызывайте её в основной оболочке, а не внутри `$( )`, `( )` или конвейера.
+* **`exec`**: не начинайте последнюю команду хука с `exec`, потому что `exec` заменяет оболочку, и ловушка не выполняется.
+* **Вторая ловушка `EXIT`**: второй `trap ... EXIT` заменяет первый, поэтому объедините их в одну ловушку. Поместите команды очистки сразу после `rc=$?;` и завершите каждую `|| true;`. Тогда очистка выполняется как при сбое, так и при успехе, а сбойная команда очистки не влияет на статус выхода хука. Эта объединённая ловушка показывает структуру, где `your-cleanup-command` заменяет вашу собственную команду:
+</code></pre>
+<p>trap &#x27;rc=$?; your-cleanup-command || true; [ &quot;$rc&quot; -eq 0 ] || [ -n &quot;${PERMANENT:-}&quot; ] || exit 1&#x27; EXIT</p>
+<pre><code>* **Команды, которым разрешено завершаться сбоем**: если хук раньше не использовал `set -e`, теперь он останавливается на первой команде, вернувшей ненулевой статус, например на поиске, который ничего не нашёл. Если хук использует результат, сделайте эту команду условием `if`. Если он игнорирует результат, добавьте после команды `|| true`.
+* **Команда, которая отправляет рабочую нагрузку**: не добавляйте после неё `|| true`. С `|| true` хук завершается с кодом 0, даже когда ваша платформа отклоняет отправку, например из-за превышения квоты, и сессия ждёт средство выполнения, которое так и не было запущено.
+
+  Называйте рабочую нагрузку по `CLAUDE_RUNNER_ORDER_ID`, как требует [первое правило хука](#the-spawn-runner-hook). Тогда ответ «уже существует» означает повторную доставку того же запроса, поэтому считайте успехом только этот ответ. Во всех остальных случаях выведите ответ в stderr и завершитесь с кодом 1 или вызовите `permanent`, если никакая повторная попытка не поможет. Этот пример делает это для `kubectl create` с файлом `job.yaml`, который содержит только рабочую нагрузку:
+</code></pre>
+<p>if ! out=$(kubectl create -f job.yaml 2&gt;&amp;1); then
+    case &quot;$out&quot; in
+      <em>AlreadyExists</em>) ;;
+      *) printf &#x27;%s\n&#x27; &quot;${out:-kubectl create failed}&quot; &gt;&amp;2; exit 1 ;;
+    esac
+  fi</p>
+<pre><code>
+  Тогда в логе оркестратора отображается это сообщение. Если хук создаёт другие объекты, называйте каждый по ID заказа, создавайте его отдельной командой и так же считайте успехом его ответ «уже существует». Для объекта, содержащего секрет, выводите фиксированное сообщение вместо вывода команды.
+
+Чтобы убедиться, что ловушка работает, добавьте сразу под строкой `trap` строку, вызывающую несуществующую команду, например `no-such-command`. Запустите файл хука из своей оболочки и убедитесь, что `echo $?` выводит `1`, затем удалите эту строку.
+
+#### Узнайте, почему был отправлен запрос на порождение
+
+Ваш хук получает причину каждого запроса на порождение в `CLAUDE_RUNNER_SPAWN_REASON`, поэтому вы можете логировать, почему хук был запущен, вместе с `CLAUDE_RUNNER_SESSION_UUID`. Требуется Claude Code v2.1.318 или новее на оркестраторе. Читайте её как `&quot;${CLAUDE_RUNNER_SPAWN_REASON:-}&quot;`, потому что она может быть не установлена, и запускайте средство выполнения при любом значении. Если ваш хук ветвится по ней, оставьте ветку по умолчанию, потому что Anthropic может добавлять новые значения.
+
+Чтобы найти причину более ранних запросов, ищите в логе каждой реплики оркестратора `session=` и `CLAUDE_RUNNER_SESSION_UUID` сессии, а не её ID `session_...`. Строки `ok session=` и `nack session=` показывают значение `CLAUDE_RUNNER_SPAWN_REASON` после `reason=` или `reason=-`, если оно не было установлено:
+
+* **`[runner:orchestrator] ok session=`**: хук завершился с кодом 0
+* **`[runner:orchestrator] nack session=`**: оркестратор сообщает Anthropic о неудачном запросе на порождение
+
+Каждое значение передаёт только последнюю причину, которую Anthropic записал для сессии, а не её историю:
+
+| Значение | Что произошло | Что проверить |
+| :- | :- | :- |
+| `session_created` | Это первый запрос на порождение для новой сессии | Ничего. Не полагайтесь на него, чтобы распознать первый запрос сессии, потому что первый запрос, который видит ваш хук, может содержать `runner_lost`, если сессию удерживало средство выполнения фиксированного флота или резервное средство выполнения. |
+| `no_runner_registered` | Ни одно средство выполнения не зарегистрировалось для предыдущего запроса в пределах `--expected-spawn-seconds`, и Anthropic не записал для него отчёта о сбое | `stop: no nack for session=` или `nack failed session=` среди более ранних строк сессии означает, что отчёт о сбое не был записан. Прочитайте любую ошибку хука перед ней, а если оркестратор останавливался, см. [Остановка или перезапуск оркестратора](#stop-or-restart-the-orchestrator). После строки `ok session=` проверьте, что её средство выполнения запустилось и зарегистрировалось в пределах `--expected-spawn-seconds`. Если ни одна реплика не записала запрос в лог, проверьте свои оркестраторы на перезапуски и строки `poll failed`. |
+| `hook_failed` | Ваш оркестратор сообщил, что предыдущий запрос завершился сбоем, допускающим повторную попытку, например потому что ваш хук завершился с кодом 1 или всё ещё выполнялся, когда истёк `--hook-timeout`. Значение то же, когда ваш оркестратор возвращает запрос Anthropic, не запуская хук, например во время остановки оркестратора. | Найдите последнюю строку сессии `[runner:orchestrator] nack session=` или `stop: handing back session=` перед этим запросом. Ошибка порождения, которую отправил оркестратор, следует за значением `reason=` и может продолжаться на следующих строках. Строка `handing back session=` означает, что оркестратор останавливался и не запускал хук, поэтому в хуке исправлять нечего. |
+| `runner_lost` | Средство выполнения, которое удерживало сессию, перестало отчитываться перед Anthropic, отменило регистрацию или было удалено | Найдите, что остановило средство выполнения или отрезало его от Anthropic, например вытеснение узла, завершение из-за нехватки памяти, изъятие spot-экземпляра или ваше собственное развёртывание или уменьшение масштаба |
+| `runner_reported_failure` | Предыдущее средство выполнения сообщило, что сессия на нём завершилась сбоем, например во время checkout | Прочитайте лог предыдущего средства выполнения. Если это значение получают многие сессии, проверьте образ и настройку репозитория. |
+| `resumed` | Сессия была приостановлена и теперь снова нуждается в средстве выполнения. Например, её средство выполнения освободило её согласно [`--release-idle-session-min`](#make-on-demand-runners-exit-when-idle), а позже она получила новое сообщение. | Ничего |
+| `requeued` | Сессия была возвращена в очередь, например когда Owner выбрал **Retry** или заблокированная сессия получила новое сообщение | Если одна и та же сессия продолжает получать это значение, прочитайте ошибку в её строках `nack session=`. Если её хук завершился с кодом 0, прочитайте лог средства выполнения. |
+| `server_retry` | Anthropic отказался от предыдущего запроса или от запуска сессии на её средстве выполнения и повторяет попытку. Ваш хук не завершился сбоем. | Ничего для единичного запроса. Если значение продолжает появляться, для одной сессии или для многих, сообщите об этом [вашей команде по работе с клиентами Anthropic](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#report-an-issue). |
+| `prewarm` | Это запрос предварительного прогрева, сессии ещё нет | Ничего |
+
+### Остановка или перезапуск оркестратора
+
+Чтобы остановить или перезапустить оркестратор, не обрывая выполняющиеся хуки `spawn-runner`, запускайте его с [`--shutdown-drain-sec`](https://code.claude.com/docs/ru/self-hosted-environments-reference#orchestrator-cli-flags). Тогда при получении `SIGTERM` он даёт выполняющимся хукам на завершение не больше заданного вами числа секунд. О том, как выбрать значение и настроить под него супервизор процессов, см. [Подбор `--shutdown-drain-sec` и таймаута остановки оркестратора](#size-shutdown-drain-sec-and-the-supervisors-stop-timeout-for-the-orchestrator).
+
+Эта команда запуска отводит 70 секунд:
+</code></pre>
+<p>claude self-hosted-runner orchestrator \
+  --environment-secret-file /etc/claude/environment-secret \
+  --hooks-dir /etc/claude/hooks \
+  --shutdown-drain-sec 70</p>
+<pre><code>
+Оркестратор завершается, как только завершатся уже отправленный опрос и все хуки. Когда истекают секунды `--shutdown-drain-sec`, хуки, которые всё ещё выполняются, получают `SIGTERM`, и оркестратор завершается. Второй `SIGTERM` или любой `SIGINT` приводит к тому же без ожидания. Строка лога, содержащая `[runner:orchestrator] stop summary:`, подсчитывает хуки и запросы на порождение по тому, как завершился каждый из них.
+
+Без `--shutdown-drain-sec` оркестратор останавливается сразу при получении `SIGTERM` или `SIGINT`. Каждый выполняющийся хук получает `SIGTERM`, а Anthropic ничего не сообщается. Сессия, средство выполнения которой так и не было запущено, может тогда оставаться в очереди, пока Anthropic [не запросит его повторно](#the-spawn-runner-hook), что происходит по истечении `--expected-spawn-seconds`, по умолчанию 120 секунд.
+
+&gt; [!NOTE]
+&gt;
+&gt; `--shutdown-drain-sec` требует Claude Code v2.1.299 или новее. Более старая версия завершается при запуске с ошибкой `error: unknown flag --shutdown-drain-sec`.
+
+#### Подбор `--shutdown-drain-sec` и таймаута остановки оркестратора
+
+При настройках по умолчанию используйте [`--shutdown-drain-sec 70`](https://code.claude.com/docs/ru/self-hosted-environments-reference#orchestrator-cli-flags) с таймаутом остановки 85 секунд, то есть `terminationGracePeriodSeconds: 85` в Kubernetes или `TimeoutStopSec=85` в systemd. Если вы изменили `--hook-timeout`, масштабируйте оба значения:
+
+* **`--shutdown-drain-sec`**: не меньше `--hook-timeout` плюс 10 секунд, чтобы хук, запущенный прямо перед `SIGTERM`, всё же успел завершиться
+* **Таймаут остановки**: не меньше `--shutdown-drain-sec` плюс 15 секунд. Оркестратор записывает это значение в лог при запуске: найдите строку, содержащую `shutdown drain:`.
+
+Настройте супервизор процессов так, чтобы он отправлял один `SIGTERM` и только процессу оркестратора, потому что второй сигнал прерывает ожидание `--shutdown-drain-sec`. Если оставить в systemd значение по умолчанию [`KillMode=control-group`](https://code.claude.com/docs/ru/self-hosted-environments-deploy#what-reaches-a-running-post-session-hook), хуки тоже получат `SIGTERM`, и хук может завершиться до того, как отправит свою рабочую нагрузку. Прежде чем менять `KillMode`, проверьте, как ваш хук `spawn-runner` запускает средства выполнения:
+
+* **Если ваш хук отправляет рабочую нагрузку на платформу и завершается**: запускайте оркестратор как основной процесс юнита и задайте `KillMode=mixed`, при котором `SIGTERM` отправляется только этому процессу.
+* **Если ваш хук запускает средства выполнения как процессы в собственном юните оркестратора**: при `KillMode=mixed` эти средства выполнения не получают `SIGTERM`. Вместо этого systemd позже отправляет им `SIGKILL`, поэтому они завершаются, не освободив свои сессии и не выполнив свой хук `post-session`.
+
+## Отправка запросов к модели в Bedrock или Agent Platform
+
+Если ваша организация требует, чтобы запросы к модели проходили через её собственный аккаунт AWS или Google Cloud, настройте runner для [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md) или [Google Cloud&#x27;s Agent Platform, ранее Vertex AI](https://code.claude.com/docs/ru/google-vertex-ai.md). После этого каждая сессия, которую запускает этот runner, обращается к модели в вашем облачном аккаунте с вашими облачными учётными данными. Без этой конфигурации сессии отправляют запросы к модели в Anthropic API.
+
+Runner по-прежнему опрашивает Anthropic на предмет сессий, и каждая сессия по-прежнему отправляет свой поток событий на `api.anthropic.com`. Поток событий содержит промпты, ответы и результаты инструментов. Требование к тарифному плану и исключение для Zero Data Retention из раздела [Доступность и ограничения](https://code.claude.com/docs/ru/self-hosted-environments#availability-and-limitations) по-прежнему действуют.
+
+Сессии направляются в окружение, а не на конкретный runner, и повторно поставленная в очередь или возобновлённая сессия может выполняться на другом runner. Настройте все runner в окружении одинаково. Прежде чем начать, прочитайте, [чем отличаются сессии у этих провайдеров](#what-differs-from-sessions-on-the-anthropic-api).
+
+**1. Подготовьте облачный аккаунт и правила исходящего трафика**
+
+Настройте доступ к моделям, политику или роль с узкими правами и сетевой доступ:
+
+* **Amazon Bedrock**: [отправьте сведения о сценарии использования](https://code.claude.com/docs/ru/amazon-bedrock.md#1-submit-use-case-details), затем создайте политику из раздела [Конфигурация IAM](https://code.claude.com/docs/ru/amazon-bedrock.md#iam-configuration), ограничив `bedrock:InvokeModel` и `bedrock:InvokeModelWithResponseStream` профилями инференса, которые используют ваши сессии, и базовыми моделями, стоящими за ними
+* **Agent Platform**: [включите API](https://code.claude.com/docs/ru/google-vertex-ai.md#1-enable-agent-platform-api) и [запросите доступ к моделям](https://code.claude.com/docs/ru/google-vertex-ai.md#2-request-model-access), затем создайте пользовательскую роль, описанную в разделе [Конфигурация IAM](https://code.claude.com/docs/ru/google-vertex-ai.md#iam-configuration), только с разрешением `aiplatform.endpoints.predict`
+* **Исходящий трафик**: разрешите эндпоинты вашего провайдера в правилах исходящего трафика. См. [Сетевые требования](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#network-requirements). Если сессии не могут до них достучаться, Claude Code может повторять попытки часами, прежде чем в сессии появится ошибка.
+
+**2. Выдайте сессиям учётные данные с узкими правами**
+
+Привяжите политику или роль из шага 1 к идентификатору, который больше ничего не может делать. Способы, которые поддерживает Claude Code, описаны в разделах [Настройка учётных данных AWS](https://code.claude.com/docs/ru/amazon-bedrock.md#2-configure-aws-credentials) и [Настройка учётных данных GCP](https://code.claude.com/docs/ru/google-vertex-ai.md#3-configure-gcp-credentials).
+
+&gt; [!WARNING]
+&gt;
+&gt; Любой, кто сможет запустить код в сессии, в том числе через промпт-инъекцию, сможет использовать эти учётные данные за ваш счёт, пока они действительны. Claude Code работает внутри сессии, поэтому учётные данные, с которыми он обращается к модели, должны быть там доступны для чтения.
+&gt;
+&gt; Shell-команды, которые запускает Claude, ваши [хуки Claude Code](https://code.claude.com/docs/ru/hooks.md) и stdio MCP-серверы наследуют окружение сессии и работают от имени того же пользователя, что и Claude Code. Поэтому они могут читать переменные и файлы с учётными данными.
+&gt;
+&gt; Когда вы [усиливаете защиту развёртывания](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#harden-your-deployment), вы не допускаете учётные данные хоста в сессии, но эти учётные данные исключить нельзя. Не давайте стоящему за ними идентификатору ничего сверх политики или роли из шага 1.
+
+Сверьте выбранный способ со следующими особенностями поведения runner:
+
+* **Эндпоинт метаданных**: если вы полностью запрещаете сессиям доступ к [облачному эндпоинту метаданных](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#harden-your-deployment), учётные данные, выдаваемые через него, например профиль экземпляра, тоже не дойдут до Claude Code. Файловая веб-идентификация, например IAM Roles for Service Accounts (IRSA) в Amazon EKS или файл учётных данных Workload Identity Federation, от него не зависит.
+* **Обновление**: сессия может пережить срок действия учётных данных, поэтому используйте способ с автоматическим обновлением, например файловую веб-идентификацию
+* **Скрипт-обёртка**: значения учётных данных, которые экспортирует ваш [скрипт-обёртка](#provision-credentials-scoped-to-the-session-creator), не обновляются, пока работает Claude Code, поэтому для длительной сессии используйте способ с автоматическим обновлением. Claude Code читает учётные данные AWS из своего окружения, поэтому если ваша обёртка уже экспортирует учётные данные AWS для других задач, Claude Code может подписывать ими запросы к модели.
+
+**3. Задайте переменные одного провайдера в окружении runner**
+
+Задайте переменные ровно одного провайдера там же, где вы задаёте остальные переменные окружения runner, например в спецификации контейнера или в service unit, а затем перезапустите runner. В примерах они показаны как shell-экспорты. При использовании [runner по требованию](#on-demand-runners) задайте их для рабочей нагрузки, которую запускает ваш хук `spawn-runner`.
+
+Запускайте эти runner с [`--confine-repo-settings enforce`](https://code.claude.com/docs/ru/self-hosted-environments-deploy#harden-your-deployment). Этот режим отклоняет сессии в репозиториях, закоммиченные настройки которых он помечает, поэтому сначала запустите runner в режиме по умолчанию `warn` и устраните то, что он записывает в лог.
+
+&gt; [tab] Amazon Bedrock
+&gt;
+&gt; Замените регион на свой:
+&gt;
+&gt; ```bash theme={null}
+&gt; export CLAUDE_CODE_USE_BEDROCK=1
+&gt; export AWS_REGION=us-east-1
+&gt; ```
+&gt;
+&gt; О том, как Claude Code определяет регион, см. [Настройка Claude Code](https://code.claude.com/docs/ru/amazon-bedrock.md#3-configure-claude-code). О том, какой префикс профиля инференса Claude Code использует для вашего региона, см. [Префиксы межрегиональных профилей инференса](https://code.claude.com/docs/ru/amazon-bedrock.md#cross-region-inference-profile-prefixes).
+
+&gt; [tab] Google Cloud&#x27;s Agent Platform
+&gt;
+&gt; Замените регион и идентификатор проекта на свои:
+&gt;
+&gt; ```bash theme={null}
+&gt; export CLAUDE_CODE_USE_VERTEX=1
+&gt; export CLOUD_ML_REGION=global
+&gt; export ANTHROPIC_VERTEX_PROJECT_ID=YOUR-PROJECT-ID
+&gt; ```
+&gt;
+&gt; О выборе региона см. [Конфигурация региона](https://code.claude.com/docs/ru/google-vertex-ai.md#region-configuration).
+
+**4. Убедитесь, что переменные дошли до сессии**
+
+Ваша собственная оболочка на хосте — это другой процесс, поэтому проверяйте изнутри сессии. Запустите сессию в окружении и попросите Claude выполнить эту команду:
+</code></pre>
+<p>env | grep -E &#x27;CLAUDE_CODE_USE_(BEDROCK|VERTEX)&#x27;</p>
+<pre><code>
+Строка, в которой `CLAUDE_CODE_USE_BEDROCK` или `CLAUDE_CODE_USE_VERTEX` имеет значение `1`, означает, что переменная дошла до сессии. Если присутствуют обе, Claude Code использует Amazon Bedrock. Отсутствие вывода означает, что ни одна из них не дошла.
+
+Команда показывает конфигурацию, а не трафик. Чтобы подтвердить сами запросы, найдите их в метриках или логах запросов вашего облачного аккаунта. Если вместо этого первое сообщение завершается ошибкой, см. раздел об устранении неполадок для [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md#troubleshooting) или [Agent Platform](https://code.claude.com/docs/ru/google-vertex-ai.md#troubleshooting).
+
+### Чем отличаются сессии от сессий в Anthropic API
+
+Сессия, отправляющая запросы к модели в Amazon Bedrock или Google Cloud&#x27;s Agent Platform, отличается от сессии в Anthropic API следующим:
+
+* **Политики из claude.ai**: [настройки, управляемые сервером](https://code.claude.com/docs/ru/server-managed-settings.md), не доходят до этих сессий. Не доходят и политики организации, которые Owner задаёт в настройках администратора Claude Code, поэтому Claude Code не применяет их внутри сессии. Поместите правила, на которые вы полагаетесь, в [файл управляемых настроек](https://code.claude.com/docs/ru/managed-settings.md#delivery-mechanisms) образа runner.
+* **Скиллы аккаунта**: эти сессии не загружают скиллы, включённые для аккаунта claude.ai пользователя. См. [Как собирается конфигурация каждой сессии](#how-each-session’s-config-is-assembled).
+* **Файлы**: файлы, которые пользователи прикрепляют к сессии в claude.ai, мобильном или десктопном приложении, до неё не доходят, и Claude не может отправлять файлы обратно с помощью [инструмента `SendUserFile`](https://code.claude.com/docs/ru/tools-reference). Вместо этого размещайте входные файлы в репозитории или на runner.
+* **Выбор модели**: управляющий уровень Anthropic передаёт модель для каждой сессии, а если сессия запускается без неё, Claude Code использует модель по умолчанию для провайдера. Вы не можете выбрать модель с помощью `ANTHROPIC_MODEL` или `ANTHROPIC_DEFAULT_MODEL` в окружении runner, но можете закрепить, во что разрешается псевдоним:
+  * **`ANTHROPIC_MODEL` и `ANTHROPIC_DEFAULT_MODEL`**: runner удаляет их из окружения, которое он передаёт сессиям, хотя в примерах на страницах провайдеров задаётся `ANTHROPIC_MODEL`.
+  * **Переменные закрепления для отдельных семейств**: переменные из раздела «Закрепление версий моделей» для [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md#4-pin-model-versions) и [Agent Platform](https://code.claude.com/docs/ru/google-vertex-ai.md#5-pin-model-versions) до сессий доходят. Они определяют, во что разрешается псевдоним, например `opus`, но не полный идентификатор модели.
+* **Модели, которые ваш аккаунт не обслуживает**: сессия может завершиться ошибкой на сообщении с указанием модели. Включите модели, которые могут выбирать ваши разработчики, фоновую модель, описанную в разделе «Закрепление версий моделей», и модель классификатора, которую использует [авторежим](https://code.claude.com/docs/ru/permission-modes.md#enable-auto-mode-on-bedrock-agent-platform-or-foundry). В Amazon Bedrock разрешите каждую из них в своей политике.
+* **Веб-поиск и быстрый режим**: [веб-поиск](https://code.claude.com/docs/ru/tools-reference.md#websearch-tool-behavior) недоступен в Amazon Bedrock, а [быстрый режим](https://code.claude.com/docs/ru/fast-mode.md) недоступен ни у одного из этих провайдеров. О других возможностях, различающихся в зависимости от провайдера, см. [Возможности CLI, зависящие от провайдера](https://code.claude.com/docs/ru/feature-availability.md#cli-capabilities-that-vary-by-provider).
+
+## MCP-серверы
+
+Чтобы [MCP-серверы](https://code.claude.com/docs/ru/mcp.md) были доступны в каждой сессии, добавьте их на этапе сборки образа той же командой `claude mcp add`, что используется при установке на рабочий компьютер. Если ваш раннер работает как обычный процесс, а не в контейнере, выполните ту же команду на хосте от имени пользователя раннера, а затем перезапустите раннер: он считывает конфигурацию хоста один раз при запуске. Флаг `--scope user` обязателен: локальная область действия по умолчанию записывает данные под ключом для конкретного каталога, который раннер не передаёт в сессии. Например, в вашем Dockerfile:
+</code></pre>
+<p>RUN claude mcp add --scope user sidecar -- /usr/local/bin/mcp-sidecar
+RUN claude mcp add --scope user --transport http internal http://mcp-gateway.svc.cluster.local:8080</p>
+<pre><code>
+Раннер делает снимок конфигурации хоста один раз при запуске. Снимок включает ключ `mcpServers` из файла `.claude.json` хоста, который находится рядом с `~/.claude/`, а не внутри него, и раннер передаёт в изолированную конфигурацию каждой сессии только этот ключ; состояние учётной записи и история проектов отбрасываются. Чтобы убедиться, что серверы попали в сессии, запустите сессию в окружении и попросите Claude перечислить его инструменты MCP; кроме того, при запуске раннер записывает в лог предупреждение для каждой захваченной записи, `type` которой он не распознаёт, и отбрасывает такую запись, поэтому вы можете увидеть, почему этот сервер отсутствует в сессиях. Если задана переменная `SELF_HOSTED_RUNNER_HOST_CONFIG_DIR`, раннер считывает `.claude.json` из этого каталога, поэтому, указав в переменной пустой каталог, вы также отключите передачу MCP-серверов.
+
+Claude Code также загружает MCP-серверы из других источников:
+
+* [Управляемый файл MCP](https://code.claude.com/docs/ru/managed-mcp.md) корпоративного уровня по стандартному системному пути: `/etc/claude-code/managed-mcp.json` на хостах раннеров под Linux, `/Library/Application Support/ClaudeCode/managed-mcp.json` на хостах под macOS. Используйте его для строго контролируемых парков машин, где могут загружаться только серверы из списка администратора. Правила приоритета описаны в разделе [эксклюзивный контроль с помощью managed-mcp.json](https://code.claude.com/docs/ru/managed-mcp.md#exclusive-control-with-managed-mcp-json). Если этот файл находится на хосте раннера, Claude Code пропускает MCP-серверы, которые плоскость управления Anthropic передаёт в сессию, включая коннекторы claude.ai, и перечисляет их в предупреждении в stderr дочернего процесса сессии, которое раннер записывает в лог на уровне `debug`. До версии v2.1.229 такие сессии завершались при запуске с ошибкой `You cannot dynamically configure MCP servers when an enterprise MCP config is present`.
+* Ключ [`managedMcpServers`](https://code.claude.com/docs/ru/settings-reference#managedmcpservers) в [управляемых настройках](https://code.claude.com/docs/ru/managed-settings.md) на хосте раннера: предоставляет серверы HTTP и SSE без эксклюзивного контроля, поэтому серверы из других источников по-прежнему загружаются. Требуется Claude Code v2.1.259 или новее.
+* `&lt;repo&gt;/.mcp.json`: область действия проекта. Вне треда [проекта](https://code.claude.com/docs/ru/claude-projects.md#what-threads-pick-up-from-your-repositories) сделайте коммит этого файла в репозиторий, и его серверы будут автоматически подтверждаться в облачных сессиях. В сессии с несколькими репозиториями [загружается файл не более чем из одного репозитория](#repository-settings-in-sessions-with-several-repositories). С флагом [`--trust-workspace false`](https://code.claude.com/docs/ru/self-hosted-environments-reference#runner-cli-flags) сессии пропускают серверы из этого файла, за исключением случаев, когда их подтверждают настройки, не зафиксированные в репозитории, например [`enabledMcpjsonServers`](https://code.claude.com/docs/ru/settings-reference#enabledmcpjsonservers) в `~/.claude/settings.json` хоста. Требуется Claude Code v2.1.319 или новее.
+* Файл [`--mcp-config`](https://code.claude.com/docs/ru/cli-reference#cli-flags) из вашего скрипта-обёртки: добавьте флаг после `&quot;$@&quot;`, например `exec &quot;$CLAUDE_RUNNER_CLAUDE_BIN&quot; &quot;$@&quot; --mcp-config /etc/claude/mcp.json`. Чтобы серверы из этого файла продолжали работать, когда переданные в сессию серверы обновляются посреди сессии, ваша обёртка должна передавать дочернему процессу [полное окружение](#wrapper-scripts), как это делает `exec`. До версии v2.1.299 серверы stdio, HTTP и SSE из этого файла завершали работу при первом таком обновлении, в котором они не были указаны.
+
+Если для вашей организации включена передача коннекторов, плоскость управления Anthropic передаёт коннекторы, настроенные вами на claude.ai, в сессии, созданные интерактивно, через предоставляемую сервером конфигурацию MCP, маршрутизируемую через `api.anthropic.com`. Сессии, созданные программно, например [запуски через CLI](https://code.claude.com/docs/ru/self-hosted-environments-testing.md#run-the-test-loop), не получают коннекторы; вместо этого предоставьте им MCP-серверы через любой из других источников, перечисленных в этом разделе. OAuth-токен дочернего процесса не содержит scope для прямого получения коннекторов, поэтому дочерний процесс сам не пытается их получить; передача управляется сервером.
+
+&gt; [!NOTE]
+&gt;
+&gt; В сессии, получившей коннектор, сервер с тем же именем из `.claude.json` хоста или из `.mcp.json` репозитория не подключается. Чтобы использовать оба, дайте своему серверу другое имя.
+
+`settings.json` не содержит определений MCP-серверов, и в схеме настроек нет поля `mcpServers` верхнего уровня. В управляемых настройках вместо этого задавайте серверы с помощью ключа [`managedMcpServers`](https://code.claude.com/docs/ru/settings-reference#managedmcpservers).
+
+Сессии наследуют окружение раннера, поэтому задайте там [`ENABLE_TOOL_SEARCH`](https://code.claude.com/docs/ru/mcp#scale-with-mcp-tool-search), чтобы управлять поиском инструментов MCP для каждой сессии, которую запускает раннер; допустимые значения описаны на странице MCP.
+
+### Ожидание MCP-серверов перед первым ходом
+
+Сессия на собственном хостинге ненадолго ожидает MCP-серверы, которые ещё подключаются, в двух разных точках. Если сервер не успевает к моменту окончания ожидания, его инструменты отсутствуют в начале первого хода и становятся доступны позже без каких-либо действий с вашей стороны. Вот эти две точки ожидания:
+
+* **Запуск сессии**: до того как список инструментов будет получен в первый раз, сессия по умолчанию ждёт до 5 секунд сервер HTTP или SSE, в записи которого задано [`alwaysLoad: true`](https://code.claude.com/docs/ru/mcp#exempt-a-server-from-deferral), или все серверы, если в окружении раннера задано [`MCP_CONNECTION_NONBLOCKING=0`](https://code.claude.com/docs/ru/env-vars). В остальных случаях серверы HTTP и SSE подключаются в фоновом режиме. Пока сессия ждёт на этом этапе, она инициализируется медленнее. [`MCP_CONNECT_TIMEOUT_MS`](https://code.claude.com/docs/ru/env-vars) изменяет значение по умолчанию в 5 секунд.
+* **Первый ход**: после поступления сообщения первый ход ждёт до 2 секунд stdio-серверы, которые ещё подключаются. Пока сессия ждёт на этом этапе, первый ответ приходит медленнее. Чтобы изменить длительность этого ожидания, задайте [`CLAUDE_CODE_MCP_STARTUP_WAIT_MS`](https://code.claude.com/docs/ru/env-vars) в окружении раннера. Эта переменная не меняет, какие серверы охватывает ожидание. Требуется Claude Code v2.1.274 или новее.
+
+У `claude mcp add` нет флага `alwaysLoad`. Чтобы задать этот ключ, добавьте сервер командой `claude mcp add-json`, которая принимает его в JSON сервера и записывает в `.claude.json`. В вашем Dockerfile:
+</code></pre>
+<p>RUN claude mcp add-json core &#x27;{&quot;type&quot;:&quot;http&quot;,&quot;url&quot;:&quot;https://mcp.example.com/mcp&quot;,&quot;alwaysLoad&quot;:true}&#x27; --scope user</p>
+<pre><code>
+Если инструменты сервера не появляются и в последующих ходах, проверьте, попал ли сервер в сессию вообще, как описано в разделе [MCP-серверы](#mcp-servers).
+
+### Отключение встроенных инструментов сессии
+
+Плоскость управления Anthropic подключает к облачным сессиям собственный MCP-сервер с именем Claude Code Remote. Claude использует инструменты этого сервера, чтобы создавать [облачные запланированные задачи](https://code.claude.com/docs/ru/routines.md), запускать другие облачные сессии и управлять ими, подключать дополнительные репозитории и отслеживать активность в pull request.
+
+Чтобы отключить весь сервер, добавьте в настройки [правило запрета на уровне сервера](https://code.claude.com/docs/ru/permissions.md#mcp). Плоскость управления регистрирует сервер под одним из трёх имён в зависимости от того, как была создана сессия. Claude Code сопоставляет имя в правиле точно, с учётом регистра, поэтому запишите правило для каждого имени, как показано ниже:
+</code></pre>
+<p>{
+  &quot;permissions&quot;: {
+    &quot;deny&quot;: [
+      &quot;mcp__Claude_Code_Remote&quot;,
+      &quot;mcp__claude-code-remote&quot;,
+      &quot;mcp__bf7c680d-5fdc-5ef4-b4a0-abadb619bf0a&quot;
+    ]
+  }
+}</p>
+<pre><code>
+Правило, указывающее весь сервер, распространяется и на инструменты, которые появятся у сервера позже. Чтобы отключить один инструмент и оставить остальные, добавьте к каждому правилу ещё два подчёркивания и имя инструмента, например `mcp__Claude_Code_Remote__add_repo`. Чтобы вообще запретить подключение сервера, а не удалять его инструменты, вместо этого добавьте три имени без префикса `mcp__` как записи `serverName` в [`deniedMcpServers`](https://code.claude.com/docs/ru/managed-mcp#policy-based-control-with-allowlists-and-denylists).
+
+Поместите правила в [настройки, управляемые сервером](https://code.claude.com/docs/ru/server-managed-settings.md), чтобы они применялись к сессиям без изменений на раннере, или в `~/.claude/settings.json` на раннере. На раннере, который [отправляет запросы к модели в Bedrock или Agent Platform](#send-model-requests-to-bedrock-or-agent-platform), используйте этот файл, поскольку настройки, управляемые сервером, не доходят до таких сессий. В разделе [Разрешения и подтверждение инструментов](#permissions-and-tool-approval) объясняется, как настройки на раннере попадают в сессии.
+
+Чтобы убедиться, что правила вступили в силу, запустите сессию в окружении и попросите Claude перечислить его инструменты MCP. Claude Code удаляет запрещённый инструмент из контекста Claude, поэтому запрещённые инструменты будут отсутствовать в его ответе.
+
+## Подсказка сеансов для отправки их работы
+
+Размещенные Anthropic сеансы запускают хук [`Stop`](https://code.claude.com/docs/ru/hooks#stop), хук Claude Code, который запускается, когда Claude заканчивает отвечать, который подсказывает Claude зафиксировать и отправить его работу. Средство выполнения не устанавливает один. Без него сеанс, который заканчивается с незафиксированными изменениями, оставляет эту работу только на диске средства выполнения, и кнопка **Create PR** в claude.ai/code остается неактивной до тех пор, пока ветка не существует на удаленном.
+
+Эталонная реализация ниже имеет две части. Объедините блок настроек в `~/.claude/settings.json` на хосте средства выполнения, который средство выполнения заполняет в каждый сеанс, и сохраните скрипт как `~/.claude/hooks/stop-hook-nudge.sh` на хосте средства выполнения и сделайте его исполняемым:
+</code></pre>
+<p>{
+  &quot;hooks&quot;: {
+    &quot;Stop&quot;: [
+      {
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;timeout&quot;: 10,
+            &quot;command&quot;: &quot;\&quot;$CLAUDE_CONFIG_DIR/hooks/stop-hook-nudge.sh\&quot;&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</p>
+<pre><code></code></pre>
+<p>#!/bin/sh</p>
+<h1 id="stop-hook-reference-implementation-for-self-hosted-runners">Stop-hook reference implementation for self-hosted runners. <a class="h-anchor" href="#stop-hook-reference-implementation-for-self-hosted-runners" aria-label="Ссылка на раздел">#</a></h1>
+<p>#</p>
+<h1 id="nudges-claude-once-per-turn-if-the-project-directory-has-uncommitted">Nudges Claude once per turn if the project directory has uncommitted <a class="h-anchor" href="#nudges-claude-once-per-turn-if-the-project-directory-has-uncommitted" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="changes-or-unpushed-commits-so-work-isn-t-lost-when-an-idle-session">changes OR unpushed commits, so work isn&#x27;t lost when an idle session <a class="h-anchor" href="#changes-or-unpushed-commits-so-work-isn-t-lost-when-an-idle-session" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="is-released-and-so-the-create-pr-button-on-claude-ai-code-lights-up">is released and so the &quot;Create PR&quot; button on claude.ai/code lights up. <a class="h-anchor" href="#is-released-and-so-the-create-pr-button-on-claude-ai-code-lights-up" aria-label="Ссылка на раздел">#</a></h1>
+<p>#</p>
+<h1 id="runner-level-no-repo-changes-drop-this-file-at-claude-hooks-on">Runner-level (no repo changes): drop this file at ~/.claude/hooks/ on <a class="h-anchor" href="#runner-level-no-repo-changes-drop-this-file-at-claude-hooks-on" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="the-runner-host-and-merge-the-accompanying-stop-hook-settings-block">the runner host and merge the accompanying Stop-hook settings block <a class="h-anchor" href="#the-runner-host-and-merge-the-accompanying-stop-hook-settings-block" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="into-claude-settings-json-the-runner-seeds-both-into-every-session">into ~/.claude/settings.json — the runner seeds both into every session. <a class="h-anchor" href="#into-claude-settings-json-the-runner-seeds-both-into-every-session" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="repo-level-alternative-commit-to-repo-claude-hooks-and-change-the">Repo-level alternative: commit to &lt;repo&gt;/.claude/hooks/ and change the <a class="h-anchor" href="#repo-level-alternative-commit-to-repo-claude-hooks-and-change-the" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="settings-json-command-path-to-claude_project_dir-claude-hooks">settings.json command path to $CLAUDE_PROJECT_DIR/.claude/hooks/. <a class="h-anchor" href="#settings-json-command-path-to-claude_project_dir-claude-hooks" aria-label="Ссылка на раздел">#</a></h1>
+<p>#</p>
+<h1 id="stdin-hook-json-payload-see-https-code-claude-com-docs-en-hooks">stdin: hook JSON payload (see https://code.claude.com/docs/en/hooks) <a class="h-anchor" href="#stdin-hook-json-payload-see-https-code-claude-com-docs-en-hooks" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="stdout-decision-block-reason-to-nudge-or-nothing-to-allow-stop">stdout: {&quot;decision&quot;:&quot;block&quot;,&quot;reason&quot;:&quot;...&quot;} to nudge, or nothing to allow stop. <a class="h-anchor" href="#stdout-decision-block-reason-to-nudge-or-nothing-to-allow-stop" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="re-entry-guard-the-harness-sets-stop_hook_active-true-when-re-invoking">Re-entry guard: the harness sets stop_hook_active=true when re-invoking <a class="h-anchor" href="#re-entry-guard-the-harness-sets-stop_hook_active-true-when-re-invoking" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="the-stop-hook-after-a-block-bail-so-we-only-nudge-once-per-turn-the">the Stop hook after a block. Bail so we only nudge once per turn. The <a class="h-anchor" href="#the-stop-hook-after-a-block-bail-so-we-only-nudge-once-per-turn-the" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="harness-emits-compact-json-no-space-after-the-colon-which-this">harness emits compact JSON (no space after the colon), which this <a class="h-anchor" href="#harness-emits-compact-json-no-space-after-the-colon-which-this" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="pattern-relies-on-use-jq-if-you-need-a-whitespace-tolerant-check">pattern relies on; use jq if you need a whitespace-tolerant check. <a class="h-anchor" href="#pattern-relies-on-use-jq-if-you-need-a-whitespace-tolerant-check" aria-label="Ссылка на раздел">#</a></h1>
+<p>in=$(cat)
+case &quot;$in&quot; in <em>&#x27;&quot;stop_hook_active&quot;:true&#x27;</em>) exit 0 ;; esac</p>
+<p>d=&quot;$CLAUDE_PROJECT_DIR&quot;</p>
+<h1 id="hardening-this-script-runs-outside-claude-code-s-bash-sandbox-so-its-git">Hardening: this script runs outside Claude Code&#x27;s Bash sandbox, so its git <a class="h-anchor" href="#hardening-this-script-runs-outside-claude-code-s-bash-sandbox-so-its-git" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="calls-skip-some-features-that-can-start-a-program-named-in-the-checkout-s">calls skip some features that can start a program named in the checkout&#x27;s <a class="h-anchor" href="#calls-skip-some-features-that-can-start-a-program-named-in-the-checkout-s" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="git-settings-they-don-t-skip-them-all-so-don-t-count-on-the-sandbox-alone">git settings. They don&#x27;t skip them all, so don&#x27;t count on the sandbox alone. <a class="h-anchor" href="#git-settings-they-don-t-skip-them-all-so-don-t-count-on-the-sandbox-alone" aria-label="Ссылка на раздел">#</a></h1>
+<p>GIT_OPTIONAL_LOCKS=0
+export GIT_OPTIONAL_LOCKS
+git() { command git -c core.fsmonitor= -c core.hooksPath=/dev/null &quot;$@&quot;; }</p>
+<h1 id="not-a-git-repo-nothing-to-nudge">Not a git repo → nothing to nudge. <a class="h-anchor" href="#not-a-git-repo-nothing-to-nudge" aria-label="Ссылка на раздел">#</a></h1>
+<p>git -C &quot;$d&quot; rev-parse --git-dir &gt;/dev/null 2&gt;&amp;1 || exit 0</p>
+<h1 id="no-remote-push-to-the-remote-is-unsatisfiable-bail">No remote → &quot;push to the remote&quot; is unsatisfiable; bail. <a class="h-anchor" href="#no-remote-push-to-the-remote-is-unsatisfiable-bail" aria-label="Ссылка на раздел">#</a></h1>
+<p>[ -z &quot;$(git -C &quot;$d&quot; remote 2&gt;/dev/null)&quot; ] &amp;&amp; exit 0</p>
+<h1 id="uncommitted-changes-staged-unstaged-or-untracked-exclude-claude">Uncommitted changes (staged, unstaged, or untracked). Exclude .claude/ <a class="h-anchor" href="#uncommitted-changes-staged-unstaged-or-untracked-exclude-claude" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="entirely-operator-seeded-settings-and-cli-written-runtime-state">entirely — operator-seeded settings and CLI-written runtime state <a class="h-anchor" href="#entirely-operator-seeded-settings-and-cli-written-runtime-state" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="scheduler-lock-worktrees-routine-state-live-there-and-neither-is">(scheduler lock, worktrees, routine state) live there and neither is <a class="h-anchor" href="#scheduler-lock-worktrees-routine-state-live-there-and-neither-is" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="uncommitted-work-the-model-needs-to-push">&quot;uncommitted work&quot; the model needs to push. <a class="h-anchor" href="#uncommitted-work-the-model-needs-to-push" aria-label="Ссылка на раздел">#</a></h1>
+<p>s=$(git -C &quot;$d&quot; status --porcelain --ignore-submodules=dirty -- . &#x27;:(exclude).claude/&#x27; 2&gt;/dev/null)
+if [ -n &quot;$s&quot; ]; then
+  printf &#x27;{&quot;decision&quot;:&quot;block&quot;,&quot;reason&quot;:&quot;There are uncommitted changes in the repository. Please commit and push these changes to the remote branch.&quot;}&#x27;
+  exit 0
+fi</p>
+<h1 id="unpushed-commits-count-commits-on-head-not-reachable-from-any">Unpushed commits. Count commits on HEAD not reachable from any <a class="h-anchor" href="#unpushed-commits-count-commits-on-head-not-reachable-from-any" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="remote-tracking-ref-or-fetch_head-this-works-uniformly-for">remote-tracking ref or FETCH_HEAD. This works uniformly for: <a class="h-anchor" href="#remote-tracking-ref-or-fetch_head-this-works-uniformly-for" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="init-fetch-checkouts-runner-default-only-fetch_head-exists">- init+fetch checkouts (runner default: only FETCH_HEAD exists) <a class="h-anchor" href="#init-fetch-checkouts-runner-default-only-fetch_head-exists" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="clone-based-checkouts-origin-exist">- clone-based checkouts (origin/* exist) <a class="h-anchor" href="#clone-based-checkouts-origin-exist" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="the-runner-default-the-child-starts-on-the-session-s-outcome">- the runner default: the child starts on the session&#x27;s outcome <a class="h-anchor" href="#the-runner-default-the-child-starts-on-the-session-s-outcome" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="branch-which-the-runner-creates-after-checkout">branch, which the runner creates after checkout <a class="h-anchor" href="#branch-which-the-runner-creates-after-checkout" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="detached-head-when-a-custom-setup-skips-that-branch-creation">- detached HEAD, when a custom setup skips that branch creation <a class="h-anchor" href="#detached-head-when-a-custom-setup-skips-that-branch-creation" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="with-no-reference-point-at-all-never-fetched-stay-silent-rather">With no reference point at all (never fetched), stay silent rather <a class="h-anchor" href="#with-no-reference-point-at-all-never-fetched-stay-silent-rather" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="than-false-positive-on-a-read-only-turn">than false-positive on a read-only turn. <a class="h-anchor" href="#than-false-positive-on-a-read-only-turn" aria-label="Ссылка на раздел">#</a></h1>
+<p>base=&quot;&quot;
+git -C &quot;$d&quot; rev-parse --verify -q FETCH_HEAD &gt;/dev/null &amp;&amp; base=&quot;FETCH_HEAD&quot;
+if [ -z &quot;$base&quot; ] &amp;&amp; [ -z &quot;$(git -C &quot;$d&quot; for-each-ref --count=1 refs/remotes/origin 2&gt;/dev/null)&quot; ]; then
+  exit 0
+fi</p>
+<h1 id="shellcheck-disable-sc2086-base-is-either-or-fetch_head-intentional-word-split">shellcheck disable=SC2086  # $base is either &quot;&quot; or &quot;FETCH_HEAD&quot;, intentional word-split <a class="h-anchor" href="#shellcheck-disable-sc2086-base-is-either-or-fetch_head-intentional-word-split" aria-label="Ссылка на раздел">#</a></h1>
+<p>unpushed=$(git -C &quot;$d&quot; rev-list HEAD --not $base --remotes=origin --count 2&gt;/dev/null) || unpushed=0
+if [ &quot;$unpushed&quot; -gt 0 ]; then
+  branch=$(git -C &quot;$d&quot; symbolic-ref --short -q HEAD)
+  if [ -n &quot;$branch&quot; ]; then
+    # $branch is attacker-influenced — git-check-ref-format(1) allows <code>&quot;</code>
+    # in ref names. <code>\</code> is forbidden (rule 10) but escaped anyway as cheap
+    # defense-in-depth.
+    # Escape JSON metacharacters before interpolating into the hand-built
+    # payload so a branch like x&quot;,&quot;continue&quot;:false can&#x27;t inject keys into
+    # the hook-output JSON the harness parses. $unpushed is safe — the
+    # -gt guard above rejects anything that isn&#x27;t a plain integer.
+    branch_esc=$(printf &#x27;%s&#x27; &quot;$branch&quot; | sed &#x27;s/\\/\\\\/g; s/&quot;/\\&quot;/g&#x27;)
+    printf &#x27;{&quot;decision&quot;:&quot;block&quot;,&quot;reason&quot;:&quot;There are %s unpushed commit(s) on branch &#x27;\&#x27;&#x27;%s&#x27;\&#x27;&#x27;. Please push these changes to the remote repository.&quot;}&#x27; &quot;$unpushed&quot; &quot;$branch_esc&quot;
+  else
+    printf &#x27;{&quot;decision&quot;:&quot;block&quot;,&quot;reason&quot;:&quot;There are %s unpushed commit(s) on a detached HEAD. Please create a branch and push it to the remote repository.&quot;}&#x27; &quot;$unpushed&quot;
+  fi
+  exit 0
+fi</p>
+<p>exit 0</p>
+<pre><code>
+Хук предлагает Claude сделать коммит и отправить изменения до завершения сессии и ничего не выводит, если каталог не является репозиторием git или у него нет удаленного репозитория. О сессиях с несколькими репозиториями см. раздел [на что указывает `$CLAUDE_PROJECT_DIR`](#repository-settings-in-sessions-with-several-repositories).
+
+Хук Stop только побуждает Claude к действию. Чтобы коммит и отправка сработали, настройте:
+
+* **Идентификацию git**: задайте `user.name` и `user.email` в образе средства выполнения или запустите средство выполнения с флагом [`--configure-git`](https://code.claude.com/docs/ru/self-hosted-environments-deploy#let-the-runner-configure-git)
+* **Учётные данные для отправки**: используйте [git под управлением Anthropic](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#use-the-anthropic-git-proxy) или предоставьте учётные данные, как описано в разделе [Включение конфигурации git в образ](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#ship-git-config-in-your-image)
+* **Для возобновлённых сессий**: задайте флаг [`--push-outcome-on-release`](https://code.claude.com/docs/ru/self-hosted-environments-reference#runner-cli-flags) на каждом средстве выполнения в окружении. Тогда возобновлённая сессия начинается с коммитов, которые Claude отправил в ветку сессии. Об ограничениях флага см. [Возобновлённые сессии теряют неотправленную работу](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#resumed-sessions-lose-unpushed-work).
+
+Хук Stop срабатывает не более одного раза за ход. Если коммит или отправка завершаются ошибкой, ход всё равно заканчивается. Найдите ошибку git в сессии и исправьте то, на что она указывает.
+
+Для большого checkout увеличьте `timeout` в настройках хука Stop и перезапустите средства выполнения. Команда `git status` в скрипте пропускает `core.fsmonitor`, поэтому может выполняться дольше заданных там 10 секунд. Хук, превысивший таймаут, завершает ход без промпта.
+
+### Подмодули и хук Stop
+
+Хук Stop проверяет, на каком коммите находится каждый подмодуль, но не файлы внутри него:
+
+* **Новый коммит в подмодуле**: Claude получает промпт, пока родительский репозиторий не зафиксирует его, даже если `.gitmodules` задаёт `ignore = all` для этого подмодуля
+* **Незафиксированные файлы в подмодуле**: Claude не получает промпт, поэтому эта работа остаётся только на диске средства выполнения
+* **Неотправленные коммиты в подмодуле**: хук Stop не проверяет, отправлены ли они, поэтому родительский репозиторий может указывать на коммит, который больше никто не может получить
+
+### Замена более ранней копии скрипта хука Stop
+
+Найдите `GIT_OPTIONAL_LOCKS` в вашей копии `stop-hook-nudge.sh`. Если этой строки нет, у вас более ранняя копия. Замените её [текущим скриптом](#prompt-sessions-to-push-their-work) везде, где вы его установили, затем перезапустите средства выполнения. Сохраните настройки хука Stop, за исключением увеличения `timeout` для большого checkout.
+
+* **Когда**: если ваши сессии работают с включённой [песочницей Bash](https://code.claude.com/docs/ru/sandboxing.md), замените скрипт сейчас. В противном случае замените его при следующей сборке образа или перезапуске средства выполнения.
+* **Что меняется**: незафиксированные файлы в подмодуле больше не вызывают промпт для Claude. Новый коммит в подмодуле, который `.gitmodules` помечает как `ignore = all`, теперь вызывает.
+
+&gt; [!WARNING]
+&gt;
+&gt; Хуки выполняются вне песочницы Bash, поэтому вызовы git в текущем скрипте пропускают некоторые функции git, способные запустить программу, указанную в настройках git в checkout. Но пропускают не все. Не полагайтесь только на песочницу и изолируйте сессии, как описано в разделе [Усиление защиты развёртывания](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#harden-your-deployment).
+
+## Разрешения и подтверждение инструментов
+
+К self-hosted сессии не подключён терминал, поэтому запрос разрешения, оставшийся без ответа, приостанавливает ход, пока пользователь не ответит в интерфейсе. Управляющий уровень Anthropic передаёт список инструментов и правила разрешений каждой сессии вместе с данными задания; конфигурация по умолчанию заранее разрешает рутинные вызовы инструментов, включая `Bash`, а облачные сессии [заранее разрешают редактирование файлов независимо от режима](https://code.claude.com/docs/ru/permission-modes.md#switch-permission-modes). Для вызова, который ничто заранее не разрешает, запрос выводится в интерфейсе сессии.
+
+### Закрепление режима разрешений в обёртке
+
+&gt; [!NOTE]
+&gt;
+&gt; Закрепляйте авторежим только в тех окружениях, где контейнеры сессий работают с [запретом исходящего сетевого трафика по умолчанию](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#default-deny-egress) и применены остальные меры из [раздела об усилении защиты](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#harden-your-deployment). Рутинные вызовы инструментов, включая сетевые запросы `Bash`, выполняются без участия человека как с набором инструментов, разрешённых по умолчанию, так и в авторежиме, поэтому именно сетевая граница ограничивает, куда могут обращаться эти вызовы.
+
+Чтобы сессии запускались в [авторежиме](https://code.claude.com/docs/ru/permission-modes.md#eliminate-prompts-with-auto-mode), пока claude.ai/code или другой клиент не задаст для них режим разрешений, закрепите его в своём скрипте-обёртке или [хуке `command`](#command). Раннер вызывает обёртку, передавая ей собственные флаги в качестве аргументов, а Claude Code применяет последний `--permission-mode` в командной строке, поэтому добавьте свой после `&quot;$@&quot;`:
+</code></pre>
+<p>#!/bin/bash
+exec &quot;$CLAUDE_RUNNER_CLAUDE_BIN&quot; &quot;$@&quot; --permission-mode auto</p>
+<pre><code>
+Как только клиент задаёт режим, добавленный вами режим перестаёт применяться, даже после перезапуска сессии на раннере. Например, claude.ai/code задаёт режим с первым сообщением сессии, если в его раскрывающемся списке режимов показан Auto или если кто-то выбрал там режим.
+
+В авторежиме отдельная модель-классификатор проверяет действия перед выполнением и блокирует отклонённые. Явное правило ask по-прежнему принудительно вызывает запрос. Вызов, который блокирует [правило запрета](https://code.claude.com/docs/ru/permissions.md#manage-permissions), остаётся заблокированным в любом режиме.
+
+### Предварительное разрешение конкретных инструментов
+
+Чтобы заранее разрешить конкретные инструменты, добавьте `--allowed-tools` со своими правилами после `&quot;$@&quot;` в скрипте-обёртке, например `--allowed-tools &quot;Bash(bazel *) Bash(yarn *) mcp__internal__*&quot;`. Списочные флаги, такие как `--allowed-tools` и `--disallowed-tools`, накапливаются между вхождениями, а не переопределяют друг друга, поэтому ваши правила применяются поверх любых правил, переданных управляющим уровнем. Чтобы сузить набор, добавьте `--disallowed-tools`: этот флаг запрещает инструменты, даже если другое правило их разрешает.
+
+### Как собирается конфигурация каждой сессии
+
+Раннер выдаёт каждой сессии собственный каталог конфигурации, заполняемый из снимка `~/.claude/` хоста, который раннер делает один раз при запуске: `settings.json`, `CLAUDE.md`, хуки, агенты, команды и скиллы в образе раннера применяются к каждой сессии как базовый пользовательский уровень. Если вы измените конфигурацию на работающем хосте, изменение вступит в силу только после перезапуска раннера.
+
+Задайте `SELF_HOSTED_RUNNER_HOST_CONFIG_DIR`, чтобы заполнять каталог из другого пути, или укажите пустой каталог, чтобы отключить заполнение.
+
+Сессии также читают следующие файлы настроек:
+
+* **Настройки проекта**: вне треда [проекта](https://code.claude.com/docs/ru/claude-projects.md#what-threads-pick-up-from-your-repositories) закоммиченный в репозиторий `.claude/settings.json` накладывается поверх базового пользовательского уровня. В сессии с несколькими репозиториями [действует файл не более чем одного репозитория](#repository-settings-in-sessions-with-several-repositories).
+* **Управляемые настройки**: сессии читают [`managed-settings.json`](https://code.claude.com/docs/ru/settings#where-settings-live) из стандартного системного пути в образе раннера. О том, применяются ли его ключи наряду с [настройками, управляемыми сервером](https://code.claude.com/docs/ru/server-managed-settings.md), см. [как Claude Code объединяет управляемые источники](https://code.claude.com/docs/ru/managed-settings.md#how-claude-code-combines-managed-sources).
+
+О порядке применения этих источников см. [приоритет настроек](https://code.claude.com/docs/ru/settings.md#settings-precedence).
+
+Когда управляющий уровень Anthropic передаёт сессии [хуки Claude Code](https://code.claude.com/docs/ru/hooks.md), раннер устанавливает их рядом с вашей собственной конфигурацией, а не поверх неё. Требуется Claude Code v2.1.229 или новее; более старые раннеры игнорируют переданные хуки. Переданные хуки запускают `python3`, поэтому установите `python3` в [образ раннера](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#build-the-runner-image).
+
+* **Куда они попадают**: раннер записывает каждый переданный скрипт хука в зарезервированный подкаталог `hooks/.ccr-launcher/` каталога конфигурации сессии и регистрирует скрипты в отдельном файле настроек, который передаёт сессии через `--settings`, не затрагивая заполненный `settings.json` и ваши собственные скрипты в `hooks/&lt;name&gt;`. Раннер пересоздаёт зарезервированный подкаталог для каждой сессии и не переносит в сессии содержимое хоста из `~/.claude/hooks/.ccr-launcher/`.
+* **Кто их создаёт**: управляющий уровень заполняет скрипты из фиксированных констант собственного развёртывания, никогда — из данных конкретной сессии или сторонних данных.
+* **Что по-прежнему ими управляет**: хуки, переданные через `--settings`, входят в обычную объединённую конфигурацию хуков, а не в управляемый уровень, поэтому ваши управляемые настройки продолжают действовать. `disableAllHooks` отключает их, и они не входят в категории, которые [`allowManagedHooksOnly`](https://code.claude.com/docs/ru/settings-reference#allowmanagedhooksonly) оставляет загруженными.
+
+Когда человек запускает собственную сессию, Claude Code загружает [скиллы, включённые для его аккаунта claude.ai](https://code.claude.com/docs/ru/skills.md#skills-in-cowork-and-cloud-sessions), в каталог конфигурации этой сессии. Запуск [облачной запланированной задачи](https://code.claude.com/docs/ru/routines.md) не получает скиллы её владельца, а сессия, которая [отправляет запросы к модели в Bedrock или Agent Platform](#send-model-requests-to-bedrock-or-agent-platform), не загружает никаких скиллов. Если такой сессии нужен скилл, добавьте его в образ раннера или, вне треда [проекта](https://code.claude.com/docs/ru/claude-projects.md#what-threads-pick-up-from-your-repositories), сделайте коммит в `.claude/skills/` репозитория.
+
+За пределами сессий [Claude Tag](https://claude.com/docs/claude-tag/overview) сессия в self-hosted окружении по умолчанию работает с отключённой [автоматической памятью](https://code.claude.com/docs/ru/memory.md#auto-memory). Для инструкций, которые должны сохраняться между сессиями, используйте `CLAUDE.md` в образе раннера или в репозитории.
+
+Снимок `~/.claude/` хоста, который делает раннер, не включает каталог `projects/`. Место хранения автоматической памяти по умолчанию находится в этом каталоге. Если вы положите туда файлы памяти, раннер не перенесёт их в сессии, и они не включат автоматическую память.
+
+### Остановка сессий, которым не удалось получить настройки, управляемые сервером
+
+Чтобы сессия, получающая [настройки, управляемые сервером](https://code.claude.com/docs/ru/server-managed-settings.md), не запускалась, если получить их не удалось, задайте [`forceRemoteSettingsRefresh`](https://code.claude.com/docs/ru/settings-reference#forceremotesettingsrefresh) значение `true` в [`managed-settings.json`](https://code.claude.com/docs/ru/settings#where-settings-live) в образе раннера. Ответ API Anthropic о том, что у вашей организации нет настроек, управляемых сервером, считается успешным получением.
+
+Прежде чем добавлять ключ, проверьте, запускает ли окружение сессии каналов Claude Tag и отправляет ли оно запросы к модели в Bedrock или Agent Platform:
+
+* **Сессии каналов Claude Tag**: не задавайте ключ на раннерах в окружении, на которое Owner [направляет каналы Claude Tag](https://code.claude.com/docs/ru/cloud-environments.md#set-the-environment-a-claude-tag-channel-uses). API Anthropic отклоняет запрос этих сессий на получение настроек, управляемых сервером, поэтому при заданном ключе они не запускаются. Поместите их правила в `managed-settings.json` образа раннера, который [они по-прежнему читают](https://code.claude.com/docs/ru/managed-settings.md#where-and-when-a-policy-applies). Чтобы использовать ключ для других сессий, запускайте их в отдельном окружении.
+* **Bedrock или Agent Platform**: сессии у этих провайдеров [не получают настройки, управляемые сервером](#what-differs-from-sessions-on-the-anthropic-api), поэтому они запускаются независимо от того, задан ли ключ. Вместо этого применяйте свои правила через тот же `managed-settings.json`.
+
+Этот `managed-settings.json` задаёт ключ:
+</code></pre>
+<p>{
+  &quot;forceRemoteSettingsRefresh&quot;: true
+}</p>
+<pre><code>
+Задайте ключ в этом файле, даже если вы также задали его в консоли администратора claude.ai. У новой сессии нет [кэшированной копии](https://code.claude.com/docs/ru/server-managed-settings.md#fetch-and-caching-behavior) ваших настроек, управляемых сервером, поэтому если ключ задан только в консоли, у сессии его ещё нет. Если затем получение настроек завершится неудачей, сессия будет работать без этих настроек, пока следующая попытка не окажется успешной.
+
+Чтобы убедиться, что сессия не запустилась из-за неудачного получения настроек, посмотрите [последний вывод Claude Code](#keep-stdin-and-file-descriptor-3-attached) в сессии или лог раннера. В нём будет `Your organization requires remote managed settings to load, but they could not be loaded.`
+
+### Настройки репозиториев в сессиях с несколькими репозиториями
+
+В треде [проекта](https://code.claude.com/docs/ru/claude-projects.md#what-threads-pick-up-from-your-repositories) `.claude/settings.json` ни одного репозитория не действует как настройки проекта, а `.mcp.json` и скиллы ни одного репозитория не загружаются, где бы ни начинался тред. Чтобы дать таким тредам скилл, добавьте его в образ раннера.
+
+В любой другой сессии с несколькими репозиториями Claude Code читает настройки проекта из каталога, в котором начинается сессия, поэтому как настройки проекта действует `.claude/settings.json` не более чем одного репозитория. Хук, определённый в файле другого репозитория, не выполняется, правило запрета в нём не применяется, а его `env` не задаётся.
+
+* **`--capacity 1`, значение по умолчанию, со встроенным checkout**: сессия запускается в первом репозитории из своего списка репозиториев. `.claude/settings.json` этого репозитория действует как настройки проекта, и загружается его [`.mcp.json`](#mcp-servers), а файлы других репозиториев — нет.
+* **`--capacity` больше единицы или [хук `checkout`](#checkout)**: сессия начинается в отдельном каталоге сессии, содержащем checkout-копии. `.claude/settings.json` ни одного репозитория не действует как настройки проекта, `.mcp.json` ни одного репозитория не загружается, а [`$CLAUDE_PROJECT_DIR`](https://code.claude.com/docs/ru/hooks#reference-scripts-by-path) в команде хука указывает на этот каталог, а не на checkout-копию.
+
+`CLAUDE.md` каждого репозитория загружается, где бы ни начиналась сессия. Вне треда проекта загружаются и его скиллы. Раннер передаёт каждый репозиторий в Claude Code как [дополнительный каталог](https://code.claude.com/docs/ru/permissions.md#additional-directories-grant-file-access-not-configuration), поэтому Claude Code также читает ключи `enabledPlugins` и `extraKnownMarketplaces` из `.claude/settings.json` каждого репозитория.
+
+Чтобы запускать хук или применять правило разрешений в каждой сессии, поместите его в `~/.claude/settings.json` на хосте раннера. Раннер [переносит файл хоста в каждую сессию](#how-each-session’s-config-is-assembled), где бы она ни начиналась. Указывайте путь в правиле `Read` или `Edit` как абсолютный [шаблон](https://code.claude.com/docs/ru/permissions.md#read-and-edit) с `//` или относительный от домашнего каталога с `~/`, потому что другие шаблоны привязываются к источнику настроек или текущему каталогу.
+
+### Правила разрешений, закоммиченные в репозиторий
+
+Не добавляйте голую запись `&quot;Edit&quot;`, `&quot;Write&quot;` или `&quot;NotebookEdit&quot;` в закоммиченный в репозиторий `permissions.allow`. Голое правило для файлового инструмента соответствует инструменту независимо от пути и разрешает запись в любом месте хоста, а не только в рабочем пространстве, поэтому защита раннера, ограничивающая область записи, помечает сессию; с [`--confine-repo-settings enforce`](https://code.claude.com/docs/ru/self-hosted-environments-reference#runner-cli-flags) раннер отказывается запускать сессию, вместо того чтобы записать предупреждение в лог и продолжить. См. [раздел об усилении защиты](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#harden-your-deployment).
+
+Репозиторию вообще не нужно правило для файловых инструментов: облачные сессии [заранее разрешают редактирование файлов независимо от режима](https://code.claude.com/docs/ru/permission-modes.md#switch-permission-modes). Если вы всё же делаете коммит правила, ограничьте его рабочим пространством, например `&quot;Edit(/**)&quot;`; одиночная косая черта в начале указывает путь относительно корня проекта, которым является рабочее пространство сессии. Голые правила для файловых инструментов допустимы в `settings.json` уровня хоста, который ведёт оператор, поскольку этот файл не коммитится в репозиторий.
+
+`defaultMode` со значением `auto` учитывается только из файла настроек уровня образа или пользовательского уровня, поэтому извлечённый репозиторий не может сам предоставить себе авторежим. О том, какие режимы принимают облачные сессии, и о полном синтаксисе правил см. [режимы разрешений](https://code.claude.com/docs/ru/permission-modes.md).
+
+## Что дальше
+
+* [Reference](https://code.claude.com/docs/ru/self-hosted-environments-reference.md): каждый флаг CLI, переменная окружения и метрика
+* [Verify session identity](https://code.claude.com/docs/ru/self-hosted-environments-identity.md): проверьте токен сеанса из служб вне средства выполнения
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

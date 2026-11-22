@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>TypeScript SDK V2 session API (removed)</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/agent-sdk/index.html">agent-sdk</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="typescript-sdk-v2-session-api-removed">TypeScript SDK V2 session API (removed) <a class="h-anchor" href="#typescript-sdk-v2-session-api-removed" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Справочник по удалённому V2 TypeScript Agent SDK session API с паттернами отправки/потока на основе сессий для многооборотных разговоров.</p>
+</blockquote>
+<blockquote>
+<p>[!WARNING]</p>
+<p>V2 session API больше не поддерживается. TypeScript Agent SDK 0.3.142 удаляет <code>unstable_v2_createSession</code>, <code>unstable_v2_resumeSession</code>, <code>unstable_v2_prompt</code> и типы <code>SDKSession</code> и <code>SDKSessionOptions</code>.</p>
+<p>Для миграции используйте <a href="https://code.claude.com/docs/ru/agent-sdk/typescript"><code>query()</code> API</a> и <a href="https://code.claude.com/docs/ru/agent-sdk/sessions.md">параметры сессии</a>, которые он принимает. Передайте <code>AsyncIterable&lt;SDKUserMessage&gt;</code> для многооборотных разговоров или <code>options.resume</code> для продолжения сохранённой сессии. Эта страница сохранена для справки, если вы поддерживаете код на Agent SDK 0.2.x или более ранней версии.</p>
+</blockquote>
+<p>V2 был экспериментальным session API, который устранил необходимость в асинхронных генераторах и координации yield. Вместо управления состоянием генератора между оборотами, каждый оборот представлял собой отдельный цикл <code>send()</code>/<code>stream()</code>. Поверхность API сводилась к созданию сессии, отправке сообщения и потоковой передаче ответа:</p>
+<ul>
+<li><code>createSession()</code> / <code>resumeSession()</code>: Начать или продолжить разговор</li>
+<li><code>session.send()</code>: Отправить сообщение</li>
+<li><code>session.stream()</code>: Получить ответ</li>
+</ul>
+<h3 id="h">Установка <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Agent SDK версии 0.2.x — это последняя версия, которая включает интерфейс V2. Версия пакета перепрыгнула с 0.2.x прямо на 0.3.142, поэтому версия удаления выше и указание установки ниже описывают одну и ту же границу. Чтобы установить последний совместимый с V2 релиз, зафиксируйте основную и дополнительную версию:</p>
+<p>```bash theme={null}
+npm install @anthropic-ai/claude-agent-sdk@0.2</p>
+<pre><code>
+&gt; [!NOTE]
+&gt;
+&gt; SDK поставляется с нативным бинарным файлом Claude Code для вашей платформы в качестве опциональной зависимости, поэтому большинству установок не требуется отдельная установка Claude Code. Смотрите [примечание об установке в quickstart](https://code.claude.com/docs/ru/agent-sdk/quickstart.md) для установок, которым это требуется.
+
+## Быстрый старт
+
+### Однократный запрос
+
+Для простых однооборотных запросов, когда вам не нужно поддерживать сессию, используйте `unstable_v2_prompt()`. Этот пример отправляет математический вопрос и логирует ответ:
+</code></pre>
+<p>import { unstable_v2_prompt } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>const result = await unstable_v2_prompt(&quot;What is 2 + 2?&quot;, {
+  model: &quot;claude-opus-4-7&quot;
+});
+if (result.subtype === &quot;success&quot;) {
+  console.log(result.result);
+}</p>
+<pre><code>
+&lt;details&gt;
+  &lt;summary&gt;Посмотрите ту же операцию в V1&lt;/summary&gt;
+</code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>const q = query({
+    prompt: &quot;What is 2 + 2?&quot;,
+    options: { model: &quot;claude-opus-4-7&quot; }
+  });</p>
+<p>for await (const msg of q) {
+    if (msg.type === &quot;result&quot; &amp;&amp; msg.subtype === &quot;success&quot;) {
+      console.log(msg.result);
+    }
+  }</p>
+<pre><code>&lt;/details&gt;
+
+### Базовая сессия
+
+Для взаимодействий, выходящих за рамки одного запроса, создайте сессию. V2 разделяет отправку и потоковую передачу на отдельные шаги:
+
+* `send()` отправляет ваше сообщение
+* `stream()` передаёт ответ потоком
+
+Это явное разделение облегчает добавление логики между оборотами (например, обработка ответов перед отправкой последующих сообщений).
+
+Пример ниже создаёт сессию, отправляет &quot;Hello!&quot; в Claude и выводит текстовый ответ. Он использует [`await using`](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#using-declarations-and-explicit-resource-management) (TypeScript 5.2+) для автоматического закрытия сессии при выходе из блока. Вы также можете вызвать `session.close()` вручную.
+</code></pre>
+<p>import { unstable_v2_createSession } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>await using session = unstable_v2_createSession({
+  model: &quot;claude-opus-4-7&quot;
+});</p>
+<p>await session.send(&quot;Hello!&quot;);
+for await (const msg of session.stream()) {
+  // Filter for assistant messages to get human-readable output
+  if (msg.type === &quot;assistant&quot;) {
+    const text = msg.message.content
+      .filter((block) =&gt; block.type === &quot;text&quot;)
+      .map((block) =&gt; block.text)
+      .join(&quot;&quot;);
+    console.log(text);
+  }
+}</p>
+<pre><code>
+&lt;details&gt;
+  &lt;summary&gt;Посмотрите ту же операцию в V1&lt;/summary&gt;
+
+  В V1 входные и выходные данные проходят через один асинхронный генератор. Для базового запроса это выглядит похоже, но добавление многооборотной логики требует переструктурирования для использования входного генератора.
+</code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>const q = query({
+    prompt: &quot;Hello!&quot;,
+    options: { model: &quot;claude-opus-4-7&quot; }
+  });</p>
+<p>for await (const msg of q) {
+    if (msg.type === &quot;assistant&quot;) {
+      const text = msg.message.content
+        .filter((block) =&gt; block.type === &quot;text&quot;)
+        .map((block) =&gt; block.text)
+        .join(&quot;&quot;);
+      console.log(text);
+    }
+  }</p>
+<pre><code>&lt;/details&gt;
+
+### Многооборотный разговор
+
+Сессии сохраняют контекст между несколькими обменами. Чтобы продолжить разговор, вызовите `send()` снова на той же сессии. Claude помнит предыдущие обороты.
+
+Этот пример задаёт математический вопрос, а затем задаёт последующий вопрос, который ссылается на предыдущий ответ:
+</code></pre>
+<p>import { unstable_v2_createSession } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>await using session = unstable_v2_createSession({
+  model: &quot;claude-opus-4-7&quot;
+});</p>
+<p>// Turn 1
+await session.send(&quot;What is 5 + 3?&quot;);
+for await (const msg of session.stream()) {
+  // Filter for assistant messages to get human-readable output
+  if (msg.type === &quot;assistant&quot;) {
+    const text = msg.message.content
+      .filter((block) =&gt; block.type === &quot;text&quot;)
+      .map((block) =&gt; block.text)
+      .join(&quot;&quot;);
+    console.log(text);
+  }
+}</p>
+<p>// Turn 2
+await session.send(&quot;Multiply that by 2&quot;);
+for await (const msg of session.stream()) {
+  if (msg.type === &quot;assistant&quot;) {
+    const text = msg.message.content
+      .filter((block) =&gt; block.type === &quot;text&quot;)
+      .map((block) =&gt; block.text)
+      .join(&quot;&quot;);
+    console.log(text);
+  }
+}</p>
+<pre><code>
+&lt;details&gt;
+  &lt;summary&gt;Посмотрите ту же операцию в V1&lt;/summary&gt;
+</code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>// Must create an async iterable to feed messages
+  async function* createInputStream() {
+    yield {
+      type: &quot;user&quot;,
+      session_id: &quot;&quot;,
+      message: { role: &quot;user&quot;, content: [{ type: &quot;text&quot;, text: &quot;What is 5 + 3?&quot; }] },
+      parent_tool_use_id: null
+    };
+    // Must coordinate when to yield next message
+    yield {
+      type: &quot;user&quot;,
+      session_id: &quot;&quot;,
+      message: { role: &quot;user&quot;, content: [{ type: &quot;text&quot;, text: &quot;Multiply by 2&quot; }] },
+      parent_tool_use_id: null
+    };
+  }</p>
+<p>const q = query({
+    prompt: createInputStream(),
+    options: { model: &quot;claude-opus-4-7&quot; }
+  });</p>
+<p>for await (const msg of q) {
+    if (msg.type === &quot;assistant&quot;) {
+      const text = msg.message.content
+        .filter((block) =&gt; block.type === &quot;text&quot;)
+        .map((block) =&gt; block.text)
+        .join(&quot;&quot;);
+      console.log(text);
+    }
+  }</p>
+<pre><code>&lt;/details&gt;
+
+### Возобновление сессии
+
+Если у вас есть ID сессии из предыдущего взаимодействия, вы можете возобновить её позже. Это полезно для долгоживущих рабочих процессов или когда вам нужно сохранить разговоры между перезагрузками приложения.
+
+Этот пример создаёт сессию, сохраняет её ID, закрывает её, а затем возобновляет разговор:
+</code></pre>
+<p>import {
+  unstable_v2_createSession,
+  unstable_v2_resumeSession,
+  type SDKMessage
+} from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>// Helper to extract text from assistant messages
+function getAssistantText(msg: SDKMessage): string | null {
+  if (msg.type !== &quot;assistant&quot;) return null;
+  return msg.message.content
+    .filter((block) =&gt; block.type === &quot;text&quot;)
+    .map((block) =&gt; block.text)
+    .join(&quot;&quot;);
+}</p>
+<p>// Create initial session and have a conversation
+const session = unstable_v2_createSession({
+  model: &quot;claude-opus-4-7&quot;
+});</p>
+<p>await session.send(&quot;Remember this number: 42&quot;);</p>
+<p>// Get the session ID from any received message
+let sessionId: string | undefined;
+for await (const msg of session.stream()) {
+  sessionId = msg.session_id;
+  const text = getAssistantText(msg);
+  if (text) console.log(&quot;Initial response:&quot;, text);
+}</p>
+<p>console.log(&quot;Session ID:&quot;, sessionId);
+session.close();</p>
+<p>// Later: resume the session using the stored ID
+await using resumedSession = unstable_v2_resumeSession(sessionId!, {
+  model: &quot;claude-opus-4-7&quot;
+});</p>
+<p>await resumedSession.send(&quot;What number did I ask you to remember?&quot;);
+for await (const msg of resumedSession.stream()) {
+  const text = getAssistantText(msg);
+  if (text) console.log(&quot;Resumed response:&quot;, text);
+}</p>
+<pre><code>
+&lt;details&gt;
+  &lt;summary&gt;Посмотрите ту же операцию в V1&lt;/summary&gt;
+</code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>// Create initial session
+  const initialQuery = query({
+    prompt: &quot;Remember this number: 42&quot;,
+    options: { model: &quot;claude-opus-4-7&quot; }
+  });</p>
+<p>// Get session ID from any message
+  let sessionId: string | undefined;
+  for await (const msg of initialQuery) {
+    sessionId = msg.session_id;
+    if (msg.type === &quot;assistant&quot;) {
+      const text = msg.message.content
+        .filter((block) =&gt; block.type === &quot;text&quot;)
+        .map((block) =&gt; block.text)
+        .join(&quot;&quot;);
+      console.log(&quot;Initial response:&quot;, text);
+    }
+  }</p>
+<p>console.log(&quot;Session ID:&quot;, sessionId);</p>
+<p>// Later: resume the session
+  const resumedQuery = query({
+    prompt: &quot;What number did I ask you to remember?&quot;,
+    options: {
+      model: &quot;claude-opus-4-7&quot;,
+      resume: sessionId
+    }
+  });</p>
+<p>for await (const msg of resumedQuery) {
+    if (msg.type === &quot;assistant&quot;) {
+      const text = msg.message.content
+        .filter((block) =&gt; block.type === &quot;text&quot;)
+        .map((block) =&gt; block.text)
+        .join(&quot;&quot;);
+      console.log(&quot;Resumed response:&quot;, text);
+    }
+  }</p>
+<pre><code>&lt;/details&gt;
+
+### Очистка
+
+Сессии можно закрывать вручную или автоматически, используя [`await using`](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#using-declarations-and-explicit-resource-management), функцию TypeScript 5.2+ для автоматической очистки ресурсов. Если вы используете более старую версию TypeScript или столкнулись с проблемами совместимости, используйте вместо этого ручную очистку.
+
+Примеры ниже показывают только шаблон очистки и не отправляют никаких сообщений, поэтому их запуск не производит никакого вывода.
+
+**Автоматическая очистка (TypeScript 5.2+):**
+</code></pre>
+<p>import { unstable_v2_createSession } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>await using session = unstable_v2_createSession({
+  model: &quot;claude-opus-4-7&quot;
+});
+// Session closes automatically when the block exits</p>
+<pre><code>
+**Ручная очистка:**
+</code></pre>
+<p>import { unstable_v2_createSession } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>const session = unstable_v2_createSession({
+  model: &quot;claude-opus-4-7&quot;
+});
+// ... use the session ...
+session.close();</p>
+<pre><code>
+## Справочник API
+
+### `unstable_v2_createSession()`
+
+Создаёт новую сессию для многооборотных разговоров.
+</code></pre>
+<p>function unstable_v2_createSession(options: {
+  model: string;
+  // Additional options supported
+}): SDKSession;</p>
+<pre><code>
+### `unstable_v2_resumeSession()`
+
+Возобновляет существующую сессию по ID.
+</code></pre>
+<p>function unstable_v2_resumeSession(
+  sessionId: string,
+  options: {
+    model: string;
+    // Additional options supported
+  }
+): SDKSession;</p>
+<pre><code>
+### `unstable_v2_prompt()`
+
+Однократная удобная функция для однооборотных запросов.
+</code></pre>
+<p>function unstable_v2_prompt(
+  prompt: string,
+  options: {
+    model: string;
+    // Additional options supported
+  }
+): Promise&lt;SDKResultMessage&gt;;</p>
+<pre><code>
+### Интерфейс SDKSession
+</code></pre>
+<p>interface SDKSession {
+  readonly sessionId: string;
+  send(message: string | SDKUserMessage): Promise&lt;void&gt;;
+  stream(): AsyncGenerator&lt;SDKMessage, void&gt;;
+  close(): void;
+}</p>
+<pre><code>
+## Доступность функций
+
+V2 session API не поддерживает все функции V1. Следующие требуют использования [V1 SDK](https://code.claude.com/docs/ru/agent-sdk/typescript.md):
+
+* Разветвление сессий (опция `forkSession`)
+* Некоторые продвинутые паттерны потокового ввода
+
+## См. также
+
+* [Справочник TypeScript SDK (V1)](https://code.claude.com/docs/ru/agent-sdk/typescript.md) - Полная документация V1 SDK
+* [Обзор SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md) - Общие концепции SDK
+* [Примеры V2 на GitHub](https://github.com/anthropics/claude-agent-sdk-demos/tree/main/hello-world-v2) - Рабочие примеры кода
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

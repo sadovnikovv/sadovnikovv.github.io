@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>MCP (Model Context Protocol)</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/05-mcp/index.html">05-mcp</a></nav>
+<p>&lt;picture&gt;
+  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;../resources/logos/claude-howto-logo-dark.svg&quot;&gt;
+  &lt;img alt=&quot;Claude How To&quot; src=&quot;../resources/logos/claude-howto-logo.svg&quot;&gt;
+&lt;/picture&gt;</p>
+<h1 id="mcp-model-context-protocol">MCP (Model Context Protocol) <a class="h-anchor" href="#mcp-model-context-protocol" aria-label="Ссылка на раздел">#</a></h1>
+<p>Эта папка содержит полную документацию и примеры конфигурации MCP-серверов и их использования с Claude Code.</p>
+<p>&lt;a id=&quot;overview&quot;&gt;&lt;/a&gt;</p>
+<h3 id="h">Обзор <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>MCP (Model Context Protocol) — это стандартизированный способ, с помощью которого Claude получает доступ к внешним инструментам, API и источникам данных в реальном времени. В отличие от Memory, MCP даёт живой доступ к изменяющимся данным.</p>
+<p>Ключевые характеристики:</p>
+<ul>
+<li>Доступ к внешним сервисам в реальном времени</li>
+<li>Синхронизация живых данных</li>
+<li>Расширяемая архитектура</li>
+<li>Безопасная аутентификация</li>
+<li>Взаимодействие через инструменты</li>
+</ul>
+<h3 id="архитектура-mcp">Архитектура MCP <a class="h-anchor" href="#архитектура-mcp" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-mermaid">graph TB
+    A[&quot;Claude&quot;]
+    B[&quot;MCP Server&quot;]
+    C[&quot;Внешний сервис&quot;]
+
+    A --&gt;|Запрос: list_issues| B
+    B --&gt;|Запрос| C
+    C --&gt;|Данные| B
+    B --&gt;|Ответ| A
+
+    A --&gt;|Запрос: create_issue| B
+    B --&gt;|Действие| C
+    C --&gt;|Результат| B
+    B --&gt;|Ответ| A
+
+    style A fill:#e1f5fe,stroke:#333,color:#333
+    style B fill:#f3e5f5,stroke:#333,color:#333
+    style C fill:#e8f5e9,stroke:#333,color:#333</code></pre>
+<h3 id="экосистема-mcp">Экосистема MCP <a class="h-anchor" href="#экосистема-mcp" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-mermaid">graph TB
+    A[&quot;Claude&quot;] --&gt;|MCP| B[&quot;Filesystem&lt;br/&gt;MCP Server&quot;]
+    A --&gt;|MCP| C[&quot;GitHub&lt;br/&gt;MCP Server&quot;]
+    A --&gt;|MCP| D[&quot;Database&lt;br/&gt;MCP Server&quot;]
+    A --&gt;|MCP| E[&quot;Slack&lt;br/&gt;MCP Server&quot;]
+    A --&gt;|MCP| F[&quot;Google Docs&lt;br/&gt;MCP Server&quot;]
+
+    B --&gt;|File I/O| G[&quot;Local Files&quot;]
+    C --&gt;|API| H[&quot;GitHub Repos&quot;]
+    D --&gt;|Query| I[&quot;PostgreSQL/MySQL&quot;]
+    E --&gt;|Messages| J[&quot;Slack Workspace&quot;]
+    F --&gt;|Docs| K[&quot;Google Drive&quot;]
+
+    style A fill:#e1f5fe,stroke:#333,color:#333
+    style B fill:#f3e5f5,stroke:#333,color:#333
+    style C fill:#f3e5f5,stroke:#333,color:#333
+    style D fill:#f3e5f5,stroke:#333,color:#333
+    style E fill:#f3e5f5,stroke:#333,color:#333
+    style F fill:#f3e5f5,stroke:#333,color:#333
+    style G fill:#e8f5e9,stroke:#333,color:#333
+    style H fill:#e8f5e9,stroke:#333,color:#333
+    style I fill:#e8f5e9,stroke:#333,color:#333
+    style J fill:#e8f5e9,stroke:#333,color:#333
+    style K fill:#e8f5e9,stroke:#333,color:#333</code></pre>
+<h3 id="способы-установки-mcp">Способы установки MCP <a class="h-anchor" href="#способы-установки-mcp" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code поддерживает несколько транспортных протоколов для подключения к MCP-серверу:</p>
+<h4 id="http-транспорт-рекомендуется">HTTP-транспорт (рекомендуется) <a class="h-anchor" href="#http-транспорт-рекомендуется" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Базовое HTTP-подключение
+claude mcp add --transport http notion https://mcp.notion.com/mcp
+
+# HTTP с заголовком аутентификации
+claude mcp add --transport http secure-api https://api.example.com/mcp \
+  --header &quot;Authorization: Bearer your-token&quot;</code></pre>
+<h4 id="stdio-транспорт-локально">Stdio-транспорт (локально) <a class="h-anchor" href="#stdio-транспорт-локально" aria-label="Ссылка на раздел">#</a></h4>
+<p>Для локально запущенных MCP-серверов:</p>
+<pre><code class="language-bash"># Локальный сервер Node.js
+claude mcp add --transport stdio myserver -- npx @myorg/mcp-server
+
+# С переменными окружения
+claude mcp add --transport stdio myserver --env KEY=value -- npx server</code></pre>
+<h4 id="sse-транспорт-устарел">SSE-транспорт (устарел) <a class="h-anchor" href="#sse-транспорт-устарел" aria-label="Ссылка на раздел">#</a></h4>
+<p>Транспорт Server-Sent Events устарел в пользу <code>http</code>, но по-прежнему поддерживается:</p>
+<pre><code class="language-bash">claude mcp add --transport sse legacy-server https://example.com/sse</code></pre>
+<h4 id="websocket-транспорт">WebSocket-транспорт <a class="h-anchor" href="#websocket-транспорт" aria-label="Ссылка на раздел">#</a></h4>
+<p>WebSocket-транспорт для постоянных двунаправленных соединений:</p>
+<pre><code class="language-bash">claude mcp add --transport ws realtime-server wss://example.com/mcp</code></pre>
+<h4 id="примечание-для-windows">Примечание для Windows <a class="h-anchor" href="#примечание-для-windows" aria-label="Ссылка на раздел">#</a></h4>
+<p>На нативном Windows (не WSL) используйте <code>cmd /c</code> для команд <code>npx</code>:</p>
+<pre><code class="language-bash">claude mcp add --transport stdio my-server -- cmd /c npx -y @some/package</code></pre>
+<h4 id="аутентификация-oauth-2-0">Аутентификация OAuth 2.0 <a class="h-anchor" href="#аутентификация-oauth-2-0" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude Code поддерживает OAuth 2.0 для MCP-серверов, которым это требуется. При подключении к OAuth-enabled серверу Claude Code обрабатывает весь поток аутентификации:</p>
+<pre><code class="language-bash"># Подключиться к MCP-серверу с OAuth (интерактивный сценарий)
+claude mcp add --transport http my-service https://my-service.example.com/mcp
+
+# Предварительно настроить OAuth-учётные данные для неинтерактивной установки
+claude mcp add --transport http my-service https://my-service.example.com/mcp \
+  --client-id &quot;your-client-id&quot; \
+  --client-secret &quot;your-client-secret&quot; \
+  --callback-port 8080</code></pre>
+<div class="table-wrap"><table><thead><tr><th>Возможность</th><th>Описание</th></tr></thead><tbody><tr><td><strong>Interactive OAuth</strong></td><td>Используйте <code>/mcp</code>, чтобы запустить OAuth-сценарий в браузере</td></tr><tr><td><strong>Pre-configured OAuth clients</strong></td><td>Встроенные OAuth-клиенты для популярных сервисов вроде Notion, Stripe и других (v2.1.30+)</td></tr><tr><td><strong>Pre-configured credentials</strong></td><td>Флаги <code>--client-id</code>, <code>--client-secret</code>, <code>--callback-port</code> для автоматической настройки</td></tr><tr><td><strong>Token storage</strong></td><td>Токены безопасно хранятся в системном keychain</td></tr><tr><td><strong>Step-up auth</strong></td><td>Поддерживает step-up authentication для привилегированных операций</td></tr><tr><td><strong>Discovery caching</strong></td><td>OAuth discovery metadata кэшируются для более быстрых повторных подключений</td></tr><tr><td><strong>Metadata override</strong></td><td><code>oauth.authServerMetadataUrl</code> в <code>.mcp.json</code> для переопределения стандартного OAuth metadata discovery</td></tr></tbody></table></div>
+<h5 id="переопределение-oauth-metadata-discovery">Переопределение OAuth metadata discovery <a class="h-anchor" href="#переопределение-oauth-metadata-discovery" aria-label="Ссылка на раздел">#</a></h5>
+<p>Если ваш MCP-сервер возвращает ошибки на стандартном OAuth metadata endpoint (<code>/.well-known/oauth-authorization-server</code>), но публикует рабочий OIDC endpoint, можно указать Claude Code получать OAuth metadata с другого URL. Установите <code>authServerMetadataUrl</code> в объекте <code>oauth</code> конфигурации сервера:</p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;my-server&quot;: {
+      &quot;type&quot;: &quot;http&quot;,
+      &quot;url&quot;: &quot;https://mcp.example.com/mcp&quot;,
+      &quot;oauth&quot;: {
+        &quot;authServerMetadataUrl&quot;: &quot;https://auth.example.com/.well-known/openid-configuration&quot;
+      }
+    }
+  }
+}</code></pre>
+<p>URL должен использовать <code>https://</code>. Эта опция требует Claude Code v2.1.64 или новее.</p>
+<h4 id="claude-ai-mcp-connectors">Claude.ai MCP Connectors <a class="h-anchor" href="#claude-ai-mcp-connectors" aria-label="Ссылка на раздел">#</a></h4>
+<p>MCP-серверы, настроенные в вашем аккаунте Claude.ai, автоматически доступны в Claude Code. Это значит, что любые MCP connections, созданные через веб-интерфейс Claude.ai, будут доступны без дополнительной настройки.</p>
+<p>Claude.ai MCP connectors также доступны в <code>--print</code> mode (v2.1.83+), что позволяет использовать их неинтерактивно и в скриптах.</p>
+<p>Чтобы отключить Claude.ai MCP servers в Claude Code, установите переменную окружения <code>ENABLE_CLAUDEAI_MCP_SERVERS</code> в значение <code>false</code>:</p>
+<pre><code class="language-bash">ENABLE_CLAUDEAI_MCP_SERVERS=false claude</code></pre>
+<blockquote>
+<p><strong>Примечание:</strong> эта функция доступна только пользователям, вошедшим через аккаунты Claude.ai.</p>
+</blockquote>
+<h3 id="процесс-настройки-mcp">Процесс настройки MCP <a class="h-anchor" href="#процесс-настройки-mcp" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant User
+    participant Claude as Claude Code
+    participant Config as Config File
+    participant Service as External Service
+
+    User-&gt;&gt;Claude: Type /mcp
+    Claude-&gt;&gt;Claude: List available MCP servers
+    Claude-&gt;&gt;User: Show options
+    User-&gt;&gt;Claude: Select GitHub MCP
+    Claude-&gt;&gt;Config: Update configuration
+    Config-&gt;&gt;Claude: Activate connection
+    Claude-&gt;&gt;Service: Test connection
+    Service--&gt;&gt;Claude: Authentication successful
+    Claude-&gt;&gt;User: ✅ MCP connected!</code></pre>
+<h3 id="поиск-mcp-tools">Поиск MCP tools <a class="h-anchor" href="#поиск-mcp-tools" aria-label="Ссылка на раздел">#</a></h3>
+<p>Когда описания MCP tools превышают 10% окна контекста, Claude Code автоматически включает tool search, чтобы эффективно выбирать нужные tools, не перегружая контекст модели.</p>
+<div class="table-wrap"><table><thead><tr><th>Параметр</th><th>Значение</th><th>Описание</th></tr></thead><tbody><tr><td><code>ENABLE_TOOL_SEARCH</code></td><td><code>auto</code> (default)</td><td>Автоматически включается, когда описания tools превышают 10% контекста</td></tr><tr><td><code>ENABLE_TOOL_SEARCH</code></td><td><code>auto:&lt;N&gt;</code></td><td>Автоматически включается на настраиваемом пороге в <code>N</code> tools</td></tr><tr><td><code>ENABLE_TOOL_SEARCH</code></td><td><code>true</code></td><td>Всегда включено независимо от количества tools</td></tr><tr><td><code>ENABLE_TOOL_SEARCH</code></td><td><code>false</code></td><td>Отключено; все описания tools отправляются полностью</td></tr></tbody></table></div>
+<blockquote>
+<p><strong>Примечание:</strong> tool search требует Sonnet 4 или новее, либо Opus 4 или новее. Модели Haiku не поддерживаются для tool search.</p>
+</blockquote>
+<h3 id="динамические-обновления-tools">Динамические обновления tools <a class="h-anchor" href="#динамические-обновления-tools" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code поддерживает MCP <code>list_changed</code> notifications. Когда MCP server динамически добавляет, удаляет или изменяет доступные tools, Claude Code получает обновление и автоматически корректирует список tools — без переподключения и без перезапуска.</p>
+<h3 id="mcp-elicitation">MCP Elicitation <a class="h-anchor" href="#mcp-elicitation" aria-label="Ссылка на раздел">#</a></h3>
+<p>MCP servers могут запрашивать у пользователя структурированный ввод через интерактивные диалоги (v2.1.49+). Это позволяет MCP server запросить дополнительную информацию прямо в середине workflow — например, подтверждение, выбор из списка вариантов или заполнение обязательных полей — и добавить интерактивность в взаимодействие с MCP server.</p>
+<h3 id="лимит-на-описания-и-инструкции-tools">Лимит на описания и инструкции tools <a class="h-anchor" href="#лимит-на-описания-и-инструкции-tools" aria-label="Ссылка на раздел">#</a></h3>
+<p>Начиная с v2.1.84, Claude Code вводит <strong>лимит 2 KB</strong> на описания и инструкции tools для каждого MCP server. Это не позволяет отдельным servers слишком сильно раздувать контекст чрезмерно многословными определениями tools, уменьшая context bloat и сохраняя эффективность взаимодействий.</p>
+<h3 id="mcp-prompts-как-slash-commands">MCP prompts как slash commands <a class="h-anchor" href="#mcp-prompts-как-slash-commands" aria-label="Ссылка на раздел">#</a></h3>
+<p>MCP servers могут публиковать prompts, которые отображаются в Claude Code как slash commands. Prompts доступны по соглашению об именовании:</p>
+<pre><code>/mcp__&lt;server&gt;__&lt;prompt&gt;</code></pre>
+<p>Например, если server с именем <code>github</code> публикует prompt <code>review</code>, его можно вызвать как <code>/mcp__github__review</code>.</p>
+<h3 id="дедупликация-servers">Дедупликация servers <a class="h-anchor" href="#дедупликация-servers" aria-label="Ссылка на раздел">#</a></h3>
+<p>Когда один и тот же MCP server определён в нескольких scopes (local, project, user), приоритет у локальной конфигурации. Это позволяет переопределять project-level или user-level MCP settings локальными настройками без конфликтов.</p>
+<p>Это позволяет переопределять project-level или user-level MCP settings локальными настройками без конфликтов.</p>
+<h3 id="mcp-resources-через-упоминания">MCP Resources через @-упоминания <a class="h-anchor" href="#mcp-resources-через-упоминания" aria-label="Ссылка на раздел">#</a></h3>
+<p>Вы можете ссылаться на MCP resources прямо в prompts, используя синтаксис <code>@</code>-mention:</p>
+<pre><code>@server-name:protocol://resource/path</code></pre>
+<p>Например, чтобы сослаться на конкретный resource базы данных:</p>
+<pre><code>@database:postgres://mydb/users</code></pre>
+<p>Это позволяет Claude подхватывать и включать содержимое MCP resource прямо в контекст разговора.</p>
+<h3 id="области-mcp">Области MCP <a class="h-anchor" href="#области-mcp" aria-label="Ссылка на раздел">#</a></h3>
+<p>MCP configurations можно хранить в разных scopes с различным уровнем совместного доступа:</p>
+<div class="table-wrap"><table><thead><tr><th>Область</th><th>Расположение</th><th>Описание</th><th>Доступно</th><th>Требует одобрения</th></tr></thead><tbody><tr><td><strong>Local</strong> (default)</td><td><code>~/.claude.json</code> (under project path)</td><td>Private to current user, только текущий проект (в старых версиях называлось <code>project</code>)</td><td>Только вы</td><td>Нет</td></tr><tr><td><strong>Project</strong></td><td><code>.mcp.json</code></td><td>Закоммичен в git repository</td><td>Члены команды</td><td>Да (при первом использовании)</td></tr><tr><td><strong>User</strong></td><td><code>~/.claude.json</code></td><td>Доступно во всех проектах (в старых версиях называлось <code>global</code>)</td><td>Только вы</td><td>Нет</td></tr></tbody></table></div>
+<h4 id="использование-project-scope">Использование project scope <a class="h-anchor" href="#использование-project-scope" aria-label="Ссылка на раздел">#</a></h4>
+<p>Храните project-specific MCP configurations в <code>.mcp.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;github&quot;: {
+      &quot;type&quot;: &quot;http&quot;,
+      &quot;url&quot;: &quot;https://api.github.com/mcp&quot;
+    }
+  }
+}</code></pre>
+<p>Участники команды увидят prompt на одобрение при первом использовании project MCPs.</p>
+<h3 id="управление-mcp-configuration">Управление MCP configuration <a class="h-anchor" href="#управление-mcp-configuration" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="добавление-mcp-servers">Добавление MCP servers <a class="h-anchor" href="#добавление-mcp-servers" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Добавить HTTP-based server
+claude mcp add --transport http github https://api.github.com/mcp
+
+# Добавить локальный stdio server
+claude mcp add --transport stdio database -- npx @company/db-server
+
+# Показать все MCP servers
+claude mcp list
+
+# Получить детали конкретного server
+claude mcp get github
+
+# Удалить MCP server
+claude mcp remove github
+
+# Сбросить project-specific approval choices
+claude mcp reset-project-choices
+
+# Импортировать из Claude Desktop
+claude mcp add-from-claude-desktop</code></pre>
+<h3 id="таблица-доступных-mcp-servers">Таблица доступных MCP servers <a class="h-anchor" href="#таблица-доступных-mcp-servers" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>MCP Server</th><th>Назначение</th><th>Частые tools</th><th>Auth</th><th>Real-time</th></tr></thead><tbody><tr><td><strong>Filesystem</strong></td><td>Операции с файлами</td><td>read, write, delete</td><td>OS permissions</td><td>✅ Да</td></tr><tr><td><strong>GitHub</strong></td><td>Управление repository</td><td>list_prs, create_issue, push</td><td>OAuth</td><td>✅ Да</td></tr><tr><td><strong>Slack</strong></td><td>Коммуникация команды</td><td>send_message, list_channels</td><td>Token</td><td>✅ Да</td></tr><tr><td><strong>Database</strong></td><td>SQL queries</td><td>query, insert, update</td><td>Credentials</td><td>✅ Да</td></tr><tr><td><strong>Google Docs</strong></td><td>Доступ к документам</td><td>read, write, share</td><td>OAuth</td><td>✅ Да</td></tr><tr><td><strong>Asana</strong></td><td>Управление проектами</td><td>create_task, update_status</td><td>API Key</td><td>✅ Да</td></tr><tr><td><strong>Stripe</strong></td><td>Платёжные данные</td><td>list_charges, create_invoice</td><td>API Key</td><td>✅ Да</td></tr><tr><td><strong>Memory</strong></td><td>Постоянная память</td><td>store, retrieve, delete</td><td>Local</td><td>❌ Нет</td></tr></tbody></table></div>
+<h3 id="h-2">Практические примеры <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="пример-1-конфигурация-github-mcp">Пример 1: конфигурация GitHub MCP <a class="h-anchor" href="#пример-1-конфигурация-github-mcp" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>File:</strong> <code>.mcp.json</code> (project root)</p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;github&quot;: {
+      &quot;command&quot;: &quot;npx&quot;,
+      &quot;args&quot;: [&quot;@modelcontextprotocol/server-github&quot;],
+      &quot;env&quot;: {
+        &quot;GITHUB_TOKEN&quot;: &quot;${GITHUB_TOKEN}&quot;
+      }
+    }
+  }
+}</code></pre>
+<p><strong>Доступные GitHub MCP tools:</strong></p>
+<h5 id="управление-pull-request">Управление Pull Request <a class="h-anchor" href="#управление-pull-request" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li><code>list_prs</code> - List all PRs in repository</li>
+<li><code>get_pr</code> - Get PR details including diff</li>
+<li><code>create_pr</code> - Create new PR</li>
+<li><code>update_pr</code> - Update PR description/title</li>
+<li><code>merge_pr</code> - Merge PR to main branch</li>
+<li><code>review_pr</code> - Add review comments</li>
+</ul>
+<p><strong>Пример запроса:</strong></p>
+<pre><code>/mcp__github__get_pr 456
+
+# Returns:
+Title: Add dark mode support
+Author: @alice
+Description: Implements dark theme using CSS variables
+Status: OPEN
+Reviewers: @bob, @charlie</code></pre>
+<h5 id="управление-issue">Управление Issue <a class="h-anchor" href="#управление-issue" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li><code>list_issues</code> - List all issues</li>
+<li><code>get_issue</code> - Get issue details</li>
+<li><code>create_issue</code> - Create new issue</li>
+<li><code>close_issue</code> - Close issue</li>
+<li><code>add_comment</code> - Add comment to issue</li>
+</ul>
+<h5 id="информация-о-repository">Информация о repository <a class="h-anchor" href="#информация-о-repository" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li><code>get_repo_info</code> - Repository details</li>
+<li><code>list_files</code> - File tree structure</li>
+<li><code>get_file_content</code> - Read file contents</li>
+<li><code>search_code</code> - Search across codebase</li>
+</ul>
+<h5 id="операции-с-commit">Операции с commit <a class="h-anchor" href="#операции-с-commit" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li><code>list_commits</code> - Commit history</li>
+<li><code>get_commit</code> - Specific commit details</li>
+<li><code>create_commit</code> - Create new commit</li>
+</ul>
+<p><strong>Настройка</strong>:</p>
+<pre><code class="language-bash">export GITHUB_TOKEN=&quot;your_github_token&quot;
+# Or use the CLI to add directly:
+claude mcp add --transport stdio github -- npx @modelcontextprotocol/server-github</code></pre>
+<h4 id="подстановка-переменных-окружения-в-configuration">Подстановка переменных окружения в configuration <a class="h-anchor" href="#подстановка-переменных-окружения-в-configuration" aria-label="Ссылка на раздел">#</a></h4>
+<p>MCP configurations поддерживают подстановку переменных окружения с fallback default-ами. Синтаксис <code>${VAR}</code> и <code>${VAR:-default}</code> работает в полях <code>command</code>, <code>args</code>, <code>env</code>, <code>url</code> и <code>headers</code>.</p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;api-server&quot;: {
+      &quot;type&quot;: &quot;http&quot;,
+      &quot;url&quot;: &quot;${API_BASE_URL:-https://api.example.com}/mcp&quot;,
+      &quot;headers&quot;: {
+        &quot;Authorization&quot;: &quot;Bearer ${API_KEY}&quot;,
+        &quot;X-Custom-Header&quot;: &quot;${CUSTOM_HEADER:-default-value}&quot;
+      }
+    },
+    &quot;local-server&quot;: {
+      &quot;command&quot;: &quot;${MCP_BIN_PATH:-npx}&quot;,
+      &quot;args&quot;: [&quot;${MCP_PACKAGE:-@company/mcp-server}&quot;],
+      &quot;env&quot;: {
+        &quot;DB_URL&quot;: &quot;${DATABASE_URL:-postgresql://localhost/dev}&quot;
+      }
+    }
+  }
+}</code></pre>
+<p>Переменные подставляются во время выполнения:</p>
+<ul>
+<li><code>${VAR}</code> - использует переменную окружения, ошибка если она не задана</li>
+<li><code>${VAR:-default}</code> - использует переменную окружения, а если она не задана, берёт default</li>
+</ul>
+<h4 id="пример-2-настройка-database-mcp">Пример 2: настройка Database MCP <a class="h-anchor" href="#пример-2-настройка-database-mcp" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Конфигурация:</strong></p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;database&quot;: {
+      &quot;command&quot;: &quot;npx&quot;,
+      &quot;args&quot;: [&quot;@modelcontextprotocol/server-database&quot;],
+      &quot;env&quot;: {
+        &quot;DATABASE_URL&quot;: &quot;postgresql://user:pass@localhost/mydb&quot;
+      }
+    }
+  }
+}</code></pre>
+<p><strong>Пример использования:</strong></p>
+<pre><code class="language-markdown">User: Fetch all users with more than 10 orders
+
+Claude: I&#x27;ll query your database to find that information.
+
+# Using MCP database tool:
+SELECT u.*, COUNT(o.id) as order_count
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id
+GROUP BY u.id
+HAVING COUNT(o.id) &gt; 10
+ORDER BY order_count DESC;
+
+# Results:
+- Alice: 15 orders
+- Bob: 12 orders
+- Charlie: 11 orders</code></pre>
+<p><strong>Setup</strong>:</p>
+<pre><code class="language-bash">export DATABASE_URL=&quot;postgresql://user:pass@localhost/mydb&quot;
+# Or use the CLI to add directly:
+claude mcp add --transport stdio database -- npx @modelcontextprotocol/server-database</code></pre>
+<h4 id="пример-3-multi-mcp-workflow">Пример 3: Multi-MCP workflow <a class="h-anchor" href="#пример-3-multi-mcp-workflow" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Сценарий: генерация daily report</strong></p>
+<pre><code class="language-markdown"># Daily Report workflow с использованием нескольких MCPs
+
+## Настройка
+1. GitHub MCP - получить PR metrics
+2. Database MCP - запросить sales data
+3. Slack MCP - опубликовать report
+4. Filesystem MCP - сохранить report
+
+## Workflow
+
+### Шаг 1: получить данные GitHub
+/mcp__github__list_prs completed:true last:7days
+
+Output:
+- Total PRs: 42
+- Average merge time: 2.3 hours
+- Review turnaround: 1.1 hours
+
+### Шаг 2: запросить database
+SELECT COUNT(*) as sales, SUM(amount) as revenue
+FROM orders
+WHERE created_at &gt; NOW() - INTERVAL &#x27;1 day&#x27;
+
+Output:
+- Sales: 247
+- Revenue: $12,450
+
+### Шаг 3: сгенерировать report
+Собрать данные в HTML report
+
+### Шаг 4: сохранить в Filesystem
+Записать report.html в `/reports/`
+
+### Шаг 5: отправить в Slack
+Отправить summary в канал `#daily-reports`
+
+Итоговый вывод:
+✅ Report generated and posted
+📊 47 PRs merged this week
+💰 $12,450 in daily sales</code></pre>
+<p><strong>Настройка</strong>:</p>
+<pre><code class="language-bash">export GITHUB_TOKEN=&quot;your_github_token&quot;
+export DATABASE_URL=&quot;postgresql://user:pass@localhost/mydb&quot;
+export SLACK_TOKEN=&quot;your_slack_token&quot;
+# Add each MCP server via the CLI or configure them in .mcp.json</code></pre>
+<h4 id="пример-4-операции-filesystem-mcp">Пример 4: операции Filesystem MCP <a class="h-anchor" href="#пример-4-операции-filesystem-mcp" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Configuration:</strong></p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;filesystem&quot;: {
+      &quot;command&quot;: &quot;npx&quot;,
+      &quot;args&quot;: [&quot;@modelcontextprotocol/server-filesystem&quot;, &quot;/home/user/projects&quot;]
+    }
+  }
+}</code></pre>
+<p><strong>Доступные операции:</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Операция</th><th>Команда</th><th>Назначение</th></tr></thead><tbody><tr><td>List files</td><td><code>ls ~/projects</code></td><td>Показать содержимое каталога</td></tr><tr><td>Read file</td><td><code>cat src/main.ts</code></td><td>Прочитать содержимое файла</td></tr><tr><td>Write file</td><td><code>create docs/api.md</code></td><td>Создать новый файл</td></tr><tr><td>Edit file</td><td><code>edit src/app.ts</code></td><td>Изменить файл</td></tr><tr><td>Search</td><td><code>grep &quot;async function&quot;</code></td><td>Искать в файлах</td></tr><tr><td>Delete</td><td><code>rm old-file.js</code></td><td>Удалить файл</td></tr></tbody></table></div>
+<p><strong>Setup</strong>:</p>
+<pre><code class="language-bash"># Use the CLI to add directly:
+claude mcp add --transport stdio filesystem -- npx @modelcontextprotocol/server-filesystem /home/user/projects</code></pre>
+<h3 id="mcp-против-memory-матрица-принятия-решения">MCP против Memory: матрица принятия решения <a class="h-anchor" href="#mcp-против-memory-матрица-принятия-решения" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-mermaid">graph TD
+    A[&quot;Нужны внешние данные?&quot;]
+    A --&gt;|Нет| B[&quot;Использовать Memory&quot;]
+    A --&gt;|Да| C[&quot;Они часто меняются?&quot;]
+    C --&gt;|Нет/редко| B
+    C --&gt;|Да/часто| D[&quot;Использовать MCP&quot;]
+
+    B --&gt;|Хранит| E[&quot;Preferences&lt;br/&gt;Context&lt;br/&gt;History&quot;]
+    D --&gt;|Получает доступ| F[&quot;Live APIs&lt;br/&gt;Databases&lt;br/&gt;Services&quot;]
+
+    style A fill:#fff3e0,stroke:#333,color:#333
+    style B fill:#e1f5fe,stroke:#333,color:#333
+    style C fill:#fff3e0,stroke:#333,color:#333
+    style D fill:#f3e5f5,stroke:#333,color:#333
+    style E fill:#e8f5e9,stroke:#333,color:#333
+    style F fill:#e8f5e9,stroke:#333,color:#333</code></pre>
+<h3 id="паттерн-request-response">Паттерн request/response <a class="h-anchor" href="#паттерн-request-response" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant App as Claude
+    participant MCP as MCP Server
+    participant DB as Database
+
+    App-&gt;&gt;MCP: Request: &quot;SELECT * FROM users WHERE id=1&quot;
+    MCP-&gt;&gt;DB: Execute query
+    DB--&gt;&gt;MCP: Result set
+    MCP--&gt;&gt;App: Return parsed data
+    App-&gt;&gt;App: Process result
+    App-&gt;&gt;App: Continue task
+
+    Note over MCP,DB: Real-time access&lt;br/&gt;No caching</code></pre>
+<h3 id="h-3">Переменные окружения <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Храните чувствительные credentials в переменных окружения:</p>
+<pre><code class="language-bash"># ~/.bashrc or ~/.zshrc
+export GITHUB_TOKEN=&quot;ghp_xxxxxxxxxxxxx&quot;
+export DATABASE_URL=&quot;postgresql://user:pass@localhost/mydb&quot;
+export SLACK_TOKEN=&quot;xoxb-xxxxxxxxxxxxx&quot;</code></pre>
+<p>Затем ссылайтесь на них в MCP config:</p>
+<pre><code class="language-json">{
+  &quot;env&quot;: {
+    &quot;GITHUB_TOKEN&quot;: &quot;${GITHUB_TOKEN}&quot;
+  }
+}</code></pre>
+<h3 id="claude-как-mcp-server-claude-mcp-serve">Claude как MCP Server (<code>claude mcp serve</code>) <a class="h-anchor" href="#claude-как-mcp-server-claude-mcp-serve" aria-label="Ссылка на раздел">#</a></h3>
+<p>Сам Claude Code может выступать как MCP server для других приложений. Это позволяет внешним tools, редакторам и системам автоматизации использовать возможности Claude через стандартный MCP protocol.</p>
+<pre><code class="language-bash"># Start Claude Code as an MCP server on stdio
+claude mcp serve</code></pre>
+<p>После этого другие applications могут подключаться к этому server как к любому stdio-based MCP server. Например, чтобы добавить Claude Code как MCP server в другом экземпляре Claude Code:</p>
+<pre><code class="language-bash">claude mcp add --transport stdio claude-agent -- claude mcp serve</code></pre>
+<p>Это полезно для построения multi-agent workflows, где один экземпляр Claude orchestrates другой.</p>
+<h3 id="управляемая-конфигурация-mcp-enterprise">Управляемая конфигурация MCP (Enterprise) <a class="h-anchor" href="#управляемая-конфигурация-mcp-enterprise" aria-label="Ссылка на раздел">#</a></h3>
+<p>Для корпоративных развёртываний IT-администраторы могут принудительно задавать политики MCP server через файл <code>managed-mcp.json</code>. Этот файл даёт эксклюзивный контроль над тем, какие MCP servers разрешены или заблокированы на уровне всей организации.</p>
+<p><strong>Расположение:</strong></p>
+<ul>
+<li>macOS: <code>/Library/Application Support/ClaudeCode/managed-mcp.json</code></li>
+<li>Linux: <code>~/.config/ClaudeCode/managed-mcp.json</code></li>
+<li>Windows: <code>%APPDATA%\ClaudeCode\managed-mcp.json</code></li>
+</ul>
+<p><strong>Возможности:</strong></p>
+<ul>
+<li><code>allowedMcpServers</code> -- whitelist разрешённых servers</li>
+<li><code>deniedMcpServers</code> -- blocklist запрещённых servers</li>
+<li>Поддерживает сопоставление по имени server, команде и URL patterns</li>
+<li>Организационные MCP policies применяются до пользовательской конфигурации</li>
+<li>Предотвращает неавторизованные подключения к servers</li>
+</ul>
+<p><strong>Пример конфигурации:</strong></p>
+<pre><code class="language-json">{
+  &quot;allowedMcpServers&quot;: [
+    {
+      &quot;serverName&quot;: &quot;github&quot;,
+      &quot;serverUrl&quot;: &quot;https://api.github.com/mcp&quot;
+    },
+    {
+      &quot;serverName&quot;: &quot;company-internal&quot;,
+      &quot;serverCommand&quot;: &quot;company-mcp-server&quot;
+    }
+  ],
+  &quot;deniedMcpServers&quot;: [
+    {
+      &quot;serverName&quot;: &quot;untrusted-*&quot;
+    },
+    {
+      &quot;serverUrl&quot;: &quot;http://*&quot;
+    }
+  ]
+}</code></pre>
+<blockquote>
+<p><strong>Примечание:</strong> если server совпадает и с <code>allowedMcpServers</code>, и с <code>deniedMcpServers</code>, приоритет у deny rule.</p>
+</blockquote>
+<h3 id="mcp-servers-предоставляемые-plugins">MCP Servers, предоставляемые Plugins <a class="h-anchor" href="#mcp-servers-предоставляемые-plugins" aria-label="Ссылка на раздел">#</a></h3>
+<p>Plugins могут упаковывать собственные MCP servers, делая их автоматически доступными после установки plugin. Такие MCP servers можно определить двумя способами:</p>
+<ol>
+<li><strong>Standalone <code>.mcp.json</code></strong> -- Поместите файл <code>.mcp.json</code> в корневой каталог plugin</li>
+<li><strong>Inline in <code>plugin.json</code></strong> -- Определите MCP servers прямо в manifest plugin</li>
+</ol>
+<p>Используйте переменную <code>${CLAUDE_PLUGIN_ROOT}</code>, чтобы ссылаться на пути относительно каталога установки plugin:</p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;plugin-tools&quot;: {
+      &quot;command&quot;: &quot;node&quot;,
+      &quot;args&quot;: [&quot;${CLAUDE_PLUGIN_ROOT}/dist/mcp-server.js&quot;],
+      &quot;env&quot;: {
+        &quot;CONFIG_PATH&quot;: &quot;${CLAUDE_PLUGIN_ROOT}/config.json&quot;
+      }
+    }
+  }
+}</code></pre>
+<h3 id="mcp-в-рамках-subagent">MCP в рамках Subagent <a class="h-anchor" href="#mcp-в-рамках-subagent" aria-label="Ссылка на раздел">#</a></h3>
+<p>MCP servers можно определять прямо во frontmatter agent с помощью ключа <code>mcpServers:</code>, ограничивая их конкретным subagent вместо всего проекта. Это полезно, когда agent нужен доступ к определённому MCP server, который не требуется другим agents в workflow.</p>
+<pre><code class="language-yaml">---
+mcpServers:
+  my-tool:
+    type: http
+    url: https://my-tool.example.com/mcp
+---
+
+Вы - agent с доступом к `my-tool` для специализированных операций.</code></pre>
+<p>MCP servers, ограниченные subagent, доступны только в контексте выполнения этого agent и не разделяются с parent или sibling agents.</p>
+<h3 id="ограничения-на-mcp-output">Ограничения на MCP output <a class="h-anchor" href="#ограничения-на-mcp-output" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code вводит ограничения на output MCP tools, чтобы предотвратить переполнение контекста:</p>
+<div class="table-wrap"><table><thead><tr><th>Ограничение</th><th>Порог</th><th>Поведение</th></tr></thead><tbody><tr><td><strong>Warning</strong></td><td>10,000 tokens</td><td>Показывается предупреждение, что output большой</td></tr><tr><td><strong>Default max</strong></td><td>25,000 tokens</td><td>Output обрезается после этого лимита</td></tr><tr><td><strong>Disk persistence</strong></td><td>50,000 characters</td><td>Результаты tools, превышающие 50K символов, сохраняются на диск</td></tr></tbody></table></div>
+<p>Максимальный лимит output настраивается через переменную окружения <code>MAX_MCP_OUTPUT_TOKENS</code>:</p>
+<pre><code class="language-bash"># Increase the max output to 50,000 tokens
+export MAX_MCP_OUTPUT_TOKENS=50000</code></pre>
+<h3 id="решение-context-bloat-через-code-execution">Решение context bloat через code execution <a class="h-anchor" href="#решение-context-bloat-через-code-execution" aria-label="Ссылка на раздел">#</a></h3>
+<p>По мере роста использования MCP подключение к десяткам servers с сотнями или тысячами tools создаёт серьёзную проблему: <strong>context bloat</strong>. Пожалуй, это самая большая проблема MCP на масштабе, и engineering team Anthropic предложила элегантное решение — использовать code execution вместо прямых tool calls.</p>
+<blockquote>
+<p><strong>Источник</strong>: <a href="https://www.anthropic.com/engineering/code-execution-with-mcp">Code Execution with MCP: Building More Efficient Agents</a> — Anthropic Engineering Blog</p>
+</blockquote>
+<h4 id="проблема-два-источника-token-waste">Проблема: два источника token waste <a class="h-anchor" href="#проблема-два-источника-token-waste" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>1. Определения tools перегружают окно контекста</strong></p>
+<p>Большинство MCP clients загружают все определения tools заранее. При подключении к тысячам tools модель должна обработать сотни тысяч tokens ещё до того, как прочитает запрос пользователя.</p>
+<p><strong>2. Промежуточные результаты потребляют дополнительные tokens</strong></p>
+<p>Каждый промежуточный результат tool проходит через контекст модели. Представьте перенос стенограммы встречи из Google Drive в Salesforce — полная стенограмма проходит через контекст <strong>дважды</strong>: при чтении и при записи в destination. Стенограмма двухчасовой встречи может добавить 50,000+ лишних tokens.</p>
+<pre><code class="language-mermaid">graph LR
+    A[&quot;Model&quot;] --&gt;|&quot;Tool Call: getDocument&quot;| B[&quot;MCP Server&quot;]
+    B --&gt;|&quot;Full transcript (50K tokens)&quot;| A
+    A --&gt;|&quot;Tool Call: updateRecord&lt;br/&gt;(re-sends full transcript)&quot;| B
+    B --&gt;|&quot;Confirmation&quot;| A
+
+    style A fill:#ffcdd2,stroke:#333,color:#333
+    style B fill:#f3e5f5,stroke:#333,color:#333</code></pre>
+<h4 id="решение-mcp-tools-как-code-apis">Решение: MCP Tools как Code APIs <a class="h-anchor" href="#решение-mcp-tools-как-code-apis" aria-label="Ссылка на раздел">#</a></h4>
+<p>Вместо того чтобы проводить определения tools и результаты через окно контекста, agent <strong>пишет code</strong>, который вызывает MCP tools как APIs. Код выполняется в sandboxed execution environment, а модели возвращается только итоговый результат.</p>
+<pre><code class="language-mermaid">graph LR
+    A[&quot;Model&quot;] --&gt;|&quot;Writes code&quot;| B[&quot;Code Execution&lt;br/&gt;Environment&quot;]
+    B --&gt;|&quot;Calls tools directly&quot;| C[&quot;MCP Servers&quot;]
+    C --&gt;|&quot;Data stays in&lt;br/&gt;execution env&quot;| B
+    B --&gt;|&quot;Only final result&lt;br/&gt;(minimal tokens)&quot;| A
+
+    style A fill:#c8e6c9,stroke:#333,color:#333
+    style B fill:#e1f5fe,stroke:#333,color:#333
+    style C fill:#f3e5f5,stroke:#333,color:#333</code></pre>
+<h5 id="h-4">Как это работает <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h5>
+<p>MCP tools are presented as a file tree of typed functions:</p>
+<pre><code>servers/
+├── google-drive/
+│   ├── getDocument.ts
+│   └── index.ts
+├── salesforce/
+│   ├── updateRecord.ts
+│   └── index.ts
+└── ...</code></pre>
+<p>Each tool file contains a typed wrapper:</p>
+<pre><code class="language-typescript">// ./servers/google-drive/getDocument.ts
+import { callMCPTool } from &quot;../../../client.js&quot;;
+
+interface GetDocumentInput {
+  documentId: string;
+}
+
+interface GetDocumentResponse {
+  content: string;
+}
+
+export async function getDocument(
+  input: GetDocumentInput
+): Promise&lt;GetDocumentResponse&gt; {
+  return callMCPTool&lt;GetDocumentResponse&gt;(
+    &#x27;google_drive__get_document&#x27;, input
+  );
+}</code></pre>
+<p>Затем agent пишет code, который оркестрирует tools:</p>
+<pre><code class="language-typescript">import * as gdrive from &#x27;./servers/google-drive&#x27;;
+import * as salesforce from &#x27;./servers/salesforce&#x27;;
+
+// Data flows directly between tools — never through the model
+const transcript = (
+  await gdrive.getDocument({ documentId: &#x27;abc123&#x27; })
+).content;
+
+await salesforce.updateRecord({
+  objectType: &#x27;SalesMeeting&#x27;,
+  recordId: &#x27;00Q5f000001abcXYZ&#x27;,
+  data: { Notes: transcript }
+});</code></pre>
+<p><strong>Результат: использование token-ов падает примерно с 150,000 до 2,000 — сокращение на 98.7%.</strong></p>
+<h4 id="h-5">Ключевые преимущества <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Преимущество</th><th>Описание</th></tr></thead><tbody><tr><td><strong>Progressive Disclosure</strong></td><td>Agent просматривает filesystem и загружает только те определения tools, которые ему нужны, а не все сразу</td></tr><tr><td><strong>Context-Efficient Results</strong></td><td>Данные фильтруются и преобразуются в execution environment до возврата модели</td></tr><tr><td><strong>Powerful Control Flow</strong></td><td>Циклы, условные конструкции и обработка ошибок выполняются в code без лишних round-trips через модель</td></tr><tr><td><strong>Privacy Preservation</strong></td><td>Промежуточные данные (PII, чувствительные записи) остаются в execution environment; они не попадают в model context</td></tr><tr><td><strong>State Persistence</strong></td><td>Agents могут сохранять промежуточные результаты в файлы и строить переиспользуемые skill functions</td></tr></tbody></table></div>
+<h5 id="example-filtering-large-datasets">Example: Filtering Large Datasets <a class="h-anchor" href="#example-filtering-large-datasets" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-typescript">// Without code execution — all 10,000 rows flow through context
+// TOOL CALL: gdrive.getSheet(sheetId: &#x27;abc123&#x27;)
+//   -&gt; returns 10,000 rows in context
+
+// With code execution — filter in the execution environment
+const allRows = await gdrive.getSheet({ sheetId: &#x27;abc123&#x27; });
+const pendingOrders = allRows.filter(
+  row =&gt; row[&quot;Status&quot;] === &#x27;pending&#x27;
+);
+console.log(`Found ${pendingOrders.length} pending orders`);
+console.log(pendingOrders.slice(0, 5)); // Only 5 rows reach the model</code></pre>
+<h5 id="example-loop-without-round-tripping">Example: Loop Without Round-Tripping <a class="h-anchor" href="#example-loop-without-round-tripping" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-typescript">// Poll for a deployment notification — runs entirely in code
+let found = false;
+while (!found) {
+  const messages = await slack.getChannelHistory({
+    channel: &#x27;C123456&#x27;
+  });
+  found = messages.some(
+    m =&gt; m.text.includes(&#x27;deployment complete&#x27;)
+  );
+  if (!found) await new Promise(r =&gt; setTimeout(r, 5000));
+}
+console.log(&#x27;Deployment notification received&#x27;);</code></pre>
+<h4 id="h-6">Компромиссы, которые стоит учитывать <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<p>Code execution добавляет собственную сложность. Для запуска кода, сгенерированного agent, требуется:</p>
+<ul>
+<li><strong>Безопасная sandboxed execution environment</strong> с подходящими лимитами ресурсов</li>
+<li><strong>Monitoring и logging</strong> исполняемого кода</li>
+<li>Дополнительные <strong>infrastructure overhead</strong> по сравнению с прямыми tool calls</li>
+</ul>
+<p>Преимущества — меньшая стоимость token-ов, меньшая latency, лучшая композиция tools — нужно сопоставлять с этими затратами на реализацию. Для agents с несколькими MCP servers прямые tool calls могут быть проще. Для agents на масштабе (десятки servers, сотни tools) code execution даёт заметное улучшение.</p>
+<h4 id="mcporter-runtime-для-композиции-mcp-tools">MCPorter: runtime для композиции MCP tools <a class="h-anchor" href="#mcporter-runtime-для-композиции-mcp-tools" aria-label="Ссылка на раздел">#</a></h4>
+<p><a href="https://github.com/steipete/mcporter">MCPorter</a> — это TypeScript runtime и CLI toolkit, который делает вызов MCP servers практичным без boilerplate и помогает уменьшить context bloat за счёт выборочной экспозиции tools и typed wrappers.</p>
+<p><strong>Что это решает:</strong> вместо загрузки всех определений tools со всех MCP servers сразу MCPorter позволяет находить, просматривать и вызывать конкретные tools по требованию — сохраняя контекст лёгким.</p>
+<p><strong>Ключевые возможности:</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Возможность</th><th>Описание</th></tr></thead><tbody><tr><td><strong>Zero-config discovery</strong></td><td>Автоматически находит MCP servers из Cursor, Claude, Codex или локальных configs</td></tr><tr><td><strong>Typed tool clients</strong></td><td><code>mcporter emit-ts</code> генерирует <code>.d.ts</code> interfaces и готовые к запуску wrappers</td></tr><tr><td><strong>Composable API</strong></td><td><code>createServerProxy()</code> открывает tools как методы в camelCase с helper-ами <code>.text()</code>, <code>.json()</code>, <code>.markdown()</code></td></tr><tr><td><strong>CLI generation</strong></td><td><code>mcporter generate-cli</code> превращает любой MCP server в отдельный CLI с фильтрацией <code>--include-tools</code> / <code>--exclude-tools</code></td></tr><tr><td><strong>Parameter hiding</strong></td><td>Необязательные параметры по умолчанию скрыты, что уменьшает verbosity схемы</td></tr></tbody></table></div>
+<p><strong>Установка:</strong></p>
+<pre><code class="language-bash">npx mcporter list          # No install required — discover servers instantly
+pnpm add mcporter          # Add to a project
+brew install steipete/tap/mcporter  # macOS via Homebrew</code></pre>
+<p><strong>Пример — композиция tools в TypeScript:</strong></p>
+<pre><code class="language-typescript">import { createRuntime, createServerProxy } from &quot;mcporter&quot;;
+
+const runtime = await createRuntime();
+const gdrive = createServerProxy(runtime, &quot;google-drive&quot;);
+const salesforce = createServerProxy(runtime, &quot;salesforce&quot;);
+
+// Data flows between tools without passing through the model context
+const doc = await gdrive.getDocument({ documentId: &quot;abc123&quot; });
+await salesforce.updateRecord({
+  objectType: &quot;SalesMeeting&quot;,
+  recordId: &quot;00Q5f000001abcXYZ&quot;,
+  data: { Notes: doc.text() }
+});</code></pre>
+<p><strong>Пример — вызов tool через CLI:</strong></p>
+<pre><code class="language-bash"># Вызвать конкретный tool напрямую
+npx mcporter call linear.create_comment issueId:ENG-123 body:&#x27;Looks good!&#x27;
+
+# Показать доступные servers и tools
+npx mcporter list</code></pre>
+<p>MCPorter дополняет описанный выше подход code execution, предоставляя runtime infrastructure для вызова MCP tools как typed APIs, что упрощает удержание промежуточных данных вне model context.</p>
+<h3 id="h-7">Лучшие практики <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-8">Соображения по безопасности <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<h5 id="h-9">Делайте ✅ <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li>Используйте переменные окружения для всех credentials</li>
+<li>Регулярно обновляйте tokens и API keys (рекомендуется раз в месяц)</li>
+<li>По возможности используйте read-only tokens</li>
+<li>Ограничивайте доступ MCP server минимально необходимой областью</li>
+<li>Следите за использованием MCP server и журналами доступа</li>
+<li>Используйте OAuth для внешних сервисов, когда это возможно</li>
+<li>Вводите rate limiting для MCP requests</li>
+<li>Тестируйте MCP connections перед production use</li>
+<li>Документируйте все активные MCP connections</li>
+<li>Поддерживайте MCP server packages в актуальном состоянии</li>
+</ul>
+<h5 id="h-10">Не делайте ❌ <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li>Не встраивайте credentials прямо в config files</li>
+<li>Не коммитьте tokens или secrets в git</li>
+<li>Не передавайте tokens в командных чатах или письмах</li>
+<li>Не используйте personal tokens для team projects</li>
+<li>Не выдавайте лишние permissions</li>
+<li>Не игнорируйте authentication errors</li>
+<li>Не публикуйте MCP endpoints наружу</li>
+<li>Не запускайте MCP servers с root/admin privileges</li>
+<li>Не кэшируйте sensitive data в logs</li>
+<li>Не отключайте authentication mechanisms</li>
+</ul>
+<h4 id="h-11">Лучшие практики конфигурации <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li><strong>Version Control</strong>: Храните <code>.mcp.json</code> в git, но для secrets используйте переменные окружения</li>
+<li><strong>Least Privilege</strong>: Выдавайте минимум permissions, необходимых каждому MCP server</li>
+<li><strong>Isolation</strong>: По возможности запускайте разные MCP servers в отдельных processes</li>
+<li><strong>Monitoring</strong>: Логируйте все MCP requests и errors для audit trails</li>
+<li><strong>Testing</strong>: Тестируйте все MCP configurations перед deploy в production</li>
+</ol>
+<h4 id="h-12">Советы по производительности <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Кэшируйте часто запрашиваемые данные на уровне application</li>
+<li>Используйте более конкретные MCP queries, чтобы уменьшить передачу данных</li>
+<li>Следите за временем ответа MCP operations</li>
+<li>Рассмотрите rate limiting для внешних APIs</li>
+<li>Используйте batching при выполнении нескольких операций</li>
+</ul>
+<h3 id="h-13">Инструкции по установке <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-14">Предварительные требования <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Node.js and npm installed</li>
+<li>Claude Code CLI installed</li>
+<li>API tokens/credentials for external services</li>
+</ul>
+<h4 id="h-15">Пошаговая настройка <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li><strong>Добавьте ваш первый MCP server</strong> через CLI (пример: GitHub):</li>
+</ol>
+<pre><code class="language-bash">claude mcp add --transport stdio github -- npx @modelcontextprotocol/server-github</code></pre>
+<p>Или создайте файл <code>.mcp.json</code> в корне проекта:</p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;github&quot;: {
+      &quot;command&quot;: &quot;npx&quot;,
+      &quot;args&quot;: [&quot;@modelcontextprotocol/server-github&quot;],
+      &quot;env&quot;: {
+        &quot;GITHUB_TOKEN&quot;: &quot;${GITHUB_TOKEN}&quot;
+      }
+    }
+  }
+}</code></pre>
+<ol>
+<li><strong>Установите переменные окружения:</strong></li>
+</ol>
+<pre><code class="language-bash">export GITHUB_TOKEN=&quot;your_github_personal_access_token&quot;</code></pre>
+<ol>
+<li><strong>Проверьте соединение:</strong></li>
+</ol>
+<pre><code class="language-bash">claude /mcp</code></pre>
+<ol>
+<li><strong>Используйте MCP tools:</strong></li>
+</ol>
+<pre><code class="language-bash">/mcp__github__list_prs
+/mcp__github__create_issue &quot;Title&quot; &quot;Description&quot;</code></pre>
+<h4 id="h-16">Установка для конкретных сервисов <a class="h-anchor" href="#h-16" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>GitHub MCP:</strong></p>
+<pre><code class="language-bash">npm install -g @modelcontextprotocol/server-github</code></pre>
+<p><strong>Database MCP:</strong></p>
+<pre><code class="language-bash">npm install -g @modelcontextprotocol/server-database</code></pre>
+<p><strong>Filesystem MCP:</strong></p>
+<pre><code class="language-bash">npm install -g @modelcontextprotocol/server-filesystem</code></pre>
+<p><strong>Slack MCP:</strong></p>
+<pre><code class="language-bash">npm install -g @modelcontextprotocol/server-slack</code></pre>
+<h3 id="h-17">Устранение неполадок <a class="h-anchor" href="#h-17" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="mcp-server-не-найден">MCP Server не найден <a class="h-anchor" href="#mcp-server-не-найден" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Проверить, что MCP server установлен
+npm list -g @modelcontextprotocol/server-github
+
+# Установить, если отсутствует
+npm install -g @modelcontextprotocol/server-github</code></pre>
+<h4 id="h-18">Сбой аутентификации <a class="h-anchor" href="#h-18" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Проверить, что переменная окружения задана
+echo $GITHUB_TOKEN
+
+# Повторно экспортировать при необходимости
+export GITHUB_TOKEN=&quot;your_token&quot;
+
+# Проверить, что token имеет правильные permissions
+# Check GitHub token scopes at: https://github.com/settings/tokens</code></pre>
+<h4 id="h-19">Тайм-аут соединения <a class="h-anchor" href="#h-19" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Check network connectivity: <code>ping api.github.com</code></li>
+<li>Verify API endpoint is accessible</li>
+<li>Check rate limits on API</li>
+<li>Try increasing timeout in config</li>
+<li>Check for firewall or proxy issues</li>
+</ul>
+<h4 id="сбой-mcp-server">Сбой MCP Server <a class="h-anchor" href="#сбой-mcp-server" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Check MCP server logs: <code>~/.claude/logs/</code></li>
+<li>Verify all environment variables are set</li>
+<li>Ensure proper file permissions</li>
+<li>Try reinstalling the MCP server package</li>
+<li>Check for conflicting processes on the same port</li>
+</ul>
+<h3 id="h-20">Связанные концепции <a class="h-anchor" href="#h-20" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="memory-против-mcp">Memory против MCP <a class="h-anchor" href="#memory-против-mcp" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Memory</strong>: Хранит постоянные, неизменные данные (preferences, context, history)</li>
+<li><strong>MCP</strong>: Получает доступ к живым, изменяющимся данным (APIs, databases, real-time services)</li>
+</ul>
+<h4 id="h-21">Когда что использовать <a class="h-anchor" href="#h-21" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Use Memory</strong> для: user preferences, conversation history, learned context</li>
+<li><strong>Use MCP</strong> для: current GitHub issues, live database queries, real-time data</li>
+</ul>
+<h4 id="интеграция-с-другими-возможностями-claude">Интеграция с другими возможностями Claude <a class="h-anchor" href="#интеграция-с-другими-возможностями-claude" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Комбинируйте MCP с Memory для richer context</li>
+<li>Используйте MCP tools в prompts для более качественного reasoning</li>
+<li>Применяйте несколько MCP для complex workflows</li>
+</ul>
+<h3 id="h-22">Дополнительные ресурсы <a class="h-anchor" href="#h-22" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/en/mcp">Официальная документация MCP</a></li>
+<li><a href="https://modelcontextprotocol.io/specification">Спецификация MCP Protocol</a></li>
+<li><a href="https://github.com/modelcontextprotocol/servers">GitHub-репозиторий MCP</a></li>
+<li><a href="https://github.com/modelcontextprotocol/servers">Доступные MCP Servers</a></li>
+<li><a href="https://github.com/steipete/mcporter">MCPorter</a> — TypeScript runtime и CLI для вызова MCP servers без boilerplate</li>
+<li><a href="https://www.anthropic.com/engineering/code-execution-with-mcp">Code Execution with MCP</a> — инженерный блог Anthropic о решении context bloat</li>
+<li><a href="https://code.claude.com/docs/en/cli-reference">Справка по Claude Code CLI</a></li>
+<li><a href="https://docs.anthropic.com">Документация Claude API</a></li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

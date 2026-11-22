@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>API Module Standards</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/02-memory/index.html">02-memory</a></nav>
+<h1 id="api-module-standards">API Module Standards <a class="h-anchor" href="#api-module-standards" aria-label="Ссылка на раздел">#</a></h1>
+<p>This file overrides root CLAUDE.md for everything in /src/api/</p>
+<h3 id="api-specific-standards">API-Specific Standards <a class="h-anchor" href="#api-specific-standards" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="request-validation">Request Validation <a class="h-anchor" href="#request-validation" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Use Zod for schema validation</li>
+<li>Always validate input</li>
+<li>Return 400 with validation errors</li>
+<li>Include field-level error details</li>
+</ul>
+<h4 id="authentication">Authentication <a class="h-anchor" href="#authentication" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>All endpoints require JWT token</li>
+<li>Token in Authorization header</li>
+<li>Token expires after 24 hours</li>
+<li>Implement refresh token mechanism</li>
+</ul>
+<h4 id="response-format">Response Format <a class="h-anchor" href="#response-format" aria-label="Ссылка на раздел">#</a></h4>
+<p>All responses must follow this structure:</p>
+<pre><code class="language-json">{
+  &quot;success&quot;: true,
+  &quot;data&quot;: { /* actual data */ },
+  &quot;timestamp&quot;: &quot;2025-11-06T10:30:00Z&quot;,
+  &quot;version&quot;: &quot;1.0&quot;
+}</code></pre>
+<p>Error responses:</p>
+<pre><code class="language-json">{
+  &quot;success&quot;: false,
+  &quot;error&quot;: {
+    &quot;code&quot;: &quot;VALIDATION_ERROR&quot;,
+    &quot;message&quot;: &quot;User message&quot;,
+    &quot;details&quot;: { /* field errors */ }
+  },
+  &quot;timestamp&quot;: &quot;2025-11-06T10:30:00Z&quot;
+}</code></pre>
+<h4 id="pagination">Pagination <a class="h-anchor" href="#pagination" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Use cursor-based pagination (not offset)</li>
+<li>Include <code>hasMore</code> boolean</li>
+<li>Limit max page size to 100</li>
+<li>Default page size: 20</li>
+</ul>
+<h4 id="rate-limiting">Rate Limiting <a class="h-anchor" href="#rate-limiting" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>1000 requests per hour for authenticated users</li>
+<li>100 requests per hour for public endpoints</li>
+<li>Return 429 when exceeded</li>
+<li>Include retry-after header</li>
+</ul>
+<h4 id="caching">Caching <a class="h-anchor" href="#caching" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Use Redis for session caching</li>
+<li>Cache duration: 5 minutes default</li>
+<li>Invalidate on write operations</li>
+<li>Tag cache keys with resource type</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

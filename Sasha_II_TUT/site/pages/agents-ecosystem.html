@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru" data-book-src="../book.html">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Глава 6H — Claude Code для инженера</title>
+<meta name="description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
+<link rel="canonical" href="https://sadovnikovv.github.io/pages/">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:site_name" content="Claude Code для инженера">
+<meta property="og:title" content="Глава 6H — Claude Code для инженера">
+<meta property="og:description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
+<meta property="og:url" content="https://sadovnikovv.github.io/pages/">
+<meta property="og:image" content="https://sadovnikovv.github.io/assets/favicon.svg">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="../assets/fonts/serif-regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/sans-regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="alternate" type="text/html" href="../book.html#agents-ecosystem">
+<meta name="page-index" content="15">
+</head>
+<body>
+<a class="skip-link" href="#book">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../index.html">Claude Code для инженера</a></strong>
+    <a href="../materials/index.html">Материалы</a>
+    <a href="../about.html">О книге</a>
+    <a href="../download/Книга-Claude-Code.epub" download>EPUB</a>
+  </div>
+</header>
+<div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+<main class="wrap" id="book">
+<section class="chapter"><h2 id="agents-ecosystem"><span class="chapter">Глава 6H</span>Агенты и их экосистема</h2>
+
+<p class="lead-in">Агент — это модель плюс инструменты, память и цикл проверки. Именно агенты превращают ИИ из советчика в исполнителя.</p>
+
+<h3>6H.1. Почему агенты важны</h3>
+
+<ul>
+  <li><strong>Многошаговость.</strong> Задача разбивается на шаги: найти, прочитать, изменить, проверить.</li>
+  <li><strong>Инструменты.</strong> Агент запускает компилятор, тесты, CLI, обращается к базе.</li>
+  <li><strong>Обратная связь.</strong> Результат команды становится входом для следующего шага.</li>
+  <li><strong>Автоматизация рутины.</strong> Регулярные проверки, миграции, документация.</li>
+  <li><strong>Масштабирование.</strong> Несколько агентов могут работать параллельно.</li>
+</ul>
+
+<p>Обратная сторона: ошибка на раннем шаге размножается. Чем автономнее агент, тем важнее проверки, права и откат.</p>
+
+<h3>6H.2. Анатомия агента</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Компонент</th><th>Функция</th></tr></thead>
+  <tbody>
+    <tr><td>Модель (policy)</td><td>Решает, что делать следующим шагом</td></tr>
+    <tr><td>Инструменты</td><td>Действия: файлы, команды, API, браузер</td></tr>
+    <tr><td>Память</td><td>Краткосрочная (контекст) и долгосрочная (файлы, база)</td></tr>
+    <tr><td>Планировщик</td><td>Разбивает задачу на подзадачи</td></tr>
+    <tr><td>Критик</td><td>Проверяет результат, запускает тесты</td></tr>
+    <tr><td>Ограничители</td><td>Разрешения, sandbox, лимиты бюджета</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>6H.3. Паттерны</h3>
+
+<ul>
+  <li><strong>ReAct</strong> — чередование рассуждения и действия.</li>
+  <li><strong>Plan-and-execute</strong> — сначала план, потом выполнение.</li>
+  <li><strong>Reflection</strong> — агент критикует свой результат и исправляет.</li>
+  <li><strong>Multi-agent</strong> — роли: исследователь, исполнитель, рецензент.</li>
+  <li><strong>Hierarchical</strong> — лидер распределяет задачи подчинённым.</li>
+  <li><strong>Human-in-the-loop</strong> — подтверждение опасных шагов человеком.</li>
+</ul>
+
+<h3>6H.4. Протоколы</h3>
+
+<ul>
+  <li><strong>Function calling</strong> — модель вызывает функции с JSON-аргументами.</li>
+  <li><strong>MCP</strong> — стандарт подключения инструментов и данных (Claude Code, другие клиенты).</li>
+  <li><strong>A2A</strong> — взаимодействие агентов между собой.</li>
+  <li><strong>Computer use</strong> — управление интерфейсом через скриншоты и клики.</li>
+</ul>
+
+<h3>6H.5. Популярные агенты и фреймворки на GitHub</h3>
+
+<p>Данные о звёздах и лицензиях — на 18.11.2026. Звёзды показывают популярность, а не качество.</p>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Проект</th><th>Звёзды</th><th>Лицензия</th><th>Что это</th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://github.com/Significant-Gravitas/AutoGPT">AutoGPT</a></td><td>~188k</td><td>Custom</td><td>Пионер автономных агентов; теперь платформа</td></tr>
+    <tr><td><a href="https://github.com/langchain-ai/langchain">LangChain</a></td><td>~150k</td><td>MIT</td><td>Фреймворк для LLM-приложений и инструментов</td></tr>
+    <tr><td><a href="https://github.com/browser-use/browser-use">Browser Use</a></td><td>~121k</td><td>MIT</td><td>Браузерный агент на Python</td></tr>
+    <tr><td><a href="https://github.com/All-Hands-AI/OpenHands">OpenHands</a></td><td>~94k</td><td>MIT</td><td>Открытый агент для разработки</td></tr>
+    <tr><td><a href="https://github.com/cline/cline">Cline</a></td><td>~72k</td><td>Apache-2.0</td><td>Агент в VS Code</td></tr>
+    <tr><td><a href="https://github.com/geekan/MetaGPT">MetaGPT</a></td><td>~71k</td><td>MIT</td><td>Мультиагентная «софтверная компания»</td></tr>
+    <tr><td><a href="https://github.com/OpenInterpreter/open-interpreter">Open Interpreter</a></td><td>~69k</td><td>Apache-2.0</td><td>Локальный агент, выполняющий код</td></tr>
+    <tr><td><a href="https://github.com/microsoft/autogen">AutoGen</a></td><td>~62k</td><td>CC-BY-4.0</td><td>Мультиагентные диалоги от Microsoft</td></tr>
+    <tr><td><a href="https://github.com/crewAIInc/crewAI">CrewAI</a></td><td>~61k</td><td>MIT</td><td>Роли и команды агентов</td></tr>
+    <tr><td><a href="https://github.com/block/goose">Goose</a></td><td>~57k</td><td>Apache-2.0</td><td>Расширяемый агент от Block</td></tr>
+    <tr><td><a href="https://github.com/Aider-AI/aider">Aider</a></td><td>~50k</td><td>Apache-2.0</td><td>Парное программирование в терминале</td></tr>
+    <tr><td><a href="https://github.com/langchain-ai/langgraph">LangGraph</a></td><td>~45k</td><td>MIT</td><td>Графы состояний для агентов</td></tr>
+    <tr><td><a href="https://github.com/continuedev/continue">Continue</a></td><td>~37k</td><td>Apache-2.0</td><td>Открытый ассистент для IDE</td></tr>
+    <tr><td><a href="https://github.com/ComposioHQ/composio">Composio</a></td><td>~31k</td><td>MIT</td><td>1000+ инструментов для агентов</td></tr>
+    <tr><td><a href="https://github.com/huggingface/smolagents">smolagents</a></td><td>~30k</td><td>Apache-2.0</td><td>Минималистичная библиотека агентов</td></tr>
+    <tr><td><a href="https://github.com/RooCodeInc/Roo-Code">Roo Code</a></td><td>~24k</td><td>Apache-2.0</td><td>Команда агентов в редакторе</td></tr>
+    <tr><td><a href="https://github.com/pydantic/pydantic-ai">Pydantic AI</a></td><td>~21k</td><td>MIT</td><td>Типизированные агенты на Python</td></tr>
+    <tr><td><a href="https://github.com/princeton-nlp/SWE-agent">SWE-agent</a></td><td>~21k</td><td>MIT</td><td>Исправление GitHub-issue</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Отдельно стоит упомянуть продукты, которые не всегда являются открытыми: Claude Code, OpenAI Codex CLI, Gemini CLI, OpenCode, Qwen Code. Они задают стандарт агентной работы в терминале.</p>
+
+<h3>6H.6. Фреймворк или готовый агент</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Что нужно</th><th>Выбор</th></tr></thead>
+  <tbody>
+    <tr><td>Работа с кодом в терминале</td><td>Claude Code, Aider, OpenHands, Codex CLI</td></tr>
+    <tr><td>Агент в VS Code</td><td>Cline, Roo Code, Continue</td></tr>
+    <tr><td>Мультиагентные сценарии</td><td>CrewAI, AutoGen, LangGraph</td></tr>
+    <tr><td>Браузерная автоматизация</td><td>Browser Use</td></tr>
+    <tr><td>Свой продукт на агентах</td><td>LangChain, Pydantic AI, smolagents</td></tr>
+    <tr><td>Автоматизация без кода</td><td>n8n, Dify, Langflow</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>6H.7. Безопасность агентов</h3>
+
+<ul>
+  <li><strong>Prompt injection.</strong> Вредоносный текст в документе или на сайте может заставить агента выполнить команду.</li>
+  <li><strong>Слишком широкие права.</strong> Агент с доступом ко всему диску может удалить лишнее.</li>
+  <li><strong>Утечка секретов.</strong> Ключи в файлах и переменных могут попасть в контекст.</li>
+  <li><strong>Supply chain.</strong> MCP-серверы и плагины — это код, который вы запускаете.</li>
+  <li><strong>Размножение ошибок.</strong> Автономный цикл может долго идти не туда, тратя бюджет.</li>
+</ul>
+
+<p>Меры: sandbox, минимальные права, allow/deny, ревью diff, лимиты бюджета, отдельные окружения, запрет на сетевые вызовы без необходимости.</p>
+
+<div class="callout">
+  <span class="label">Вывод</span>
+  <p>Агенты полезны там, где есть проверяемый результат: сборка, тесты, измерения, diff. Чем хуже проверяется результат, тем меньше должна быть автономность.</p>
+</div>
+
+</section>
+</main>
+<footer class="site-footer">
+  <nav class="chapter-nav" aria-label="Навигация по главам">
+    <span><a data-rel="prev" href="../pages/hardware.html">← Глава 6G</a></span>
+    <a data-rel="toc" href="../index.html">Оглавление</a>
+    <span><a data-rel="next" href="../pages/optimization-posts.html">Глава 6I →</a></span>
+  </nav>
+  <p>Источник — <a href="../book.html">книга одним файлом</a>,
+  <a href="../download/Книга-Claude-Code.epub">EPUB</a>.</p>
+</footer>
+<script type="application/json" id="page-list">[{"title":"Глава 0 История этой книги","short":"Глава 0","url":"pages/history.html"},{"title":"Глава 1 Как читать эту книгу","short":"Глава 1","url":"pages/how-to-read.html"},{"title":"Глава 2 Ваш стенд: Claude Code → OmniRoute → DeepSeek","short":"Глава 2","url":"pages/stand.html"},{"title":"Глава 3 Что такое ИИ","short":"Глава 3","url":"pages/what-is-ai.html"},{"title":"Глава 4 Как работает языковая модель","short":"Глава 4","url":"pages/how-llm-works.html"},{"title":"Глава 5 Промпт как техническое задание","short":"Глава 5","url":"pages/prompt.html"},{"title":"Глава 6 Что такое агент","short":"Глава 6","url":"pages/agent.html"},{"title":"Глава 6A История нейронных сетей","short":"Глава 6A","url":"pages/history-nn.html"},{"title":"Глава 6B Анатомия трансформера","short":"Глава 6B","url":"pages/transformer-anatomy.html"},{"title":"Глава 6C Веса, биты и точность","short":"Глава 6C","url":"pages/weights-bits.html"},{"title":"Глава 6D Ландшафт моделей 2026","short":"Глава 6D","url":"pages/model-landscape.html"},{"title":"Глава 6E Локальные модели","short":"Глава 6E","url":"pages/local-models.html"},{"title":"Глава 6F Токены, контекст и сжатие","short":"Глава 6F","url":"pages/tokens-compression.html"},{"title":"Глава 6G Железо и вычислительность","short":"Глава 6G","url":"pages/hardware.html"},{"title":"Глава 6H Агенты и их экосистема","short":"Глава 6H","url":"pages/agents-ecosystem.html"},{"title":"Глава 6I Оптимизация: что пишут на Хабре и Пикабу","short":"Глава 6I","url":"pages/optimization-posts.html"},{"title":"Глава 6J Вопросы и ответы","short":"Глава 6J","url":"pages/faq.html"},{"title":"Глава 6K (не публикуется)","short":"Глава 6K (не публикуется)","url":"pages/deepseek-billing.html"},{"title":"Глава 7 Установка и первый запуск","short":"Глава 7","url":"pages/install.html"},{"title":"Глава 7A (не публикуется)","short":"Глава 7A (не публикуется)","url":"pages/migration.html"},{"title":"Глава 7B (не публикуется)","short":"Глава 7B (не публикуется)","url":"pages/new-pc.html"},{"title":"Глава 8 Интерфейс и команды","short":"Глава 8","url":"pages/interface.html"},{"title":"Глава 9 Память и CLAUDE.md","short":"Глава 9","url":"pages/memory.html"},{"title":"Глава 9A Память, обучение и превращение в скилл","short":"Глава 9A","url":"pages/memory-training.html"},{"title":"Глава 10 Разрешения и безопасность","short":"Глава 10","url":"pages/permissions.html"},{"title":"Глава 11 Контекст, стоимость, сессии","short":"Глава 11","url":"pages/context-cost.html"},{"title":"Глава 12 Расширения: skills, субагенты, hooks, MCP","short":"Глава 12","url":"pages/extensions.html"},{"title":"Глава 13 Принцип интеграции","short":"Глава 13","url":"pages/integration-principle.html"},{"title":"Глава 14 Схемотехника и симуляция","short":"Глава 14","url":"pages/circuit.html"},{"title":"Глава 15 EDA и трассировка плат","short":"Глава 15","url":"pages/pcb.html"},{"title":"Глава 16 Микроконтроллеры","short":"Глава 16","url":"pages/mcu.html"},{"title":"Глава 17 Отладка и измерения","short":"Глава 17","url":"pages/debug.html"},{"title":"Глава 18 Машиностроение и CAD","short":"Глава 18","url":"pages/cad.html"},{"title":"Глава 19 Документация и traceability","short":"Глава 19","url":"pages/docs.html"},{"title":"Глава 20 Карта связок","short":"Глава 20","url":"pages/integration-map.html"},{"title":"Глава 21 Десять заданий","short":"Глава 21","url":"pages/labs.html"},{"title":"Глава 22 Итоговый проект: термостат лабораторной печи","short":"Глава 22","url":"pages/capstone.html"},{"title":"Глава 23 Как проверять ИИ","short":"Глава 23","url":"pages/verify.html"},{"title":"Глава 24 Команды и флаги","short":"Глава 24","url":"pages/commands.html"},{"title":"Глава 25 Переменные, файлы, настройки","short":"Глава 25","url":"pages/files-settings.html"},{"title":"Глава 26 Шаблоны промптов","short":"Глава 26","url":"pages/prompt-templates.html"},{"title":"Глава 27 Диагностика","short":"Глава 27","url":"pages/troubleshooting.html"},{"title":"Глава 28 Файлы и папки","short":"Глава 28","url":"pages/library.html"},{"title":"Глава 29 Литература","short":"Глава 29","url":"pages/literature.html"},{"title":"Глава 29A Открытая хрестоматия","short":"Глава 29A","url":"pages/open-books.html"},{"title":"Глава 30 План на восемь недель","short":"Глава 30","url":"pages/plan.html"},{"title":"Глава 31 Словарь","short":"Глава 31","url":"pages/glossary.html"},{"title":"Глава 32 Источники","short":"Глава 32","url":"pages/sources.html"}]</script>
+<script src="../assets/app.js" defer></script>
+</body>
+</html>

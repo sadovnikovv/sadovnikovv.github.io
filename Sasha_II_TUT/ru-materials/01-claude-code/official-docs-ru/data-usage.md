@@ -1,0 +1,139 @@
+> ## Documentation Index
+> Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Использование данных
+
+> Узнайте о политике использования данных Anthropic для Claude
+
+## Политики использования данных
+
+### Политика использования данных для обучения
+
+**Потребительские пользователи (планы Free, Pro, Max и Ultra)**:
+Мы даём вам возможность разрешить использование ваших данных для улучшения будущих моделей Claude. Мы будем обучать новые модели, используя данные из учётных записей Free, Pro, Max и Ultra, когда эта настройка включена (включая случаи, когда вы используете Claude Code из этих учётных записей).
+
+**Коммерческие пользователи**: (планы Team и Enterprise, API, платформы третьих сторон и Claude Gov) сохраняют существующие политики: Anthropic не обучает генеративные модели, используя код или подсказки, отправленные в Claude Code на коммерческих условиях, если только клиент не выбрал предоставить нам свои данные для улучшения модели (например, [Developer Partner Program](https://support.claude.com/ru/articles/11174108-about-the-development-partner-program)).
+
+### Development Partner Program
+
+Если вы явно согласитесь предоставить нам материалы для обучения, например через [Development Partner Program](https://support.claude.com/ru/articles/11174108-about-the-development-partner-program), мы можем использовать эти материалы для обучения наших моделей. Администратор организации может явно согласиться на участие в Development Partner Program для своей организации. Обратите внимание, что эта программа доступна только для API Anthropic первой стороны и недоступна для пользователей Amazon Bedrock или Google Cloud's Agent Platform.
+
+### Обратная связь с помощью команды `/feedback`
+
+Если вы решите отправить нам отзыв о Claude Code с помощью команды `/feedback`, мы можем использовать ваш отзыв для улучшения наших продуктов и услуг. Стенограммы, отправленные через `/feedback`, или через `/bug` и `/share`, которые передаются через тот же путь, сохраняются в течение 5 лет.
+
+С [Claude-drafted feedback](https://code.claude.com/docs/ru/tools-reference.md#sendfeedback-tool-behavior) Claude также может составить отчёт об обратной связи и поставить его в очередь на вашей машине для проверки. Claude Code ничего не отправляет, пока вы не решите отправить черновик, и отправленный черновик проходит через тот же путь отправки и хранения, что и другие отчёты `/feedback`.
+
+### Опросы о качестве сеанса
+
+Когда вы видите подсказку "How is Claude doing this session?" в Claude Code, ответ на этот опрос, включая выбор "Dismiss", записывает только вашу оценку. Мы не собираем и не сохраняем никакие стенограммы разговоров, входные данные, выходные данные или другие данные сеанса в рамках самого опроса оценки. В отличие от отзывов с большим пальцем вверх/вниз или отчётов `/feedback`, этот опрос о качестве сеанса является простой метрикой удовлетворённости продуктом.
+
+После подсказки оценки вы можете увидеть отдельный дополнительный вопрос "Can Anthropic look at your session transcript to help us improve Claude Code?". Это необязательный второй шаг, отличный от оценки:
+
+* **Yes**: загружает стенограмму вашего разговора, любые стенограммы подагентов и файл необработанного журнала сеанса с диска в Anthropic. Известные шаблоны ключей API и токенов удаляются перед загрузкой. Исходный код, содержимое файлов и другое содержимое разговора загружаются как есть. Общие стенограммы сохраняются до 6 месяцев. На Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry и сеансах [Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway) с входом в систему, Yes записывает тот же полезный груз в локальный архив под `~/.claude/feedback-bundles/` вместо загрузки; ничего не покидает вашу машину, пока вы не переправите этот файл.
+* **No**: отклоняет без отправки чего-либо
+* **Don't ask again**: отклоняет и останавливает появление этого дополнительного вопроса в будущих сеансах
+
+Ничего не загружается, если вы явно не выберете **Yes**. Организации с [zero data retention](https://code.claude.com/docs/ru/zero-data-retention.md), или где обратная связь о продукте отключена политикой организации, или где установлена переменная `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`, никогда не видят этот дополнительный вопрос. Ваши ответы на этот опрос, включая стенограммы сеансов, отправленные после подсказки оценки, не влияют на ваши предпочтения использования данных для обучения и не могут использоваться для обучения наших моделей ИИ.
+
+Чтобы отключить эти опросы, установите `CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY=1`. Опрос также отключается при установке `DISABLE_TELEMETRY`, `DO_NOT_TRACK` или `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`. Организации, которые блокируют несущественный трафик, но захватывают ответы опроса через свой собственный [OpenTelemetry collector](https://code.claude.com/docs/ru/monitoring-usage.md), могут повторно включить опрос, установив `CLAUDE_CODE_ENABLE_FEEDBACK_SURVEY_FOR_OTEL=1`. Опрос затем регистрирует оценки только в настроенный сборщик. Дополнительный вопрос о совместном использовании стенограммы и весь остальной трафик обратной связи, направленный в Anthropic, остаются отключены. Чтобы управлять частотой вместо отключения, установите [`feedbackSurveyRate`](https://code.claude.com/docs/ru/settings-reference#feedbacksurveyrate) в файле параметров на вероятность между `0` и `1`.
+
+### Хранение данных
+
+Anthropic сохраняет данные Claude Code в зависимости от типа вашей учётной записи и предпочтений.
+
+**Потребительские пользователи (планы Free, Pro, Max и Ultra)**:
+
+* Пользователи, которые разрешают использование данных для улучшения модели: период хранения 5 лет для поддержки разработки модели и улучшения безопасности
+* Пользователи, которые не разрешают использование данных для улучшения модели: период хранения 30 дней
+* Параметры конфиденциальности можно изменить в любое время на [claude.ai/settings/data-privacy-controls](https://claude.ai/settings/data-privacy-controls).
+
+**Коммерческие пользователи (Team, Enterprise и API)**:
+
+* Стандартный: период хранения 30 дней
+* [Zero data retention](https://code.claude.com/docs/ru/zero-data-retention.md): доступно для Claude Code на Claude for Enterprise. ZDR не включается в стандартный план Enterprise; он включается на основе организации вашей командой учёта после подтверждения соответствия требованиям
+* Локальное кэширование: клиенты Claude Code хранят стенограммы сеансов локально в открытом виде под `~/.claude/projects/` в течение 30 дней по умолчанию для включения возобновления сеанса. Отрегулируйте период с помощью `cleanupPeriodDays`. См. [application data](https://code.claude.com/docs/ru/claude-directory.md#application-data) для информации о том, что хранится и как это очистить.
+
+  Стенограммы сеансов, начатых или последний раз продолженных в Claude Desktop или Cowork, [по умолчанию освобождены от этого ограничения](https://code.claude.com/docs/ru/claude-directory.md#cleaned-up-automatically).
+
+Вы можете удалить отдельные сеансы Claude Code в Интернете в любое время. Удаление сеанса навсегда удаляет данные событий сеанса. Инструкции по удалению сеансов см. в разделе [Delete sessions](https://code.claude.com/docs/ru/claude-code-on-the-web.md#delete-sessions).
+
+Узнайте больше о практике хранения данных в нашем [Privacy Center](https://privacy.anthropic.com/).
+
+Для получения полной информации, пожалуйста, ознакомьтесь с нашими [Commercial Terms of Service](https://www.anthropic.com/legal/commercial-terms) (для пользователей Team, Enterprise и API) или [Consumer Terms](https://www.anthropic.com/legal/consumer-terms) (для пользователей Free, Pro, Max и Ultra) и [Privacy Policy](https://www.anthropic.com/legal/privacy).
+
+## Доступ к данным
+
+Для всех пользователей первой стороны вы можете узнать больше о том, какие данные регистрируются для [локального Claude Code](#local-claude-code-data-flow-and-dependencies) и [удалённого Claude Code](#cloud-execution-data-flow-and-dependencies). Сеансы [Remote Control](https://code.claude.com/docs/ru/remote-control.md) следуют локальному потоку данных, поскольку всё выполнение происходит на вашей машине; во время подключения транскрипт сеанса также хранится на серверах Anthropic для синхронизации беседы между устройствами, как описано в разделе [Connection and security](https://code.claude.com/docs/ru/remote-control.md#connection-and-security). Обратите внимание, что для удалённого Claude Code Claude получает доступ к репозиторию, в котором вы инициируете сеанс Claude Code. Claude не получает доступ к репозиториям, которые вы подключили, но в которых не начали сеанс.
+
+## Local Claude Code: поток данных и зависимости
+
+На диаграмме ниже показано, как Claude Code подключается к внешним сервисам во время установки и нормальной работы. Сплошные линии указывают на обязательные соединения, а пунктирные линии представляют дополнительные или инициированные пользователем потоки данных.
+
+![Диаграмма, показывающая внешние соединения Claude Code: установка/обновление подключается к серверу распределения, а запросы пользователя подключаются к Anthropic Console auth и public-api, с дополнительными потоками телеметрии, передающими метрики и отчёты об ошибках в Anthropic и сторонние сервисы. Отзывы, отправленные с помощью /feedback, идут в Google Cloud Storage и опционально создают проблему GitHub](https://mintcdn.com/claude-code/YR4DRZyI3CdsXkiT/images/claude-code-data-flow.svg?fit=max\&auto=format\&n=YR4DRZyI3CdsXkiT\&q=85\&s=2846ea92cfc2297b8620c31c82b482ad)
+
+Claude Code работает локально. Для взаимодействия с LLM Claude Code отправляет данные по сети. Эти данные включают все подсказки пользователя и выходные данные модели, зашифрованные при передаче через TLS 1.2+. Claude Code совместим с большинством популярных VPN и прокси LLM.
+
+Шифрование в покое зависит от вашего поставщика модели:
+
+| Поставщик | Шифрование в покое |
+| - | - |
+| Anthropic API | Шифрование диска на уровне инфраструктуры (AES-256). Включите [Zero Data Retention](https://code.claude.com/docs/ru/zero-data-retention.md) для отсутствия сохранения на стороне сервера. |
+| Amazon Bedrock | AES-256 с управляемыми AWS ключами. Ключи, управляемые клиентом, доступны через AWS KMS. |
+| Google Cloud's Agent Platform | Ключи шифрования, управляемые Google. CMEK доступен. |
+| Microsoft Foundry | Зависит от [варианта размещения](https://platform.claude.com/docs/en/build-with-claude/claude-in-microsoft-foundry#hosting-options) развёртывания. Для развёртываний «Размещено на Azure» см. [где обрабатываются и хранятся данные](https://platform.claude.com/docs/en/build-with-claude/claude-in-microsoft-foundry#hosting-options). Для развёртываний «Размещено на Anthropic» запросы маршрутизируются в инфраструктуру Anthropic с шифрованием диска AES-256. |
+
+Claude Code построен на API Anthropic. Для получения подробной информации о средствах контроля безопасности API, включая процедуры логирования API, см. артефакты соответствия в [Anthropic Trust Center](https://trust.anthropic.com).
+
+### Cloud execution: поток данных и зависимости
+
+[Cloud sessions](https://code.claude.com/docs/ru/claude-code-on-the-web.md) выполняются на виртуальных машинах, управляемых Anthropic, по умолчанию вместо локального выполнения. Сеансы, которые ваша организация маршрутизирует в [самостоятельно размещённую среду](https://code.claude.com/docs/ru/self-hosted-environments), выполняются на инфраструктуре, которой вы управляете; для информации о том, что остаётся на ваших машинах и что всё ещё идёт в Anthropic, см. [What stays on your infrastructure](https://code.claude.com/docs/ru/self-hosted-environments#what-stays-on-your-infrastructure). В облачных сеансах, размещённых на Anthropic:
+
+* **Хранилище кода и данных:** Ваш репозиторий клонируется на изолированную виртуальную машину. Anthropic хранит стенограмму сеанса, чтобы вы могли вернуться к сеансу позже. Код и данные сеанса подлежат [политикам хранения и использования](#data-retention) для вашего типа учётной записи
+* **Учётные данные:** Учётные данные GitHub хранятся в зашифрованном виде на серверах Anthropic и никогда не попадают на виртуальную машину. Трафик GitHub с виртуальной машины проходит через прокси Anthropic, который прикрепляет их на стороне сервера
+* **Сетевой трафик:** Весь исходящий трафик проходит через прокси безопасности для логирования аудита и предотвращения злоупотреблений
+* **Данные сеанса:** Подсказки, изменения кода и выходные данные следуют тем же политикам данных, что и локальное использование Claude Code
+
+Для получения подробной информации о безопасности облачного выполнения см. [Security](https://code.claude.com/docs/ru/security.md#cloud-execution-security).
+
+## Сервисы телеметрии
+
+Claude Code отправляет два вида операционной телеметрии: метрики использования и отчёты об ошибках. Вы можете отключить каждый из них отдельно с помощью переменных окружения ниже, или отключить весь неэссенциальный трафик сразу, установив `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`. Установка `DISABLE_TELEMETRY` или `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` также отключает оценку флагов функций, от которой зависит [Remote Control](https://code.claude.com/docs/ru/remote-control.md#requirements); `DISABLE_ERROR_REPORTING` этого не делает.
+
+**Метрики**: задержка, надёжность и паттерны использования, отправляются в Anthropic и в инфраструктуру логирования третьих сторон через TLS. Метрики никогда не включают ваш код, подсказки или пути к файлам. Установите `DISABLE_TELEMETRY=1`, чтобы отказаться.
+
+**Отчёты об ошибках**: сообщения об ошибках и трассировки стека из собственных внутренних компонентов Claude Code, отправляются в сервис отслеживания ошибок третьей стороны через TLS. Claude Code удаляет известные паттерны секретов, путей к файлам, адресов электронной почты и другой личной информации перед тем, как что-либо покидает вашу машину. Установите `DISABLE_ERROR_REPORTING=1`, чтобы отказаться.
+
+Отчёты об ошибках включены только когда выполняются все эти условия:
+
+* вы входите с подпиской Claude Pro, Max или Ultra
+* вы используете Claude Code v2.1.198 или позже
+* вы подключаетесь напрямую к Claude API
+* ваша организация не имеет соглашения о нулевом сохранении данных или HIPAA
+
+Когда вы выполняете команду `/feedback`, копия вашей истории разговора, включая код, отправляется в Anthropic. Команды `/bug` и `/share` отправляются через тот же путь. Перед отправкой отчёта из диалога обратной связи вы выбираете, сколько истории включить: только текущую сессию, что является значением по умолчанию, или также другие сессии из того же проекта за последние 24 часа или 7 дней. Claude Code отправляет [составленную Claude обратную связь](https://code.claude.com/docs/ru/tools-reference.md#sendfeedback-tool-behavior) через тот же путь, включая стенограмму, когда вы выбрали её включение на экране проверки черновика. Данные зашифрованы при передаче через TLS и хранятся в Google Cloud Storage, которая по умолчанию шифрует хранящиеся данные в покое. Опционально создаётся проблема GitHub в публичном репозитории. Чтобы отказаться, установите переменную окружения `DISABLE_FEEDBACK_COMMAND` на `1`.
+
+Когда вы используете поставщика третьей стороны, такого как Amazon Bedrock или Google Cloud's Agent Platform, или у вас не настроены учётные данные Anthropic, `/feedback` записывает отчёт в локальный архив в `~/.claude/feedback-bundles/` вместо отправки в Anthropic. Известные паттерны ключей API и токенов удаляются перед записью архива. Ничего не покидает вашу машину, пока вы не отправите этот файл своему представителю учётной записи Anthropic или не прикрепите его к запросу поддержки.
+
+## Поведение по умолчанию в зависимости от поставщика API
+
+По умолчанию отчёты об ошибках, телеметрия и отчёты об ошибках отключены при использовании Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry или Claude Platform on AWS. Опросы о качестве сеанса и проверка безопасности домена WebFetch являются исключениями и выполняются независимо от поставщика. На сеансе с подписью [Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway) аналитика использования, отчёты об ошибках и оценки опросов для Anthropic отключены самим учётным данным шлюза, без возможности их повторного включения. Вы можете отказаться от всего несущественного трафика, включая опросы, сразу же, установив `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`. Эта переменная не влияет на проверку WebFetch или автоматическую установку официального marketplace плагинов; каждая имеет свой собственный отказ: `skipWebFetchPreflight` в [settings](https://code.claude.com/docs/ru/settings.md) для WebFetch и `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL` для marketplace. Вот полное поведение по умолчанию:
+
+| Сервис | Claude API | Google Cloud's Agent Platform API | Amazon Bedrock API | Microsoft Foundry API | Claude Platform on AWS |
+| - | - | - | - | - | - |
+| **Metrics** | По умолчанию включено. `DISABLE_TELEMETRY=1` для отключения. | По умолчанию отключено. `CLAUDE_CODE_USE_VERTEX` должен быть 1. | По умолчанию отключено. `CLAUDE_CODE_USE_BEDROCK` должен быть 1. | По умолчанию отключено. `CLAUDE_CODE_USE_FOUNDRY` должен быть 1. | По умолчанию отключено. `CLAUDE_CODE_USE_ANTHROPIC_AWS` должен быть 1. |
+| **Error reports** | Включено при входе с подписками Pro, Max и Ultra на v2.1.198+, в противном случае отключено. `DISABLE_ERROR_REPORTING=1` для отключения. | По умолчанию отключено. `CLAUDE_CODE_USE_VERTEX` должен быть 1. | По умолчанию отключено. `CLAUDE_CODE_USE_BEDROCK` должен быть 1. | По умолчанию отключено. `CLAUDE_CODE_USE_FOUNDRY` должен быть 1. | По умолчанию отключено. `CLAUDE_CODE_USE_ANTHROPIC_AWS` должен быть 1. |
+| **Claude API (`/feedback` reports)** | По умолчанию включено. `DISABLE_FEEDBACK_COMMAND=1` для отключения. | По умолчанию отключено. `CLAUDE_CODE_USE_VERTEX` должен быть 1. | По умолчанию отключено. `CLAUDE_CODE_USE_BEDROCK` должен быть 1. | По умолчанию отключено. `CLAUDE_CODE_USE_FOUNDRY` должен быть 1. | По умолчанию отключено. `CLAUDE_CODE_USE_ANTHROPIC_AWS` должен быть 1. |
+| **Session quality surveys** | По умолчанию включено. `CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY=1` для отключения. | По умолчанию включено. `CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY=1` для отключения. | По умолчанию включено. `CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY=1` для отключения. | По умолчанию включено. `CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY=1` для отключения. | По умолчанию включено. `CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY=1` для отключения. |
+| **WebFetch domain safety check** | По умолчанию включено. `skipWebFetchPreflight: true` в [settings](https://code.claude.com/docs/ru/settings.md) для отключения. | По умолчанию включено. `skipWebFetchPreflight: true` в [settings](https://code.claude.com/docs/ru/settings.md) для отключения. | По умолчанию включено. `skipWebFetchPreflight: true` в [settings](https://code.claude.com/docs/ru/settings.md) для отключения. | По умолчанию включено. `skipWebFetchPreflight: true` в [settings](https://code.claude.com/docs/ru/settings.md) для отключения. | По умолчанию включено. `skipWebFetchPreflight: true` в [settings](https://code.claude.com/docs/ru/settings.md) для отключения. |
+
+Все переменные окружения можно прописать в `settings.json` и хранить вместе с ним в репозитории (см. [settings reference](https://code.claude.com/docs/ru/settings-reference.md)).
+
+Когда хост-платформа устанавливает `CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST`, метрики по умолчанию включены для Google Cloud's Agent Platform, Amazon Bedrock, Microsoft Foundry и Claude Platform on AWS и следуют стандартному отказу `DISABLE_TELEMETRY`. Отчёты об ошибках и отчёты `/feedback` остаются отключены по умолчанию на этих поставщиках.
+
+### WebFetch domain safety check
+
+Перед получением URL инструмент WebFetch отправляет запрашиваемое имя хоста на `api.anthropic.com` для проверки его в списке блокировки безопасности, поддерживаемом Anthropic. Отправляется только имя хоста, а не полный URL, путь или содержимое страницы. Claude Code кэширует имя хоста, которое прошло проверку, на пять минут и повторно проверяет заблокированное или неудачное имя хоста при следующем запросе.
+
+Эта проверка выполняется независимо от того, какого поставщика модели вы используете, и не зависит от `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`. Если ваша сеть блокирует `api.anthropic.com`, запросы WebFetch не выполняются до тех пор, пока вы либо не добавите домен в список разрешений, либо не установите `skipWebFetchPreflight: true` в [settings](https://code.claude.com/docs/ru/settings.md). Отключение проверки означает, что WebFetch пытается получить любой URL без консультации со списком блокировки, поэтому объедините его с [`WebFetch` permission rules](https://code.claude.com/docs/ru/permissions#webfetch), если вам нужно ограничить, какие домены может достичь Claude.

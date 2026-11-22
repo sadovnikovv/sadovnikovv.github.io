@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Безопасность и доверие к плагинам</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/plugins/index.html">plugins</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Безопасность и доверие к плагинам <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Решите, доверять ли плагину перед его установкой: от того, что плагин может делать на вашем компьютере, до того, как его проверить и удалить.</p>
+</blockquote>
+<p>Плагин Claude Code, который вы устанавливаете, может выполнять произвольный код на вашем компьютере с вашими привилегиями пользователя.</p>
+<p>Вы устанавливаете плагин из marketplace, который является каталогом, из которого Claude Code его получает. Некоторые названия marketplace <a href="#marketplace-tiers">зарезервированы для собственных marketplace Anthropic</a>, а все остальные marketplace являются сторонними. Название marketplace говорит вам, кто публикует каталог, а не то, что делает каждый плагин в нём, поэтому <a href="#review-a-plugin-before-you-install">проверьте плагин перед установкой</a> независимо от того, из какого marketplace он поступает.</p>
+<p>Прочитайте эту страницу, если вы решаете, устанавливать ли плагин, или если вы проверяете инструменты перед тем, как ваша команда сможет их использовать.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Эти случаи рассматриваются на других страницах:</p>
+<ul>
+<li><strong>Собственная модель безопасности Claude Code</strong>: см. <a href="https://code.claude.com/docs/ru/security.md">Security</a></li>
+<li><strong>Ограничение или требование плагинов для организации</strong>: см. <a href="https://code.claude.com/docs/ru/plugins/org.md">Manage plugins for your organization</a></li>
+<li><strong>Плагины <code>security-guidance</code> или <code>claude-security</code></strong>: эта страница о них не идёт. См. <a href="https://code.claude.com/docs/ru/security-guidance"><code>security-guidance</code></a> и <a href="https://code.claude.com/docs/ru/claude-security"><code>claude-security</code></a></li>
+</ul>
+</blockquote>
+<p>Начните с <a href="#understand-what-a-plugin-can-do">того, что может делать плагин</a> и <a href="#marketplace-tiers">какие marketplace принадлежат Anthropic</a>, затем <a href="#review-a-plugin-before-you-install">проверьте плагин перед установкой</a>.</p>
+<h3 id="h-2">Поймите, что может делать плагин <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Плагин может содержать контент, который выполняет код на вашей машине с вашими привилегиями пользователя, и контент, который входит в контекст Claude в качестве инструкций, поэтому <a href="#review-a-plugin-before-you-install">перед установкой плагина его следует проверить</a>. Вот что может делать установленный плагин:</p>
+<ul>
+<li><strong>Hooks</strong>: <a href="https://code.claude.com/docs/ru/hooks.md">hooks</a> плагина выполняются как команды shell в определённых точках жизненного цикла Claude Code, например до или после вызова инструмента.</li>
+<li><strong>Мониторы</strong>: <a href="https://code.claude.com/docs/ru/plugins/components.md#monitors">мониторы</a> плагина выполняются как фоновые shell-команды, которые Claude Code запускает самостоятельно при запуске сессии, при перезагрузке плагинов или при первом запуске именованного скилла.</li>
+<li><strong>Mods</strong>: <a href="https://code.claude.com/docs/ru/plugins/mods/overview.md">mod</a> плагина выполняет JavaScript внутри Claude Code с вашими разрешениями. Чтобы увидеть, что делает mod перед установкой, см. <a href="https://code.claude.com/docs/ru/plugins/mods/overview.md#decide-whether-to-trust-a-mod">Решите, доверять ли mod</a>.</li>
+<li><strong>MCP и LSP серверы</strong>: Claude Code подключается к <a href="https://code.claude.com/docs/ru/mcp.md">MCP серверам</a>, которые объявляет включённый плагин, и предоставляет Claude их инструменты. Stdio MCP сервер работает как процесс, который Claude Code запускает на вашей машине. Claude Code также запускает языковые серверы, которые объявляет плагин.</li>
+<li><strong>Директория <code>bin/</code></strong>: Claude Code добавляет директорию <code>bin/</code> каждого включённого плагина в <code>PATH</code> оболочки инструмента Bash, поэтому команды Bash от Claude могут запускать любой исполняемый файл оттуда. Команда, которую Claude запускает с помощью <a href="https://code.claude.com/docs/ru/tools-reference.md#powershell-tool">инструмента PowerShell</a>, получает эти директории в своём <code>PATH</code>, когда выполняется вне <a href="https://code.claude.com/docs/ru/sandboxing.md">песочницы</a>, но не получает их, когда выполняется внутри неё.</li>
+<li><strong>Skills, команды и агенты</strong>: они входят в контекст Claude в качестве инструкций, поэтому они влияют на то, что Claude делает с инструментами, которые у него уже есть.</li>
+<li><strong>Обновления</strong>: когда автоматическое обновление включено для маркетплейса, из которого вы установили плагин, Claude Code обновляет этот плагин в фоновом режиме, поэтому файлы, которые вы проверили, могут измениться на диске. <a href="https://code.claude.com/docs/ru/plugins/loading.md#when-auto-update-runs">Когда выполняется автоматическое обновление</a> содержит информацию о времени. Чтобы включить или отключить автоматическое обновление для каждого маркетплейса, см. <a href="https://code.claude.com/docs/ru/plugins/install.md#keep-plugins-updated">Держите плагины в актуальном состоянии</a>.</li>
+</ul>
+<p><a href="https://code.claude.com/docs/ru/permissions.md">Правила разрешений</a> Claude Code и <a href="https://code.claude.com/docs/ru/sandboxing.md">sandbox</a> охватывают вызовы инструментов, которые делает Claude, а не код, который плагин запускает самостоятельно:</p>
+<ul>
+<li><strong>Хуки, мониторы и серверные процессы</strong>: command-хуки и мониторы — это shell-команды, которые выполняются с вашими полными привилегиями пользователя. Claude Code запускает хуки, мониторы, MCP-серверы, LSP-серверы и процессы, которые запускает <a href="https://code.claude.com/docs/ru/plugins/mods/overview.md#what-a-mod-can-reach">мод</a>, вне песочницы.</li>
+<li><strong>Вызовы инструментов Claude</strong>: вызов одного из инструментов MCP плагина и команда Bash, которая запускает исполняемый файл из <code>bin/</code> плагина, являются вызовами инструментов, поэтому к ним применяются ваши правила разрешений. Чтобы узнать, что mod может делать с вызовом инструмента, см. <a href="https://code.claude.com/docs/ru/plugins/mods/overview.md#decide-whether-to-trust-a-mod">Решите, доверять ли mod</a>.</li>
+</ul>
+<p>Установка плагина также включает его, за исключением случаев, когда его манифест или запись маркетплейса устанавливает <a href="https://code.claude.com/docs/ru/plugins/install#choose-an-install-scope"><code>defaultEnabled: false</code></a>, а вы сами его не включили.</p>
+<p>Чтобы удалить плагин, которому вы больше не доверяете, см. <a href="#remove-a-plugin-you-no-longer-trust">Удалите плагин, которому вы больше не доверяете</a>.</p>
+<h3 id="определите-marketplace-anthropic-по-названию">Определите marketplace Anthropic по названию <a class="h-anchor" href="#определите-marketplace-anthropic-по-названию" aria-label="Ссылка на раздел">#</a></h3>
+<p>Название marketplace помещает его в один из трёх уровней: official, community или third-party. Claude Code принимает названия official и community только для marketplace, полученных из репозиториев <code>github.com/anthropics/</code>, поэтому сторонний marketplace не может выдавать себя за marketplace Anthropic. Marketplace, который публикует коллега или ваша организация, является third-party.</p>
+<p>В таблице указано, какие названия относятся к каждому уровню:</p>
+<p>| Уровень | Какие marketplace |
+| :- | :- |
+| Official | <a href="#official-marketplace-names">Официальные названия marketplace</a>, такие как <code>claude-plugins-official</code> |
+| Community | <code>claude-community</code>, <code>claude-plugins-community</code> и <code>healthcare</code> |
+| Third-party | Все остальные marketplace |</p>
+<p>Где каталог <code>claude-community</code> закрепляет плагин к commit SHA, что он делает почти для каждой записи, Claude Code отказывается устанавливать другой commit.</p>
+<h4 id="официальные-названия-marketplace">Официальные названия marketplace <a class="h-anchor" href="#официальные-названия-marketplace" aria-label="Ссылка на раздел">#</a></h4>
+<p>Эти названия marketplace составляют official уровень:</p>
+<ul>
+<li><code>claude-plugins-official</code></li>
+<li><code>claude-code-marketplace</code></li>
+<li><code>claude-code-plugins</code></li>
+<li><code>anthropic-marketplace</code></li>
+<li><code>anthropic-plugins</code></li>
+<li><code>agent-skills</code></li>
+<li><code>anthropic-agent-skills</code></li>
+<li><code>life-sciences</code></li>
+<li><code>knowledge-work-plugins</code></li>
+<li><code>claude-for-legal</code></li>
+<li><code>claude-for-financial-services</code></li>
+<li><code>financial-services-plugins</code></li>
+<li><code>first-party-plugins</code></li>
+<li><code>claude-tag-plugins</code></li>
+</ul>
+<p>О том, чем отличаются маркетплейсы official и community и где можно просмотреть, что указано в каждом из них, см. <a href="https://code.claude.com/docs/ru/plugins/anthropic-marketplaces.md">Маркетплейсы Anthropic</a>.</p>
+<h3 id="h-3">Проверьте плагин перед установкой <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Перед установкой плагина посмотрите, что он добавляет и откуда он поступает.</p>
+<p><strong>1. Проверьте источник marketplace</strong></p>
+<p>В вашей shell выполните <code>claude plugin marketplace list</code>, чтобы вывести источник, из которого был добавлен каждый marketplace, например репозиторий GitHub или директорию.</p>
+<p><strong>2. Прочитайте панель деталей</strong></p>
+<p>В сеансе Claude Code выполните <code>/plugin</code> и выберите плагин. Панель деталей показывает раздел <strong>Will install</strong>, в котором перечислены команды, agents, skills, hooks и MCP и LSP серверы плагина. Для плагина, для которого Anthropic не опубликовала данные компонентов, раздел показывает то, что объявляет запись marketplace, или примечание: <code>Components will be discovered at installation</code> для плагина, хранящегося внутри marketplace, или <code>Component summary not available for remote plugin</code> для плагина, полученного откуда-то ещё.</p>
+<p><strong>3. Прочитайте исходный код плагина</strong></p>
+<p>На панели деталей выберите <strong>Open homepage</strong> или <strong>View on GitHub</strong> под опциями установки. Если панель не предлагает ни того, ни другого, откройте репозиторий marketplace, который вы нашли на первом шаге. Найдите там директорию плагина. Раздел <strong>Will install</strong> показывает, что hook существует, но не то, что он запускает, поэтому прочитайте эти файлы в директории плагина:</p>
+<ul>
+<li><strong><code>hooks/hooks.json</code></strong>: команда, которую запускает каждый hook</li>
+<li><strong><code>.mcp.json</code></strong>: команда или URL каждого сервера</li>
+<li><strong><code>bin/</code></strong>: каждый файл в директории</li>
+</ul>
+<p><strong>4. Перечислите содержимое плагина</strong></p>
+<p>Клонируйте репозиторий, который содержит директорию плагина, затем выполните <code>claude --plugin-dir &lt;plugin directory&gt; plugin details &lt;plugin name&gt;</code> в вашей shell, чтобы увидеть, что Claude Code находит в нём. Команда читает файлы плагина без запуска сеанса и выводит <code>Component inventory</code>, в котором перечислены skills и commands плагина, agents, hooks с событием каждого hook и MCP и LSP серверы.</p>
+<p>После установки плагина выполните <code>claude plugin details &lt;plugin name&gt;</code> в вашей shell, чтобы вывести тот же <code>Component inventory</code> для установленной копии под <code>~/.claude/plugins/cache/&lt;marketplace&gt;/&lt;plugin&gt;/&lt;version&gt;/</code>.</p>
+<h4 id="h-4">Удалите плагин, которому вы больше не доверяете <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<p>В вашей shell выполните <a href="https://code.claude.com/docs/ru/plugins/cli-reference#plugin-uninstall"><code>claude plugin uninstall &lt;plugin&gt;</code></a> с <code>--scope</code>, в котором вы его установили. Затем проверьте, что удалила деинсталляция и что она оставила:</p>
+<ul>
+<li><strong>Постоянные данные</strong>: по умолчанию, когда это был последний scope, в котором был установлен плагин, деинсталляция также удаляет директорию постоянных данных плагина. Для <code>--keep-data</code> и других случаев, когда она остаётся, см. <a href="https://code.claude.com/docs/ru/plugins/cli-reference.md#plugin-uninstall">plugin uninstall</a>.</li>
+<li><strong>Кэшированные файлы</strong>: файлы плагина остаются на диске под <code>~/.claude/plugins/cache/</code> в течение 14 дней, прежде чем <a href="https://code.claude.com/docs/ru/plugins/loading.md#cleanup-of-previous-versions">фоновая очистка их удалит</a>. После деинсталляции последнего плагина orphaned директории остаются, пока вы не установите другой. Чтобы удалить файлы сейчас, удалите директорию плагина под <code>~/.claude/plugins/cache/&lt;marketplace&gt;/&lt;plugin&gt;/</code> самостоятельно.</li>
+<li><strong>Marketplace</strong>: если вы также не доверяете владельцу marketplace, <a href="https://code.claude.com/docs/ru/plugins/install.md#manage-marketplaces">удалите marketplace</a> тоже, что деинсталлирует каждый плагин, который вы установили из него.</li>
+</ul>
+<h3 id="распознайте-когда-claude-code-отказывает-или-предупреждает">Распознайте, когда Claude Code отказывает или предупреждает <a class="h-anchor" href="#распознайте-когда-claude-code-отказывает-или-предупреждает" aria-label="Ссылка на раздел">#</a></h3>
+<p>Панель деталей, которую вы открываете из вкладки <strong>Discover</strong> или <strong>Marketplaces</strong> в <code>/plugin</code>, показывает одно и то же предупреждение о доверии для каждого плагина. Claude Code отказывает вместо предупреждения в случаях, таких как те, что указаны в <a href="#untrusted-marketplace-sources-and-failed-integrity-checks">Untrusted marketplace sources and failed integrity checks</a>.</p>
+<h4 id="h-5">Предупреждение о доверии перед установкой <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<p>Предупреждение читается одинаково независимо от того, из какого marketplace поступает плагин:</p>
+<p>```text theme={null}
+Plugins can run code on your computer, with access to your files and shell. Make sure you trust a plugin before installing, updating, or using it. Anthropic does not control what MCP servers, files, or other software are included in plugins and cannot verify that they will work as intended or that they won&#x27;t change. See each plugin&#x27;s homepage for more information.</p>
+<pre><code>
+Если ваша организация устанавливает `pluginTrustMessage` в [managed settings](https://code.claude.com/docs/ru/plugins/org.md), Claude Code добавляет этот текст к предупреждению.
+
+### Ненадёжные источники marketplace и неудачные проверки целостности
+
+Claude Code отказывает загружать marketplace или устанавливать плагин в этих случаях, каждый со своим сообщением об ошибке:
+
+* **Ненадёжный источник marketplace**: когда marketplace использует официальное или community название, но его источник находится вне `github.com/anthropics/`, Claude Code прекращает загрузку marketplace и плагинов, которые вы установили из него. Ошибка: [Marketplace is registered from an untrusted source](https://code.claude.com/docs/ru/errors.md#marketplace-is-registered-from-an-untrusted-source).
+* **Целостность архива**: когда запись marketplace закрепляет [`archive` источник](https://code.claude.com/docs/ru/plugins/marketplace-reference#archive-plugin-source) к дайджесту `sha256` и дайджест загруженного файла не совпадает с ним, Claude Code отказывает установку. Ошибка: [Plugin archive integrity check failed](https://code.claude.com/docs/ru/errors.md#plugin-archive-integrity-check-failed).
+
+Закрепление `sha256` отделено от закрепления commit SHA каталога community, которое выбирает git commit для проверки.
+
+## Применяйте элементы управления плагинами для вашей организации
+
+С помощью [managed settings](https://code.claude.com/docs/ru/plugins/org.md) администратор может применять эти элементы управления плагинами:
+
+* Allowlist или blocklist источников marketplace
+* Force-enable плагины
+* Отключить флаги `--plugin-dir` и `--plugin-url` и переменную `CLAUDE_CODE_PLUGIN_DIRS`
+* Ограничить hooks теми, которые из managed settings и force-enabled плагинов
+* Остановить загрузку плагинов из учётных записей claude.ai членов в Claude Code с помощью [`syncClaudeAiPlugins`](https://code.claude.com/docs/ru/plugins/org#control-matrix)
+
+[Матрица управления](https://code.claude.com/docs/ru/plugins/org.md#control-matrix) говорит, что делает каждый ключ и что он не охватывает.
+
+## Найдите плагины в телеметрии
+
+Если ваша организация экспортирует [OpenTelemetry события](https://code.claude.com/docs/ru/monitoring-usage.md) Claude Code на свой собственный backend, [уровни marketplace](#marketplace-tiers) определяют, какие названия плагинов появляются там:
+
+* **[Plugin loaded event](https://code.claude.com/docs/ru/monitoring-usage.md#plugin-loaded-event)**: событие сообщает официальные названия плагинов и marketplace как они есть. Для уровней community и third-party `plugin.name` и `marketplace.name` являются буквальной строкой `third-party`, если вы не установите `OTEL_LOG_TOOL_DETAILS=1`.
+* **Plugin scope**: `plugin.scope` загруженного события по-прежнему сообщает, откуда поступил плагин, например `org` для плагина, который включают ваши managed settings, или `user-local` для любого другого плагина third-party. [Plugin loaded event](https://code.claude.com/docs/ru/monitoring-usage.md#plugin-loaded-event) перечисляет каждое значение.
+* **[Plugin installed event](https://code.claude.com/docs/ru/monitoring-usage.md#plugin-installed-event)**: если вы не установите `OTEL_LOG_TOOL_DETAILS=1`, событие опускает поля имён для плагинов, не являющихся official, вместо того чтобы сообщать `third-party`.
+* **[Claude Code Analytics API](https://platform.claude.com/docs/en/api/admin/analytics/plugins/list)**: Claude Code сообщает плагины из official и community уровней по названию и сообщает каждый другой плагин как `third-party`.
+
+## Следующие шаги
+
+* [Manage plugins for your organization](https://code.claude.com/docs/ru/plugins/org.md): ограничьте, из каких marketplace пользователи могут устанавливать, и требуйте те, которым вы доверяете
+* [Install and manage plugins](https://code.claude.com/docs/ru/plugins/install.md): проверьте панель деталей плагина перед выбором scope
+* [Anthropic&#x27;s marketplaces](https://code.claude.com/docs/ru/plugins/anthropic-marketplaces.md): какие названия marketplace принадлежат Anthropic
+* [Security](https://code.claude.com/docs/ru/security.md): собственная модель безопасности Claude Code
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

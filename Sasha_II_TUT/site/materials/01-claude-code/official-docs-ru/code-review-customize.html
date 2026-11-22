@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Настройка Code Review</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="настройка-code-review">Настройка Code Review <a class="h-anchor" href="#настройка-code-review" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Настройте, что Code Review отмечает в ваших pull request, с помощью REVIEW.md и CLAUDE.md: перекалибруйте серьёзность, исключите пути, добавьте проверки и узнайте, какая копия применяется.</p>
+</blockquote>
+<p>Вы можете изменить, что <a href="https://code.claude.com/docs/ru/code-review.md">Code Review</a> отмечает в вашем репозитории, закоммитив в него инструкции. Так можно сократить количество мелких замечаний, отключить комментарии к сгенерированным файлам или добавить правило, важное для вашей команды. Поместите их в один из двух файлов:</p>
+<ul>
+<li><strong><code>CLAUDE.md</code></strong>: <a href="https://code.claude.com/docs/ru/memory.md">инструкции проекта</a>, которые Claude Code читает для каждой задачи, включая ревью. Code Review читает их как контекст проекта и отмечает изменения, которые их нарушают.</li>
+<li><strong><code>REVIEW.md</code></strong>: инструкции только для ревью. Используйте его, чтобы указать, что ваша команда хочет отмечать, с какой серьёзностью и что пропускать.</li>
+</ul>
+<p>Добавьте <code>REVIEW.md</code> в корень репозитория и выполните слияние. Затем <a href="#which-branch-review-md-is-read-from">защитите ветку по умолчанию</a>.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Чтобы изменить тщательность ревью или момент их запуска, попросите Owner изменить <a href="https://code.claude.com/docs/ru/code-review-setup.md#set-the-default-review-level">уровень ревью</a> или <a href="https://code.claude.com/docs/ru/code-review-setup.md#set-when-reviews-run">настройку <strong>Review runs</strong></a>.</p>
+</blockquote>
+<h3 id="используйте-claude-md-для-правил-всего-проекта">Используйте CLAUDE.md для правил всего проекта <a class="h-anchor" href="#используйте-claude-md-для-правил-всего-проекта" aria-label="Ссылка на раздел">#</a></h3>
+<p>Code Review читает файлы <code>CLAUDE.md</code> вашего репозитория как контекст проекта. Изменение, нарушающее одно из их правил, становится замечанием с тем <a href="https://code.claude.com/docs/ru/code-review-pull-requests.md#severity-levels">уровнем серьёзности</a>, который соответствует проблеме.</p>
+<p>Ревью читает <code>CLAUDE.md</code> в корне репозитория и файлы <code>CLAUDE.md</code> в родительских каталогах каждого изменённого файла. <code>CLAUDE.md</code> подкаталога читается, когда pull request изменяет файл по этому пути.</p>
+<h3 id="используйте-review-md-для-правил-относящихся-только-к-ревью">Используйте REVIEW\.md для правил, относящихся только к ревью <a class="h-anchor" href="#используйте-review-md-для-правил-относящихся-только-к-ревью" aria-label="Ссылка на раздел">#</a></h3>
+<p><code>REVIEW.md</code> — это файл в корне репозитория, который адаптирует Code Review к вашему репозиторию. В <a href="#what-a-review-reads-for-each-branch-setup">защищённой ветке</a> вы также можете добавить <code>REVIEW.md</code> в <a href="#when-a-subdirectory-review-md-doesnt-apply">большинство подкаталогов</a>, чтобы добавить проверки для изменений в этом подкаталоге в дополнение к корневому файлу.</p>
+<p>Агенты, которые находят проблемы, и агенты, которые их проверяют, получают его содержимое как инструкции ревью вашего репозитория вместе со стандартными рекомендациями Code Review. Этап, на котором пишется итоговое ревью, обращается к нему, прежде чем определить серьёзность и написать сводку.</p>
+<p>В этом примере структуры есть корневой файл и один файл в подкаталоге:</p>
+<p>```text theme={null}
+your-repo/
+├── REVIEW.md            # Root file
+├── services/
+│   └── billing/
+│       └── REVIEW.md    # Adds checks for changes under services/billing/
+└── src/</p>
+<pre><code>
+Прежде чем полагаться на файл в подкаталоге, защитите ветку по умолчанию и проверьте, [что читает ревью при вашей настройке веток](#what-a-review-reads-for-each-branch-setup).
+
+&gt; [!NOTE]
+&gt;
+&gt; Сервис Code Review и локальная [команда `/code-review`](https://code.claude.com/docs/ru/code-review-local) — это два отдельных инструмента, и они читают разные файлы. Сервис читает и `CLAUDE.md`, и `REVIEW.md`. Команда `/code-review`, которую вы запускаете в сессии Claude Code на своём компьютере, читает ваши файлы `CLAUDE.md`, но не `REVIEW.md`. Указания, которые должны применяться в обоих местах, помещайте в `CLAUDE.md`, а `REVIEW.md` оставьте для правил, специфичных для ревью pull request.
+
+### Когда REVIEW\.md в подкаталоге не применяется
+
+Code Review не применяет `REVIEW.md`, расположенный в подкаталоге с одним из следующих имён или ниже него, независимо от содержимого подкаталога. Имя подкаталога совпадает только целиком, в любом регистре и на любой глубине, поэтому `Tests` совпадает, а `integration-tests` — нет:
+
+* **Тесты**: `test`, `tests`, `__tests__`, `testdata`, `fixtures`, `__fixtures__`, `golden`, `corpus`, `snapshots`, `__snapshots__`
+* **Примеры**: `example`, `examples`, `sample`, `samples`, `demo`, `demos`
+* **Сгенерированный код**: `generated`
+* **Сторонний код**: `vendor`, `third_party`, `third-party`, `thirdparty`, `node_modules`, `bower_components`, `external`, `extern`, `deps`, `godeps`, `pods`, `carthage`, `site-packages`, `contrib`
+
+Размещайте проверки для таких подкаталогов в корневом `REVIEW.md` или в `REVIEW.md` родительского подкаталога, если ни этот родительский подкаталог, ни что-либо выше него не входит в список.
+
+Остальные файлы `REVIEW.md` в подкаталогах на путях, которые изменяет pull request, имеют общее ограничение в 150 000 байт, не считая корневого файла. Если [check run](https://code.claude.com/docs/ru/code-review-pull-requests.md#check-run-output) сообщает, что некоторые из них не поместились, сократите файлы, чтобы уложиться в это ограничение.
+
+### Пример REVIEW\.md
+
+Этот `REVIEW.md` перекалибровывает серьёзность для бэкенд-сервиса, ограничивает количество мелких замечаний, пропускает сгенерированные файлы и добавляет проверки, специфичные для репозитория.
+</code></pre>
+<h1 id="review-instructions">Review instructions <a class="h-anchor" href="#review-instructions" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="what-important-means-here">What Important means here <a class="h-anchor" href="#what-important-means-here" aria-label="Ссылка на раздел">#</a></h3>
+<p>Reserve Important for findings that would break behavior, leak data,
+or block a rollback: incorrect logic, unscoped database queries, PII
+in logs or error messages, and migrations that aren&#x27;t backward
+compatible. Style, naming, and refactoring suggestions are Nit at
+most.</p>
+<h3 id="cap-the-nits">Cap the nits <a class="h-anchor" href="#cap-the-nits" aria-label="Ссылка на раздел">#</a></h3>
+<p>Report at most five Nits per review.</p>
+<h3 id="do-not-report">Do not report <a class="h-anchor" href="#do-not-report" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Anything CI already enforces: lint, formatting, type errors</li>
+<li>Generated files under <code>src/gen/</code> and any <code>*.lock</code> file</li>
+<li>Test-only code that intentionally violates production rules</li>
+</ul>
+<h3 id="always-check">Always check <a class="h-anchor" href="#always-check" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>New API routes have an integration test</li>
+<li>Log lines don&#x27;t include email addresses, user IDs, or request bodies</li>
+<li>Database queries are scoped to the caller&#x27;s tenant</li>
+</ul>
+<pre><code>
+### Выбор содержимого REVIEW\.md
+
+`REVIEW.md` — это Markdown в свободной форме, который изменяет то, что ревью находит и сообщает. Он не меняет формат ревью. Найдите проблему, с которой вы столкнулись, и добавьте инструкцию, подобную показанной. В [примере](#example-review-md) используются первые четыре.
+
+* **Не то помечается как Important**: переопределите, что означает 🔴 Important для вашего репозитория. Калибровка по умолчанию ориентирована на production-код, а для репозитория документации, репозитория конфигурации или прототипа может потребоваться гораздо более узкое определение. Укажите, какие классы замечаний являются Important, а какие — максимум Nit. Можно также повышать серьёзность, например считать любое нарушение `CLAUDE.md` как Important.
+* **Слишком много мелких замечаний**: ограничьте количество комментариев 🟡 Nit, которые публикует одно ревью. Ограничение вроде «сообщать не более пяти мелких замечаний» сохраняет ревью практичными.
+* **Комментарии к сгенерированным файлам или к тому, что уже проверяет CI**: перечислите пути и категории замечаний, для которых Claude должен пропускать замечания. Типичные кандидаты — сгенерированный код, lock-файлы и вендорные зависимости, а также всё, что уже обеспечивает ваш CI, например линтинг или проверка орфографии. Для путей, которые требуют некоторого ревью, но не полного анализа, задайте более высокую планку: «в `scripts/` сообщать только о почти несомненных и серьёзных проблемах».
+* **Правило команды не проверяется**: добавьте правила, которые должны отмечаться в каждом pull request, например «новые маршруты API должны иметь интеграционный тест».
+* **Замечания оказываются ошибочными**: требуйте доказательств перед публикацией определённого класса замечаний. Например, «утверждения о поведении требуют ссылки `file:line` в исходном коде, а не вывода из названий» сокращает ложные срабатывания, которые иначе стоили бы автору лишнего цикла.
+
+Некоторым из этих инструкций [требуется корневой файл в защищённой ветке по умолчанию](#which-branch-review-md-is-read-from).
+
+Оставляйте в `REVIEW.md` только инструкции, изменяющие поведение ревью, а общий контекст проекта — в `CLAUDE.md`.
+
+### Включение других файлов в REVIEW\.md
+
+Вы можете разделить инструкции ревью на несколько файлов и подключить их в корневой `REVIEW.md`. Используйте это, когда `REVIEW.md` становится слишком длинным или когда вы уже храните правила ревью в другом файле.
+
+Чтобы включить файл, добавьте в корневой `REVIEW.md` строку, содержащую только `@` и имя файла. Code Review подставляет содержимое файла вместо этой строки, поэтому оно применяется как часть `REVIEW.md`. В этом примере корневой файл даёт одну собственную инструкцию, а затем включает два файла с правилами:
+</code></pre>
+<h1 id="review-instructions-2">Review instructions <a class="h-anchor" href="#review-instructions-2" aria-label="Ссылка на раздел">#</a></h1>
+<p>Report at most five Nits per review.</p>
+<p>@review-security.md
+@review-api.md</p>
+<pre><code>
+Сохраните включаемые файлы в корне репозитория рядом с `REVIEW.md`:
+</code></pre>
+<p>your-repo/
+├── REVIEW.md
+├── review-security.md
+└── review-api.md</p>
+<pre><code>
+Code Review включает файлы, когда читает `REVIEW.md` из защищённой ветки, поэтому проверьте, [какую ветку читает ревью для вашего репозитория](#what-a-review-reads-for-each-branch-setup):
+
+* **Защищённая ветка**: Code Review подставляет включаемый файл вместо его строки `@`
+* **Незащищённая ветка по умолчанию**: строка `@` остаётся в `REVIEW.md` как обычный текст. Если pull request изменяет файл, указанный в строке, строка опускается.
+
+Если ревью не применяет включаемый файл, проверьте каждый из следующих пунктов:
+
+* **Расположение**: переместите файл в корень репозитория. За исключением [файла скилла](#include-a-skill-file), путь в подкаталог, например `@docs/review-rules.md`, не включается.
+* **Имя**: указывайте имя файла точно, с учётом регистра, и используйте имя без пробелов. Строка, имя в которой не совпадает ни с одним файлом рядом с `REVIEW.md`, остаётся в `REVIEW.md` как обычный текст, и check run не сообщает о ней как о пропущенном включении.
+* **Один уровень**: перечислите все файлы в корневом `REVIEW.md`. Строка `@` во включаемом файле или в `REVIEW.md` подкаталога остаётся обычным текстом ([для файлов скиллов это иначе](#include-a-skill-file)), а ссылка Markdown на другой файл не является включением.
+* **Ограничения**: включайте не более восьми разных файлов, а общий размер `REVIEW.md` и включаемых им файлов должен быть меньше 150 000 байт. Файл, который достиг бы ограничения по байтам, пропускается целиком, а не обрезается. Check run сообщает, сколько строк включения было пропущено из-за каждого из ограничений.
+* **Ссылки**: общее количество ссылок Markdown в `REVIEW.md` и включаемых им файлах должно быть не более 64. Ссылки на адреса `http`, `https` или `mailto` и на якоря `#` не учитываются, как и ссылки в [файле скилла](#include-a-skill-file). При превышении этого ограничения ревью пропускает весь ваш корневой `REVIEW.md`, а не только включаемые файлы. В этом случае check run [сообщает, что инструкции не были применены](https://code.claude.com/docs/ru/code-review-troubleshooting.md#the-check-run-mentions-review-md).
+* **Копия после слияния**: выполните слияние включаемого файла в [ветку, из которой читается `REVIEW.md`](#which-branch-review-md-is-read-from). Ревью читает оба файла из одного и того же коммита, но никогда из изменений самого pull request.
+
+### Включение файла скилла
+
+Чтобы ревью следовали указаниям, которые вы храните в [скилле](https://code.claude.com/docs/ru/skills.md), включите `SKILL.md` этого скилла в корневой `REVIEW.md`. Code Review не запускает скиллы.
+
+Добавьте `@` и путь к `SKILL.md` в формате `.claude/skills/&lt;folder&gt;/SKILL.md` на отдельной строке:
+</code></pre>
+<h1 id="review-instructions-3">Review instructions <a class="h-anchor" href="#review-instructions-3" aria-label="Ссылка на раздел">#</a></h1>
+<p>Report at most five Nits per review.</p>
+<p>@.claude/skills/api-review/SKILL.md</p>
+<p>Treat any change under <code>migrations/</code> as Important.</p>
+<pre><code>
+Защитите [ветку, из которой читается `REVIEW.md`](#which-branch-review-md-is-read-from), поскольку Code Review включает файл скилла, только когда читает `REVIEW.md` из защищённой ветки. Файл скилла учитывается в ограничениях в восемь файлов и 150 000 байт, а также имеет собственное ограничение в 30 000 байт.
+
+#### Напишите строку скилла, которую Code Review включит
+
+Используйте имя папки без пробелов. Строка с пробелом в пути остаётся в `REVIEW.md` как обычный текст, и check run не сообщает о ней как о пропущенном включении.
+
+Если строка `@` для скилла нарушает одно из приведённых ниже правил, Code Review не включает скилл из этой строки:
+
+* **Путь**: указывайте путь в виде `.claude/skills/&lt;folder&gt;/SKILL.md` от корня репозитория, при этом папка скилла должна находиться непосредственно в `skills/`. В отличие от имени файла в корне, путь такого вида, не совпадающий ни с одним файлом, пропускается и учитывается.
+* **Источник**: скопируйте указания из любого другого файла в `.claude/` или из [встроенного, личного скилла или скилла плагина](https://code.claude.com/docs/ru/skills.md#where-skills-live) в файл рядом с `REVIEW.md`. Включить их напрямую нельзя.
+* **Файл**: сделайте коммит `SKILL.md` как обычного текстового файла. Code Review не переходит по символическим ссылкам, будь то сам файл или папка в его пути.
+* **Размер**: размер `SKILL.md` должен быть не более 30 000 байт, включая frontmatter
+* **Количество**: пишите не более восьми строк скиллов. Повторяющаяся строка снова учитывается в этих восьми.
+* **Блоки в `REVIEW.md`**: не размещайте строку `@` внутри блоков кода. Закройте все HTML-комментарии и все блоки `&lt;pre&gt;`, `&lt;script&gt;`, `&lt;style&gt;` или `&lt;textarea&gt;` выше неё.
+
+Когда Code Review пропускает строку скилла из-за нарушения правил «Файл», «Размер», «Количество» или «Блоки», она учитывается в [сообщении check run о пропущенных строках включения](https://code.claude.com/docs/ru/code-review-troubleshooting.md#the-check-run-mentions-review-md). Это сообщение появляется, только когда ревью применяет `REVIEW.md` из защищённой ветки.
+
+#### Проверьте, что ревью получает из скилла
+
+Когда скилл включён, ревью получает тело `SKILL.md` и ничего больше из скилла, поэтому проверьте скилл по списку ниже.
+
+* **Frontmatter**: повторите в теле всё, что нужно ревью из [frontmatter](https://code.claude.com/docs/ru/skills.md#frontmatter-reference), например условия использования скилла, указанные в `description`
+* **Внедряемые команды**: распишите то, что предоставила бы [команда `!`](https://code.claude.com/docs/ru/skills#inject-dynamic-context). Code Review не выполняет команду и заменяет всю строку или блок, где она находится, заполнителем.
+* **Подстановки**: замените `$ARGUMENTS` и другие [подстановки](https://code.claude.com/docs/ru/skills.md#available-string-substitutions) фиксированным текстом, поскольку ревью не передаёт аргументы и оставляет их как есть
+* **Вспомогательные файлы**: скопируйте то, что нужно ревью, в `SKILL.md`, поскольку Code Review не загружает скрипты, связанные файлы или ссылки `@file`
+* **Исключения и ограничения Nit**: пишите инструкции, исключающие замечания или ограничивающие количество Nit, в `REVIEW.md` или в файле рядом с ним, а не в скилле. Code Review не принимает текст скилла как основание ни для того, ни для другого.
+* **Ссылки на файлы репозитория**: опишите словами, на что указывает ссылка или ссылка `@file`. Ревью видит путь как обычный текст или как заполнитель.
+
+Если вы редактируете команды `!`, `$ARGUMENTS` или ссылки скилла, вы также меняете то, как он работает в Claude Code. Если ваша команда на них полагается, скопируйте указания в файл рядом с `REVIEW.md` и включите этот файл вместо скилла.
+
+#### Символы, которые Code Review изменяет в тексте скилла
+
+Code Review изменяет некоторые символы в тексте скилла, поэтому ваши примеры кода попадают в ревью в виде, показанном ниже.
+</code></pre>
+<p>In SKILL.md:       Use <code>items[0]</code>, never <code>List&lt;String&gt;</code>.
+The review reads:  Use ˋitems(0)ˋ, never ˋList&lt; String&gt;ˋ.</p>
+<p>In SKILL.md:       Run <code>ps | grep api</code> and ask @alice.
+The review reads:  Run ˋps ¦ grep apiˋ and ask @ alice.</p>
+<pre><code>
+Если правило зависит от одного из этих символов, опишите его также словами.
+
+### Из какой ветки читается REVIEW\.md
+
+Code Review читает `REVIEW.md` из базовой ветки pull request или из ветки по умолчанию, но никогда из изменений самого pull request. Чтобы изменить поведение ревью, сначала выполните слияние изменения `REVIEW.md`.
+
+Храните `REVIEW.md` в ветке по умолчанию и защитите эту ветку. Когда ревью читает копию из защищённой ветки по умолчанию (первая строка таблицы ниже), оно соблюдает следующие инструкции из корневого файла:
+
+* Понижение серьёзности замечания
+* Исключение путей, файлов или классов проблем
+* Ограничение количества мелких замечаний
+
+Пишите исключения и ограничения Nit в `REVIEW.md` или в файле рядом с ним, а не во [включённом скилле](#include-a-skill-file).
+
+#### Что считается защитой ветки
+
+Code Review считает защитой следующие настройки:
+
+* **Ветка по умолчанию**: классическое правило защиты ветки или ruleset
+* **Любая другая ветка**: только ruleset
+
+Ruleset засчитывается, если он ограничивает обновления или требует pull request как минимум с одним одобрением. Если он требует pull request, он также должен отзывать это одобрение при новом push или требовать, чтобы одобрение было получено после последнего push.
+
+#### Что читает ревью при каждой настройке веток
+
+Найдите ситуацию вашего репозитория в первом столбце таблицы ниже.
+
+| Защита ветки | Читаемая копия | Читаемые файлы |
+| :- | :- | :- |
+| Ветка по умолчанию защищена, и pull request направлен в неё или в ветку, не защищённую ни одним ruleset | Ветка по умолчанию | Корневой файл, включаемые им файлы и [большинство файлов подкаталогов](#when-a-subdirectory-review-md-doesnt-apply) |
+| Pull request направлен в другую ветку, защищённую ruleset | Эта базовая ветка | Корневой файл, включаемые им файлы и [большинство файлов подкаталогов](#when-a-subdirectory-review-md-doesnt-apply) |
+| Ветка по умолчанию не защищена, и у базовой ветки нет правила защиты ни одного из типов | Ветка по умолчанию | Корневой файл |
+| Code Review не может подтвердить настройки защиты. Сюда относится незащищённая ветка по умолчанию с базовой веткой, у которой есть только классическое правило | Нет | Нет |
+
+Если в check run упоминается `REVIEW.md`, см. [The check run mentions REVIEW.md](https://code.claude.com/docs/ru/code-review-troubleshooting.md#the-check-run-mentions-review-md).
+
+## Связанные ресурсы
+
+* [Code Review](https://code.claude.com/docs/ru/code-review.md): что представляет собой сервис и как выполняется ревью
+* [Чтение и запрос ревью в pull request](https://code.claude.com/docs/ru/code-review-pull-requests.md#severity-levels): что означает каждый уровень серьёзности и как отображаются замечания
+* [Настройка Code Review](https://code.claude.com/docs/ru/code-review-setup.md): уровень ревью и момент запуска ревью, которые задаёт Owner
+* [Локальное ревью с помощью `/code-review`](https://code.claude.com/docs/ru/code-review-local): команда `/code-review`, её аргументы и уровни effort
+* [Память](https://code.claude.com/docs/ru/memory.md): как работают файлы `CLAUDE.md` в Claude Code
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

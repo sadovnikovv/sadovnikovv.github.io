@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Как помочь курсу</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../materials/01-claude-code/community-guides/claude-code-pro-course/index.html">claude-code-pro-course</a></nav>
+<h1 id="h">Как помочь курсу <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<p>Спасибо, что хотите сделать курс лучше! Claude Code быстро меняется, и свежие исправления особенно ценны.</p>
+<h3 id="h-2">Что можно сделать <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>🐛 <strong>Исправить неточность</strong> — команда устарела, поле переименовано, опечатка.</li>
+<li>🧪 <strong>Добавить лабу или рецепт</strong> — <code>labs/</code>, <code>recipes/prompts.md</code>.</li>
+<li>🧩 <strong>Добавить шаблон</strong> — skill, агент, hook, правило в <code>starter-kit/</code>.</li>
+<li>🌍 <strong>Улучшить объяснение</strong> — если что-то было непонятно вам, будет непонятно и другим.</li>
+</ul>
+<h3 id="h-3">Правила <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li><strong>Точность важнее полноты.</strong> Сверяйтесь с https://code.claude.com/docs. Не уверены — отметьте это в PR.</li>
+<li><strong>Практичность.</strong> Каждый раздел отвечает на вопрос «как это использовать в работе».</li>
+<li><strong>Кратко.</strong> Таблицы и примеры лучше длинных абзацев.</li>
+<li><strong>Шаблоны должны работать.</strong> Skills — с <code>name</code> и <code>description</code>, имя совпадает с папкой. Скрипты — проходят <code>bash -n</code> и <code>shellcheck</code>.</li>
+<li><strong>Без секретов</strong> в примерах — только <code>${VAR}</code>.</li>
+</ol>
+<h3 id="перед-pr">Перед PR <a class="h-anchor" href="#перед-pr" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-bash">pip install pyyaml
+python3 scripts/validate.py      # JSON, frontmatter, bash, ссылки
+shellcheck $(git ls-files &#x27;*.sh&#x27;) # если установлен</code></pre>
+<p>Эти же проверки запускает CI (<a href=".github/workflows/validate.yml">validate.yml</a>).</p>
+<h3 id="h-4">Стиль текста <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Русский язык, обращение на «вы».</li>
+<li>Термины как в документации: skill, subagent, hook, MCP, plan mode.</li>
+<li>Код и команды — в блоках кода; пути и имена файлов — в <code>моноширинном</code>.</li>
+<li>Каждый модуль заканчивается разделом <strong>Практика</strong> и ссылкой на следующий модуль.</li>
+</ul>
+<h3 id="работа-с-claude-code-над-этим-репозиторием">Работа с Claude Code над этим репозиторием <a class="h-anchor" href="#работа-с-claude-code-над-этим-репозиторием" aria-label="Ссылка на раздел">#</a></h3>
+<p>В репозитории есть <a href="CLAUDE.md">CLAUDE.md</a> — Claude Code сразу знает правила проекта. Попробуйте:</p>
+<pre><code>&gt; /code-review
+&gt; проверь course/05-skills.md на соответствие актуальной документации</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

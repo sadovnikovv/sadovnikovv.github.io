@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Подключение к внешним инструментам с помощью MCP</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/agent-sdk/index.html">agent-sdk</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="подключение-к-внешним-инструментам-с-помощью-mcp">Подключение к внешним инструментам с помощью MCP <a class="h-anchor" href="#подключение-к-внешним-инструментам-с-помощью-mcp" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Настройте MCP серверы для расширения вашего агента внешними инструментами. Охватывает типы транспорта, поиск инструментов для больших наборов инструментов, аутентификацию и обработку ошибок.</p>
+</blockquote>
+<p><a href="https://modelcontextprotocol.io/docs/getting-started/intro">Model Context Protocol (MCP)</a> — это открытый стандарт для подключения AI агентов к внешним инструментам и источникам данных. С помощью MCP ваш агент может запрашивать базы данных, интегрироваться с API, такими как Slack и GitHub, и подключаться к другим сервисам без написания пользовательских реализаций инструментов.</p>
+<p>MCP серверы могут работать как локальные процессы, подключаться через HTTP или выполняться непосредственно в вашем приложении SDK.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>На этой странице рассматривается конфигурация MCP для Agent SDK. Чтобы добавить MCP серверы в Claude Code CLI так, чтобы они загружались в каждом проекте, см. <a href="https://code.claude.com/docs/ru/mcp.md#mcp-installation-scopes">Области установки MCP</a>.</p>
+</blockquote>
+<h3 id="h">Быстрый старт <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Этот пример подключается к MCP серверу <a href="https://code.claude.com/docs">документации Claude Code</a> с использованием <a href="#http%2Fsse-servers">HTTP транспорта</a> и использует <a href="#allow-mcp-tools"><code>allowedTools</code></a> с подстановочным знаком для разрешения всех инструментов с сервера.</p>
+<p>```typescript TypeScript theme={null}
+import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>for await (const message of query({
+  prompt: &quot;Use the docs MCP server to explain what hooks are in Claude Code&quot;,
+  options: {
+    mcpServers: {
+      &quot;claude-code-docs&quot;: {
+        type: &quot;http&quot;,
+        url: &quot;https://code.claude.com/docs/mcp&quot;
+      }
+    },
+    allowedTools: [&quot;mcp__claude-code-docs__*&quot;]
+  }
+})) {
+  if (message.type === &quot;result&quot; &amp;&amp; message.subtype === &quot;success&quot;) {
+    console.log(message.result);
+  }
+}</p>
+<pre><code></code></pre>
+<p>import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage</p>
+<p>async def main():
+    options = ClaudeAgentOptions(
+        mcp_servers={
+            &quot;claude-code-docs&quot;: {
+                &quot;type&quot;: &quot;http&quot;,
+                &quot;url&quot;: &quot;https://code.claude.com/docs/mcp&quot;,
+            }
+        },
+        allowed_tools=[&quot;mcp__claude-code-docs__*&quot;],
+    )</p>
+<p>async for message in query(
+        prompt=&quot;Use the docs MCP server to explain what hooks are in Claude Code&quot;,
+        options=options,
+    ):
+        if isinstance(message, ResultMessage) and message.subtype == &quot;success&quot;:
+            print(message.result)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+Агент подключается к серверу документации, ищет информацию о hooks и возвращает результаты.
+
+## Добавить MCP сервер
+
+Вы можете настроить MCP серверы в коде при вызове `query()`, или в файле `.mcp.json`, загруженном через [`settingSources`](#from-a-config-file).
+
+### Добавление сервера в коде
+
+Передайте MCP серверы непосредственно в опции `mcpServers`. Этот пример запускает локальный файловый MCP сервер для `/Users/me/projects`. Замените этот путь на директорию на вашей машине:
+</code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>for await (const message of query({
+  prompt: &quot;List files in my project&quot;,
+  options: {
+    mcpServers: {
+      filesystem: {
+        command: &quot;npx&quot;,
+        args: [&quot;-y&quot;, &quot;@modelcontextprotocol/server-filesystem&quot;, &quot;/Users/me/projects&quot;]
+      }
+    },
+    allowedTools: [&quot;mcp__filesystem__*&quot;]
+  }
+})) {
+  if (message.type === &quot;result&quot; &amp;&amp; message.subtype === &quot;success&quot;) {
+    console.log(message.result);
+  }
+}</p>
+<pre><code></code></pre>
+<p>import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage</p>
+<p>async def main():
+    options = ClaudeAgentOptions(
+        mcp_servers={
+            &quot;filesystem&quot;: {
+                &quot;command&quot;: &quot;npx&quot;,
+                &quot;args&quot;: [
+                    &quot;-y&quot;,
+                    &quot;@modelcontextprotocol/server-filesystem&quot;,
+                    &quot;/Users/me/projects&quot;,
+                ],
+            }
+        },
+        allowed_tools=[&quot;mcp__filesystem__*&quot;],
+    )</p>
+<p>async for message in query(prompt=&quot;List files in my project&quot;, options=options):
+        if isinstance(message, ResultMessage) and message.subtype == &quot;success&quot;:
+            print(message.result)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+### Добавление сервера из файла конфигурации
+
+Создайте файл `.mcp.json` в корне вашего проекта. Файл загружается, когда включен источник настроек `project`, что происходит по умолчанию для опций `query()`. Если вы явно установите `settingSources`, включите `&quot;project&quot;` для загрузки этого файла. Замените `/Users/me/projects` на директорию на вашей машине:
+</code></pre>
+<p>{
+  &quot;mcpServers&quot;: {
+    &quot;filesystem&quot;: {
+      &quot;command&quot;: &quot;npx&quot;,
+      &quot;args&quot;: [&quot;-y&quot;, &quot;@modelcontextprotocol/server-filesystem&quot;, &quot;/Users/me/projects&quot;]
+    }
+  }
+}</p>
+<pre><code>
+## Время подключения
+
+Claude Code начинает подключать ваши MCP-серверы при запуске сессии и отправляет [сообщение инициализации](#error-handling), как только заканчивается ожидание первого хода, если оно есть. Сколько первый ход ждёт сервер, зависит от того, где вы его настроили. Если вы задали `permissionPromptToolName`, первый ход всегда ждёт сервер этого инструмента, до `MCP_TIMEOUT`, независимо от того, где вы его настроили.
+
+Для сервера в `options.mcpServers` найдите его тип в первом столбце, чтобы узнать, сколько первый ход его ждёт.
+
+| Тип сервера | Задерживает первый ход? | Тайм-аут ожидания первого хода |
+| :- | :- | :- |
+| Сервер stdio или HTTP/SSE сервер без кэшированного списка инструментов | Да, до подключения | [`MCP_TIMEOUT`](https://code.claude.com/docs/ru/env-vars), по умолчанию 30 секунд; подключение завершается ошибкой в этот момент |
+| Удалённый сервер с кэшированным списком инструментов, сохранённый Claude Code из предыдущего подключения | Нет; кэшированные инструменты доступны с первого хода | Нет; подключается при первом вызове инструмента, и это отложенное подключение имеет собственный тайм-аут |
+| In-process [SDK сервер](#sdk-mcp-servers) | Да, до подключения и получения списка инструментов | [`MCP_TIMEOUT`](https://code.claude.com/docs/ru/env-vars), по умолчанию 30 секунд, за попытку подключения; подключение завершается ошибкой в этот момент |
+
+Кэшированный список инструментов есть у сервера, только когда включён [кэш обнаружения MCP](https://code.claude.com/docs/ru/mcp.md#server-status-detail).
+
+Серверы из [файлов настроек](#from-a-config-file), таких как `.mcp.json`, или из плагинов часто всё ещё показывают `pending` в сообщении инициализации. Сколько первый ход их ждёт, зависит от `options.mcpServers` и поиска инструментов:
+
+* **`options.mcpServers` содержит сервер stdio, HTTP или SSE**: первый ход ждёт также ожидающие серверы из файлов настроек и плагинов, до `MCP_TIMEOUT`.
+* **Иначе, когда `ANTHROPIC_BASE_URL` указывает на [шлюз](https://code.claude.com/docs/ru/mcp.md#tool-search-through-a-gateway), а [`ENABLE_TOOL_SEARCH`](https://code.claude.com/docs/ru/mcp#configure-tool-search) не задана**: первый ход ждёт до 2 секунд каждый ожидающий сервер из файлов настроек и плагинов.
+* **Иначе, с включённым [поиском инструментов](https://code.claude.com/docs/ru/agent-sdk/tool-search.md), что является значением по умолчанию**: первый ход ждёт до 2 секунд и только ожидающие серверы, для которых задано [`alwaysLoad: true`](https://code.claude.com/docs/ru/mcp#exempt-a-server-from-deferral) или которые вы [назвали](#named-servers). Остальные продолжают подключаться в фоновом режиме, и Claude [получает доступ к их инструментам](https://code.claude.com/docs/ru/mcp.md#tool-availability), как только они подключатся.
+* **Иначе, с отключённым поиском инструментов**: первый ход ждёт до 2 секунд каждый ожидающий сервер из файлов настроек и плагинов. Поиск инструментов отключён, когда его отключает ваше [значение `ENABLE_TOOL_SEARCH` или модель](https://code.claude.com/docs/ru/agent-sdk/tool-search#configure-tool-search), или когда вы исключаете инструмент `ToolSearch`, например через `disallowedTools`.
+
+### Названные серверы
+
+Вы называете сервер, указав любой из его инструментов, например `mcp__github__list_issues` или `mcp__github__*`, в [`allowedTools`](#allow-mcp-tools) или в правиле `permissions.allow` в опции `settings`. [Хук `mcp_tool`](https://code.claude.com/docs/ru/hooks#mcp-tool-hook-fields) также называет сервер, который он вызывает, когда вы настраиваете его на событие отправки промпта, использования инструмента, разрешения, субагента, задачи, elicitation или worktree. До версии 2.1.284 указание сервера не влияло на ожидание первого хода.
+
+### Самостоятельная настройка ожидания первого хода
+
+Чтобы задать ожидание первого хода самостоятельно, установите `CLAUDE_CODE_MCP_STARTUP_WAIT_MS` в [опции `env`](https://code.claude.com/docs/ru/agent-sdk/configuration#set-environment-variables), например `CLAUDE_CODE_MCP_STARTUP_WAIT_MS: &quot;5000&quot;`. Тогда первый ход ждёт ожидающие серверы из файлов настроек и плагинов до указанного количества миллисекунд, независимо от того, включён ли поиск инструментов. Тот же предел заменяет ожидание `MCP_TIMEOUT` для серверов stdio, HTTP и SSE в `options.mcpServers`.
+
+Три ожидания действуют при любом заданном значении, включая `0`:
+
+* **Сервер `permissionPromptToolName`**: до `MCP_TIMEOUT`.
+* **In-process [SDK-сервер](#sdk-mcp-servers)**: до `MCP_TIMEOUT` за попытку подключения.
+* **Всё ещё подключающийся [названный сервер](#named-servers)**: не менее 2 секунд, поэтому значение ниже `2000` не сокращает его ожидание.
+
+Установите переменную в `0`, чтобы пропустить ожидание для всех остальных серверов. Серверы, которые всё ещё ожидают, когда ожидание заканчивается, продолжают подключаться в фоновом режиме. `CLAUDE_CODE_MCP_STARTUP_WAIT_MS` требует Claude Code версии 2.1.274 или новее.
+
+### Ожидание серверов при запуске
+
+Две настройки заставляют ждать сам запуск, до того как Claude Code отправит сообщение инициализации:
+
+* **[`MCP_CONNECTION_NONBLOCKING`](https://code.claude.com/docs/ru/env-vars) со значением `0`**: запуск ждёт всю партию подключений, по умолчанию до 5 секунд. Чтобы изменить этот предел, задайте [`MCP_CONNECT_TIMEOUT_MS`](https://code.claude.com/docs/ru/env-vars) в миллисекундах. Серверы, которые всё ещё ожидают при достижении предела, продолжают подключаться в фоновом режиме.
+* **`alwaysLoad: true` в конфигурации сервера**: запуск ждёт инструменты этого сервера до того же предела, чтобы на первом ходе они были доступны с полными схемами, [исключёнными из отложенной загрузки поиска инструментов](https://code.claude.com/docs/ru/mcp.md#exempt-a-server-from-deferral). Удалённый сервер с кэшированным списком инструментов предоставляет их без подключения и без задержки запуска.
+
+Сообщение инициализации сообщает статус каждого сервера на момент, когда Claude Code его отправляет.
+
+## Разрешить инструменты MCP
+
+Инструменты MCP требуют явного разрешения перед тем, как Claude сможет их использовать. Без разрешения Claude увидит, что инструменты доступны, но не сможет их вызывать.
+
+### Соглашение об именовании инструментов
+
+Инструменты MCP именуются как `mcp__&lt;server-name&gt;__&lt;tool-name&gt;`, где `&lt;server-name&gt;` — это имя, под которым вы регистрируете сервер, например его ключ в `mcpServers`.
+
+Символы в имени сервера, такие как `.` и пробелы, заменяются на `_`. В этой таблице показано полное имя инструмента `list_issues` для двух ключей сервера:
+
+| Ключ в `mcpServers` | Полное имя инструмента |
+| :- | :- |
+| `github` | `mcp__github__list_issues` |
+| `my.server` | `mcp__my_server__list_issues` |
+
+Используйте полные имена инструментов в `allowedTools` и в [правилах разрешений MCP](https://code.claude.com/docs/ru/permissions.md#mcp). Для сервера, который предоставляет [плагин](https://code.claude.com/docs/ru/agent-sdk/plugins.md), `&lt;server-name&gt;` принимает [форму с областью плагина](https://code.claude.com/docs/ru/mcp.md#plugin-provided-mcp-servers) и начинается с `plugin_`.
+
+### Автоматическое одобрение с allowedTools
+
+Используйте `allowedTools` для автоматического одобрения определённых инструментов MCP:
+</code></pre>
+<p>const _ = {
+  options: {
+    mcpServers: {
+      // your servers
+    },
+    allowedTools: [
+      &quot;mcp__github__*&quot;, // All tools from the github server
+      &quot;mcp__db__query&quot;, // Only the query tool from db server
+      &quot;mcp__slack__send_message&quot; // Only send_message from slack server
+    ]
+  }
+};</p>
+<pre><code></code></pre>
+<p>options = ClaudeAgentOptions(
+    mcp_servers={
+        # your servers
+    },
+    allowed_tools=[
+        &quot;mcp__github__*&quot;,  # All tools from the github server
+        &quot;mcp__db__query&quot;,  # Only the query tool from db server
+        &quot;mcp__slack__send_message&quot;,  # Only send_message from slack server
+    ],
+)</p>
+<pre><code>
+Подстановочные знаки (`*`) позволяют вам разрешить все инструменты с сервера без перечисления каждого отдельно.
+
+&gt; [!NOTE]
+&gt;
+&gt; **Предпочитайте `allowedTools` режимам разрешений для доступа MCP.** `permissionMode: &quot;acceptEdits&quot;` не одобряет автоматически инструменты MCP (только редактирование файлов и команды Bash файловой системы). `permissionMode: &quot;bypassPermissions&quot;` одобряет автоматически инструменты MCP, но также отключает большинство других запросов безопасности, что шире, чем необходимо; см. [Как оцениваются разрешения](https://code.claude.com/docs/ru/agent-sdk/permissions.md#how-permissions-are-evaluated) для запросов, которые остаются. Подстановочный знак в `allowedTools` предоставляет ровно тот сервер MCP, который вам нужен, и ничего больше. См. [Режимы разрешений](https://code.claude.com/docs/ru/agent-sdk/permissions.md#permission-modes) для полного сравнения.
+
+### Обнаружение доступных инструментов
+
+Чтобы увидеть, какие инструменты предоставляет сервер MCP, проверьте документацию сервера или проверьте массив `tools` в инициализирующем сообщении `system`. Имена инструментов MCP начинаются с `mcp__`.
+
+Claude Code выдаёт инициализирующее сообщение после [ожидания подключения на первом ходу](#connection-timing) для серверов, переданных в `options.mcpServers`, поэтому массив `tools` содержит инструменты `mcp__` каждого сервера, который подключился к этому моменту, плюс те, у которых есть [кэшированный список инструментов](#connection-timing), которые подключаются при первом использовании. Инструменты любого другого сервера, который ещё не подключился, отсутствуют; см. [Обработка ошибок](#error-handling) для чтения статуса каждого сервера.
+
+Этот фильтр выводит имена инструментов MCP:
+</code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>const options = {
+  mcpServers: {
+    // your servers
+  },
+};</p>
+<p>for await (const message of query({ prompt: &quot;...&quot;, options })) {
+  if (message.type === &quot;system&quot; &amp;&amp; message.subtype === &quot;init&quot;) {
+    const mcpTools = message.tools.filter((name) =&gt; name.startsWith(&quot;mcp__&quot;));
+    console.log(&quot;Available MCP tools:&quot;, mcpTools);
+  }
+}</p>
+<pre><code></code></pre>
+<p>import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions, SystemMessage</p>
+<p>async def main():
+    options = ClaudeAgentOptions(
+        mcp_servers={
+            # your servers
+        },
+    )
+    async for message in query(prompt=&quot;...&quot;, options=options):
+        if isinstance(message, SystemMessage) and message.subtype == &quot;init&quot;:
+            mcp_tools = [t for t in message.data.get(&quot;tools&quot;, []) if t.startswith(&quot;mcp__&quot;)]
+            print(&quot;Available MCP tools:&quot;, mcp_tools)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+Вы также можете попросить Claude перечислить инструменты, доступные с сервера.
+
+## Типы транспорта
+
+MCP серверы взаимодействуют с вашим агентом, используя различные протоколы транспорта. Проверьте документацию сервера, чтобы узнать, какой транспорт он поддерживает:
+
+* Если в документации указана **команда для запуска** (например, `npx @modelcontextprotocol/server-filesystem`), используйте stdio
+* Если в документации указан **URL**, используйте HTTP или SSE
+* Если вы создаёте свои собственные инструменты в коде, используйте SDK MCP сервер
+
+### stdio серверы
+
+Локальные процессы, которые взаимодействуют через stdin/stdout. Используйте это для MCP-серверов, которые вы запускаете на одной машине. Для формата `.mcp.json` используйте те же поля, показанные в разделе [Добавление сервера из файла конфигурации](#from-a-config-file). В коде передайте команду и её аргументы. Замените `/Users/me/projects` на директорию на вашей машине:
+</code></pre>
+<p>const _ = {
+  options: {
+    mcpServers: {
+      filesystem: {
+        command: &quot;npx&quot;,
+        args: [&quot;-y&quot;, &quot;@modelcontextprotocol/server-filesystem&quot;, &quot;/Users/me/projects&quot;]
+      }
+    },
+    allowedTools: [&quot;mcp__filesystem__read_file&quot;, &quot;mcp__filesystem__list_directory&quot;]
+  }
+};</p>
+<pre><code></code></pre>
+<p>options = ClaudeAgentOptions(
+    mcp_servers={
+        &quot;filesystem&quot;: {
+            &quot;command&quot;: &quot;npx&quot;,
+            &quot;args&quot;: [
+                &quot;-y&quot;,
+                &quot;@modelcontextprotocol/server-filesystem&quot;,
+                &quot;/Users/me/projects&quot;,
+            ],
+        }
+    },
+    allowed_tools=[&quot;mcp__filesystem__read_file&quot;, &quot;mcp__filesystem__list_directory&quot;],
+)</p>
+<pre><code>
+### HTTP/SSE серверы
+
+Используйте HTTP или SSE для облачных MCP серверов и удалённых API. Для формата `.mcp.json` используйте те же поля, что и в примере в [HTTP headers for remote servers](#http-headers-for-remote-servers), с `&quot;type&quot;: &quot;sse&quot;` для SSE сервера. В коде передайте URL сервера:
+</code></pre>
+<p>const _ = {
+  options: {
+    mcpServers: {
+      &quot;remote-api&quot;: {
+        type: &quot;sse&quot;,
+        url: &quot;https://api.example.com/mcp/sse&quot;,
+        headers: {
+          Authorization: <code>Bearer ${process.env.API_TOKEN}</code>
+        }
+      }
+    },
+    allowedTools: [&quot;mcp__remote-api__*&quot;]
+  }
+};</p>
+<pre><code></code></pre>
+<p>options = ClaudeAgentOptions(
+    mcp_servers={
+        &quot;remote-api&quot;: {
+            &quot;type&quot;: &quot;sse&quot;,
+            &quot;url&quot;: &quot;https://api.example.com/mcp/sse&quot;,
+            &quot;headers&quot;: {&quot;Authorization&quot;: f&quot;Bearer {os.environ[&#x27;API_TOKEN&#x27;]}&quot;},
+        }
+    },
+    allowed_tools=[&quot;mcp__remote-api__*&quot;],
+)</p>
+<pre><code>
+Для потокового HTTP транспорта используйте `&quot;type&quot;: &quot;http&quot;` вместо этого. В `.mcp.json` и других JSON файлах конфигурации `&quot;streamable-http&quot;` принимается как псевдоним для `&quot;http&quot;`. Тип `McpHttpServerConfig` в SDK объявляет только `&quot;http&quot;`, поэтому используйте `&quot;http&quot;` для серверов, которые вы передаёте в коде.
+
+### SDK MCP серверы
+
+Определите пользовательские инструменты непосредственно в коде вашего приложения вместо запуска отдельного процесса сервера. Подробности реализации см. в [custom tools guide](https://code.claude.com/docs/ru/agent-sdk/custom-tools.md).
+
+SDK MCP сервер, зарегистрированный запросом управления [`initialize`](https://code.claude.com/docs/ru/agent-sdk/typescript#sdkcontrolinitializeresponse), начинает подключаться сразу же после обработки запроса Claude Code.
+
+## Поиск инструментов MCP
+
+Когда у вас настроено много инструментов MCP, определения инструментов могут занимать значительную часть вашего контекстного окна. Поиск инструментов решает эту проблему, скрывая определения инструментов из контекста и загружая только те, которые Claude нужны для каждого хода.
+
+Поиск инструментов включен по умолчанию. Дополнительную информацию о параметрах конфигурации, лучших практиках и использовании поиска инструментов с пользовательскими инструментами SDK см. в разделе [Поиск инструментов](https://code.claude.com/docs/ru/agent-sdk/tool-search.md).
+
+## Аутентификация
+
+Большинство серверов MCP требуют аутентификации для доступа к внешним сервисам. Передавайте учетные данные через переменные окружения в конфигурации сервера.
+
+### Передача учетных данных через переменные окружения
+
+Используйте поле `env` для передачи ключей API, токенов и других учетных данных на сервер MCP:
+
+&gt; [tab] В коде
+&gt;
+&gt; ```typescript TypeScript hidelines={1,-1} theme={null}
+&gt; const _ = {
+&gt;   options: {
+&gt;     mcpServers: {
+&gt;       &quot;api-server&quot;: {
+&gt;         command: &quot;npx&quot;,
+&gt;         args: [&quot;-y&quot;, &quot;@your-org/api-mcp-server&quot;],
+&gt;         env: {
+&gt;           API_KEY: process.env.API_KEY
+&gt;         }
+&gt;       }
+&gt;     },
+&gt;     allowedTools: [&quot;mcp__api-server__*&quot;]
+&gt;   }
+&gt; };
+&gt; ```
+&gt;
+&gt; ```python Python theme={null}
+&gt; options = ClaudeAgentOptions(
+&gt;     mcp_servers={
+&gt;         &quot;api-server&quot;: {
+&gt;             &quot;command&quot;: &quot;npx&quot;,
+&gt;             &quot;args&quot;: [&quot;-y&quot;, &quot;@your-org/api-mcp-server&quot;],
+&gt;             &quot;env&quot;: {&quot;API_KEY&quot;: os.environ[&quot;API_KEY&quot;]},
+&gt;         }
+&gt;     },
+&gt;     allowed_tools=[&quot;mcp__api-server__*&quot;],
+&gt; )
+&gt; ```
+
+&gt; [tab] .mcp.json
+&gt;
+&gt; ```json theme={null}
+&gt; {
+&gt;   &quot;mcpServers&quot;: {
+&gt;     &quot;api-server&quot;: {
+&gt;       &quot;command&quot;: &quot;npx&quot;,
+&gt;       &quot;args&quot;: [&quot;-y&quot;, &quot;@your-org/api-mcp-server&quot;],
+&gt;       &quot;env&quot;: {
+&gt;         &quot;API_KEY&quot;: &quot;${API_KEY}&quot;
+&gt;       }
+&gt;     }
+&gt;   }
+&gt; }
+&gt; ```
+&gt;
+&gt; Синтаксис `${API_KEY}` раскрывает переменные окружения во время выполнения.
+
+### HTTP-заголовки для удаленных серверов
+
+Для HTTP и SSE серверов передавайте заголовки аутентификации непосредственно в конфигурации сервера:
+
+&gt; [tab] В коде
+&gt;
+&gt; ```typescript TypeScript hidelines={1,-1} theme={null}
+&gt; const _ = {
+&gt;   options: {
+&gt;     mcpServers: {
+&gt;       &quot;secure-api&quot;: {
+&gt;         type: &quot;http&quot;,
+&gt;         url: &quot;https://api.example.com/mcp&quot;,
+&gt;         headers: {
+&gt;           Authorization: `Bearer ${process.env.API_TOKEN}`
+&gt;         }
+&gt;       }
+&gt;     },
+&gt;     allowedTools: [&quot;mcp__secure-api__*&quot;]
+&gt;   }
+&gt; };
+&gt; ```
+&gt;
+&gt; ```python Python theme={null}
+&gt; options = ClaudeAgentOptions(
+&gt;     mcp_servers={
+&gt;         &quot;secure-api&quot;: {
+&gt;             &quot;type&quot;: &quot;http&quot;,
+&gt;             &quot;url&quot;: &quot;https://api.example.com/mcp&quot;,
+&gt;             &quot;headers&quot;: {&quot;Authorization&quot;: f&quot;Bearer {os.environ[&#x27;API_TOKEN&#x27;]}&quot;},
+&gt;         }
+&gt;     },
+&gt;     allowed_tools=[&quot;mcp__secure-api__*&quot;],
+&gt; )
+&gt; ```
+
+&gt; [tab] .mcp.json
+&gt;
+&gt; ```json theme={null}
+&gt; {
+&gt;   &quot;mcpServers&quot;: {
+&gt;     &quot;secure-api&quot;: {
+&gt;       &quot;type&quot;: &quot;http&quot;,
+&gt;       &quot;url&quot;: &quot;https://api.example.com/mcp&quot;,
+&gt;       &quot;headers&quot;: {
+&gt;         &quot;Authorization&quot;: &quot;Bearer ${API_TOKEN}&quot;
+&gt;       }
+&gt;     }
+&gt;   }
+&gt; }
+&gt; ```
+&gt;
+&gt; Синтаксис `${API_TOKEN}` раскрывает переменные окружения во время выполнения.
+
+Полный рабочий пример удаленного сервера с аутентификацией через заголовки см. в разделе [Список проблем из репозитория](#list-issues-from-a-repository).
+
+### Аутентификация OAuth2
+
+[Спецификация MCP поддерживает OAuth 2.1](https://modelcontextprotocol.io/specification/2025-03-26/basic/authorization) для авторизации. SDK не открывает браузер и не запускает интерактивный поток OAuth. Когда настроенный сервер возвращает запрос авторизации, а у Claude Code нет токена для отправки, SDK сообщает для сервера статус `needs-auth` или `failed`:
+
+* **`needs-auth`**: Claude Code не нашёл входа, который можно использовать для этого сервера. Передайте токен в `headers` или перед запуском [войдите из интерактивной сессии Claude Code](https://code.claude.com/docs/ru/mcp.md#authenticate-with-remote-mcp-servers) на том же компьютере.
+* **`failed`** с полем `error` в записи [`McpServerStatus`](https://code.claude.com/docs/ru/agent-sdk/typescript#mcpserverstatus), которое начинается с `Couldn&#x27;t read the stored credentials` или `A request to MCP server`: Claude Code не смог прочитать своё хранилище учётных данных. О том, что делать, см. [Couldn&#x27;t read the stored credentials for MCP server](https://code.claude.com/docs/ru/errors.md#couldnt-read-the-stored-credentials-for-mcp-server). До Claude Code v2.1.307 в случае заблокированной связки ключей входа на Mac вместо этого сообщался статус `needs-auth`.
+
+В любом случае запуск агента продолжается без инструментов этого сервера. Массив `mcp_servers` [системного инициализирующего сообщения](https://code.claude.com/docs/ru/agent-sdk/typescript.md#sdksystemmessage) может по-прежнему показывать `pending` для этого сервера при его отправке. Чтобы подтвердить, требуются ли серверу учётные данные, опросите `mcpServerStatus()` в TypeScript SDK или [`get_mcp_status()`](https://code.claude.com/docs/ru/agent-sdk/python#methods) в Python.
+
+Для предоставления учетных данных завершите поток OAuth в своем приложении и передайте полученный токен доступа в `headers` сервера:
+</code></pre>
+<p>// После завершения потока OAuth в вашем приложении.
+// Реализуйте getAccessTokenFromOAuthFlow для вашего поставщика OAuth.
+const accessToken = await getAccessTokenFromOAuthFlow();</p>
+<p>const options = {
+  mcpServers: {
+    &quot;oauth-api&quot;: {
+      type: &quot;http&quot;,
+      url: &quot;https://api.example.com/mcp&quot;,
+      headers: {
+        Authorization: <code>Bearer ${accessToken}</code>
+      }
+    }
+  },
+  allowedTools: [&quot;mcp__oauth-api__*&quot;]
+};</p>
+<pre><code></code></pre>
+<h1 id="после-завершения-потока-oauth-в-вашем-приложении">После завершения потока OAuth в вашем приложении. <a class="h-anchor" href="#после-завершения-потока-oauth-в-вашем-приложении" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="реализуйте-get_access_token_from_oauth_flow-для-вашего-поставщика-oauth">Реализуйте get_access_token_from_oauth_flow для вашего поставщика OAuth. <a class="h-anchor" href="#реализуйте-get_access_token_from_oauth_flow-для-вашего-поставщика-oauth" aria-label="Ссылка на раздел">#</a></h1>
+<p>access_token = await get_access_token_from_oauth_flow()</p>
+<p>options = ClaudeAgentOptions(
+    mcp_servers={
+        &quot;oauth-api&quot;: {
+            &quot;type&quot;: &quot;http&quot;,
+            &quot;url&quot;: &quot;https://api.example.com/mcp&quot;,
+            &quot;headers&quot;: {&quot;Authorization&quot;: f&quot;Bearer {access_token}&quot;},
+        }
+    },
+    allowed_tools=[&quot;mcp__oauth-api__*&quot;],
+)</p>
+<pre><code>
+## Примеры
+
+### Список проблем из репозитория
+
+Этот пример подключается к удалённому [серверу GitHub MCP](https://github.com/github/github-mcp-server) для получения списка последних проблем. Пример включает отладочное логирование для проверки подключения MCP и вызовов инструментов.
+
+Перед запуском создайте [личный токен доступа GitHub](https://github.com/settings/personal-access-tokens) с правами на чтение репозиториев, которые вы хотите запросить, и установите его как переменную окружения:
+</code></pre>
+<p>export GITHUB_TOKEN=YOUR_GITHUB_PAT</p>
+<pre><code></code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>for await (const message of query({
+  prompt: &quot;List the 3 most recent issues in anthropics/claude-code&quot;,
+  options: {
+    mcpServers: {
+      github: {
+        type: &quot;http&quot;,
+        url: &quot;https://api.githubcopilot.com/mcp/&quot;,
+        headers: {
+          Authorization: <code>Bearer ${process.env.GITHUB_TOKEN}</code>
+        }
+      }
+    },
+    allowedTools: [&quot;mcp__github__list_issues&quot;]
+  }
+})) {
+  // Verify MCP server connected successfully
+  if (message.type === &quot;system&quot; &amp;&amp; message.subtype === &quot;init&quot;) {
+    console.log(&quot;MCP servers:&quot;, message.mcp_servers);
+  }</p>
+<p>// Log when Claude calls an MCP tool
+  if (message.type === &quot;assistant&quot;) {
+    for (const block of message.message.content) {
+      if (block.type === &quot;tool_use&quot; &amp;&amp; block.name.startsWith(&quot;mcp__&quot;)) {
+        console.log(&quot;MCP tool called:&quot;, block.name);
+      }
+    }
+  }</p>
+<p>// Print the final result
+  if (message.type === &quot;result&quot; &amp;&amp; message.subtype === &quot;success&quot;) {
+    console.log(message.result);
+  }
+}</p>
+<pre><code></code></pre>
+<p>import asyncio
+import os
+from claude_agent_sdk import (
+    query,
+    ClaudeAgentOptions,
+    ResultMessage,
+    SystemMessage,
+    AssistantMessage,
+)</p>
+<p>async def main():
+    options = ClaudeAgentOptions(
+        mcp_servers={
+            &quot;github&quot;: {
+                &quot;type&quot;: &quot;http&quot;,
+                &quot;url&quot;: &quot;https://api.githubcopilot.com/mcp/&quot;,
+                &quot;headers&quot;: {&quot;Authorization&quot;: f&quot;Bearer {os.environ[&#x27;GITHUB_TOKEN&#x27;]}&quot;},
+            }
+        },
+        allowed_tools=[&quot;mcp__github__list_issues&quot;],
+    )</p>
+<p>async for message in query(
+        prompt=&quot;List the 3 most recent issues in anthropics/claude-code&quot;,
+        options=options,
+    ):
+        # Verify MCP server connected successfully
+        if isinstance(message, SystemMessage) and message.subtype == &quot;init&quot;:
+            print(&quot;MCP servers:&quot;, message.data.get(&quot;mcp_servers&quot;))</p>
+<p># Log when Claude calls an MCP tool
+        if isinstance(message, AssistantMessage):
+            for block in message.content:
+                if hasattr(block, &quot;name&quot;) and block.name.startswith(&quot;mcp__&quot;):
+                    print(&quot;MCP tool called:&quot;, block.name)</p>
+<p># Print the final result
+        if isinstance(message, ResultMessage) and message.subtype == &quot;success&quot;:
+            print(message.result)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+В строке `MCP servers:` статус `connected` для `github` подтверждает, что токен работает. Если Claude Code имеет [кэшированный список инструментов](#connection-timing) для сервера, статус может отображаться как `pending`, и сервер подключится при первом вызове инструмента. Если статус `failed` или `needs-auth`, см. [Обработка ошибок](#error-handling) перед тем, как доверять результату, так как Claude может вернуться к встроенным инструментам, когда сервер недоступен.
+
+### Запрос к базе данных
+
+Этот пример использует [DBHub](https://github.com/bytebase/dbhub) для запроса к базе данных Postgres. Агент автоматически обнаруживает схему базы данных, пишет SQL-запрос и возвращает результаты.
+
+Инструмент `execute_sql` DBHub выполняет любой SQL, который выдаёт агент, включая операции записи, если вы это не ограничите. Установка `readonly = true` в [файле конфигурации DBHub](https://dbhub.ai/config/toml) заставляет DBHub отклонять операторы `INSERT`, `UPDATE`, `DELETE` и DDL, поэтому пример не может изменять ваши данные, даже если агент выдаст операцию записи. DBHub разрешает `${DATABASE_URL}` из переменных окружения процесса при загрузке конфига, поэтому строка подключения остаётся вне файла. Создайте этот файл `dbhub.toml` рядом с вашим скриптом:
+</code></pre>
+<p>[[sources]]
+id = &quot;production&quot;
+dsn = &quot;${DATABASE_URL}&quot;</p>
+<p>[[tools]]
+name = &quot;execute_sql&quot;
+source = &quot;production&quot;
+readonly = true</p>
+<pre><code>
+Затем скрипт указывает DBHub на файл конфигурации вместо прямой передачи строки подключения. Перед запуском установите переменную окружения `DATABASE_URL` на вашу строку подключения. Замените значения-заполнители на детали вашей базы данных:
+</code></pre>
+<p>export DATABASE_URL=postgresql://user:password@localhost:5432/mydb</p>
+<pre><code></code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>for await (const message of query({
+  // Natural language query - Claude writes the SQL
+  prompt: &quot;How many users signed up last week? Break it down by day.&quot;,
+  options: {
+    mcpServers: {
+      postgres: {
+        command: &quot;npx&quot;,
+        // dbhub.toml sets readonly = true, so execute_sql rejects writes
+        args: [&quot;-y&quot;, &quot;@bytebase/dbhub&quot;, &quot;--config&quot;, &quot;dbhub.toml&quot;]
+      }
+    },
+    allowedTools: [&quot;mcp__postgres__execute_sql&quot;]
+  }
+})) {
+  if (message.type === &quot;result&quot; &amp;&amp; message.subtype === &quot;success&quot;) {
+    console.log(message.result);
+  }
+}</p>
+<pre><code></code></pre>
+<p>import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage</p>
+<p>async def main():
+    options = ClaudeAgentOptions(
+        mcp_servers={
+            &quot;postgres&quot;: {
+                &quot;command&quot;: &quot;npx&quot;,
+                # dbhub.toml sets readonly = true, so execute_sql rejects writes
+                &quot;args&quot;: [
+                    &quot;-y&quot;,
+                    &quot;@bytebase/dbhub&quot;,
+                    &quot;--config&quot;,
+                    &quot;dbhub.toml&quot;,
+                ],
+            }
+        },
+        allowed_tools=[&quot;mcp__postgres__execute_sql&quot;],
+    )</p>
+<p># Natural language query - Claude writes the SQL
+    async for message in query(
+        prompt=&quot;How many users signed up last week? Break it down by day.&quot;,
+        options=options,
+    ):
+        if isinstance(message, ResultMessage) and message.subtype == &quot;success&quot;:
+            print(message.result)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+## Обработка ошибок
+
+MCP серверы могут не подключиться по различным причинам: процесс сервера может быть не установлен, учетные данные могут быть неверными или удаленный сервер может быть недоступен.
+
+Claude Code отправляет сообщение `system` с подтипом `init` в начале каждого запроса. Это сообщение включает статус подключения для каждого MCP сервера. Поле `status` может быть `&quot;pending&quot;`, `&quot;connected&quot;`, `&quot;failed&quot;`, `&quot;needs-auth&quot;` или `&quot;disabled&quot;`. Claude Code отправляет сообщение init после [первого ожидания подключения](#connection-timing) для серверов, переданных в `options.mcpServers`, поэтому такой сервер, который подключился в течение ожидания, показывает `&quot;connected&quot;`.
+
+В сообщении init не рассматривайте `&quot;pending&quot;` как ошибку само по себе. Это может означать любое из следующего:
+
+* Сервер еще не подключился. См. [как долго Claude Code ждет его перед первым ходом](#connection-timing)
+* Список инструментов сервера был [получен из кэша](#connection-timing), с подключением при первом использовании
+* Срок подключения истек. Такой сервер сообщает `&quot;pending&quot;` или `&quot;failed&quot;` в зависимости от времени
+
+Проверьте `&quot;failed&quot;` или `&quot;needs-auth&quot;` для обнаружения серверов, которые не будут пригодны для использования:
+</code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>try {
+  for await (const message of query({
+    prompt: &quot;Process data&quot;,
+    options: {
+      mcpServers: {
+        // Replace dataServer with your server configuration
+        &quot;data-processor&quot;: dataServer
+      }
+    }
+  })) {
+    if (message.type === &quot;system&quot; &amp;&amp; message.subtype === &quot;init&quot;) {
+      const unavailableServers = message.mcp_servers.filter(
+        (s) =&gt; s.status === &quot;failed&quot; || s.status === &quot;needs-auth&quot;
+      );</p>
+<p>if (unavailableServers.length &gt; 0) {
+        console.warn(&quot;Unavailable MCP servers:&quot;, unavailableServers);
+      }
+    }</p>
+<p>if (message.type === &quot;result&quot; &amp;&amp; message.subtype === &quot;error_during_execution&quot;) {
+      console.error(&quot;Execution failed&quot;);
+    }
+  }
+} catch (error) {
+  // A single-shot query() throws after yielding an error result. If the
+  // failure was an error result, the error subtype branch above has
+  // already run; a failure to start or reach the Claude Code process
+  // yields no result message. MCP servers that fail to connect don&#x27;t
+  // throw: use the status check above, and note that servers still
+  // &quot;pending&quot; at init need a later status check.
+  console.log(<code>Session ended with an error: ${error}</code>);
+}</p>
+<pre><code></code></pre>
+<p>import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions, SystemMessage, ResultMessage</p>
+<p>async def main():
+    # Replace data_server with your server configuration
+    options = ClaudeAgentOptions(mcp_servers={&quot;data-processor&quot;: data_server})</p>
+<p>try:
+        async for message in query(prompt=&quot;Process data&quot;, options=options):
+            if isinstance(message, SystemMessage) and message.subtype == &quot;init&quot;:
+                unavailable_servers = [
+                    s
+                    for s in message.data.get(&quot;mcp_servers&quot;, [])
+                    if s.get(&quot;status&quot;) in (&quot;failed&quot;, &quot;needs-auth&quot;)
+                ]</p>
+<p>if unavailable_servers:
+                    print(f&quot;Unavailable MCP servers: {unavailable_servers}&quot;)</p>
+<p>if (
+                isinstance(message, ResultMessage)
+                and message.subtype == &quot;error_during_execution&quot;
+            ):
+                print(&quot;Execution failed&quot;)
+    except Exception as error:
+        # A single-shot query() raises after yielding an error result. If the
+        # failure was an error result, the error subtype branch above has
+        # already run; a failure to start or reach the Claude Code process
+        # yields no result message. MCP servers that fail to connect don&#x27;t
+        # raise: use the status check above, and note that servers still
+        # &quot;pending&quot; at init need a later status check.
+        print(f&quot;Session ended with an error: {error}&quot;)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+Статус удаленного сервера также может измениться после того, как он сообщит `&quot;connected&quot;`. Когда соединение с ним разрывается во время сеанса, Claude Code переводит сервер обратно в `&quot;pending&quot;` во время [переподключения](https://code.claude.com/docs/ru/mcp.md#automatic-reconnection). Последующий вызов `mcpServerStatus()` в TypeScript или [`ClaudeSDKClient.get_mcp_status()`](https://code.claude.com/docs/ru/agent-sdk/python#methods) в Python может затем сообщить `&quot;pending&quot;` для сервера, который вы видели подключенным ранее, без каких-либо изменений конфигурации с вашей стороны.
+
+После пяти неудачных попыток переподключения сервер сообщает `&quot;failed&quot;` или `&quot;needs-auth&quot;`, когда ему требуется повторная авторизация. HTTP- или SSE-сервер в состоянии `&quot;failed&quot;` может вернуться в `&quot;connected&quot;` без какого-либо вызова с вашей стороны, поскольку после временной ошибки Claude Code продолжает [повторять попытки в фоновом режиме](https://code.claude.com/docs/ru/mcp.md#mid-session-drops-of-a-remote-server). Для повторной попытки вручную вызовите [`reconnectMcpServer()`](https://code.claude.com/docs/ru/agent-sdk/typescript#methods) в TypeScript или [`ClaudeSDKClient.reconnect_mcp_server()`](https://code.claude.com/docs/ru/agent-sdk/python#methods) в Python.
+
+## Troubleshooting
+
+### Server shows &quot;failed&quot; status
+
+Check the `init` message to see which servers failed to connect:
+</code></pre>
+<p>if (message.type === &quot;system&quot; &amp;&amp; message.subtype === &quot;init&quot;) {
+  for (const server of message.mcp_servers) {
+    if (server.status === &quot;failed&quot;) {
+      console.error(<code>Server ${server.name} failed to connect</code>);
+    }
+  }
+}</p>
+<pre><code></code></pre>
+<p>if isinstance(message, SystemMessage) and message.subtype == &quot;init&quot;:
+    for server in message.data.get(&quot;mcp_servers&quot;, []):
+        if server.get(&quot;status&quot;) == &quot;failed&quot;:
+            print(f&quot;Server {server[&#x27;name&#x27;]} failed to connect&quot;)</p>
+<pre><code>
+A `&quot;pending&quot;` status doesn&#x27;t mean the server failed. See [Обработка ошибок](#error-handling) for the cases it covers at init. To get updated statuses later in the session, call the query&#x27;s `mcpServerStatus()` method in the TypeScript SDK, or [`ClaudeSDKClient.get_mcp_status()`](https://code.claude.com/docs/ru/agent-sdk/python#methods) in Python.
+
+Common causes:
+
+* **Missing environment variables**: Ensure required tokens and credentials are set. For stdio servers, check the `env` field matches what the server expects.
+* **Server not installed**: For `npx` commands, verify the package exists and Node.js is in your PATH.
+* **Invalid connection string**: For database servers, verify the connection string format and that the database is accessible.
+* **Network issues**: For remote HTTP/SSE servers, check the URL is reachable and any firewalls allow the connection.
+
+### Tools not being called
+
+If Claude sees tools but doesn&#x27;t use them, check that you&#x27;ve granted permission with `allowedTools`:
+</code></pre>
+<p>const _ = {
+  options: {
+    mcpServers: {
+      // your servers
+    },
+    allowedTools: [&quot;mcp__servername__*&quot;] // Auto-approve calls from this server
+  }
+};</p>
+<pre><code></code></pre>
+<p>options = ClaudeAgentOptions(
+    mcp_servers={
+        # your servers
+    },
+    allowed_tools=[&quot;mcp__servername__*&quot;],  # Auto-approve calls from this server
+)</p>
+<pre><code>
+### Инструмент отсутствует в SDK MCP-сервере
+
+В TypeScript SDK, если входную схему инструмента невозможно преобразовать в JSON Schema, сервер, созданный с помощью [`createSdkMcpServer()`](https://code.claude.com/docs/ru/agent-sdk/typescript#createsdkmcpserver), не включает этот инструмент в список своих инструментов. В этот момент SDK выдаёт предупреждение. В Node.js это предупреждение процесса с кодом `CLAUDE_SDK_MCP_TOOL_SCHEMA_UNCONVERTIBLE`, и оно начинается с такого текста:
+</code></pre>
+<p>Tool &quot;&lt;name&gt;&quot; on SDK MCP server &quot;&lt;server&gt;&quot; was left out of the server&#x27;s tool list, because its input schema cannot be converted to JSON Schema</p>
+<pre><code>
+Далее в предупреждении приводится сообщение об ошибке преобразования, если оно есть, а затем указывается, что следует проверить и изменить.
+
+До версии TypeScript Agent SDK v0.3.286 одна непреобразуемая схема приводила к сбою всего списка инструментов сервера без этого предупреждения, поэтому ни один из инструментов этого сервера не попадал к Claude.
+
+### Connection timeouts
+
+MCP server connections time out after 30 seconds by default. To change how long a running tool call may take, set [`MCP_TOOL_TIMEOUT`](https://code.claude.com/docs/ru/env-vars). If your server takes longer to start, the connection fails. Raise the connection limit with the [`MCP_TIMEOUT`](https://code.claude.com/docs/ru/env-vars) environment variable, in milliseconds. For servers that need more startup time, also consider:
+
+* Using a lighter-weight server if available
+* Pre-warming the server before starting your agent
+* Checking server logs for slow initialization causes
+
+In TypeScript, you can set the tool-call limit for a single [SDK MCP server](#sdk-mcp-servers) by passing [`timeout` to `createSdkMcpServer()`](https://code.claude.com/docs/ru/agent-sdk/typescript#createsdkmcpserver).
+
+### Tool output exceeds maximum allowed tokens
+
+SDK применяет те же ограничения на вывод MCP, что и Claude Code. Когда успешный результат инструмента без изображений превышает 25 000 токенов, Claude Code сохраняет вывод в файл и заменяет результат инструмента сообщением об ошибке с путём к этому файлу, чтобы агент мог прочитать вывод по частям.
+
+Чтобы изменить лимит токенов, задайте переменную окружения [`MAX_MCP_OUTPUT_TOKENS`](https://code.claude.com/docs/ru/env-vars). Если инструмент не объявляет `anthropic/maxResultSizeChars`, успешный текстовый результат длиннее 50 000 символов сохраняется в файл независимо от лимита токенов. Полное описание поведения, включая то, как сервер объявляет эту аннотацию, см. в разделе [Ограничения и предупреждения вывода MCP](https://code.claude.com/docs/ru/mcp.md#mcp-output-limits-and-warnings).
+
+## Связанные ресурсы
+
+* **[Руководство по пользовательским инструментам](https://code.claude.com/docs/ru/agent-sdk/custom-tools.md)**: Создайте собственный MCP сервер, который работает в процессе вашего приложения SDK
+* **[Разрешения](https://code.claude.com/docs/ru/agent-sdk/permissions.md)**: Контролируйте, какие MCP инструменты может использовать ваш агент, с помощью `allowedTools` и `disallowedTools`
+* **[Справочник TypeScript SDK](https://code.claude.com/docs/ru/agent-sdk/typescript.md)**: Полный справочник API, включая параметры конфигурации MCP
+* **[Справочник Python SDK](https://code.claude.com/docs/ru/agent-sdk/python.md)**: Полный справочник API, включая параметры конфигурации MCP
+* **[Каталог MCP серверов](https://github.com/modelcontextprotocol/servers)**: Просмотрите доступные MCP серверы для баз данных, API и многого другого
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

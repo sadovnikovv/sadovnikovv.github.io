@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Эскалация сложных решений с помощью инструмента advisor</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="эскалация-сложных-решений-с-помощью-инструмента-advisor">Эскалация сложных решений с помощью инструмента advisor <a class="h-anchor" href="#эскалация-сложных-решений-с-помощью-инструмента-advisor" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Объедините вашу основную модель с более мощной моделью-советником, которую Claude консультирует в ключевые моменты выполнения задачи.</p>
+</blockquote>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Инструмент advisor является экспериментальным и требует API Anthropic, <a href="https://code.claude.com/docs/ru/claude-platform-on-aws.md">Claude Platform on AWS</a> или <a href="https://code.claude.com/docs/ru/claude-models-on-google-cloud-anthropic-managed.md">Claude Models on Google Cloud (Anthropic managed)</a>. На Claude Platform on AWS или Claude Models on Google Cloud (Anthropic managed) для него требуется Claude Code v2.1.300 или более поздней версии. Он недоступен на Amazon Bedrock, Google Cloud&#x27;s Agent Platform или Microsoft Foundry. Поведение, цены и доступность могут измениться.</p>
+</blockquote>
+<p>Инструмент advisor позволяет Claude консультироваться со второй, обычно более мощной моделью в ключевые моменты выполнения задачи, например перед принятием подхода, когда возникает повторяющаяся ошибка, или перед объявлением задачи завершённой. Советник получает полный диалог, включая каждый вызов инструмента и результат, и возвращает рекомендации, которые Claude применяет перед продолжением.</p>
+<p>Советник работает на стороне сервера на инфраструктуре Anthropic как <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool">server tool</a>, доступный как для подписных, так и для счётных по API аккаунтов. Вы выбираете, какая модель действует в качестве советника, а Claude решает, когда его вызывать.</p>
+<p>На этой странице рассказывается, как включить советника, какие пары моделей приняты, что Claude показывает во время консультации и как выставляется счёт за использование советника.</p>
+<h3 id="h">Когда использовать советника <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Советник подходит для длительных многошаговых задач, где большинство ходов рутинны, но качество плана определяет результат. Примеры включают крупные рефакторинги, сеансы отладки, где ошибка повторяется, и задачи, которые вы хотите независимо проверить перед тем, как Claude объявит их завершёнными.</p>
+<p>Он добавляет меньше ценности для коротких задач, где мало что нужно планировать, или для работы, где каждый ход требует самой мощной модели. Для этого <a href="https://code.claude.com/docs/ru/model-config.md#setting-your-model">переключите основную модель</a> или см. <a href="#compare-with-related-features">как советник сравнивается с opusplan и subagents</a> для других способов получить второе мнение.</p>
+<h3 id="h-2">Включение советника <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Вы можете установить модель советника тремя способами:</p>
+<ul>
+<li><strong>Команда <code>/advisor</code></strong>: установите или измените советника во время сеанса и сохраните его как стандартный</li>
+<li><strong>Параметр <code>advisorModel</code></strong>: настройте постоянное значение по умолчанию в вашем <a href="https://code.claude.com/docs/ru/settings.md">файле параметров</a></li>
+<li><strong>Флаг <code>--advisor</code></strong>: установите советника для одного сеанса при запуске</li>
+</ul>
+<p>Каждый из этих способов включает советника для сеансов, основная модель которых <a href="#choose-an-advisor-model">его поддерживает</a>. После запуска сеанса Claude Code показывает уведомление <code>Advisor Tool (experimental) is on and may use more tokens · /advisor</code>. Чтобы перестать использовать советника, см. <a href="#turn-the-advisor-off">Отключение советника</a>.</p>
+<p>На некоторых планах использование Fable в качестве советника также требует вашего одноразового <a href="https://code.claude.com/docs/ru/model-config.md#fable-and-usage-credits">согласия на выставление счёта за использование Fable на основе кредитов использования</a>. О том, что происходит до того, как вы дали это согласие, см. <a href="#fable-advisor-and-usage-credits">Советник Fable и кредиты использования</a>.</p>
+<h4 id="использование-команды-advisor">Использование команды <code>/advisor</code> <a class="h-anchor" href="#использование-команды-advisor" aria-label="Ссылка на раздел">#</a></h4>
+<p>Запустите <code>/advisor</code> без аргументов, чтобы открыть средство выбора со списком доступных моделей советника, или передайте модель напрямую:</p>
+<pre><code>/advisor opus</code></pre>
+<p>Команда подтверждает выбор сообщением <code>Advisor set to</code>, за которым следует имя модели советника. Ваш выбор сохраняется в <code>advisorModel</code> в параметрах пользователя и сохраняется между сеансами, за исключением случаев, которые указаны в записи <a href="https://code.claude.com/docs/ru/settings-reference#advisormodel"><code>advisorModel</code></a> как применяемые только к текущему сеансу.</p>
+<p>Команда также работает там, где нет средства выбора терминала: в <a href="https://code.claude.com/docs/ru/headless.md">неинтерактивном режиме</a> с флагом <code>-p</code>, в Agent SDK, в настольном приложении и через <a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a>. Это требует Claude Code v2.1.260 или более поздней версии. На этих поверхностях:</p>
+<ul>
+<li>Запустите <code>/advisor</code> без аргумента, чтобы вывести текущую модель советника и псевдонимы, которые она принимает.</li>
+<li>Запустите <code>/advisor</code> с моделью, например <code>/advisor opus</code>, чтобы установить её.</li>
+<li>Запустите <code>/advisor off</code>, чтобы отключить его.</li>
+</ul>
+<p>Claude Code не вызывает сохранённого советника, которого исключает список разрешённых моделей <a href="https://code.claude.com/docs/ru/model-config#restrict-model-selection"><code>availableModels</code></a> вашей организации. Чтобы использовать советника, выберите разрешённую модель с помощью <code>/advisor</code>.</p>
+<p>Claude Code по-прежнему сохраняет советника, которого не поддерживает ваша текущая основная модель. Этот советник активируется после переключения на <a href="#choose-an-advisor-model">совместимую основную модель</a> с помощью <a href="https://code.claude.com/docs/ru/model-config#setting-your-model"><code>/model</code></a>. Если API уже отклонил сохранённого советника в текущем разговоре, он остаётся отключённым до <code>/clear</code> или <code>/compact</code>, даже после переключения моделей.</p>
+<p>На некоторых планах использование Fable в качестве советника также требует вашего одноразового <a href="https://code.claude.com/docs/ru/model-config.md#fable-and-usage-credits">согласия на выставление счёта за использование Fable на основе кредитов использования</a>. О том, что делает <code>/advisor fable</code> до того, как вы дали это согласие, см. <a href="#fable-advisor-and-usage-credits">Советник Fable и кредиты использования</a>.</p>
+<h4 id="установка-advisormodel-в-параметрах">Установка <code>advisorModel</code> в параметрах <a class="h-anchor" href="#установка-advisormodel-в-параметрах" aria-label="Ссылка на раздел">#</a></h4>
+<p>Чтобы настроить советника по умолчанию без открытия сеанса, установите его в файле параметров:</p>
+<p>```json theme={null}
+{
+  &quot;advisorModel&quot;: &quot;opus&quot;
+}</p>
+<pre><code>
+### Использование флага `--advisor`
+
+Чтобы установить советника для одного сеанса без изменения сохранённого параметра, запустите с флагом:
+</code></pre>
+<p>claude --advisor opus</p>
+<pre><code>
+Claude Code использует флаг вместо параметра `advisorModel` для этого сеанса. Он не указывает `--advisor` в `claude --help`. Claude Code завершается с ошибкой при запуске, если:
+
+* Основная модель сеанса не поддерживает советника
+* Запрошенная модель, например Haiku 4.5, не может действовать в качестве советника
+* Список разрешённых моделей [`availableModels`](https://code.claude.com/docs/ru/model-config#restrict-model-selection) вашей организации исключает запрошенную модель
+* Вы запросили Fable, и ваша учётная запись по-прежнему требует [согласия на кредиты использования](#fable-advisor-and-usage-credits)
+
+Если вы запустите [фоновый сеанс](https://code.claude.com/docs/ru/agent-view.md) с флагом `--advisor` и применимо одно из этих условий, Claude Code запустит сеанс без советника вместо выхода с ошибкой.
+
+Если переданная вами модель может действовать в качестве советника, но [ранжируется ниже вашей основной модели](#choose-an-advisor-model), сессия запускается независимо от того, фоновая она или нет. В этом случае ваша основная модель работает без советника.
+
+## Выбор модели советника
+
+Claude Code ранжирует модели по способностям для роли советника, и советник должен иметь ранг не ниже основной модели вашей сессии. Строки расположены от основной модели с самым низким рангом до модели с самым высоким:
+
+| Основная модель | Принятые советники |
+| - | - |
+| Haiku 4.5 | Fable, Opus, Sonnet, Haiku 5.5 |
+| Sonnet 4.6 | Fable, Opus, Sonnet, Haiku 5.5 |
+| Opus 4.6 | Fable, Opus, Sonnet 5 или позже, Haiku 5.5 |
+| Sonnet 5 или Haiku 5.5 | Fable, Opus 4.7 или позже, Sonnet 5 или позже, Haiku 5.5 |
+| Opus 4.7 или Opus 4.8 | Fable, Opus 4.7 или позже, Sonnet 5.5 |
+| Sonnet 5.5 | Fable, Opus 5 или позже, Sonnet 5.5 |
+| Opus 5 или Opus 5.5 | Fable, Opus 5 или позже |
+| Fable 5 | Fable 5.2, Fable 5.1 или Fable 5 |
+| Fable 5.1 | Fable 5.2 или Fable 5.1 |
+| Fable 5.2 | Fable 5.2 |
+
+Fable 5.2 требует Claude Code v2.1.321 или более поздней версии, а Fable 5.1 требует v2.1.257 или более поздней версии. Модели Fable требуют [доступ к Fable](https://code.claude.com/docs/ru/model-config.md#work-with-fable). Sonnet 5.5 в качестве советника для основной модели Opus 4.7 или Opus 4.8 требует Claude Code v2.1.287 или более поздней версии. Haiku 5.5 в качестве основной модели или советника требует Claude Code v2.1.293 или более поздней версии.
+
+Установите советника как `fable`, `opus` или `sonnet`. Эти псевдонимы разрешаются во [встроенную версию Claude Code по умолчанию](https://code.claude.com/docs/ru/model-config.md#model-aliases) для каждого семейства моделей, которая обновляется с новыми выпусками Claude Code. Вы также можете передать полный ID модели, например `claude-opus-5-5` или `claude-haiku-5-5`. Haiku 4.5 может вызывать советника, но не может быть им.
+
+Подагенты наследуют настроенного советника и применяют ту же проверку пары к своей собственной модели.
+
+Claude Code проверяет пару перед отправкой запроса, и API проверяет её снова:
+
+* Если советник имеет ранг ниже основной модели, Claude Code не присоединяет его к запросам основной модели. Вывод команды `/advisor` и уведомление показывают это; см. [Advisor is less capable than the current main model](https://code.claude.com/docs/ru/errors.md#advisor-is-less-capable-than-the-current-main-model). Субагенты, чья собственная модель удовлетворяет требованиям пары, могут по-прежнему использовать советника.
+* Если API отклоняет пару с советником, которого присоединил Claude Code, Claude Code повторно отправляет этот запрос без советника. Диалог продолжается без него, поэтому вы не видите ошибку и не получаете вызовы советника. Если затем вы выберете другого советника с помощью `/advisor`, изменение вступит в силу после `/clear` или `/compact` и в новых сессиях.
+* Если основная модель или советник — это модель, которую Claude Code не распознает, советник не присоединяется.
+
+### Советник Fable и кредиты использования
+
+На некоторых планах использование Fable выставляется в счёт кредитов использования, и Fable в качестве советника выставляется в счёт так же. Если ваша учётная запись требует [одноразового согласия на выставление счёта за использование Fable в кредиты использования](https://code.claude.com/docs/ru/model-config.md#fable-and-usage-credits), Claude Code запрашивает его, когда вы выбираете модель Fable с помощью `/model`, и не применяет Fable в качестве советника до тех пор, пока вы не примете это согласие.
+
+До того как вы примете его, Claude Code не сохраняет Fable в качестве советника, когда вы вводите `/advisor fable` или выбираете Fable в средстве выбора `/advisor`. Вместо этого он указывает вам на `/model fable`. С помощью `claude --advisor fable` Claude Code выходит при запуске с сообщением, которое указывает на `/model fable`. В [фоновой сессии](#use-the-advisor-flag) он запускает сессию без советника вместо выхода. Если Fable уже сохранён как ваша `advisorModel`, Claude Code отправляет запросы без советника. В интерактивной сессии, основная модель которой поддерживает советника, он также показывает уведомление, которое указывает на `/model fable`.
+
+Чтобы принять согласие, запустите `/model fable` и выберите продолжить на Fable. Claude Code записывает согласие и [сохраняет Fable как вашу выбранную модель](https://code.claude.com/docs/ru/model-config.md#default-model-setting). Затем выберите Fable в качестве советника.
+
+### Распространённые пары моделей
+
+Любая принятая пара работает. Эти комбинации балансируют стоимость и возможности по-разному:
+
+| Пара | Когда использовать |
+| - | - |
+| Sonnet основная + Opus советник | Sonnet обрабатывает рутинную работу и эскалирует планирование, неоднозначные сбои и проверки завершения на Opus |
+| Sonnet основная + Fable советник | Рекомендации Fable в точках принятия решений без запуска Fable на протяжении всего процесса. Требует доступ к Fable |
+| Haiku основная + Opus советник | Самая дешёвая основная модель с мощным планированием. Ожидайте более высокую стоимость, чем только Haiku, но ниже, чем переключение основной модели на Sonnet или Opus |
+| Opus основная + Opus советник | Второй Opus проверяет первый. Полезно для высокорисковых задач, где независимая проверка важнее стоимости |
+| Fable основная + Fable советник | Пара с наивысшей возможностью, когда Fable доступна. Claude Code не применяет советника Opus или Sonnet к основной модели Fable |
+| Sonnet основная + Sonnet советник | Более дешёвое второе мнение для выявления рутинных упущений |
+
+## Когда Claude консультируется с советником
+
+Claude решает, когда вызывать советника. Он имеет тенденцию консультироваться перед принятием подхода, когда ошибка повторяется, и перед объявлением задачи завершённой, но время определяется моделью, а не правилами.
+
+Вы можете попросить консультацию в своём приглашении так же, как вы запросили бы любой инструмент, например `consult the advisor before you continue`. Нет параметра для ограничения или принудительного вызова советника; если вы хотите, чтобы Claude консультировался чаще или реже во время задачи, скажите об этом в своих инструкциях.
+
+## Что вы видите во время сеанса
+
+Когда Claude вызывает советника, стенограмма показывает строку `Advising` с именем модели советника во время выполнения вызова. Когда результат возвращается, строка сообщает, дал ли советник рекомендации:
+
+* **Reviewed**: строка подтверждает, что советник проверил диалог. Когда советник вернул читаемые рекомендации, нажмите `Ctrl+O`, чтобы прочитать их.
+* **Declined**: строка читается как `Advisor declined to advise on this request`. Если советник дал причину, нажмите `Ctrl+O`, чтобы прочитать её.
+* **Unavailable**: вызов советника не удался, и строка читается как `Advisor unavailable (&lt;error_code&gt;)`, где `&lt;error_code&gt;` — это код, который вернул вызов.
+
+Claude обычно следует рекомендациям советника, но адаптируется, когда его собственные доказательства противоречат конкретному утверждению: если рекомендуемый шаг не удаётся при попытке или содержимое файла противоречит совету, Claude выявляет конфликт, а не следует рекомендации безусловно.
+
+Советник всегда получает полный диалог, и Claude контролирует время. Для большего контроля или другой конфигурации см. [как советник сравнивается с subagents и opusplan](#compare-with-related-features).
+
+## Стоимость
+
+Когда Claude вызывает советника, модель советника читает диалог, поэтому каждый вызов потребляет токены по ставкам модели советника в дополнение к использованию вашей основной модели. То, как эти токены советника выставляются в счёт, зависит от способа оплаты:
+
+* **Выставление счёта по API**: вы платите по входным и выходным ставкам модели советника за токены советника
+* **Планы подписки**: использование советника учитывается в пределах лимитов использования вашего плана, за исключением того, что советник Fable выставляет счёт на [кредиты использования](https://code.claude.com/docs/ru/model-config.md#fable-and-usage-credits) на планах, где это применяется
+
+О том, как советник Fable работает с кредитами использования, см. [Советник Fable и кредиты использования](#fable-advisor-and-usage-credits).
+
+Claude вызывает советника в точках принятия решений, а не на каждом ходу, поэтому объединение более быстрой основной модели с более мощным советником обычно стоит меньше, чем запуск более мощной модели на протяжении всего процесса. Использование советника учитывается в итогах сеанса, показанных [`/usage`](https://code.claude.com/docs/ru/costs#track-your-costs).
+
+Для информации о том, как токены советника сообщаются в ответах API, см. [Usage and billing](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool#usage-and-billing) в документации Claude API.
+
+## Влияние на кэширование приглашений
+
+Включение или отключение советника во время сеанса не делает недействительным [кэш приглашений](https://code.claude.com/docs/ru/prompt-caching.md) вашей основной модели. В отличие от [переключения моделей](https://code.claude.com/docs/ru/prompt-caching.md#switching-models), переключение `/advisor` сохраняет кэшированный префикс нетронутым, и возвращённые рекомендации советника кэшируются как часть стенограммы при последующих ходах.
+
+Собственное чтение советником диалога не кэшируется. Каждый вызов советника обрабатывает полную стенограмму заново, без повторного использования между вызовами.
+
+## Требования
+
+* **Провайдер**: API Anthropic, [Claude Platform on AWS](https://code.claude.com/docs/ru/claude-platform-on-aws.md) или [Claude Models on Google Cloud (Anthropic managed)](https://code.claude.com/docs/ru/claude-models-on-google-cloud-anthropic-managed.md), но не Amazon Bedrock, Google Cloud&#x27;s Agent Platform или Microsoft Foundry. На Claude Platform on AWS или Claude Models on Google Cloud (Anthropic managed) для советника требуется Claude Code v2.1.300 или более поздней версии.
+* **LLM-шлюз**: при работе через [LLM-шлюз](https://code.claude.com/docs/ru/llm-gateway), настроенный с `ANTHROPIC_BASE_URL`, доступность зависит от того, пересылает ли шлюз запрос в целости на API Anthropic. Если шлюз или его вышестоящий источник не распознают инструмент advisor, см. [Автоматическая повторная попытка и пересылка ошибок](https://code.claude.com/docs/ru/llm-gateway-protocol.md#automatic-retry-and-error-forwarding) для информации о том, как Claude Code реагирует.
+* **Поддерживаемая основная модель**: Fable, Opus 4.6 или позже, Sonnet 4.6 или позже, Haiku 4.5 или Haiku 5.5. См. [Выбор модели advisor](#choose-an-advisor-model) для информации о том, какие советники принимает каждая модель.
+* **Получение флагов функций**: если вы не используете Claude Platform on AWS или Claude Models on Google Cloud (Anthropic managed), советнику нужен флаг функции, получаемый от Anthropic. В сессии с переменной, отключающей получение, такой как `DISABLE_TELEMETRY`, этого флага нет. Чтобы проверить свою сессию, см. [какие сессии пропускают получение или запускаются без флага](https://code.claude.com/docs/ru/env-vars.md#features-that-need-feature-flag-fetching).
+
+## Отключение советника
+
+Чтобы перестать использовать советника, запустите `/advisor off` или выберите **No advisor** в средстве выбора `/advisor`:
+</code></pre>
+<p>/advisor off</p>
+<pre><code>
+Чтобы полностью отключить инструмент advisor, установите `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1`. Команда `/advisor` становится недоступной и любой настроенный `advisorModel` игнорируется. Флаг `--advisor` принимается, но не имеет эффекта. См. [Environment variables](https://code.claude.com/docs/ru/env-vars.md).
+
+## Сравнение со связанными функциями
+
+Советник — это один из нескольких способов объединить сильные стороны моделей. Выбирайте в зависимости от того, когда вы хотите, чтобы вторая модель была задействована.
+
+| Подход | Когда работает более мощная модель | Как это начинается |
+| - | - | - |
+| Инструмент advisor | В точках принятия решений во время задачи | Claude вызывает его, когда ему нужна рекомендация |
+| [`opusplan`](https://code.claude.com/docs/ru/model-config#opusplan-model-setting) | Во время режима плана, когда [разрешено `availableModels`](https://code.claude.com/docs/ru/model-config#restrict-model-selection), затем переключается на Sonnet для выполнения | Вы входите в режим плана |
+| [Subagents](https://code.claude.com/docs/ru/sub-agents.md#choose-a-model) с установленным `model` | Для всей делегированной подзадачи | Claude делегирует или вы вызываете subagent |
+| [`/model`](https://code.claude.com/docs/ru/model-config#setting-your-model) | Для всех последующих ходов | Вы переключаете модели |
+
+## См. также
+
+* [Model configuration](https://code.claude.com/docs/ru/model-config.md): переключение моделей, установка уровней усилий и использование `opusplan`
+* [Manage costs effectively](https://code.claude.com/docs/ru/costs.md): отслеживание использования токенов между моделями
+* [Advisor tool in the Claude API](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool): понимание базового инструмента сервера или его прямое использование из Messages API
+* [The advisor strategy](https://claude.com/blog/the-advisor-strategy): почему объединение быстрой основной модели с более мощным советником работает
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

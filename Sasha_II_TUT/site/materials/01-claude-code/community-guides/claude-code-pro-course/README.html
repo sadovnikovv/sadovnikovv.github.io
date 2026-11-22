@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Claude Code PRO — курс и гайд</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../materials/01-claude-code/community-guides/claude-code-pro-course/index.html">claude-code-pro-course</a></nav>
+<h1 id="claude-code-pro-курс-и-гайд">Claude Code PRO — курс и гайд <a class="h-anchor" href="#claude-code-pro-курс-и-гайд" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Практический курс по работе с <strong>Claude Code</strong> на русском: от первого запуска до профессиональной настройки команды.
+CLAUDE.md, settings, skills, subagents, hooks, MCP, плагины, headless-режим и CI — с лабораторными работами и готовыми шаблонами, которые можно скопировать в свой проект. 🧠 <strong><a href="https://t.me/+PwIsGaFpgjhkNTdi">Machine learning</a></strong> — здесь можно найти полный список самых крутых ИИ курсво, чтобы стать гуру ИИ и множество полезных инструментов и уроками работы с ними, абсолютных мастхев!</p>
+</blockquote>
+<p><a href="https://github.com/justxor/claude-code-pro-course/actions/workflows/validate.yml/badge.svg">![Validate</a>](https://github.com/justxor/claude-code-pro-course/actions/workflows/validate.yml)
+<img src="https://img.shields.io/badge/уровень-от_новичка_до_профи-blue" alt="level" loading="lazy">
+<img src="https://img.shields.io/badge/модулей-12-orange" alt="modules" loading="lazy">
+<img src="https://img.shields.io/badge/лаб-8-purple" alt="labs" loading="lazy">
+<img src="https://img.shields.io/badge/язык-русский-green" alt="lang" loading="lazy">
+<img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="license" loading="lazy"></p>
+<hr>
+<h3 id="h">Содержание <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Старт</th><th>Как это работает</th><th>Практика</th><th>Справочник</th></tr></thead><tbody><tr><td><a href="#быстрый-старт-за-5-минут">Быстрый старт</a></td><td><a href="#как-работает-claude-code">Агентный цикл</a></td><td><a href="#продвинутые-приёмы-работы-с-claude-code">Продвинутые приёмы</a></td><td><a href="#безопасность-и-разрешения">Безопасность</a></td></tr><tr><td><a href="#маршрут-обучения">Маршрут обучения</a></td><td><a href="#как-устроена-конфигурация-claude-code">Конфигурация</a></td><td><a href="#практические-рецепты-задач">Рецепты задач</a></td><td><a href="#готовые-шаблоны">Шаблоны</a></td></tr><tr><td><a href="#программа">Программа</a></td><td><a href="#главные-принципы-tldr">Принципы</a></td><td><a href="#антипаттерны-и-как-их-исправить">Антипаттерны</a></td><td><a href="#экономия-контекста-и-денег">Экономия</a> · <a href="#частые-проблемы">Проблемы</a></td></tr></tbody></table></div>
+<h3 id="h-2">Что внутри <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td>📚 <strong><a href="#программа">12 модулей</a></strong></td><td>Теория с примерами: от установки до мульти-агентной работы</td></tr><tr><td>🧪 <strong><a href="labs/">8 лабораторных</a></strong></td><td>Задания с критериями «готово» — закрепить на практике</td></tr><tr><td>🧰 <strong><a href="starter-kit/">Starter kit</a></strong></td><td>8 skills, 5 субагентов, 4 hooks, правила, statusline, output style — ставится одной командой</td></tr><tr><td>💬 <strong><a href="recipes/prompts.md">Библиотека промптов</a></strong></td><td>Проверенные формулировки для 13 типов задач</td></tr><tr><td>🧩 <strong><a href="plugin-example/">Пример плагина</a></strong></td><td>Как упаковать настройки и раздать команде</td></tr><tr><td>⚙️ <strong><a href=".github/workflows/">GitHub Actions</a></strong></td><td><code>@claude</code> в issues/PR и авто-ревью</td></tr><tr><td>📋 <strong><a href="course/cheatsheet.md">Шпаргалка</a> · <a href="course/faq.md">FAQ</a></strong></td><td>Всё важное на одной странице и решения типичных проблем</td></tr></tbody></table></div>
+<h3 id="h-3">Полезные ресурсы <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>🧠 <strong><a href="https://t.me/+PwIsGaFpgjhkNTdi">Machine learning</a></strong> — ИИ-инструменты для генерации Python кода, умные-агенты и все что нужно знать из области AI.</li>
+<li>🖥 <strong><a href="https://t.me/+pwTlhtK8vEY4Mjky">Pythonl</a></strong>— с помощью понятных картинок и коротких видео авторы объясняют сложные концепции и учат профессиональному подходу в разработке.</li>
+<li>🖥 <strong><a href="https://t.me/+sTT6sbZubDM2MWEy">Python Интервью</a></strong> — огромное количество разобранных вопросов с реальных собеседований Python разработчика.</li>
+<li>📖 <strong><a href="https://t.me/+VnfYvBmK_ZM3YzIy">PythonBooks</a></strong> (<a href="https://t.me/+8Dvl5VlUs5NhMTIy">2</a>) — мы создали канал с книгами по Linux и залили туда наверное самую большую подборку книг.</li>
+<li>💼 <strong><a href="https://t.me/+eQsE0ZVnmINmNjQy">Python Jobs</a></strong> — вакансии и подработка для Python разработчиков.</li>
+<li>🔝 <strong><a href="https://t.me/addlist/8vDUwYRGujRmZjFi">А здесь мы собрали</a></strong> целый кладезь полезных Python ресурсов для прокачки.</li>
+<li>🔥 <strong><a href="https://t.me/ai_machinelearning_big_data/10997">Больше крутых курсов и полезных ИИ-инструментов</a></strong> — регулярно публикую здесь.</li>
+<li>📦 <strong><a href="https://github.com/justxor/Harness_ru">Harness_ru</a></strong> — полный курс по Harness 2026 на русском языке: всё, что нужно знать, в одном месте.</li>
+</ul>
+<h3 id="h-4">Для кого <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Разработчики, которые уже пробовали Claude Code и хотят выжать из него максимум.</li>
+<li>Тимлиды, которым нужно настроить единые правила для команды.</li>
+<li>Все, кто хочет автоматизировать рутину: ревью, тесты, коммиты, CI.</li>
+</ul>
+<h3 id="быстрый-старт-за-5-минут">Быстрый старт за 5 минут <a class="h-anchor" href="#быстрый-старт-за-5-минут" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-bash"># 1. Установите Claude Code
+curl -fsSL https://claude.ai/install.sh | bash     # macOS / Linux / WSL
+# или: npm install -g @anthropic-ai/claude-code
+
+# 2. Поставьте starter-kit в свой проект
+git clone https://github.com/justxor/claude-code-pro-course.git
+bash claude-code-pro-course/install.sh ~/path/to/my-project
+
+# 3. Запустите
+cd ~/path/to/my-project &amp;&amp; claude
+&gt; /context          # что загружено
+&gt; /onboard          # skill из starter-kit: обзор проекта</code></pre>
+<h3 id="h-5">Маршрут обучения <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-mermaid">flowchart LR
+    subgraph B[&quot;🟢 Основы&quot;]
+        M0[&quot;00 Установка&quot;] --&gt; M1[&quot;01 Промптинг&quot;] --&gt; M2[&quot;02 CLAUDE.md&quot;] --&gt; M3[&quot;03 Настройки&quot;]
+    end
+    subgraph W[&quot;🟡 Рабочий процесс&quot;]
+        M4[&quot;04 Workflow профи&quot;]
+    end
+    subgraph E[&quot;🟠 Расширение&quot;]
+        M5[&quot;05 Skills&quot;] --&gt; M6[&quot;06 Subagents&quot;] --&gt; M7[&quot;07 Hooks&quot;] --&gt; M8[&quot;08 MCP&quot;]
+    end
+    subgraph P[&quot;🔴 Масштаб&quot;]
+        M9[&quot;09 Плагины&quot;] --&gt; M10[&quot;10 Headless и CI&quot;] --&gt; M11[&quot;11 Pro-приёмы&quot;]
+    end
+    B --&gt; W --&gt; E --&gt; P</code></pre>
+<h3 id="h-6">Программа <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Модуль</th><th>Что освоите</th><th>Практика</th></tr></thead><tbody><tr><td>00</td><td><a href="course/00-install.md">Установка и первый запуск</a></td><td>Установка, логин, интерфейс, горячие клавиши</td><td>—</td></tr><tr><td>01</td><td><a href="course/01-basics-prompting.md">Основы работы и промптинг</a></td><td>Постановка задач, контекст, @-упоминания, изображения</td><td>—</td></tr><tr><td>02</td><td><a href="course/02-claude-md.md">CLAUDE.md — память проекта</a></td><td>Иерархия, импорты, <code>.claude/rules/</code></td><td><a href="labs/lab-01-onboarding.md">Лаба 1</a></td></tr><tr><td>03</td><td><a href="course/03-settings-permissions.md">Настройки и разрешения</a></td><td>settings.json, allow/ask/deny, режимы, модели</td><td><a href="labs/lab-02-permissions.md">Лаба 2</a></td></tr><tr><td>04</td><td><a href="course/04-workflow.md">Workflow профи</a></td><td>Plan mode, TDD, чекпоинты, управление контекстом</td><td><a href="labs/lab-03-tdd-feature.md">Лаба 3</a></td></tr><tr><td>05</td><td><a href="course/05-skills.md">Skills и slash-команды</a></td><td>SKILL.md, аргументы, авто-вызов</td><td><a href="labs/lab-04-skill.md">Лаба 4</a></td></tr><tr><td>06</td><td><a href="course/06-subagents.md">Subagents</a></td><td>Изоляция контекста, специализация, параллельность</td><td><a href="labs/lab-05-subagents.md">Лаба 5</a></td></tr><tr><td>07</td><td><a href="course/07-hooks.md">Hooks</a></td><td>Автоформат, защита файлов, уведомления</td><td><a href="labs/lab-06-hooks.md">Лаба 6</a></td></tr><tr><td>08</td><td><a href="course/08-mcp.md">MCP</a></td><td>GitHub, браузер, БД, свои серверы</td><td><a href="labs/lab-07-mcp.md">Лаба 7</a></td></tr><tr><td>09</td><td><a href="course/09-plugins.md">Плагины и маркетплейсы</a></td><td>Упаковка и раздача конфигурации команде</td><td><a href="plugin-example/">Пример</a></td></tr><tr><td>10</td><td><a href="course/10-headless-ci.md">Headless, CI и GitHub Actions</a></td><td><code>claude -p</code>, JSON, <code>@claude</code> в PR, Agent SDK</td><td><a href="labs/lab-08-automation.md">Лаба 8</a></td></tr><tr><td>11</td><td><a href="course/11-pro-tips.md">Продвинутые приёмы</a></td><td>Worktrees, мульти-агенты, экономия, безопасность</td><td>Чек-листы</td></tr></tbody></table></div>
+<h3 id="как-работает-claude-code">Как работает Claude Code <a class="h-anchor" href="#как-работает-claude-code" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code — это <strong>агент</strong>, а не автодополнение: он сам решает, какие файлы прочитать и какие команды запустить, и крутит цикл «действие → проверка», пока задача не решена. Ваша работа — дать ему цель, контекст и способ проверить результат.</p>
+<pre><code class="language-mermaid">flowchart LR
+    U[&quot;👤 Задача&lt;br/&gt;промпт · @файлы · скриншоты&quot;] --&gt; C[&quot;📥 Сбор контекста&lt;br/&gt;CLAUDE.md · Read · Grep · Glob&quot;]
+    C --&gt; P[&quot;🧠 План&lt;br/&gt;что менять и как проверить&quot;]
+    P --&gt; A[&quot;🛠 Действие&lt;br/&gt;Edit · Write · Bash · MCP&quot;]
+    A --&gt; V{&quot;✅ Проверка&lt;br/&gt;тесты · линтер · сборка&quot;}
+    V -- &quot;ошибка&quot; --&gt; C
+    V -- &quot;готово&quot; --&gt; R[&quot;📝 Результат&lt;br/&gt;diff · коммит · PR&quot;]
+    PM[&quot;🔐 Permissions&quot;] -. &quot;разрешить / спросить / запретить&quot; .-&gt; A
+    H[&quot;🪝 Hooks&quot;] -. &quot;до и после каждого инструмента&quot; .-&gt; A</code></pre>
+<h4 id="h-7">Контекст — главный ресурс <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<p>Всё, что Claude «знает» в сессии, лежит в одном окне контекста. Чем оно чище, тем точнее ответы. Посмотреть, чем оно занято, — <code>/context</code>.</p>
+<pre><code class="language-mermaid">flowchart TB
+    subgraph CW[&quot;🪟 Окно контекста&quot;]
+        direction TB
+        S1[&quot;Системный промпт и инструменты&quot;]
+        S2[&quot;CLAUDE.md и правила&quot;]
+        S3[&quot;Описания skills · agents · MCP&quot;]
+        S4[&quot;История диалога&quot;]
+        S5[&quot;Прочитанные файлы и вывод команд&quot;]
+    end
+    CW --&gt; Q{&quot;Что дальше?&quot;}
+    Q -- &quot;новая задача&quot; --&gt; CL[&quot;/clear&lt;br/&gt;чистый лист&quot;]
+    Q -- &quot;длинная задача&quot; --&gt; CO[&quot;/compact&lt;br/&gt;сжать историю&quot;]
+    Q -- &quot;большое исследование&quot; --&gt; SA[&quot;🤖 Subagent&lt;br/&gt;своё окно, вернёт только вывод&quot;]</code></pre>
+<h3 id="как-устроена-конфигурация-claude-code">Как устроена конфигурация Claude Code <a class="h-anchor" href="#как-устроена-конфигурация-claude-code" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-mermaid">flowchart TB
+    subgraph U[&quot;👤 Пользователь — ~/.claude/&quot;]
+        U1[&quot;CLAUDE.md&quot;]
+        U2[&quot;settings.json&quot;]
+        U3[&quot;skills/ · agents/ · output-styles/&quot;]
+    end
+    subgraph PR[&quot;📦 Проект — в git, для команды&quot;]
+        P1[&quot;CLAUDE.md · .claude/rules/&quot;]
+        P2[&quot;.claude/settings.json&lt;br/&gt;permissions · hooks · statusLine&quot;]
+        P3[&quot;.claude/skills/ · .claude/agents/&quot;]
+        P4[&quot;.mcp.json&quot;]
+    end
+    subgraph L[&quot;🔒 Локально — не в git&quot;]
+        L1[&quot;CLAUDE.local.md&quot;]
+        L2[&quot;.claude/settings.local.json&quot;]
+    end
+    PL[&quot;🧩 Плагины&lt;br/&gt;skills · agents · hooks · MCP&quot;]
+    U --&gt; S((&quot;Сессия&lt;br/&gt;Claude Code&quot;))
+    PR --&gt; S
+    L --&gt; S
+    PL --&gt; S</code></pre>
+<p><strong>Что куда класть:</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Хочу…</th><th>Инструмент</th></tr></thead><tbody><tr><td>чтобы Claude знал правила проекта</td><td><code>CLAUDE.md</code>, <code>.claude/rules/</code></td></tr><tr><td>не отвечать на одни и те же вопросы о разрешениях</td><td><code>permissions.allow</code> в settings</td></tr><tr><td>запретить опасное</td><td><code>permissions.deny</code> + hook <code>PreToolUse</code></td></tr><tr><td>переиспользовать процедуру / промпт</td><td><strong>skill</strong></td></tr><tr><td>изолировать исследование или дать узкую роль</td><td><strong>subagent</strong></td></tr><tr><td>чтобы что-то происходило <strong>всегда</strong></td><td><strong>hook</strong></td></tr><tr><td>подключить внешнюю систему</td><td><strong>MCP</strong></td></tr><tr><td>раздать всё это другим репозиториям</td><td><strong>плагин</strong></td></tr><tr><td>запускать без человека</td><td><code>claude -p</code>, GitHub Actions, Agent SDK</td></tr></tbody></table></div>
+<h4 id="h-8">Как выбрать инструмент <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">flowchart TD
+    Q1{&quot;Должно происходить всегда,&lt;br/&gt;без исключений?&quot;} -- да --&gt; HK[&quot;🪝 Hook&quot;]
+    Q1 -- нет --&gt; Q2{&quot;Нужна внешняя система&lt;br/&gt;или данные?&quot;}
+    Q2 -- да --&gt; MCP[&quot;🔌 MCP-сервер&quot;]
+    Q2 -- нет --&gt; Q3{&quot;Задача шумная,&lt;br/&gt;нужен отдельный контекст?&quot;}
+    Q3 -- да --&gt; SA[&quot;🤖 Subagent&quot;]
+    Q3 -- нет --&gt; Q4{&quot;Повторяемая процедура&lt;br/&gt;или промпт?&quot;}
+    Q4 -- да --&gt; SK[&quot;🧰 Skill&quot;]
+    Q4 -- нет --&gt; CM[&quot;📄 CLAUDE.md или обычный промпт&quot;]</code></pre>
+<h3 id="главные-принципы-tl-dr">Главные принципы (TL;DR) <a class="h-anchor" href="#главные-принципы-tl-dr" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li><strong>Контекст — ваш главный ресурс.</strong> Чистите (<code>/clear</code>), сжимайте (<code>/compact</code>), выносите исследование в subagents.</li>
+<li><strong>Сначала план, потом код.</strong> Plan mode (<code>Shift+Tab</code>) для всего, что сложнее одного файла.</li>
+<li><strong>Дайте Claude способ проверить себя</strong> — тесты, линтер, скриншоты. Это самый сильный рычаг качества.</li>
+<li><strong>CLAUDE.md короткий и конкретный.</strong> Команды, стиль, запреты. Не роман.</li>
+<li><strong>Повторяется трижды — сделайте skill.</strong> Должно случаться всегда — сделайте hook.</li>
+<li><strong>Разрешения — через allowlist,</strong> а не через <code>bypassPermissions</code>.</li>
+</ol>
+<h3 id="продвинутые-приемы-работы-с-claude-code">Продвинутые приёмы работы с Claude Code <a class="h-anchor" href="#продвинутые-приемы-работы-с-claude-code" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-9">Режимы работы <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<p><code>Shift+Tab</code> переключает режимы по кругу:</p>
+<div class="table-wrap"><table><thead><tr><th>Режим</th><th>Что делает Claude</th><th>Когда использовать</th></tr></thead><tbody><tr><td><strong>Обычный</strong></td><td>Спрашивает разрешение на правки и команды</td><td>Незнакомый код, рискованные изменения</td></tr><tr><td><strong>Auto-accept edits</strong></td><td>Правит файлы без подтверждения</td><td>План согласован, есть тесты и git</td></tr><tr><td><strong>Plan mode</strong></td><td>Только читает и предлагает план</td><td>Старт любой нетривиальной задачи</td></tr></tbody></table></div>
+<h4 id="explore-plan-code-verify-commit">Explore → Plan → Code → Verify → Commit <a class="h-anchor" href="#explore-plan-code-verify-commit" aria-label="Ссылка на раздел">#</a></h4>
+<p>Главный рабочий цикл. Не давайте Claude сразу писать код: сначала пусть разберётся и предложит план.</p>
+<pre><code class="language-mermaid">sequenceDiagram
+    actor Dev as Разработчик
+    participant C as Claude
+    participant R as Репозиторий
+    Dev-&gt;&gt;C: Plan mode — изучи модуль оплаты, ничего не меняй
+    C-&gt;&gt;R: Read · Grep · Glob
+    C--&gt;&gt;Dev: План — файлы, шаги, риски, как проверить
+    Dev-&gt;&gt;C: Поправь шаг 3, остальное ок — реализуй
+    loop пока проверки не зелёные
+        C-&gt;&gt;R: Edit
+        C-&gt;&gt;R: Bash — тесты и линтер
+    end
+    C--&gt;&gt;Dev: diff и краткий итог
+    Dev-&gt;&gt;C: Закоммить и открой PR</code></pre>
+<h4 id="h-10">Промпты, которые работают <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>❌ Размыто</th><th>✅ Конкретно</th></tr></thead><tbody><tr><td>«Почини баг»</td><td>«При пустом email <code>signup()</code> падает с TypeError. Воспроизведи тестом, исправь, прогони <code>npm test</code>.»</td></tr><tr><td>«Добавь тесты»</td><td>«Покрой <code>parseDate</code> тестами: границы месяцев, таймзоны, невалидный ввод. Без моков, стиль как в <code>utils.test.ts</code>.»</td></tr><tr><td>«Отрефактори»</td><td>«Вынеси работу с БД из <code>orders.ts</code> в репозиторий. Публичный API не меняй, существующие тесты должны пройти без правок.»</td></tr><tr><td>«Сделай красиво»</td><td>«Сверстай по скриншоту, сними скриншот результата через браузерный MCP, сравни и исправь расхождения.»</td></tr></tbody></table></div>
+<p>Формула: <strong>цель + где искать + ограничения + как проверить</strong>.</p>
+<h4 id="h-11">Контекст и память <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>CLAUDE.md — память проекта.</strong> <code>/init</code> создаёт его автоматически. Стек, команды сборки и тестов, стиль, запреты — коротко. Редактировать — <code>/memory</code>.</li>
+<li><strong>Одна задача — одна сессия.</strong> <code>/clear</code> перед новой задачей, <code>/compact</code> для длинной (можно с подсказкой: <code>/compact оставь только решения по API</code>).</li>
+<li><strong><code>@</code> для файлов</strong> — <code>@src/api/client.ts</code> сразу кладёт файл в контекст, без поиска.</li>
+<li><strong><code>!</code> для команд</strong> — <code>!git status</code> выполнит команду и покажет вывод Claude.</li>
+<li><strong>Скриншоты и логи</strong> вставляйте прямо в чат или передавайте через пайп: <code>cat error.log | claude</code>.</li>
+<li><strong>Пусть Claude ведёт заметки.</strong> Для долгих задач попросите вести <code>PLAN.md</code> или <code>NOTES.md</code> — после <code>/clear</code> работу легко продолжить.</li>
+</ul>
+<h4 id="дайте-claude-способ-проверить-себя">Дайте Claude способ проверить себя <a class="h-anchor" href="#дайте-claude-способ-проверить-себя" aria-label="Ссылка на раздел">#</a></h4>
+<p>Без обратной связи агент угадывает, с ней — итерирует до результата:</p>
+<ul>
+<li>тесты и тайпчекер (<code>npm test</code>, <code>pytest</code>, <code>tsc --noEmit</code>);</li>
+<li>линтер и форматтер (лучше через hook — тогда всегда);</li>
+<li>скриншоты UI через браузерный MCP (Playwright, Chrome);</li>
+<li>эталонный вывод: «скрипт должен напечатать ровно это».</li>
+</ul>
+<h4 id="hooks-гарантии-вместо-просьб">Hooks: гарантии вместо просьб <a class="h-anchor" href="#hooks-гарантии-вместо-просьб" aria-label="Ссылка на раздел">#</a></h4>
+<p>CLAUDE.md — это просьба, hook — это правило. Hook запускается на событии и может заблокировать действие.</p>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant C as Claude
+    participant H as Hook
+    participant T as Инструмент
+    C-&gt;&gt;H: PreToolUse — Bash rm -rf
+    alt опасная команда
+        H--&gt;&gt;C: exit 2 и причина в stderr
+        Note over C: вызов заблокирован, Claude видит причину
+    else всё в порядке
+        H--&gt;&gt;C: exit 0
+        C-&gt;&gt;T: выполнить
+        T--&gt;&gt;C: результат
+        C-&gt;&gt;H: PostToolUse — Edit
+        H--&gt;&gt;C: prettier и eslint --fix
+    end</code></pre>
+<p>Автоформат после каждой правки (<code>.claude/settings.json</code>):</p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;PostToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Edit|Write&quot;,
+        &quot;hooks&quot;: [
+          { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;jq -r &#x27;.tool_input.file_path&#x27; | xargs npx prettier --write&quot; }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<div class="table-wrap"><table><thead><tr><th>Событие</th><th>Пример использования</th></tr></thead><tbody><tr><td><code>SessionStart</code></td><td>подгрузить текущую ветку, открытые задачи</td></tr><tr><td><code>UserPromptSubmit</code></td><td>добавить контекст к каждому промпту</td></tr><tr><td><code>PreToolUse</code></td><td>запретить <code>rm -rf</code>, правки <code>.env</code> и миграций</td></tr><tr><td><code>PostToolUse</code></td><td>форматтер, линтер, тесты по изменённому файлу</td></tr><tr><td><code>Notification</code></td><td>уведомление на рабочий стол, когда Claude ждёт вас</td></tr><tr><td><code>Stop</code></td><td>финальная проверка: тесты зелёные — можно завершать</td></tr><tr><td><code>PreCompact</code></td><td>сохранить важное перед сжатием контекста</td></tr></tbody></table></div>
+<h4 id="subagents-специалисты-со-своим-контекстом">Subagents: специалисты со своим контекстом <a class="h-anchor" href="#subagents-специалисты-со-своим-контекстом" aria-label="Ссылка на раздел">#</a></h4>
+<p>Субагент работает в отдельном окне контекста и возвращает только вывод — главная сессия остаётся чистой.</p>
+<pre><code class="language-mermaid">flowchart LR
+    M[&quot;🎯 Главная сессия&quot;] --&gt; A1[&quot;🔍 explorer&lt;br/&gt;ищет по коду&quot;]
+    M --&gt; A2[&quot;🧪 test-runner&lt;br/&gt;гоняет тесты&quot;]
+    M --&gt; A3[&quot;🛡 security-reviewer&lt;br/&gt;ищет уязвимости&quot;]
+    A1 -- &quot;краткая сводка&quot; --&gt; M
+    A2 -- &quot;только упавшие тесты&quot; --&gt; M
+    A3 -- &quot;список находок&quot; --&gt; M</code></pre>
+<p><code>.claude/agents/reviewer.md</code>:</p>
+<pre><code class="language-markdown">---
+name: reviewer
+description: Ревью изменений перед коммитом. Используй после любой заметной правки.
+tools: Read, Grep, Glob, Bash
+model: sonnet
+---
+Ты строгий ревьюер. Проверь git diff на баги, пограничные случаи,
+утечки секретов и нарушения стиля из CLAUDE.md.
+Отвечай списком: файл:строка — проблема — как исправить.</code></pre>
+<h4 id="параллельная-работа-через-git-worktree">Параллельная работа через git worktree <a class="h-anchor" href="#параллельная-работа-через-git-worktree" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">flowchart TB
+    R[&quot;📦 Репозиторий&quot;] --&gt; W1[&quot;../app-auth&lt;br/&gt;feature/auth&quot;]
+    R --&gt; W2[&quot;../app-billing&lt;br/&gt;feature/billing&quot;]
+    R --&gt; W3[&quot;../app-fix&lt;br/&gt;fix/flaky-test&quot;]
+    W1 --&gt; C1[&quot;🤖 Claude 1&quot;]
+    W2 --&gt; C2[&quot;🤖 Claude 2&quot;]
+    W3 --&gt; C3[&quot;🤖 Claude 3&quot;]</code></pre>
+<pre><code class="language-bash">git worktree add ../app-auth -b feature/auth
+cd ../app-auth &amp;&amp; claude</code></pre>
+<p>Каждая сессия работает в своей папке и ветке — задачи идут параллельно и не мешают друг другу.</p>
+<p><strong>Writer / Reviewer:</strong> один Claude пишет код, второй в чистой сессии делает ревью, первый исправляет по замечаниям. Свежий контекст замечает то, что «замылилось».</p>
+<h4 id="headless-и-автоматизация">Headless и автоматизация <a class="h-anchor" href="#headless-и-автоматизация" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Разовый запрос в скрипте или CI
+claude -p &quot;Найди причину падения сборки&quot; --output-format json &lt; build.log
+
+# Ревью своего diff перед пушем
+git diff main | claude -p &quot;Сделай ревью: баги, пограничные случаи, безопасность&quot;
+
+# Ограничить инструменты и число шагов
+claude -p &quot;Обнови CHANGELOG по последним коммитам&quot; --allowedTools &quot;Read,Edit,Bash(git log:*)&quot; --max-turns 10
+
+# Массовая миграция: файл за файлом
+for f in $(git ls-files &#x27;src/**/*.js&#x27;); do
+  claude -p &quot;Переведи $f на TypeScript, не меняя поведения&quot; --allowedTools &quot;Read,Edit,Bash(npx tsc:*)&quot;
+done</code></pre>
+<h4 id="h-12">Шпаргалка по управлению <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Клавиша / команда</th><th>Что делает</th></tr></thead><tbody><tr><td><code>Esc</code></td><td>прервать Claude, не теряя контекст</td></tr><tr><td><code>Esc Esc</code> · <code>/rewind</code></td><td>откатиться к прошлому шагу (код и диалог)</td></tr><tr><td><code>Shift+Tab</code></td><td>переключить режим: обычный → auto-accept → plan</td></tr><tr><td><code>@файл</code> · <code>!команда</code></td><td>добавить файл / вывод команды в контекст</td></tr><tr><td><code>/clear</code> · <code>/compact</code> · <code>/context</code></td><td>очистить, сжать, посмотреть контекст</td></tr><tr><td><code>/model</code></td><td>сменить модель</td></tr><tr><td><code>/permissions</code> · <code>/hooks</code> · <code>/agents</code> · <code>/mcp</code></td><td>настройка разрешений, хуков, агентов, MCP</td></tr><tr><td><code>claude --continue</code> · <code>claude --resume</code></td><td>продолжить последнюю / выбрать прошлую сессию</td></tr></tbody></table></div>
+<h3 id="h-13">Практические рецепты задач <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h3>
+<p>Готовые промпты под частые задачи — копируйте и подставляйте своё. Больше — в <a href="recipes/prompts.md">библиотеке промптов</a>.</p>
+<details><summary>🗺 Разобраться в незнакомом проекте</summary>
+<pre><code class="language-text">Plan mode. Изучи репозиторий и объясни: архитектуру, точки входа,
+поток данных для запроса /api/orders, где тесты и как их запускать.
+Ничего не меняй. В конце — 5 мест, где новичку легче всего ошибиться.</code></pre>
+</details>
+<details><summary>🐛 Баг по стектрейсу</summary>
+<pre><code class="language-text">@error.log Вот стектрейс из продакшена.
+1) Найди корневую причину, а не место падения.
+2) Напиши падающий тест, который воспроизводит баг.
+3) Исправь минимальным изменением, прогони все тесты.</code></pre>
+</details>
+<details><summary>🧪 Фича через TDD</summary>
+<pre><code class="language-text">Фича: скидка 10% для заказов от 5000 ₽.
+Сначала напиши тесты (включая границы: 4999, 5000, 0, отрицательные),
+убедись, что они падают, и закоммить. Потом реализуй, не меняя тесты.</code></pre>
+</details>
+<details><summary>♻️ Безопасный рефакторинг</summary>
+<pre><code class="language-text">Разбей @src/services/user.ts на модули по ответственности.
+Поведение и публичный API не меняй. После каждого шага — тесты и tsc.
+Если тестов не хватает, сначала добавь характеризационные тесты.</code></pre>
+</details>
+<details><summary>🔍 Ревью своего кода</summary>
+<pre><code class="language-text">Сделай ревью git diff main как строгий senior:
+баги, гонки, пограничные случаи, безопасность, производительность.
+Формат: файл:строка — проблема — критичность — как исправить.</code></pre>
+</details>
+<details><summary>🎲 Плавающий (flaky) тест</summary>
+<pre><code class="language-text">Тест checkout.spec.ts падает примерно в 1 из 10 запусков.
+Запусти его 30 раз, собери статистику, найди источник
+недетерминизма (время, порядок, сеть, общий стейт) и устрани его.</code></pre>
+</details>
+<details><summary>⬆️ Обновление зависимости</summary>
+<pre><code class="language-text">Обнови react-router с v5 до v6. Сначала составь план миграции
+по changelog и список затронутых файлов. Затем мигрируй по одному
+модулю, после каждого — сборка и тесты.</code></pre>
+</details>
+<details><summary>🎨 Вёрстка по макету</summary>
+<pre><code class="language-text">[скриншот] Сверстай этот экран на наших компонентах из @src/ui.
+После — сними скриншот через браузерный MCP, сравни с макетом
+и исправь расхождения. Повтори, пока не совпадёт.</code></pre>
+</details>
+<details><summary>⚡ Производительность</summary>
+<pre><code class="language-text">Эндпоинт /api/report отвечает 4 секунды. Найди узкое место
+(N+1, лишние запросы, тяжёлые вычисления), предложи 2–3 варианта
+с оценкой выигрыша. Реализуй лучший и замерь до/после.</code></pre>
+</details>
+<details><summary>🛡 Аудит безопасности</summary>
+<pre><code class="language-text">Используй субагента: проверь проект на OWASP Top 10 —
+инъекции, XSS, хранение секретов, авторизацию на эндпоинтах.
+Верни отчёт по критичности. Ничего не исправляй без моего ок.</code></pre>
+</details>
+<details><summary>📝 Описание PR и changelog</summary>
+<pre><code class="language-text">По git log main..HEAD и diff напиши описание PR:
+зачем, что изменилось, как проверить, риски.
+Добавь запись в CHANGELOG.md в нашем формате.</code></pre>
+</details>
+<details><summary>🚨 Разбор инцидента</summary>
+<pre><code class="language-text">@incident.log Восстанови хронологию инцидента по логам,
+найди первопричину и напиши постмортем: таймлайн, причина,
+влияние, что сделать, чтобы не повторилось.</code></pre>
+</details>
+<h3 id="h-14">Антипаттерны и как их исправить <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>❌ Ошибка</th><th>Почему плохо</th><th>✅ Как правильно</th></tr></thead><tbody><tr><td>Одна бесконечная сессия на весь день</td><td>Контекст забит старым, ответы хуже</td><td><code>/clear</code> между задачами, заметки в файле</td></tr><tr><td>«Сделай фичу» без плана</td><td>Claude уверенно идёт не туда</td><td>Plan mode → согласовать → реализовать</td></tr><tr><td>Нет тестов и проверок</td><td>Агент не видит своих ошибок</td><td>Тесты, линтер, скриншоты в цикле</td></tr><tr><td>CLAUDE.md на 500 строк</td><td>Важное тонет, тратится контекст</td><td>Коротко; детали — в <code>.claude/rules/</code> и skills</td></tr><tr><td>Правила только словами в CLAUDE.md</td><td>Иногда игнорируются</td><td>Критичное — через hooks и <code>permissions.deny</code></td></tr><tr><td><code>bypassPermissions</code> «чтобы не спрашивал»</td><td>Риск удалить лишнее или слить секреты</td><td>Allowlist безопасных команд, песочница</td></tr><tr><td>Исправлять ошибку третьим сообщением подряд</td><td>Контекст засоряется неудачными попытками</td><td><code>Esc Esc</code> / <code>/rewind</code> и переформулировать</td></tr><tr><td>Принимать diff не глядя</td><td>Тихие баги и лишние изменения</td><td>Ревью diff или субагент-ревьюер</td></tr></tbody></table></div>
+<h3 id="h-15">Безопасность и разрешения <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h3>
+<p>Каждый вызов инструмента проходит через правила. Порядок проверки: <strong>deny → ask → allow</strong>, запрет всегда сильнее разрешения.</p>
+<pre><code class="language-mermaid">flowchart LR
+    T[&quot;🛠 Claude хочет&lt;br/&gt;вызвать инструмент&quot;] --&gt; H{&quot;🪝 PreToolUse&lt;br/&gt;hook&quot;}
+    H -- &quot;exit 2&quot; --&gt; X[&quot;⛔ Заблокировано&quot;]
+    H -- &quot;ок&quot; --&gt; D{&quot;Есть правило&lt;br/&gt;deny?&quot;}
+    D -- да --&gt; X
+    D -- нет --&gt; K{&quot;Есть правило&lt;br/&gt;ask?&quot;}
+    K -- да --&gt; Q[&quot;🙋 Спросить вас&quot;]
+    K -- нет --&gt; A{&quot;Есть правило&lt;br/&gt;allow?&quot;}
+    A -- да --&gt; OK[&quot;✅ Выполнить&quot;]
+    A -- нет --&gt; Q
+    Q -- &quot;разрешили&quot; --&gt; OK
+    Q -- &quot;отказали&quot; --&gt; X</code></pre>
+<p>Пример <code>.claude/settings.json</code> для команды:</p>
+<pre><code class="language-json">{
+  &quot;permissions&quot;: {
+    &quot;allow&quot;: [
+      &quot;Bash(npm run test:*)&quot;,
+      &quot;Bash(npm run lint)&quot;,
+      &quot;Bash(git status)&quot;,
+      &quot;Bash(git diff:*)&quot;
+    ],
+    &quot;ask&quot;: [
+      &quot;Bash(git push:*)&quot;
+    ],
+    &quot;deny&quot;: [
+      &quot;Read(./.env)&quot;,
+      &quot;Read(./.env.*)&quot;,
+      &quot;Read(./secrets/**)&quot;,
+      &quot;Bash(rm -rf:*)&quot;,
+      &quot;Bash(curl:*)&quot;
+    ]
+  }
+}</code></pre>
+<p><strong>Чек-лист:</strong></p>
+<ul>
+<li>секреты закрыты через <code>deny</code> и не лежат в CLAUDE.md;</li>
+<li><code>git push</code>, деплой и миграции — только с подтверждением;</li>
+<li>автономные запуски (<code>-p</code>, CI, <code>--dangerously-skip-permissions</code>) — только в контейнере или песочнице без доступа к проду;</li>
+<li>данные из интернета и MCP — это данные, а не инструкции: следите за промпт-инъекциями;</li>
+<li>перед коммитом — <code>git diff</code>, а не «принять всё».</li>
+</ul>
+<h3 id="h-16">Готовые шаблоны <a class="h-anchor" href="#h-16" aria-label="Ссылка на раздел">#</a></h3>
+<details><summary>📄 CLAUDE.md — короткий и рабочий</summary>
+<pre><code class="language-markdown"># Проект: магазин на Next.js + PostgreSQL
+
+## Команды
+- npm run dev — запуск
+- npm test — тесты (Vitest), npm run lint — линтер
+- npm run db:migrate — миграции (только с подтверждения!)
+
+## Архитектура
+- src/app — роуты, src/lib — бизнес-логика, src/db — доступ к БД
+- Вся работа с БД только через src/db, не из компонентов
+
+## Правила
+- TypeScript strict, без any
+- Новый код — с тестами, баг — сначала падающий тест
+- Не трогать src/legacy без явной просьбы
+- Перед завершением задачи: npm test &amp;&amp; npm run lint</code></pre>
+</details>
+<details><summary>🧰 Skill — повторяемая процедура</summary>
+<p><code>.claude/skills/release-notes/SKILL.md</code>:</p>
+<pre><code class="language-markdown">---
+name: release-notes
+description: Готовит release notes по коммитам с последнего тега. Используй, когда просят релиз, changelog или заметки к версии.
+---
+1. Найди последний тег: git describe --tags --abbrev=0
+2. Собери коммиты: git log &lt;тег&gt;..HEAD --oneline
+3. Сгруппируй: ✨ Новое, 🐛 Исправления, ⚙️ Внутреннее
+4. Пиши для пользователей, а не для разработчиков
+5. Добавь блок в начало CHANGELOG.md</code></pre>
+<p>Вызов: <code>/release-notes</code> — или Claude сам подхватит skill по описанию.</p>
+</details>
+<details><summary>🔌 MCP — подключение внешних инструментов</summary>
+<pre><code class="language-bash"># Браузер для проверки UI и скриншотов
+claude mcp add playwright -- npx @playwright/mcp@latest
+
+# Посмотреть подключённые серверы и их статус
+claude mcp list</code></pre>
+<p>Общий для команды <code>.mcp.json</code> в корне репозитория:</p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;playwright&quot;: {
+      &quot;command&quot;: &quot;npx&quot;,
+      &quot;args&quot;: [&quot;@playwright/mcp@latest&quot;]
+    }
+  }
+}</code></pre>
+</details>
+<details><summary>🤖 GitHub Actions — @claude в issues и PR</summary>
+<p>Самый быстрый способ — выполнить в Claude Code <code>/install-github-app</code>. После этого достаточно написать в issue или PR:</p>
+<pre><code class="language-text">@claude реализуй эту задачу и открой PR
+@claude сделай ревью этого PR с фокусом на безопасность</code></pre>
+<p>Готовые workflow — в <a href=".github/workflows/">.github/workflows/</a>.</p>
+</details>
+<h3 id="h-17">Экономия контекста и денег <a class="h-anchor" href="#h-17" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Приём</th><th>Эффект</th></tr></thead><tbody><tr><td><code>/clear</code> между задачами</td><td>не платите за чужую историю в каждом запросе</td></tr><tr><td><code>/compact</code> с подсказкой, что сохранить</td><td>длинная задача без переполнения</td></tr><tr><td>Поиск и чтение логов — в субагента</td><td>в главный контекст попадает вывод, а не тысячи строк</td></tr><tr><td>Модель под задачу (<code>/model</code>)</td><td>сильная — для архитектуры и сложных багов, быстрая — для рутины и поиска</td></tr><tr><td><code>@файл</code> вместо «найди сам»</td><td>меньше лишних чтений</td></tr><tr><td>Короткий CLAUDE.md, детали — в skills</td><td>skill грузится только когда нужен</td></tr><tr><td>Отключать неиспользуемые MCP-серверы</td><td>описания инструментов тоже занимают контекст</td></tr><tr><td><code>/context</code> и <code>/cost</code></td><td>видно, куда уходят токены</td></tr></tbody></table></div>
+<h3 id="путь-к-уровню-pro">Путь к уровню PRO <a class="h-anchor" href="#путь-к-уровню-pro" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-mermaid">flowchart LR
+    L1[&quot;🟢 Новичок&lt;br/&gt;чат и правки по просьбе&quot;] --&gt; L2[&quot;🟡 Практик&lt;br/&gt;CLAUDE.md · Plan mode · тесты&quot;]
+    L2 --&gt; L3[&quot;🟠 Продвинутый&lt;br/&gt;skills · hooks · subagents · MCP&quot;]
+    L3 --&gt; L4[&quot;🔴 PRO&lt;br/&gt;worktrees · headless · CI · плагины для команды&quot;]</code></pre>
+<h3 id="h-18">Частые проблемы <a class="h-anchor" href="#h-18" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Симптом</th><th>Причина</th><th>Что сделать</th></tr></thead><tbody><tr><td>Claude «забыл» договорённости</td><td>контекст сжат или переполнен</td><td>вынести в CLAUDE.md, вести <code>NOTES.md</code>, <code>/clear</code> и начать с плана</td></tr><tr><td>Игнорирует правило из CLAUDE.md</td><td>правило утонуло среди прочего</td><td>сократить файл, критичное — в hook или <code>deny</code></td></tr><tr><td>Ходит по кругу с одной ошибкой</td><td>замусоренный контекст</td><td><code>Esc Esc</code>, откатиться и дать больше данных: лог, тест, гипотезу</td></tr><tr><td>Меняет лишние файлы</td><td>нет границ в задаче</td><td>указать, какие файлы трогать нельзя, работать по плану</td></tr><tr><td>Постоянно спрашивает разрешения</td><td>нет allowlist</td><td><code>/permissions</code> или <code>permissions.allow</code> в settings</td></tr><tr><td>MCP-сервер не видно</td><td>не запустился или не тот scope</td><td><code>claude mcp list</code>, <code>/mcp</code>, проверить <code>.mcp.json</code></td></tr><tr><td>Hook не срабатывает</td><td>неверный <code>matcher</code> или путь</td><td><code>/hooks</code>, запустить скрипт вручную, проверить exit code</td></tr></tbody></table></div>
+<h3 id="h-19">Прогресс <a class="h-anchor" href="#h-19" aria-label="Ссылка на раздел">#</a></h3>
+<p>Скопируйте в свою заметку или issue и отмечайте:</p>
+<pre><code class="language-markdown">- [ ] 00 Установка          - [ ] 06 Subagents        + Лаба 5
+- [ ] 01 Промптинг          - [ ] 07 Hooks            + Лаба 6
+- [ ] 02 CLAUDE.md + Лаба 1 - [ ] 08 MCP              + Лаба 7
+- [ ] 03 Настройки + Лаба 2 - [ ] 09 Плагины
+- [ ] 04 Workflow  + Лаба 3 - [ ] 10 Headless и CI    + Лаба 8
+- [ ] 05 Skills    + Лаба 4 - [ ] 11 Pro-приёмы (итоговый чек-лист)</code></pre>
+<h3 id="h-20">Структура репозитория <a class="h-anchor" href="#h-20" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>.
+├── course/                  # 12 модулей + cheatsheet.md + faq.md
+├── labs/                    # 8 лабораторных работ
+├── recipes/prompts.md       # библиотека промптов
+├── starter-kit/             # готовая конфигурация для копирования
+│   ├── CLAUDE.md  .mcp.json
+│   └── .claude/
+│       ├── settings.json    # permissions + hooks + statusLine
+│       ├── skills/          # 8 skills
+│       ├── agents/          # 5 субагентов
+│       ├── hooks/           # 4 hook-скрипта
+│       ├── rules/           # правила по путям
+│       ├── output-styles/   # режим наставника
+│       └── statusline.sh
+├── plugin-example/          # пример плагина
+├── install.sh               # установщик starter-kit
+├── scripts/validate.py      # проверки (запускаются в CI)
+└── .github/workflows/       # @claude, авто-ревью PR, валидация</code></pre>
+<h3 id="h-21">Участие <a class="h-anchor" href="#h-21" aria-label="Ссылка на раздел">#</a></h3>
+<p>Нашли устаревшую команду или хотите добавить лабу/шаблон? См. <a href="CONTRIBUTING.md">CONTRIBUTING.md</a>. История изменений — <a href="CHANGELOG.md">CHANGELOG.md</a>.</p>
+<h3 id="h-22">Полезные ссылки <a class="h-anchor" href="#h-22" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Документация: https://code.claude.com/docs</li>
+<li>Best practices от Anthropic: https://www.anthropic.com/engineering/claude-code-best-practices</li>
+<li>GitHub Action: https://github.com/anthropics/claude-code-action</li>
+</ul>
+<blockquote>
+<p>⚠️ Claude Code быстро развивается. Если команда или поле не работает — сверьтесь с <code>/help</code> и официальной документацией и <a href="https://github.com/justxor/claude-code-pro-course/issues/new/choose">откройте issue</a>.</p>
+</blockquote>
+<h3 id="h-23">Лицензия <a class="h-anchor" href="#h-23" aria-label="Ссылка на раздел">#</a></h3>
+<p><a href="LICENSE">MIT</a> — используйте, копируйте, адаптируйте.</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

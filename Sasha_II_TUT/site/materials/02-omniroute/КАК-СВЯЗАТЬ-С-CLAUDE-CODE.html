@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Связка Claude Code + OmniRoute: практическое объяснение</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../materials/index.html">Материалы</a>
+    <a href="../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../materials/index.html">Материалы</a> / <a href="../../materials/02-omniroute/index.html">02-omniroute</a></nav>
+<h1 id="связка-claude-code-omniroute-практическое-объяснение">Связка Claude Code + OmniRoute: практическое объяснение <a class="h-anchor" href="#связка-claude-code-omniroute-практическое-объяснение" aria-label="Ссылка на раздел">#</a></h1>
+<p><em>Разбор на основе официальной русской документации OmniRoute (папка <code>docs-ru</code>) и вашего файла <code>cc.txt</code>. Дата: 18.11.2026.</em></p>
+<hr>
+<h3 id="1-что-происходит-схема">1. Что происходит: схема <a class="h-anchor" href="#1-что-происходит-схема" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>Claude Code (CLI)
+      │  запросы к Anthropic Messages API
+      ▼
+http://localhost:20128  ← OmniRoute (локальный шлюз)
+      │  выбирает провайдера и модель
+      ▼
+DeepSeek / Claude / GPT / Gemini / GLM / локальные модели ...</code></pre>
+<p>Claude Code «из коробки» умеет разговаривать только с API Anthropic. OmniRoute притворяется таким API: принимает запросы на <code>/v1/messages</code> и перенаправляет их тому провайдеру, который вы выбрали (или автоматически — по квотам и доступности).</p>
+<p><strong>Зачем это нужно:</strong></p>
+<ul>
+<li>один адрес и один ключ вместо десятка API-ключей;</li>
+<li>можно переключать модели без переустановки клиента;</li>
+<li>автоматический fallback при исчерпании квоты;</li>
+<li>учёт расходов и токенов в одном месте.</li>
+</ul>
+<p><strong>Что важно понимать:</strong> OmniRoute — отдельная программа. Если она не запущена, Claude Code не сможет подключиться, даже если все переменные окружения заданы правильно.</p>
+<hr>
+<h3 id="2-как-claude-code-подключается-к-шлюзу">2. Как Claude Code подключается к шлюзу <a class="h-anchor" href="#2-как-claude-code-подключается-к-шлюзу" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code читает несколько переменных окружения. Ключевые:</p>
+<div class="table-wrap"><table><thead><tr><th>Переменная</th><th>Зачем нужна</th><th>Пример</th></tr></thead><tbody><tr><td><code>ANTHROPIC_BASE_URL</code></td><td>Адрес шлюза. Claude Code сам добавляет <code>/v1/messages</code>, поэтому суффикс <code>/v1</code> в адресе <strong>не нужен</strong>.</td><td><code>http://localhost:20128</code></td></tr><tr><td><code>ANTHROPIC_AUTH_TOKEN</code></td><td>Ваш ключ доступа OmniRoute. Уходит в заголовке <code>Authorization: Bearer ...</code>.</td><td><code>sk-...</code> (ключ из панели OmniRoute)</td></tr><tr><td><code>ANTHROPIC_API_KEY</code></td><td>Альтернативный способ передать ключ (заголовок <code>x-api-key</code>). Если заданы оба, побеждает <code>ANTHROPIC_AUTH_TOKEN</code>.</td><td>—</td></tr><tr><td><code>ANTHROPIC_MODEL</code></td><td>Принудительно выбрать модель, минуя <code>/model</code>.</td><td><code>combo/DeepSeek</code></td></tr><tr><td><code>ANTHROPIC_SMALL_FAST_MODEL</code></td><td>Модель для служебных быстрых задач (заголовки, короткие ответы).</td><td><code>combo/DeepSeek</code></td></tr><tr><td><code>CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC</code></td><td>Отключает необязательный трафик (телеметрия, лишние запросы).</td><td><code>1</code></td></tr><tr><td><code>CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY</code></td><td>Разрешает список моделей из <code>/v1/models</code> в <code>/model</code>.</td><td><code>1</code></td></tr></tbody></table></div>
+<p>Переменные читаются <strong>один раз при запуске</strong>. Изменили — перезапустите <code>claude</code>.</p>
+<hr>
+<h3 id="3-разбор-вашего-cc-txt">3. Разбор вашего <code>cc.txt</code> <a class="h-anchor" href="#3-разбор-вашего-cc-txt" aria-label="Ссылка на раздел">#</a></h3>
+<p>Файл <code>cc.txt</code> — это PowerShell-обёртка запуска. По строкам:</p>
+<pre><code class="language-powershell">Set-Location &quot;C:\Users\SMDWORKS\Downloads\Sasha_II_TUT&quot;
+
+$env:ANTHROPIC_BASE_URL = &quot;http://localhost:20128&quot;</code></pre>
+<p>Указываем Claude Code, что API находится на локальном порту 20128 — там слушает OmniRoute.</p>
+<pre><code class="language-powershell">Remove-Item Env:ANTHROPIC_API_KEY -ErrorAction SilentlyContinue
+Remove-Item Env:CLAUDE_CODE_OAUTH_TOKEN -ErrorAction SilentlyContinue</code></pre>
+<p>Убираем конкурирующие способы авторизации. Если оставить старый <code>ANTHROPIC_API_KEY</code> или OAuth-токен, Claude Code может пойти не туда и получить 401.</p>
+<pre><code class="language-powershell">$env:ANTHROPIC_AUTH_TOKEN = &#x27;sk-...&#x27;</code></pre>
+<p>Ключ доступа к OmniRoute. <strong>В реальном файле он лежит открытым текстом</strong> — см. раздел 6.</p>
+<pre><code class="language-powershell">$env:ANTHROPIC_MODEL = &quot;combo/DeepSeek&quot;
+$env:ANTHROPIC_SMALL_FAST_MODEL = &quot;combo/DeepSeek&quot;</code></pre>
+<p>Фиксируем модель: <code>combo/DeepSeek</code> — это имя модели/комбо внутри OmniRoute, а не у Anthropic. Если в панели OmniRoute такой модели нет, будет ошибка «model not found». <code>combo/...</code> обычно означает автоматическую комбинацию провайдеров.</p>
+<pre><code class="language-powershell">$env:CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = &quot;1&quot;</code></pre>
+<p>Отключаем необязательные сетевые запросы — меньше шума и расходов.</p>
+<pre><code class="language-powershell">$env:CLAUDE_CODE_AUTO_MODE_SERVER = &quot;0&quot;</code></pre>
+<p>Отключаем серверный режим авто-режима (связан с разрешениями/телеметрией).</p>
+<pre><code class="language-powershell">claude --model &quot;combo/DeepSeek&quot; --permission-mode auto</code></pre>
+<p>Запуск Claude Code с явной моделью и режимом разрешений <code>auto</code>.</p>
+<blockquote>
+<p>⚠️ <strong>Про <code>--permission-mode auto</code>:</strong> этот режим снижает количество подтверждений. Для первых запусков безопаснее <code>--permission-mode default</code>, чтобы видеть, какие команды агент собирается выполнить. Переходите на <code>auto</code>, только когда освоитесь и работаете в отдельной папке.</p>
+</blockquote>
+<hr>
+<h3 id="4-как-проверить-связку-по-шагам">4. Как проверить связку по шагам <a class="h-anchor" href="#4-как-проверить-связку-по-шагам" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="шаг-1-запущен-ли-omniroute">Шаг 1. Запущен ли OmniRoute <a class="h-anchor" href="#шаг-1-запущен-ли-omniroute" aria-label="Ссылка на раздел">#</a></h4>
+<p>Обычно:</p>
+<pre><code class="language-powershell">omniroute</code></pre>
+<p>или через Docker:</p>
+<pre><code class="language-powershell">docker run -d --name omniroute -p 20128:20128 diegosouzapw/omniroute:latest</code></pre>
+<p>Панель управления: <code>http://localhost:20128</code>.</p>
+<h4 id="шаг-2-есть-ли-ключ">Шаг 2. Есть ли ключ <a class="h-anchor" href="#шаг-2-есть-ли-ключ" aria-label="Ссылка на раздел">#</a></h4>
+<p>В панели: <strong>Dashboard → API-ключи</strong> (<code>http://localhost:20128/dashboard/api-manager</code>). Создайте ключ и сохраните — он показывается один раз. Это ключ <strong>для клиентов</strong> (Claude Code), а не ключ вышестоящего провайдера.</p>
+<h4 id="шаг-3-отвечает-ли-api">Шаг 3. Отвечает ли API <a class="h-anchor" href="#шаг-3-отвечает-ли-api" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-powershell">curl.exe -H &quot;Authorization: Bearer sk-ВАШ_КЛЮЧ&quot; http://localhost:20128/v1/models</code></pre>
+<p>Должен вернуться список моделей. Если здесь ошибка — проблема в OmniRoute, а не в Claude Code.</p>
+<h4 id="шаг-4-запуск-claude-code">Шаг 4. Запуск Claude Code <a class="h-anchor" href="#шаг-4-запуск-claude-code" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-powershell">.\cc.txt</code></pre>
+<p>или вручную:</p>
+<pre><code class="language-powershell">$env:ANTHROPIC_BASE_URL=&quot;http://localhost:20128&quot;
+$env:ANTHROPIC_AUTH_TOKEN=&quot;sk-ВАШ_КЛЮЧ&quot;
+$env:ANTHROPIC_MODEL=&quot;combo/DeepSeek&quot;
+claude</code></pre>
+<p>Проверка внутри Claude Code:</p>
+<pre><code>/status</code></pre>
+<p>Должно быть видно, что используется нестандартный base URL и выбранная модель.</p>
+<hr>
+<h3 id="5-частые-проблемы">5. Частые проблемы <a class="h-anchor" href="#5-частые-проблемы" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Симптом</th><th>Вероятная причина</th><th>Что делать</th></tr></thead><tbody><tr><td><code>Connection refused</code> / <code>ECONNREFUSED</code></td><td>OmniRoute не запущен или слушает другой порт</td><td>Запустить <code>omniroute</code>, проверить <code>http://localhost:20128</code></td></tr><tr><td><code>401 Unauthorized</code></td><td>Неверный ключ, старый <code>ANTHROPIC_API_KEY</code>, лишние кавычки</td><td>Пересоздать ключ, удалить конкурирующие переменные, перезапустить терминал</td></tr><tr><td><code>404 Not Found</code></td><td>В <code>ANTHROPIC_BASE_URL</code> добавлен <code>/v1</code> или <code>/v1/messages</code></td><td>Оставить только <code>http://localhost:20128</code></td></tr><tr><td><code>model not found</code></td><td>В OmniRoute нет модели <code>combo/DeepSeek</code></td><td>Открыть панель → проверить точное имя модели или включить discovery</td></tr><tr><td>Ответы пустые/обрываются</td><td>Исчерпана квота провайдера, сработал fallback</td><td>Посмотреть логи OmniRoute, сменить модель/провайдера</td></tr><tr><td><code>429 Too Many Requests</code></td><td>Лимит бесплатного провайдера</td><td>Подождать, включить auto-fallback, подключить другого провайдера</td></tr><tr><td>Claude Code «забывает» настройки</td><td>Переменные не попали в текущую сессию</td><td>Запускать из одного скрипта, перезапустить терминал</td></tr><tr><td>TLS/SSL ошибки</td><td>Корпоративный прокси или MITM</td><td>Отключить перехват для localhost, проверить настройки прокси</td></tr></tbody></table></div>
+<p>Больше диагностики — в <code>docs-ru/docs/guides/TROUBLESHOOTING.md</code> (72 КБ, машинный перевод).</p>
+<hr>
+<h3 id="6-безопасность">6. Безопасность <a class="h-anchor" href="#6-безопасность" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li><strong>В <code>cc.txt</code> лежит боевой токен открытым текстом.</strong> Любой, кто получил файл, получил доступ к вашему шлюзу.</li>
+<li><strong>Не коммитьте <code>cc.txt</code> в git.</strong> Добавьте его в <code>.gitignore</code> или держите вне репозитория.</li>
+<li><strong>Ротируйте ключ</strong>, если файл кому-то отправляли (в мессенджер, в архив, в чат ИИ).</li>
+<li><strong>Лучше хранить ключ в переменной пользователя</strong> или в менеджере секретов, а не в скрипте:</li>
+</ol>
+<pre><code class="language-powershell">   [Environment]::SetEnvironmentVariable(&quot;ANTHROPIC_AUTH_TOKEN&quot;,&quot;sk-...&quot;,&quot;User&quot;)</code></pre>
+<ol>
+<li><strong>Проверяйте, куда ведёт <code>ANTHROPIC_BASE_URL</code>.</strong> Если это чужой сервер, вы отправляете ему весь код и контекст.</li>
+<li><strong><code>--permission-mode auto</code></strong> даёт агенту больше свободы. Работайте в отдельной папке и с бэкапами.</li>
+</ol>
+<hr>
+<h3 id="7-где-читать-дальше-в-этой-папке">7. Где читать дальше (в этой папке) <a class="h-anchor" href="#7-где-читать-дальше-в-этой-папке" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Файл</th><th>Что внутри</th></tr></thead><tbody><tr><td><code>docs-ru/docs/getting-started/QUICK-START.md</code></td><td>Установка OmniRoute за 3 минуты</td></tr><tr><td><code>docs-ru/docs/guides/CLAUDE-CODE-CONFIGURATION.md</code></td><td>Полная официальная инструкция по связке с Claude Code</td></tr><tr><td><code>docs-ru/docs/guides/USER_GUIDE.md</code></td><td>Пользовательское руководство (82 КБ)</td></tr><tr><td><code>docs-ru/docs/guides/CLI-INTEGRATIONS.md</code></td><td>Интеграции с CLI-инструментами</td></tr><tr><td><code>docs-ru/docs/guides/COST_TRACKING.md</code></td><td>Учёт токенов и расходов</td></tr><tr><td><code>docs-ru/docs/guides/TROUBLESHOOTING.md</code></td><td>Диагностика проблем</td></tr><tr><td><code>docs-ru/docs/getting-started/FREE-TIERS-GUIDE.md</code></td><td>Бесплатные тарифы и ограничения</td></tr><tr><td><code>docs-ru/docs/getting-started/AUTO-COMBO-GUIDE.md</code></td><td>Как работают автоматические комбинации моделей</td></tr></tbody></table></div>
+<blockquote>
+<p>Переводы OmniRoute машинные: смысл передан, но формулировки местами корявые. Если что-то непонятно — сверяйтесь с английским оригиналом в репозитории <code>cheaper-inference/OmniRoute</code> (<code>docs/guides/...</code>).</p>
+</blockquote>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

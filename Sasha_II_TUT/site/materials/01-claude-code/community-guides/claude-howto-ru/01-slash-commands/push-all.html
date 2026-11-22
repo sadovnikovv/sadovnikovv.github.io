@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Commit and Push Everything</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/01-slash-commands/index.html">01-slash-commands</a></nav>
+<hr>
+<p>description: Stage all changes, create commit, and push to remote (use with caution)
+allowed-tools: Bash(git add:<em>), Bash(git status:</em>), Bash(git commit:<em>), Bash(git push:</em>), Bash(git diff:<em>), Bash(git log:</em>), Bash(git pull:*)</p>
+<hr>
+<h1 id="commit-and-push-everything">Commit and Push Everything <a class="h-anchor" href="#commit-and-push-everything" aria-label="Ссылка на раздел">#</a></h1>
+<p>⚠️ <strong>CAUTION</strong>: Stage ALL changes, commit, and push to remote. Use only when confident all changes belong together.</p>
+<h3 id="workflow">Workflow <a class="h-anchor" href="#workflow" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="1-analyze-changes">1. Analyze Changes <a class="h-anchor" href="#1-analyze-changes" aria-label="Ссылка на раздел">#</a></h4>
+<p>Run in parallel:</p>
+<ul>
+<li><code>git status</code> - Show modified/added/deleted/untracked files</li>
+<li><code>git diff --stat</code> - Show change statistics</li>
+<li><code>git log -1 --oneline</code> - Show recent commit for message style</li>
+</ul>
+<h4 id="2-safety-checks">2. Safety Checks <a class="h-anchor" href="#2-safety-checks" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>❌ STOP and WARN if detected:</strong></p>
+<ul>
+<li>Secrets: <code>.env*</code>, <code>*.key</code>, <code>*.pem</code>, <code>credentials.json</code>, <code>secrets.yaml</code>, <code>id_rsa</code>, <code>*.p12</code>, <code>*.pfx</code>, <code>*.cer</code></li>
+<li>API Keys: Any <code>*_API_KEY</code>, <code>*_SECRET</code>, <code>*_TOKEN</code> variables with real values (not placeholders like <code>your-api-key</code>, <code>xxx</code>, <code>placeholder</code>)</li>
+<li>Large files: <code>&gt;10MB</code> without Git LFS</li>
+<li>Build artifacts: <code>node_modules/</code>, <code>dist/</code>, <code>build/</code>, <code>__pycache__/</code>, <code>*.pyc</code>, <code>.venv/</code></li>
+<li>Temp files: <code>.DS_Store</code>, <code>thumbs.db</code>, <code>*.swp</code>, <code>*.tmp</code></li>
+</ul>
+<p><strong>API Key Validation:</strong>
+Check modified files for patterns like:</p>
+<pre><code class="language-bash">OPENAI_API_KEY=sk-proj-xxxxx  # ❌ Real key detected!
+AWS_SECRET_KEY=AKIA...         # ❌ Real key detected!
+STRIPE_API_KEY=sk_live_...    # ❌ Real key detected!
+
+# ✅ Acceptable placeholders:
+API_KEY=your-api-key-here
+SECRET_KEY=placeholder
+TOKEN=xxx
+API_KEY=&lt;your-key&gt;
+SECRET=${YOUR_SECRET}</code></pre>
+<p><strong>✅ Verify:</strong></p>
+<ul>
+<li><code>.gitignore</code> properly configured</li>
+<li>No merge conflicts</li>
+<li>Correct branch (warn if main/master)</li>
+<li>API keys are placeholders only</li>
+</ul>
+<h4 id="3-request-confirmation">3. Request Confirmation <a class="h-anchor" href="#3-request-confirmation" aria-label="Ссылка на раздел">#</a></h4>
+<p>Present summary:</p>
+<pre><code>📊 Changes Summary:
+- X files modified, Y added, Z deleted
+- Total: +AAA insertions, -BBB deletions
+
+🔒 Safety: ✅ No secrets | ✅ No large files | ⚠️ [warnings]
+🌿 Branch: [name] → origin/[name]
+
+I will: git add . → commit → push
+
+Type &#x27;yes&#x27; to proceed or &#x27;no&#x27; to cancel.</code></pre>
+<p><strong>WAIT for explicit &quot;yes&quot; before proceeding.</strong></p>
+<h4 id="4-execute-after-confirmation">4. Execute (After Confirmation) <a class="h-anchor" href="#4-execute-after-confirmation" aria-label="Ссылка на раздел">#</a></h4>
+<p>Run sequentially:</p>
+<pre><code class="language-bash">git add .
+git status  # Verify staging</code></pre>
+<h4 id="5-generate-commit-message">5. Generate Commit Message <a class="h-anchor" href="#5-generate-commit-message" aria-label="Ссылка на раздел">#</a></h4>
+<p>Analyze changes and create conventional commit:</p>
+<p><strong>Format:</strong></p>
+<pre><code>[type]: Brief summary (max 72 characters)
+
+- Key change 1
+- Key change 2
+- Key change 3</code></pre>
+<p><strong>Types:</strong> <code>feat</code>, <code>fix</code>, <code>docs</code>, <code>style</code>, <code>refactor</code>, <code>test</code>, <code>chore</code>, <code>perf</code>, <code>build</code>, <code>ci</code></p>
+<p><strong>Example:</strong></p>
+<pre><code>docs: Update concept README files with comprehensive documentation
+
+- Add architecture diagrams and tables
+- Include practical examples
+- Expand best practices sections</code></pre>
+<h4 id="6-commit-and-push">6. Commit and Push <a class="h-anchor" href="#6-commit-and-push" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">git commit -m &quot;$(cat &lt;&lt;&#x27;EOF&#x27;
+[Generated commit message]
+EOF
+)&quot;
+git push  # If fails: git pull --rebase &amp;&amp; git push
+git log -1 --oneline --decorate  # Verify</code></pre>
+<h4 id="7-confirm-success">7. Confirm Success <a class="h-anchor" href="#7-confirm-success" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>✅ Successfully pushed to remote!
+
+Commit: [hash] [message]
+Branch: [branch] → origin/[branch]
+Files changed: X (+insertions, -deletions)</code></pre>
+<h3 id="error-handling">Error Handling <a class="h-anchor" href="#error-handling" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong>git add fails</strong>: Check permissions, locked files, verify repo initialized</li>
+<li><strong>git commit fails</strong>: Fix pre-commit hooks, check git config (user.name/email)</li>
+<li><strong>git push fails</strong>:</li>
+<li>Non-fast-forward: <code>git pull --rebase &amp;&amp; git push</code></li>
+<li>No remote branch: <code>git push -u origin [branch]</code></li>
+<li>Protected branch: Use PR workflow instead</li>
+</ul>
+<h3 id="when-to-use">When to Use <a class="h-anchor" href="#when-to-use" aria-label="Ссылка на раздел">#</a></h3>
+<p>✅ <strong>Good:</strong></p>
+<ul>
+<li>Multi-file documentation updates</li>
+<li>Feature with tests and docs</li>
+<li>Bug fixes across files</li>
+<li>Project-wide formatting/refactoring</li>
+<li>Configuration changes</li>
+</ul>
+<p>❌ <strong>Avoid:</strong></p>
+<ul>
+<li>Uncertain what&#x27;s being committed</li>
+<li>Contains secrets/sensitive data</li>
+<li>Protected branches without review</li>
+<li>Merge conflicts present</li>
+<li>Want granular commit history</li>
+<li>Pre-commit hooks failing</li>
+</ul>
+<h3 id="alternatives">Alternatives <a class="h-anchor" href="#alternatives" aria-label="Ссылка на раздел">#</a></h3>
+<p>If user wants control, suggest:</p>
+<ol>
+<li><strong>Selective staging</strong>: Review/stage specific files</li>
+<li><strong>Interactive staging</strong>: <code>git add -p</code> for patch selection</li>
+<li><strong>PR workflow</strong>: Create branch → push → PR (use <code>/pr</code> command)</li>
+</ol>
+<p><strong>⚠️ Remember</strong>: Always review changes before pushing. When in doubt, use individual git commands for more control.</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

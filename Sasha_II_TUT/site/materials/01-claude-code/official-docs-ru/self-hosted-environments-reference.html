@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Справочник самостоятельно размещаемых окружений</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Справочник самостоятельно размещаемых окружений <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Полный справочник по самостоятельно размещаемому runner и orchestrator: флаги CLI, переменные окружения и метрики Prometheus.</p>
+</blockquote>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Самостоятельно размещаемые окружения находятся в публичной бета-версии на планах Team и Enterprise; <a href="https://code.claude.com/docs/ru/cloud-environments.md#organization-shared-environments">Owner</a> включает их, активируя <strong>Allow self-hosted environments</strong> на <a href="https://claude.ai/admin-settings/cloud-environments">странице администратора <strong>Cloud environments</strong></a>. Эта страница является справочником по флагам и метрикам; см. <a href="https://code.claude.com/docs/ru/self-hosted-environments-quickstart.md">quickstart</a> для настройки и <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md">Deploy to production</a> для рецептов флота.</p>
+</blockquote>
+<p>Эта страница является справочником для двух процессов, которые вы запускаете в <a href="https://code.claude.com/docs/ru/self-hosted-environments">самостоятельно размещаемом окружении</a>: runner, который выполняет Claude Code <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">cloud sessions</a> на ваших хостах, и опциональный orchestrator автомасштабирования, который запускает runners по мере поступления sessions в очередь. Каждый имеет свою таблицу флагов. Оба работают на хостах Linux или macOS, для которых значения по умолчанию, такие как <code>/workspace</code> и <code>~/.claude</code>, предполагаются. Запустите <code>claude self-hosted-runner --help</code> для авторитетного списка на вашей установленной версии.</p>
+<p>Серии метрик и несколько полей API по-прежнему используют <code>pool</code> для того, что эти страницы называют окружением; оба термина обозначают одно и то же. ID окружения — это поле <code>pool_id</code> с формой <code>ccpool_...</code>: везде, где эти страницы показывают идентификатор <code>pool</code>, он обозначает окружение. Флаги CLI и переменные окружения пишут его как <code>environment</code>, например <code>--environment-secret-file</code>; устаревшие написания <code>pool</code> по-прежнему работают, как описывает строка <a href="#runner-cli-flags"><code>--environment-secret-file</code></a>.</p>
+<h3 id="флаги-cli-runner">Флаги CLI Runner <a class="h-anchor" href="#флаги-cli-runner" aria-label="Ссылка на раздел">#</a></h3>
+<p>Большинство флагов имеют соответствующую переменную окружения. Когда установлены оба, флаг имеет приоритет. Флаги длительности принимают минуты или секунды в CLI, но связанная переменная окружения всегда в миллисекундах, обозначаемая суффиксом <code>_MS</code>, и столбец Default показывает единицу флага: <code>--exit-if-unused-min 10</code> эквивалентно <code>SELF_HOSTED_RUNNER_IDLE_SHUTDOWN_MS=600000</code>, а значение Helm вроде <code>SELF_HOSTED_RUNNER_STARTUP_TIMEOUT_MS: &quot;15&quot;</code> означает 15 миллисекунд, а не 15-минутное значение по умолчанию.</p>
+<p>| Флаг | Переменная окружения | По умолчанию | Описание |
+| :- | :- | :- | :- |
+| <code>--api-url &lt;url&gt;</code> | none | <code>https://api.anthropic.com</code> | URL базы API. Переопределяйте только для тестирования. |
+| <code>--base-dir &lt;path&gt;</code> | <code>SELF_HOSTED_RUNNER_BASE_DIR</code> | <code>/workspace</code>; на Windows отсутствует | Каталог для извлечённых репозиториев и рабочих каталогов для каждого сеанса. Runner должен иметь доступ на запись к этому пути или его родительскому каталогу. Runner создает каталог при запуске и выходит с <code>cannot create or write to base directory</code>, когда не может создать или записать в него. До v2.1.225 runner создавал каталог при запуске первого сеанса, поэтому непригодный путь приводил к сбою сеансов, а не запуска. На Windows, который не является поддерживаемым хостом runner, нет значения по умолчанию: runner выходит при запуске, если вы не передадите флаг и не установите переменную. Используйте одно и то же значение на каждом runner в среде. См. <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#keep-the-base-directory-and-capacity-identical-across-runners">Держите базовый каталог и емкость идентичными на всех runners</a>. |
+| <code>--capacity &lt;n&gt;</code> | none | <code>1</code> | Максимальное количество одновременных сеансов, которые обрабатывает этот runner. Все сеансы принадлежат одному заблокированному <a href="https://code.claude.com/docs/ru/self-hosted-environments#key-concepts">owner</a>. Используйте одно и то же значение на каждом runner в среде; см. <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#keep-the-base-directory-and-capacity-identical-across-runners">Держите базовый каталог и емкость идентичными на всех runners</a>. |
+| <code>--client-label &lt;label&gt;</code> | <code>SELF_HOSTED_RUNNER_CLIENT_LABEL</code> | имя хоста хоста | Метка, которую runner отправляет при регистрации. Runner также сообщает её как метку <code>client_label</code> <a href="#prometheus-metrics"><code>claude_code_self_hosted_runner_info</code></a>. Требует Claude Code v2.1.248 или позже. |
+| <code>--configure-git</code> | <code>SELF_HOSTED_RUNNER_CONFIGURE_GIT=1</code> | off | При запуске запишите глобальную идентификацию git, включите подписание коммитов Anthropic, включите переговоры git push и установите hooks коммитов, которые добавляют трейлер <code>Co-authored-by:</code>. Переговоры push требуют Claude Code v2.1.257 или позже. См. <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#configure-git">Configure git</a>. |
+| <code>--confine-repo-settings &lt;mode&gt;</code> | <code>SELF_HOSTED_RUNNER_CONFINE_REPO_SETTINGS</code> | <code>warn</code> | Устанавливает режим защиты, которая помечает сеанс, когда параметры репозитория, зафиксированные в коммите, пытаются предоставить доступ на запись или чтение вне собственного рабочего пространства этого сеанса, установить переменные окружения или переопределить позицию sandbox или hooks оператора, например <code>sandbox.enabled: false</code> или <code>disableAllHooks</code>. По умолчанию <code>warn</code> регистрирует нарушение и все еще запускает сеанс, <code>enforce</code> отказывает в сеансе, а <code>off</code> отключает сканирование. См. <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#harden-your-deployment">Harden your deployment</a>. |
+| <code>--debug-token-dir &lt;path&gt;</code> | <code>SELF_HOSTED_RUNNER_DEBUG_TOKEN_DIR</code> | unset | Запишите живые токены на диск для проверки. Только для отладки; не используйте в production. |
+| <code>--defer-shutdown-max-min &lt;n&gt;</code> | <code>SELF_HOSTED_RUNNER_DEFER_SHUTDOWN_MAX_MS</code> | <code>0</code> | При первом <code>SIGTERM</code> или <code>SIGINT</code> продолжайте обслуживать уже подключенные сеансы вместо их осушения, затем отпустите все еще подключенное через N минут и выйдите. Повысьте timeout остановки вашего хоста перед установкой этого. См. <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#defer-the-drain-past-the-first-signal">Defer the drain past the first signal</a>. <code>0</code> отключает. Требует Claude Code v2.1.238 или позже. |
+| <code>--drain-grace-sec &lt;n&gt;</code> | <code>SELF_HOSTED_RUNNER_DRAIN_GRACE_MS</code> | <code>0</code> | До тех пор, пока runner не получит сигнал завершения или не достигнет времени выхода на пенсию, контролирует, когда runner выходит после завершения активных сеансов: <code>0</code> выходит немедленно без опроса на дополнительные, а положительное значение держит runner живым и повторно опрашивает очередь заблокированного owner в течение этого количества секунд, за счет изоляции контейнера для каждого сеанса, описанной в <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#harden-your-deployment">разделе hardening</a>. После первого сигнала, который вы отложили с помощью <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy#defer-the-drain-past-the-first-signal"><code>--defer-shutdown-max-min</code></a>, runner выходит, как только он не содержит сеансов, независимо от того, что вы установили здесь. |
+| <code>--drain-marker-file &lt;path&gt;</code> | <code>SELF_HOSTED_RUNNER_DRAIN_MARKER_FILE</code> | unset | Файл маркера, который ваш хост записывает для объявления корректного осушения перед отправкой <code>SIGTERM</code>. Когда файл существует в начале осушения, runner сообщает о своем выходе в Anthropic как об осушении хоста, а не как о простом сигнале завершения. Само осушение, включая удержание <code>--drain-wait-sec</code>, работает так же, как без флага. Назовите путь на локальной файловой системе, в которую сеансы не могут писать. Требует Claude Code v2.1.271 или позже. |
+| <code>--drain-wait-sec &lt;n&gt;</code> | <code>SELF_HOSTED_RUNNER_DRAIN_WAIT_MS</code> | <code>0</code> | После начала осушения, которое происходит на <code>SIGTERM</code>, если вы не установили <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy#defer-the-drain-past-the-first-signal"><code>--defer-shutdown-max-min</code></a>, ждите до N секунд для завершения текущего хода каждого сеанса и фоновых задач перед завершением дочернего процесса. Во время этого ожидания runner считает фоновую задачу, которая только что завершилась, все еще работающей до тех пор, пока не начнется следующий ход, который читает её результат, в течение максимум окна <a href="#environment-variable-only-settings"><code>SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS</code></a>. <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#let-running-turns-finish-before-a-restart">Также повысьте таймаут остановки</a>. |
+| <code>--environment-secret-file &lt;path&gt;</code> | <code>SELF_HOSTED_RUNNER_ENVIRONMENT_SECRET</code> | required | Путь к файлу, содержащему секрет среды, или, для runner, порожденных <a href="https://code.claude.com/docs/ru/self-hosted-environments-configuration.md#on-demand-runners">orchestrator</a>, одноразовый JWT работного заказа. <code>SELF_HOSTED_RUNNER_ENVIRONMENT_SECRET</code> несет значение секрета напрямую, а не путь к файлу. Старый флаг <code>--pool-secret-file</code> и переменная <code>SELF_HOSTED_RUNNER_POOL_SECRET</code> по-прежнему работают и выводят уведомление об устаревании в stderr; сборки runner программы предварительного просмотра старше 2.1.216 распознают только эти старые имена. |
+| <code>--exec-path &lt;path&gt;</code> | <code>SELF_HOSTED_RUNNER_EXEC_PATH</code> | собственный бинарный файл | Бинарный файл или скрипт-обертка для порождения для каждого сеанса. См. <a href="https://code.claude.com/docs/ru/self-hosted-environments-configuration.md#wrapper-scripts">Wrapper scripts</a>. |
+| <code>--exit-if-unused-min &lt;n&gt;</code> | <code>SELF_HOSTED_RUNNER_IDLE_SHUTDOWN_MS</code> | <code>0</code> | Выйдите после N минут опроса, если работа так ни разу и не была назначена, для уменьшения масштаба при автомасштабировании. <code>0</code> отключает. |
+| <code>--git-host-rewrite &lt;from&gt;=&lt;to&gt;</code> | none | unset | Переписать URL источников <code>https://&lt;from&gt;/...</code> на <code>https://&lt;to&gt;/...</code> перед клонированием для разделенного DNS горизонта. Повторяемо; только флаг. |
+| <code>--git-ssh-rewrite &lt;host&gt;</code> | none | unset | Переписать URL источников <code>https://&lt;host&gt;/...</code> на <code>git@&lt;host&gt;:...</code> перед клонированием для хостов git только с SSH. Повторяемо; только флаг. |
+| <code>--health-port &lt;port&gt;</code> | <code>SELF_HOSTED_RUNNER_HEALTH_PORT</code> | <code>8080</code> | Порт для слушателя <code>/healthz</code> и <code>/metrics</code>. Установите <code>0</code> для отключения. |
+| <code>--hold-idle-file &lt;path&gt;</code> | <code>SELF_HOSTED_RUNNER_HOLD_IDLE_FILE</code> | unset | Файл, который ваш хост постоянно изменяет, чтобы удерживать простаивающую сессию на runner. См. <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#keep-an-idle-session-while-its-processes-run">Keep an idle session while its processes run</a>. Требует Claude Code v2.1.311 или новее. |
+| <code>--hooks-dir &lt;path&gt;</code> | <code>SELF_HOSTED_RUNNER_HOOKS_DIR</code> | unset | Каталог скриптов hooks жизненного цикла. См. <a href="https://code.claude.com/docs/ru/self-hosted-environments-configuration.md#lifecycle-hooks">Lifecycle hooks</a>. |
+| <code>--host-config-snapshot &lt;mode&gt;</code> | <code>SELF_HOSTED_RUNNER_HOST_CONFIG_SNAPSHOT</code> | <code>disk</code> | Где runner хранит снимок при запуске <a href="#environment-variable-only-settings">каталога конфигурации хоста</a>, который он засевает каждый сеанс. <code>disk</code> копирует снимок в каталог, принадлежащий runner, под <code>--base-dir</code> и при каждом запуске сеанса проверяет каждый файл по дайджесту в памяти. Если файл в копии был изменен, сеанс не удается и runner отказывает в сеансах, пока вы не перезагрузите его. <code>memory</code> держит весь снимок на куче, ограниченный 64 МиБ; сверх лимита сеансы запускаются без конфигурации хоста и показывают уведомление об этом. Когда runner не может записать снимок на диск, он регистрирует сбой и использует <code>memory</code> для этого запуска. Требует Claude Code v2.1.271 или позже. |
+| <code>--kill-session-after-min &lt;n&gt;</code> | <code>SELF_HOSTED_RUNNER_MAX_LIFETIME_MS</code> | <code>0</code> | Ограничьте сеанс N минутами настенного времени как предел безопасности для зависших сеансов. На v2.1.260 или позже runner отпускает сеанс, который достигает лимита, чтобы он мог возобновиться при следующем сообщении пользователя, и завершает его только если он все еще на runner, когда окончится окно благодати <a href="#environment-variable-only-settings"><code>SELF_HOSTED_RUNNER_MAX_LIFETIME_GRACE_MS</code></a>. До v2.1.260 runner завершал сеанс на лимите. См. <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#some-sessions-don%E2%80%99t-count-as-idle">Some sessions don&#x27;t count as idle</a> для деталей и как выбрать значение. <code>0</code> отключает. |
+| <code>--lock-to-account &lt;id&gt;</code> | <code>SELF_HOSTED_RUNNER_LOCK_TO_ACCOUNT</code> | unset | Предварительно заблокируйте runner на конкретный аккаунт при запуске вместо блокировки при первом сеансе. Принимает адрес электронной почты или ID <code>user_...</code> в организации среды. Предварительно заблокированный runner никогда не подхватывает сеансы канала Claude Tag, у которых нет аккаунта. |
+| <code>--log-file &lt;path&gt;</code> | <code>SELF_HOSTED_RUNNER_LOG_FILE</code> | unset | Зеркалируйте логи runner в файл в дополнение к stdout и stderr, созданный с разрешениями <code>0600</code>. Требуется для <code>self-hosted-runner doctor</code> для локального отслеживания логов. |
+| <code>--log-level &lt;level&gt;</code> | none | <code>info</code> | <code>info</code> или <code>debug</code> |
+| <code>--max-hold-min &lt;n&gt;</code> | <code>SELF_HOSTED_RUNNER_MAX_HOLD_MS</code> | <code>1440</code> | При использовании <code>--hold-idle-file</code> всё равно отпускает удерживаемую сессию через N минут после того, как она стала простаивать. Значение, меньшее или равное <code>--release-idle-session-min</code>, ничего не удерживает. <code>0</code> отключает удержание. Требует Claude Code v2.1.311 или новее. |
+| <code>--post-session-hook-timeout-sec &lt;n&gt;</code> | <code>SELF_HOSTED_RUNNER_POST_SESSION_HOOK_TIMEOUT_MS</code> | <code>60</code> | Бюджет для <a href="https://code.claude.com/docs/ru/self-hosted-environments-configuration#post-session"><code>post-session</code> hook</a> при завершении каждого сеанса, включая завершение runner |
+| <code>--proxy-authorization-command &lt;command&gt;</code> | <code>SELF_HOSTED_RUNNER_PROXY_AUTHORIZATION_COMMAND</code> | unset | Команда shell, которую runner запускает для каждого подключения к вашему прокси выхода, используя его обрезанный stdout как значение заголовка <code>Proxy-Authorization</code>. Требует <code>HTTPS_PROXY</code> или <code>HTTP_PROXY</code>, и не может быть объединен с <code>--proxy-authorization-file</code>. См. <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#authenticate-to-an-egress-proxy">Authenticate to an egress proxy</a>. Требует Claude Code v2.1.238 или позже. |
+| <code>--proxy-authorization-file &lt;path&gt;</code> | <code>SELF_HOSTED_RUNNER_PROXY_AUTHORIZATION_FILE</code> | unset | Файл, который runner читает для каждого подключения к вашему прокси выхода, используя его обрезанное содержимое как значение заголовка <code>Proxy-Authorization</code>. Используйте этот флаг для токена, который другой процесс ротирует на месте. Несет те же требования, что и <code>--proxy-authorization-command</code>, и не может быть объединен с ним. См. <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#authenticate-to-an-egress-proxy">Authenticate to an egress proxy</a>. Требует Claude Code v2.1.238 или позже. |
+| <code>--push-outcome-on-release</code> | <code>SELF_HOSTED_RUNNER_PUSH_OUTCOME_ON_RELEASE</code> | off | При завершении сессии по инициативе runner, например при осушении или отпуске при простое, runner отправляет основные ветки сессии с новыми коммитами в <code>origin</code> перед удалением рабочего пространства. Выполняется по мере возможности; добавляет 30 секунд к бюджету завершения. Для возобновления с них требуется git 2.29 или новее. Ограничьте круг тех, кто может выполнять push в refs <code>claude/*</code>; см. <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#resumed-sessions-lose-unpushed-work">Возобновлённые сессии теряют неотправленную работу</a>. Репозитории хука <code>checkout</code> не отправляются; делайте их снимки из <a href="https://code.claude.com/docs/ru/self-hosted-environments-configuration#post-session">хука <code>post-session</code></a>. |
+| <code>--release-idle-session-min &lt;n&gt;</code> | <code>SELF_HOSTED_RUNNER_SESSION_IDLE_MS</code> | <code>0</code> | Отпускает слот сессии после N минут неактивности после завершения хода или когда сессия ожидает действия пользователя. <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#some-sessions-don’t-count-as-idle">Некоторые сессии не считаются простаивающими</a>, поэтому используйте вместе с <code>--kill-session-after-min</code>. Завершённая фоновая задача держит сессию занятой в течение максимум окна <a href="#environment-variable-only-settings"><code>SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS</code></a>. Чтобы отложить отпуск, задайте <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy#keep-an-idle-session-while-its-processes-run"><code>--hold-idle-file</code></a>. <code>0</code> отключает. |
+| <code>--remove-session-state [bool]</code> | <code>SELF_HOSTED_RUNNER_REMOVE_SESSION_STATE</code> | off | Удалите каталоги сеанса для каждого сеанса под <code>&lt;base-dir&gt;/_sessions/</code> когда сеанс заканчивается на этом runner, независимо от результата. <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#reuse-a-pre-warmed-checkout">Reuse a pre-warmed checkout</a> описывает, что они содержат и кто может их читать, когда они остаются. Удаление является лучшим усилием: каталоги для каждого сеанса остаются на месте, когда runner убивается или достигает крайнего срока осушения перед запуском очистки. С флагом включенным, логи отладки неудачного или прерванного сеанса не сохраняются на диск. Требует Claude Code v2.1.268 или позже. |
+| <code>--retire-at &lt;epoch-seconds&gt;</code> | <code>SELF_HOSTED_RUNNER_RETIRE_AT</code> | unset | Выведите runner на пенсию в абсолютный временной штамп Unix в секундах для инфраструктуры, которая убивает runner в известное время; <a href="https://code.claude.com/docs/ru/self-hosted-environments#runner-lifecycle">Runner lifecycle</a> описывает последовательность отпуска и как определить размер маржи. Значения до 2001 или после года 5138 отклоняются флагом и игнорируются переменной окружения. |
+| <code>--server-auto-mode-lists &lt;mode&gt;</code> | <code>SELF_HOSTED_RUNNER_SERVER_AUTO_MODE_LISTS</code> | <code>no-allow</code> | Какие из списков правил классификатора <a href="https://code.claude.com/docs/ru/permission-modes.md#eliminate-prompts-with-auto-mode">авторежима</a>, которые управляющий уровень отправляет вместе с сессией, могут применяться к этой сессии: <code>all</code>, <code>no-allow</code> или <code>none</code>. Что применяет каждое значение, см. в разделе <a href="#auto-mode-rule-lists">Списки правил авторежима</a>. Недопустимое значение останавливает runner при запуске. Требуется Claude Code v2.1.295 или новее. |
+| <code>--session-stop-grace-sec &lt;n&gt;</code> | <code>SELF_HOSTED_RUNNER_SESSION_STOP_GRACE_MS</code> | <code>5</code> | Как долго ждать чистого выхода процесса Claude после завершения сеанса перед принудительным завершением. Повысьте значение, если собственные hooks <code>SessionEnd</code> дочернего процесса нуждаются в большем времени. |
+| <code>--startup-timeout-min &lt;n&gt;</code> | <code>SELF_HOSTED_RUNNER_STARTUP_TIMEOUT_MS</code> | <code>15</code> | Сколько ждать дочерний процесс, который не инициализировался, прежде чем освободить слот сессии. С какого момента начинается отсчёт и какие сессии продолжают работать, см. в разделе <a href="#session-startup-timeout">Таймаут запуска сессии</a>. <code>0</code> отключает таймаут. |
+| <code>--trust-workspace [bool]</code> | <code>SELF_HOSTED_RUNNER_TRUST_WORKSPACE</code> | on | Посейте сохраняемое доверие для путей репозитория каждого сеанса, чтобы зафиксированные в репо <code>permissions.allow</code> и <code>additionalDirectories</code> были соблюдены. Установите <code>false</code> для отпуска зафиксированных в репо грантов разрешений и вместо этого настройте правила разрешения в <code>settings.json</code> конфигурации хоста; параметры <code>sandbox.*</code> зафиксированные в репо все еще применяются в любом случае, поэтому <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#harden-your-deployment">защита repo-settings</a> сканирует их независимо от этого флага. |
+| <code>--use-anthropic-git-proxy</code> | <code>CLAUDE_RUNNER_USE_GIT_PROXY=1</code> | off | Клонирует репозитории на github.com через <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#use-the-anthropic-git-proxy">прокси git Anthropic</a> вместо управляемой клиентом аутентификации git. Требует <code>--capacity 1</code> и git 2.32 или новее; в противном случае runner отказывается запускаться. Также требует Claude Code v2.1.267 или новее. Заменяет флаги перезаписи. |</p>
+<p>Большинство флагов длительности имеют максимум, выбранный для сохранения каждого timeout в потолке 32-битного таймера runtime примерно 24,85 дня. Флаги <code>--*-min</code> ограничены 10080 минутами, 7 дней; <code>--drain-grace-sec</code> на 604800 секунд, также 7 дней; и <code>--drain-wait-sec</code> на 86400 секунд, 24 часа. <code>--session-stop-grace-sec</code> и <code>--post-session-hook-timeout-sec</code> не ограничены. Превышение лимита ведет себя по-разному в зависимости от поверхности:</p>
+<ul>
+<li><strong>Флаг</strong>: запуск не удается с ошибкой.</li>
+<li><strong>Переменная окружения</strong>: runner зажимает значение до потолка таймера вместо его отклонения.</li>
+</ul>
+<h4 id="h-2">Таймаут запуска сессии <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если сессия потеряла свой слот во время хода, например <code>/code-review</code>, обновите runner и дочерний бинарный файл до v2.1.309 или новее. С v2.1.299 по v2.1.308 runner освобождал сессию, даже посреди хода, если таймаут запуска истекал без сообщения <code>user</code> или <code>assistant</code>.</p>
+<p>С <code>--startup-timeout-min &lt;n&gt;</code> runner освобождает слот сессии, если её дочерний процесс не инициализировался в течение <code>&lt;n&gt;</code> минут после клонирования. Во время хода, начавшегося до инициализации дочернего процесса, сессия сохраняет свой слот, пока не пройдёт <code>&lt;n&gt;</code> минут без единой строки в <a href="https://code.claude.com/docs/ru/self-hosted-environments-configuration.md#keep-stdin-and-file-descriptor-3-attached">канале активности</a> дочернего процесса. После инициализации дочернего процесса runner сбрасывает этот отсчёт, и освобождением управляет <code>--release-idle-session-min</code>. Чтобы ограничить сессию, дочерний процесс которой жив, но завис, задайте <code>--kill-session-after-min</code>.</p>
+<h4 id="h-3">Списки правил авторежима <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p><code>--server-auto-mode-lists</code> позволяет решить, какие правила классификатора <a href="https://code.claude.com/docs/ru/permission-modes.md#eliminate-prompts-with-auto-mode">авторежима</a>, поступающие извне runner, применяются к сессиям на ваших runner. Управляющий уровень Anthropic может отправлять списки правил вместе с сессией и просить runner применить их. Некоторые записи могут быть правилами, написанными администратором вашей организации. Списки называются <code>environment</code>, <code>soft_deny</code> и <code>allow</code>:</p>
+<ul>
+<li><strong><code>environment</code></strong>: запись может заставить классификатор разрешать как больше, так и меньше.</li>
+<li><strong><code>soft_deny</code></strong>: запись блокирует действие, если только пользователь явно не попросил о нём или не применяется исключение <code>allow</code>.</li>
+<li><strong><code>allow</code></strong>: исключения для записей <code>soft_deny</code>.</li>
+</ul>
+<p>Значение флага определяет, какие списки применяет runner:</p>
+<ul>
+<li><strong><code>no-allow</code></strong>: значение по умолчанию. Применяет <code>environment</code> и <code>soft_deny</code> и не применяет <code>allow</code>. Запись <code>environment</code> по-прежнему может заставить классификатор разрешать больше, поэтому значение по умолчанию не исключает всех ослаблений.</li>
+<li><strong><code>all</code></strong>: применяет все три списка.</li>
+<li><strong><code>none</code></strong>: не применяет ни один из них. Выберите <code>none</code>, чтобы исключить любые ослабления из этих списков. При этом также отбрасываются ограничения <code>soft_deny</code>.</li>
+</ul>
+<p>Никакая настройка runner не заставляет управляющий уровень просить runner применить списки. Если он не просит, сессии не получают ни одного списка, что бы вы ни установили. Чтобы узнать, что произошло, запустите runner с <code>--log-level debug</code>. Тогда для каждой сессии runner записывает в лог строку, содержащую <code>the server asked this runner to apply</code>, или строку, содержащую <code>the server did not ask this runner to apply the auto mode lists it sends</code>.</p>
+<h3 id="флаги-cli-orchestrator">Флаги CLI Orchestrator <a class="h-anchor" href="#флаги-cli-orchestrator" aria-label="Ссылка на раздел">#</a></h3>
+<p>Подкоманда <code>self-hosted-runner orchestrator</code>, которая порождает <a href="https://code.claude.com/docs/ru/self-hosted-environments-configuration.md#on-demand-runners">on-demand runners</a>, принимает <code>--api-url</code>, <code>--environment-secret-file</code>, <code>--hooks-dir</code>, <code>--health-port</code> и <code>--log-level</code> с теми же значениями по умолчанию, что и runner и, где флаг runner имеет один, ту же переменную окружения, за исключением того, что <code>--hooks-dir</code> требуется и должен содержать hook <code>spawn-runner</code>. Он также принимает свои собственные флаги:</p>
+<p>| Флаг | По умолчанию | Описание |
+| :- | :- | :- |
+| <code>--hook-concurrency &lt;n&gt;</code> | <code>4</code> | Максимальное число хуков <code>spawn-runner</code>, работающих параллельно. Также ограничивает количество запросов на порождение, забираемых за один опрос. Orchestrator проверяет наличие новых запросов на порождение только после завершения всех запущенных им хуков, поэтому один медленный хук задерживает следующие хуки этого orchestrator. |
+| <code>--hook-timeout &lt;sec&gt;</code> | <code>60</code> | Завершите дерево процессов hook после этого количества секунд. Timeout плюс его 5-секундная благодать убийства должны оставаться ниже <code>--expected-spawn-seconds</code>; orchestrator обеспечивает это при запуске. |
+| <code>--expected-spawn-seconds &lt;sec&gt;</code> | <code>120</code> | Ожидаемое время p99 с момента получения orchestrator запроса на порождение до регистрации runner, включая любое ожидание свободных ресурсов на вашей платформе. Сервер допускает диапазон от 10 до 3600. Отправляется при каждом опросе как аренда на стороне сервера: если ни один runner не зарегистрируется до её истечения, сессия предлагается повторно с новым ID заказа. Все реплики должны использовать одно и то же значение. |
+| <code>--min-idle &lt;n&gt;</code> | <code>0</code> | Держите по крайней мере N свободных слотов сеанса в режиме ожидания, активно порождая резервные runner. <code>0</code> отключает предварительное прогревание. Объедините с <code>--exit-if-unused-min</code> runner, чтобы избыточные резервные runner восстановили себя. |
+| <code>--shutdown-drain-sec &lt;n&gt;</code> | <code>0</code> | При получении <code>SIGTERM</code> прекратить опрос запросов на порождение и дать запущенным хукам <code>spawn-runner</code> и любому опросу, ещё не получившему ответа, до указанного числа секунд на завершение, после чего остановить всё оставшееся. При <code>0</code> остановка происходит немедленно. Максимум <code>3600</code>, что orchestrator проверяет при запуске. Чтобы выбрать значение, см. <a href="https://code.claude.com/docs/ru/self-hosted-environments-configuration#size-shutdown-drain-sec-and-the-supervisors-stop-timeout-for-the-orchestrator">Подбор <code>--shutdown-drain-sec</code> и таймаута остановки orchestrator</a>. Требуется Claude Code v2.1.299 или новее. |
+| <code>--debug-dir &lt;path&gt;</code> | unset | Запишите рабочий заказ каждого запроса на порождение и stderr hook на диск. Только для отладки; никогда не устанавливайте в production. |</p>
+<h4 id="флаги-scm-connector">Флаги SCM connector <a class="h-anchor" href="#флаги-scm-connector" aria-label="Ссылка на раздел">#</a></h4>
+<p>Соединитель SCM недоступен, поэтому оставьте флаги в этом разделе неустановленными. Если вы установите <code>--scm-connector-host</code>, соединение не открывается, и orchestrator продолжает его переподключать. Runners по-прежнему запускаются по мере поступления сеансов в очередь.</p>
+<p>Соединитель — это постоянное подключение WebSocket от orchestrator к плоскости управления Anthropic. Он разработан для того, чтобы позволить размещенным предсеансовым потокам, таким как средство выбора репозитория и средство разрешения ветви или ссылки, достичь хоста GitHub Enterprise Server, который маршрутизируется только изнутри вашей сети. См. <a href="https://code.claude.com/docs/ru/github-enterprise-server.md#network-requirements">Network requirements</a> на странице GitHub Enterprise Server для получения информации о том, что требуется этим потокам.</p>
+<p>| Флаг | По умолчанию | Описание |
+| :- | :- | :- |
+| <code>--scm-connector-host &lt;host[:port]&gt;</code> | unset | Имя хоста GitHub Enterprise Server для перенаправления запросов. Порт по умолчанию <code>443</code>. |
+| <code>--scm-connector-id &lt;n&gt;</code> | required with <code>--scm-connector-host</code> | Числовой ID подключения GitHub Enterprise Server вашей организации. |
+| <code>--scm-connector-provider &lt;slug&gt;</code> | <code>ghe</code> | Сегмент пути, идентифицирующий поставщика, соответствующий <code>^[a-z0-9-]{1,32}$</code>. |
+| <code>--scm-connector-ca-file &lt;path&gt;</code> | unset | Дополнительный пакет CA в формате PEM для подключений TLS к хосту GitHub Enterprise Server. |
+| <code>--scm-connector-host-rewrite &lt;from&gt;=&lt;to_host:to_port&gt;</code> | unset | Только для сквозного тестирования: перенаправляет подключение TCP, сохраняя заголовок Host и TLS SNI как <code>--scm-connector-host</code>. |</p>
+<p>При каждой попытке подключения orchestrator отправляет свой существующий секрет окружения, и он автоматически переподключается с экспоненциальной задержкой, ограниченной 30 секундами плюс jitter.</p>
+<h3 id="h-4">Параметры только для переменных окружения <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Эти параметры runner читаются только из окружения и охватывают поведение, которое большинство развертываний оставляют по умолчанию:</p>
+<p>| Переменная окружения | По умолчанию | Описание |
+| :- | :- | :- |
+| <code>SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS</code> | <code>30000</code> | Как долго runner считает сеанс занятым после завершения фоновой задачи, пока не начнется следующий ход, который читает результат. Строки <a href="#runner-cli-flags"><code>--drain-wait-sec</code> и <code>--release-idle-session-min</code></a> описывают, где применяется удержание при осушении и отпуске при простое, и <a href="https://code.claude.com/docs/ru/self-hosted-environments#runner-lifecycle">Runner lifecycle</a> описывает, где оно применяется при выходе на пенсию <code>--retire-at</code>. <code>0</code> или непригодное значение возвращается к значению по умолчанию, поэтому удержание не может быть отключено. Требует Claude Code v2.1.228 или позже. |
+| <code>SELF_HOSTED_RUNNER_HOST_CONFIG_DIR</code> | <code>~/.claude</code> | Каталог, захваченный в снимок запуска runner и посеянный в <code>CLAUDE_CONFIG_DIR</code> каждого сеанса; изменения на диске применяются после перезагрузки runner. Установка переменной также перемещает, где runner читает <code>.claude.json</code> для <a href="https://code.claude.com/docs/ru/self-hosted-environments-configuration.md#mcp-servers">MCP seeding</a>, поэтому установка её, включая её собственное значение по умолчанию, перемещает этот поиск; укажите на пустой каталог для полного отключения посева. |
+| <code>SELF_HOSTED_RUNNER_MAX_LIFETIME_GRACE_MS</code> | <code>900000</code> | Как долго runner ждет после того, как сеанс достигает своего лимита <code>--kill-session-after-min</code>, чтобы текущий ход завершился или отпуск завершился, перед завершением сеанса |
+| <code>SELF_HOSTED_RUNNER_POST_TURN_SETTLE_MS</code> | <code>7000</code> | Ограничение на то, как долго runner считает сеанс занятым для осушения <code>--drain-wait-sec</code> после завершения хода, пока процесс сеанса сообщает об окончании хода в Anthropic. <code>0</code> или непригодное значение возвращается к значению по умолчанию, поэтому удержание не может быть отключено. Требует Claude Code v2.1.275 или позже. |
+| <code>SELF_HOSTED_RUNNER_SIGKILL_GRACE_MS</code> | <code>30000</code> | Как долго runner ждет, пока ОС доставит <code>SIGKILL</code> дочернему процессу, застрявшему в неперерываемом I/O, перед выходом самого себя. Минимум <code>--post-session-hook-timeout-sec</code> плюс 15 секунд, и 30 больше, когда установлен <code>--push-outcome-on-release</code>, поэтому эффективный минимум составляет 75 секунд при значениях по умолчанию. |
+| <code>CLAUDE_RUNNER_DISABLE_RENEWAL_WARNING</code> | unset | Когда <code>1</code>, runner не публикует в сессии сообщение <code>The server has refused to renew this session&#x27;s access to the model</code>. После каждого отказа он ждёт следующего запланированного продления, чтобы запросить снова. Требует Claude Code v2.1.319 или позже. |
+| <code>CLAUDE_RUNNER_FETCH_DEPTH</code> | <code>50</code> | Глубина выборки Git для свежих клонов. Установите положительное целое число или <code>full</code> или <code>0</code> для полной выборки. Для клона, который уже находится в рабочем пространстве, см. <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#reuse-a-pre-warmed-checkout">Повторное использование заранее подготовленного checkout</a>. |
+| <code>CLAUDE_RUNNER_FETCH_SERVER_PROGRESS_CAP_MS</code> | <code>600000</code> | Как долго в миллисекундах, в рамках одной попытки, выборка git может ждать первых данных, пока собственные показатели прогресса сервера git продолжают расти, например когда сервер подготавливает pack для большого репозитория. <code>0</code> или <code>off</code> отключает ожидание: тогда такая выборка прерывается через две минуты без данных. Любое другое целое число ограничивается диапазоном от <code>120000</code> до <code>1800000</code>, то есть от 2 до 30 минут. Требует Claude Code v2.1.295 или позже. |
+| <code>CLAUDE_RUNNER_SKIP_GIT_VERIFY</code> | unset | Когда <code>1</code>, пропустите проверку наличия <code>.git</code> после запуска hook <code>checkout</code>. Установите это, когда ваш hook материализует источник, не являющийся git. |
+| <code>FORCE_AUTOUPDATE_PLUGINS</code> | unset | Когда <code>1</code>, позвольте маркетплейсам плагинов автоматически обновляться, несмотря на то, что бинарный файл закреплен |
+| <code>CLAUDE_CODE_DISABLE_ARTIFACT</code> | unset | Когда <code>1</code>, отключите инструмент Artifact в сеансах независимо от параметра администратора организации и удалите требование к исходящему трафику на <code>*.frame.claudeusercontent.com</code> |</p>
+<h3 id="h-5">Телеметрия <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<p>Дочерние процессы сеанса отправляют операционную телеметрию в Anthropic, если вы её не отключите. Никакой код или содержимое репозитория не отправляется. Установите переменные телеметрии на процесс runner; runner переустанавливает их после применения переменных окружения, предоставленных сервером, поэтому параметр оператора всегда имеет приоритет.</p>
+<p>Один элемент управления специфичен для самостоятельно размещаемых сред: <code>CLAUDE_CODE_BYOC_ENABLE_DATADOG=1</code> выбирает метрики операционной деятельности Datadog, которые по умолчанию отключены в самостоятельно размещаемых средах. Общие элементы управления телеметрией Claude Code, <code>DISABLE_TELEMETRY</code>, <code>DO_NOT_TRACK</code>, <code>DISABLE_ERROR_REPORTING</code> и <code>CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC</code>, применяются к дочерним процессам сессии, как задокументировано в <a href="https://code.claude.com/docs/ru/env-vars.md">справочнике переменных окружения</a>. <a href="https://code.claude.com/docs/ru/env-vars#variables"><code>CLAUDE_CODE_DISABLE_FEATURE_FLAGS</code></a> связан, но отличается: установка <code>CLAUDE_CODE_DISABLE_FEATURE_FLAGS=1</code> отключает выборку флагов функций, и телеметрия остается включенной, если также не установлен <code>DISABLE_TELEMETRY</code>. <code>CLAUDE_CODE_DISABLE_FEATURE_FLAGS</code> требует Claude Code v2.1.319 или более поздней версии.</p>
+<p><code>CLAUDE_CODE_ENABLE_TELEMETRY</code> не связан: он включает экспорт OpenTelemetry на ваш собственный сборщик, как описано в <a href="https://code.claude.com/docs/ru/monitoring-usage.md">Monitoring</a>, и не контролирует аналитику Anthropic.</p>
+<h3 id="h-6">Конечная точка здоровья <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<p>Runner обслуживает <code>GET /healthz</code> на настроенном порту здоровья после того, как зарегистрируется и завершит проверки при запуске. С этого момента ответ — <code>200 OK</code> всякий раз, когда процесс живой, независимо от состояния цикла опроса, поэтому зонд HTTP на этом эндпоинте обнаруживает только мертвый процесс. Тело JSON описывает текущее состояние:</p>
+<p>```json theme={null}
+{
+  &quot;status&quot;: &quot;ok&quot;,
+  &quot;runner_id&quot;: &quot;ccrunner_...&quot;,
+  &quot;active_sessions&quot;: 2,
+  &quot;last_poll_at&quot;: &quot;2026-03-31T18:04:11.220Z&quot;,
+  &quot;last_poll_age_ms&quot;: 842
+}</p>
+<pre><code>
+Настройте оповещения по `last_poll_age_ms`, но не используйте это значение в зонде живости; для этого зонда опирайтесь на код состояния HTTP. Значение отражает время с момента последнего успешного опроса, поэтому оно также растет, пока runner не может связаться с Anthropic. Оба `last_poll_at` и `last_poll_age_ms` равны `null` до первого успешного опроса. Чтобы отловить опросы, которые завершаются ошибкой с самого начала, также настройте оповещения по метрике `claude_code_self_hosted_runner_poll_errors_total`, указанной в разделе [Метрики Prometheus](#prometheus-metrics).
+
+Собственный `/healthz` orchestrator на его порту здоровья всегда возвращает `200`. Тело несет поле `connected`, сообщающее, успешен ли последний опрос, плюс количество очереди порождения для каждого состояния в `queue_counts`. Чтобы узнать, почему `connected` равно `false`, прочитайте поле верхнего уровня `last_error`, которое сбрасывается в `null` при каждом успешном опросе. Ограничьте готовность и оповещение на `connected` вместо кода состояния.
+
+Когда [SCM connector](#scm-connector-flags) настроен, тело `/healthz` orchestrator также несет `scm_connector_connected` и объект `scm_connector` с `connected`, `last_connected_at`, `last_error`, `reconnects` и `requests_forwarded`. Оба поля равны `null`, когда `--scm-connector-host` не установлен.
+
+## Метрики Prometheus
+
+Каждый runner отдаёт метрики Prometheus по `GET /metrics` на том же порту, что и `/healthz`. Основные серии:
+
+| Серия | Примечания |
+| :- | :- |
+| `claude_code_self_hosted_runner_info{runner_id,version,client_label}` | Всегда `1`; полезна для инвентаризации парка и обнаружения расхождения версий |
+| `claude_code_self_hosted_runner_capacity` | Настроенное значение `--capacity` |
+| `claude_code_self_hosted_runner_active_sessions` | Сессии, выполняющиеся в данный момент |
+| `claude_code_self_hosted_runner_locked_account{email}` | Появляется, как только runner закреплён за пользователем и выдан токен сессии с утверждением `act.email`. Серия отсутствует на runner, закреплённом за агентом Claude Tag, поскольку его токены сессий не содержат `act.email`. Значение метки — email учётной записи; если ваше хранилище метрик доступно для чтения широкому кругу лиц, удаляйте или хешируйте метку при сборе, например с помощью `metric_relabel_configs` в Prometheus. |
+| `claude_code_self_hosted_runner_last_poll_age_seconds` | Секунды с момента последнего успешного опроса. Настройте оповещение, если значение превышает 60. |
+| `claude_code_self_hosted_runner_poll_errors_total{error_kind}` | Накопительное число сбоев PollWork по типам: `transport`, `timeout`, `5xx`, `429` или `4xx`. Все пять серий присутствуют с момента запуска процесса; настройте оповещение на `rate(...[5m]) &gt; 0`. |
+| `claude_code_self_hosted_runner_sessions_started_total{client_platform}` | Дочерние процессы сессий, запущенные за время жизни runner, по одной серии на источник сессии, например `web_claude_ai`, `ios`, `android`, `desktop_app` или `claude_code_cli`, либо `unknown`, если сервер его не передал. Сессии Slack помечаются либо `claude_in_slack`, либо `claude-in-slack` в зависимости от того, какая интеграция Slack их создала, поэтому сопоставляйте оба варианта селектором с регулярным выражением, например `{client_platform=~&quot;claude[-_]in[-_]slack&quot;}`. Используйте `sum()` для получения общего значения по парку. |
+| `claude_code_self_hosted_runner_sessions_completed_total{client_platform}` | Сессии, завершившиеся штатно, с такими же метками. Понятие шире, чем просто штатный выход: что именно учитывается, см. в разделе [семантика счётчиков жизненного цикла сессий](#session-lifecycle-counter-semantics). |
+| `claude_code_self_hosted_runner_sessions_failed_total{client_platform}` | Сессии, завершившиеся сбоем, с такими же метками. Та же оговорка: см. [семантика счётчиков жизненного цикла сессий](#session-lifecycle-counter-semantics). |
+| `claude_code_self_hosted_runner_sessions_interrupted_total{client_platform}` | Сессии, которые runner завершил по эксплуатационной причине, а не по итогу самой сессии, с такими же метками. См. [семантика счётчиков жизненного цикла сессий](#session-lifecycle-counter-semantics). |
+| `claude_code_self_hosted_runner_initializing_sessions` | Сессии, находящиеся в фазе инициализации: от назначения до события init дочернего процесса |
+| `claude_code_self_hosted_runner_session_init_duration_seconds` | Гистограмма длительности инициализации сессий |
+| `claude_code_self_hosted_runner_session_init_errors_total` | Сессии, завершившиеся сбоем до достижения init: сбой хука checkout, подготовки git, выдачи токена или падение дочернего процесса до init |
+| `claude_code_self_hosted_runner_session_start_hook_errors_total` | Хуки `SessionStart`, сообщившие об ошибке, по одному на каждое неудачное выполнение хука |
+| `claude_code_self_hosted_runner_session_idle_seconds{session_id,client_platform}` | Gauge для каждой сессии: секунды с момента перехода сессии в режим простоя. Полезна для завершения сессий, зависших на неотвеченном запросе разрешения. |
+
+Оркестратор отдаёт собственные серии по `GET /metrics` на том же порту, что и его `/healthz`:
+
+| Серия | Примечания |
+| :- | :- |
+| `claude_code_self_hosted_orchestrator_info{version,pool_id,orchestrator_uuid,hostname}` | Всегда `1` |
+| `claude_code_self_hosted_orchestrator_connected` | `1`, если последний опрос завершился успешно; падает до `0` после любого неудачного опроса, независимо от типа сбоя |
+| `claude_code_self_hosted_orchestrator_last_poll_age_seconds` | Секунды с момента последней попытки опроса, успешной или нет, в отличие от одноимённой метрики runner, которая отсчитывается от последнего успешного опроса; используйте вместе с `connected`, чтобы отлавливать неудачные опросы. Цикл опроса оркестратора ожидает выполнения хуков, поэтому настраивайте оповещение на значение выше `--hook-timeout` плюс запас, около 90 секунд при значениях по умолчанию, а не на фиксированные 60. |
+| `claude_code_self_hosted_orchestrator_poll_errors_total{error_kind}` | Накопительное число сбоев PollSpawnHints по типам: `transport`, `timeout`, `5xx`, `429` или `4xx`. Все пять серий присутствуют с момента запуска процесса; настройте оповещение на `rate(...[5m]) &gt; 0`. |
+| `claude_code_self_hosted_orchestrator_queue_pending_sessions` | Запросы на запуск, которые можно забрать прямо сейчас |
+| `claude_code_self_hosted_orchestrator_queue_backing_off_sessions` | Запросы на запуск, находящиеся в задержке перед повторной попыткой после сбоя хука, допускающего повторную попытку |
+| `claude_code_self_hosted_orchestrator_queue_circuit_broken_sessions` | Сессии, запуск которых заблокирован. Каждая остаётся заблокированной, пока пользователь не отправит ей новое сообщение или Owner не повторит попытку на вкладке **Activity** окружения. Значение может оставаться выше нуля после устранения причины. Настройте оповещение, если значение выше нуля. |
+| `claude_code_self_hosted_orchestrator_pool_pending_sessions` | Общее число сессий, ожидающих runner для этого окружения. Агрегат по всему окружению, одинаковый на каждом экземпляре оркестратора: используйте `MAX`, а не `SUM` по экземплярам. |
+| `claude_code_self_hosted_orchestrator_pool_active_sessions` | Сессии, в данный момент назначенные работающему runner в этом окружении. Агрегат по всему окружению, одинаковый на каждом экземпляре оркестратора: используйте `MAX`, а не `SUM` по экземплярам. |
+| `claude_code_self_hosted_orchestrator_spawn_hooks_total{result}` | Накопительные результаты хука `spawn-runner`: `ok`, `retryable`, `non_retryable`. Учитывает вызовы хука оркестратором, а не дочерние процессы сессий, которые запускают runner: несопоставима с `sessions_started_total`, поскольку ёмкость больше единицы, тёплые пулы и повторный запуск runner для той же сессии приводят к расхождению этих значений. |
+| `claude_code_self_hosted_orchestrator_spawn_hook_duration_seconds` | Гистограмма длительности выполнения хука |
+| `claude_code_self_hosted_orchestrator_warm_hints_dispatched_total` | Резервные запросы на запуск, отправленные с момента запуска процесса |
+| `claude_code_self_hosted_orchestrator_session_queue_wait_seconds` | Гистограмма времени в секундах, которое каждая сессия провела в очереди, прежде чем оркестратор забрал её для запуска; записывается по метке времени ожидания в очереди, которую плоскость управления передаёт с запросом на запуск каждой сессии. Используйте для оповещений по p50/p99 времени в очереди. Запуски для предварительного прогрева не учитываются. |
+| `claude_code_self_hosted_orchestrator_clock_skew_seconds` | Расхождение часов (локальное минус серверное); диагностическая метрика, появляется после измерения |
+| `claude_code_self_hosted_orchestrator_scm_connector_connected` | `1`, когда WebSocket [коннектора SCM](#scm-connector-flags) открыт; `0` во время подключения или задержки перед повторной попыткой. Отсутствует, если `--scm-connector-host` не задан. |
+| `claude_code_self_hosted_orchestrator_scm_connector_requests_forwarded_total` | Накопительное число HTTP-запросов, проксированных на настроенный хост SCM с момента запуска процесса. Отсутствует, если `--scm-connector-host` не задан. |
+
+Для автомасштабирования выберите серию, соответствующую вашему подходу к масштабированию, и отфильтруйте её, прежде чем передавать в механизм масштабирования:
+
+* **Масштабирование по глубине очереди**: передавайте в HPA или KEDA `claude_code_self_hosted_orchestrator_pool_pending_sessions`, а не `queue_pending_sessions`.
+* **Масштабирование по ёмкости**: масштабируйте по отношению `active_sessions` runner к `capacity`.
+* **Фильтрация по `connected`**: фильтруйте запрос условием `claude_code_self_hosted_orchestrator_connected == 1` для каждого экземпляра, чтобы устаревшее значение отключённой реплики не попадало в механизм масштабирования.
+
+Во время полного сбоя опроса, когда все реплики отключены, отфильтрованный запрос не возвращает данных. HPA сохраняет текущее число реплик при отсутствии метрики, однако Prometheus scaler в KEDA со значением по умолчанию `ignoreNullValues: &quot;true&quot;` интерпретирует пустой результат как ноль и уменьшает число реплик; задайте `ignoreNullValues: &quot;false&quot;` в ScaledObject, при необходимости вместе с минимальным числом реплик `fallback`.
+
+Следующий `PodMonitor` для Prometheus Operator охватывает оба процесса. Он выбирает поды по метке `app.kubernetes.io/part-of: claude-code-self-hosted-runner` и именованному порту `health`, которые задаёт [рецепт для Kubernetes](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#kubernetes); скорректируйте пространства имён в соответствии с вашим развёртыванием:
+</code></pre>
+<h1 id="example-prometheus-operator-podmonitor-for-the-claude-code-self-hosted">Example Prometheus Operator PodMonitor for the Claude Code self-hosted <a class="h-anchor" href="#example-prometheus-operator-podmonitor-for-the-claude-code-self-hosted" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="runner-orchestrator-adjust-the-namespace-and-label-selectors-to-match">runner + orchestrator. Adjust the namespace and label selectors to match <a class="h-anchor" href="#runner-orchestrator-adjust-the-namespace-and-label-selectors-to-match" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="your-deployment-both-the-runner-and-the-orchestrator-serve-metrics-on">your deployment. Both the runner and the orchestrator serve /metrics on <a class="h-anchor" href="#your-deployment-both-the-runner-and-the-orchestrator-serve-metrics-on" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="their-health-port-default-8080">their --health-port (default 8080). <a class="h-anchor" href="#their-health-port-default-8080" aria-label="Ссылка на раздел">#</a></h1>
+<p>apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: claude-code-self-hosted-runner
+  namespace: monitoring
+spec:
+  namespaceSelector:
+    matchNames:</p>
+<ul>
+<li>claude-runners selector: matchExpressions: # Matches the runner Deployment from the Kubernetes recipe, plus any # on-demand runner Jobs and orchestrator pods you label the same way # and give a named &#x27;health&#x27; containerPort.</li>
+<li>key: app.kubernetes.io/part-of operator: In values: [claude-code-self-hosted-runner] podMetricsEndpoints:</li>
+<li>port: health path: /metrics interval: 30s</li>
+</ul>
+<pre><code>
+### Примеры правил оповещений
+
+Эти примеры правил оповещений — отправная точка; настройте пороговые значения под размер вашего парка:
+</code></pre>
+<h1 id="example-prometheus-alert-rules-for-the-claude-code-self-hosted-runner">Example Prometheus alert rules for the Claude Code self-hosted runner <a class="h-anchor" href="#example-prometheus-alert-rules-for-the-claude-code-self-hosted-runner" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="orchestrator-tune-thresholds-for-your-fleet-size-and-slos">+ orchestrator. Tune thresholds for your fleet size and SLOs. <a class="h-anchor" href="#orchestrator-tune-thresholds-for-your-fleet-size-and-slos" aria-label="Ссылка на раздел">#</a></h1>
+<p>groups:</p>
+<ul>
+<li>name: claude-code-self-hosted-runner rules:</li>
+<li>alert: ClaudeRunnerPollStale expr: claude_code_self_hosted_runner_last_poll_age_seconds &gt; 60 for: 2m labels: {severity: warning} annotations: summary: &quot;Runner {{ $labels.pod }} has not polled in &gt;60s&quot;</li>
+<li>alert: ClaudeRunnerVersionDrift expr: count(count by (version) (claude_code_self_hosted_runner_info)) &gt; 1 for: 30m labels: {severity: info} annotations: summary: &quot;Runners are running mixed versions&quot;</li>
+<li>alert: ClaudeRunnerInitErrorsHigh expr: sum by (namespace) (increase(claude_code_self_hosted_runner_session_init_errors_total[10m])) &gt; 3 for: 5m labels: {severity: warning} annotations: summary: &quot;Sessions are failing before init (checkout hook / git / token / pre-init crash)&quot;</li>
+<li>alert: ClaudeRunnerPollErrors expr: sum by (pod) (rate(claude_code_self_hosted_runner_poll_errors_total[5m])) &gt; 0 for: 2m labels: {severity: warning} annotations: summary: &quot;Runner {{ $labels.pod }}: PollWork failing ({{ $value | humanize }}/s over 5m)&quot;</li>
+<li>alert: ClaudeRunnerSessionStartHookErrors expr: sum by (namespace) (increase(claude_code_self_hosted_runner_session_start_hook_errors_total[10m])) &gt; 3 for: 5m labels: {severity: warning} annotations: summary: &quot;SessionStart hooks are failing&quot;</li>
+</ul>
+<ul>
+<li>name: claude-code-self-hosted-orchestrator rules:</li>
+<li>alert: ClaudeOrchestratorDisconnected expr: claude_code_self_hosted_orchestrator_connected == 0 for: 2m labels: {severity: critical} annotations: summary: &quot;Orchestrator {{ $labels.pod }} cannot reach the Anthropic control plane&quot;</li>
+<li>alert: ClaudeOrchestratorPollStale expr: claude_code_self_hosted_orchestrator_last_poll_age_seconds &gt; 90 for: 2m labels: {severity: warning} annotations: summary: &quot;Orchestrator {{ $labels.pod }} has not polled in &gt;90s (poll loop waits on hook execution)&quot;</li>
+<li>alert: ClaudeOrchestratorCircuitBroken expr: max by (namespace) (claude_code_self_hosted_orchestrator_queue_circuit_broken_sessions and on (instance) max_over_time(claude_code_self_hosted_orchestrator_connected[2m]) == 1) &gt; 0 for: 1m labels: {severity: critical} annotations: summary: &quot;Sessions blocked from spawning: {{ $value }}. Read each one&#x27;s error in the Activity tab, fix the cause, then select Retry&quot;</li>
+<li>alert: ClaudeOrchestratorPollErrors expr: sum by (pod) (rate(claude_code_self_hosted_orchestrator_poll_errors_total[5m])) &gt; 0 for: 2m labels: {severity: warning} annotations: summary: &quot;Orchestrator {{ $labels.pod }}: PollSpawnHints failing ({{ $value | humanize }}/s over 5m)&quot;</li>
+<li>alert: ClaudeOrchestratorSpawnHookFailing expr: sum by (pod) (increase(claude_code_self_hosted_orchestrator_spawn_hooks_total{result!=&quot;ok&quot;}[5m])) &gt; 3 for: 5m labels: {severity: warning} annotations: summary: &quot;Orchestrator {{ $labels.pod }}: &gt;3 spawn-runner hook failures in 5m&quot;</li>
+</ul>
+<pre><code>
+### Оповещения о потере runner и ожидающих сессиях
+
+Чтобы получать оповещения о потере runner, ожидании сессий или недоступности оркестратора, загрузите эти правила оповещений Prometheus вместе с [примерами правил оповещений](#sample-alert-rules):
+
+* **[Фиксированный парк](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#scale-the-fleet)**: `ClaudeRunnersBelowFloor`
+* **[Runner по требованию](https://code.claude.com/docs/ru/self-hosted-environments-configuration.md#on-demand-runners)**: `ClaudeOrchestratorSessionsWaiting`, `ClaudeOrchestratorQueueWaitHigh` и `ClaudeOrchestratorAbsent`
+
+#### Оповещение о потере runner в фиксированном парке
+
+`ClaudeRunnersBelowFloor` срабатывает, когда в течение 10 минут зарегистрированных runner, с которых собираются метрики, остаётся меньше минимального порога:
+</code></pre>
+<p>groups:
+  # Fixed fleets only. With on-demand runners the count follows demand,
+  # so ClaudeRunnersBelowFloor would fire whenever demand is low.</p>
+<ul>
+<li>name: claude-code-self-hosted-fixed-fleet-capacity rules:</li>
+<li>alert: ClaudeRunnersBelowFloor expr: (count(claude_code_self_hosted_runner_info{namespace=&quot;claude-runners&quot;}) or vector(0)) &lt; 2 for: 10m labels: {severity: critical, namespace: claude-runners} annotations: summary: &quot;Runners registered and scraped: {{ $value }}, below the floor. Check the runner workloads first, then the scrape targets if all are running.&quot;</li>
+</ul>
+<pre><code>
+* **Минимальный порог**: задайте `2` в `expr` примерно равным половине числа реплик с округлением вверх. При трёх репликах оставьте `2`, и оповещение сработает, когда останется один runner или ни одного.
+* **Пространство имён**: замените `claude-runners` в matcher и в `labels` и скопируйте оповещение для каждого дополнительного пространства имён. Если у ваших целей нет метки `namespace`, удалите matcher и метку, иначе оповещение получит 0 и сработает.
+* **`ClaudeRunnerPollStale` и `ClaudeRunnerPollErrors`**: оставьте их загруженными из [примеров правил оповещений](#sample-alert-rules), поскольку `ClaudeRunnersBelowFloor` по-прежнему учитывает runner, который не может выполнить опрос
+
+#### Оповещение об ожидании сессиями runner по требованию
+
+`ClaudeOrchestratorSessionsWaiting` срабатывает, когда число сессий, ожидающих runner, остаётся выше 0 в течение 10 минут. `ClaudeOrchestratorQueueWaitHigh` срабатывает, когда более 1% ожиданий в очереди за последние 10 минут превысили 160 секунд и это сохраняется в течение 5 минут:
+</code></pre>
+<p>groups:
+  # On-demand runners only. Needs no edit for the namespace.</p>
+<ul>
+<li>name: claude-code-self-hosted-on-demand-capacity rules:</li>
+<li>alert: ClaudeOrchestratorSessionsWaiting expr: | max by (namespace) ( claude_code_self_hosted_orchestrator_pool_pending_sessions and on (instance) max_over_time(claude_code_self_hosted_orchestrator_connected[2m]) == 1 ) &gt; 0 for: 10m labels: {severity: warning} annotations: summary: &quot;Sessions waiting for a runner: {{ $value }}, above the threshold for 10 minutes. Check claude_code_self_hosted_orchestrator_spawn_hooks_total by result, then runner workloads that don&#x27;t start.&quot;</li>
+<li>alert: ClaudeOrchestratorQueueWaitHigh expr: | histogram_quantile(0.99, sum by (namespace, le) ( rate(claude_code_self_hosted_orchestrator_session_queue_wait_seconds_bucket[10m]) )) &gt; 160 for: 5m labels: {severity: warning} annotations: summary: &quot;Over 1% of queue waits in the last 10 minutes exceeded 160 seconds. Check whether ClaudeOrchestratorDisconnected is firing, then claude_code_self_hosted_orchestrator_spawn_hooks_total by result and claude_code_self_hosted_orchestrator_spawn_hook_duration_seconds.&quot;</li>
+</ul>
+<pre><code>
+* **Порог**: если какая-то сессия ожидает постоянно, поднимите `&gt; 0` в `ClaudeOrchestratorSessionsWaiting` выше значения, которое вы обычно наблюдаете
+* **`ClaudeOrchestratorDisconnected`**: оставьте его загруженным из [примеров правил оповещений](#sample-alert-rules), поскольку `ClaudeOrchestratorSessionsWaiting` перестаёт срабатывать примерно через 2 минуты после отключения последнего оркестратора в пространстве имён
+
+#### Оповещение о недоступности оркестратора
+
+Чтобы узнавать о недоступности самого [оркестратора](https://code.claude.com/docs/ru/self-hosted-environments-configuration.md#on-demand-runners), загрузите `ClaudeOrchestratorAbsent`. Оно срабатывает, когда в течение 5 минут метрики не собираются ни с одного оркестратора в пространстве имён:
+</code></pre>
+<p>groups:
+  # On-demand runners only. Replace claude-runners with the orchestrator&#x27;s namespace.</p>
+<ul>
+<li>name: claude-code-self-hosted-on-demand-orchestrator rules:</li>
+<li>alert: ClaudeOrchestratorAbsent expr: absent(claude_code_self_hosted_orchestrator_connected{namespace=&quot;claude-runners&quot;}) for: 5m labels: {severity: critical} annotations: summary: &quot;No orchestrator has been scraped for 5 minutes. If it&#x27;s down, no on-demand runner starts, and sessions wait. Check the orchestrator workload first, then its scrape target if it&#x27;s running.&quot;</li>
+</ul>
+<pre><code>
+* **Пространство имён**: замените `claude-runners` на пространство имён оркестратора и скопируйте оповещение для каждого дополнительного пространства имён, в котором работает оркестратор. Если у ваших целей нет метки `namespace`, удалите matcher, иначе оповещение сработает через 5 минут и не отключится.
+* **Серверы Prometheus, которые не собирают метрики оркестратора**: не включайте это оповещение в их файлы правил, поскольку на таком сервере оно срабатывает через 5 минут и не отключается
+* **Не полагайтесь на другие оповещения оркестратора**: они читают метрики, которые отдаёт сам оркестратор. `ClaudeOrchestratorSessionsWaiting`, `ClaudeOrchestratorQueueWaitHigh` и [примеры правил оповещений](#sample-alert-rules) для оркестратора перестают срабатывать примерно в течение 10 минут после отказа оркестратора.
+
+### Проброс метрик дочерних процессов сессий
+
+Каждая сессия выполняется в собственном дочернем процессе со своими метриками OpenTelemetry; при `--capacity` больше единицы runner изменяет способ публикации этих дочерних метрик. Если задать `OTEL_METRICS_EXPORTER=prometheus` на хосте runner и `CLAUDE_CODE_ENABLE_TELEMETRY=1` в окружении сессии, например из вашего [скрипта-обёртки](https://code.claude.com/docs/ru/self-hosted-environments-configuration.md#wrapper-scripts) или в собственном окружении runner, которое наследуют сессии, то инструменты типа counter и gauge каждого дочернего процесса будут повторно опубликованы на собственном эндпоинте `/metrics` runner рядом с сериями самого runner. Runner перенастраивает экспортёр дочернего процесса на отправку по OTLP в приёмник на порту health, доступный только через loopback, помечает каждую серию метками `session_id` и `client_platform` и удаляет серии сессии, когда эта сессия завершается. Гистограммы не пробрасываются, а дочерняя метрика, имя которой конфликтовало бы с собственным префиксом runner, отбрасывается.
+
+При значении по умолчанию `--capacity 1` эта перенастройка не применяется: дочерний процесс сессии, как обычно, открывает собственный эндпоинт Prometheus на порту 9464.
+
+#### Сопоставление метрик сессии с метриками runner
+
+Чтобы узнать, во что обошлись простаивающие сессии, соедините метрику runner `claude_code_self_hosted_runner_session_idle_seconds` с метрикой стоимости Claude Code по `ccr_session_id`. Метрика runner не содержит этой метки, поэтому добавьте её с помощью `label_replace`, как в этом запросе:
+</code></pre>
+<p>sum by (ccr_session_id) (claude_code_cost_usage_total)
+and on (ccr_session_id)
+label_replace(
+  claude_code_self_hosted_runner_session_idle_seconds &gt; 600,
+  &quot;ccr_session_id&quot;, &quot;cse_$1&quot;, &quot;session_id&quot;, &quot;session_(.*)&quot;
+)</p>
+<pre><code>
+Запрос возвращает по одному результату на каждую сессию, простаивающую более десяти минут: стоимость в долларах США, которую её процесс Claude Code насчитал на данный момент. Чтобы соединить другую метрику Claude Code, замените `claude_code_cost_usage_total` в запросе. Запрос работает при любом значении `--capacity`.
+
+* **`session_id`**: на порту 9464 эта метка у метрик Claude Code содержит собственный [`session.id`](https://code.claude.com/docs/ru/monitoring-usage#standard-attributes) Claude Code, который не совпадает ни с одной серией runner. Соединение по ней ничего не возвращает, поэтому соединяйте по `ccr_session_id`.
+* **У метрик Claude Code нет `ccr_session_id`**: убедитесь, что [`OTEL_METRICS_INCLUDE_SESSION_ID`](https://code.claude.com/docs/ru/monitoring-usage#metrics-cardinality-control) не задана как `false`
+
+### Семантика счётчиков жизненного цикла сессий
+
+Счётчики `sessions_started_total`, `sessions_completed_total`, `sessions_failed_total` и `sessions_interrupted_total` классифицируют каждую сессию по тому, как она завершилась. Каждый запущенный дочерний процесс сессии увеличивает `sessions_started_total` в момент запуска, и ровно один из остальных трёх счётчиков увеличивается при выходе, поэтому `sessions_started_total` минус сумма остальных трёх равна числу дочерних процессов сессий, выполняющихся в данный момент.
+
+* `completed`: сессия завершилась штатно. Сюда относятся: самостоятельный выход дочернего процесса с кодом `0`; архивация или удаление сессии, пока дочерний процесс ещё был подключён; штатное освобождение слота runner: освобождение сессии по таймауту простоя, по времени вывода из эксплуатации или по лимиту `--kill-session-after-min`; таймаут запуска; либо снятие назначения на стороне сервера, которое цикл опроса заметил до выхода дочернего процесса. Увеличивает `sessions_completed_total`.
+* `failed`: дочерний процесс самостоятельно завершился с ненулевым кодом — из-за падения или сбоя настройки после запуска. Увеличивает `sessions_failed_total`.
+* `interrupted`: runner завершил дочерний процесс по эксплуатационной причине, которая не является ни успехом сессии, ни ошибкой runner, например при выводе из работы (drain) или при завершении сессии, которая всё ещё находилась на runner по истечении окна отсрочки [`SELF_HOSTED_RUNNER_MAX_LIFETIME_GRACE_MS`](#environment-variable-only-settings) после её лимита `--kill-session-after-min`. Поэтапный перезапуск в Kubernetes с отправкой `SIGTERM` — один из примеров вывода из работы. Увеличивает `sessions_interrupted_total`.
+
+До версии v2.1.260 runner завершал каждую сессию, достигшую лимита `--kill-session-after-min`, и учитывал её в `sessions_interrupted_total`.
+
+Переменная `CLAUDE_RUNNER_EXIT_REASON` [хука `post-session`](https://code.claude.com/docs/ru/self-hosted-environments-configuration#post-session) классифицирует штатные передачи иначе. Хук сообщает о них как об `interrupted`, поскольку runner остановил дочерний процесс: это освобождение, таймаут запуска, снятие назначения сервером, а также архивация или удаление, которые первым заметил опрос. Эти счётчики записывают те же события как `completed`, поскольку слот был освобождён штатно.
+
+Если сверять получение хуков непосредственно с `sessions_completed_total`, число завершений окажется заниженным. Используйте хук для гарантий на уровне отдельных сессий, а счётчики — для агрегированных показателей.
+
+В одноразовом окружении, с `--capacity 1` и значением по умолчанию `--drain-grace-sec 0`, каждый процесс runner завершается через мгновение после окончания его единственной сессии. `sessions_completed_total`, `sessions_failed_total` и `sessions_interrupted_total` увеличиваются только в конце сессии, непосредственно перед этим выходом, поэтому сбор метрик Prometheus каждые 15–60 секунд редко успевает зафиксировать приращение до того, как серии runner исчезнут; именно эти три счётчика окончания сессии далее в этом разделе называются терминальными. `sessions_started_total` увеличивается при запуске и остаётся видимым на протяжении всей сессии, поэтому он надёжно появляется, однако в одноразовом окружении он скорее отражает «сессии, выполняющиеся в данный момент», чем накопительное значение.
+
+Для соответствующей цели используйте серии из этой таблицы вместо терминальных счётчиков:
+
+| Цель | Что использовать |
+| :- | :- |
+| Пропускная способность | `claude_code_self_hosted_orchestrator_spawn_hooks_total{result=&quot;ok&quot;}` — счётчик на долгоживущем оркестраторе, который увеличивается один раз на каждое успешное выполнение хука `spawn-runner` и сохраняет смысл при использовании `rate()`. Он учитывает вызовы хука, а не сессии, поэтому предварительный прогрев и повторные запуски для одной и той же сессии приводят к расхождению с числом сессий. |
+| Загрузка | `sum(claude_code_self_hosted_runner_active_sessions)` относительно `sum(claude_code_self_hosted_runner_capacity)`; обе метрики — gauge, корректные при каждом сборе независимо от времени жизни runner |
+| Очередь | `claude_code_self_hosted_orchestrator_pool_pending_sessions` для глубины очереди и `claude_code_self_hosted_orchestrator_queue_circuit_broken_sessions` с оповещением, если значение выше нуля |
+| Сбои | `claude_code_self_hosted_runner_sessions_failed_total`, по мере возможности: реальные падения после запуска его увеличивают, а `rate()` имеет смысл на runner, которые переживают свои сессии при `--drain-grace-sec` больше `0`. В одноразовом окружении существует та же проблема окна сбора, что и у остальных терминальных счётчиков, поэтому любое ненулевое значение, которое вы всё же увидите, стоит расследовать. Сбои до запуска, например сбой хука checkout, подготовки git или выдачи токена, отражаются только в `session_init_errors_total`. |
+
+Строки `orchestrator_*` существуют только в окружениях, использующих [оркестратор по требованию](https://code.claude.com/docs/ru/self-hosted-environments-configuration.md#on-demand-runners). В фиксированном парке, runner которого переживают свои сессии при `--drain-grace-sec` больше `0`, используйте `sum(rate(claude_code_self_hosted_runner_sessions_started_total[5m]))` для пропускной способности; в одноразовом парке у этой серии та же проблема окна сбора, что и у терминальных счётчиков, поэтому полагайтесь на число сессий в очереди. Проверяйте очередь на вкладке **Activity** окружения на [странице администрирования **Cloud environments**](https://claude.ai/admin-settings/cloud-environments): runner не экспортируют серию глубины очереди.
+
+Для отчётности по итогам отдельных сессий используйте [хук `post-session`](https://code.claude.com/docs/ru/self-hosted-environments-configuration#post-session): он срабатывает при каждом завершении сессии, для которой был запущен дочерний процесс, за исключением внезапного завершения runner, например при вытеснении VM, в соответствии с [собственным контрактом хука](https://code.claude.com/docs/ru/self-hosted-environments-configuration.md#post-session).
+
+## Что дальше
+
+* [Self-hosted environments](https://code.claude.com/docs/ru/self-hosted-environments): среда, runner и модель сеанса; [quickstart](https://code.claude.com/docs/ru/self-hosted-environments-quickstart.md) и [Deploy to production](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md) содержат настройку и операции
+* [Customize sessions](https://code.claude.com/docs/ru/self-hosted-environments-configuration.md): скрипты-обертки, hooks жизненного цикла и on-demand runner
+* [Verify session identity](https://code.claude.com/docs/ru/self-hosted-environments-identity.md): токен сеанса, его претензии и как его проверить
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

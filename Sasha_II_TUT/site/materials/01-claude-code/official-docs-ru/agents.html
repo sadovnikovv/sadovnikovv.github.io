@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Запуск агентов параллельно</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Запуск агентов параллельно <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Сравните способы, которыми Claude Code может выполнять несколько задач одновременно: подагенты, представление агентов, команды агентов, динамические рабочие процессы и проекты.</p>
+</blockquote>
+<p>Claude Code имеет пять способов работать над несколькими задачами одновременно: <a href="https://code.claude.com/docs/ru/sub-agents.md">subagents</a>, <a href="https://code.claude.com/docs/ru/agent-view.md">agent view</a>, <a href="https://code.claude.com/docs/ru/agent-teams.md">agent teams</a>, <a href="https://code.claude.com/docs/ru/workflows.md">dynamic workflows</a> и <a href="https://code.claude.com/docs/ru/claude-projects.md">projects</a>. Они отличаются тем, насколько вы остаетесь вовлечены, от управления каждым разговором самостоятельно до того, чтобы позволить Claude координировать группу работников, и тем, работает ли работа на вашей машине или в облаке.</p>
+<p>| Подход | Что вы получаете | Используйте, когда |
+| :- | :- | :- |
+| <a href="https://code.claude.com/docs/ru/sub-agents.md">Subagents</a> | Делегированные работники в одном сеансе, которые выполняют побочную задачу в своем собственном контексте и возвращают резюме | Побочная задача заполнит ваш основной разговор результатами поиска, логами или содержимым файлов, на которые вы больше не будете ссылаться |
+| <a href="https://code.claude.com/docs/ru/agent-view.md">Agent view</a> | Один экран для отправки и мониторинга сеансов, работающих в фоновом режиме, открывается с помощью <code>claude agents</code>. Предварительный просмотр исследования | У вас есть несколько независимых задач, и вы хотите их передать, проверить статус с первого взгляда и вмешаться только когда один из них нуждается в вас |
+| <a href="https://code.claude.com/docs/ru/agent-teams.md">Agent teams</a> | Несколько координируемых сеансов с общим списком задач и обменом сообщениями между агентами, управляемые лидером. Экспериментальная функция и отключена по умолчанию | Вы хотите, чтобы Claude разделил проект на части, назначил их и держал работников в синхронизации |
+| <a href="https://code.claude.com/docs/ru/claude-projects.md">Projects</a> | Один текущий диалог на claude.ai/code или в приложении для рабочего стола. Claude запускает параллельные сессии, называемые потоками, в облаке или, когда вы попросите, на вашем компьютере через Remote Control. Он дает каждой из них инструкции проекта и показывает вам, какие из них нуждаются в вас. Публичная бета-версия на Pro, Max и Ultra | Работа охватывает множество задач в течение дней или недель, должна продолжаться, когда ваша машина выключена, и вы предпочитаете описать ее один раз, чем отправлять и отслеживать каждую сессию |
+| <a href="https://code.claude.com/docs/ru/workflows.md">Dynamic workflows</a> | Скрипт, который запускает множество подагентов и проверяет их результаты, для работы, которая слишком велика для координации за один ход или которая требует более одного прохода | Задача слишком велика для нескольких подагентов, или вы хотите, чтобы результаты были проверены друг против друга: аудит всей кодовой базы, миграция 500 файлов, перепроверенное исследование или план, разработанный с нескольких углов |</p>
+<p>В каждом подходе работники — это сеансы Claude. Чтобы задействовать другой инструмент, предоставьте его Claude как <a href="https://code.claude.com/docs/ru/mcp.md">MCP server</a>.</p>
+<p>Три дополнительных инструмента поддерживают эту работу, не являясь способом запуска агентов:</p>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/worktrees.md">Worktrees</a> дают каждой сессии отдельный git checkout, поэтому параллельные сессии редактируют каждая свою копию файлов. Используйте их для сессий, которые вы запускаете сами. Сессия, которую вы отправляете из agent view, <a href="https://code.claude.com/docs/ru/agent-view.md#how-file-edits-are-isolated">переходит в свой собственный worktree перед редактированием файлов</a>, и субагенты, которых вы порождаете, тоже могут получить каждый свой.</li>
+<li><a href="https://code.claude.com/docs/ru/cross-session-messaging.md">Cross-session messaging</a> позволяет Claude перечислять и отправлять сообщения вашим другим сеансам Claude Code на этой машине, на другой машине или <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">в облаке</a>, поэтому сеансы, которые вы запускаете сами, могут передавать результаты и статус между собой.</li>
+<li><a href="https://code.claude.com/docs/ru/commands"><code>/batch</code></a> — это <a href="https://code.claude.com/docs/ru/skills.md">skill</a>, который заставляет Claude разделить одно большое изменение на 5–30 worktree-изолированных подагентов. Это упакованное использование подагентов и worktrees, а не отдельный стиль координации.</li>
+</ul>
+<p>Несколько других функций запускают Claude без того, чтобы вы управляли каждым шагом, но они решают другую проблему, чем разделение работы между агентами:</p>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/interactive-mode.md#background-bash-commands">Фоновая bash команда</a> запускает одну команду оболочки без блокировки разговора. Она не порождает агента.</li>
+<li><a href="https://code.claude.com/docs/ru/sub-agents.md#fork-the-current-conversation">Разветвленный подагент</a> — это подагент, который наследует полный контекст вашего разговора вместо того, чтобы начинать с нуля. Это способ порождения подагента, а не отдельная поверхность. Запустите его с помощью <code>/subtask</code>. Claude также порождает его сам, когда <a href="https://code.claude.com/docs/ru/sub-agents.md#turn-fork-mode-on-or-off">режим fork</a> включен. Чтобы скопировать весь сеанс в новый <a href="https://code.claude.com/docs/ru/agent-view.md#from-inside-a-session">фоновый сеанс</a>, который работает параллельно с ним, используйте <code>/fork</code>. При <a href="https://code.claude.com/docs/ru/agent-view.md#turn-off-agent-view">отключенном agent view</a> команда разветвленного подагента — это <code>/fork</code> вместо этого, и <code>/subtask</code> недоступна.</li>
+<li><a href="https://code.claude.com/docs/ru/routines.md">Облачная запланированная задача</a> запускает сессию по расписанию в облаке, а не параллельно на вашей машине.</li>
+</ul>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Одновременный запуск нескольких сессий или субагентов многократно увеличивает расход токенов. Подробнее об использовании и ограничениях частоты запросов см. в разделе <a href="https://code.claude.com/docs/ru/costs.md">Затраты</a>.</p>
+</blockquote>
+<h3 id="h-2">Выберите подход <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Правильный подход зависит от того, кто координирует работу, нужны ли работникам общаться и редактируют ли они одни и те же файлы:</p>
+<ul>
+<li><strong>Кто координирует работу?</strong></li>
+<li>Claude делегирует и собирает результаты в одном разговоре: <a href="https://code.claude.com/docs/ru/sub-agents.md">subagents</a></li>
+<li>Вы передаёте независимые задачи и проверяете их позже: <a href="https://code.claude.com/docs/ru/agent-view.md">agent view</a></li>
+<li>Claude планирует, назначает и контролирует группу работников: <a href="https://code.claude.com/docs/ru/agent-teams.md">agent teams</a>, экспериментальная функция, отключена по умолчанию</li>
+<li>Скрипт держит координацию вместо пошагового суждения Claude: <a href="https://code.claude.com/docs/ru/workflows.md">dynamic workflows</a>. См. <a href="https://code.claude.com/docs/ru/workflows.md#when-to-use-a-workflow">как workflows сравниваются с subagents и skills</a></li>
+<li><strong>Нужны ли работникам общаться друг с другом?</strong> Claude может передавать результаты с помощью <a href="https://code.claude.com/docs/ru/cross-session-messaging.md">cross-session messaging</a> между сеансами, которые вы запускаете сами, включая сеансы, которые вы отправляете из agent view. Subagents сообщают результаты обратно в разговор, который их породил, а сеансы agent view сообщают результаты только вам. Товарищи по команде в команде агентов обмениваются сообщениями напрямую и, когда они <a href="https://code.claude.com/docs/ru/tools-reference.md#task-tool-availability">имеют инструменты Task</a>, делят список задач.</li>
+<li><strong>Затрагивают ли задачи одни и те же файлы?</strong> Изолируйте работу с помощью <a href="https://code.claude.com/docs/ru/worktrees.md">worktrees</a>. Subagents и сеансы, которые вы запускаете сами, могут каждый использовать отдельный worktree. Agent teams не изолируют товарищей по команде в worktrees, поэтому <a href="https://code.claude.com/docs/ru/agent-teams.md#avoid-file-conflicts">разделите работу</a> так, чтобы каждый товарищ по команде владел другим набором файлов.</li>
+</ul>
+<h3 id="h-3">Проверьте выполняемую работу <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Команда для проверки выполняемой работы зависит от того, какой подход вы использовали:</p>
+<ul>
+<li>Для фоновых сеансов <code>claude agents</code> открывает <a href="https://code.claude.com/docs/ru/agent-view.md">agent view</a>: один экран, показывающий каждый сеанс, его состояние и какие из них нуждаются в вашем вводе.</li>
+<li>Для субагентов в текущей сессии именованные фоновые субагенты появляются в typeahead @-упоминания с их статусом. Команда <code>/agents</code> выводит уведомление, указывающее на расположение файлов субагентов. Чтобы <a href="https://code.claude.com/docs/ru/sub-agents.md#configure-subagents">создавать и редактировать пользовательские субагенты</a>, попросите Claude или отредактируйте файлы напрямую. Несмотря на похожее имя, <code>/agents</code> отделена от <code>claude agents</code>.</li>
+<li>Для всего, что работает в фоновом режиме текущего сеанса, <code>/tasks</code> перечисляет каждый элемент и позволяет вам проверить, присоединиться или остановить его. Список также включает подагентов, которые завершили работу.</li>
+<li>Для динамических рабочих процессов <code>/workflows</code> перечисляет запущенные и завершенные запуски, фазу, в которой находится каждый из них, и сколько агентов завершило работу.</li>
+</ul>
+<p>Для представления на рабочем столе всех ваших сеансов см. <a href="https://code.claude.com/docs/ru/desktop.md#work-in-parallel-with-sessions">параллельные сеансы в приложении для рабочего стола</a>.</p>
+<h3 id="h-4">Узнайте больше <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Каждое руководство ниже охватывает настройку и конфигурацию для одного подхода:</p>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/sub-agents.md">Create custom subagents</a>: определите переиспользуемых специалистов и контролируйте, какие инструменты они могут использовать.</li>
+<li><a href="https://code.claude.com/docs/ru/agent-view.md">Manage agents with agent view</a>: отправляйте сеансы, наблюдайте их состояние и присоединяйтесь, когда один из них нуждается в вас.</li>
+<li><a href="https://code.claude.com/docs/ru/agent-teams.md">Orchestrate agent teams</a>: установите лидера и товарищей по команде, назначьте задачи и проверьте их работу.</li>
+<li><a href="https://code.claude.com/docs/ru/workflows.md">Orchestrate dynamic workflows</a>: запустите объединённый workflow или позвольте Claude написать один, который запускает множество subagents и проверяет их результаты друг против друга.</li>
+<li><a href="https://code.claude.com/docs/ru/worktrees.md">Run parallel sessions with worktrees</a>: запустите Claude в изолированном checkout, контролируйте, что копируется, и очищайте после этого.</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

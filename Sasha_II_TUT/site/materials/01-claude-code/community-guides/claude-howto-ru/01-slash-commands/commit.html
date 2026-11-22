@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>commit.md</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/01-slash-commands/index.html">01-slash-commands</a></nav>
+<hr>
+<p>allowed-tools: Bash(git add:<em>), Bash(git status:</em>), Bash(git commit:<em>), Bash(git diff:</em>)
+argument-hint: [message]
+description: Create a git commit with context</p>
+<hr>
+<h3 id="context">Context <a class="h-anchor" href="#context" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Current git status: !<code>git status</code></li>
+<li>Current git diff: !<code>git diff HEAD</code></li>
+<li>Current branch: !<code>git branch --show-current</code></li>
+<li>Recent commits: !<code>git log --oneline -10</code></li>
+</ul>
+<h3 id="your-task">Your task <a class="h-anchor" href="#your-task" aria-label="Ссылка на раздел">#</a></h3>
+<p>Based on the above changes, create a single git commit.</p>
+<p>If a message was provided via arguments, use it: $ARGUMENTS</p>
+<p>Otherwise, analyze the changes and create an appropriate commit message following conventional commits format:</p>
+<ul>
+<li><code>feat:</code> for new features</li>
+<li><code>fix:</code> for bug fixes</li>
+<li><code>docs:</code> for documentation changes</li>
+<li><code>refactor:</code> for code refactoring</li>
+<li><code>test:</code> for adding tests</li>
+<li><code>chore:</code> for maintenance tasks</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

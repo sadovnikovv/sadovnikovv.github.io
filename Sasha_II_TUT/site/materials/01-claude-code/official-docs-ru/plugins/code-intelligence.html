@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Code intelligence plugins</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/plugins/index.html">plugins</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="code-intelligence-plugins">Code intelligence plugins <a class="h-anchor" href="#code-intelligence-plugins" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Установите плагин языкового сервера, чтобы Claude видел ошибки типов после редактирования и навигировал по коду по символам, и ответьте на диалог рекомендации плагина LSP.</p>
+</blockquote>
+<p>Плагин code intelligence предоставляет Claude живую диагностику и переход к определению, которые есть в вашем редакторе, поэтому Claude перехватывает ошибки типов и отсутствующие импорты, которые вводят его собственные правки, прежде чем вы запустите сборку, и находит определения и ссылки по символам вместо поиска по тексту.</p>
+<p>Каждый плагин подключает Claude Code к языковому серверу для одного языка через Language Server Protocol (LSP). Вы устанавливаете плагин из официального marketplace Anthropic и двоичный файл языкового сервера на вашей машине.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Code intelligence plugins работают в сеансах терминала. В <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">облачных сеансах</a> Claude Code не запускает языковые серверы плагинов, поэтому Claude не получает диагностику или навигацию по коду там. Чтобы написать свой собственный плагин языкового сервера или подключить языковой сервер, у которого нет плагина, см. <a href="https://code.claude.com/docs/ru/plugins/components.md#lsp-servers">LSP servers in plugin components</a>.</p>
+</blockquote>
+<p>Чтобы начать работу, найдите свой язык в таблице в разделе <a href="#install-a-code-intelligence-plugin">Установка плагина code intelligence</a>. Плагины в этой таблице поступают из <a href="https://code.claude.com/docs/ru/plugins/anthropic-marketplaces.md">официального marketplace плагинов</a> Anthropic.</p>
+<p>Если вы уже видели диалог <strong>LSP plugin recommendation</strong>, см. <a href="#accept-or-dismiss-the-recommendation-dialog">Принять или отклонить диалог рекомендации</a>, чтобы узнать, что делает каждый выбор.</p>
+<h3 id="установка-плагина-code-intelligence">Установка плагина code intelligence <a class="h-anchor" href="#установка-плагина-code-intelligence" aria-label="Ссылка на раздел">#</a></h3>
+<p>Плагин code intelligence сообщает Claude Code, какая команда запускает языковой сервер и какие расширения файлов он обрабатывает. Он не включает языковой сервер. Сначала установите двоичный файл языкового сервера, затем плагин, затем подтвердите, что сервер запускается.</p>
+<p><strong>1. Установка двоичного файла языкового сервера</strong></p>
+<p>Найдите свой язык в таблице ниже и установите двоичный файл в его строке. Если вашего языка нет в списке, см. <a href="#add-a-language-without-an-official-plugin">Добавление языка без официального плагина</a>.</p>
+<p>| Язык | Плагин | Двоичный файл |
+| :- | :- | :- |
+| C/C++ | <a href="https://github.com/anthropics/claude-plugins-official/tree/main/plugins/clangd-lsp"><code>clangd-lsp</code></a> | <code>clangd</code> |
+| C# | <a href="https://github.com/anthropics/claude-plugins-official/tree/main/plugins/csharp-lsp"><code>csharp-lsp</code></a> | <code>csharp-ls</code> |
+| Go | <a href="https://github.com/anthropics/claude-plugins-official/tree/main/plugins/gopls-lsp"><code>gopls-lsp</code></a> | <code>gopls</code> |
+| Java | <a href="https://github.com/anthropics/claude-plugins-official/tree/main/plugins/jdtls-lsp"><code>jdtls-lsp</code></a> | <code>jdtls</code> |
+| Kotlin | <a href="https://github.com/anthropics/claude-plugins-official/tree/main/plugins/kotlin-lsp"><code>kotlin-lsp</code></a> | <code>kotlin-lsp</code> |
+| Liquid | <a href="https://github.com/Shopify/liquid-skills/tree/main/plugins/liquid-lsp"><code>liquid-lsp</code></a> | <code>shopify</code>, из Shopify CLI |
+| Lua | <a href="https://github.com/anthropics/claude-plugins-official/tree/main/plugins/lua-lsp"><code>lua-lsp</code></a> | <code>lua-language-server</code> |
+| PHP | <a href="https://github.com/anthropics/claude-plugins-official/tree/main/plugins/php-lsp"><code>php-lsp</code></a> | <code>intelephense</code> |
+| Python | <a href="https://github.com/anthropics/claude-plugins-official/tree/main/plugins/pyright-lsp"><code>pyright-lsp</code></a> | <code>pyright-langserver</code> |
+| Ruby | <a href="https://github.com/anthropics/claude-plugins-official/tree/main/plugins/ruby-lsp"><code>ruby-lsp</code></a> | <code>ruby-lsp</code> |
+| Rust | <a href="https://github.com/anthropics/claude-plugins-official/tree/main/plugins/rust-analyzer-lsp"><code>rust-analyzer-lsp</code></a> | <code>rust-analyzer</code> |
+| Swift | <a href="https://github.com/anthropics/claude-plugins-official/tree/main/plugins/swift-lsp"><code>swift-lsp</code></a> | <code>sourcekit-lsp</code> |
+| TypeScript и JavaScript | <a href="https://github.com/anthropics/claude-plugins-official/tree/main/plugins/typescript-lsp"><code>typescript-lsp</code></a> | <code>typescript-language-server</code> |</p>
+<p>Anthropic поддерживает каждый плагин в таблице, кроме <code>liquid-lsp</code>, который поддерживает Shopify и который официальный marketplace указывает.</p>
+<p>Чтобы найти команду, которая устанавливает двоичный файл, перейдите по ссылке плагина в таблице на его README. Для TypeScript эта команда: <code>npm install -g typescript-language-server typescript</code>.</p>
+<p>После установки двоичного файла подтвердите, что он находится в <code>PATH</code> оболочки, из которой вы запускаете <code>claude</code>, например с помощью <code>which typescript-language-server</code> или <code>Get-Command typescript-language-server</code> в PowerShell.</p>
+<p><strong>2. Установка плагина</strong></p>
+<p>В расширении VS Code или настольном приложении вместо этого шага следуйте инструкциям из раздела <a href="https://code.claude.com/docs/ru/plugins/install.md#install-a-plugin">Установка плагина</a>. В терминале запустите Claude Code командой <code>claude</code>, затем введите в его промпте следующее, заменив <code>typescript-lsp</code> на плагин, указанный для вашего языка в таблице шага 1:</p>
+<pre><code>/plugin install typescript-lsp@claude-plugins-official</code></pre>
+<p>Сообщение подтверждения указывает, активен ли плагин сейчас или требуется <code>/reload-plugins</code>. Если установка не удалась с ошибкой <code>Marketplace &quot;claude-plugins-official&quot; not found</code>, см. <a href="https://code.claude.com/docs/ru/plugins/troubleshooting.md#marketplace-claude-plugins-official-not-found">запись по устранению неполадок для этой ошибки</a>. Чтобы контролировать, где устанавливается плагин, или запустить установку из вашей оболочки вместо Claude Code, см. <a href="https://code.claude.com/docs/ru/plugins/install.md">Установка плагинов</a>.</p>
+<p><strong>3. Подтверждение запуска сервера</strong></p>
+<p>Языковой сервер запускается в первый раз, когда Claude редактирует файл с одним из расширений плагина. Чтобы увидеть это в действии, попросите Claude внести ошибку типа в файл этого языка, а затем исправить её. Затем проверьте разговор на наличие строки диагностики:</p>
+<ul>
+<li><strong>Появляется строка диагностики</strong>: <code>Found N new diagnostic issues in M files (ctrl+o to expand)</code> под редактированием, которое внесло ошибку, означает, что сервер запустился.</li>
+<li><strong>Строка диагностики не появляется</strong>: запустите <code>/plugin</code> и откройте вкладку <strong>Errors</strong>. Строка, читающая <code>Executable not found in $PATH: &quot;&lt;binary&gt;&quot;</code>, называет двоичный файл для установки. Если вкладка не содержит такую строку, см. <a href="#troubleshoot-code-intelligence">Устранение неполадок code intelligence</a>.</li>
+</ul>
+<p>После установки отсутствующего двоичного файла Claude Code повторит попытку в следующий раз, когда Claude отредактирует соответствующий файл. Если вы установили двоичный файл в каталог, который не находится в <code>PATH</code> оболочки, из которой вы запустили <code>claude</code>, запустите новый сеанс из оболочки, где он находится.</p>
+<h3 id="посмотрите-что-получает-claude">Посмотрите, что получает Claude <a class="h-anchor" href="#посмотрите-что-получает-claude" aria-label="Ссылка на раздел">#</a></h3>
+<p>С запущенным языковым сервером Claude получает диагностику и навигацию по коду:</p>
+<ul>
+<li><strong>Диагностика после редактирования</strong>: каждый раз, когда Claude редактирует или записывает файл, который обрабатывает сервер, Claude получает ошибки и предупреждения, которые сообщает сервер. Он видит ошибку типа, отсутствующий импорт или синтаксическую ошибку, которую он внёс, без запуска компилятора.</li>
+<li><strong>Навигация по коду</strong>: Claude получает инструмент <code>LSP</code>, который ищет символы через сервер вместо поиска текста. Инструмент доступен только для чтения. Для того, что Claude может искать с помощью инструмента и как разрешения применяются к нему, см. <a href="https://code.claude.com/docs/ru/tools-reference.md#lsp-tool-behavior">LSP tool behavior</a>.</li>
+</ul>
+<h4 id="h">Прочитайте диагностику самостоятельно <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h4>
+<p>После того как Claude отредактирует файл, который обрабатывает сервер, разговор показывает только сводку <code>Found N new diagnostic issues</code>. Чтобы прочитать сами проблемы, нажмите <strong>Ctrl+O</strong>.</p>
+<h3 id="h-2">Принять или отклонить диалог рекомендации <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Если двоичный файл языкового сервера уже находится в вашем <code>PATH</code> и плагин, который его использует, не установлен, Claude Code предлагает установить плагин для вас в диалоге с названием <strong>LSP plugin recommendation</strong>.</p>
+<h4 id="h-3">Когда появляется диалог рекомендации <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Диалог <strong>LSP plugin recommendation</strong> может появиться после того, как Claude отредактирует файл. Эти условия определяют, появляется ли он и какой плагин он предлагает:</p>
+<ul>
+<li><strong>Плагин соответствует файлу</strong>: один из добавленных вами marketplaces или официальный marketplace, который Claude Code зарегистрировал для вас, содержит плагин code intelligence для расширения этого файла, и двоичный файл плагина установлен.</li>
+<li><strong>Официальный первым</strong>: когда более одного marketplace предлагает плагин для расширения, диалог предлагает плагин официального marketplace.</li>
+<li><strong>Один раз за сеанс</strong>: диалог появляется максимум один раз в сеансе, для первого соответствующего файла, который редактирует Claude.</li>
+<li><strong>Не для облачных сеансов</strong>: диалог никогда не появляется, когда ваш терминал подключен к облачному сеансу, например к тому, который вы запустили с помощью <a href="https://code.claude.com/docs/ru/claude-code-on-the-web#from-terminal-to-cloud"><code>claude --cloud</code></a>.</li>
+</ul>
+<h4 id="h-4">Ответьте на диалог рекомендации <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<p>Диалог <strong>LSP plugin recommendation</strong> называет плагин и предлагает эти варианты:</p>
+<ul>
+<li><strong>Yes, install</strong>: Claude Code устанавливает плагин для вашей учётной записи пользователя и выводит <code>&lt;plugin&gt; installed · restart to apply</code>. Запустите новый сеанс для загрузки сервера.</li>
+<li><strong>No, not now</strong>: диалог закрывается, и более поздний сеанс может предложить плагин снова. Нажатие <strong>Esc</strong> делает то же самое.</li>
+<li><strong>Never for this plugin</strong>: диалог перестаёт появляться для этого плагина и по-прежнему появляется для других.</li>
+<li><strong>Disable all LSP recommendations</strong>: диалог перестаёт появляться для каждого языка.</li>
+</ul>
+<p>Если вы не выберете опцию, Claude Code закроет её через 30 секунд и будет считать это игнорированием. Счёт ведётся между сеансами. После пяти игнорируемых диалогов Claude Code перестаёт рекомендовать плагины, как если бы вы выбрали <strong>Disable all LSP recommendations</strong>.</p>
+<h4 id="h-5">Включить рекомендации снова <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<p>Диалог <strong>LSP plugin recommendation</strong> перестаёт появляться после того, как вы выберете <strong>Disable all LSP recommendations</strong> или игнорируете его пять раз.</p>
+<ul>
+<li><strong>Отключено или игнорировано пять раз</strong>: чтобы включить его снова в любом случае, удалите ключи <code>lspRecommendationDisabled</code> и <code>lspRecommendationIgnoredCount</code> из <code>~/.claude.json</code>, собственного файла конфигурации Claude Code.</li>
+<li><strong>Never for this plugin</strong>: если вы выбрали <strong>Never for this plugin</strong> и хотите, чтобы этот плагин был предложен снова, удалите его идентификатор <code>name@marketplace</code> из списка <code>lspRecommendationNeverPlugins</code> в том же файле.</li>
+</ul>
+<h3 id="устранение-неполадок-code-intelligence">Устранение неполадок code intelligence <a class="h-anchor" href="#устранение-неполадок-code-intelligence" aria-label="Ссылка на раздел">#</a></h3>
+<p>Страница устранения неполадок плагинов охватывает симптомы, специфичные для плагинов code intelligence, в разделе <a href="https://code.claude.com/docs/ru/plugins/troubleshooting.md#language-server-doesnt-start">Language server doesn&#x27;t start, uses too much memory, or reports wrong diagnostics</a>:</p>
+<ul>
+<li><strong>Языковой сервер не запускается</strong>: вы видите <code>Executable not found in $PATH</code> на вкладке <strong>Errors</strong> в <code>/plugin</code>, или Claude никогда не сообщает диагностику для языка.</li>
+<li><strong>Высокое использование памяти</strong>: использование памяти увеличивается, пока сервер индексирует проект.</li>
+<li><strong>Ложные положительные диагностики в monorepo</strong>: диагностика сообщает об импортах как неразрешённых, когда они разрешены.</li>
+</ul>
+<h3 id="h-6">Добавление языка без официального плагина <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<p>Если вашего языка нет в <a href="#install-a-code-intelligence-plugin">таблице официальных плагинов</a>, вы всё равно можете подключить языковой сервер.</p>
+<ol>
+<li>Напишите плагин с файлом <code>.lsp.json</code>, который называет команду сервера и расширения файлов, которые он обрабатывает.</li>
+<li>Затем загрузите плагин с помощью <a href="https://code.claude.com/docs/ru/plugins/cli-reference#flags-that-load-a-plugin-for-one-session"><code>--plugin-dir</code></a> или опубликуйте его на marketplace.</li>
+</ol>
+<p>Для полей файла и рабочего примера см. <a href="https://code.claude.com/docs/ru/plugins/components.md#lsp-servers">LSP servers in plugin components</a>.</p>
+<h3 id="h-7">Следующие шаги <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/plugins/components.md#lsp-servers">LSP servers in plugin components</a>: напишите <code>.lsp.json</code> для языкового сервера, у которого нет официального плагина</li>
+<li><a href="https://code.claude.com/docs/ru/plugins/install.md">Install and manage plugins</a>: области, обновления и удаление</li>
+<li><a href="https://code.claude.com/docs/ru/plugins/troubleshooting.md">Troubleshoot plugins</a>: ошибки загрузки, выходящие за рамки языковых серверов на этой странице</li>
+<li><a href="https://code.claude.com/docs/ru/plugins/anthropic-marketplaces.md#find-plugins-in-the-official-marketplace">Find plugins in the official marketplace</a>: где просмотреть остальную часть официального marketplace</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Agent Configuration</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../../../materials/index.html">Материалы</a> / <a href="../../../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/edgelab-claude-md/index.html">edgelab-claude-md</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/edgelab-claude-md/skills/index.html">skills</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/edgelab-claude-md/skills/onboarding/index.html">onboarding</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/edgelab-claude-md/skills/onboarding/templates/index.html">templates</a></nav>
+<h1 id="agent-configuration">Agent Configuration <a class="h-anchor" href="#agent-configuration" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="operator">Operator <a class="h-anchor" href="#operator" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Name: {{NAME}}</li>
+<li>Timezone: {{TIMEZONE}}</li>
+<li>Language: {{LANGUAGE}}</li>
+</ul>
+<h3 id="autonomy">Autonomy <a class="h-anchor" href="#autonomy" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="green-zone-autonomous">Green zone (autonomous) <a class="h-anchor" href="#green-zone-autonomous" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Code, scripts, configs</li>
+<li>Git (commit, push to branch, PR)</li>
+<li>Tests, research</li>
+<li>Small bug fixes</li>
+<li>File creation and editing</li>
+</ul>
+<h4 id="red-zone-ask-first">Red zone (ask first) <a class="h-anchor" href="#red-zone-ask-first" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Deleting files or data</li>
+<li>Architecture changes</li>
+<li>Deploying to production</li>
+<li>Force push, rewriting history</li>
+<li>Installing system-level packages</li>
+</ul>
+<h3 id="code-style">Code Style <a class="h-anchor" href="#code-style" aria-label="Ссылка на раздел">#</a></h3>
+<p>{{CODE_STYLE}}</p>
+<h3 id="git">Git <a class="h-anchor" href="#git" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Commits in {{COMMIT_LANGUAGE}}</li>
+<li>Branches: feature/, fix/, refactor/</li>
+<li>Never push to main directly</li>
+<li>Never force push</li>
+</ul>
+<h3 id="communication">Communication <a class="h-anchor" href="#communication" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Respond in {{LANGUAGE}}</li>
+<li>{{STYLE_BRIEF_OR_DETAILED}}</li>
+<li>Lead with the answer, then explain if needed</li>
+<li>If uncertain about a task -- ask before acting</li>
+</ul>
+<h3 id="security">Security <a class="h-anchor" href="#security" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Never output API keys or passwords</li>
+<li>Never commit .env, secrets, or key files</li>
+<li>rm -rf only with explicit confirmation</li>
+<li>Never run sudo without permission</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

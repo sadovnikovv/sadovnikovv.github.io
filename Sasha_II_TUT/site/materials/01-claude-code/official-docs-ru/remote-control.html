@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Продолжайте локальные сеансы с любого устройства с помощью Remote Control</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="продолжайте-локальные-сеансы-с-любого-устройства-с-помощью-remote-control">Продолжайте локальные сеансы с любого устройства с помощью Remote Control <a class="h-anchor" href="#продолжайте-локальные-сеансы-с-любого-устройства-с-помощью-remote-control" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Продолжайте локальный сеанс Claude Code со своего телефона, планшета или любого браузера, используя Remote Control. Работает с claude.ai/code и мобильным приложением Claude.</p>
+</blockquote>
+<p>Remote Control подключает <a href="https://claude.ai/code">claude.ai/code</a> или приложение Claude для <a href="https://apps.apple.com/us/app/claude-by-anthropic/id6473753684">iOS</a> и <a href="https://play.google.com/store/apps/details?id=com.anthropic.claude">Android</a> к сеансу Claude Code, работающему на вашем компьютере. Начните задачу за столом, а затем продолжите её со своего телефона на диване или в браузере на другом компьютере.</p>
+<p>Когда вы запускаете сеанс Remote Control на своем компьютере, Claude продолжает работать локально всё время, поэтому выполнение кода и доступ к файловой системе остаются на вашем компьютере. С помощью Remote Control вы можете:</p>
+<ul>
+<li><strong>Использовать полную локальную среду удалённо</strong>: ваша файловая система, <a href="https://code.claude.com/docs/ru/mcp.md">MCP servers</a>, инструменты и конфигурация проекта остаются доступными, и ввод <code>@</code> автоматически дополняет пути файлов из вашего локального проекта.</li>
+<li><strong>Работать с обеих поверхностей одновременно</strong>: беседа и прогресс <a href="https://code.claude.com/docs/ru/sub-agents.md">subagents</a> и <a href="https://code.claude.com/docs/ru/workflows.md">dynamic workflows</a> остаются синхронизированными на всех подключённых устройствах, поэтому вы можете отправлять сообщения из терминала, браузера и телефона взаимозаменяемо.</li>
+<li><strong>Отправлять изображения и файлы со своего телефона или браузера</strong>: прикрепляйте фотографию или файл в приложение Claude или на claude.ai/code с подписью или без неё. Claude видит прикреплённые фотографии непосредственно как часть вашего сообщения. Claude Code загружает другие файлы на ваш компьютер и передаёт их Claude как ссылки на файлы <code>@</code>.</li>
+<li><strong>Пережить перебои</strong>: если ваш ноутбук перейдёт в режим сна или сетевое соединение разорвётся, Claude Code автоматически переподключится, когда ваш компьютер вернётся в сеть.</li>
+</ul>
+<p>В отличие от <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">cloud sessions</a>, которые работают на облачной инфраструктуре, сеансы Remote Control работают непосредственно на вашем компьютере и взаимодействуют с вашей локальной файловой системой. Веб- и мобильные интерфейсы — это просто окно в этот локальный сеанс, поэтому ваш компьютер должен оставаться включённым и процесс <code>claude</code> должен продолжать работать.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Remote Control — это функция Claude Code. Сведения о диалогах в других продуктах Claude см. в <a href="https://support.claude.com">Справочном центре Claude</a>.</p>
+</blockquote>
+<h3 id="h">Требования <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Перед использованием Remote Control убедитесь, что ваша среда соответствует этим условиям:</p>
+<ul>
+<li><strong>Подписка</strong>: доступна на планах Pro, Max, Ultra, Team и Enterprise. API-ключи не поддерживаются. На планах Team и Enterprise Owner должен сначала включить переключатель Remote Control в <a href="https://claude.ai/admin-settings/claude-code">настройках администратора Claude Code</a>.</li>
+<li><strong>Пользовательские роли</strong>: если ваша организация Enterprise управляет вашим доступом с помощью <a href="https://support.claude.com/en/articles/13930452">пользовательских ролей</a>, ваши роли должны предоставлять вам как разрешение на облачные сессии, так и разрешение <strong>Claude Code remote control</strong>. Если любого из них нет, при запуске Remote Control отображается <a href="#remote-control-is-disabled-by-your-organizations-policy"><code>Remote Control is disabled by your organization&#x27;s policy</code></a>. Попросите Owner проверить ваши роли и добавить недостающее в <a href="https://claude.ai/admin-settings/roles"><strong>Organization settings &gt; Roles</strong></a>.</li>
+<li><strong>Аутентификация</strong>: запустите <code>claude</code> и используйте <code>/login</code> для входа через claude.ai, если вы ещё этого не сделали. Без подходящей учётной записи <code>claude remote-control</code> завершится с ошибкой, в то время как <code>claude --remote-control</code> всё ещё запустит интерактивный сеанс и покажет уведомление об ошибке Remote Control вскоре после запуска.</li>
+<li><strong>Конечная точка API</strong>: недоступна в любой из этих конфигураций:</li>
+<li>Вы используете Amazon Bedrock, Google Cloud&#x27;s Agent Platform или Microsoft Foundry.</li>
+<li>Вы указываете <a href="https://code.claude.com/docs/ru/env-vars"><code>ANTHROPIC_BASE_URL</code></a> на хост, отличный от <code>api.anthropic.com</code>, например на <a href="https://code.claude.com/docs/ru/llm-gateway">LLM gateway</a> или прокси. Отключите переменную, чтобы использовать Remote Control.</li>
+<li>Вы входите через корпоративный <a href="https://code.claude.com/docs/ru/claude-apps-gateway">Claude apps gateway</a>.</li>
+<li><strong>Оценка флага функции</strong>: если вы установили <a href="https://code.claude.com/docs/ru/env-vars.md#features-that-need-feature-flag-fetching">переменную окружения, которая отключает оценку флага функции</a>, доступность Remote Control зависит от того, какую именно:</li>
+<li>Если вы установили <code>CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC</code> или <a href="https://code.claude.com/docs/ru/env-vars#variables"><code>CLAUDE_CODE_DISABLE_FEATURE_FLAGS</code></a>, Remote Control недоступен. Отключите переменную везде, где она установлена, в переменных окружения вашей оболочки или в блоке <code>env</code> <a href="https://code.claude.com/docs/ru/settings-reference#all-settings">файла <code>settings.json</code></a>, чтобы использовать Remote Control.</li>
+<li>Если вы установили только <code>DISABLE_TELEMETRY</code> или <code>DO_NOT_TRACK</code>, Remote Control остаётся доступным, если только ваша организация не требует <a href="#trusted-devices">Trusted Devices</a>. Если требует, отключите переменную, чтобы использовать Remote Control. Использование Remote Control с любой из этих переменных требует Claude Code версии 2.1.283 или позже либо версии 2.1.304 или позже в приложении Claude Desktop.</li>
+<li><strong>Доверие рабочей области</strong>: в каталоге, который вы ещё не доверили, <code>claude remote-control</code> выводит информацию о том, что включает доверие, и спрашивает <code>Trust &lt;directory&gt;? [y/N]</code> перед запуском. Ответ <code>y</code> сохраняет выбор, за исключением вашего домашнего каталога, где доверие никогда не сохраняется и вопрос повторяется при каждом запуске. Когда стандартный ввод или вывод команды не является терминалом, команда не может спросить и завершается с ошибкой <a href="https://code.claude.com/docs/ru/errors#workspace-not-trusted-when-starting-remote-control"><code>Workspace not trusted</code></a>.</li>
+</ul>
+<h3 id="запуск-сеанса-remote-control">Запуск сеанса Remote Control <a class="h-anchor" href="#запуск-сеанса-remote-control" aria-label="Ссылка на раздел">#</a></h3>
+<p>Вы можете запустить сеанс Remote Control из CLI, <a href="https://code.claude.com/docs/ru/desktop.md">приложения Claude Desktop</a> или расширения VS Code. CLI предлагает три режима вызова; приложение Desktop и VS Code используют команду <code>/remote-control</code>.</p>
+<blockquote>
+<p>[tab] Режим сервера</p>
+<p>В каталоге вашего проекта выполните:</p>
+<p>```bash theme={null}
+claude remote-control</p>
+<pre><code>
+`claude rc` — псевдоним этой команды.
+
+До тех пор, пока вы не примете одноразовое подтверждение Remote Control, `claude remote-control` объясняет, что он делает, и спрашивает `Enable Remote Control? (y/n)` перед запуском сервера. Ответьте `y`, чтобы принять и запустить сервер. Если вы откажетесь, Claude Code завершит работу без запуска сервера и снова спросит при следующем запуске команды.
+
+Процесс продолжает работать в вашем терминале в режиме сервера, ожидая удаленных подключений. Он отображает URL, который вы можете использовать для [подключения с другого устройства](#connect-from-another-device), и вы можете нажать пробел, чтобы показать QR-код для быстрого доступа с телефона. Пока активна удаленная сессия, терминал показывает статус подключения и активность инструментов.
+
+Передавайте любые из этих флагов после `remote-control`:
+
+| Флаг | Описание |
+| - | - |
+| `--name &quot;My Project&quot;` | Установите пользовательское название сеанса, видимое в списке сеансов на claude.ai/code. |
+| `--remote-control-session-name-prefix &lt;prefix&gt;` | Префикс для автоматически генерируемых названий сеансов, когда явное имя не установлено. По умолчанию используется имя хоста вашей машины, создавая названия вроде `myhost-graceful-unicorn`. Установите `CLAUDE_REMOTE_CONTROL_SESSION_NAME_PREFIX` для того же эффекта. |
+| `-c`, `--continue` | Восстановите сеанс, который последний сервер в этом каталоге запустил, вместо создания нового. См. [Возобновление сеансов после остановки сервера](#resume-sessions-after-stopping-the-server). Не может быть объединено с `--session-id`, `--spawn`, `--capacity` или `--create-session-in-dir`. Требуется Claude Code v2.1.200 или позже. |
+| `--session-id &lt;id&gt;` | Восстановите один сеанс по его ID. См. [Возобновление сеансов после остановки сервера](#resume-sessions-after-stopping-the-server). Не может быть объединено с `--continue`, `--spawn`, `--capacity` или `--create-session-in-dir`. Требуется Claude Code v2.1.200 или позже. |
+| `--spawn &lt;mode&gt;` | Как сервер создает сессии. • `same-dir` (по умолчанию, если режим не сохранен): все сессии используют текущий рабочий каталог, поэтому они могут конфликтовать при редактировании одних и тех же файлов. • `worktree`: каждая сессия по требованию получает собственный [git worktree](https://code.claude.com/docs/ru/worktrees.md). Требуется Git-репозиторий или [хук `WorktreeCreate`](https://code.claude.com/docs/ru/hooks#worktreecreate). • `session`: режим одной сессии. Обслуживает ровно одну сессию и отклоняет дополнительные подключения. Задается только при запуске. Нажмите `w` во время работы, чтобы переключаться между `same-dir` и `worktree`. Режим, на который вы переключились, становится [режимом по умолчанию для этого проекта](#set-the-default-spawn-mode-for-a-project). |
+| `--capacity &lt;N&gt;` | Максимальное количество одновременных сеансов. По умолчанию 32. Не может использоваться с `--spawn=session`. |
+| `--[no-]create-session-in-dir` | Предварительно создайте один сеанс в текущем каталоге при запуске сервера, чтобы у вас было место для ввода сразу. В режиме `worktree` этот сеанс остается в текущем каталоге, а сеансы по требованию получают изолированные worktrees. Включено по умолчанию. Если вы передадите `--no-create-session-in-dir` для запуска без него, Claude Code архивирует сеансы сервера при его остановке, поэтому нечего [возобновлять](#resume-sessions-after-stopping-the-server). |
+| `--permission-mode &lt;mode&gt;` | Установите начальный [режим разрешений](https://code.claude.com/docs/ru/permission-modes.md) для сеансов сервера, например `acceptEdits`. Принимает `manual` как псевдоним для `default`; неузнанный режим останавливает сервер при запуске и выводит список допустимых режимов. |
+| `--settings &lt;file&gt;` | Применяет JSON-файл настроек к сессиям сервера с тем же [приоритетом](https://code.claude.com/docs/ru/settings.md#settings-precedence), что и `claude --settings`. Укажите путь к файлу, а не JSON-строку. Требуется Claude Code v2.1.321 или новее. |
+| `--chrome` / `--no-chrome` | Включите или отключите [интеграцию Chrome](https://code.claude.com/docs/ru/chrome.md) в сеансах, которые создает сервер, чтобы Claude мог использовать Chrome на вашей машине, пока вы работаете с другого устройства. Без любого из флагов сеанс, который сервер предварительно создает, и любой сеанс, который вы запускаете сами с claude.ai/code или приложения Claude, начинаются с отключенным Chrome, даже если вы [включили Chrome по умолчанию](https://code.claude.com/docs/ru/chrome.md#enable-chrome-by-default). Сеанс, который сервер запускает для одного из ваших потоков [проекта](https://code.claude.com/docs/ru/claude-projects.md), следует этому параметру вместо этого, за исключением режима `bypassPermissions`. Требуется Claude Code v2.1.273 или позже. |
+| `-d`, `--debug[=&lt;filter&gt;]` | Включите отладочное логирование для сервера, опционально отфильтрованное по категориям. Передайте фильтр только в форме `=`, например `--debug=api,hooks`. Требуется Claude Code v2.1.282 или позже. |
+| `--debug-file &lt;path&gt;` | Запишите отладочные логи в указанный файл. |
+| `--verbose` | Показывайте подробные логи подключения и сеанса. |
+| `--sandbox`, `--no-sandbox` | Удалены в v2.1.300. Если вы передадите любой из этих флагов, сервер [завершится с ошибкой](https://code.claude.com/docs/ru/errors.md#sandbox-is-not-supported-by-claude-remote-control) вместо запуска. |
+
+Если вы передадите глобальный флаг `claude` перед `remote-control` или его добавит скрипт-обертка, Claude Code не переносит этот флаг в сессии, которые создает сервер. С некоторыми флагами, например `--verbose` или `--model`, сервер все равно запускается. С любым другим флагом сервер [не запускается](https://code.claude.com/docs/ru/errors.md#not-carried-over-to-the-sessions-remote-control-starts). Чтобы передать файл настроек, укажите `--settings` после `remote-control`.
+
+Чтобы изолировать сеансы, которые запускает сервер, включите [изоляцию](https://code.claude.com/docs/ru/sandboxing.md) в файле параметров.
+
+Чтобы вывести флаги `remote-control` в терминале, выполните `claude remote-control --help`. До v2.1.302 без входа с подходящей учетной записью команда вместо этого возвращала одну из ошибок, описанных в разделе [Устранение неполадок](#troubleshooting).</code></pre>
+</blockquote>
+<blockquote>
+<p>[tab] Интерактивная сессия</p>
+<p>Чтобы запустить обычную интерактивную сессию Claude Code с включенным Remote Control, используйте флаг <code>--remote-control</code> (или <code>--rc</code>):</p>
+<p>```bash theme={null}
+claude --remote-control</p>
+<pre><code>
+Опционально передайте имя для сеанса:
+</code></pre>
+<p>claude --remote-control &quot;My Project&quot;</p>
+<pre><code>
+Это дает вам полный интерактивный сеанс в вашем терминале, который вы также можете контролировать с claude.ai или приложения Claude. В отличие от `claude remote-control` (режим сервера), вы можете вводить сообщения локально, пока сеанс также доступен удаленно.</code></pre>
+</blockquote>
+<blockquote>
+<p>[tab] Из существующего сеанса</p>
+<p>Если вы уже находитесь в сеансе Claude Code и хотите продолжить его удаленно, используйте команду <code>/remote-control</code> (или <code>/rc</code>):</p>
+<p>```text theme={null}
+/remote-control</p>
+<pre><code>
+Передайте имя в качестве аргумента, чтобы установить пользовательское название сеанса:
+</code></pre>
+<p>/remote-control My Project</p>
+<pre><code>
+Это запускает сеанс Remote Control, который переносит историю вашего текущего разговора.
+
+До тех пор, пока вы не примете одноразовое подтверждение Remote Control, диалог появляется перед подключением `/remote-control`. Выберите **Enable Remote Control**, чтобы принять и подключиться. Если вы выберете **Never mind** или нажмете Esc, Claude Code не подключится и снова спросит при следующем запуске `/remote-control`.
+
+Флаг `--verbose` недоступен с этой командой.</code></pre>
+</blockquote>
+<blockquote>
+<p>[tab] VS Code</p>
+<p>В <a href="https://code.claude.com/docs/ru/vs-code.md">расширении Claude Code VS Code</a> введите <code>/remote-control</code> или <code>/rc</code> в поле подсказки.</p>
+<p>```text theme={null}
+/remote-control</p>
+<pre><code>
+Пока Remote Control включен, Claude Code показывает индикатор **Remote Control** в нижней части поля подсказки. После подключения сеанса нажмите на индикатор, чтобы перейти непосредственно к сеансу, или найдите его в списке сеансов на [claude.ai/code](https://claude.ai/code). Claude Code также публикует URL сеанса в разговоре. Чтобы отключиться, запустите `/remote-control` снова.
+
+В отличие от CLI, команда VS Code не принимает аргумент имени и не отображает QR-код. Название сеанса выводится из истории вашего разговора или первой подсказки.</code></pre>
+</blockquote>
+<blockquote>
+<p>[tab] Приложение Desktop</p>
+<p>В локальном сеансе на вкладке Code <a href="https://code.claude.com/docs/ru/desktop.md">приложения Claude Desktop</a> введите <code>/remote-control</code> или <code>/rc</code> в поле подсказки.</p>
+<p>```text theme={null}
+/remote-control</p>
+<pre><code>
+После подключения сеанса найдите его в списке сеансов на [claude.ai/code](https://claude.ai/code). Чтобы отключиться, запустите `/remote-control` снова.
+
+Чтобы вместо этого включить Remote Control для каждого сеанса по умолчанию, см. [Включение Remote Control для всех сеансов](#enable-remote-control-for-all-sessions).</code></pre>
+</blockquote>
+<h4 id="h-2">Проверка статуса подключения <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<p>В интерактивном сеансе, пока Remote Control подключен, терминал показывает индикатор <code>/rc active</code>, который ссылается на сеанс на claude.ai. Индикатор скрывается, когда терминал слишком узкий, чтобы его вместить. Чтобы увидеть URL сеанса и QR-код для <a href="#connect-from-another-device">подключения с другого устройства</a>, запустите <code>/remote-control</code> снова, чтобы открыть панель статуса. Панель также позволяет вам отключить Remote Control, пока ваш локальный сеанс продолжает работать.</p>
+<p>Если подключение не удается в интерактивном сеансе, индикатор изменяется, чтобы показать сбой, и Claude Code показывает причину в уведомлении и добавляет ее в разговор. Запустите <code>/remote-control</code> для переподключения, если только причина не говорит, что сеанс изменился где-то еще:</p>
+<ul>
+<li><strong>Another connection took over this session</strong>: другое устройство или сеанс Claude Code теперь его имеет. Запустите <code>/remote-control</code> только если вы хотите его вернуть.</li>
+<li><strong>This session was ended or archived from another device or app</strong>: запустите <code>/remote-control</code> только если вы хотите сеанс вернуть. Claude Code повторно открывает архивированный сеанс.</li>
+<li><strong>The server no longer reports this session</strong>: он может быть удален с другого устройства или приложения.</li>
+</ul>
+<p>Если <code>/remote-control</code> открывает диалоговое окно с сообщением <code>Remote Control isn&#x27;t connected.</code>, выполните шаг, который указан в диалоговом окне, например запустите <code>/login</code> или выберите <strong>Continue</strong> и повторите попытку.</p>
+<h4 id="h-3">Подключение с другого устройства <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>После активации сеанса Remote Control у вас есть несколько способов подключиться с другого устройства:</p>
+<ul>
+<li><strong>Откройте URL, который отображает Claude Code</strong>, в любом браузере, чтобы перейти на <a href="https://claude.ai/code">claude.ai/code</a>.</li>
+<li><strong>Отсканируйте QR-код</strong>, показанный рядом с URL, чтобы открыть его в приложении Claude. С <code>claude remote-control</code> нажмите пробел, чтобы переключить отображение QR-кода.</li>
+<li><strong>Откройте <a href="https://claude.ai/code">claude.ai/code</a> или приложение Claude</strong> и найдите сеанс по имени в списке сеансов. В мобильном приложении Claude нажмите <strong>Code</strong> в навигации, чтобы достичь списка сеансов. Сеансы Remote Control показывают значок компьютера с зеленой точкой статуса при подключении.</li>
+</ul>
+<p>Когда вы подключаетесь, устройство показывает любых подагентов и рабочие процессы, которые сеанс уже запустил в фоновом режиме. Остановите один из них с устройства, и Claude Code остановит эту задачу на вашей машине.</p>
+<p>Название удаленного сеанса выбирается в этом порядке:</p>
+<ol>
+<li>Имя, которое вы передали в <code>--name</code>, <code>--remote-control</code> или <code>/remote-control</code></li>
+<li>Название, которое вы установили с помощью <code>/rename</code></li>
+<li>Последнее значимое сообщение в существующей истории разговора</li>
+<li>Автоматически сгенерированное имя вроде <code>myhost-graceful-unicorn</code>, где <code>myhost</code> — это имя хоста вашей машины или префикс, который вы установили с помощью <code>--remote-control-session-name-prefix</code></li>
+</ol>
+<p>Если вы не установили явное имя, Claude Code обновляет название, чтобы отразить вашу подсказку после того, как вы отправите одну. Когда вы переименовываете сеанс с claude.ai или приложения Claude, Claude Code также обновляет локальное название, показанное в <code>claude --resume</code>.</p>
+<p>Если у вас еще нет приложения Claude, запустите <code>/mobile</code> внутри Claude Code, чтобы показать QR-код для <a href="https://claude.ai/mobile">claude.ai/mobile</a>, который открывает правильный магазин приложений для вашего телефона.</p>
+<h4 id="h-4">Что видят подключенные устройства <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<p>Подключенное устройство показывает разговор в вашем терминале по мере его происхождения. Эти случаи выходят за рамки обычных сообщений:</p>
+<ul>
+<li><strong>Компактирование и <code>/clear</code></strong>: пока Claude Code <a href="https://code.claude.com/docs/ru/context-window.md#what-survives-compaction">компактирует разговор</a>, подключенные устройства показывают прогресс, а затем где был компактирован разговор. Когда вы запускаете <code>/clear</code>, разговор также сбрасывается на подключенных устройствах.</li>
+<li><strong>Отключение после <code>/resume</code> или <code>/teleport</code></strong>: если у подключенной сессии есть <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md#share-sessions">ссылка для общего доступа</a> или Claude Code не может это проверить, Remote Control отключается, когда любая из этих команд открывает другой диалог. Иначе люди со ссылкой увидели бы этот диалог. Чтобы подключить новый диалог, запустите <code>/remote-control</code> в терминале. Для проверки ссылки для общего доступа требуется Claude Code v2.1.324 или новее.</li>
+<li><strong>Переключение разговоров с помощью <code>/resume</code></strong>: подключенное устройство не получает название переключенного разговора или более раннюю историю, но новые сообщения в обе стороны идут к и от того разговора, который открыт в вашем терминале. Чтобы снова работать с исходным разговором с устройства, запустите <code>/resume</code> в вашем терминале и переключитесь обратно на него.</li>
+<li><strong>Извлечение сеанса с помощью <code>/teleport</code></strong>: когда вы извлекаете <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md#from-cloud-to-terminal">облачный сеанс</a> в ваш терминал с помощью <code>/teleport</code>, подключенное устройство не получает более раннюю историю извлеченного разговора. Новые сообщения в обе стороны идут к и от извлеченного разговора, который теперь открыт в вашем терминале.</li>
+<li><strong>Сообщения из ваших других сессий</strong>: с <a href="https://code.claude.com/docs/ru/cross-session-messaging.md">межсессионной передачей сообщений</a> одно и то же подключение переносит сообщения между вашими собственными сессиями на разных машинах.</li>
+<li><strong>Diff ваших изменений</strong>: когда каталог сеанса находится в git репозитории, панель diff подключенного устройства показывает ваши изменения. На ветке, которая имеет коммиты впереди ветки по умолчанию репозитория, панель показывает изменения с момента разделения ветки, включая ваши незафиксированные правки. На самой ветке по умолчанию или на ветке, которая не впереди, панель показывает только ваши незафиксированные изменения.</li>
+<li><strong>Модель</strong>: когда вы выбираете <a href="https://code.claude.com/docs/ru/model-config.md">модель</a> с подключенного устройства, Claude Code запускает сеанс на этой модели. Требуется Claude Code v2.1.238 или позже. Модель, которую вы выбираете с элемента управления моделью устройства, применяется только к текущему сеансу. Когда вы отправляете <code>/model &lt;name&gt;</code> с устройства в интерактивный сеанс, Claude Code также устанавливает ваше значение по умолчанию для новых сеансов.</li>
+<li><strong>Уровень effort</strong>: когда вы задаете <a href="https://code.claude.com/docs/ru/model-config.md#adjust-effort-level">уровень effort</a> с подключенного устройства с помощью <code>/effort</code> или элемента управления effort на устройстве, Claude Code применяет его к сессии на вашей машине. Если вы закрепили уровень с помощью <code>CLAUDE_CODE_EFFORT_LEVEL</code>, сессия сохраняет этот уровень. Для выбора уровня в элементе управления effort требуется Claude Code v2.1.234 или новее на вашей машине.</li>
+<li><strong>Переподключение после сбоя подключения</strong>: выполните <code>/remote-control</code> для переподключения. Если за это время сжатие контекста переписало диалог или вы переключили диалоги с помощью <code>/resume</code>, Claude Code архивирует серверную сессию, которую он использовал, вместо того чтобы оставлять ее в списке сессий. Вы по-прежнему можете найти эту сессию среди ваших <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md#find-an-archived-session">архивированных сессий</a> на claude.ai/code. Переключение диалогов, пока устройство все еще подключено, не архивирует сессию.</li>
+</ul>
+<h4 id="h-5">Создание ответвления сессии из браузера <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<p>Чтобы попробовать другое направление, не прерывая сессию, откройте ее на <a href="https://claude.ai/code">claude.ai/code</a> и выберите <strong>Fork</strong> в меню сессии или создайте ответвление от более раннего сообщения в транскрипте. Ответвление открывается как новая сессия в вашем списке сессий и продолжает диалог с этой точки, пока исходная сессия продолжает работать. Для создания ответвлений требуется Claude Code v2.1.277 или новее на вашей машине.</p>
+<p>Сервер <code>claude remote-control</code>, запущенный с <code>--spawn session</code>, вмещает только свою единственную сессию, поэтому не может запустить ответвление.</p>
+<p>Claude Code отклоняет создание ответвления, например, в следующих случаях:</p>
+<ul>
+<li>Сессия занята. Создайте ответвление, когда она простаивает.</li>
+<li>Сессия размещена в расширении VS Code или другом приложении, построенном на <a href="https://code.claude.com/docs/ru/agent-sdk/overview.md">Agent SDK</a>.</li>
+</ul>
+<h4 id="включение-remote-control-для-всех-сеансов">Включение Remote Control для всех сеансов <a class="h-anchor" href="#включение-remote-control-для-всех-сеансов" aria-label="Ссылка на раздел">#</a></h4>
+<p>Remote Control активируется только при явном запуске <code>claude remote-control</code>, <code>claude --remote-control</code> или <code>/remote-control</code>, если не включено автоподключение. Чтобы включить автоподключение для каждого интерактивного сеанса, запустите <code>/config</code> внутри Claude Code и установите <strong>Enable Remote Control for all sessions</strong>. Переключатель принимает три значения:</p>
+<ul>
+<li><strong><code>true</code></strong>: автоматически подключаться при запуске интерактивного сеанса.</li>
+<li><strong><code>false</code></strong>: отключить автоподключение, однако <code>true</code> из <a href="https://code.claude.com/docs/ru/managed-settings.md">управляемых настроек</a> имеет приоритет, потому что Claude Code сохраняет выбор в ваши пользовательские настройки. <code>false</code> в настройках проекта или локальных настройках (<code>.claude/settings.json</code>, <code>.claude/settings.local.json</code>) отключает автоподключение даже при управляемом <code>true</code>.</li>
+<li><strong><code>default</code></strong>: очистить ваш выбор и следовать значению по умолчанию, заданному администратором вашей организации, если оно установлено, иначе текущему значению по умолчанию Claude Code. Если вы задали <code>DISABLE_TELEMETRY</code> или <code>DO_NOT_TRACK</code>, см. <a href="#auto-connect-with-disable-telemetry-or-do-not-track">Автоподключение при заданных <code>DISABLE_TELEMETRY</code> или <code>DO_NOT_TRACK</code></a>.</li>
+</ul>
+<p>Расширение VS Code и приложение Desktop также имеют переключатель автоподключения:</p>
+<ul>
+<li><strong>Расширение VS Code</strong>: <strong>Enable Remote Control for all sessions</strong> в разделе Settings <a href="https://code.claude.com/docs/ru/vs-code.md#use-the-prompt-box">меню команд</a>.</li>
+<li><strong>Приложение Desktop</strong>: <strong>Connect new sessions to Remote Control</strong> в <strong>Settings &gt; Code</strong> или <strong>Settings &gt; Claude Code</strong>. См. <a href="https://code.claude.com/docs/ru/desktop.md#control-which-sessions-appear-on-your-other-devices">Управление тем, какие сессии появляются на других ваших устройствах</a>.</li>
+</ul>
+<p>Чтобы вместо этого включить автоподключение из файла настроек, задайте для <a href="https://code.claude.com/docs/ru/settings-reference#remotecontrolatstartup"><code>remoteControlAtStartup</code></a> значение <code>true</code> в вашем пользовательском файле <code>~/.claude/settings.json</code> или в <a href="https://code.claude.com/docs/ru/managed-settings.md">управляемых настройках</a>. В настройках проекта или локальных настройках (<code>.claude/settings.json</code>, <code>.claude/settings.local.json</code>) Claude Code учитывает <code>false</code> и отключает автоподключение для этого репозитория. Значение <code>true</code> там игнорируется, поэтому вы не можете использовать файл, добавленный в репозиторий, чтобы включить Remote Control для всех, кто открывает репозиторий.</p>
+<p>Автоподключение входит с вашей собственной учетной записью claude.ai, поэтому сеанс, который оно запускает, появляется только в приложениях Claude вашей собственной учетной записи и не предоставляет доступ никому другому.</p>
+<p>С этим параметром включенным, каждый интерактивный процесс Claude Code регистрирует один удаленный сеанс. Если вы запускаете несколько экземпляров, каждый получает свой собственный удаленный сеанс. Чтобы запустить несколько одновременных сеансов из одного процесса, используйте вместо этого <a href="#start-a-remote-control-session">режим сервера</a>.</p>
+<h5 id="автоподключение-при-заданных-disable_telemetry-или-do_not_track">Автоподключение при заданных <code>DISABLE_TELEMETRY</code> или <code>DO_NOT_TRACK</code> <a class="h-anchor" href="#автоподключение-при-заданных-disable_telemetry-или-do_not_track" aria-label="Ссылка на раздел">#</a></h5>
+<p>Если задана только <code>DISABLE_TELEMETRY</code> или <code>DO_NOT_TRACK</code>, ваши сессии не подключаются автоматически через значение по умолчанию, заданное администратором вашей организации, или собственное значение по умолчанию Claude Code. Если Remote Control недоступен для вас по другой причине, например из-за <a href="https://code.claude.com/docs/ru/env-vars#variables"><code>CLAUDE_CODE_DISABLE_FEATURE_FLAGS</code></a> или LLM-шлюза, начните вместо этого с раздела <a href="#requirements">Требования</a>.</p>
+<p>Прежде чем включать автоподключение, когда задана только <code>DISABLE_TELEMETRY</code> или <code>DO_NOT_TRACK</code>, убедитесь, что ваша версия Claude Code соответствует <a href="#requirements">требованию для этих переменных</a>. Затем проверьте, требует ли ваша организация <a href="#trusted-devices">Trusted Devices</a>:</p>
+<ul>
+<li><strong>Не требует</strong>: установите <strong>Enable Remote Control for all sessions</strong> в <code>true</code> в <code>/config</code>.</li>
+<li><strong>Требует</strong>: Remote Control недоступен, пока задана <code>DISABLE_TELEMETRY</code> или <code>DO_NOT_TRACK</code>. Удалите ту из двух переменных, которую вы задали. Если ваши сессии по-прежнему не подключаются автоматически, установите <strong>Enable Remote Control for all sessions</strong> в <code>true</code> в <code>/config</code>.</li>
+</ul>
+<h4 id="h-6">Возобновление сеансов после остановки сервера <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<p>Когда вы останавливаете <code>claude remote-control</code> с помощью Ctrl+C, сеансы, которые он обслуживал, перестают отвечать с вашего телефона или браузера. Пока вы не запускали другой <code>claude remote-control</code> в том же каталоге и не запустили этот с <code>--no-create-session-in-dir</code>, Claude Code их не архивирует. Чтобы их вернуть, запустите одну из этих команд в том же каталоге:</p>
+<ul>
+<li><strong><code>claude remote-control</code></strong>: возвращает каждый сеанс, который обслуживал сервер.</li>
+<li><strong><code>claude remote-control --continue</code></strong>: возвращает только сеанс, с которого сервер начал, и выходит, когда этот сеанс заканчивается. Если в этом каталоге нет записи, Claude Code использует самый новый из других git worktrees этого репозитория.</li>
+<li><strong><code>claude remote-control --session-id &lt;id&gt;</code></strong>: возвращает только сеанс, чей ID вы передали, и выходит, когда этот сеанс заканчивается. ID — это часть URL сеанса на claude.ai/code между <code>/code/</code> и любым <code>?</code>.</li>
+</ul>
+<p>Эти команды работают примерно четыре часа после остановки сервера. После этого запустите <code>claude remote-control</code> для запуска нового сеанса. Если вы архивировали сеанс в то же время, <code>--continue</code> и <code>--session-id</code> разархивируют его на Claude Code v2.1.228 или позже.</p>
+<p>Чтобы вернуть сессию, которую вы запустили с помощью <code>claude --remote-control</code> или <code>/remote-control</code>, возобновите диалог с помощью <code>claude --continue</code> или <code>claude --resume</code>. О режиме разрешений, в котором запускается возобновленный диалог, см. <a href="https://code.claude.com/docs/ru/sessions.md#permission-mode-on-resume">режим разрешений при возобновлении</a>. Если Remote Control не переподключится, см. <a href="#couldnt-reconnect-to-your-remote-control-session">Не удалось переподключиться к вашей сессии Remote Control</a>.</p>
+<p>Если вы возобновляете разговор во втором терминале, пока первый все еще имеет Remote Control включенным, Claude Code выводит уведомление <code>Remote Control not started here</code> во втором терминале и оставляет Remote Control отключенным там вместо того, чтобы забирать сеанс у первого. Запустите <code>/remote-control</code> во втором терминале, чтобы переместить Remote Control на него.</p>
+<p>Когда вы возобновляете разговор в Claude Desktop или расширении IDE, которое имело Remote Control включенным, Claude Code переподключает его к существующему сеансу claude.ai вместо добавления нового в список сеансов.</p>
+<h4 id="h-7">Установка режима запуска по умолчанию для проекта <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если <code>claude remote-control</code> выводит при запуске <code>Spawn mode: &lt;mode&gt; (saved for this folder; press w to change)</code>, сервер запускается в режиме запуска, ранее сохраненном для этого проекта.</p>
+<p>Сохраненный режим берется из выбора, который вы сделали в своем собственном терминале. Если <code>claude remote-control</code> спросил там <code>Spawn mode for this project:</code>, Claude Code сохранил ваш ответ: <code>1</code> для <code>same-dir</code> или <code>2</code> для <code>worktree</code>. Если вы нажали <code>w</code> во время его работы, Claude Code сохранил режим, на который вы переключились, даже при запуске с <code>--spawn same-dir</code> или <code>--spawn worktree</code>.</p>
+<ul>
+<li>Пока сервер работает в режиме <code>same-dir</code> или <code>worktree</code>, нажмите <code>w</code> в терминале сервера, чтобы переключиться на другой режим. Для переключения требуется Git-репозиторий или хук <code>WorktreeCreate</code>.</li>
+<li>Чтобы использовать другой режим для одного запуска, передайте <code>--spawn &lt;mode&gt;</code>.</li>
+</ul>
+<h3 id="h-8">Подключение и безопасность <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h3>
+<p>Ваш локальный сеанс Claude Code выполняет только исходящие HTTPS запросы и никогда не открывает входящие порты на вашем компьютере. Когда вы запускаете Remote Control, он регистрируется в API Anthropic и опрашивает работу. Когда вы подключаетесь с другого устройства, сервер маршрутизирует сообщения между веб-клиентом или мобильным клиентом и вашим локальным сеансом через потоковое соединение.</p>
+<p>Весь трафик проходит через API Anthropic через TLS, тот же транспортный протокол безопасности, что и любой сеанс Claude Code. Соединение использует несколько краткосрочных учётных данных, каждое из которых ограничено одной целью и истекает независимо.</p>
+<p>Пока Remote Control подключен, стенограмма сеанса, включая ваши сообщения, ответы Claude и активность инструментов, хранится на серверах Anthropic. Сохраненная стенограмма синхронизирует беседу на всех ваших устройствах и позволяет сеансу переподключиться после разрыва сети. Выполнение и доступ к файловой системе остаются на вашем компьютере, а сохраненные стенограммы хранятся в соответствии с политикой <a href="https://code.claude.com/docs/ru/data-usage.md">Использование данных</a>.</p>
+<p>Чтобы полностью отключить Remote Control, используйте параметр <a href="https://code.claude.com/docs/ru/settings-reference#disableremotecontrol"><code>disableRemoteControl</code></a>. Организации с включённым <a href="https://code.claude.com/docs/ru/zero-data-retention.md">Zero Data Retention</a> или с применённой <a href="https://code.claude.com/docs/ru/hipaa-setup.md">конфигурацией HIPAA</a> не могут включить Remote Control.</p>
+<h3 id="h-9">Доверенные устройства <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h3>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Доверенные устройства в настоящее время находятся в бета-версии. Функции и возможности могут развиваться по мере совершенствования опыта.</p>
+<p>Доверенные устройства доступны на планах Pro, Max, Ultra, Team и Enterprise и отключены по умолчанию. На планах Team и Enterprise Owner включает эту функцию для организации. На планах Pro, Max и Ultra вы сами включаете <strong>Require trusted devices</strong> в своих настройках на странице Cowork или Account.</p>
+</blockquote>
+<p>Доверенные устройства требуют проверенного устройства, прежде чем вы сможете просматривать сессии Remote Control или управлять ими из claude.ai, мобильных приложений Claude или Claude Desktop. Это требование распространяется на каждого члена вашей организации или только на вас на плане Pro, Max или Ultra. Это связывает доступ Remote Control с известным устройством и недавней аутентификацией, а не просто с учётной записью, в которую выполнен вход.</p>
+<p>Когда параметр включен, взаимодействие с сеансом Remote Control требует обоих следующих условий:</p>
+<ul>
+<li><strong>Зарегистрированное устройство</strong>: каждый браузер, телефон или приложение для рабочего стола, которое член использует для Remote Control, регистрирует свои собственные учётные данные. Регистрация предлагается только вскоре после полного входа, поэтому устройство присоединяется к списку доверенных как часть реальной аутентификации, а не молча в фоновом режиме.</li>
+<li><strong>Недавний вход</strong>: вход члена должен быть не старше 18 часов. Вместо входа каждый день члены подтверждают присутствие с помощью Face ID, Touch ID, Windows Hello или passkey. Этот биометрический шаг повышения уровня немедленно обновляет сеанс.</li>
+</ul>
+<p>Биометрические проверки выполняются на устройстве через операционную систему или браузер, тот же механизм, что и вход с passkey. Anthropic никогда не получает и не хранит отпечатки пальцев, данные лица или любую другую биометрическую информацию. Хранятся только открытый ключ устройства и основные метаданные, такие как отображаемое имя, платформа и время регистрации.</p>
+<p>Настройка применяется к Remote Control в Claude Code и к Computer access в <a href="https://claude.com/docs/cowork/overview">Cowork</a>. На этой странице рассматривается сторона Claude Code. Обычный чат Claude, Claude Code в терминале и использование API не затронуты.</p>
+<h4 id="включение-доверенных-устройств-для-организации-team-или-enterprise">Включение доверенных устройств для организации Team или Enterprise <a class="h-anchor" href="#включение-доверенных-устройств-для-организации-team-или-enterprise" aria-label="Ссылка на раздел">#</a></h4>
+<p>Владелец включает параметр из параметров организации claude.ai.</p>
+<p><strong>1. Перейдите на страницу Capabilities</strong></p>
+<p>Перейдите на <a href="https://claude.ai/admin-settings/capabilities"><strong>Organization settings &gt; Capabilities &gt; Remote sessions</strong></a>. Переключатель <strong>Require trusted devices</strong> появляется в этом разделе.</p>
+<p><strong>2. Включите Require trusted devices</strong></p>
+<p>Параметр применяется к каждому члену организации и к сеансам Remote Control, запущенным после включения переключателя. Сеансы, которые уже работали до включения переключателя, не защищены задним числом и продолжают работать без требования устройства до их завершения. Область действия для каждой команды или проекта недоступна.</p>
+<p><strong>3. Сообщите членам, чего ожидать</strong></p>
+<p>В первый раз, когда член просматривает или управляет новым сеансом Remote Control из браузера, телефона или приложения для рабочего стола после включения параметра, ему предлагается зарегистрировать это устройство. Предварительное уведомление избегает путаницы.</p>
+<h4 id="h-10">Что видят члены <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h4>
+<p>Регистрация — это одноразовый шаг для каждого устройства. После этого единственное видимое изменение — это случайный биометрический запрос.</p>
+<ul>
+<li><strong>Первое использование на каждом устройстве</strong>: члену предлагается зарегистрировать устройство. Если его вход не свежий, он сначала входит через ваш обычный процесс, включая SSO, если настроен, а затем подтверждает регистрацию.</li>
+<li><strong>День за днём</strong>: члены с зарегистрированным устройством и свежим входом не видят никаких запросов. Когда вход становится старше 18 часов, следующее взаимодействие Remote Control показывает один запрос Face ID, Touch ID, Windows Hello или passkey.</li>
+<li><strong>Незарегистрированные устройства</strong>: сеансы Remote Control не могут быть просмотрены или управляться до регистрации устройства. Обычный чат Claude на этом устройстве не затронут.</li>
+<li><strong>Без аутентификатора платформы</strong>: члены на машине без Face ID, Touch ID или Windows Hello могут использовать аппаратный ключ безопасности или войти снова вместо повышения уровня.</li>
+<li><strong>В терминале</strong>: машина, на которой работает Claude Code, получает свои собственные учётные данные автоматически, когда разработчик входит в CLI. В терминале нет отдельного шага регистрации.</li>
+</ul>
+<h4 id="h-11">Управление зарегистрированными устройствами <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h4>
+<p>Члены могут просматривать и отзывать свои собственные устройства из параметров учётной записи.</p>
+<p>Откройте <a href="https://claude.ai/settings/account#trusted-devices">claude.ai/settings/account</a> и найдите раздел <strong>Trusted devices</strong>, чтобы увидеть каждое зарегистрированное устройство с его именем, платформой и датой регистрации. Удаление устройства немедленно отзывает его учётные данные, и устройство может повторно зарегистрироваться позже после свежего входа. Учётные данные также истекают самостоятельно, если не обновляются, поэтому неиспользуемое устройство автоматически исчезает из списка доверенных.</p>
+<p>Для потерянного или украденного устройства член удаляет его с этой страницы. Если член не может войти, администратор может использовать <strong>Sign out everywhere</strong> в консоли администратора, чтобы отозвать каждый сеанс и зарегистрированное устройство для этого члена, после чего член повторно регистрирует устройства, которые он всё ещё держит.</p>
+<h3 id="remote-control-и-облачные-сеансы">Remote Control и облачные сеансы <a class="h-anchor" href="#remote-control-и-облачные-сеансы" aria-label="Ссылка на раздел">#</a></h3>
+<p>Remote Control и <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">облачные сеансы</a> используют интерфейс claude.ai/code. Ключевое различие заключается в том, где выполняется сеанс: Remote Control выполняется на вашем компьютере, поэтому ваши локальные MCP серверы, инструменты и конфигурация проекта остаются доступными. Облачный сеанс выполняется на облачной инфраструктуре, управляемой Anthropic по умолчанию.</p>
+<p>Используйте Remote Control, когда вы находитесь в процессе локальной работы и хотите продолжить с другого устройства. Используйте облачный сеанс, когда вы хотите начать задачу без какой-либо локальной настройки, работать с репозиторием, который у вас не клонирован, или запускать несколько задач параллельно. <a href="https://code.claude.com/docs/ru/claude-projects.md">Проект</a> объединяет оба подхода: его потоки выполняются в облаке, и он использует Remote Control для <a href="https://code.claude.com/docs/ru/claude-projects.md#run-a-thread-on-your-own-computer">запуска потока на вашем компьютере</a>, когда вы просите это там.</p>
+<p>Claude Code предлагает несколько способов работы, когда вы находитесь не у терминала. Они отличаются тем, что запускает работу, где работает Claude, и сколько настроек вам нужно выполнить.</p>
+<p>| | Триггер | Claude работает на | Настройка | Лучше всего для |
+| :- | :- | :- | :- | :- |
+| <a href="https://code.claude.com/docs/ru/desktop.md#sessions-from-dispatch">Dispatch</a> | Отправьте задачу из мобильного приложения Claude | Ваша машина (Desktop) | <a href="https://support.claude.com/en/articles/13947068">Свяжите мобильное приложение с Desktop</a> | Делегирование работы, когда вас нет, минимальная настройка |
+| <a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a> | Управляйте запущенной сессией из <a href="https://claude.ai/code">claude.ai/code</a> или мобильного приложения Claude | Ваша машина (CLI, Desktop или VS Code) | Запустите <a href="https://code.claude.com/docs/ru/remote-control#start-a-remote-control-session"><code>claude remote-control</code> или <code>/remote-control</code></a> | Управление текущей работой с другого устройства |
+| <a href="https://code.claude.com/docs/ru/channels.md">Channels</a> | Отправляйте события из приложения чата, такого как Telegram или Discord, или с вашего собственного сервера | Ваша машина (CLI) | <a href="https://code.claude.com/docs/ru/channels.md#quickstart">Установите плагин канала</a> или <a href="https://code.claude.com/docs/ru/channels-reference.md">создайте свой</a> | Реагирование на внешние события, такие как сбои CI или сообщения в чате |
+| <a href="https://code.claude.com/docs/ru/slack.md">Slack</a> | Упомяните <code>@Claude</code> в канале команды | Облако Anthropic | <a href="https://code.claude.com/docs/ru/slack.md#setting-up-claude-code-in-slack">Установите приложение Slack</a> с включенным <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">Claude Code в веб-версии</a>, в планах Pro, Max и Ultra | PR и рецензии из чата команды |
+| <a href="https://code.claude.com/docs/ru/self-hosted-environments">Self-hosted environments</a> | Запустите <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">облачную сессию</a> и выберите окружение вашей организации | Инфраструктура вашей организации | <a href="https://code.claude.com/docs/ru/self-hosted-environments-quickstart.md">Разверните runners</a>, в планах Team и Enterprise | Облачные сессии, которые должны работать внутри вашей сети |
+| <a href="https://code.claude.com/docs/ru/scheduled-tasks.md">Scheduled tasks</a> | Установите расписание | <a href="https://code.claude.com/docs/ru/scheduled-tasks.md">CLI</a>, <a href="https://code.claude.com/docs/ru/desktop-scheduled-tasks.md">Desktop</a> или <a href="https://code.claude.com/docs/ru/routines.md">облако</a> | Выберите частоту | Повторяющаяся автоматизация, такая как ежедневные проверки |</p>
+<h3 id="мобильные-push-уведомления">Мобильные push-уведомления <a class="h-anchor" href="#мобильные-push-уведомления" aria-label="Ссылка на раздел">#</a></h3>
+<p>Когда Remote Control активен, Claude может отправлять push-уведомления на ваш телефон.</p>
+<p>Push-уведомление может прийти, когда завершается долгоживущая задача или когда Claude нужно ваше решение. Вы также можете запросить push-уведомление в своем промпте, например <code>notify me when the tests finish</code>. Помимо двух переключателей включения/выключения ниже, нет конфигурации для отдельных событий.</p>
+<p>Чтобы настроить мобильные push-уведомления:</p>
+<p><strong>1. Установите мобильное приложение Claude</strong></p>
+<p>Загрузите приложение Claude для <a href="https://apps.apple.com/us/app/claude-by-anthropic/id6473753684">iOS</a> или <a href="https://play.google.com/store/apps/details?id=com.anthropic.claude">Android</a>.</p>
+<p><strong>2. Войдите с помощью своей учетной записи Claude Code</strong></p>
+<p>Используйте ту же учетную запись и организацию, которые вы используете для Claude Code в терминале.</p>
+<p><strong>3. Разрешите уведомления</strong></p>
+<p>Примите запрос разрешения на уведомления от операционной системы.</p>
+<p><strong>4. Включите push в Claude Code</strong></p>
+<p>В вашем терминале запустите <code>/config</code> и включите <strong>Push when Claude decides</strong> для проактивных уведомлений, <strong>Push when actions required</strong> для запросов разрешений и вопросов, или оба варианта.</p>
+<p>Если уведомления не приходят:</p>
+<ul>
+<li>Если <code>/config</code> показывает <strong>No mobile registered</strong>, откройте приложение Claude на вашем телефоне, чтобы оно могло обновить свой push-токен. Предупреждение исчезает при следующем подключении Remote Control.</li>
+<li>На iOS режимы Focus и сводки уведомлений могут подавлять или задерживать push-уведомления. Проверьте Settings → Notifications → Claude.</li>
+<li>На Android агрессивная оптимизация батареи может задержать доставку. Исключите приложение Claude из оптимизации батареи в системных параметрах.</li>
+</ul>
+<p>Claude Code пропускает мобильные push-уведомления, пока вы печатаете или сосредоточены на подключенном терминале. Чтобы расширить это на любое время, когда вы находитесь у машины, даже в другом окне, установите <a href="https://code.claude.com/docs/ru/env-vars"><code>CLAUDE_CLIENT_PRESENCE_FILE</code></a> на путь файла-маркера: уведомления пропускаются, пока файл существует. Настройте прослушиватель блокировки экрана или аналогичный инструмент для создания файла при разблокировке экрана и удаления его при блокировке экрана.</p>
+<h3 id="h-12">Ограничения <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong>Одна удалённая сессия на интерактивный процесс</strong>: вне серверного режима каждый экземпляр Claude Code поддерживает только одну удалённую сессию одновременно. Используйте <a href="#start-a-remote-control-session">серверный режим</a>, чтобы запускать несколько параллельных сессий из одного процесса.</li>
+<li><strong>Локальный процесс должен продолжать работать</strong>: Remote Control работает как локальный процесс. Если вы закроете терминал, выйдете из приложения Desktop или VS Code, в котором сессия выполняется на вашей машине, либо иным образом остановите процесс <code>claude</code>, сессия перейдёт в офлайн, пока вы <a href="#resume-sessions-after-stopping-the-server">не вернёте её</a>. Если вы запускаете <code>claude</code> из терминала на удалённой машине, запускайте его внутри <code>tmux</code> или <code>screen</code>, чтобы сессия продолжала работать после отключения от SSH.</li>
+<li><strong>Аварийно завершившиеся сессии в серверном режиме</strong>: если сессия, обслуживаемая <code>claude remote-control</code>, аварийно завершилась, отправьте ей сообщение с подключённого устройства. Claude Code снова начнёт её обслуживать. Перезапускать сервер не нужно. Требуется Claude Code v2.1.238 или новее.</li>
+<li><strong>Отказы HTTP 403 в подключённой сессии</strong>: после подключения интерактивной сессии Claude Code продолжает повторять попытки в течение трёх минут, если что-то между вашей машиной и серверами Anthropic отвечает HTTP 403, что может произойти после смены VPN или сети. Если отказы продолжаются дольше, Claude Code отключается, а в причине указывается, что именно отказало: пограничный узел сети либо прокси, VPN или файрвол в вашей собственной сети.</li>
+<li><strong>Длительный сбой сети</strong>: если ваша машина не спит, но не может подключиться к сети, дальнейшие действия зависят от режима:</li>
+<li><strong>Серверный режим</strong>: Claude Code прекращает попытки примерно через 10 минут, и процесс <code>claude remote-control</code> завершается. Чтобы перезапустить сервер, см. <a href="#resume-sessions-after-stopping-the-server">Возобновление сессий после остановки сервера</a>.</li>
+<li><strong>Интерактивная сессия</strong>: продолжайте работать локально. Claude Code повторяет попытки всё время, пока длится сбой, и переподключается сам, когда сеть восстанавливается.</li>
+<li><strong>Вложения, которые не загружаются</strong>: если файл, прикреплённый вами с телефона или в браузере, не удаётся загрузить на вашу машину, Claude всё равно получает ваше сообщение и загруженные файлы. Вместо отсутствующих файлов Claude Code добавляет к сообщению примечание, например <code>[1 of 3 attachments did not arrive]</code>.</li>
+<li><strong>Сбой сигналов присутствия</strong>: если интерактивная сессия отключается с сообщением <code>could not reach the Remote Control server for about 30 minutes</code>, выполните <code>/remote-control</code>, чтобы переподключиться.</li>
+<li><strong>Пересылаемые диалоги истекают</strong>: Claude Code держит запросы разрешений и вопросы <code>AskUserQuestion</code> открытыми, пока вы на них не ответите. Когда Claude Code пересылает в удалённую сессию диалог другого типа, например промпт выбора модели, показываемый после отказа по соображениям безопасности, он по умолчанию ждёт пять минут, затем закрывает диалог и продолжает с вариантом диалога по умолчанию, не предполагающим действий. Задайте <a href="https://code.claude.com/docs/ru/settings-reference#dialogexpiry"><code>dialogExpiry</code></a>, чтобы изменить или отключить этот срок. Требуется Claude Code v2.1.224 или новее.</li>
+<li><strong>Неотвеченные промпты согласия на кредиты использования Fable завершают ход</strong>: если никто не ответит на <a href="https://code.claude.com/docs/ru/model-config.md#fable-and-usage-credits">промпт согласия на кредиты использования Fable</a> до истечения срока <a href="https://code.claude.com/docs/ru/settings-reference#dialogexpiry"><code>dialogExpiry</code></a>, ход завершается и ничего не отправляется; см. <a href="https://code.claude.com/docs/ru/errors.md#the-prompt-to-confirm-went-unanswered">The prompt to confirm went unanswered</a>. В интерактивной сессии в терминале этот промпт также может появиться на вашем подключённом устройстве, и вы можете ответить на него там. Требуется Claude Code v2.1.323 или новее.</li>
+<li><strong>Некоторые команды доступны только локально</strong>: команды, которые работают только в терминальном интерфейсе, например <code>/plugin</code> или <code>/resume</code>, работают только из локального CLI, независимо от того, передаёте ли вы аргумент. <code>/claude-api</code> также недоступна, если вводить её с мобильного устройства или в вебе. Claude всё же может <a href="https://code.claude.com/docs/ru/skills.md#work-on-claude-api-projects">загрузить этот скилл самостоятельно</a> и там. С мобильного устройства и в вебе работают следующие команды:</li>
+<li>Команды с текстовым выводом: <code>/compact</code>, <code>/clear</code>, <code>/context</code>, <code>/usage</code>, <code>/exit</code>, <code>/usage-credits</code>, <code>/recap</code> и <code>/reload-plugins</code>. <code>/usage-credits</code> отвечает текстом, например сообщает, где управлять кредитами использования. <code>/reload-plugins</code> работает, только когда сессия выполняется в интерактивном терминале; сессия без него отклоняет эту команду.</li>
+<li><code>/model</code>, <code>/effort</code>, <code>/fast</code>, <code>/color</code> и <code>/rename</code>: передайте значение как аргумент, например <code>/model sonnet</code> или <code>/effort high</code>. С мобильного устройства и в вебе <code>/model</code> и <code>/effort</code> принимают аргумент вместо терминального меню выбора или ползунка.</li>
+<li><code>/mcp</code>: в мобильном приложении возвращает текстовую сводку состояния серверов вместо открытия меню выбора. В вебе <code>/mcp</code> без аргументов открывает каталог <a href="https://code.claude.com/docs/ru/mcp.md#use-mcp-servers-from-claude-ai">коннекторов claude.ai</a> вместо возврата сводки. <a href="https://code.claude.com/docs/ru/commands.md#all-commands">Подкоманды</a> <code>reconnect</code>, <code>enable</code> и <code>disable</code> работают в обоих случаях, когда сессия выполняется в интерактивном терминале. <code>/mcp reconnect</code> без имени сервера повторяет попытку для каждого сервера, который дал сбой или требует аутентификации. Чтобы авторизовать коннектор claude.ai без меню выбора, см. <a href="#authorize-a-connector-again-from-your-shell">Повторная авторизация коннектора из оболочки</a>.</li>
+<li><code>/config</code>: в мобильном приложении передайте <code>key=value</code>, чтобы задать настройку, или выполните команду без аргумента, чтобы вывести список ключей, которые можно задать. В вебе <code>/config</code> вместо этого открывает <strong>Settings &gt; Code</strong> или <strong>Settings &gt; Claude Code</strong>.</li>
+<li>Если вы участник Team или Enterprise без доступа к биллингу, команда <code>/usage-credits</code> с мобильного устройства или в вебе не отправляет <a href="https://code.claude.com/docs/ru/costs.md#add-usage-credits-to-your-subscription">запрос кредитов использования вашему администратору</a>. Для отправки требуется подтверждение, которое появляется только в интерактивном CLI, поэтому команда предлагает вам выполнить её там.</li>
+<li><code>/autocompact</code>, начиная с v2.1.221: передайте размер окна как аргумент, например <code>/autocompact 500k</code>. Без аргумента команда выводит текущий размер окна в виде текста вместо открытия диалога, который она показывает в терминальной сессии.</li>
+<li><code>/advisor</code>, начиная с v2.1.260: передайте модель как аргумент, например <code>/advisor opus</code>, или передайте <code>off</code>, чтобы отключить советника. Обе формы применяются только к текущей сессии и не меняют сохранённое значение по умолчанию. Без аргумента команда выводит текущего советника в виде текста вместо открытия меню выбора.</li>
+<li><code>/output-style</code>, начиная с v2.1.269: передайте имя стиля как аргумент, например <code>/output-style concise</code>, или выполните команду без аргумента, чтобы вывести список стилей. С мобильного устройства и в вебе можно просматривать и выбирать только <a href="https://code.claude.com/docs/ru/output-styles.md#built-in-output-styles">встроенные стили</a>. Чтобы использовать <a href="https://code.claude.com/docs/ru/output-styles.md#create-a-custom-output-style">пользовательский стиль</a>, выберите его в самой сессии.</li>
+<li><code>/focus</code>, начиная с v2.1.281: передайте <code>on</code> или <code>off</code> как аргумент, например <code>/focus on</code>, или выполните команду без аргумента, чтобы переключить <a href="https://code.claude.com/docs/ru/commands.md#all-commands">режим фокуса</a>. Обе формы применяются только к текущей сессии и не меняют сохранённый выбор.</li>
+</ul>
+<h3 id="h-13">Повторная авторизация коннектора из оболочки <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h3>
+<p>Когда коннектору claude.ai требуется аутентификация в сессии, которой вы управляете через Remote Control, панель <code>/mcp</code> недоступна в мобильном приложении или в веб-версии. Получите ссылку для авторизации в терминале на машине, где выполняется сессия, а затем откройте ссылку на устройстве, которое вы используете. Запустить команду из мобильного приложения или веб-версии нельзя. Строка, которую вы отправляете оттуда и которая начинается с <code>!</code>, передаётся Claude как сообщение и не выполняется в <a href="https://code.claude.com/docs/ru/interactive-mode.md#shell-mode-with-prefix">режиме оболочки</a>.</p>
+<p><strong>1. Получите ссылку для авторизации</strong></p>
+<p>В терминале на машине, где выполняется сессия, например через SSH, выполните <code>claude mcp login</code>, указав имя коннектора в кавычках. Имя коннектора начинается с <code>claude.ai</code>, например <code>claude.ai Slack</code> для коннектора Slack. Следующая команда получает ссылку для коннектора Slack:</p>
+<p>```bash theme={null}
+claude mcp login &quot;claude.ai Slack&quot; --no-browser</p>
+<pre><code>
+Команда выводит ссылку на claude.ai и завершает работу. Откройте ссылку в браузере и завершите авторизацию на claude.ai. `--no-browser` не даёт команде открыть браузер на этой машине, которая может не быть устройством, которое вы используете.
+
+**2. Используйте коннектор в сессии**
+
+Запустите новую сессию или переподключите коннектор в уже работающей сессии:
+
+* **Новая сессия**: сессия, которую вы запускаете после авторизации, подключается к коннектору без каких-либо дополнительных действий.
+* **Работающая сессия**: выполните `/mcp reconnect` с тем же именем без кавычек в промпте Claude Code или из мобильного приложения или веб-версии. Чтобы проверить, принимает ли ваша сессия эту команду оттуда, см. пункт `/mcp` в разделе [какие команды работают из мобильного приложения и веб-версии](#limitations).
+
+Следующая команда переподключает коннектор Slack:
+</code></pre>
+<p>/mcp reconnect claude.ai Slack</p>
+<pre><code>
+В терминале Claude Code выводит `Successfully reconnected to claude.ai Slack`. В мобильном приложении или веб-версии ответ будет `Reconnected &quot;claude.ai Slack&quot;.`
+
+## Устранение неполадок
+
+### &quot;Remote Control disconnected&quot; or &quot;Can&#x27;t reach&quot;
+
+На [claude.ai/code](https://claude.ai/code) или в приложении Desktop сообщение **Remote Control disconnected** или **Can&#x27;t reach** означает, что ваш браузер или приложение потеряли связь с Claude Code на вашем компьютере. Ни одно из этих сообщений не говорит о том, продолжает ли Claude или субагент, за которым вы следили, работать на вашем компьютере. На этом компьютере проверьте, в каком состоянии находится Claude Code, и выполните соответствующий шаг для повторного подключения:
+
+* **Интерактивная сессия показывает `Remote Control disconnected`**: выполните [шаги повторного подключения для причины, указанной в этой строке](#session-ended-elsewhere)
+* **Claude Code работает и не показывает ошибок**: интерактивная сессия переподключается сама, как только машина выходит из спящего режима и подключается к сети, поэтому вам не нужно ничего делать. Если вы использовали `claude remote-control`, см. **Extended network outage** в разделе [Ограничения](#limitations)
+* **Claude Code не запущен**: [запустите его снова и верните сессию](#resume-sessions-after-stopping-the-server)
+
+### &quot;Remote Control requires a claude.ai subscription&quot;
+
+Вы не вошли с учётной записью claude.ai, или другие учётные данные имеют приоритет над вашим входом. Сообщение имеет одну из следующих форм:
+
+* Вы не вошли, запуск через `/remote-control` или `--remote-control`: `Remote Control requires a claude.ai subscription.` или `/remote-control requires a claude.ai subscription.`
+* Вы не вошли, запуск через `claude remote-control`: `You must be logged in to use Remote Control. Remote Control is only available with claude.ai subscriptions.`
+* Вы вошли, но используется API-ключ или токен: `Remote Control requires claude.ai subscription auth.`, за которым следуют используемые учётные данные, например `ANTHROPIC_API_KEY is set, so this session is using API-key auth`. Настройка `apiKeyHelper` и `ANTHROPIC_AUTH_TOKEN` указываются таким же образом.
+
+Выполните `claude auth login` и выберите вариант claude.ai. Если в сообщении указан `ANTHROPIC_API_KEY` или `ANTHROPIC_AUTH_TOKEN`, удалите эту переменную везде, где она задана: в окружении вашей оболочки или в блоке `env` [файла настроек](https://code.claude.com/docs/ru/settings-reference.md#env). Если указан `apiKeyHelper`, удалите эту настройку.
+
+### &quot;Remote Control requires a full-scope login token&quot;
+
+Вы прошли аутентификацию с помощью долгоживущего токена из `claude setup-token` или переменной окружения `CLAUDE_CODE_OAUTH_TOKEN`. Такие токены могут только отправлять запросы к модели, поэтому не могут устанавливать сессии Remote Control. Вместо этого выполните `claude auth login`, чтобы пройти аутентификацию с сессионным токеном полного доступа.
+
+### &quot;Unable to determine your organization for Remote Control eligibility&quot;
+
+Кешированная информация о вашей учётной записи устарела или неполна. Выполните `claude auth login`, чтобы обновить её.
+
+### &quot;Remote Control isn&#x27;t enabled for this account&quot;
+
+Claude Code проверил доступность Remote Control для учётной записи, под которой вы вошли, и проверка показала, что функция отключена. Обычная причина — устаревшие кешированные права доступа после смены тарифа. Выполните `claude auth logout`, затем `claude auth login`, чтобы обновить их, и обновите Claude Code, если у вас старая версия.
+
+Выполните `claude doctor`, чтобы увидеть, какая именно проверка доступности не прошла. Конфликты переменных окружения, недоступность проверок и настройка Remote Control вашей организации выдают каждая своё сообщение, поэтому эта ошибка относится именно к проверке на уровне учётной записи.
+
+До v2.1.239 это сообщение звучало как &quot;Remote Control is not yet enabled for your account&quot;.
+
+### &quot;Couldn&#x27;t verify Remote Control eligibility&quot;
+
+Claude Code не смог связаться со службой feature-флагов, чтобы проверить, включён ли Remote Control для вашей учётной записи, — обычно потому, что вы не в сети или прокси блокирует запрос. Повторите попытку, когда появится доступ к сети, или выполните `claude doctor` для получения подробностей. Связанное сообщение &quot;Couldn&#x27;t verify your organization&#x27;s Remote Control policy&quot; означает, что Claude Code столкнулся с ошибкой при чтении этой политики; решение то же самое.
+
+### &quot;Remote Control requires feature-flag evaluation&quot;
+
+Задана [переменная окружения](https://code.claude.com/docs/ru/env-vars.md#features-that-need-feature-flag-fetching), отключающая вычисление feature-флагов, и полное сообщение называет переменную, которую обнаружил Claude Code. В версиях до 2.1.154 та же конфигурация вместо этого выдаёт &quot;Remote Control is not yet enabled for your account&quot;. Что делать, зависит от переменной, указанной в сообщении:
+
+* **`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`, `CLAUDE_CODE_DISABLE_FEATURE_FLAGS` или `DISABLE_GROWTHBOOK`**: удалите (unset) переменную везде, где она задана, — в окружении вашей оболочки или в блоке `env` [файла `settings.json`](https://code.claude.com/docs/ru/settings-reference#all-settings).
+* **`DISABLE_TELEMETRY` или `DO_NOT_TRACK`**: на тарифе Pro, Max, Ultra, Team или Enterprise при незаданных `CLAUDE_CODE_DISABLE_FEATURE_FLAGS` и `DISABLE_GROWTHBOOK` эти переменные оставляют Remote Control доступным, если только ваша организация не требует [Trusted Devices](#trusted-devices). Если требует, удалите (unset) переменную везде, где она задана, чтобы использовать Remote Control. В версиях с v2.1.154 по v2.1.282 это сообщение появляется при заданной любой из этих переменных, поэтому обновите Claude Code до версии, соответствующей [требованию для этих переменных](#requirements).
+
+### &quot;Remote Control is only available when using Claude via api.anthropic.com&quot;
+
+Сессия взаимодействует с Anthropic API не напрямую, а Remote Control этого требует. Так происходит на Amazon Bedrock, Google Cloud&#x27;s Agent Platform и Microsoft Foundry. Это также происходит, когда [`ANTHROPIC_BASE_URL`](https://code.claude.com/docs/ru/env-vars) указывает на хост, отличный от `api.anthropic.com`, например на [LLM-шлюз](https://code.claude.com/docs/ru/llm-gateway) или прокси, даже если вы входите через claude.ai. Полный список причин см. в [справочнике ошибок](https://code.claude.com/docs/ru/errors.md#remote-control-requires-the-anthropic-api).
+
+В сообщении указано, что направило сессию в обход Anthropic API, например `CLAUDE_CODE_USE_BEDROCK` или пользовательский `ANTHROPIC_BASE_URL`. Если у вас есть подходящий вход через claude.ai, удалите указанную переменную, уберите её из ключа `env` в [настройках](https://code.claude.com/docs/ru/settings.md), если вы задавали её там, и перезапустите сессию.
+
+### &quot;Remote Control is disabled by your organization&#x27;s policy&quot;
+
+Remote Control заблокирован политикой. Проверьте следующие причины по порядку:
+
+* **В ошибке упоминается `disableRemoteControl`**: ваш ИТ-администратор отключил Remote Control на этом устройстве через [управляемые настройки](https://code.claude.com/docs/ru/managed-settings.md), независимо от переключателя на уровне организации и от того, как вы вошли.
+* **Ваш тариф claude.ai — Pro, Max или Ultra**: Claude Code всё ещё авторизован под организацией Team или Enterprise после предыдущего входа, поэтому проверяет политику Remote Control этой организации. Выполните `/status`, чтобы увидеть, какой тариф и организацию использует ваш вход. Выполните `claude auth logout`, затем `claude auth login`, чтобы войти заново под текущим тарифом.
+* **Сообщение не предлагает обратиться к администратору организации**: к вашей организации применена [конфигурация HIPAA](https://code.claude.com/docs/ru/hipaa-setup.md), которая отключает Remote Control. Чтобы убедиться в этом, выполните `/status` и найдите `HIPAA` в строке `Organization configuration`. Owner видит переключатель **Remote Control** неактивным в [настройках администратора](https://claude.ai/admin-settings/claude-code) и не может его включить. Если у вас есть вопросы о конфигурации, обратитесь к Owner, который может связаться с командой Anthropic, обслуживающей вашу организацию. До v2.1.267 в этом случае вместо этого показывалось &quot;Remote Control isn&#x27;t available for your organization due to its compliance policy&quot;.
+* **Remote Control работает у других сотрудников вашей организации, но не у вас**: если ваша организация Enterprise управляет вашим доступом с помощью [пользовательских ролей](https://support.claude.com/en/articles/13930452), причиной могут быть ваши роли. Для Remote Control нужны и разрешение на облачные сессии, и разрешение **Claude Code remote control**. Попросите Owner проверить, включают ли ваши роли оба разрешения, и добавить недостающее в [**Organization settings &gt; Roles**](https://claude.ai/admin-settings/roles).
+* **Owner видит баннер [Zero Data Retention](https://code.claude.com/docs/ru/zero-data-retention.md) в [настройках администратора](https://claude.ai/admin-settings/claude-code)**: Remote Control недоступен для вашей организации, и Owner не может его включить.
+* **В остальных случаях Owner не включил его для вашей организации**: на тарифах Team и Enterprise Remote Control по умолчанию отключён. Owner может включить его на [claude.ai/admin-settings/claude-code](https://claude.ai/admin-settings/claude-code), включив переключатель **Remote Control**. Этот переключатель — серверная настройка организации.
+
+До v2.1.281 это сообщение также появлялось, когда Claude Code не загрузил политику вашей организации на этой машине, например после запуска без сети. Более поздние версии сообщают об этом состоянии как [`Couldn&#x27;t verify your organization&#x27;s policy for remote control`](#couldnt-verify-your-organizations-policy-for-remote-control).
+
+### &quot;Remote Control was turned off by your organization&#x27;s policy&quot;
+
+Политика вашей организации перестала разрешать Remote Control, пока сессия была подключена, поэтому Claude Code отключил её. Что происходит с сессией, зависит от того, как вы запустили Remote Control:
+
+* **Через `/remote-control`, `claude --remote-control` или [автоподключение](#enable-remote-control-for-all-sessions)**: сессия продолжает работать без Remote Control, а Claude Code архивирует её на claude.ai
+* **Через `claude remote-control`**: сервер останавливается и архивирует обслуживаемые им сессии, затем завершает работу
+
+Чтобы снова найти одну из этих сессий, откройте [архивированные сессии](https://code.claude.com/docs/ru/claude-code-on-the-web.md#find-an-archived-session) на claude.ai/code.
+
+Remote Control не переподключается сам. Чтобы снова включить его после того, как ваша организация снова его разрешит, выполните `/remote-control` в сессии или `claude remote-control` в оболочке. Любая из этих команд завершается с ошибкой [`Remote Control is disabled by your organization&#x27;s policy`](#remote-control-is-disabled-by-your-organizations-policy), пока Claude Code на этой машине не получит изменённую политику. Открытая сессия получает её примерно раз в час. Чтобы выяснить, что блокирует Remote Control, сопоставьте полный текст, который выводит команда, с этим разделом.
+
+### &quot;Couldn&#x27;t verify your organization&#x27;s policy for remote control&quot;
+
+Claude Code не смог получить политику вашей организации, и на этой машине нет её сохранённой копии, которую можно было бы использовать вместо неё, поэтому он держит Remote Control отключённым, пока не сможет подтвердить, что ваша организация его разрешает. Обычно это происходит, когда вы запускаете Claude Code без сети или до подключения VPN, либо когда прокси мешает запросу. При медленном соединении сообщение также может появиться, пока первый запрос ещё выполняется.
+
+Сообщение имеет одну из следующих форм:
+
+* Из `/remote-control`, `claude remote-control` или `claude --remote-control`: `Couldn&#x27;t verify your organization&#x27;s policy for remote control. Check your network connection and try again.`
+* Из [автоподключения](#enable-remote-control-for-all-sessions) при запуске сессии: `couldn&#x27;t verify your organization&#x27;s policy — check your network connection and try again` с префиксом `Remote Control failed` в уведомлении и `Remote Control disconnected` в диалоге. После этого сессия оставляет Remote Control отключённым.
+
+Восстановите сетевое подключение, затем выполните `/remote-control` или запустите команду снова. Каждая попытка заново проверяет политику, поэтому перезапускать Claude Code не нужно. Если сообщение продолжает появляться, выполните `claude doctor` и посмотрите строку `Organization policy`, в которой указано, почему политика не загрузилась.
+
+До v2.1.281 в этом состоянии вместо этого показывалось `Remote Control is disabled by your organization&#x27;s policy`.
+
+### &quot;Remote credentials fetch failed&quot;
+
+Claude Code не смог получить краткосрочные учётные данные от Anthropic API для установки соединения. Чтобы увидеть полную ошибку, запустите сессию из оболочки с отладочным логом, затем найдите в логе `code-session`:
+</code></pre>
+<p>claude --remote-control --debug-file claude-debug.log</p>
+<pre><code>
+Распространённые причины:
+
+* Проблема с сетью или прокси: брандмауэр или прокси может блокировать исходящий HTTPS-запрос. Remote Control требует доступа к Anthropic API через порт 443.
+* Не удалось создать сессию: если вы также видите `Session creation failed — see debug log`, сбой произошёл на более раннем этапе настройки. Выполните тот же поиск, чтобы найти ошибку.
+
+### &quot;working folder not found&quot;
+
+В терминале, где запущен [`claude remote-control`](#start-a-remote-control-session), сообщение `Session failed: working folder not found:`, за которым следует путь в кавычках, означает, что сессию не удалось запустить, потому что по этому пути нет папки.
+
+* **Сервер всё ещё работает**: восстановите папку и снова запустите сессию или остановите сервер
+* **Сервер завершил работу**: снова выполните `claude remote-control` из существующей папки
+
+До v2.1.318 сессия, завершившаяся таким сбоем, показывала `Session failed: spawn error:` и сообщение `ENOENT`, в котором вместо отсутствующей папки был указан файл программы.
+
+### &quot;The program file this Remote Control started from is gone&quot;
+
+Это предупреждение в терминале, где запущен [`claude remote-control`](#start-a-remote-control-session), означает, что файл программы, из которого был запущен сервер, отсутствует, и новые сессии запускаются на более новой версии, которая его заменила. Чтобы перевести на эту версию и сам сервер, остановите его и снова выполните `claude remote-control`. Если Claude Code установлен в сетевом хранилище, перезапустите сервер сейчас и следуйте разделу [Установка в сетевое хранилище](https://code.claude.com/docs/ru/setup.md#install-on-network-storage). В противном случае новые сессии запускаются без перезапуска.
+
+Когда файл программы отсутствует и Claude Code не находит более новой версии для запуска, новые сессии завершаются сбоем. В терминале отображается ошибка, например `Session failed: spawn error:`, за которой следует сообщение `ENOENT`. Остановите сервер, снова [установите Claude Code](https://code.claude.com/docs/ru/setup.md#install-claude-code), если `claude` не запускается в вашей оболочке, и снова выполните `claude remote-control`. До v2.1.318 новые сессии завершались таким сбоем, даже если была установлена более новая версия.
+
+### &quot;Couldn&#x27;t reconnect to your Remote Control session&quot;
+
+Когда вы возобновляете диалог с помощью `claude --resume` или `claude --continue`, Claude Code переподключается к сессии Remote Control, записанной в этом диалоге. Это сообщение означает, что переподключение не удалось по причине, которая может быть временной, например из-за прерывания сети или ошибки сервера, поэтому Claude Code не может подтвердить, существует ли ещё удалённая сессия.
+
+Выполните `/remote-control`, чтобы повторить попытку подключения, или запустите новую сессию с `claude --remote-control`, чтобы создать новую сессию Remote Control. Тем временем ваша локальная сессия продолжает работать без Remote Control.
+
+### &quot;Previous session is unavailable — run /remote-control to start a new one&quot;
+
+Claude Code не смог вернуть предыдущую сессию Remote Control и остановился, вместо того чтобы самостоятельно запустить новую. Вы можете увидеть это сообщение после возобновления диалога с помощью `claude --resume` или `claude --continue` либо после того, как Claude Code [самостоятельно переподключится после разрыва соединения](https://code.claude.com/docs/ru/errors.md#remote-control-couldnt-refresh-your-login).
+
+Выполните `/remote-control`, чтобы запустить новую сессию Remote Control под текущим входом; тем временем ваша локальная сессия продолжает работать без Remote Control. Для связанного сообщения `Remote Control could not verify the signed-in account — run /remote-control to reconnect` решение то же самое. Если вы выполните `/remote-control` после `Previous session is unavailable`, не перезапустив предварительно Claude Code, Claude Code не включит более ранние сообщения диалога в новую сессию.
+
+### &quot;Remote Control got an unexpected server response&quot;
+
+Сервер Remote Control принял запрос, но ответил в форме, которую эта версия Claude Code не смогла прочитать, при создании удалённой сессии или получении её учётных данных. Повторная попытка на той же версии завершится так же. Выполните `claude update`, затем `/remote-control`, чтобы переподключиться.
+
+### &quot;Your organization requires Trusted Devices for Remote Control, but this device is not enrolled&quot;
+
+В вашей организации включены [Trusted Devices](#trusted-devices), а эта машина ещё не зарегистрирована. Выполните `/login` в Claude Code. Регистрация происходит в рамках входа, отдельной команды для регистрации нет.
+
+### &quot;session expired for trusted-device check&quot;
+
+Вашему входу более 18 часов. Выполните `/login` в Claude Code или подтвердите вход с помощью Face ID, Touch ID, Windows Hello или ключа доступа, когда claude.ai или мобильное приложение попросят вас об этом. См. [Trusted Devices](#trusted-devices).
+
+## Связанные ресурсы
+
+* [Claude Code в веб-версии](https://code.claude.com/docs/ru/claude-code-on-the-web.md): запускайте сеансы в облаке вместо вашего компьютера, настроенные через [облачные среды](https://code.claude.com/docs/ru/cloud-environments.md)
+* [Кросс-сеансовая передача сообщений](https://code.claude.com/docs/ru/cross-session-messaging.md): позвольте Claude отправлять сообщения вашим сеансам на других машинах или в [облачных сеансах](https://code.claude.com/docs/ru/claude-code-on-the-web.md)
+* [Channels](https://code.claude.com/docs/ru/channels.md): перенаправьте Telegram, Discord или iMessage в сеанс, чтобы Claude реагировал на сообщения, пока вас нет
+* [Dispatch](https://code.claude.com/docs/ru/desktop.md#sessions-from-dispatch): отправьте задачу со своего телефона, и она может создать сеанс Desktop для её обработки
+* [Аутентификация](https://code.claude.com/docs/ru/authentication.md): настройте `/login` и управляйте учётными данными для claude.ai
+* [Справочник CLI](https://code.claude.com/docs/ru/cli-reference.md): полный список флагов и команд, включая `claude remote-control`
+* [Безопасность](https://code.claude.com/docs/ru/security.md): как сеансы Remote Control вписываются в модель безопасности Claude Code
+* [Использование данных](https://code.claude.com/docs/ru/data-usage.md): какие данные проходят через API Anthropic во время локальных, Remote Control и облачных сеансов
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

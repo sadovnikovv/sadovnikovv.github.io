@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Рекомендуйте ваш plugin из вашего CLI</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/plugins/index.html">plugins</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="рекомендуйте-ваш-plugin-из-вашего-cli">Рекомендуйте ваш plugin из вашего CLI <a class="h-anchor" href="#рекомендуйте-ваш-plugin-из-вашего-cli" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Предложите пользователям Claude Code установить ваш plugin из официального marketplace, отправив тег claude-code-hint из вашего CLI или SDK.</p>
+</blockquote>
+<p>Если вы поддерживаете CLI или SDK, ваш инструмент может предложить пользователям Claude Code установить ваш plugin. Когда ваш CLI обнаружит, что он работает внутри Claude Code, он должен записать однострочный тег <code>&lt;claude-code-hint /&gt;</code> в stderr. Claude Code удаляет строку из вывода инструментов Bash и PowerShell перед тем, как модель увидит вывод, а затем показывает пользователю одноразовое предложение об установке.</p>
+<p>Эта страница применяется только если ваш plugin указан в <code>claude-plugins-official</code> или другом marketplace с одним из <a href="https://code.claude.com/docs/ru/plugins/security.md#official-marketplace-names">официальных названий marketplace Anthropic</a>. Сообщество marketplace, <code>claude-community</code>, не входит в их число.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Чтобы опубликовать plugin, см. <a href="https://code.claude.com/docs/ru/plugins/publish.md">Опубликуйте и распространяйте plugin</a>.</p>
+</blockquote>
+<h3 id="h">Отправьте подсказку <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Отправляйте тег только когда установлены <code>CLAUDECODE</code> или <code>CLAUDE_CODE_CHILD_SESSION</code>, чтобы он не появлялся, когда человек запускает ваш CLI напрямую.</p>
+<p>Claude Code устанавливает <code>CLAUDECODE=1</code> в командах, которые он запускает через инструменты Bash и PowerShell, и в командах hook. На v2.1.172 и более поздних версиях он также устанавливает <code>CLAUDE_CODE_CHILD_SESSION=1</code> там. Переменные отличаются тем, какие процессы их переносят:</p>
+<ul>
+<li><strong><code>CLAUDECODE</code></strong>: устанавливается каждой версией Claude Code. IDE расширения также устанавливают его в своих интегрированных терминалах, поэтому проверка только <code>CLAUDECODE</code> также отправляет тег, когда человек запускает ваш CLI самостоятельно в одном из этих терминалов</li>
+<li><strong><code>CLAUDE_CODE_CHILD_SESSION</code></strong>: устанавливается только в подпроцессах, которые сам запускает Claude Code. Используйте его, когда вы можете требовать v2.1.172 или более позднюю версию</li>
+</ul>
+<p><a href="https://code.claude.com/docs/ru/env-vars.md">Справочник переменных окружения</a> содержит подробности.</p>
+<p>Следующие примеры проверяют <code>CLAUDECODE</code> для наибольшего охвата и отправляют подсказку для plugin с именем <code>example-cli</code> в официальном marketplace:</p>
+<p>```javascript Node.js theme={null}
+if (process.env.CLAUDECODE) {
+  process.stderr.write(
+    &#x27;&lt;claude-code-hint v=&quot;1&quot; type=&quot;plugin&quot; value=&quot;example-cli@claude-plugins-official&quot; /&gt;\n&#x27;,
+  )
+}</p>
+<pre><code></code></pre>
+<p>import os, sys</p>
+<p>if os.environ.get(&quot;CLAUDECODE&quot;):
+    print(
+        &#x27;&lt;claude-code-hint v=&quot;1&quot; type=&quot;plugin&quot; value=&quot;example-cli@claude-plugins-official&quot; /&gt;&#x27;,
+        file=sys.stderr,
+    )</p>
+<pre><code></code></pre>
+<p>if os.Getenv(&quot;CLAUDECODE&quot;) != &quot;&quot; {
+    fmt.Fprintln(os.Stderr,
+        <code>&lt;claude-code-hint v=&quot;1&quot; type=&quot;plugin&quot; value=&quot;example-cli@claude-plugins-official&quot; /&gt;</code>)
+}</p>
+<pre><code></code></pre>
+<p>if [ -n &quot;$CLAUDECODE&quot; ]; then
+  printf &#x27;%s\n&#x27; &#x27;&lt;claude-code-hint v=&quot;1&quot; type=&quot;plugin&quot; value=&quot;example-cli@claude-plugins-official&quot; /&gt;&#x27; &gt;&amp;2
+fi</p>
+<pre><code>
+Замените `example-cli` на имя вашего plugin в официальном marketplace.
+
+Вы можете отправлять подсказку при каждом вызове, потому что Claude Code предлагает для каждого plugin один раз.
+
+Чтобы проверить отправителя, запустите `CLAUDECODE=1 example-cli` в терминале и подтвердите, что строка тега появляется на stderr, затем запустите `example-cli` без переменной и подтвердите, что ничего лишнего не печатается.
+
+## Формат подсказки
+
+Тег должен занимать свою собственную строку; Claude Code игнорирует тег, встроенный в середину строки.
+
+Тег принимает три атрибута, все обязательны:
+
+| Атрибут | Описание |
+| :- | :- |
+| `v` | Версия протокола. `1` — единственное поддерживаемое значение |
+| `type` | Вид подсказки. `plugin` — единственное поддерживаемое значение |
+| `value` | Идентификатор plugin в форме `name@marketplace` |
+
+Значения могут быть заключены в двойные кавычки или без кавычек; значение без кавычек не может содержать пробелы.
+
+Claude Code удаляет строку из вывода даже когда `v` или `type` не распознаны.
+
+## Проверьте, когда появляется подсказка
+
+Подсказка появляется только в интерактивных сеансах терминала. В запусках `claude -p`, в запусках подагента и в выводе команд hook тег удаляется и подсказка не показывается. Все эти проверки также должны пройти:
+
+* **Официальный и устанавливаемый**: `value` называет plugin, который Claude Code находит в своей локальной копии официального marketplace, который еще не установлен, и который не блокирует никакая политика
+* **Аналитика включена**: сеанс, где аналитика Claude Code отключена, никогда не предлагает, например, с установленными `DISABLE_TELEMETRY`, `DO_NOT_TRACK` или `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`, или на поставщике третьей стороны, таком как Amazon Bedrock, где применяется [автоматический отказ от телеметрии](https://code.claude.com/docs/ru/data-usage.md#default-behaviors-by-api-provider)
+* **Ограничения частоты**: одна подсказка за сеанс, одна подсказка когда-либо за plugin независимо от ответа пользователя, и ни одна после того, как на этой машине было предложено 100 plugin
+* **Не отключено**: пользователь не выбрал **Нет, и больше не показывать подсказки об установке plugin**
+* **Локальный, посещаемый сеанс**: рабочее пространство сеанса является локальным, а не в облаке или на удаленной машине, и сеанс не работает без присмотра. Например, сеанс, запущенный с `--cloud`, один, обслуживающий Remote Control, или товарищ по команде агентов никогда не предлагает
+
+## Предпросмотр того, что видит пользователь
+
+Когда проверки в [Проверьте, когда появляется подсказка](#check-when-the-prompt-appears) пройдены, Claude Code показывает диалог **Рекомендация plugin** следующим образом:
+</code></pre>
+<p>─────────────────────────────────────────────────────────────
+  Рекомендация plugin</p>
+<p>Команда example-cli предлагает установить plugin.</p>
+<p>Plugin: example-cli
+    Marketplace: claude-plugins-official
+    Описание: Официальная интеграция для развертываний example-cli</p>
+<p>Вы хотите установить его?
+    ❯ 1. Да, установить</p>
+<ol>
+<li>Нет</li>
+<li>Нет, и больше не показывать подсказки об установке plugin</li>
+</ol>
+<p>─────────────────────────────────────────────────────────────</p>
+<pre><code>
+Диалог называет первое слово команды shell, которую запустил Claude, поэтому пользователи могут заметить несоответствие. Каждый ответ имеет один эффект:
+
+* **Да, установить**: устанавливает plugin в [область пользователя](https://code.claude.com/docs/ru/plugins/install.md)
+* **Нет, и больше не показывать подсказки об установке plugin**: отключает будущие подсказки для этого пользователя
+* **Нет ответа в течение 30 секунд**: считается как **Нет**
+
+## Следующие шаги
+
+* [Опубликовать и распространить плагин](https://code.claude.com/docs/ru/plugins/publish.md): маршруты для распространения плагина, включая официальный marketplace, который требует подсказка
+* [Справочник команд плагина](https://code.claude.com/docs/ru/plugins/cli-reference.md#plugin-install): команда оболочки, которая устанавливает тот же плагин вне сеанса
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

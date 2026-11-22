@@ -1,0 +1,463 @@
+> ## Documentation Index
+> Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Использование mods API
+
+> Вызывайте mods API из мода Claude Code для добавления команд и инструментов, вызова модели, запуска работы по таймеру, отправки сообщений другим сессиям и доступа к файлам и сети.
+
+mods API — это набор методов, которые mod вызывает для выполнения действий: добавления команд и инструментов, вызова модели, запуска работы между событиями и доступа к файловой системе, процессам и сети. Каждый hook получает её в качестве первого аргумента, `$`, с методами, сгруппированными в пространства имён, такие как `$.ui` и `$.fs`. [События](https://code.claude.com/docs/ru/plugins/mods/events.md) определяют, когда выполняется hook, а mods API — это то, что hook вызывает после этого.
+
+Создайте свой [первый mod](https://code.claude.com/docs/ru/plugins/mods/create.md) перед тем, как начать здесь. Для каждого метода см. [методы mods API](https://code.claude.com/docs/ru/plugins/mods/reference.md#mods-api-methods) или прочитайте [типы для вашей сборки](https://code.claude.com/docs/ru/plugins/mods/create.md#get-the-types-for-your-build).
+
+## Добавление команды или инструмента
+
+Mod может добавить команду для запуска пользователем и инструмент для вызова Claude. Зарегистрируйте оба в hook [`session.start`](https://code.claude.com/docs/ru/plugins/mods/reference#session). Claude Code ждёт этого hook перед первым запросом, поэтому то, что вы регистрируете, доступно с первого хода.
+
+### Добавление команды
+
+Команда предназначена для пользователя. Зарегистрируйте её, затем обработайте [`command.run`](https://code.claude.com/docs/ru/plugins/mods/reference#commands-and-configuration) для её имени. Этот пример добавляет команду `/standup`, которая принимает необязательное количество дней:
+
+```javascript theme={null}
+on('session.start', async ($, e, next) => {
+  // Add /standup to the command list, with the description the user sees there
+  await $.command.register({ name: 'standup', description: 'Summarize what changed today', argumentHint: '[days]' })
+  return next(e)
+})
+
+// The matcher limits the hook to /standup, so other commands don't reach it
+on('command.run', { command: 'standup' }, async ($, e) => {
+  // e.args is the text typed after the command name, or an empty string
+  return { text: 'Summary for the last ' + (e.args || '1') + ' day(s): ...' }
+})
+```
+
+После запуска сеанса `/standup` появляется с его описанием в списке, который вы видите при вводе `/`. `argumentHint` отображается в подсказке после ввода команды и пробела, как в `/standup [days]`. Когда вы запускаете `/standup 3`, второй hook возвращает `Summary for the last 3 day(s): ...`, и стенограмма показывает этот текст после имени плагина. Hook никогда не вызывает `next`, потому что команда не имеет поведения, кроме вашего.
+
+`text`, который вы возвращаете, печатается в стенограмме и Claude его читает. Чтобы ничего не печатать, как команда, которая только открывает [pane](https://code.claude.com/docs/ru/plugins/mods/interface.md#pick-where-to-draw), верните `{}`. Чтобы позволить команде выполняться, пока Claude работает, добавьте `immediate: true` к регистрации.
+
+Выберите имя, которое не использует ни одна встроенная команда. Введите `/` в сеансе, чтобы увидеть их. `$.command.register` выбрасывает исключение для занятого имени с сообщением, таким как `"/focus" refused: it is the built-in /focus`. Hook, который выбрасывает исключение, пропускается, поэтому остальная часть вашего hook `session.start` тоже не выполняется. Регистрируйте команды в последнюю очередь в этом hook или оберните вызов в `try` и `catch`.
+
+### Добавление инструмента
+
+Инструмент предназначен для Claude. Зарегистрируйте его с именем, описанием, которое читает Claude, и JSON Schema для его входных данных. Claude видит его под более длинным именем, состоящим из `mcp__`, имени вашего плагина, двух подчёркиваний и имени, которое вы зарегистрировали. Вы обрабатываете его вызовы в hook [`tool.call`](https://code.claude.com/docs/ru/plugins/mods/events#guard-or-change-a-tool-call), отфильтрованном по этому полному имени. Этот пример из плагина с именем `my-mod` регистрирует `ticket`, поэтому полное имя — `mcp__my-mod__ticket`. Он даёт Claude инструмент, который ищет билет в трекере проблем:
+
+```javascript theme={null}
+on('session.start', async ($, e, next) => {
+  await $.tool.register({
+    name: 'ticket',
+    // Claude decides when to call the tool from this description
+    description: 'Look up a ticket by its id and return its title and status',
+    // The arguments Claude has to send: one required string named id
+    inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
+  })
+  return next(e)
+})
+
+// The full tool name is mcp__, the plugin's name, and the registered name
+on('tool.call', { tool: 'mcp__my-mod__ticket' }, async ($, e) => {
+  // The tool's arguments are fields of e, so the id is e.id
+  const response = await $.http.fetch('https://tickets.example.com/api/' + encodeURIComponent(e.id))
+  // Return a result either way, so Claude learns when the lookup failed
+  return { result: response.ok ? response.text : 'Lookup failed with status ' + response.status }
+})
+```
+
+Когда вы спрашиваете о билете, Claude может вызвать `mcp__my-mod__ticket` с его id. Второй hook получает билет и возвращает тело ответа, которое Claude читает как результат инструмента. Когда сервер отвечает с кодом ошибки, Claude читает `Lookup failed with status` и номер.
+
+> [!TIP]
+>
+> Когда [MCP Tool Search](https://code.claude.com/docs/ru/mcp.md#scale-with-mcp-tool-search) откладывает зарегистрированный инструмент, Claude видит его имя, но не видит описание, пока не выполнит его поиск. Если Claude должен учитывать инструмент на каждом ходе, добавьте [`isDeferred: false`](https://code.claude.com/docs/ru/plugins/mods/reference#tools) к регистрации, чтобы [загружать полный инструмент заранее](https://code.claude.com/docs/ru/mcp.md#exempt-a-server-from-deferral). Это поле требует Claude Code v2.1.293 или более поздней версии, а более ранние версии его игнорируют.
+
+## Вызов модели
+
+Мод может отправлять модели собственные запросы для небольшой работы, такой как классификация или суммирование текста. `$.model.complete` отправляет ваш промпт отдельно, а `$.model.fork({ prompt })` отправляет текущий диалог с вашим промптом в конце.
+
+В этой таблице сравнивается, что содержит каждый запрос:
+
+| В запросе | `$.model.complete` | `$.model.fork` |
+| :- | :- | :- |
+| Модель | Переданная вами `model` | Модель сессии |
+| Системный промпт | Короткий [блок атрибуции](https://code.claude.com/docs/ru/llm-gateway-protocol.md#system-prompt-attribution-block), затем ваш `system`, если вы его передаёте | Системный промпт сессии |
+| Сообщения | Одно сообщение пользователя — ваш `prompt` | Диалог на текущий момент, затем ваш `prompt` как сообщение пользователя |
+| CLAUDE.md и другой контекст проекта | Не включаются | Включаются, как в последнем запросе диалога |
+| Инструменты | Нет | Инструменты Claude, которые модель не может вызывать |
+
+Fork повторяет последний запрос диалога, поэтому Claude API обслуживает большую его часть из [кэша промптов](https://code.claude.com/docs/ru/prompt-caching.md), пока диалог ещё находится в кэше.
+
+Оба вызова используют учётные данные сессии, поэтому оплачиваются через план пользователя, API-ключ или облачного провайдера. [Типы для вашей сборки](https://code.claude.com/docs/ru/plugins/mods/create.md#get-the-types-for-your-build) документируют каждый метод `$.model`.
+
+### Отправка одного промпта
+
+Передайте `model` и `prompt` в `$.model.complete`. `prompt` становится сообщением пользователя. Чтобы дать модели инструкции, например роль или формат вывода, передайте также `system`, который становится системным промптом.
+
+Этот hook отвечает на команду `/triage`, [зарегистрированную как команда](#add-a-command), попросив небольшую модель пометить текст, введённый после неё:
+
+```javascript theme={null}
+on('command.run', { command: 'triage' }, async ($, e) => {
+  const r = await $.model.complete({
+    model: 'haiku',
+    // The system prompt sets the job, and the prompt carries the text to label
+    system: 'Reply with one word: bug, feature, or question.',
+    prompt: e.args,
+    // One word needs few tokens, and the call gives up after 15 seconds
+    maxTokens: 20,
+    timeoutMs: 15000,
+  })
+  // r.text exists only when the model answered, so check r.isAnswered first
+  const label = r.isAnswered ? r.text.trim() : 'unknown'
+  return { text: 'Label: ' + label }
+})
+```
+
+Когда вы запускаете `/triage the export button does nothing`, мод отправляет этот текст модели и печатает её ответ, например `Label: bug`. Когда модель не отвечает, метка — `unknown`.
+
+Сбой Claude API не отклоняет вызов, поэтому проверьте `r.isAnswered` и прочитайте `r.reason`, когда это `false`. Вызов отклоняется для запроса, который Claude Code не отправит, например для модели, которую блокирует ваша организация.
+
+[Типы для вашей сборки](https://code.claude.com/docs/ru/plugins/mods/create.md#get-the-types-for-your-build) перечисляют другие параметры, такие как `effort`, а в разделе [ограничения](https://code.claude.com/docs/ru/plugins/mods/reference.md#limits) указано значение `maxTokens` по умолчанию.
+
+### Использование кэширования промптов
+
+`$.model.complete` поддерживает [кэширование промптов](https://platform.claude.com/docs/en/build-with-claude/prompt-caching) Claude API. API кэширует начало запроса, называемое префиксом, до заданной вами [точки останова кэша](https://platform.claude.com/docs/en/build-with-claude/prompt-caching#explicit-cache-breakpoints). Когда каждый вызов начинается с одного и того же длинного статического содержимого, например инструкций или справочных материалов, установите точку останова в конце этого содержимого. Последующие вызовы будут читать его из кэша, а не оплачивать по полной цене входных данных.
+
+Чтобы установить точку останова, передайте `prompt` как массив блоков `{ text }` вместо строки и добавьте `cache: true` к последнему блоку статического содержимого. Claude Code отправляет этот блок с полем API `cache_control`. `system` принимает ту же форму массива. О том, как выбрать между ними, см. [Выбор между `prompt` и `system`](#choose-between-prompt-and-system).
+
+> [!NOTE]
+>
+> Массивы блоков требуют Claude Code v2.1.292 или новее. Более ранние версии отклоняют массив в `prompt` с ошибкой, которая заканчивается на `takes { model, prompt } (host check)`, а массив в `system` не включают в запрос.
+
+Эта версия [хука `/triage`](#send-one-prompt) отправляет длинный набор правил разметки перед текстом для разметки, с точкой останова после правил. `RULES` — это ваша собственная строка:
+
+```javascript theme={null}
+on('command.run', { command: 'triage' }, async ($, e) => {
+  const r = await $.model.complete({
+    model: 'haiku',
+    prompt: [
+      // Identical on every call, so it forms the cached prefix
+      { text: RULES, cache: true },
+      // Changes on every call, so it goes after the breakpoint
+      { text: e.args },
+    ],
+  })
+  return { text: 'Label: ' + (r.isAnswered ? r.text.trim() : 'unknown') }
+})
+```
+
+Для TTL и количества точек останова действуют следующие ограничения:
+
+* **TTL**: запись кэша существует пять минут после последнего использования. TTL берётся из настроек Claude Code пользователя, а не из вызова. Для одного часа установите [`subagentPromptCacheTtl`](https://code.claude.com/docs/ru/prompt-caching#choose-the-ttl-yourself) в `1h`.
+* **Точки останова на запрос**: API принимает [до четырёх](https://platform.claude.com/docs/en/build-with-claude/prompt-caching#when-to-use-multiple-breakpoints), а ещё одна возвращается как `api-error` в `r.reason`
+
+#### Выбор между `prompt` и `system`
+
+Помещайте статическое содержимое, общее для ваших вызовов, в начало `prompt`, если только вы не знаете, что ваши запросы идут напрямую в Claude API:
+
+* **Напрямую в Claude API, с API-ключом или подпиской Claude**: подходит любое поле
+* **Через [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md), [Claude Platform on AWS](https://code.claude.com/docs/ru/claude-platform-on-aws.md), [Google Cloud's Agent Platform](https://code.claude.com/docs/ru/google-vertex-ai.md), [Microsoft Foundry](https://code.claude.com/docs/ru/microsoft-foundry.md) или [LLM-шлюз](https://code.claude.com/docs/ru/llm-gateway)**: используйте `prompt`. Claude Code начинает системный промпт с [блока атрибуции](https://code.claude.com/docs/ru/llm-gateway-protocol.md#system-prompt-attribution-block), отпечаток которого вычисляется из начала сообщения пользователя. Эндпоинт `api.anthropic.com` удаляет этот блок перед кэшированием. Другие эндпоинты получают его как часть промпта, поэтому точка останова в `system` может не дать попадания в кэш, если `prompt` начинается по-другому.
+* **В моде, который запускают другие люди**: используйте `prompt`, потому что вы не выбираете их провайдера
+
+`system` идёт перед `prompt` в префиксе, поэтому точка останова в `prompt` охватывает и `system`, а вызов с другим `system` не попадает в кэш.
+
+#### Проверка попаданий в кэш
+
+Результат `$.model.complete` содержит объект `usage` с [полями кэша](https://platform.claude.com/docs/en/build-with-claude/prompt-caching#tracking-cache-performance) API. `usage.cache_creation_input_tokens` подсчитывает токены, которые вызов записал в кэш, а `usage.cache_read_input_tokens` — токены, которые он прочитал из кэша. Ожидайте запись при первом вызове и чтение при последующих вызовах в пределах TTL.
+
+Если каждый вызов записывает и ни один не читает, префикс различается между вызовами или вызовы разделены промежутком больше TTL. Если префикс различается, см. [Выбор между `prompt` и `system`](#choose-between-prompt-and-system).
+
+Если оба поля остаются нулевыми в вызовах, на которые модель ответила, ничего не было закэшировано. Проверьте каждую из следующих причин:
+
+* **Префикс слишком короткий**: API не кэширует префикс короче [минимальной длины](https://platform.claude.com/docs/en/build-with-claude/prompt-caching#cache-limitations) для модели и не возвращает ошибку
+* **Кэширование промптов отключено**: когда к модели применяется [переменная `DISABLE_PROMPT_CACHING`](https://code.claude.com/docs/ru/prompt-caching#disable-prompt-caching), Claude Code удаляет точки останова и отправляет текст без кэширования
+* **Ваш шлюз удаляет `cache_control`**: шлюз может [удалить это поле и всё равно вернуть успех](https://code.claude.com/docs/ru/prompt-caching.md#where-the-cache-lives)
+* **Другой мод переписывает начало текста**: тогда Claude Code [отправляет его без точек останова](#what-a-model-complete-hook-receives)
+
+### Что получает хук `model.complete`
+
+Если вы подключаете хук к событию [`model.complete`](https://code.claude.com/docs/ru/plugins/mods/reference#mods-api-calls), чтобы просматривать или изменять запросы других модов, читайте текст из этих полей:
+
+* **`e.prompt`**: всегда строка. Когда вызывающий передал массив, это текст блоков, объединённый по порядку.
+* **`e.system`**: строка, построенная тем же образом, или отсутствует, если вызывающий не передал `system`
+* **`e.promptBlocks` и `e.systemBlocks`**: массивы вызывающего, каждый присутствует, когда вызывающий передал массив для соответствующего поля
+
+Claude Code отправляет строки, которые ваш хук передаёт в `next`, и использует переданные вместе с ними массивы для размещения [точек останова кэша](#use-prompt-caching). Он сохраняет начальные блоки, которые всё ещё совпадают с началом строки, вместе с их точками останова, а остаток строки отправляет без точки останова. Например, `next({ ...e, prompt: e.prompt + NOTE })` сохраняет точки останова вызывающего, а хук, который изменяет начало `prompt`, удаляет их.
+
+## Запуск работы в фоне
+
+Работа, которая переживает одно событие, например проверка чего-либо раз в минуту, выполняется на таймере, который вы запускаете из `session.start`. Сам хук выполняется для одного события и имеет [ограничение по времени](https://code.claude.com/docs/ru/plugins/mods/reference.md#limits) на собственное время выполнения. Время, потраченное на ожидание `next` или вызова mods API, не учитывается, кроме `$.clock.sleep`. `$.clock.every` и `$.clock.after` заменяют `setInterval` и `setTimeout`, с задержкой в миллисекундах в первую очередь: `$.clock.after(5000, fn)` вызывает `fn` один раз через пять секунд. Каждый возвращает таймер с методом `cancel()`, и `await $.clock.now()` даёт время в миллисекундах.
+
+Этот hook ищет проверки pull request один раз в минуту и показывает результат под запросом. `summarize` — это функция вашего собственного, которая превращает вывод JSON команды в несколько слов:
+
+```javascript theme={null}
+on('session.start', async ($, e, next) => {
+  // Call the function every 60,000 milliseconds, starting one minute from now
+  $.clock.every(60_000, async () => {
+    const status = await $.process.run(['gh', 'pr', 'checks', '--json', 'state'])
+    // Replace the line under the prompt with the latest summary
+    $.ui.status('checks: ' + summarize(status.stdout))
+  })
+  // Return without waiting for the timer, so the session starts right away
+  return next(e)
+})
+```
+
+Сеанс начинается как обычно. Через минуту под запросом появляется строка с `⚠`, именем mod и затем `checks:` и вашей сводкой. Она заменяется один раз в минуту после этого. Обратный вызов таймера выполняется вне любого события, поэтому он продолжает работать между ходами и не запускает один. Если обратный вызов выбрасывает исключение, ошибка переходит в [журнал отладки](https://code.claude.com/docs/ru/plugins/mods/troubleshoot.md#read-the-debug-log) и таймер снова выполняется в следующем интервале.
+
+### Показать что-то без запуска хода
+
+Фоновая работа может показать пользователю что-то без запуска хода. Каждый из этих вызовов помещает текст в другое место:
+
+| Вызов | Что видит пользователь |
+| :- | :- |
+| `$.ui.status(text)` | Одна строка под запросом, которая остаётся, пока вы её не измените. Она начинается с `⚠` и имени mod, как в `⚠ my-mod: checks: 3 passing`. |
+| `$.ui.toast(text)` | Всплывающее уведомление с именем мода, которое исчезает через несколько секунд. В [полноэкранном режиме отрисовки](https://code.claude.com/docs/ru/fullscreen.md) это блок в правом верхнем углу, а в классическом рендерере — одна строка справа под промптом. |
+| `$.ui.log(text)` | Тусклая строка в стенограмме, которую Claude не читает. Она начинается с `●` и имени mod, как в `● my-mod: build finished`. |
+| `$.ui.notify(text)` | Уведомление от терминала пользователя, вне Claude Code, отправленное способом, который указан в его настройке [`preferredNotifChannel`](https://code.claude.com/docs/ru/settings-reference#preferrednotifchannel). Заголовком служит имя мода, если вы не передадите непустой `{ title }`, который отображается в том виде, в каком вы его передали. |
+
+`$.ui.notify` — единственный из этих вызовов, который возвращает ответ. Он разрешается с `{ isSent: true, channel }`, когда канал пользователя записал уведомление в его терминал. `channel` — это значение настройки, через которое оно было отправлено, например `kitty` или `terminal_bell`. Канал `terminal_bell` подаёт звуковой сигнал и не показывает ни ваш текст, ни заголовок.
+
+В противном случае вызов разрешается с `{ isSent: false, reason }`:
+
+| `reason` | Значение |
+| :- | :- |
+| `disabled` | Пользователь установил `preferredNotifChannel` в `notifications_disabled` |
+| `no-channel` | Настройка имеет значение `auto`, и у терминала пользователя нет уведомления, которое Claude Code может отправить |
+| `no-surface` | У сессии нет терминала, как при запуске с `-p`, в Agent SDK, в десктопном приложении, в расширении VS Code или в облачной сессии. Это также ответ на вызов, сделанный до начала сессии, пока ваш мод загружается, и на вызов, сделанный во время завершения Claude Code |
+| `refused` | Хук другого мода на `ui.notify` ответил вместо Claude Code, не отправив уведомление |
+
+Вызов отклоняется вместо разрешения, когда `text` не является строкой, когда хук другого мода на `ui.notify` возвращает `{ deny }` или когда запись в терминал завершается ошибкой.
+
+Ваш мод не может выбрать канал, и Claude Code не ограничивает, как часто мод отправляет уведомления. Единственный переключатель — настройка пользователя.
+
+Когда вызов доходит до работающей сессии, выполняются [хуки `Notification`](https://code.claude.com/docs/ru/hooks#notification) пользователя с типом `plugin_notification`. Они выполняются, даже когда ответ — `disabled`, а также в сессии без терминала, где ответ — `no-surface`. Для вызова, сделанного до начала сессии или во время завершения Claude Code, хуки не выполняются. Хук, из которого ваш мод вызвал `$.ui.notify`, исключается из этого запуска, поэтому хук `classic.Notification`, который отправляет уведомление, не вызывается повторно для собственного уведомления.
+
+Терминал не сообщает, показал ли он уведомление, поэтому `isSent: true` означает, что уведомление было отправлено, а не что пользователь его увидел.
+
+Этот пример отправляет уведомление, когда ход основного диалога завершается без прерывания, и использует всплывающее уведомление как резервный вариант, если уведомление с текстом не было отправлено. Он не ждёт уведомления перед передачей события дальше, потому что сначала выполняются хуки `Notification` пользователя, а это может занять некоторое время:
+
+```javascript theme={null}
+on('turn.complete', ($, e, next) => {
+  const isMainTurn = e.agentId === undefined && !e.isAborted
+  const fallBack = () => $.ui.toast('Turn finished')
+  if (isMainTurn) {
+    $.ui.notify('Turn finished').then(sent => {
+      const hasText = sent.isSent && sent.channel !== 'terminal_bell'
+      if (!hasText) fallBack()
+    }, fallBack)
+  }
+  return next(e)
+})
+```
+
+В [расширении VS Code](https://code.claude.com/docs/ru/plugins/mods/interface.md#draw-in-the-vs-code-extension) строки состояния и всплывающие уведомления вместо этого отображаются над полем ввода промпта, а строки лога — в диалоге.
+
+### Запуск хода из фоновой работы
+
+Когда фоновая работа находит что-то, что требует внимания Claude, она может запустить ход, отправив запрос с `$.prompt.submit({ text })`. Claude читает текст после предложения, которое называет ваш mod как отправителя. Чтобы отправить его как собственные слова пользователя, без этого предложения, добавьте `asUser: true`. Вызов ждёт, пока сеанс будет неактивным, а затем запускает новый ход. Он разрешается при запуске этого хода, поэтому не `await` его в обработчике, который выполняется, пока Claude работает.
+
+### Остановка фоновой работы
+
+Таймеры останавливаются при перезагрузке модуля. Для долгоживущей работы внутри хука [`next.signal`](https://code.claude.com/docs/ru/plugins/mods/reference#the-hook-function) — это `AbortSignal`, который прерывается, когда событие, которое обрабатывает ваш хук, отменяется, например когда пользователь прерывает работу. Передавайте его всему, что работает долго.
+
+### Вызовы и фоновая работа после того, как пользователь прерывает ход
+
+Причина `the session was stopped and nobody has sent input since` в результате или ошибке означает, что пользователь остановил выполняющийся ход, например клавишей Esc или кнопкой **Stop**. После такого прерывания вызовы, которые запускают новую работу в сессии, отклоняются до следующего ввода пользователя, например сообщения в промпте.
+
+За исключением `$.prompt.submit` и `$.command.run`, такая обработка вызовов и фоновой работы после прерывания требует Claude Code v2.1.304 или более поздней версии.
+
+#### Повторная попытка отклонённого или отброшенного вызова
+
+Повторяйте отклонённый или отброшенный вызов из хука [`turn.complete`](https://code.claude.com/docs/ru/plugins/mods/events#follow-a-turn). Вызовы остаются отклонёнными до следующего ввода пользователя, и ничто не ставит их в очередь и не повторяет за вас.
+
+Если результат или ошибка вызова содержит одну из этих строк, сохраните его аргументы для последующей повторной попытки:
+
+* **`the session was stopped and nobody has sent input since`**: вызов был отклонён
+* **`was removed from the queue before it ran`**: промпт или команда покинули очередь, не выполнившись, и были отброшены, например когда пользователь остановил ход
+
+В этом примере вызывайте `submitPrompt` из фоновой работы вместо [`$.prompt.submit`](#start-a-turn-from-a-background-job). Поместите переменную `pendingText` и функцию `submitPrompt` над [`register`](https://code.claude.com/docs/ru/plugins/mods/reference#files), а хук `turn.complete` — внутри него, потому что [проверка](https://code.claude.com/docs/ru/plugins/mods/create.md#check-what-claude-code-reads-from-your-mod) отклоняет `$`, переданный в функцию, объявленную внутри `register`. Когда результат или ошибка содержит одну из этих строк, `submitPrompt` сохраняет текст в `pendingText`, чтобы хук `turn.complete` отправил его снова:
+
+```javascript theme={null}
+// The text of the last refused or dropped prompt, or null
+let pendingText = null
+
+async function submitPrompt($, text) {
+  let reason
+  try {
+    const result = await $.prompt.submit({ text })
+    reason = result?.drop ?? ''
+  } catch (error) {
+    reason = String(error?.message ?? error)
+  }
+  if (reason.includes('the session was stopped and nobody has sent input since') ||
+      reason.includes('was removed from the queue before it ran')) {
+    pendingText = text
+  }
+  // Any other result or error isn't retried
+}
+
+on('turn.complete', async ($, e, next) => {
+  if (pendingText !== null) {
+    const text = pendingText
+    // Empty pendingText before retrying, so that a second run of this hook
+    // doesn't submit the same text.
+    pendingText = null
+    // Not awaited: the hook would stay open until the new turn starts
+    submitPrompt($, text)
+  }
+  return next(e)
+})
+```
+
+До следующего ввода пользователя `turn.complete` может сработать для самого прерванного хода и для хода субагента, и сделанные в этот момент вызовы снова отклоняются. В таком случае `submitPrompt` сохраняет текст для последующего `turn.complete`.
+
+Для вызова, который отклоняет промис, например `$.command.run`, перехватите ошибку и проверьте её сообщение так же, как `submitPrompt` проверяет `reason`.
+
+#### Что возвращают отклонённые вызовы
+
+В результатах `<reason>` обозначает причину, по которой вызов был отклонён. После прерывания это `the session was stopped and nobody has sent input since`. О других причинах см. [Вызовы, отклоняемые в запусках `claude -p` и сессиях Agent SDK](#calls-refused-in-non-interactive-runs).
+
+| Некоторые отклонённые вызовы | Результат |
+| :- | :- |
+| `$.prompt.submit` | Разрешается с `{ drop: '<reason>' }` и не ставит промпт в очередь |
+| `$.command.run` | Отклоняется с ошибкой, сообщение которой заканчивается на `<reason>` |
+| [`$.agent.spawn`](https://code.claude.com/docs/ru/plugins/mods/reference#mods-api-methods) | Разрешается с `{ deny: '<reason>' }` и не запускает субагента |
+| `$.session.send` субагенту, который завершил работу | Разрешается с `{ isDelivered: false, reason: 'Agent "<id>" was not resumed: <reason>.' }`, где `<id>` — идентификатор субагента. Субагент, который ещё выполняется, получает сообщение. |
+| `$.session.send` участнику [команды агентов](https://code.claude.com/docs/ru/agent-teams.md) | Разрешается с `{ isDelivered: false, reason: 'Teammate "<name>" was not messaged: <reason>.' }`, где `<name>` — имя участника команды |
+| [`$.tool.call`](https://code.claude.com/docs/ru/plugins/mods/reference#mods-api-methods) для Bash с `run_in_background: true`, Monitor или CronCreate | Разрешается с `{ deny: '<tool> was not run: it starts background work, a schedule or a goal, and <reason>' }`, где `<tool>` — имя инструмента |
+
+Когда один из этих вызовов `$.session.send` или `$.tool.call` отклоняется после прерывания в интерактивной сессии, пользователь может увидеть [всплывающее уведомление `Stopped:`](https://code.claude.com/docs/ru/plugins/mods/troubleshoot#stopped-type-a-message-to-continue).
+
+#### Работа, которую ваш мод запустил до прерывания
+
+После того как пользователь останавливает выполняющийся ход, например клавишей Esc, часть работы, которую ваш мод уже запустил, отбрасывается, а часть ждёт следующего ввода пользователя.
+
+| Работа | Что происходит до следующего ввода пользователя | Что делать |
+| :- | :- | :- |
+| Промпт из `$.prompt.submit`, который ещё в очереди | Отбрасывается. Вызов разрешается с `{ drop: 'the prompt was removed from the queue before it ran' }`. | Отправьте его снова, как показано в разделе [Повторная попытка отклонённого или отброшенного вызова](#retry-a-refused-or-dropped-call) |
+| Команда из `$.command.run`, которая ещё в очереди | Отбрасывается. Вызов отклоняется с ошибкой, сообщение которой содержит `the command was removed from the queue before it ran`. | Выполните её снова, как показано в разделе [Повторная попытка отклонённого или отброшенного вызова](#retry-a-refused-or-dropped-call) |
+| Однократное задание, запланированное с помощью инструмента, например CronCreate, срок которого наступает до следующего ввода пользователя | В этот момент не запускает ход и выполняется после этого ввода | Ничего не требуется |
+| Повторяющееся задание, запланированное с помощью инструмента, например CronCreate, срок которого наступает до следующего ввода пользователя | В этот момент не запускает ход. Задание пропускает этот запуск и сохраняет своё расписание. | Ничего не требуется |
+| Событие от монитора, который запустил ваш мод | Монитор продолжает работать, а Claude Code отбрасывает события, которые монитор генерирует во время работы. | Ничего сделать нельзя |
+| Субагент, которого ваш мод запустил, а затем возобновил с помощью `$.session.send`, и который завершает работу до следующего ввода пользователя | Его уведомление о завершении ждёт и попадает в диалог после этого ввода | Ничего не требуется |
+| Команда Bash или PowerShell переднего плана из `$.tool.call`, которая уже выполнялась, когда пользователь остановил ход, и достигает своего таймаута до его следующего ввода | Останавливается по таймауту вместо [перехода в фон](https://code.claude.com/docs/ru/tools-reference.md#foreground-commands-that-move-to-the-background). Вызов разрешается с установленным `isError`, а вывод содержит строку `Ended instead of moving to the background: plugins' input is held, by a Stop or by the host's limits.` | Выполните её снова после следующего ввода пользователя, как показано в разделе [Повторная попытка отклонённого или отброшенного вызова](#retry-a-refused-or-dropped-call) |
+
+Когда срок запланированного задания наступает или монитор генерирует событие до следующего ввода пользователя, пользователь может увидеть [всплывающее уведомление `Stopped:`](https://code.claude.com/docs/ru/plugins/mods/troubleshoot#stopped-type-a-message-to-continue).
+
+### Вызовы, отклоняемые в запусках `claude -p` и сессиях Agent SDK
+
+В запуске `claude -p` или сессии [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md) результат вроде `{ drop: 'the run reached its --max-turns limit' }` означает, что запуск отклонил вызов вашего мода.
+
+Отклонённый `$.prompt.submit` разрешается с `{ drop: '<reason>' }`. Другие отклонённые вызовы, например `$.command.run` и `$.agent.spawn`, дают результаты, показанные в разделе [Что возвращают отклонённые вызовы](#what-refused-calls-return), с причиной вместо `<reason>`. Найдите свою `<reason>` ниже, чтобы узнать, что делать:
+
+* **`the run reached its --max-turns limit`**: ходы от промптов вашего мода и от запущенных им субагентов учитываются в [`--max-turns`](https://code.claude.com/docs/ru/cli-reference#cli-flags) или в [ограничении ходов](https://code.claude.com/docs/ru/agent-sdk/configuration.md#limit-turns-and-spend) Agent SDK. Чтобы получить больше ходов, начните запуск с более высоким ограничением. Если это невозможно, сделайте так, чтобы ваш мод перестал выполнять отклоняемый вызов. Если запуск получает ещё один промпт от пользователя или приложения SDK, счётчик ходов сбрасывается, и запуск снова принимает вызовы.
+* **`the run is past its --max-budget-usd limit`**: начните запуск с более высоким `--max-budget-usd` или увеличьте [ограничение расходов](https://code.claude.com/docs/ru/agent-sdk/configuration.md#limit-turns-and-spend) Agent SDK. Если это невозможно, сделайте так, чтобы ваш мод перестал выполнять отклоняемый вызов. Ограничение применяется к общей стоимости запуска на текущий момент. Эта сумма продолжает расти, когда запуск получает ещё один промпт, поэтому повторная попытка возвращает ту же причину.
+* **`the host has ended its input`**: например, приложение SDK завершило свой [потоковый ввод](https://code.claude.com/docs/ru/agent-sdk/streaming-vs-single-mode.md) или закрылся stdin в запуске, начатом с [`--input-format stream-json`](https://code.claude.com/docs/ru/cli-reference#cli-flags). Запуск завершается и больше не принимает ввод, поэтому повторная попытка возвращает ту же причину. Сделайте так, чтобы ваш мод перестал выполнять отклоняемый вызов. Если вы сами начинаете запуск, в следующий раз держите этот ввод открытым, пока вашему моду не останется делать вызовов.
+* **`the session was stopped and nobody has sent input since`**: запуск был [прерван](#calls-and-background-work-after-the-user-interrupts-a-turn), например с помощью [`interrupt()`](https://code.claude.com/docs/ru/agent-sdk/typescript#query-object) в Agent SDK. Чтобы повторить вызов после следующего сообщения от пользователя или приложения SDK, следуйте разделу [Повторная попытка отклонённого или отброшенного вызова](#retry-a-refused-or-dropped-call).
+
+### Запуск `claude -p` с вашим модом никогда не завершается
+
+Если ваш мод отправляет промпт в конце каждого хода, каждый промпт запускает новый ход. Без [`--max-turns`](https://code.claude.com/docs/ru/cli-reference#cli-flags) или `--max-budget-usd` запуск `claude -p`, загружающий этот мод, продолжается, пока вы сами его не остановите.
+
+Чтобы запуск завершался самостоятельно, добавьте любой из этих флагов к команде в оболочке. Если запуск начинают другие люди, сделайте так, чтобы ваш мод перестал отправлять промпты после завершения своей работы. Эта команда добавляет `--max-turns`:
+
+```bash theme={null}
+claude -p "find the TODOs" --max-turns 5
+```
+
+Когда запуск достигает этого ограничения, следующий промпт мода [отклоняется](#calls-refused-in-non-interactive-runs) вместо запуска хода, и запуск завершается.
+
+Если запуск всё равно выходит за ограничение, выполните `claude --version` в оболочке и [обновите Claude Code](https://code.claude.com/docs/ru/setup.md#update-claude-code), если ваша версия старше v2.1.304. Промпты мода отклоняются при достижении ограничения начиная с v2.1.299. Если ваш мод запускает субагентов, их ходы учитываются в `--max-turns` начиная с v2.1.304.
+
+## Отправка и получение сообщений между сеансами
+
+Мод может отправить простое текстовое сообщение другой вашей сессии, одному из субагентов этой сессии или участнику её [команды агентов](https://code.claude.com/docs/ru/agent-teams.md). Он также может наблюдать за сообщениями, которые приходят и уходят.
+
+Чтобы отправить сообщение, вызовите `$.session.send({ to, text })`: он выполняет такую же доставку, как инструмент SendMessage. Задайте `to` в зависимости от получателя сообщения:
+
+* **Другая ваша сессия**: `{ sessionId }`
+* **Субагент или участник команды**: `{ agentId }` с id из `$.agent.list()`
+* **Отправитель полученного вами сообщения**: строковый адрес, с которого пришло это сообщение
+
+Вызов разрешается после того, как сообщение поставлено в очередь, с `{ isDelivered: true }`. Если ничего не было доставлено, он разрешается с `{ isDelivered: false, reason }`, и `reason` сообщает причину.
+
+Этот hook отвечает на команду `/ping`, [зарегистрированную как команда](#add-a-command), попросив сеанс, чей id вы вводите после неё, получить статус:
+
+```javascript theme={null}
+on('command.run', { command: 'ping' }, async ($, e) => {
+  // e.args is the session id typed after /ping
+  const sent = await $.session.send({ to: { sessionId: e.args }, text: 'Status? One line.' })
+  // The call resolves either way, so check isDelivered to learn what happened
+  if (!sent.isDelivered) $.ui.toast('Not delivered: ' + sent.reason)
+  // An empty result prints nothing in this session's transcript
+  return {}
+})
+```
+
+Когда сообщение поставлено в очередь, в вашей сессии ничего не появляется, и Claude другой сессии читает `Status? One line.` Когда ничего не было доставлено, всплывающее уведомление сообщает причину.
+
+`session.receive` и `session.send` позволяют mod наблюдать сообщения. Верните `next(e)` из обоих, чтобы пропустить каждое сообщение без изменений:
+
+| Событие | Срабатывает когда | Полезные поля |
+| :- | :- | :- |
+| `session.receive` | Сообщение поступает для этого сеанса, перед тем как Claude его прочитает | `e.text` и `e.origin.kind`, такие как `peer` или `peer-send-message` для другого сеанса или агента, `task-notification` или `scheduled-trigger`. Верните `{ consumed: reason }`, чтобы помешать Claude. |
+| `session.send` | Сообщение вот-вот уйдёт, из инструмента SendMessage или mod | `e.to`, `e.text` и `e.origin.kind`, который является `model` или `plugin` |
+
+Сеанс, установленный на [отказ входящих сообщений](https://code.claude.com/docs/ru/cross-session-messaging.md#control-inbound-messages), отказывает сообщение перед срабатыванием `session.receive`, поэтому hook никогда его не видит. Сообщение, которое удерживается для вашего одобрения, сначала достигает hook, поэтому mod может прочитать сообщение, которое вы ещё не одобрили. `next(e)` hook отклоняет, когда сообщение не доставляется.
+
+Имя отправителя в полученном сообщении — это то, что написал отправитель, поэтому не основывайте решение на нём.
+
+## Доступ к файлам, процессам и сети
+
+Мод получает доступ к файловой системе, процессам и сети через API модов с теми же разрешениями, что и пользователь, запускающий Claude Code. Сам модуль хуков не имеет API Node.js, нет глобальных таймеров, таких как `setTimeout`, и нет собственного доступа к сети или файлам. Доступны стандартный JavaScript и веб-API, такие как `URL`, `TextEncoder`, `AbortController` и `crypto.subtle`. Каждое пространство имён ниже охватывает один вид доступа:
+
+| Пространство имён | Что оно делает |
+| :- | :- |
+| `$.fs` | `read(path)`, `write(path, text)`, `exists(path)`, `stat(path)` и `list(path)` работают с файлами и каталогами |
+| `$.process` | `run(['git', 'status'])` запускает команду и разрешается при выходе. `spawn` потоком выводит долгоживущую команду. |
+| `$.http` | `fetch(url, init)` по `http` или `https`. Он разрешается в `{ status, ok, headers, text }` после прочтения тела. |
+| `$.store` | Хранилище JSON ключ-значение вашего собственного плагина, сохраняемое между сессиями |
+| `$.env` | `get` и `set` переменные окружения. Напишите имя как буквальную строку. |
+| `$.settings` | `read()` разрешается во все настройки, объединённые в один объект. С `{ source }` или `{ key }` он вместо этого разрешается в [настройки одного источника или значение одного ключа](#read-one-source-or-one-key). |
+| `$.session` | `messages()` возвращает транскрипт как список `{ role, text, toolUses }`. Также рабочий каталог, модель и многое другое. [`usage()`](https://code.claude.com/docs/ru/plugins/mods/reference#mods-api-methods) возвращает использование контекстного окна и ограничения плана. |
+| `$.mcp` | `call` инструмент на подключённом MCP-сервере |
+
+Файлы, процессы и запросы имеют несколько собственных правил:
+
+* **Пути**: относительный путь разрешается относительно рабочего каталога сессии или субагента, событие которого обрабатывает хук
+* **`$.fs.list`**: возвращает записи одного каталога как `{ name, kind, size, isLink }` и не спускается в подкаталоги
+* **`$.process.run`**: принимает список аргументов и не использует оболочку. Он разрешается в `{ exitCode, stdout, stderr }` независимо от кода выхода. Он отклоняется, если программа не может запуститься или всё ещё выполняется при истечении времени ожидания, которое по умолчанию составляет 30 секунд, поэтому оберните его в `try` и `catch`.
+* **`$.http.fetch`**: следует не более чем пяти перенаправлениям. При перенаправлении на другой источник он сохраняет только заданные вами заголовки запроса `accept`, `accept-language`, `content-type` и `user-agent` и отбрасывает остальные, поэтому запрос, зависящий от другого заголовка, например `Authorization`, может завершиться ошибкой после такого перенаправления. В разделе [ограничения](https://code.claude.com/docs/ru/plugins/mods/reference.md#limits) указаны его таймаут и размеры тела.
+
+Каждый из этих вызовов сам по себе является событием, названным по его пространству имён и методу без `$.`, например `fs.read` для `$.fs.read`. Мод [ранее в цепи](https://code.claude.com/docs/ru/plugins/mods/events.md#the-order-mods-run-in) может наблюдать, переписывать или отклонять ваш вызов — именно так организация ограничивает то, к чему моды получают доступ.
+
+Мод может отклонить ваш вызов `$.process.spawn` уже после того, как команда выдала вывод или завершилась, и ничего из сделанного командой не отменяется. В этом случае вызов отклоняется с сообщением, которое заканчивается одной из этих строк и причиной, указанной отклонившим модом:
+
+* **`$.process.spawn started, and a plugin withheld its result:`**: отклонивший мод не дочитал вывод команды до конца. Claude Code останавливает команду, если она всё ещё выполняется.
+* **`$.process.spawn ran, and a plugin withheld its result:`**: отклонивший мод дочитал вывод команды до конца, поэтому команда уже завершилась
+
+### Чтение всех настроек, одного источника или одного ключа
+
+`$.settings.read()` разрешается в один объект, содержащий настройки из всех используемых источников, объединённые с учётом [приоритета](https://code.claude.com/docs/ru/settings.md#settings-precedence). Передайте `{ source }`, чтобы вместо этого прочитать один источник, `{ key }`, чтобы прочитать один ключ, или оба:
+
+| Вызов | Разрешается в |
+| :- | :- |
+| `$.settings.read()` | Объединённые настройки в виде одного объекта. Его ключи верхнего уровня совпадают с ключами файла `settings.json`, например `permissions` и `hooks`. |
+| `$.settings.read({ source: 'policy' })` | Настройки этого одного источника в виде одного объекта или `{}`, если этот источник не содержит настроек |
+| `$.settings.read({ key: 'spinnerTipsEnabled' })` | Значение этого ключа в объединённых настройках или `undefined`, если ключ не задан |
+| `$.settings.read({ key: 'spinnerTipsEnabled', source: 'user' })` | Значение этого ключа в этом одном источнике или `undefined`, если этот источник его не задаёт |
+
+Для `source` передайте имя того источника настроек, который нужно прочитать:
+
+* **`user`**: `~/.claude/settings.json`
+* **`project`**: `.claude/settings.json`
+* **`local`**: `.claude/settings.local.json`
+* **`flag`**: то, что вы передаёте с помощью `--settings`, а также встроенные настройки SDK
+* **`policy`**: [управляемые настройки](https://code.claude.com/docs/ru/managed-settings.md#how-claude-code-combines-managed-sources)
+
+Для `key` передайте точное имя одного ключа верхнего уровня, а не путь через точку во вложенный объект. Аргумент `key` требует Claude Code v2.1.304 или новее.
+
+## Следующие шаги
+
+* [Реагирование на события](https://code.claude.com/docs/ru/plugins/mods/events.md): hook вызовы инструментов, запросы и ходы
+* [Рисование в интерфейсе](https://code.claude.com/docs/ru/plugins/mods/interface.md): показать то, что собирает ваш mod в pane или над запросом
+* [Тестирование mod](https://code.claude.com/docs/ru/plugins/mods/test.md): заглушка любого из этих вызовов в тесте
+* [Справочник Mods](https://code.claude.com/docs/ru/plugins/mods/reference.md): события, методы mods API и ограничения

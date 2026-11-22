@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Модуль 04. Workflow профи</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/index.html">claude-code-pro-course</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/course/index.html">course</a></nav>
+<h1 id="модуль-04-workflow-профи">Модуль 04. Workflow профи <a class="h-anchor" href="#модуль-04-workflow-профи" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="1-explore-plan-code-commit">1. Explore → Plan → Code → Commit <a class="h-anchor" href="#1-explore-plan-code-commit" aria-label="Ссылка на раздел">#</a></h3>
+<p>Самый надёжный базовый цикл.</p>
+<pre><code>1. EXPLORE   &gt; прочитай src/billing/ и объясни, как считается скидка. Код пока не меняй.
+2. PLAN      [Shift+Tab → plan mode] &gt; составь план добавления промокодов
+3. CODE      &gt; реализуй план. После каждого шага запускай тесты.
+4. COMMIT    &gt; сделай коммит и открой PR с описанием</code></pre>
+<p><strong>Plan mode</strong> (<code>Shift+Tab</code> дважды или <code>claude --permission-mode plan</code>) — Claude только читает и предлагает план. Вы правите план до того, как написана хоть строка кода. Это дешевле любого рефакторинга.</p>
+<p>Совет: попросите сохранить план в файл (<code>docs/plans/promo.md</code>) — к нему можно вернуться после <code>/clear</code>.</p>
+<h3 id="2-tdd-с-claude">2. TDD с Claude <a class="h-anchor" href="#2-tdd-с-claude" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude отлично работает, когда есть <strong>чёткая цель, которую можно проверить</strong>.</p>
+<pre><code>&gt; Напиши тесты для функции parseDuration по этим примерам: &quot;1h30m&quot; → 5400, &quot;90s&quot; → 90,
+  &quot;abc&quot; → ошибка. Это TDD — реализацию НЕ пиши. Запусти тесты, убедись, что падают.
+&gt; Закоммить тесты.
+&gt; Теперь напиши реализацию, чтобы тесты прошли. Тесты не меняй.</code></pre>
+<h3 id="3-визуальная-итерация">3. Визуальная итерация <a class="h-anchor" href="#3-визуальная-итерация" aria-label="Ссылка на раздел">#</a></h3>
+<p>Для UI: макет → код → скриншот → сравнение → исправление. С MCP для браузера (Playwright/Chrome) Claude сам делает скриншоты. 2–3 итерации дают результат намного лучше первого.</p>
+<h3 id="4-дайте-способ-проверки">4. Дайте способ проверки <a class="h-anchor" href="#4-дайте-способ-проверки" aria-label="Ссылка на раздел">#</a></h3>
+<p>Самый сильный рычаг качества. Вместо «сделай» — «сделай и проверь»:</p>
+<ul>
+<li>тесты (<code>npm test</code>),</li>
+<li>типы (<code>tsc --noEmit</code>),</li>
+<li>линтер,</li>
+<li>запуск скрипта и сравнение вывода,</li>
+<li>скриншот UI.</li>
+</ul>
+<h3 id="5-управление-контекстом">5. Управление контекстом <a class="h-anchor" href="#5-управление-контекстом" aria-label="Ссылка на раздел">#</a></h3>
+<p>Контекстное окно — ограниченный ресурс. Чем оно полнее, тем хуже Claude следует инструкциям.</p>
+<div class="table-wrap"><table><thead><tr><th>Инструмент</th><th>Когда</th></tr></thead><tbody><tr><td><code>/clear</code></td><td>Новая задача. Используйте часто!</td></tr><tr><td><code>/compact [фокус]</code></td><td>Длинная задача, нужно продолжить. <code>/compact сохрани решения по API</code></td></tr><tr><td><code>/context</code></td><td>Посмотреть, что съедает контекст</td></tr><tr><td>Subagents</td><td>Поиск/исследование в отдельном контексте (модуль 06)</td></tr><tr><td>Файл-заметки</td><td><code>PLAN.md</code>, <code>NOTES.md</code> — «внешняя память» между сессиями</td></tr></tbody></table></div>
+<h3 id="6-чекпоинты-и-откат">6. Чекпоинты и откат <a class="h-anchor" href="#6-чекпоинты-и-откат" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Claude автоматически сохраняет состояние файлов перед правками.</li>
+<li><code>Esc Esc</code> или <code>/rewind</code> — откатить разговор и/или код к выбранной точке.</li>
+<li>Чекпоинты не заменяют git: коммитьте рабочие состояния.</li>
+</ul>
+<h3 id="7-сессии">7. Сессии <a class="h-anchor" href="#7-сессии" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-bash">claude -c              # продолжить последнюю сессию
+claude -r              # выбрать сессию из списка
+/resume                # то же внутри
+/rename auth-refactor  # дать сессии имя (если доступно)</code></pre>
+<h3 id="8-работа-с-git">8. Работа с git <a class="h-anchor" href="#8-работа-с-git" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude умеет всё: история, конфликты, коммиты, PR (через <code>gh</code>).</p>
+<pre><code>&gt; почему в v2.3 поменяли логику ретраев? посмотри git log и blame
+&gt; реши конфликты мерджа, сохранив нашу логику кеширования
+&gt; создай PR с описанием изменений и чек-листом тестирования</code></pre>
+<p>Установите <code>gh</code> CLI — Claude будет работать с issues и PR.</p>
+<h3 id="9-курс-коррекция">9. Курс-коррекция <a class="h-anchor" href="#9-курс-коррекция" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Прерывайте рано (<code>Esc</code>), не ждите конца.</li>
+<li>Если после 2 исправлений всё ещё не то — <code>/clear</code> и новый, лучший промпт.</li>
+<li>«Сначала объясни, что собираешься сделать» — дешёвая страховка.</li>
+</ul>
+<h3 id="10-шаблон-рабочего-дня">10. Шаблон рабочего дня <a class="h-anchor" href="#10-шаблон-рабочего-дня" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>Утро:   claude -c  → «на чём мы остановились? прочитай PLAN.md»
+Задача: /clear → explore → plan mode → код с тестами → /review → коммит
+Вечер:  «обнови PLAN.md: что сделано, что дальше»</code></pre>
+<h3 id="h">Практика <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li>Решите одну задачу строго по циклу Explore → Plan → Code → Commit.</li>
+<li>Сделайте одну функцию через TDD.</li>
+<li>Посмотрите <code>/context</code> в середине длинной задачи, выполните <code>/compact</code> с фокусом.</li>
+</ol>
+<p>🧪 Закрепите на практике: <a href="../labs/lab-03-tdd-feature.md">лабораторная работа</a></p>
+<p>➡️ Далее: <a href="05-skills.md">05. Skills и slash-команды</a></p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

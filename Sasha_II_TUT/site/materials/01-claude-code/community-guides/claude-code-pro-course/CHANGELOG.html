@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Changelog</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../materials/01-claude-code/community-guides/claude-code-pro-course/index.html">claude-code-pro-course</a></nav>
+<h1 id="changelog">Changelog <a class="h-anchor" href="#changelog" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="1-1-0-2026-09-30">[1.1.0] — 2026-09-30 <a class="h-anchor" href="#1-1-0-2026-09-30" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h">Добавлено <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>8 лабораторных работ (<code>labs/</code>) с критериями готовности</li>
+<li>Библиотека промптов (<code>recipes/prompts.md</code>) — 13 категорий</li>
+<li>FAQ и решение проблем (<code>course/faq.md</code>)</li>
+<li>Skills: <code>refactor</code>, <code>pr-description</code> (с шаблоном), <code>release-notes</code>, <code>onboard</code></li>
+<li>Субагенты: <code>architect</code>, <code>docs-writer</code></li>
+<li>Правила по путям: <code>.claude/rules/{testing,api,frontend}.md</code></li>
+<li>Output style «Mentor», статусная строка, hooks <code>notify.sh</code> и <code>session-context.sh</code></li>
+<li><code>install.sh</code> — установка starter-kit в проект или в <code>~/.claude</code></li>
+<li>CI: <code>validate.yml</code> (JSON, frontmatter, ссылки, shellcheck, smoke-тесты hooks) и <code>claude-review.yml</code> (авто-ревью PR)</li>
+<li><code>CONTRIBUTING.md</code>, <code>CLAUDE.md</code> репозитория, шаблоны issue и PR</li>
+<li>README: схема курса, карта конфигурации, чек-лист прогресса</li>
+</ul>
+<h4 id="h-2">Изменено <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>hooks вызываются через <code>bash</code>, чтобы не зависеть от прав на исполнение</li>
+</ul>
+<h3 id="1-0-0-2026-09-30">[1.0.0] — 2026-09-30 <a class="h-anchor" href="#1-0-0-2026-09-30" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Первая версия: 12 модулей, шпаргалка, starter-kit, пример плагина, workflow для <code>@claude</code></li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

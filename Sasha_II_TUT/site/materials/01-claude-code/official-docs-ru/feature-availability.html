@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Доступность функций</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Доступность функций <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Сравните, какие функции Claude Code доступны в каждом плане подписки Anthropic, в Anthropic Console и у облачных поставщиков, таких как Amazon Bedrock и Google Cloud.</p>
+</blockquote>
+<p>CLI Claude Code и всё, что работает локально, функционирует одинаково у каждого поставщика. Инструкции по настройке для каждого поставщика см. в разделе <a href="https://code.claude.com/docs/ru/third-party-integrations.md">Обзор развёртывания для предприятий</a>. Чтобы сразу перейти к тому, что отсутствует у вашего поставщика, см. вкладки <a href="#summary-by-provider">сводки по поставщикам</a>.</p>
+<p>В таблицах ниже ✓ означает доступно, ✗ означает недоступно, а «See note» ссылается на сноску для частичной поддержки. Квалификатор после ✓ сужает доступность до этого подмножества, а «Admin-enabled» означает, что функция отключена до тех пор, пока администратор организации её не включит.</p>
+<h3 id="h-2">Доступность по поставщику модели <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Способ аутентификации определяет, какие функции может использовать Claude Code. Для единого списка того, что отсутствует у вашего поставщика, см. вкладки <a href="#summary-by-provider">сводки по поставщикам</a>. Чтобы найти свой столбец в таблицах:</p>
+<ul>
+<li><strong>Подписка Claude</strong>: вы входите с учётной записью claude.ai в плане Pro, Max, Ultra, Team или Enterprise</li>
+<li><strong>Anthropic Console</strong>: вы аутентифицируетесь с помощью ключа API Anthropic или <a href="https://code.claude.com/docs/ru/authentication.md#sign-in-without-an-api-key">входите в учётную запись Console без ключа</a></li>
+<li><strong>Amazon Bedrock</strong>: вы используете модели Claude из каталога моделей Amazon Bedrock и устанавливаете <code>CLAUDE_CODE_USE_BEDROCK</code>. <a href="https://code.claude.com/docs/ru/amazon-bedrock.md#use-the-mantle-endpoint">Конечная точка Mantle</a> (<code>CLAUDE_CODE_USE_MANTLE</code>) охватывается этим столбцом</li>
+<li><strong>Claude Platform на AWS</strong>: вы приобрели Claude через AWS Marketplace, но вызываете API Anthropic и устанавливаете <code>CLAUDE_CODE_USE_ANTHROPIC_AWS</code></li>
+<li><strong>Google Cloud (Anthropic managed)</strong>: вы используете <a href="https://code.claude.com/docs/ru/claude-models-on-google-cloud-anthropic-managed.md">Claude Models on Google Cloud (Anthropic managed)</a> и устанавливаете <code>CLAUDE_CODE_USE_ANTHROPIC_GOOGLE_CLOUD</code>. Вы обращаетесь к Claude API, которым управляет Anthropic, через свой проект Google Cloud. Чтобы различить два предложения Google Cloud, см. <a href="https://platform.claude.com/docs/en/build-with-claude/claude-models-on-google-cloud/overview#which-offering-are-you-using">Каким предложением вы пользуетесь?</a></li>
+<li><strong>Google Cloud (Google managed)</strong>: управляется Google в рамках Google Cloud&#x27;s Agent Platform, ранее Vertex AI; вы устанавливаете <code>CLAUDE_CODE_USE_VERTEX</code> и используете Claude Models on Google Cloud (Google managed)</li>
+<li><strong>Microsoft Foundry</strong>: управляется Anthropic; вы устанавливаете <code>CLAUDE_CODE_USE_FOUNDRY</code></li>
+</ul>
+<h4 id="h-3">Функции, доступные у каждого поставщика <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Они работают у каждого поставщика:</p>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/quickstart.md">CLI</a> и <a href="https://code.claude.com/docs/ru/agent-sdk/overview.md">Agent SDK</a></li>
+<li>Расширения <a href="https://code.claude.com/docs/ru/vs-code.md">VS Code</a> и <a href="https://code.claude.com/docs/ru/jetbrains.md">JetBrains</a></li>
+<li><a href="https://code.claude.com/docs/ru/sub-agents.md">Subagents</a>, <a href="https://code.claude.com/docs/ru/hooks-guide.md">hooks</a>, <a href="https://code.claude.com/docs/ru/commands.md">commands</a> и <a href="https://code.claude.com/docs/ru/skills.md">skills</a></li>
+<li><a href="https://code.claude.com/docs/ru/memory.md">Память CLAUDE.md</a>, <a href="https://code.claude.com/docs/ru/plugins/overview.md">plugins</a> и <a href="https://code.claude.com/docs/ru/mcp.md">MCP servers</a></li>
+<li><a href="https://code.claude.com/docs/ru/checkpointing.md">Checkpoints</a>, <a href="https://code.claude.com/docs/ru/sandboxing.md">sandboxing</a> и <a href="https://code.claude.com/docs/ru/workflows.md">Workflows</a></li>
+<li><a href="https://code.claude.com/docs/ru/monitoring-usage.md">Метрики OpenTelemetry</a> и <a href="https://code.claude.com/docs/ru/managed-settings.md#delivery-mechanisms">управляемый файл параметров</a></li>
+</ul>
+<p>Они имеют различия, зависящие от поставщика:</p>
+<ul>
+<li><strong>MCP-серверы</strong>: <a href="https://code.claude.com/docs/ru/mcp.md#use-mcp-servers-from-claude-ai">коннекторы из claude.ai</a> загружаются только когда ваша подписка claude.ai является активным методом аутентификации. <a href="https://code.claude.com/docs/ru/mcp.md#configure-tool-search">Поиск инструментов</a> не поддерживается на <a href="https://platform.claude.com/docs/en/build-with-claude/claude-in-microsoft-foundry#hosting-options">развёртываниях Microsoft Foundry, размещённых на Azure</a>. На Google Cloud (Google managed) поиск инструментов не поддерживается на моделях более ранних, чем Claude Opus 4.5, Claude Sonnet 4.5 и Claude Haiku 4.5</li>
+<li><strong>Субагенты</strong>: когда родительский диалог работает на Fable, встроенный <a href="https://code.claude.com/docs/ru/sub-agents.md#built-in-subagents">субагент Explore</a> работает на Opus при использовании подписки Claude, учётной записи Anthropic Console или <a href="https://code.claude.com/docs/ru/llm-gateway">LLM-шлюза</a>, доступ к которому осуществляется через <code>ANTHROPIC_BASE_URL</code>. У других провайдеров, включая Claude Platform on AWS, он работает на Fable</li>
+<li><strong><a href="https://code.claude.com/docs/ru/commands.md#all-commands">Команды</a></strong>:</li>
+<li><code>/design-sync</code> и <code>/import</code> с его формой подкоманды <code>claude import</code> недоступны у облачных поставщиков, а также через <a href="https://code.claude.com/docs/ru/claude-apps-gateway#availability-and-limitations">Claude apps gateway</a></li>
+<li><code>/voice</code> требует учётную запись claude.ai</li>
+<li><code>/list-agents</code> и его псевдоним <code>/peers</code> доступны только в сессиях, где <a href="https://code.claude.com/docs/ru/cross-session-messaging.md#availability">включена передача сообщений между сессиями</a></li>
+</ul>
+<h4 id="функции-требующие-подписку-claude">Функции, требующие подписку Claude <a class="h-anchor" href="#функции-требующие-подписку-claude" aria-label="Ссылка на раздел">#</a></h4>
+<p>Они требуют входа с учётной записью claude.ai и недоступны с ключом API Anthropic Console или от поставщика третьей стороны:</p>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">Облачные сессии</a> и Claude Code на мобильном устройстве</li>
+<li><a href="https://code.claude.com/docs/ru/slack.md">Claude Code в Slack</a>: планы Pro, Max и Ultra</li>
+<li><a href="https://code.claude.com/docs/ru/desktop.md">Claude Code Desktop</a></li>
+<li><a href="https://code.claude.com/docs/ru/routines.md">Облачные запланированные задачи</a> (<code>/schedule</code>)</li>
+<li><a href="https://code.claude.com/docs/ru/ultrareview.md">Ultrareview</a></li>
+<li><a href="https://code.claude.com/docs/ru/code-review.md">Code Review</a>: планы Team и Enterprise</li>
+<li><a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a></li>
+<li><a href="https://code.claude.com/docs/ru/chrome.md">Расширение Chrome</a></li>
+<li><a href="https://code.claude.com/docs/ru/computer-use.md">Computer use</a>: планы Pro, Max и Ultra</li>
+<li><a href="https://code.claude.com/docs/ru/artifacts.md">Артефакты</a>: планы Pro, Max, Ultra, Team и Enterprise</li>
+<li><a href="https://code.claude.com/docs/ru/voice-dictation.md">Voice dictation</a></li>
+</ul>
+<p>Desktop — частичное исключение: <a href="https://code.claude.com/docs/ru/llm-gateway-connect.md#desktop-app">маршрутизация шлюза может быть настроена в приложении или администратором</a>. <a href="https://claude.com/docs/third-party/claude-desktop/overview">Claude Desktop на 3P</a> также запускает вкладку Code на Amazon Bedrock, Google Cloud&#x27;s Agent Platform, Microsoft Foundry или самостоятельно размещённом LLM-шлюзе. Он также запускает вкладку Code на <a href="https://claude.com/docs/third-party/claude-desktop/claude-api">Claude API</a> с API-ключом Anthropic Console. Для доступности этих функций по плану см. <a href="#availability-by-subscription-plan">Доступность по плану подписки</a>.</p>
+<h4 id="возможности-cli-которые-различаются-по-поставщикам">Возможности CLI, которые различаются по поставщикам <a class="h-anchor" href="#возможности-cli-которые-различаются-по-поставщикам" aria-label="Ссылка на раздел">#</a></h4>
+<p>Эти функции работают в локальном CLI, но зависят от возможности на стороне сервера, которую не каждый поставщик предоставляет.</p>
+<p>&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Функция&lt;/th&gt;
+      &lt;th&gt;Подписка Claude&lt;/th&gt;
+      &lt;th&gt;Anthropic Console&lt;/th&gt;
+      &lt;th&gt;Amazon Bedrock&lt;/th&gt;
+      &lt;th&gt;Claude Platform на AWS&lt;/th&gt;
+      &lt;th&gt;Google Cloud (Anthropic managed)&lt;/th&gt;
+      &lt;th&gt;Google Cloud (Google managed)&lt;/th&gt;
+      &lt;th&gt;Microsoft Foundry&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;</p>
+<p>&lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;<a href="https://code.claude.com/docs/ru/tools-reference.md#websearch-tool-behavior">Web search</a>&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;См. примечание &lt;sup&gt;<a href="#fn1">1</a>&lt;/sup&gt;&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+    &lt;/tr&gt;</p>
+<p>&lt;tr&gt;
+      &lt;td&gt;<a href="https://code.claude.com/docs/ru/fast-mode.md">Быстрый режим</a>&lt;/td&gt;
+      &lt;td&gt;✓ (<a href="https://code.claude.com/docs/ru/fast-mode.md#enable-fast-mode-for-your-organization">включено владельцем</a> для Team и Enterprise)&lt;/td&gt;
+      &lt;td&gt;✓ (для Opus 5 и 4.8 требуется подготовленный доступ)&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✓ (<a href="https://code.claude.com/docs/ru/fast-mode.md#use-fast-mode-on-agent-platform">Fable 5.2, с условиями</a>)&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+    &lt;/tr&gt;</p>
+<p>&lt;tr&gt;
+      &lt;td&gt;<a href="https://code.claude.com/docs/ru/auto-mode-config.md">Авторежим</a>&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;См. примечание &lt;sup&gt;<a href="#fn2">2</a>&lt;/sup&gt;&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;См. примечание &lt;sup&gt;<a href="#fn2">2</a>&lt;/sup&gt;&lt;/td&gt;
+      &lt;td&gt;См. примечание &lt;sup&gt;<a href="#fn2">2</a>&lt;/sup&gt;&lt;/td&gt;
+    &lt;/tr&gt;</p>
+<p>&lt;tr&gt;
+      &lt;td&gt;<a href="https://code.claude.com/docs/ru/advisor.md">Advisor</a>&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✓ (Claude Code v2.1.300 или более поздней версии)&lt;/td&gt;
+      &lt;td&gt;✓ (Claude Code v2.1.300 или более поздней версии)&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+    &lt;/tr&gt;</p>
+<p>&lt;tr&gt;
+      &lt;td&gt;<a href="https://code.claude.com/docs/ru/code-mode.md">Code Mode</a>&lt;/td&gt;
+      &lt;td&gt;✓ (экспериментально, <a href="https://code.claude.com/docs/ru/code-mode.md#requirements">действуют требования</a>)&lt;/td&gt;
+      &lt;td&gt;✓ (экспериментально, <a href="https://code.claude.com/docs/ru/code-mode.md#requirements">действуют требования</a>)&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+    &lt;/tr&gt;</p>
+<p>&lt;tr&gt;
+      &lt;td&gt;<a href="https://code.claude.com/docs/ru/cross-session-messaging.md">Cross-session messaging</a>&lt;/td&gt;
+      &lt;td&gt;✓ &lt;sup&gt;<a href="#fn5">5</a>&lt;/sup&gt;&lt;/td&gt;
+      &lt;td&gt;✓ (одна машина) &lt;sup&gt;<a href="#fn5">5</a>&lt;/sup&gt;&lt;/td&gt;
+      &lt;td&gt;✓ (одна машина) &lt;sup&gt;<a href="#fn5">5</a>&lt;/sup&gt;&lt;/td&gt;
+      &lt;td&gt;✓ (одна машина) &lt;sup&gt;<a href="#fn5">5</a>&lt;/sup&gt;&lt;/td&gt;
+      &lt;td&gt;✓ (одна машина) &lt;sup&gt;<a href="#fn5">5</a>&lt;/sup&gt;&lt;/td&gt;
+      &lt;td&gt;✓ (одна машина) &lt;sup&gt;<a href="#fn5">5</a>&lt;/sup&gt;&lt;/td&gt;
+      &lt;td&gt;✓ (одна машина) &lt;sup&gt;<a href="#fn5">5</a>&lt;/sup&gt;&lt;/td&gt;
+    &lt;/tr&gt;</p>
+<p>&lt;tr&gt;
+      &lt;td&gt;<a href="https://code.claude.com/docs/ru/channels.md">Каналы</a>&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+    &lt;/tr&gt;</p>
+<p>&lt;tr&gt;
+      &lt;td&gt;<a href="https://code.claude.com/docs/ru/github-actions.md">GitHub Actions</a>&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+    &lt;/tr&gt;</p>
+<p>&lt;tr&gt;
+      &lt;td&gt;<a href="https://code.claude.com/docs/ru/gitlab-ci-cd.md">GitLab CI/CD</a>&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;✓&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;</p>
+<h4 id="h-4">Администрирование и аналитика <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<p>Элементы управления на уровне организации и видимость использования.</p>
+<p>&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Функция&lt;/th&gt;
+      &lt;th&gt;Подписка Claude&lt;/th&gt;
+      &lt;th&gt;Anthropic Console&lt;/th&gt;
+      &lt;th&gt;Amazon Bedrock&lt;/th&gt;
+      &lt;th&gt;Claude Platform на AWS&lt;/th&gt;
+      &lt;th&gt;Google Cloud (Anthropic managed)&lt;/th&gt;
+      &lt;th&gt;Google Cloud (Google managed)&lt;/th&gt;
+      &lt;th&gt;Microsoft Foundry&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;</p>
+<p>&lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;<a href="https://code.claude.com/docs/ru/analytics.md">Панель управления аналитики и API</a>&lt;/td&gt;
+      &lt;td&gt;✓ (панель управления: Team и Enterprise; API: Enterprise)&lt;/td&gt;
+      &lt;td&gt;✓ &lt;sup&gt;<a href="#fn4">4</a>&lt;/sup&gt;&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+    &lt;/tr&gt;</p>
+<p>&lt;tr&gt;
+      &lt;td&gt;<a href="https://code.claude.com/docs/ru/server-managed-settings.md">Server-managed settings</a>&lt;/td&gt;
+      &lt;td&gt;✓ (Team и Enterprise)&lt;/td&gt;
+      &lt;td&gt;См. <a href="https://code.claude.com/docs/ru/server-managed-settings.md#platform-availability">Доступность платформы</a>&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+      &lt;td&gt;✗&lt;/td&gt;
+    &lt;/tr&gt;</p>
+<p>&lt;tr&gt;
+      &lt;td&gt;<a href="https://code.claude.com/docs/ru/zero-data-retention.md">Zero Data Retention</a>&lt;/td&gt;
+      &lt;td&gt;✓ (квалифицированные Enterprise аккаунты)&lt;/td&gt;
+      &lt;td&gt;✓ (квалифицированные аккаунты)&lt;/td&gt;
+      &lt;td&gt;См. примечание &lt;sup&gt;<a href="#fn3">3</a>&lt;/sup&gt;&lt;/td&gt;
+      &lt;td&gt;✓ (квалифицированные аккаунты)&lt;/td&gt;
+      &lt;td&gt;✓ (по запросу)&lt;/td&gt;
+      &lt;td&gt;См. примечание &lt;sup&gt;<a href="#fn3">3</a>&lt;/sup&gt;&lt;/td&gt;
+      &lt;td&gt;См. примечание &lt;sup&gt;<a href="#fn3">3</a>&lt;/sup&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;</p>
+<p>&lt;sup&gt;1&lt;/sup&gt; На Google Cloud (Google managed) веб-поиск доступен для Opus 4, Sonnet 4, Haiku 4.5 и более поздних моделей.\</p>
+<p>&lt;sup&gt;2&lt;/sup&gt; На этих поставщиках авторежим поддерживает только Claude Sonnet 5 или более поздние версии, Opus 4.7 или более поздние версии, Haiku 5.5 и модели Fable. См. <a href="https://code.claude.com/docs/ru/auto-mode-config.md">Конфигурация авторежима</a>. Для режима разрешений, в котором сессия начинается на этих поставщиках, см. <a href="https://code.claude.com/docs/ru/permission-modes.md#which-mode-a-session-starts-in">В каком режиме начинается сессия</a>.\</p>
+<p>&lt;sup&gt;3&lt;/sup&gt; В соответствии с вашим соглашением с поставщиком облачных услуг.\</p>
+<p>&lt;sup&gt;4&lt;/sup&gt; Только панель управления и API. <a href="https://code.claude.com/docs/ru/analytics.md#enable-contribution-metrics">Contribution metrics</a> требует организацию claude.ai Team или Enterprise.\</p>
+<p>&lt;sup&gt;5&lt;/sup&gt; Требует Claude Code v2.1.224 или более поздней версии на macOS и Linux, включая Linux внутри WSL 2. На нативной Windows требует Claude Code v2.1.234 или более поздней версии. При аутентификации с помощью API-ключа передача сообщений доступна только на одной машине. На Amazon Bedrock, Claude Platform на AWS, Google Cloud (Anthropic managed), Google Cloud (Google managed) и Microsoft Foundry передача сообщений доступна только на одной машине и требует Claude Code v2.1.248 или более поздней версии. Claude может найти ваши <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">облачные сессии</a> и ваши сессии на других машинах только из сессии, подключённой к <a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a>. Для подключения вам нужен вход в claude.ai и выполнение других <a href="https://code.claude.com/docs/ru/remote-control.md#requirements">требований Remote Control</a>. См. <a href="https://code.claude.com/docs/ru/cross-session-messaging.md#message-sessions-on-other-machines">Передача сообщений сессиям на других машинах</a>.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Если вы аутентифицируетесь через <a href="https://code.claude.com/docs/ru/llm-gateway">LLM-шлюз</a>, доступность функций соответствует базовому поставщику, на который шлюз перенаправляет запросы, за исключением функций, которые сам Claude Code отключает. Когда <code>ANTHROPIC_BASE_URL</code> указывает на хост, отличный от <code>api.anthropic.com</code>, Claude Code отключает такие функции, как <a href="https://code.claude.com/docs/ru/remote-control.md#requirements">Remote Control</a> и <a href="https://code.claude.com/docs/ru/server-managed-settings.md#platform-availability">server-managed settings</a>, независимо от того, куда перенаправляет шлюз. Некоторые функции, такие как <a href="https://code.claude.com/docs/ru/advisor.md#requirements">Advisor</a>, работают, только если шлюз перенаправляет запросы без изменений.</p>
+<p>Для информации о том, как запросы, которые отправляет Claude Code, различаются между шлюзом в формате Amazon Bedrock или Agent Platform, шлюзом <code>ANTHROPIC_BASE_URL</code> и входом в Claude apps gateway, см. <a href="https://code.claude.com/docs/ru/llm-gateway-protocol.md#how-the-connection-method-changes-client-behavior">поведение клиента по методу подключения</a>.</p>
+</blockquote>
+<h4 id="h-5">Сводка по поставщикам <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<p>Каждая вкладка содержит список того, что недоступно или частично поддерживается у этого поставщика, с альтернативами, где они существуют. См. также <a href="#features-available-on-every-provider">различия, зависящие от поставщика</a>. На Amazon Bedrock, Google Cloud (Google managed), Microsoft Foundry и Claude Platform на AWS отчёты об ошибках и телеметрия для Anthropic отключены по умолчанию. См. <a href="https://code.claude.com/docs/ru/data-usage.md#default-behaviors-by-api-provider">поведение по умолчанию по поставщику API</a> для информации о том, какой трафик всё ещё достигает Anthropic и как отказаться.</p>
+<blockquote>
+<p>[tab] Amazon Bedrock</p>
+<p><strong>Недоступно:</strong> все <a href="#features-that-require-a-claude-subscription">функции, требующие подписку Claude</a>, плюс <a href="https://code.claude.com/docs/ru/tools-reference.md#websearch-tool-behavior">веб-поиск</a>, <a href="https://code.claude.com/docs/ru/fast-mode.md">быстрый режим</a>, <a href="https://code.claude.com/docs/ru/advisor.md">Advisor</a>, <a href="https://code.claude.com/docs/ru/channels.md">Каналы</a>, <a href="https://code.claude.com/docs/ru/code-mode.md">Code Mode</a>, <a href="https://code.claude.com/docs/ru/analytics.md">панель управления аналитики</a>, <a href="https://code.claude.com/docs/ru/server-managed-settings.md">server-managed settings</a> и <a href="https://code.claude.com/docs/ru/commands#all-commands">команды <code>/design-sync</code> и <code>/import</code></a>.</p>
+<p><strong>Частичная поддержка:</strong></p>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/desktop.md">Desktop</a>: только через <a href="https://claude.com/docs/third-party/claude-desktop/overview">Claude Desktop на 3P</a></li>
+<li><a href="https://code.claude.com/docs/ru/auto-mode-config.md">Авторежим</a>: только Sonnet 5 или более поздние версии, Opus 4.7 или более поздние версии, Haiku 5.5 и модели Fable</li>
+<li><a href="https://code.claude.com/docs/ru/cross-session-messaging.md">Cross-session messaging</a>: между вашими сеансами на этой машине только &lt;sup&gt;<a href="#fn5">5</a>&lt;/sup&gt;</li>
+<li><a href="https://code.claude.com/docs/ru/zero-data-retention.md">Zero Data Retention</a>: в соответствии с вашим соглашением AWS</li>
+</ul>
+<p><strong>Альтернативы:</strong> для планирования используйте <a href="https://code.claude.com/docs/ru/scheduled-tasks"><code>/loop</code></a> вместо <code>/schedule</code>. Для облачных сеансов используйте <a href="https://code.claude.com/docs/ru/github-actions.md">GitHub Actions</a> или <a href="https://code.claude.com/docs/ru/gitlab-ci-cd.md">GitLab CI/CD</a>. Для веб-поиска используйте инструмент <a href="https://code.claude.com/docs/ru/tools-reference.md#webfetch-tool-behavior">WebFetch</a> с конкретным URL.</p>
+</blockquote>
+<blockquote>
+<p>[tab] Claude Platform на AWS</p>
+<p><strong>Недоступно:</strong> все <a href="#features-that-require-a-claude-subscription">функции, требующие подписку Claude</a>, плюс <a href="https://code.claude.com/docs/ru/fast-mode.md">быстрый режим</a>, <a href="https://code.claude.com/docs/ru/channels.md">Каналы</a>, <a href="https://code.claude.com/docs/ru/github-actions.md">GitHub Actions</a>, <a href="https://code.claude.com/docs/ru/code-mode.md">Code Mode</a>, <a href="https://code.claude.com/docs/ru/analytics.md">панель управления аналитики</a>, <a href="https://code.claude.com/docs/ru/server-managed-settings.md">server-managed settings</a> и <a href="https://code.claude.com/docs/ru/commands#all-commands">команды <code>/design-sync</code> и <code>/import</code></a>.</p>
+<p><strong>Доступно здесь, но не на Amazon Bedrock:</strong> <a href="https://code.claude.com/docs/ru/tools-reference.md#websearch-tool-behavior">веб-поиск</a>, а также <a href="https://code.claude.com/docs/ru/advisor.md">Advisor</a> в Claude Code v2.1.300 или более поздней версии.</p>
+<p><strong>Частичная поддержка:</strong></p>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/cross-session-messaging.md">Cross-session messaging</a>: между вашими сеансами на этой машине только &lt;sup&gt;<a href="#fn5">5</a>&lt;/sup&gt;</li>
+</ul>
+<p><strong>Альтернативы:</strong> для планирования используйте <a href="https://code.claude.com/docs/ru/scheduled-tasks"><code>/loop</code></a> вместо <code>/schedule</code>. Для облачных сеансов используйте <a href="https://code.claude.com/docs/ru/gitlab-ci-cd.md">GitLab CI/CD</a>.</p>
+</blockquote>
+<blockquote>
+<p>[tab] Google Cloud (Anthropic managed)</p>
+<p><strong>Недоступно:</strong> все <a href="#features-that-require-a-claude-subscription">функции, требующие подписку Claude</a>, плюс <a href="https://code.claude.com/docs/ru/fast-mode.md">быстрый режим</a>, <a href="https://code.claude.com/docs/ru/channels.md">Каналы</a>, <a href="https://code.claude.com/docs/ru/github-actions.md">GitHub Actions</a>, <a href="https://code.claude.com/docs/ru/code-mode.md">Code Mode</a>, <a href="https://code.claude.com/docs/ru/analytics.md">панель управления аналитики</a>, <a href="https://code.claude.com/docs/ru/server-managed-settings.md">server-managed settings</a> и <a href="https://code.claude.com/docs/ru/commands#all-commands">команды <code>/design-sync</code> и <code>/import</code></a>.</p>
+<p><strong>Доступно здесь, но не на Google Cloud (Google managed):</strong> <a href="https://code.claude.com/docs/ru/advisor.md">Advisor</a> в Claude Code v2.1.300 или более поздней версии.</p>
+<p><strong>Частичная поддержка:</strong></p>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/cross-session-messaging.md">Cross-session messaging</a>: только между вашими сессиями на этой машине &lt;sup&gt;<a href="#fn5">5</a>&lt;/sup&gt;</li>
+<li><a href="https://platform.claude.com/docs/en/build-with-claude/claude-models-on-google-cloud/anthropic-managed#data-retention">Zero Data Retention</a>: доступно по запросу. Обратитесь к представителю Anthropic, ведущему вашу учётную запись</li>
+</ul>
+<p><strong>Альтернативы:</strong> для планирования используйте <a href="https://code.claude.com/docs/ru/scheduled-tasks"><code>/loop</code></a> вместо <code>/schedule</code>.</p>
+</blockquote>
+<blockquote>
+<p>[tab] Google Cloud (Google managed)</p>
+<p>Если вы устанавливаете <code>CLAUDE_CODE_USE_VERTEX</code>, чтобы использовать Claude Code с Google Cloud&#x27;s Agent Platform, вы используете этого поставщика.</p>
+<p><strong>Недоступно:</strong> все <a href="#features-that-require-a-claude-subscription">функции, требующие подписку Claude</a>, плюс <a href="https://code.claude.com/docs/ru/advisor.md">Advisor</a>, <a href="https://code.claude.com/docs/ru/channels.md">Каналы</a>, <a href="https://code.claude.com/docs/ru/code-mode.md">Code Mode</a>, <a href="https://code.claude.com/docs/ru/analytics.md">панель управления аналитики</a>, <a href="https://code.claude.com/docs/ru/server-managed-settings.md">server-managed settings</a> и <a href="https://code.claude.com/docs/ru/commands#all-commands">команды <code>/design-sync</code> и <code>/import</code></a>.</p>
+<p><strong>Частичная поддержка:</strong></p>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/desktop.md">Desktop</a>: через <a href="https://claude.com/docs/third-party/claude-desktop/configuration">управляемые параметры</a> или <a href="https://claude.com/docs/third-party/claude-desktop/overview">Claude Desktop на 3P</a></li>
+<li><a href="https://code.claude.com/docs/ru/tools-reference.md#websearch-tool-behavior">Веб-поиск</a>: Opus 4, Sonnet 4, Haiku 4.5 и более поздние модели</li>
+<li><a href="https://code.claude.com/docs/ru/fast-mode.md#use-fast-mode-on-agent-platform">Быстрый режим</a>: Fable 5.2 в регионах <code>global</code>, <code>us</code> и <code>eu</code> или стандартная скорость, если Agent Platform отклоняет быстрый режим</li>
+<li><a href="https://code.claude.com/docs/ru/auto-mode-config.md">Авторежим</a>: только Sonnet 5 или более поздние версии, Opus 4.7 или более поздние версии, Haiku 5.5 и модели Fable</li>
+<li><a href="https://code.claude.com/docs/ru/cross-session-messaging.md">Cross-session messaging</a>: между вашими сеансами на этой машине только &lt;sup&gt;<a href="#fn5">5</a>&lt;/sup&gt;</li>
+<li><a href="https://code.claude.com/docs/ru/zero-data-retention.md">Zero Data Retention</a>: в соответствии с вашим соглашением Google Cloud</li>
+</ul>
+<p><strong>Альтернативы:</strong> для планирования используйте <a href="https://code.claude.com/docs/ru/scheduled-tasks"><code>/loop</code></a> вместо <code>/schedule</code>. Для облачных сеансов используйте <a href="https://code.claude.com/docs/ru/github-actions.md">GitHub Actions</a> или <a href="https://code.claude.com/docs/ru/gitlab-ci-cd.md">GitLab CI/CD</a>.</p>
+</blockquote>
+<blockquote>
+<p>[tab] Microsoft Foundry</p>
+<p><strong>Недоступно:</strong> все <a href="#features-that-require-a-claude-subscription">функции, требующие подписку Claude</a>, плюс <a href="https://code.claude.com/docs/ru/fast-mode.md">быстрый режим</a>, <a href="https://code.claude.com/docs/ru/advisor.md">Advisor</a>, <a href="https://code.claude.com/docs/ru/channels.md">Каналы</a>, <a href="https://code.claude.com/docs/ru/gitlab-ci-cd.md">GitLab CI/CD</a>, <a href="https://code.claude.com/docs/ru/code-mode.md">Code Mode</a>, <a href="https://code.claude.com/docs/ru/analytics.md">панель управления аналитики</a>, <a href="https://code.claude.com/docs/ru/server-managed-settings.md">server-managed settings</a> и <a href="https://code.claude.com/docs/ru/commands#all-commands">команды <code>/design-sync</code> и <code>/import</code></a>.</p>
+<p><strong>Частичная поддержка:</strong></p>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/desktop.md">Desktop</a>: только через <a href="https://claude.com/docs/third-party/claude-desktop/overview">Claude Desktop на 3P</a></li>
+<li><a href="https://code.claude.com/docs/ru/auto-mode-config.md">Авторежим</a>: только Sonnet 5 или более поздние версии, Opus 4.7 или более поздние версии, Haiku 5.5 и модели Fable</li>
+<li><a href="https://code.claude.com/docs/ru/cross-session-messaging.md">Cross-session messaging</a>: между вашими сеансами на этой машине только &lt;sup&gt;<a href="#fn5">5</a>&lt;/sup&gt;</li>
+<li><a href="https://code.claude.com/docs/ru/zero-data-retention.md">Zero Data Retention</a>: в соответствии с вашим соглашением Azure</li>
+</ul>
+<p><strong>Альтернативы:</strong> для планирования используйте <a href="https://code.claude.com/docs/ru/scheduled-tasks"><code>/loop</code></a> вместо <code>/schedule</code>. Для облачных сеансов используйте <a href="https://code.claude.com/docs/ru/github-actions.md">GitHub Actions</a>.</p>
+</blockquote>
+<blockquote>
+<p>[tab] Anthropic Console</p>
+<p><strong>Недоступно:</strong> все <a href="#features-that-require-a-claude-subscription">функции, требующие подписку Claude</a>.</p>
+<p>Всё в разделе <a href="#cli-capabilities-that-vary-by-provider">Возможности CLI, которые различаются по поставщикам</a> доступно, за исключением того, что <a href="https://code.claude.com/docs/ru/fast-mode.md">быстрый режим</a> с Claude Opus 5 или Claude Opus 4.8 требует <a href="https://code.claude.com/docs/ru/fast-mode.md#enable-fast-mode-for-your-organization">подготовленный доступ</a>. <a href="https://code.claude.com/docs/ru/server-managed-settings.md">Server-managed settings</a>, которые вы настраиваете в организации claude.ai Team или Enterprise, не применяются к сессии, которая аутентифицируется с помощью API-ключа Console. См. <a href="https://code.claude.com/docs/ru/server-managed-settings.md#platform-availability">Доступность платформы</a>, чтобы узнать, как охватить такие сессии.</p>
+<p><strong>Частичная поддержка:</strong></p>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/desktop.md">Desktop</a>: через <a href="https://claude.com/docs/third-party/claude-desktop/claude-api">Claude Desktop на 3P с Claude API</a></li>
+</ul>
+</blockquote>
+<h3 id="h-6">Доступность по плану подписки <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<p>Если вы аутентифицируетесь через облачного провайдера или API-ключ Anthropic Console, этот раздел к вам не применяется. Когда вы входите с учётной записью claude.ai, ваш план определяет, какие из приведённых ниже функций доступны.</p>
+<p>В организациях Enterprise с применённой <a href="https://code.claude.com/docs/ru/hipaa-setup.md">конфигурацией HIPAA</a> некоторые функции из этой таблицы отключены.</p>
+<p>| Функция | Pro | Max | Ultra | Team | Enterprise |
+| :- | :- | :- | :- | :- | :- |
+| <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">Cloud sessions</a> | ✓ | ✓ | ✓ | ✓ | ✓ &lt;sup&gt;<a href="#fn6">6</a>&lt;/sup&gt; |
+| <a href="https://code.claude.com/docs/ru/routines.md">Облачные запланированные задачи</a> | ✓ | ✓ | ✓ | ✓ | ✓ |
+| <a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a> | ✓ | ✓ | ✓ | Admin-enabled | Admin-enabled |
+| <a href="https://code.claude.com/docs/ru/channels.md">Channels</a> | ✓ | ✓ | ✓ | Admin-enabled | Admin-enabled |
+| <a href="https://code.claude.com/docs/ru/computer-use.md">Computer use</a> | ✓ | ✓ | ✓ | ✗ | ✗ |
+| Dispatch (<a href="https://code.claude.com/docs/ru/desktop.md#sessions-from-dispatch">Desktop</a>) | ✓ | ✓ | ✓ | ✗ | ✗ |
+| <a href="https://code.claude.com/docs/ru/code-review.md">Code Review</a> | ✗ | ✗ | ✗ | ✓ | ✓ |
+| <a href="https://code.claude.com/docs/ru/artifacts.md">Artifacts</a> | ✓ | ✓ | ✓ | ✓ | ✓ |
+| <a href="https://code.claude.com/docs/ru/analytics.md">Analytics dashboard and contribution metrics</a> | ✗ | ✗ | ✗ | ✓ | ✓ |
+| <a href="https://code.claude.com/docs/ru/analytics.md#access-data-programmatically">Enterprise Analytics API</a> | ✗ | ✗ | ✗ | ✗ | ✓ |
+| <a href="https://code.claude.com/docs/ru/server-managed-settings.md">Server-managed settings</a> | ✗ | ✗ | ✗ | ✓ | ✓ |
+| <a href="https://support.claude.com/en/articles/9266767-what-is-the-team-plan">SSO</a> | ✗ | ✗ | ✗ | ✓ | ✓ |
+| SCIM | ✗ | ✗ | ✗ | ✗ | ✓ |
+| <a href="https://platform.claude.com/docs/en/api/compliance">Compliance API</a> | ✗ | ✗ | ✗ | ✗ | ✓ |
+| <a href="https://code.claude.com/docs/ru/zero-data-retention.md">Zero Data Retention</a> | ✗ | ✗ | ✗ | ✗ | ✓ &lt;sup&gt;<a href="#fn7">7</a>&lt;/sup&gt; |</p>
+<p>&lt;sup&gt;6&lt;/sup&gt; На Enterprise требуется премиум-место или место Chat + Claude Code. См. <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">Cloud sessions</a>.\</p>
+<p>&lt;sup&gt;7&lt;/sup&gt; Не включено в стандартный план Enterprise. Требует отдельного включения Anthropic для квалифицированных аккаунтов. См. <a href="https://code.claude.com/docs/ru/zero-data-retention.md">Zero Data Retention</a>.</p>
+<p>Для информации о ценах и полного сравнения планов см. <a href="https://support.claude.com/en/articles/9266767-what-is-the-team-plan">Team plans</a> и <a href="https://support.claude.com/en/articles/9797531-what-is-the-enterprise-plan">Enterprise plans</a>.</p>
+<h4 id="план-ultra">План Ultra <a class="h-anchor" href="#план-ultra" aria-label="Ссылка на раздел">#</a></h4>
+<p>Ultra — это новое название плана Max 20x, а Max — новое название Max 5x. Чтобы узнать, какой у вас план, проверьте свою подписку на claude.ai.</p>
+<p>В Claude Code планы Max и Ultra имеют одинаковые функции, указанные в столбцах Max и Ultra <a href="#availability-by-subscription-plan">таблицы доступности</a>. Информацию о лимитах использования и ценах см. на <a href="https://claude.com/pricing">странице цен Claude</a>.</p>
+<h3 id="h-7">Доступность моделей <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h3>
+<p>Для информации о том, какие модели Claude и размеры контекстного окна доступны для каждого поставщика и региона, см. <a href="https://code.claude.com/docs/ru/model-config.md">Model configuration</a> и <a href="https://platform.claude.com/docs/en/about-claude/models/overview">Models overview</a>. Vision, PDF input и extended thinking — это возможности модели, а не функции Claude Code, и работают у каждого поставщика, который предлагает модель. <a href="https://code.claude.com/docs/ru/prompt-caching.md">Prompt caching</a> работает одинаково у большинства поставщиков; на Amazon Bedrock поддержка варьируется в зависимости от модели.</p>
+<h3 id="h-8">Связанные ресурсы <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/third-party-integrations.md">Обзор развёртывания для предприятий</a>: сравните аутентификацию, выставление счётов и регионы у поставщиков</li>
+<li>Руководства по настройке поставщиков: <a href="https://code.claude.com/docs/ru/amazon-bedrock.md">Amazon Bedrock</a>, <a href="https://code.claude.com/docs/ru/claude-platform-on-aws.md">Claude Platform на AWS</a>, <a href="https://code.claude.com/docs/ru/claude-models-on-google-cloud-anthropic-managed.md">Claude Models в Google Cloud (под управлением Anthropic)</a>, <a href="https://code.claude.com/docs/ru/google-vertex-ai.md">Google Cloud&#x27;s Agent Platform</a>, <a href="https://code.claude.com/docs/ru/microsoft-foundry.md">Microsoft Foundry</a></li>
+<li><a href="https://code.claude.com/docs/ru/platforms.md">Platforms and integrations</a>: где работает Claude Code, включая CLI, Desktop, расширения IDE, веб, мобильные устройства и CI/CD</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

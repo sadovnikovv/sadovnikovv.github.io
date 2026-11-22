@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Лаба 5. Субагент-ревьюер и параллельное исследование</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/index.html">claude-code-pro-course</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/labs/index.html">labs</a></nav>
+<h1 id="лаба-5-субагент-ревьюер-и-параллельное-исследование">Лаба 5. Субагент-ревьюер и параллельное исследование <a class="h-anchor" href="#лаба-5-субагент-ревьюер-и-параллельное-исследование" aria-label="Ссылка на раздел">#</a></h1>
+<p><strong>Цель:</strong> научиться делегировать, экономя контекст основной сессии.</p>
+<h3 id="часть-a-ревьюер">Часть A — ревьюер <a class="h-anchor" href="#часть-a-ревьюер" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li>Скопируйте агентов из <a href="../starter-kit/.claude/agents/"><code>starter-kit/.claude/agents/</code></a>, выполните <code>/agents</code>.</li>
+<li>Внесите изменение в код (или используйте учебный проект с намеренными багами).</li>
+<li>``` &gt; попроси code-reviewer проверить незакоммиченные изменения</li>
+</ol>
+<pre><code>4. Сравните: попросите основную сессию «проверь сама себя». Кто нашёл больше?
+
+## Часть B — параллельное исследование
+
+1. Выполните `/context`, запишите заполнение.
+2. ```
+   &gt; Запусти 3 субагента параллельно: (1) как устроена аутентификация,
+     (2) где и как логируются ошибки, (3) какие части кода не покрыты тестами.
+     Сведи результаты в таблицу.</code></pre>
+<ol>
+<li>Снова <code>/context</code>. Сравните с тем, если бы основная сессия читала все файлы сама.</li>
+</ol>
+<h3 id="часть-c-свой-агент">Часть C — свой агент <a class="h-anchor" href="#часть-c-свой-агент" aria-label="Ссылка на раздел">#</a></h3>
+<p>Создайте агента под вашу задачу (например, <code>migration-checker</code> или <code>a11y-auditor</code>) с минимальным набором <code>tools</code>.</p>
+<h3 id="h">✅ Готово, если <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>[ ] Ревьюер нашёл хотя бы одну реальную проблему</li>
+<li>[ ] Параллельное исследование заняло заметно меньше контекста основной сессии</li>
+<li>[ ] У вашего агента нет лишних инструментов (ревьюеру не нужен Edit)</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Руководство по Agent Skills</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/03-skills/index.html">03-skills</a></nav>
+<p>&lt;picture&gt;
+  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;../resources/logos/claude-howto-logo-dark.svg&quot;&gt;
+  &lt;img alt=&quot;Claude How To&quot; src=&quot;../resources/logos/claude-howto-logo.svg&quot;&gt;
+&lt;/picture&gt;</p>
+<h1 id="руководство-по-agent-skills">Руководство по Agent Skills <a class="h-anchor" href="#руководство-по-agent-skills" aria-label="Ссылка на раздел">#</a></h1>
+<p>Agent Skills — это переиспользуемые возможности на уровне файловой системы, которые расширяют функциональность Claude. Они упаковывают предметную экспертизу, workflows и лучшие практики в обнаруживаемые компоненты, которые Claude автоматически использует, когда это уместно.</p>
+<h3 id="h">Обзор <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Agent Skills</strong> — это модульные возможности, которые превращают универсального агента в специалиста. В отличие от промптов, которые задают инструкции на уровне одной беседы, skills загружаются по запросу и убирают необходимость повторять одни и те же указания в разных диалогах.</p>
+<h4 id="h-2">Ключевые преимущества <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Специализация Claude</strong>: настраивайте возможности под конкретные задачи</li>
+<li><strong>Меньше повторов</strong>: создайте один раз, используйте автоматически в разных беседах</li>
+<li><strong>Композиция возможностей</strong>: комбинируйте Skills для сложных workflows</li>
+<li><strong>Масштабирование workflows</strong>: переиспользуйте skills в нескольких проектах и командах</li>
+<li><strong>Поддержание качества</strong>: встраивайте лучшие практики прямо в рабочий процесс</li>
+</ul>
+<p>Skills следуют открытому стандарту <a href="https://agentskills.io">Agent Skills</a>, который работает во многих AI-инструментах. Claude Code расширяет стандарт дополнительными возможностями, такими как управление активацией, выполнение через subagent и динамическая подстановка контекста.</p>
+<blockquote>
+<p><strong>Примечание</strong>: пользовательские slash-команды были объединены в skills. Файлы <code>.claude/commands/</code> по-прежнему работают и поддерживают те же поля frontmatter. Для новых проектов рекомендуется использовать skills. Если оба варианта существуют в одном месте (например, <code>.claude/commands/review.md</code> и <code>.claude/skills/review/SKILL.md</code>), приоритет у skill.</p>
+</blockquote>
+<h3 id="как-работают-skills-постепенное-раскрытие">Как работают Skills: постепенное раскрытие <a class="h-anchor" href="#как-работают-skills-постепенное-раскрытие" aria-label="Ссылка на раздел">#</a></h3>
+<p>Skills используют архитектуру <strong>progressive disclosure</strong> — Claude загружает информацию поэтапно по мере необходимости, а не съедает весь контекст заранее. Это даёт эффективное управление контекстом при практически неограниченном масштабировании.</p>
+<h4 id="h-3">Три уровня загрузки <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TB
+    subgraph &quot;Уровень 1: метаданные (загружаются всегда)&quot;
+        A[&quot;YAML Frontmatter&quot;]
+        A1[&quot;~100 токенов на skill&quot;]
+        A2[&quot;name + description&quot;]
+    end
+
+    subgraph &quot;Уровень 2: инструкции (при активации)&quot;
+        B[&quot;SKILL.md Body&quot;]
+        B1[&quot;Менее 5k токенов&quot;]
+        B2[&quot;Рабочие процессы и инструкции&quot;]
+    end
+
+    subgraph &quot;Уровень 3: ресурсы (по необходимости)&quot;
+        C[&quot;Вложенные файлы&quot;]
+        C1[&quot;Практически без ограничений&quot;]
+        C2[&quot;Скрипты, шаблоны, документация&quot;]
+    end
+
+    A --&gt; B
+    B --&gt; C</code></pre>
+<div class="table-wrap"><table><thead><tr><th>Уровень</th><th>Когда загружается</th><th>Стоимость в токенах</th><th>Содержимое</th></tr></thead><tbody><tr><td><strong>Уровень 1: метаданные</strong></td><td>Всегда, при старте</td><td>~100 токенов на Skill</td><td><code>name</code> и <code>description</code> из YAML frontmatter</td></tr><tr><td><strong>Уровень 2: инструкции</strong></td><td>Когда skill активируется</td><td>Меньше 5k токенов</td><td>Тело <code>SKILL.md</code> с инструкциями и пояснениями</td></tr><tr><td><strong>Уровень 3+: ресурсы</strong></td><td>По необходимости</td><td>Практически неограниченно</td><td>Вложенные файлы, которые выполняются через bash без загрузки содержимого в контекст</td></tr></tbody></table></div>
+<p>Это означает, что вы можете установить много Skills без штрафа за контекст: Claude знает только о существовании каждого Skill и о том, когда его использовать, пока он не будет реально активирован.</p>
+<h3 id="процесс-загрузки-skill">Процесс загрузки Skill <a class="h-anchor" href="#процесс-загрузки-skill" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant User
+    participant Claude as Claude
+    participant System as System
+    participant Skill as Skill
+
+    User-&gt;&gt;Claude: &quot;Review this code for security issues&quot;
+    Claude-&gt;&gt;System: Check available skills (metadata)
+    System--&gt;&gt;Claude: Skill descriptions loaded at startup
+    Claude-&gt;&gt;Claude: Match request to skill description
+    Claude-&gt;&gt;Skill: bash: read code-review/SKILL.md
+    Skill--&gt;&gt;Claude: Instructions loaded into context
+    Claude-&gt;&gt;Claude: Determine: Need templates?
+    Claude-&gt;&gt;Skill: bash: read templates/checklist.md
+    Skill--&gt;&gt;Claude: Template loaded
+    Claude-&gt;&gt;Claude: Execute skill instructions
+    Claude-&gt;&gt;User: Comprehensive code review</code></pre>
+<h3 id="типы-и-расположение-skills">Типы и расположение Skills <a class="h-anchor" href="#типы-и-расположение-skills" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Тип</th><th>Расположение</th><th>Область</th><th>Общий доступ</th><th>Лучше всего подходит для</th></tr></thead><tbody><tr><td><strong>Enterprise</strong></td><td>Управляемые настройки</td><td>Все пользователи организации</td><td>Да</td><td>Стандартов на уровне всей организации</td></tr><tr><td><strong>Personal</strong></td><td><code>~/.claude/skills/&lt;skill-name&gt;/SKILL.md</code></td><td>Отдельного пользователя</td><td>Нет</td><td>Личных workflows</td></tr><tr><td><strong>Project</strong></td><td><code>.claude/skills/&lt;skill-name&gt;/SKILL.md</code></td><td>Команды</td><td>Да, через git</td><td>Стандартов команды</td></tr><tr><td><strong>Plugin</strong></td><td><code>&lt;plugin&gt;/skills/&lt;skill-name&gt;/SKILL.md</code></td><td>Там, где включён</td><td>Зависит</td><td>Пакетов внутри plugins</td></tr></tbody></table></div>
+<p>Если skills имеют одинаковое имя на разных уровнях, приоритет у более высокого уровня: <strong>enterprise &gt; personal &gt; project</strong>. Plugin skills используют namespace <code>plugin-name:skill-name</code>, поэтому не конфликтуют.</p>
+<h4 id="h-4">Автоматическое обнаружение <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Вложенные каталоги</strong>: когда вы работаете с файлами в подкаталогах, Claude Code автоматически находит skills во вложенных <code>.claude/skills/</code> директориях. Например, если вы редактируете файл в <code>packages/frontend/</code>, Claude Code также ищет skills в <code>packages/frontend/.claude/skills/</code>. Это поддерживает monorepo, где у пакетов есть собственные skills.</p>
+<p><strong>Каталоги из <code>--add-dir</code></strong>: skills из директорий, добавленных через <code>--add-dir</code>, загружаются автоматически с отслеживанием изменений. Любые правки skill-файлов в этих директориях применяются сразу без перезапуска Claude Code.</p>
+<p><strong>Бюджет описаний</strong>: описания skills (metadata уровня 1) ограничены <strong>2% окна контекста</strong> (fallback: <strong>16,000 символов</strong>). Если у вас установлено много skills, часть может быть исключена. Запустите <code>/context</code>, чтобы проверить предупреждения. Порог можно переопределить через переменную окружения <code>SLASH_COMMAND_TOOL_CHAR_BUDGET</code>.</p>
+<h3 id="создание-собственных-skills">Создание собственных Skills <a class="h-anchor" href="#создание-собственных-skills" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-5">Базовая структура каталога <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>my-skill/
+├── SKILL.md           # Основные инструкции (обязательно)
+├── template.md        # Шаблон, который Claude будет заполнять
+├── examples/
+│   └── sample.md      # Пример результата в ожидаемом формате
+└── scripts/
+    └── validate.sh    # Скрипт, который Claude может выполнить</code></pre>
+<h4 id="формат-skill-md">Формат <code>SKILL.md</code> <a class="h-anchor" href="#формат-skill-md" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-yaml">---
+name: your-skill-name
+description: Кратко опишите, что делает этот skill и когда его использовать
+---
+
+# Название вашего skill
+
+## Инструкции
+Дайте Claude понятные пошаговые инструкции.
+
+## Примеры
+Покажите конкретные примеры использования этого Skill.</code></pre>
+<h4 id="h-6">Обязательные поля <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>name</strong>: только строчные буквы, цифры и дефисы (макс. 64 символа). Не может содержать &quot;anthropic&quot; или &quot;claude&quot;.</li>
+<li><strong>description</strong>: что делает Skill И когда его использовать (макс. 1024 символа). Это критично для того, чтобы Claude понимал, когда активировать skill.</li>
+</ul>
+<h4 id="необязательные-поля-frontmatter">Необязательные поля frontmatter <a class="h-anchor" href="#необязательные-поля-frontmatter" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-yaml">---
+name: my-skill
+description: Что делает этот skill и когда его использовать
+argument-hint: &quot;[filename] [format]&quot;        # Hint for autocomplete
+disable-model-invocation: true              # Only user can invoke
+user-invocable: false                       # Hide from slash menu
+allowed-tools: Read, Grep, Glob             # Restrict tool access
+model: opus                                 # Specific model to use
+effort: high                                # Effort level override (low, medium, high, max)
+context: fork                               # Run in isolated subagent
+agent: Explore                              # Which agent type (with context: fork)
+shell: bash                                 # Shell for commands: bash (default) or powershell
+hooks:                                      # Skill-scoped hooks
+  PreToolUse:
+    - matcher: &quot;Bash&quot;
+      hooks:
+        - type: command
+          command: &quot;./scripts/validate.sh&quot;
+---</code></pre>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Описание</th></tr></thead><tbody><tr><td><code>name</code></td><td>Только строчные буквы, цифры и дефисы (макс. 64 символа). Не может содержать &quot;anthropic&quot; или &quot;claude&quot;.</td></tr><tr><td><code>description</code></td><td>Что делает Skill И когда его использовать (макс. 1024 символа). Критично для автоактивации.</td></tr><tr><td><code>argument-hint</code></td><td>Подсказка в меню автодополнения <code>/</code> (например, <code>&quot;[filename] [format]&quot;</code>).</td></tr><tr><td><code>disable-model-invocation</code></td><td><code>true</code> = только пользователь может запускать через <code>/name</code>. Claude никогда не будет запускать автоматически.</td></tr><tr><td><code>user-invocable</code></td><td><code>false</code> = скрыт из меню <code>/</code>. Запускать может только Claude автоматически.</td></tr><tr><td><code>allowed-tools</code></td><td>Список инструментов через запятую, которые skill может использовать без запросов на разрешение.</td></tr><tr><td><code>model</code></td><td>Переопределение модели, пока skill активен (например, <code>opus</code>, <code>sonnet</code>).</td></tr><tr><td><code>effort</code></td><td>Переопределение уровня effort, пока skill активен: <code>low</code>, <code>medium</code>, <code>high</code> или <code>max</code>.</td></tr><tr><td><code>context</code></td><td><code>fork</code>, чтобы запускать skill в форкнутом subagent-контексте с собственным окном контекста.</td></tr><tr><td><code>agent</code></td><td>Тип subagent при <code>context: fork</code> (например, <code>Explore</code>, <code>Plan</code>, <code>general-purpose</code>).</td></tr><tr><td><code>shell</code></td><td>Shell для подстановок <code>!</code>command`<code> и скриптов: </code>bash<code> (по умолчанию) или </code>powershell`.</td></tr><tr><td><code>hooks</code></td><td>Hooks, привязанные к жизненному циклу этого skill (тот же формат, что и у глобальных hooks).</td></tr></tbody></table></div>
+<h3 id="типы-содержимого-skill">Типы содержимого Skill <a class="h-anchor" href="#типы-содержимого-skill" aria-label="Ссылка на раздел">#</a></h3>
+<p>Skills могут содержать два типа контента, каждый для своих задач:</p>
+<h4 id="h-7">Справочный контент <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<p>Добавляет знания, которые Claude применяет к текущей работе: соглашения, паттерны, style guides, предметную область. Используется прямо в контексте беседы.</p>
+<pre><code class="language-yaml">---
+name: api-conventions
+description: API design patterns for this codebase
+---
+
+When writing API endpoints:
+- Use RESTful naming conventions
+- Return consistent error formats
+- Include request validation</code></pre>
+<h4 id="h-8">Контент задач <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<p>Пошаговые инструкции для конкретных действий. Часто вызываются напрямую через <code>/skill-name</code>.</p>
+<pre><code class="language-yaml">---
+name: deploy
+description: Deploy the application to production
+context: fork
+disable-model-invocation: true
+---
+
+Deploy the application:
+1. Run the test suite
+2. Build the application
+3. Push to the deployment target</code></pre>
+<h3 id="управление-активацией-skill">Управление активацией Skill <a class="h-anchor" href="#управление-активацией-skill" aria-label="Ссылка на раздел">#</a></h3>
+<p>По умолчанию и вы, и Claude можете запускать любой skill. Два поля frontmatter управляют тремя режимами активации:</p>
+<div class="table-wrap"><table><thead><tr><th>Frontmatter</th><th>Вы можете вызвать</th><th>Claude может вызвать</th></tr></thead><tbody><tr><td>(default)</td><td>Да</td><td>Да</td></tr><tr><td><code>disable-model-invocation: true</code></td><td>Да</td><td>Нет</td></tr><tr><td><code>user-invocable: false</code></td><td>Нет</td><td>Да</td></tr></tbody></table></div>
+<p><strong>Используйте <code>disable-model-invocation: true</code></strong> для workflows с побочными эффектами: <code>/commit</code>, <code>/deploy</code>, <code>/send-slack-message</code>. Claude не должен сам решать, что пора выкатывать код только потому, что он выглядит готовым.</p>
+<p><strong>Используйте <code>user-invocable: false</code></strong> для фоновых знаний, которые не являются осмысленной командой. Например, skill <code>legacy-system-context</code> объясняет, как устроена старая система: это полезно для Claude, но не является действием для пользователя.</p>
+<h3 id="h-9">Подстановки строк <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h3>
+<p>Skills поддерживают динамические значения, которые вычисляются до того, как содержимое skill попадёт к Claude:</p>
+<div class="table-wrap"><table><thead><tr><th>Переменная</th><th>Описание</th></tr></thead><tbody><tr><td><code>$ARGUMENTS</code></td><td>Все аргументы, переданные при запуске skill</td></tr><tr><td><code>$ARGUMENTS[N]</code> or <code>$N</code></td><td>Доступ к конкретному аргументу по индексу (начиная с 0)</td></tr><tr><td><code>${CLAUDE_SESSION_ID}</code></td><td>Текущий ID сессии</td></tr><tr><td><code>${CLAUDE_SKILL_DIR}</code></td><td>Каталог, содержащий файл <code>SKILL.md</code> этого skill</td></tr><tr><td>`<code> !</code>command<code> </code>`</td><td>Динамическая подстановка контекста — запускает shell-команду и подставляет её вывод</td></tr></tbody></table></div>
+<p><strong>Пример:</strong></p>
+<pre><code class="language-yaml">---
+name: fix-issue
+description: Fix a GitHub issue
+---
+
+Fix GitHub issue $ARGUMENTS following our coding standards.
+1. Read the issue description
+2. Implement the fix
+3. Write tests
+4. Create a commit</code></pre>
+<p>Запуск <code>/fix-issue 123</code> заменяет <code>$ARGUMENTS</code> на <code>123</code>.</p>
+<h3 id="h-10">Подстановка динамического контекста <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h3>
+<p>Синтаксис <code>!</code>command`` запускает shell-команды до того, как содержимое skill будет отправлено Claude:</p>
+<pre><code class="language-yaml">---
+name: pr-summary
+description: Суммировать изменения в pull request
+context: fork
+agent: Explore
+---
+
+## Контекст pull request
+- Diff PR: !`gh pr diff`
+- Комментарии PR: !`gh pr view --comments`
+- Изменённые файлы: !`gh pr diff --name-only`
+
+## Ваша задача
+Суммируйте этот pull request...</code></pre>
+<p>Команды выполняются сразу; Claude видит только итоговый вывод. По умолчанию команды запускаются в <code>bash</code>. Укажите <code>shell: powershell</code> в frontmatter, чтобы использовать PowerShell.</p>
+<h3 id="запуск-skills-в-subagents">Запуск Skills в Subagents <a class="h-anchor" href="#запуск-skills-в-subagents" aria-label="Ссылка на раздел">#</a></h3>
+<p>Добавьте <code>context: fork</code>, чтобы запускать skill в изолированном subagent-контексте. Содержимое skill становится задачей для отдельного subagent с собственным окном контекста, а основная беседа остаётся чистой.</p>
+<p>Поле <code>agent</code> определяет, какой тип agent использовать:</p>
+<div class="table-wrap"><table><thead><tr><th>Тип agent</th><th>Лучше всего подходит для</th></tr></thead><tbody><tr><td><code>Explore</code></td><td>Исследований только для чтения, анализа кодовой базы</td></tr><tr><td><code>Plan</code></td><td>Подготовки планов реализации</td></tr><tr><td><code>general-purpose</code></td><td>Широких задач, где нужны все инструменты</td></tr><tr><td>Custom agents</td><td>Специализированных агентов, определённых в вашей конфигурации</td></tr></tbody></table></div>
+<p><strong>Пример frontmatter:</strong></p>
+<pre><code class="language-yaml">---
+context: fork
+agent: Explore
+---</code></pre>
+<p><strong>Полный пример skill:</strong></p>
+<pre><code class="language-yaml">---
+name: deep-research
+description: Тщательно исследовать тему
+context: fork
+agent: Explore
+---
+
+Тщательно исследуйте $ARGUMENTS:
+1. Найдите релевантные файлы с помощью Glob и Grep
+2. Прочитайте и проанализируйте код
+3. Суммируйте выводы с конкретными ссылками на файлы</code></pre>
+<h3 id="h-11">Практические примеры <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="пример-1-skill-для-code-review">Пример 1: Skill для code review <a class="h-anchor" href="#пример-1-skill-для-code-review" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Структура каталога:</strong></p>
+<pre><code>~/.claude/skills/code-review/
+├── SKILL.md
+├── templates/
+│   ├── review-checklist.md
+│   └── finding-template.md
+└── scripts/
+    ├── analyze-metrics.py
+    └── compare-complexity.py</code></pre>
+<p><strong>Файл:</strong> <code>~/.claude/skills/code-review/SKILL.md</code></p>
+<pre><code class="language-yaml">---
+name: code-review-specialist
+description: Полный code review с анализом безопасности, производительности и качества. Используйте, когда пользователь просит провести review кода, оценить его качество, проверить pull request или упоминает анализ безопасности либо оптимизацию производительности.
+---
+
+# Skill для code review
+
+Этот skill даёт полноценные возможности для code review с акцентом на:
+
+1. **Анализ безопасности**
+   - Ошибки аутентификации/авторизации
+   - Риски утечки данных
+   - Уязвимости инъекций
+   - Криптографические слабые места
+
+2. **Проверка производительности**
+   - Эффективность алгоритмов (анализ Big O)
+   - Оптимизация памяти
+   - Оптимизация запросов к базе данных
+   - Возможности кэширования
+
+3. **Качество кода**
+   - Принципы SOLID
+   - Паттерны проектирования
+   - Соглашения об именовании
+   - Покрытие тестами
+
+4. **Поддерживаемость**
+   - Читаемость кода
+   - Размер функций (желательно &lt; 50 строк)
+   - Цикломатическая сложность
+   - Безопасность типов
+
+## Шаблон review
+
+Для каждого рассмотренного фрагмента кода укажите:
+
+### Краткая сводка
+- Общая оценка качества (1-5)
+- Количество ключевых замечаний
+- Рекомендуемые приоритетные области
+
+### Критические проблемы (если есть)
+- **Проблема**: чёткое описание
+- **Местоположение**: файл и номер строки
+- **Влияние**: почему это важно
+- **Серьёзность**: Critical/High/Medium
+- **Исправление**: пример кода
+
+Для подробных чеклистов см. [templates/review-checklist.md](templates/review-checklist.md).</code></pre>
+<h4 id="пример-2-skill-для-визуализации-кодовой-базы">Пример 2: Skill для визуализации кодовой базы <a class="h-anchor" href="#пример-2-skill-для-визуализации-кодовой-базы" aria-label="Ссылка на раздел">#</a></h4>
+<p>Skill, который генерирует интерактивные HTML-визуализации:</p>
+<p><strong>Структура каталога:</strong></p>
+<pre><code>~/.claude/skills/codebase-visualizer/
+├── SKILL.md
+└── scripts/
+    └── visualize.py</code></pre>
+<p><strong>Файл:</strong> <code>~/.claude/skills/codebase-visualizer/SKILL.md</code></p>
+<pre><code class="language-yaml">---
+name: codebase-visualizer
+description: Generate an interactive collapsible tree visualization of your codebase. Use when exploring a new repo, understanding project structure, or identifying large files.
+allowed-tools: Bash(python *)
+---
+
+# Визуализатор кодовой базы
+
+Генерирует интерактивное HTML-дерево, показывающее структуру файлов проекта.
+
+## Использование
+
+Запустите скрипт визуализации из корня проекта:
+</code></pre>
+<p>python ~/.claude/skills/codebase-visualizer/scripts/visualize.py .</p>
+<pre><code>
+Это создаст `codebase-map.html` и откроет его в браузере по умолчанию.
+
+## Что показывает визуализация
+
+- **Сворачиваемые каталоги**: кликайте по папкам, чтобы раскрывать или сворачивать их
+- **Размеры файлов**: отображаются рядом с каждым файлом
+- **Цвета**: разные цвета для разных типов файлов
+- **Итоги по каталогу**: показывает суммарный размер каждой папки</code></pre>
+<p>Встроенный Python-скрипт делает основную работу, а Claude занимается orchestration.</p>
+<h4 id="пример-3-skill-для-deploy-только-пользовательский-запуск">Пример 3: Skill для deploy (только пользовательский запуск) <a class="h-anchor" href="#пример-3-skill-для-deploy-только-пользовательский-запуск" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-yaml">---
+name: deploy
+description: Deploy the application to production
+disable-model-invocation: true
+allowed-tools: Bash(npm *), Bash(git *)
+---
+
+Deploy $ARGUMENTS to production:
+
+1. Run the test suite: `npm test`
+2. Build the application: `npm run build`
+3. Push to the deployment target
+4. Verify the deployment succeeded
+5. Report deployment status</code></pre>
+<h4 id="пример-4-skill-brand-voice-фоновое-знание">Пример 4: Skill brand voice (фоновое знание) <a class="h-anchor" href="#пример-4-skill-brand-voice-фоновое-знание" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-yaml">---
+name: brand-voice
+description: Ensure all communication matches brand voice and tone guidelines. Use when creating marketing copy, customer communications, or public-facing content.
+user-invocable: false
+---
+
+## Tone of Voice
+- **Friendly but professional** - approachable without being casual
+- **Clear and concise** - avoid jargon
+- **Confident** - we know what we&#x27;re doing
+- **Empathetic** - understand user needs
+
+## Writing Guidelines
+- Use &quot;you&quot; when addressing readers
+- Use active voice
+- Keep sentences under 20 words
+- Start with value proposition
+
+For templates, see [templates/](templates/).</code></pre>
+<h4 id="пример-5-skill-для-генерации-claude-md">Пример 5: Skill для генерации <code>CLAUDE.md</code> <a class="h-anchor" href="#пример-5-skill-для-генерации-claude-md" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-yaml">---
+name: claude-md
+description: Create or update CLAUDE.md files following best practices for optimal AI agent onboarding. Use when users mention CLAUDE.md, project documentation, or AI onboarding.
+---
+
+## Основные принципы
+
+**LLM stateless**: `CLAUDE.md` — это единственный файл, который автоматически включается в каждую беседу.
+
+### Золотые правила
+
+1. **Меньше — лучше**: держите файл в пределах 300 строк, а лучше меньше 100
+2. **Универсальность**: включайте только информацию, актуальную для КАЖДОЙ сессии
+3. **Не используйте Claude как линтер**: используйте детерминированные инструменты
+4. **Никогда не генерируйте автоматически**: делайте файл вручную и обдуманно
+
+## Обязательные разделы
+
+- **Project Name**: краткое описание в одну строку
+- **Tech Stack**: основной язык, фреймворки, база данных
+- **Development Commands**: команды установки, тестов и сборки
+- **Critical Conventions**: только неочевидные, но важные соглашения
+- **Known Issues / Gotchas**: то, что сбивает разработчиков</code></pre>
+<h4 id="пример-6-skill-для-рефакторинга-со-скриптами">Пример 6: Skill для рефакторинга со скриптами <a class="h-anchor" href="#пример-6-skill-для-рефакторинга-со-скриптами" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Структура каталога:</strong></p>
+<pre><code>refactor/
+├── SKILL.md
+├── references/
+│   ├── code-smells.md
+│   └── refactoring-catalog.md
+├── templates/
+│   └── refactoring-plan.md
+└── scripts/
+    ├── analyze-complexity.py
+    └── detect-smells.py</code></pre>
+<p><strong>Файл:</strong> <code>refactor/SKILL.md</code></p>
+<pre><code class="language-yaml">---
+name: code-refactor
+description: Systematic code refactoring based on Martin Fowler&#x27;s methodology. Use when users ask to refactor code, improve code structure, reduce technical debt, or eliminate code smells.
+---
+
+# Skill для code refactoring
+
+Поэтапный подход с упором на безопасные, постепенные изменения, подтверждённые тестами.
+
+## Workflow
+
+Phase 1: Research &amp; Analysis → Phase 2: Test Coverage Assessment →
+Phase 3: Code Smell Identification → Phase 4: Refactoring Plan Creation →
+Phase 5: Incremental Implementation → Phase 6: Review &amp; Iteration
+
+## Основные принципы
+
+1. **Сохранение поведения**: внешнее поведение не должно меняться
+2. **Маленькие шаги**: делайте крошечные, проверяемые изменения
+3. **Test-Driven**: тесты — это страховка
+4. **Непрерывность**: рефакторинг — это постоянная практика, а не разовая акция
+
+Для каталога code smells см. [references/code-smells.md](references/code-smells.md).
+Для техник рефакторинга см. [references/refactoring-catalog.md](references/refactoring-catalog.md).</code></pre>
+<h3 id="h-12">Поддерживающие файлы <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h3>
+<p>Skills могут включать в каталоге несколько файлов помимо <code>SKILL.md</code>. Эти поддерживающие файлы — шаблоны, примеры, скрипты и reference-документы — помогают держать основной skill-файл сфокусированным, при этом давая Claude дополнительные ресурсы, которые он может подгружать по необходимости.</p>
+<pre><code>my-skill/
+├── SKILL.md              # Main instructions (required, keep under 500 lines)
+├── templates/            # Templates for Claude to fill in
+│   └── output-format.md
+├── examples/             # Example outputs showing expected format
+│   └── sample-output.md
+├── references/           # Domain knowledge and specifications
+│   └── api-spec.md
+└── scripts/              # Scripts Claude can execute
+    └── validate.sh</code></pre>
+<p>Рекомендации для поддерживающих файлов:</p>
+<ul>
+<li>Держите <code>SKILL.md</code> меньше <strong>500 строк</strong>. Детальные reference-материалы, крупные примеры и спецификации выносите в отдельные файлы.</li>
+<li>Ссылайтесь на дополнительные файлы из <code>SKILL.md</code> через <strong>relative paths</strong> (например, <code>[API reference](references/api-spec.md)</code>).</li>
+<li>Поддерживающие файлы загружаются на уровне 3, по мере необходимости, поэтому не расходуют контекст, пока Claude их реально не откроет.</li>
+</ul>
+<h3 id="управление-skills">Управление Skills <a class="h-anchor" href="#управление-skills" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="просмотр-доступных-skills">Просмотр доступных Skills <a class="h-anchor" href="#просмотр-доступных-skills" aria-label="Ссылка на раздел">#</a></h4>
+<p>Спросите Claude напрямую:</p>
+<pre><code>What Skills are available?</code></pre>
+<p>Или проверьте файловую систему:</p>
+<pre><code class="language-bash"># List personal Skills
+ls ~/.claude/skills/
+
+# List project Skills
+ls .claude/skills/</code></pre>
+<h4 id="проверка-skill">Проверка Skill <a class="h-anchor" href="#проверка-skill" aria-label="Ссылка на раздел">#</a></h4>
+<p>Есть два способа проверить:</p>
+<p><strong>Позвольте Claude вызвать его автоматически</strong>, задав запрос, который соответствует описанию:</p>
+<pre><code>Can you help me review this code for security issues?</code></pre>
+<p><strong>Или вызовите напрямую</strong> по имени skill:</p>
+<pre><code>/code-review src/auth/login.ts</code></pre>
+<h4 id="обновление-skill">Обновление Skill <a class="h-anchor" href="#обновление-skill" aria-label="Ссылка на раздел">#</a></h4>
+<p>Редактируйте файл <code>SKILL.md</code> напрямую. Изменения вступают в силу при следующем запуске Claude Code.</p>
+<pre><code class="language-bash"># Personal Skill
+code ~/.claude/skills/my-skill/SKILL.md
+
+# Project Skill
+code .claude/skills/my-skill/SKILL.md</code></pre>
+<h4 id="ограничение-доступа-claude-к-skills">Ограничение доступа Claude к Skills <a class="h-anchor" href="#ограничение-доступа-claude-к-skills" aria-label="Ссылка на раздел">#</a></h4>
+<p>Есть три способа контролировать, какие skills Claude может запускать:</p>
+<p><strong>Отключить все skills</strong> в <code>/permissions</code>:</p>
+<pre><code># Add to deny rules:
+Skill</code></pre>
+<p><strong>Разрешить или запретить конкретные skills</strong>:</p>
+<pre><code># Allow only specific skills
+Skill(commit)
+Skill(review-pr *)
+
+# Deny specific skills
+Skill(deploy *)</code></pre>
+<p><strong>Скрыть отдельные skills</strong> можно, добавив <code>disable-model-invocation: true</code> в их frontmatter.</p>
+<h3 id="h-13">Лучшие практики <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="1-делайте-описания-конкретными">1. Делайте описания конкретными <a class="h-anchor" href="#1-делайте-описания-конкретными" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Плохо (размыто)</strong>: &quot;Помогает с документами&quot;</li>
+<li><strong>Хорошо (конкретно)</strong>: &quot;Извлекает текст и таблицы из PDF, заполняет формы, объединяет документы. Используйте при работе с PDF-файлами или когда пользователь упоминает PDF, формы или извлечение документов.&quot;</li>
+</ul>
+<h4 id="2-держите-skills-сфокусированными">2. Держите Skills сфокусированными <a class="h-anchor" href="#2-держите-skills-сфокусированными" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Один Skill = одна возможность</li>
+<li>✅ &quot;Заполнение PDF-форм&quot;</li>
+<li>❌ &quot;Обработка документов&quot; (слишком широко)</li>
+</ul>
+<h4 id="3-добавляйте-trigger-terms">3. Добавляйте trigger terms <a class="h-anchor" href="#3-добавляйте-trigger-terms" aria-label="Ссылка на раздел">#</a></h4>
+<p>Добавляйте ключевые слова в описания, которые совпадают с запросами пользователей:</p>
+<pre><code class="language-yaml">description: Анализировать Excel-таблицы, строить сводные таблицы и создавать графики. Используйте при работе с Excel-файлами, spreadsheets или файлами .xlsx.</code></pre>
+<h4 id="4-держите-skill-md-меньше-500-строк">4. Держите <code>SKILL.md</code> меньше 500 строк <a class="h-anchor" href="#4-держите-skill-md-меньше-500-строк" aria-label="Ссылка на раздел">#</a></h4>
+<p>Выносите детальный reference-материал в отдельные файлы, которые Claude подгружает по необходимости.</p>
+<h4 id="5-ссылайтесь-на-поддерживающие-файлы">5. Ссылайтесь на поддерживающие файлы <a class="h-anchor" href="#5-ссылайтесь-на-поддерживающие-файлы" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-markdown">## Дополнительные ресурсы
+
+- Полные детали API см. в [reference.md](reference.md)
+- Примеры использования см. в [examples.md](examples.md)</code></pre>
+<h4 id="h-14">Что делать <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Используйте понятные и описательные имена</li>
+<li>Добавляйте исчерпывающие инструкции</li>
+<li>Приводите конкретные примеры</li>
+<li>Собирайте связанные скрипты и шаблоны вместе</li>
+<li>Проверяйте на реальных сценариях</li>
+<li>Документируйте зависимости</li>
+</ul>
+<h4 id="h-15">Чего не делать <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Не создавайте skills для одноразовых задач</li>
+<li>Не дублируйте уже существующую функциональность</li>
+<li>Не делайте skills слишком широкими</li>
+<li>Не пропускайте поле description</li>
+<li>Не устанавливайте skills из недоверенных источников без проверки</li>
+</ul>
+<h3 id="h-16">Устранение неполадок <a class="h-anchor" href="#h-16" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-17">Краткая памятка <a class="h-anchor" href="#h-17" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Проблема</th><th>Решение</th></tr></thead><tbody><tr><td>Claude не использует Skill</td><td>Сделайте описание более конкретным и добавьте trigger terms</td></tr><tr><td>Файл skill не найден</td><td>Проверьте путь: <code>~/.claude/skills/name/SKILL.md</code></td></tr><tr><td>Ошибки YAML</td><td>Проверьте <code>---</code>, отступы и отсутствие табов</td></tr><tr><td>Skills конфликтуют</td><td>Используйте разные trigger terms в описаниях</td></tr><tr><td>Скрипты не запускаются</td><td>Проверьте права: <code>chmod +x scripts/*.py</code></td></tr><tr><td>Claude не видит все skills</td><td>Слишком много skills; проверьте <code>/context</code> на предупреждения</td></tr></tbody></table></div>
+<h4 id="skill-не-срабатывает">Skill не срабатывает <a class="h-anchor" href="#skill-не-срабатывает" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если Claude не использует ваш skill, когда это ожидается:</p>
+<ol>
+<li>Проверьте, что в <code>description</code> есть ключевые слова, которые пользователь реально употребляет</li>
+<li>Убедитесь, что skill появляется при вопросе <code>&quot;What skills are available?&quot;</code></li>
+<li>Попробуйте переформулировать запрос так, чтобы он совпадал с описанием</li>
+<li>Для проверки вызовите skill напрямую через <code>/skill-name</code></li>
+</ol>
+<h4 id="skill-срабатывает-слишком-часто">Skill срабатывает слишком часто <a class="h-anchor" href="#skill-срабатывает-слишком-часто" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если Claude использует skill, когда вам это не нужно:</p>
+<ol>
+<li>Сделайте описание более конкретным</li>
+<li>Добавьте <code>disable-model-invocation: true</code>, если skill должен вызываться только вручную</li>
+</ol>
+<h4 id="claude-не-видит-все-skills">Claude не видит все Skills <a class="h-anchor" href="#claude-не-видит-все-skills" aria-label="Ссылка на раздел">#</a></h4>
+<p>Описания skills загружаются на уровне <strong>2% окна контекста</strong> (fallback: <strong>16,000 символов</strong>). Запустите <code>/context</code>, чтобы проверить предупреждения об исключённых skills. Порог можно переопределить через переменную окружения <code>SLASH_COMMAND_TOOL_CHAR_BUDGET</code>.</p>
+<h3 id="h-18">Соображения безопасности <a class="h-anchor" href="#h-18" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Используйте только Skills из доверенных источников.</strong> Skills дают Claude возможности через инструкции и код, и вредоносный Skill может заставить Claude запускать инструменты или выполнять код опасным образом.</p>
+<p><strong>Ключевые меры безопасности:</strong></p>
+<ul>
+<li><strong>Проверяйте тщательно</strong>: просматривайте все файлы в каталоге Skill</li>
+<li><strong>Внешние источники рискованны</strong>: Skills, которые тянут данные из внешних URL, могут быть скомпрометированы</li>
+<li><strong>Злоупотребление инструментами</strong>: вредоносные Skills могут запускать инструменты опасным образом</li>
+<li><strong>Относитесь как к установке ПО</strong>: используйте Skills только из доверенных источников</li>
+</ul>
+<h3 id="skills-vs-другие-возможности">Skills vs другие возможности <a class="h-anchor" href="#skills-vs-другие-возможности" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Возможность</th><th>Способ запуска</th><th>Лучше всего подходит для</th></tr></thead><tbody><tr><td><strong>Skills</strong></td><td>Авто или <code>/name</code></td><td>Переиспользуемой экспертизы и workflows</td></tr><tr><td><strong>Slash Commands</strong></td><td>Пользовательский запуск <code>/name</code></td><td>Быстрых ярлыков (объединены в skills)</td></tr><tr><td><strong>Subagents</strong></td><td>Автоделегирование</td><td>Изолированного выполнения задач</td></tr><tr><td><strong>Memory (CLAUDE.md)</strong></td><td>Загружается всегда</td><td>Постоянного контекста проекта</td></tr><tr><td><strong>MCP</strong></td><td>В реальном времени</td><td>Доступа к внешним данным и сервисам</td></tr><tr><td><strong>Hooks</strong></td><td>По событию</td><td>Автоматизированных побочных эффектов</td></tr></tbody></table></div>
+<h3 id="встроенные-skills">Встроенные Skills <a class="h-anchor" href="#встроенные-skills" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code поставляется с несколькими встроенными skills, которые всегда доступны без установки:</p>
+<div class="table-wrap"><table><thead><tr><th>Skill</th><th>Описание</th></tr></thead><tbody><tr><td><code>/simplify</code></td><td>Проверяет изменённые файлы на повторное использование, качество и эффективность; запускает 3 параллельных review-агента</td></tr><tr><td><code>/batch &lt;instruction&gt;</code></td><td>Координирует крупные параллельные изменения в кодовой базе с помощью git worktrees</td></tr><tr><td><code>/debug [description]</code></td><td>Помогает разобраться с текущей сессией, читая debug-log</td></tr><tr><td><code>/loop [interval] &lt;prompt&gt;</code></td><td>Запускает prompt по таймеру повторно (например, <code>/loop 5m check the deploy</code>)</td></tr><tr><td><code>/claude-api</code></td><td>Загружает reference по Claude API/SDK; автоматически активируется при импортах <code>anthropic</code>/<code>@anthropic-ai/sdk</code></td></tr></tbody></table></div>
+<p>Эти skills доступны сразу и не требуют установки или настройки. Они используют тот же формат <code>SKILL.md</code>, что и пользовательские skills.</p>
+<h3 id="распространение-skills">Распространение Skills <a class="h-anchor" href="#распространение-skills" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="project-skills-совместное-использование-в-команде">Project Skills (совместное использование в команде) <a class="h-anchor" href="#project-skills-совместное-использование-в-команде" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Создайте Skill в <code>.claude/skills/</code></li>
+<li>Закоммитьте в git</li>
+<li>Участники команды подтягивают изменения — Skills становятся доступны сразу</li>
+</ol>
+<h4 id="личные-skills">Личные Skills <a class="h-anchor" href="#личные-skills" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Copy to personal directory
+cp -r my-skill ~/.claude/skills/
+
+# Make scripts executable
+chmod +x ~/.claude/skills/my-skill/scripts/*.py</code></pre>
+<h4 id="распространение-через-plugin">Распространение через Plugin <a class="h-anchor" href="#распространение-через-plugin" aria-label="Ссылка на раздел">#</a></h4>
+<p>Пакуйте skills в каталог <code>skills/</code> внутри plugin, если нужен более широкий способ распространения.</p>
+<h3 id="дальше-коллекция-skills-и-менеджер-skills">Дальше: коллекция Skills и менеджер Skills <a class="h-anchor" href="#дальше-коллекция-skills-и-менеджер-skills" aria-label="Ссылка на раздел">#</a></h3>
+<p>Когда вы начнёте серьёзно заниматься skills, станут необходимы две вещи: библиотека проверенных skills и инструмент для их управления.</p>
+<p><strong><a href="https://github.com/luongnv89/skills">luongnv89/skills</a></strong> — Коллекция skills, которые я использую каждый день почти во всех проектах. Среди них <code>logo-designer</code> (генерирует логотипы проекта на лету) и <code>ollama-optimizer</code> (настраивает производительность локальных LLM под ваше железо). Хорошая отправная точка, если вам нужны готовые к использованию skills.</p>
+<p><strong><a href="https://github.com/luongnv89/asm">luongnv89/asm</a></strong> — Agent Skill Manager. Он занимается разработкой skills, поиском дубликатов и тестированием. Команда <code>asm link</code> позволяет проверять skill в любом проекте, не копируя файлы туда-сюда — это становится особенно важно, когда у вас уже не один-два skill.</p>
+<h3 id="h-19">Дополнительные ресурсы <a class="h-anchor" href="#h-19" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/en/skills">Официальная документация по Skills</a></li>
+<li><a href="https://claude.com/blog/equipping-agents-for-the-real-world-with-agent-skills">Блог про архитектуру Agent Skills</a></li>
+<li><a href="https://github.com/luongnv89/skills">Skills Repository</a> - Коллекция готовых skills</li>
+<li><a href="../01-slash-commands/">Slash Commands Guide</a> - Команды, запускаемые пользователем</li>
+<li><a href="../04-subagents/">Subagents Guide</a> - Делегированные AI-агенты</li>
+<li><a href="../02-memory/">Memory Guide</a> - Постоянный контекст</li>
+<li><a href="../05-mcp/">MCP (Model Context Protocol)</a> - Доступ к внешним данным в реальном времени</li>
+<li><a href="../06-hooks/">Hooks Guide</a> - Автоматизация по событиям</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

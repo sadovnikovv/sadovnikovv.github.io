@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>My Development Preferences</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/02-memory/index.html">02-memory</a></nav>
+<h1 id="my-development-preferences">My Development Preferences <a class="h-anchor" href="#my-development-preferences" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="about-me">About Me <a class="h-anchor" href="#about-me" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong>Experience Level</strong>: 8 years full-stack development</li>
+<li><strong>Preferred Languages</strong>: TypeScript, Python</li>
+<li><strong>Communication Style</strong>: Direct, with examples</li>
+<li><strong>Learning Style</strong>: Visual diagrams with code</li>
+</ul>
+<h3 id="code-preferences">Code Preferences <a class="h-anchor" href="#code-preferences" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="error-handling">Error Handling <a class="h-anchor" href="#error-handling" aria-label="Ссылка на раздел">#</a></h4>
+<p>I prefer explicit error handling with try-catch blocks and meaningful error messages.
+Avoid generic errors. Always log errors for debugging.</p>
+<h4 id="comments">Comments <a class="h-anchor" href="#comments" aria-label="Ссылка на раздел">#</a></h4>
+<p>Use comments for WHY, not WHAT. Code should be self-documenting.
+Comments should explain business logic or non-obvious decisions.</p>
+<h4 id="testing">Testing <a class="h-anchor" href="#testing" aria-label="Ссылка на раздел">#</a></h4>
+<p>I prefer TDD (test-driven development).
+Write tests first, then implementation.
+Focus on behavior, not implementation details.</p>
+<h4 id="architecture">Architecture <a class="h-anchor" href="#architecture" aria-label="Ссылка на раздел">#</a></h4>
+<p>I prefer modular, loosely-coupled design.
+Use dependency injection for testability.
+Separate concerns (Controllers, Services, Repositories).</p>
+<h3 id="debugging-preferences">Debugging Preferences <a class="h-anchor" href="#debugging-preferences" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Use console.log with prefix: <code>[DEBUG]</code></li>
+<li>Include context: function name, relevant variables</li>
+<li>Use stack traces when available</li>
+<li>Always include timestamps in logs</li>
+</ul>
+<h3 id="communication">Communication <a class="h-anchor" href="#communication" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Explain complex concepts with diagrams</li>
+<li>Show concrete examples before explaining theory</li>
+<li>Include before/after code snippets</li>
+<li>Summarize key points at the end</li>
+</ul>
+<h3 id="project-organization">Project Organization <a class="h-anchor" href="#project-organization" aria-label="Ссылка на раздел">#</a></h3>
+<p>I organize my projects as:</p>
+<pre><code>project/
+  ├── src/
+  │   ├── api/
+  │   ├── services/
+  │   ├── models/
+  │   └── utils/
+  ├── tests/
+  ├── docs/
+  └── docker/</code></pre>
+<h3 id="tooling">Tooling <a class="h-anchor" href="#tooling" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong>IDE</strong>: VS Code with vim keybindings</li>
+<li><strong>Terminal</strong>: Zsh with Oh-My-Zsh</li>
+<li><strong>Format</strong>: Prettier (100 char line length)</li>
+<li><strong>Linter</strong>: ESLint with airbnb config</li>
+<li><strong>Test Framework</strong>: Jest with React Testing Library</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

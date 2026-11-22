@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru" data-book-src="../book.html">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Глава 6C — Claude Code для инженера</title>
+<meta name="description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
+<link rel="canonical" href="https://sadovnikovv.github.io/pages/">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:site_name" content="Claude Code для инженера">
+<meta property="og:title" content="Глава 6C — Claude Code для инженера">
+<meta property="og:description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
+<meta property="og:url" content="https://sadovnikovv.github.io/pages/">
+<meta property="og:image" content="https://sadovnikovv.github.io/assets/favicon.svg">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="../assets/fonts/serif-regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/sans-regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="alternate" type="text/html" href="../book.html#weights-bits">
+<meta name="page-index" content="10">
+</head>
+<body>
+<a class="skip-link" href="#book">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../index.html">Claude Code для инженера</a></strong>
+    <a href="../materials/index.html">Материалы</a>
+    <a href="../about.html">О книге</a>
+    <a href="../download/Книга-Claude-Code.epub" download>EPUB</a>
+  </div>
+</header>
+<div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+<main class="wrap" id="book">
+<section class="chapter"><h2 id="weights-bits"><span class="chapter">Глава 6C</span>Веса, биты и точность</h2>
+
+<p class="lead-in">Параметры модели — это числа. Разберёмся, откуда они берутся, что означают и почему «биты» важны, но не имеют смысла «один бит — один факт».</p>
+
+<h3>6C.1. Что такое параметр</h3>
+
+<p><strong>Параметр</strong> (вес) — число, которое модель использует в вычислениях. У большой модели их миллиарды: матрицы attention (Q, K, V, выходная), матрицы MLP, эмбеддинги, нормировки. Во время обучения эти числа подстраиваются так, чтобы уменьшить ошибку предсказания следующего токена.</p>
+
+<p>Параметры распределены по слоям неравномерно: в MLP обычно больше всего весов, в attention — меньше, но они критичны для связей. В MoE добавляются параметры экспертов.</p>
+
+<h3>6C.2. Как обучаются веса</h3>
+
+<ol>
+  <li><strong>Инициализация.</strong> Веса задаются случайными малыми числами.</li>
+  <li><strong>Прямой проход.</strong> Модель предсказывает следующий токен и считает ошибку (cross-entropy).</li>
+  <li><strong>Обратный проход.</strong> Градиенты показывают, как изменить каждый вес, чтобы ошибка уменьшилась.</li>
+  <li><strong>Шаг оптимизатора.</strong> AdamW и подобные алгоритмы обновляют веса.</li>
+  <li><strong>Повторение.</strong> Миллиарды примеров, батчи, эпохи, контроль переобучения.</li>
+</ol>
+
+<p>После предобучения следует <strong>SFT</strong> (дообучение на инструкциях), затем <strong>RLHF/DPO</strong> (выравнивание по предпочтениям). Это меняет поведение, но не создаёт «базу фактов» в явном виде.</p>
+
+<h3>6C.3. За что отвечает отдельный вес или бит</h3>
+
+<p>Короткий ответ: <strong>ни за что конкретное</strong>. Знания распределены по миллионам весов; один нейрон может реагировать на разные понятия (полисемантичность), а одно понятие может быть размазано по многим нейронам (суперпозиция). Поэтому нельзя сказать «этот бит отвечает за слово „термопара“».</p>
+
+<p>Биты важны на другом уровне — <strong>точности представления чисел</strong>. Формат определяет, сколько памяти занимает вес и насколько точно он хранится.</p>
+
+<h3>6C.4. Форматы чисел</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Формат</th><th>Биты</th><th>Где применяется</th><th>Особенности</th></tr></thead>
+  <tbody>
+    <tr><td><strong>FP32</strong></td><td>32</td><td>Обучение, эталон</td><td>1 знак, 8 экспонента, 23 мантисса; точность и диапазон</td></tr>
+    <tr><td><strong>TF32</strong></td><td>19 (усечённый)</td><td>Обучение на GPU</td><td>Компромисс скорости и точности</td></tr>
+    <tr><td><strong>FP16</strong></td><td>16</td><td>Инференс, смешанное обучение</td><td>1/5/10; диапазон ограничен, возможны переполнения</td></tr>
+    <tr><td><strong>BF16</strong></td><td>16</td><td>Обучение и инференс</td><td>1/8/7; диапазон как у FP32, точность ниже</td></tr>
+    <tr><td><strong>FP8</strong></td><td>8</td><td>Быстрый инференс</td><td>Экономия памяти и вычислений; нужна калибровка</td></tr>
+    <tr><td><strong>INT8</strong></td><td>8</td><td>Квантованный инференс</td><td>Целые числа + масштаб; хорошее качество при калибровке</td></tr>
+    <tr><td><strong>INT4</strong></td><td>4</td><td>Локальные модели</td><td>Сильная экономия; заметная потеря качества на сложных задачах</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>В формате с плавающей точкой <strong>экспонента</strong> отвечает за диапазон (насколько большое или малое число можно представить), а <strong>мантисса</strong> — за точность (сколько значащих цифр). В целочисленном квантовании добавляются <strong>масштаб</strong> и <strong>смещение</strong>, которые отображают целые числа обратно в реальный диапазон.</p>
+
+<h3>6C.5. Квантование</h3>
+
+<p><strong>Квантование</strong> — уменьшение точности весов и/или активаций. Основные подходы:</p>
+
+<ul>
+  <li><strong>PTQ</strong> (post-training quantization) — квантование после обучения; быстро, но требует калибровки.</li>
+  <li><strong>QAT</strong> (quantization-aware training) — обучение с учётом квантования; качество выше, дороже.</li>
+  <li><strong>GPTQ, AWQ</strong> — методы для больших моделей, учитывающие важность весов.</li>
+  <li><strong>GGUF K-quants</strong> — семейство форматов для llama.cpp: Q4_K_M, Q5_K_M, Q6_K, Q8_0 и др.</li>
+</ul>
+
+<p>Обозначения вроде <code>Q4_K_M</code> означают: 4 бита на вес, K-квантование, средний размер группы. Чем выше число и буква, тем больше памяти и обычно лучше качество.</p>
+
+<h3>6C.6. Сколько памяти нужно</h3>
+
+<p>Грубая формула для весов:</p>
+
+<pre><code>Память (ГБ) ≈ Число параметров (млрд) × Байт на параметр
+
+FP16/BF16: 2 байта
+INT8:      1 байт
+INT4:      0,5 байта</code></pre>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Модель</th><th>FP16</th><th>INT8</th><th>INT4</th><th>Комментарий</th></tr></thead>
+  <tbody>
+    <tr><td>7B</td><td>~14 ГБ</td><td>~7 ГБ</td><td>~3,5 ГБ</td><td>Плюс KV-кэш и накладные расходы</td></tr>
+    <tr><td>13B</td><td>~26 ГБ</td><td>~13 ГБ</td><td>~6,5 ГБ</td><td>Комфортно на 24 ГБ VRAM в INT4</td></tr>
+    <tr><td>30B</td><td>~60 ГБ</td><td>~30 ГБ</td><td>~15 ГБ</td><td>Нужны 24–48 ГБ или гибрид CPU/GPU</td></tr>
+    <tr><td>70B</td><td>~140 ГБ</td><td>~70 ГБ</td><td>~35 ГБ</td><td>Одна 48/64 ГБ карта или несколько GPU</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>К этому добавляются <strong>KV-кэш</strong>, буферы активаций и служебные расходы. Поэтому модель «на 14 ГБ» может не влезть в 16 ГБ VRAM при длинном контексте.</p>
+
+<h3>6C.7. KV-кэш: формула</h3>
+
+<p>Приблизительно:</p>
+
+<pre><code>KV-кэш ≈ 2 × слоёв × KV-голов × head_dim × длина × батч × байт</code></pre>
+
+<p>Множитель 2 — для K и V. GQA (grouped-query attention) уменьшает число KV-голов и тем самым кэш. Именно поэтому длинный контекст — это не только «модель умная», но и «память большая».</p>
+
+<h3>6C.8. Почему 4 бита работают</h3>
+
+<p>Веса избыточны: многие близки по значению, а качество задачи зависит не от каждого бита. Квантование с группами и масштабами сохраняет важные различия. Но потеря качества неравномерна: простые задачи почти не страдают, сложные рассуждения и код — могут. Поэтому всегда проверяйте на своих задачах, а не только по perplexity.</p>
+
+<h3>6C.9. Распределение весов и разреженность</h3>
+
+<p>Внутри модели веса распределены по типам слоёв. В MoE большая часть параметров относится к экспертам, но активными на токен являются немногие. Это меняет и память, и скорость: модель может занимать много места, но работать быстрее, чем плотная модель того же общего размера.</p>
+
+<div class="callout">
+  <span class="label">Главное</span>
+  <p>Параметры — это не «файлы знаний», а числа статистической модели. Биты задают точность и память, но не имеют смысловых подписей. Понимание этого защищает от мифов вроде «модель хранит текст дословно» и «можно удалить бит с ложью».</p>
+</div>
+
+</section>
+</main>
+<footer class="site-footer">
+  <nav class="chapter-nav" aria-label="Навигация по главам">
+    <span><a data-rel="prev" href="../pages/transformer-anatomy.html">← Глава 6B</a></span>
+    <a data-rel="toc" href="../index.html">Оглавление</a>
+    <span><a data-rel="next" href="../pages/model-landscape.html">Глава 6D →</a></span>
+  </nav>
+  <p>Источник — <a href="../book.html">книга одним файлом</a>,
+  <a href="../download/Книга-Claude-Code.epub">EPUB</a>.</p>
+</footer>
+<script type="application/json" id="page-list">[{"title":"Глава 0 История этой книги","short":"Глава 0","url":"pages/history.html"},{"title":"Глава 1 Как читать эту книгу","short":"Глава 1","url":"pages/how-to-read.html"},{"title":"Глава 2 Ваш стенд: Claude Code → OmniRoute → DeepSeek","short":"Глава 2","url":"pages/stand.html"},{"title":"Глава 3 Что такое ИИ","short":"Глава 3","url":"pages/what-is-ai.html"},{"title":"Глава 4 Как работает языковая модель","short":"Глава 4","url":"pages/how-llm-works.html"},{"title":"Глава 5 Промпт как техническое задание","short":"Глава 5","url":"pages/prompt.html"},{"title":"Глава 6 Что такое агент","short":"Глава 6","url":"pages/agent.html"},{"title":"Глава 6A История нейронных сетей","short":"Глава 6A","url":"pages/history-nn.html"},{"title":"Глава 6B Анатомия трансформера","short":"Глава 6B","url":"pages/transformer-anatomy.html"},{"title":"Глава 6C Веса, биты и точность","short":"Глава 6C","url":"pages/weights-bits.html"},{"title":"Глава 6D Ландшафт моделей 2026","short":"Глава 6D","url":"pages/model-landscape.html"},{"title":"Глава 6E Локальные модели","short":"Глава 6E","url":"pages/local-models.html"},{"title":"Глава 6F Токены, контекст и сжатие","short":"Глава 6F","url":"pages/tokens-compression.html"},{"title":"Глава 6G Железо и вычислительность","short":"Глава 6G","url":"pages/hardware.html"},{"title":"Глава 6H Агенты и их экосистема","short":"Глава 6H","url":"pages/agents-ecosystem.html"},{"title":"Глава 6I Оптимизация: что пишут на Хабре и Пикабу","short":"Глава 6I","url":"pages/optimization-posts.html"},{"title":"Глава 6J Вопросы и ответы","short":"Глава 6J","url":"pages/faq.html"},{"title":"Глава 6K (не публикуется)","short":"Глава 6K (не публикуется)","url":"pages/deepseek-billing.html"},{"title":"Глава 7 Установка и первый запуск","short":"Глава 7","url":"pages/install.html"},{"title":"Глава 7A (не публикуется)","short":"Глава 7A (не публикуется)","url":"pages/migration.html"},{"title":"Глава 7B (не публикуется)","short":"Глава 7B (не публикуется)","url":"pages/new-pc.html"},{"title":"Глава 8 Интерфейс и команды","short":"Глава 8","url":"pages/interface.html"},{"title":"Глава 9 Память и CLAUDE.md","short":"Глава 9","url":"pages/memory.html"},{"title":"Глава 9A Память, обучение и превращение в скилл","short":"Глава 9A","url":"pages/memory-training.html"},{"title":"Глава 10 Разрешения и безопасность","short":"Глава 10","url":"pages/permissions.html"},{"title":"Глава 11 Контекст, стоимость, сессии","short":"Глава 11","url":"pages/context-cost.html"},{"title":"Глава 12 Расширения: skills, субагенты, hooks, MCP","short":"Глава 12","url":"pages/extensions.html"},{"title":"Глава 13 Принцип интеграции","short":"Глава 13","url":"pages/integration-principle.html"},{"title":"Глава 14 Схемотехника и симуляция","short":"Глава 14","url":"pages/circuit.html"},{"title":"Глава 15 EDA и трассировка плат","short":"Глава 15","url":"pages/pcb.html"},{"title":"Глава 16 Микроконтроллеры","short":"Глава 16","url":"pages/mcu.html"},{"title":"Глава 17 Отладка и измерения","short":"Глава 17","url":"pages/debug.html"},{"title":"Глава 18 Машиностроение и CAD","short":"Глава 18","url":"pages/cad.html"},{"title":"Глава 19 Документация и traceability","short":"Глава 19","url":"pages/docs.html"},{"title":"Глава 20 Карта связок","short":"Глава 20","url":"pages/integration-map.html"},{"title":"Глава 21 Десять заданий","short":"Глава 21","url":"pages/labs.html"},{"title":"Глава 22 Итоговый проект: термостат лабораторной печи","short":"Глава 22","url":"pages/capstone.html"},{"title":"Глава 23 Как проверять ИИ","short":"Глава 23","url":"pages/verify.html"},{"title":"Глава 24 Команды и флаги","short":"Глава 24","url":"pages/commands.html"},{"title":"Глава 25 Переменные, файлы, настройки","short":"Глава 25","url":"pages/files-settings.html"},{"title":"Глава 26 Шаблоны промптов","short":"Глава 26","url":"pages/prompt-templates.html"},{"title":"Глава 27 Диагностика","short":"Глава 27","url":"pages/troubleshooting.html"},{"title":"Глава 28 Файлы и папки","short":"Глава 28","url":"pages/library.html"},{"title":"Глава 29 Литература","short":"Глава 29","url":"pages/literature.html"},{"title":"Глава 29A Открытая хрестоматия","short":"Глава 29A","url":"pages/open-books.html"},{"title":"Глава 30 План на восемь недель","short":"Глава 30","url":"pages/plan.html"},{"title":"Глава 31 Словарь","short":"Глава 31","url":"pages/glossary.html"},{"title":"Глава 32 Источники","short":"Глава 32","url":"pages/sources.html"}]</script>
+<script src="../assets/app.js" defer></script>
+</body>
+</html>

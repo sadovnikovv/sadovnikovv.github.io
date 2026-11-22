@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Refactoring Plan Template</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../../../materials/index.html">Материалы</a> / <a href="../../../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/03-skills/index.html">03-skills</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/03-skills/refactor/index.html">refactor</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/03-skills/refactor/templates/index.html">templates</a></nav>
+<h1 id="refactoring-plan-template">Refactoring Plan Template <a class="h-anchor" href="#refactoring-plan-template" aria-label="Ссылка на раздел">#</a></h1>
+<p>Use this template to document and track your refactoring effort.</p>
+<hr>
+<h3 id="project-information">Project Information <a class="h-anchor" href="#project-information" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody><tr><td><strong>Project/Module</strong></td><td>[Project name]</td></tr><tr><td><strong>Target Files</strong></td><td>[List of files to refactor]</td></tr><tr><td><strong>Date Created</strong></td><td>[Date]</td></tr><tr><td><strong>Author</strong></td><td>[Name]</td></tr><tr><td><strong>Status</strong></td><td>Draft / In Review / Approved / In Progress / Completed</td></tr></tbody></table></div>
+<hr>
+<h3 id="executive-summary">Executive Summary <a class="h-anchor" href="#executive-summary" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="goals">Goals <a class="h-anchor" href="#goals" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>[ ] [Primary goal: e.g., Improve readability of payment processing]</li>
+<li>[ ] [Secondary goal: e.g., Reduce code duplication]</li>
+<li>[ ] [Tertiary goal: e.g., Improve testability]</li>
+</ul>
+<h4 id="constraints">Constraints <a class="h-anchor" href="#constraints" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>[ ] [Constraint 1: e.g., Cannot change public API]</li>
+<li>[ ] [Constraint 2: e.g., Must maintain backward compatibility]</li>
+<li>[ ] [Constraint 3: e.g., No changes to database schema]</li>
+</ul>
+<h4 id="risk-level">Risk Level <a class="h-anchor" href="#risk-level" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>[ ] Low - Minor changes, well-tested code</li>
+<li>[ ] Medium - Moderate changes, some risk</li>
+<li>[ ] High - Significant changes, careful attention needed</li>
+</ul>
+<hr>
+<h3 id="pre-refactoring-checklist">Pre-Refactoring Checklist <a class="h-anchor" href="#pre-refactoring-checklist" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="test-coverage-assessment">Test Coverage Assessment <a class="h-anchor" href="#test-coverage-assessment" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Metric</th><th>Current</th><th>Target</th><th>Status</th></tr></thead><tbody><tr><td>Unit Test Coverage</td><td>__%</td><td>≥80%</td><td></td></tr><tr><td>Integration Tests</td><td>Yes/No</td><td>Yes</td><td></td></tr><tr><td>All Tests Passing</td><td>Yes/No</td><td>Yes</td><td></td></tr></tbody></table></div>
+<h4 id="required-before-starting">Required Before Starting <a class="h-anchor" href="#required-before-starting" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>[ ] All tests passing</li>
+<li>[ ] Code reviewed and understood</li>
+<li>[ ] Backup/version control in place</li>
+<li>[ ] User approval obtained</li>
+</ul>
+<hr>
+<h3 id="identified-code-smells">Identified Code Smells <a class="h-anchor" href="#identified-code-smells" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="summary">Summary <a class="h-anchor" href="#summary" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Smell</th><th>Location</th><th>Severity</th><th>Priority</th></tr></thead><tbody><tr><td>1</td><td>[e.g., Long Method]</td><td>[file:line]</td><td>High</td><td>P1</td></tr><tr><td>2</td><td>[e.g., Duplicate Code]</td><td>[file:line]</td><td>Medium</td><td>P2</td></tr><tr><td>3</td><td>[e.g., Feature Envy]</td><td>[file:line]</td><td>Low</td><td>P3</td></tr></tbody></table></div>
+<h4 id="detailed-analysis">Detailed Analysis <a class="h-anchor" href="#detailed-analysis" aria-label="Ссылка на раздел">#</a></h4>
+<h5 id="smell-1-name">Smell #1: [Name] <a class="h-anchor" href="#smell-1-name" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Location</strong>: <code>path/to/file.js:45-120</code></p>
+<p><strong>Description</strong>: [Detailed description of the problem]</p>
+<p><strong>Impact</strong>:</p>
+<ul>
+<li>[Impact 1]</li>
+<li>[Impact 2]</li>
+</ul>
+<p><strong>Proposed Solution</strong>: [Brief overview of how to fix]</p>
+<hr>
+<h3 id="refactoring-phases">Refactoring Phases <a class="h-anchor" href="#refactoring-phases" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="phase-a-quick-wins-low-risk">Phase A: Quick Wins (Low Risk) <a class="h-anchor" href="#phase-a-quick-wins-low-risk" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Objective</strong>: Simple improvements with immediate value</p>
+<p><strong>Estimated Changes</strong>: [X files, Y methods]</p>
+<p><strong>User Approval Required</strong>: Yes / No</p>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Task</th><th>File</th><th>Refactoring</th><th>Status</th></tr></thead><tbody><tr><td>A1</td><td>Rename variable <code>x</code> to <code>userCount</code></td><td>utils.js:15</td><td>Rename Variable</td><td>[ ]</td></tr><tr><td>A2</td><td>Remove unused <code>oldHandler()</code></td><td>api.js:89</td><td>Remove Dead Code</td><td>[ ]</td></tr><tr><td>A3</td><td>Extract duplicate validation</td><td>form.js:23,67</td><td>Extract Method</td><td>[ ]</td></tr></tbody></table></div>
+<p><strong>Rollback Plan</strong>: Revert commits A1-A3</p>
+<hr>
+<h4 id="phase-b-structural-improvements-medium-risk">Phase B: Structural Improvements (Medium Risk) <a class="h-anchor" href="#phase-b-structural-improvements-medium-risk" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Objective</strong>: Improve code organization and clarity</p>
+<p><strong>Estimated Changes</strong>: [X files, Y methods]</p>
+<p><strong>User Approval Required</strong>: Yes</p>
+<p><strong>Dependencies</strong>: Phase A must be complete</p>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Task</th><th>File</th><th>Refactoring</th><th>Status</th></tr></thead><tbody><tr><td>B1</td><td>Extract <code>calculatePrice()</code> from long method</td><td>order.js:45</td><td>Extract Method</td><td>[ ]</td></tr><tr><td>B2</td><td>Introduce <code>OrderDetails</code> parameter object</td><td>order.js:12</td><td>Introduce Parameter Object</td><td>[ ]</td></tr><tr><td>B3</td><td>Move <code>formatAddress()</code> to Address class</td><td>customer.js:78</td><td>Move Method</td><td>[ ]</td></tr></tbody></table></div>
+<p><strong>Rollback Plan</strong>: Revert to post-Phase-A commit</p>
+<hr>
+<h4 id="phase-c-architectural-changes-higher-risk">Phase C: Architectural Changes (Higher Risk) <a class="h-anchor" href="#phase-c-architectural-changes-higher-risk" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Objective</strong>: Address deeper structural issues</p>
+<p><strong>Estimated Changes</strong>: [X files, Y methods]</p>
+<p><strong>User Approval Required</strong>: Yes</p>
+<p><strong>Dependencies</strong>: Phases A and B must be complete</p>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Task</th><th>File</th><th>Refactoring</th><th>Status</th></tr></thead><tbody><tr><td>C1</td><td>Replace price switch with polymorphism</td><td>pricing.js:30</td><td>Replace Conditional with Polymorphism</td><td>[ ]</td></tr><tr><td>C2</td><td>Extract <code>NotificationService</code> class</td><td>user.js:100</td><td>Extract Class</td><td>[ ]</td></tr></tbody></table></div>
+<p><strong>Rollback Plan</strong>: Revert to post-Phase-B commit</p>
+<hr>
+<h3 id="detailed-refactoring-steps">Detailed Refactoring Steps <a class="h-anchor" href="#detailed-refactoring-steps" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="task-id-task-name">Task [ID]: [Task Name] <a class="h-anchor" href="#task-id-task-name" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Smell Addressed</strong>: [Smell name]</p>
+<p><strong>Refactoring Technique</strong>: [Technique name]</p>
+<p><strong>Risk Level</strong>: Low / Medium / High</p>
+<h5 id="context">Context <a class="h-anchor" href="#context" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Before</strong> (Current State):</p>
+<pre><code class="language-javascript">// Paste current code here</code></pre>
+<p><strong>After</strong> (Expected State):</p>
+<pre><code class="language-javascript">// Paste expected code here</code></pre>
+<h5 id="step-by-step-mechanics">Step-by-Step Mechanics <a class="h-anchor" href="#step-by-step-mechanics" aria-label="Ссылка на раздел">#</a></h5>
+<ol>
+<li>[ ] <strong>Step 1</strong>: [Description]</li>
+<li>Test: Run tests after this step</li>
+<li>Expected: All tests pass</li>
+</ol>
+<ol>
+<li>[ ] <strong>Step 2</strong>: [Description]</li>
+<li>Test: Run tests after this step</li>
+<li>Expected: All tests pass</li>
+</ol>
+<ol>
+<li>[ ] <strong>Step 3</strong>: [Description]</li>
+<li>Test: Run tests after this step</li>
+<li>Expected: All tests pass</li>
+</ol>
+<h5 id="verification">Verification <a class="h-anchor" href="#verification" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li>[ ] All tests passing</li>
+<li>[ ] Behavior unchanged</li>
+<li>[ ] Code compiles</li>
+<li>[ ] No new warnings</li>
+</ul>
+<h5 id="commit-message">Commit Message <a class="h-anchor" href="#commit-message" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code>refactor: [Describe the refactoring]</code></pre>
+<hr>
+<h3 id="progress-tracking">Progress Tracking <a class="h-anchor" href="#progress-tracking" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="phase-status">Phase Status <a class="h-anchor" href="#phase-status" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Phase</th><th>Status</th><th>Started</th><th>Completed</th><th>Tests Passing</th></tr></thead><tbody><tr><td>A</td><td>Not Started / In Progress / Done</td><td></td><td></td><td></td></tr><tr><td>B</td><td>Not Started / In Progress / Done</td><td></td><td></td><td></td></tr><tr><td>C</td><td>Not Started / In Progress / Done</td><td></td><td></td><td></td></tr></tbody></table></div>
+<h4 id="issues-encountered">Issues Encountered <a class="h-anchor" href="#issues-encountered" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Issue</th><th>Resolution</th><th>Status</th></tr></thead><tbody><tr><td>1</td><td>[Description]</td><td>[How resolved]</td><td>Open / Resolved</td></tr></tbody></table></div>
+<hr>
+<h3 id="metrics-comparison">Metrics Comparison <a class="h-anchor" href="#metrics-comparison" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="before-refactoring">Before Refactoring <a class="h-anchor" href="#before-refactoring" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Metric</th><th>File 1</th><th>File 2</th><th>Total</th></tr></thead><tbody><tr><td>Lines of Code</td><td></td><td></td><td></td></tr><tr><td>Cyclomatic Complexity</td><td></td><td></td><td></td></tr><tr><td>Maintainability Index</td><td></td><td></td><td></td></tr><tr><td>Number of Methods</td><td></td><td></td><td></td></tr><tr><td>Avg Method Length</td><td></td><td></td><td></td></tr></tbody></table></div>
+<h4 id="after-refactoring">After Refactoring <a class="h-anchor" href="#after-refactoring" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Metric</th><th>File 1</th><th>File 2</th><th>Total</th><th>Change</th></tr></thead><tbody><tr><td>Lines of Code</td><td></td><td></td><td></td><td></td></tr><tr><td>Cyclomatic Complexity</td><td></td><td></td><td></td><td></td></tr><tr><td>Maintainability Index</td><td></td><td></td><td></td><td></td></tr><tr><td>Number of Methods</td><td></td><td></td><td></td><td></td></tr><tr><td>Avg Method Length</td><td></td><td></td><td></td><td></td></tr></tbody></table></div>
+<hr>
+<h3 id="post-refactoring-checklist">Post-Refactoring Checklist <a class="h-anchor" href="#post-refactoring-checklist" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>[ ] All tests passing</li>
+<li>[ ] No new warnings or errors</li>
+<li>[ ] Code compiles successfully</li>
+<li>[ ] Manual verification completed</li>
+<li>[ ] Documentation updated (if needed)</li>
+<li>[ ] Code reviewed</li>
+<li>[ ] Metrics improved</li>
+<li>[ ] User sign-off obtained</li>
+</ul>
+<hr>
+<h3 id="lessons-learned">Lessons Learned <a class="h-anchor" href="#lessons-learned" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="what-went-well">What Went Well <a class="h-anchor" href="#what-went-well" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>[Item 1]</li>
+<li>[Item 2]</li>
+</ul>
+<h4 id="what-could-be-improved">What Could Be Improved <a class="h-anchor" href="#what-could-be-improved" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>[Item 1]</li>
+<li>[Item 2]</li>
+</ul>
+<h4 id="recommendations-for-future">Recommendations for Future <a class="h-anchor" href="#recommendations-for-future" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>[Item 1]</li>
+<li>[Item 2]</li>
+</ul>
+<hr>
+<h3 id="approvals">Approvals <a class="h-anchor" href="#approvals" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Role</th><th>Name</th><th>Date</th><th>Signature</th></tr></thead><tbody><tr><td>Plan Author</td><td></td><td></td><td></td></tr><tr><td>Technical Lead</td><td></td><td></td><td></td></tr><tr><td>Product Owner</td><td></td><td></td><td></td></tr></tbody></table></div>
+<hr>
+<h3 id="appendix">Appendix <a class="h-anchor" href="#appendix" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="a-related-documentation">A. Related Documentation <a class="h-anchor" href="#a-related-documentation" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>[Link to relevant docs]</li>
+</ul>
+<h4 id="b-reference-materials">B. Reference Materials <a class="h-anchor" href="#b-reference-materials" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>[Link to code smells catalog]</li>
+<li>[Link to refactoring catalog]</li>
+</ul>
+<h4 id="c-tools-used">C. Tools Used <a class="h-anchor" href="#c-tools-used" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>[Testing framework]</li>
+<li>[Linting tools]</li>
+<li>[Complexity analysis tools]</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Шлюз Claude apps для Amazon Bedrock, Claude Platform на AWS, Google Cloud и Microsoft Foundry</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="шлюз-claude-apps-для-amazon-bedrock-claude-platform-на-aws-google-cloud-и-microsoft-foundry">Шлюз Claude apps для Amazon Bedrock, Claude Platform на AWS, Google Cloud и Microsoft Foundry <a class="h-anchor" href="#шлюз-claude-apps-для-amazon-bedrock-claude-platform-на-aws-google-cloud-и-microsoft-foundry" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Запускайте Claude Code через Amazon Bedrock, Claude Platform на AWS, Google Cloud или Microsoft Foundry за самостоятельно размещаемым шлюзом с входом SSO, доступом к моделям по группам и телеметрией OTLP.</p>
+</blockquote>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Шлюз Claude apps предназначен для организаций, которые должны — или предпочитают — маршрутизировать вывод через своего поставщика облачных услуг, например для соответствия требованиям <a href="https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#compliance-posture">резидентности данных</a>. Если у вас нет этого требования и вы хотите получить доступ к другим функциям, таким как подготовка SCIM или Claude Code в веб-версии и мобильных приложениях, Claude Enterprise может быть лучшим вариантом. Полное сравнение всех методов развертывания см. на странице <a href="https://code.claude.com/docs/ru/feature-availability.md">доступности функций</a>.</p>
+<p>Claude Code использует только один вход одновременно: вход через шлюз заменяет вход в Claude for Teams или Enterprise. Сессии шлюза не получают <a href="https://code.claude.com/docs/ru/server-managed-settings.md">управляемые сервером настройки</a>, заданные вами в консоли администратора claude.ai, поэтому передавайте их через <a href="https://code.claude.com/docs/ru/claude-apps-gateway-config#managed">блок <code>managed</code></a> шлюза. Не включайте <code>forceLoginMethod</code> и <code>forceLoginOrgUUID</code> в этот блок, иначе <a href="https://code.claude.com/docs/ru/claude-apps-gateway-config.md#client-side-managed-settings">некоторые сессии с выполненным входом будут завершаться при запуске</a>. О том, чего лишаются сессии шлюза, см. в разделе <a href="#availability-and-limitations">Доступность и ограничения</a>.</p>
+</blockquote>
+<p>Claude apps gateway — это самостоятельно размещаемый сервис, который находится между клиентами Claude Code ваших разработчиков и вашим поставщиком модели. Разработчики входят с помощью вашего корпоративного поставщика удостоверений (IdP) вместо того, чтобы хранить ключи API или учетные данные облака. Шлюз хранит учетные данные вышестоящего уровня, обеспечивает доступ к модели и <a href="https://code.claude.com/docs/ru/managed-settings.md">управляемые параметры</a> по группам IdP и передает телеметрию использования в ваш собственный стек наблюдаемости.</p>
+<p>Он включен в двоичный файл <code>claude</code>, поэтому тот же исполняемый файл, который запускает Claude Code на ноутбуке, запускает сервер шлюза с помощью <code>claude gateway --config gateway.yaml</code>.</p>
+<p>На этой странице рассматривается:</p>
+<ul>
+<li><a href="#why-claude-apps-gateway">Почему Claude apps gateway</a>, что он добавляет по сравнению с самостоятельным запуском и когда что-то другое подходит лучше</li>
+<li><a href="#quickstart">Быстрый старт</a> с <a href="#prerequisites">предварительными требованиями</a>, который переводит шлюз от нуля к вошедшему разработчику</li>
+<li><a href="#connect-developers">Подключение разработчиков</a>, включая установку URL шлюза через управляемые параметры</li>
+<li><a href="#availability-and-limitations">Доступность и ограничения</a>, охватывающие какие функции Claude Code работают через шлюз и что поддерживает сервер</li>
+</ul>
+<p>Дополнительные страницы углубляются в детали. <a href="https://code.claude.com/docs/ru/claude-apps-gateway-config.md">Справочник по конфигурации</a> охватывает каждый параметр в файле YAML, который пишет быстрый старт, а <a href="https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md">руководство по развертыванию</a> охватывает настройку для каждого IdP, развертывание Kubernetes и Cloud Run, а также операции.</p>
+<h3 id="почему-claude-apps-gateway">Почему Claude apps gateway <a class="h-anchor" href="#почему-claude-apps-gateway" aria-label="Ссылка на раздел">#</a></h3>
+<p><a href="https://code.claude.com/docs/ru/gateways.md">Обзор шлюза</a> охватывает, что делает шлюз и почему вы бы его запустили. Claude apps gateway — это собственный шлюз Anthropic, встроенный в двоичный файл <code>claude</code> и протестированный вместе с каждым выпуском Claude Code, поэтому он пересылает значения <code>anthropic-beta</code> и поля запроса, которые отправляет Claude Code, без того, чтобы операторы поддерживали отдельный список разрешённых значений. После развёртывания он даёт вам:</p>
+<ul>
+<li><strong>Учётные данные</strong>: ключ API вышестоящего уровня или учётные данные облака существуют только в вашей инфраструктуре. Разработчики аутентифицируются с помощью корпоративного SSO и получают краткосрочные токены-носители, поэтому отключение происходит в вашем IdP. Отключите пользователя, и его доступ к шлюзу истекает в течение времени жизни сеанса, по умолчанию один час.</li>
+<li><strong>Контроль доступа</strong>: ваши группы IdP сопоставляются со списками разрешённых моделей, политиками <a href="https://code.claude.com/docs/ru/managed-settings.md">управляемых настроек</a> и <a href="https://code.claude.com/docs/ru/claude-apps-gateway-config.md#send-each-team-to-its-own-upstream">вышестоящими сервисами</a>. Шлюз обеспечивает доступ к модели на стороне сервера, отклоняя запросы для неразрешённых моделей, и выбирает политику управляемых настроек каждой группы, которую CLI применяет на <a href="https://code.claude.com/docs/ru/settings.md#settings-precedence">уровне управляемых настроек</a>. Разные команды получают разные модели, инструменты и разрешения, и разработчик не может переопределить то, что его политика блокирует.</li>
+<li><strong>Доставка параметров</strong>: шлюз доставляет управляемые параметры подписанным клиентам сам, занимая место <a href="https://code.claude.com/docs/ru/server-managed-settings.md">параметров, управляемых сервером</a> из консоли администратора claude.ai.</li>
+<li><strong>Телеметрия</strong>: каждое настроенное назначение получает <a href="https://code.claude.com/docs/ru/monitoring-usage.md">метрики OpenTelemetry Protocol (OTLP)</a> с подсчётом токенов, моделью, идентификацией пользователя и задержкой по умолчанию, с журналами и трассировками как дополнительные параметры для каждого назначения.</li>
+<li><strong>Маршрутизация вышестоящего уровня</strong>: клиенты говорят API Anthropic Messages с шлюзом, и шлюз переводит для каждого вышестоящего уровня, будь то Amazon Bedrock, <a href="https://code.claude.com/docs/ru/claude-platform-on-aws.md">Claude Platform on AWS</a>, Agent Platform Google Cloud, Microsoft Foundry или API Anthropic, с отказоустойчивостью между ними. Вы можете менять регионы, поставщиков или порядок отказоустойчивости без того, чтобы разработчики замечали или переконфигурировали.</li>
+</ul>
+<p><img src="https://mintcdn.com/claude-code/VbyXug8hBU9UK6oT/images/claude-gateway-architecture.svg?fit=max\&amp;auto=format\&amp;n=VbyXug8hBU9UK6oT\&amp;q=85\&amp;s=9e4f1190fc56718144190a3db61c63af" alt="Диаграмма, показывающая клиентов Claude Code и Claude Desktop, подключающихся по HTTPS с Bearer-токенами к самостоятельно размещённому Claude apps gateway внутри вашей инфраструктуры, который выполняет вход пользователей через ваш IdP, хранит состояние аутентификации в PostgreSQL, передаёт телеметрию вашему сборщику OTLP и пересылает запросы инференса в Amazon Bedrock, Claude Platform on AWS, Google Cloud, Microsoft Foundry или API Anthropic" loading="lazy"></p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Плоскость данных самого шлюза не отправляет ничего в инфраструктуру Anthropic, если API Anthropic не является настроенным вышестоящим уровнем. Вы контролируете, куда идут телеметрия, журналы аудита, управляемые параметры и идентификация IdP ваших разработчиков, и шлюз не отправляет ни одно из них в Anthropic. Для оставшегося трафика процесс CLI может отправлять и как его закрыть, см. <a href="https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#compliance-posture">Позиция соответствия</a>.</p>
+</blockquote>
+<p>Для того, какие функции Claude Code работают через шлюз и что сам сервер поддерживает, см. <a href="#availability-and-limitations">Доступность и ограничения</a> ниже. Для решений, таких как стоимость, обход, запуск нескольких шлюзов и бессерверные платформы, см. <a href="https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#deployment">руководство по развёртыванию</a>.</p>
+<h4 id="h">Другие реализации шлюза <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если вы уже запускаете шлюз LLM или шлюз API, который соответствует вашим потребностям, продолжайте его использовать; <a href="https://code.claude.com/docs/ru/llm-gateway">Другие шлюзы LLM</a> охватывает конфигурирование Claude Code против него.</p>
+<p><a href="https://code.claude.com/docs/ru/llm-gateway-protocol.md">Справочник протокола шлюза</a> документирует, что Claude Code ожидает от любого шлюза: конечные точки, которые он вызывает, заголовки и поля тела для пересылки, и что перестаёт работать, когда они удаляются. Работающий Claude apps gateway также служит собственной ссылкой на протокол в <code>GET /protocol</code>, которая описывает конечные точки, которые он предоставляет клиентам Claude Code: вход SSO, вывод, доставка управляемых параметров, обнаружение модели и телеметрия. Получите его с помощью <code>curl https://claude-gateway.internal.example.com/protocol</code> из любого развёрнутого шлюза, такого как тот, который производит <a href="#quickstart">быстрый старт</a> ниже.</p>
+<p>Критические изменения протокола объявляются заранее, но неопределённая обратная совместимость не гарантируется.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Токен входа шлюза идентифицирует разработчика, который подтвердил вход, а не программу, которая его использует. Claude Code выполняет вход без собственного идентификатора клиента или секрета, поэтому шлюз не может проверить, какая программа выполняет вход. Любой клиент может задать <code>User-Agent</code> и другие поля запроса, поэтому используйте их для маршрутизации или метрик, а не как доказательство того, что запрос исходит от Claude Code.</p>
+</blockquote>
+<h3 id="h-2">Быстрый старт <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>В этом руководстве по быстрому старту описан минимальный путь: зарегистрировать OAuth-клиент в вашем IdP, написать <code>gateway.yaml</code>, запустить шлюз вместе с Postgres с помощью Docker Compose и проверить вход от начала до конца. В нём используется вышестоящий провайдер Amazon Bedrock; Claude Platform on AWS, Agent Platform от Google Cloud, Microsoft Foundry и Anthropic API поддерживаются в равной степени — достаточно заменить блок <code>upstreams</code>, как показано в <a href="https://code.claude.com/docs/ru/claude-apps-gateway-config.md#upstreams">справочнике по конфигурации</a>. В итоге у вас будет шлюз, в который разработчик может войти с помощью <code>/login</code>.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p><strong>Развёртывайте шлюз в частной сети.</strong> Claude Code подключается только к шлюзу с частным адресом. Это мера безопасности, поскольку доверенный шлюз может передавать настройки, которые выполняют команды на машинах разработчиков. Разместите шлюз за внутренним балансировщиком нагрузки или VPN и назначьте ему имя хоста, которое разрешается только в частные IP-адреса. Если ваша внутренняя сеть использует публичное адресное пространство IPv4, принадлежащее вашей организации, см. раздел <a href="#allow-a-gateway-on-public-address-space-you-own">Разрешение шлюза в принадлежащем вам публичном адресном пространстве</a>.</p>
+</blockquote>
+<h4 id="h-3">Предварительные требования <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Перед началом убедитесь, что у вас есть следующее:</p>
+<p>| Что нужно | Подробности |
+| - | - |
+| Claude Code v2.1.195 или новее | Подкоманда <code>claude gateway</code> и процесс входа через шлюз появились в v2.1.195. Более ранние публичные сборки их не содержат. И машина, на которой работает сервер шлюза, и машина каждого разработчика должны использовать v2.1.195 или новее; выполните <code>claude update</code>, чтобы получить последний выпуск. Для <a href="https://code.claude.com/docs/ru/claude-apps-gateway-config.md#claude-platform-on-aws">вышестоящего провайдера Claude Platform on AWS</a> на сервере шлюза требуется Claude Code v2.1.198 или новее. |
+| Поставщик удостоверений OpenID Connect (OIDC) | Okta, Microsoft Entra ID, Google Workspace, Keycloak или Dex, либо любой другой OIDC-совместимый IdP, например PingFederate. Шлюз выполняет с ним стандартное обнаружение OIDC и процесс authorization code. SAML и LDAP не поддерживаются. |
+| PostgreSQL 11 или новее | Обеспечивает процесс входа с устройства и счётчики ограничений частоты запросов. Подойдёт управляемый сервис PostgreSQL, включая самый маленький тариф; см. <a href="https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#postgres">какие базы данных поддерживаются</a>. При использовании <a href="https://code.claude.com/docs/ru/claude-apps-gateway-spend-limits.md">лимитов расходов</a> в нём также хранятся постоянные таблицы расходов, аудита и удостоверений, для которых следует делать резервные копии. Рекомендуется TLS через <code>?sslmode=require</code>. Для PostgreSQL 11, 12 и 13 на сервере шлюза требуется Claude Code v2.1.290 или новее. Проект PostgreSQL больше не поддерживает эти версии, поэтому по возможности используйте более новую. |
+| Вышестоящий провайдер моделей | Учётные данные Amazon Bedrock, учётные данные Claude Platform on AWS, учётные данные Google Cloud, ресурс Microsoft Foundry или API-ключ Anthropic. Поддерживается несколько вышестоящих провайдеров с переключением при отказе. |
+| HTTPS | Шлюз должен быть доступен по <code>https://</code> с ноутбуков разработчиков и из любого браузера, используемого для входа; шлюз отдаёт страницу проверки устройства на том же слушателе. Либо предоставьте TLS-сертификат через <code>listen.tls</code>, либо запустите шлюз за ingress с терминированием TLS, и в обоих случаях задайте в <code>listen.public_url</code> внешний origin. При <code>/login</code> Claude Code принимает обычный origin <code>http://</code> только в том случае, если хост шлюза — loopback: <code>localhost</code>, <code>127.0.0.1</code> или <code>::1</code>. |
+| Адрес в частной сети | При <code>/login</code> Claude Code требует, чтобы имя хоста или IP-адрес шлюза разрешались только в частные адреса: диапазоны RFC 1918 и link-local, CGNAT <code>100.64.0.0/10</code>, IPv6 ULA <code>fc00::/7</code> и loopback. См. <a href="https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#threat-model-summary">модель угроз</a>. Если ваша внутренняя сеть использует публичное адресное пространство IPv4, принадлежащее вашей организации, <a href="#allow-a-gateway-on-public-address-space-you-own">объявите эти блоки</a>, чтобы <code>/login</code> принимал шлюз в них. |
+| Среда выполнения Linux | Сервер шлюза работает только как нативный бинарный файл Linux. macOS подходит для локальной разработки. Windows не поддерживается в качестве серверной платформы. |</p>
+<p>Если к хосту шлюза применяется <code>HTTPS_PROXY</code> или <code>HTTP_PROXY</code>, для входа также требуется либо прокси, имя хоста которого разрешается в частные адреса, либо хост шлюза в <code>NO_PROXY</code> на машинах разработчиков. Если на этих машинах также задан <code>no_proxy</code>, добавьте хост шлюза и туда, иначе запросы к модели по-прежнему будут идти через прокси.</p>
+<h4 id="h-4">Шаги <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>1. Зарегистрируйте OAuth-клиент в вашем IdP</strong></p>
+<p>Сначала определитесь с именем хоста шлюза, поскольку URI перенаправления должен ему соответствовать. Создайте новое веб-приложение OIDC и задайте URI перенаправления <code>https://claude-gateway.&lt;your-domain&gt;/oauth/callback</code>, где хост совпадает со значением, которое вы зададите в <a href="https://code.claude.com/docs/ru/claude-apps-gateway-config#listen"><code>listen.public_url</code></a> на шаге 3. Запишите <code>client_id</code> и <code>client_secret</code>. Инструкции для отдельных IdP приведены в разделе <a href="https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#identity-provider-setup">Настройка поставщика удостоверений</a>.</p>
+<p><strong>2. Подготовьте базу данных PostgreSQL</strong></p>
+<p>Используйте PostgreSQL 11 или новее. Самого маленького управляемого тарифа достаточно. Шлюз сам выполняет миграции схемы при запуске, поэтому роли базы данных нужны права на создание и изменение таблиц; см. <a href="https://code.claude.com/docs/ru/claude-apps-gateway-config#store"><code>store</code></a>.</p>
+<p><strong>3. Напишите gateway.yaml</strong></p>
+<p>Секреты считываются через подстановку <code>${ENV_VAR}</code>, поэтому сам файл можно хранить в системе контроля версий. Используйте в <code>public_url</code> имя хоста, которое разрешается в частный IP-адрес в вашей сети, поскольку <code>/login</code> отклоняет публичные адреса. Минимальная конфигурация состоит из пяти разделов, а у всех остальных полей есть значения по умолчанию:</p>
+<p>```yaml gateway.yaml theme={null}
+listen:
+  host: 0.0.0.0
+  port: 8080
+  # Required unless host is a loopback address. Used for the IdP
+  # redirect_uri and the discovery document.
+  public_url: https://claude-gateway.internal.example.com</p>
+<p>oidc:
+  issuer: https://login.example.com        # must serve /.well-known/openid-configuration
+  client_id: 0oa1example2
+  client_secret: ${OIDC_CLIENT_SECRET}
+  allowed_email_domains: [example.com]        # reject id_tokens outside your org
+  userinfo_fallback: true                  # for IdPs whose id_token omits email/groups; harmless otherwise</p>
+<p>session:
+  jwt_secret: ${GATEWAY_JWT_SECRET}        # openssl rand -base64 32
+  ttl_hours: 1                             # also bounds revocation latency on IdP deprovision</p>
+<p>store:
+  postgres_url: ${GATEWAY_POSTGRES_URL}    # add ?sslmode=require for managed Postgres</p>
+<p>upstreams:</p>
+<ul>
+<li>provider: bedrock region: us-east-1 auth: {} # empty: AWS default credential chain</li>
+</ul>
+<h1 id="irsa-ec2-ecs-task-role-env-vars-aws">(IRSA, EC2/ECS task role, env vars, ~/.aws) <a class="h-anchor" href="#irsa-ec2-ecs-task-role-env-vars-aws" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="models-are-translated-per-upstream-automatically-the-built-in-catalog">Models are translated per upstream automatically. The built-in catalog <a class="h-anchor" href="#models-are-translated-per-upstream-automatically-the-built-in-catalog" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="maps-claude-opus-4-8-to-us-anthropic-claude-opus-4-8-and-so-on-for-every">maps claude-opus-4-8 to us.anthropic.claude-opus-4-8 and so on for every <a class="h-anchor" href="#maps-claude-opus-4-8-to-us-anthropic-claude-opus-4-8-and-so-on-for-every" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="bedrock-supported-claude-model-set-false-and-add-a-models-list-to">Bedrock-supported Claude model. Set false and add a <code>models:</code> list to <a class="h-anchor" href="#bedrock-supported-claude-model-set-false-and-add-a-models-list-to" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="expose-only-specific-models">expose only specific models. <a class="h-anchor" href="#expose-only-specific-models" aria-label="Ссылка на раздел">#</a></h1>
+<p>auto_include_builtin_models: true</p>
+<pre><code>
+Этой конфигурации достаточно для работающего цикла входа с каталогом моделей Amazon Bedrock по умолчанию. Когда всё заработает, добавьте RBAC для отдельных групп и управляемые настройки через [`managed.policies`](https://code.claude.com/docs/ru/claude-apps-gateway-config#managed), рассылку телеметрии через [`telemetry`](https://code.claude.com/docs/ru/claude-apps-gateway-config#telemetry), а также переключение между несколькими вышестоящими провайдерами при отказе, ARN выделенной пропускной способности или регионы за пределами США через [`models`](https://code.claude.com/docs/ru/claude-apps-gateway-config#models).
+
+&gt; [!NOTE]
+&gt;
+&gt; Вышестоящему провайдеру Amazon Bedrock нужен субъект AWS с разрешениями `bedrock:InvokeModel` и `bedrock:InvokeModelWithResponseStream` как на ARN `inference-profile/us.anthropic.*`, так и на базовые ARN `foundation-model/anthropic.*`. Кроме того, для аккаунта должна быть отправлена одноразовая форма Anthropic с описанием сценария использования из раздела Model catalog консоли Bedrock.
+&gt;
+&gt; Предоставляйте учётные данные через IRSA в EKS, роль задачи ECS или профиль экземпляра EC2, а не через статические ключи. В [справочнике по `upstreams`](https://code.claude.com/docs/ru/claude-apps-gateway-config#upstreams) приведены полные сведения об IAM, матрица учётных данных для разных облаков и блоки `auth` для других провайдеров.
+
+**4. Запустите шлюз**
+
+Соберите образ контейнера на основе бинарного файла `claude`, отвечающий [требованиям к образу](https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#container-image), и запустите его вместе с Postgres. В файле Compose образ указан как `registry.example.com/claude-gateway:2.1.198`; подставьте собственный реестр и тег образа:
+</code></pre>
+<p>services:
+  gateway:
+    image: registry.example.com/claude-gateway:2.1.198
+    ports: [&quot;8080:8080&quot;]
+    volumes: [&quot;./gateway.yaml:/etc/claude/gateway.yaml:ro&quot;]
+    environment:
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET}
+      GATEWAY_JWT_SECRET: ${GATEWAY_JWT_SECRET}
+      GATEWAY_POSTGRES_URL: postgres://gw:pw@postgres/gateway
+      # AWS credentials: in production, omit these and use an instance
+      # role. For local Compose testing, pass through your own:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+  postgres:
+    image: postgres:16-alpine
+    environment: { POSTGRES_USER: gw, POSTGRES_PASSWORD: pw, POSTGRES_DB: gateway }
+    healthcheck:
+      test: [&quot;CMD-SHELL&quot;, &quot;pg_isready -U gw&quot;]
+      interval: 5s
+    volumes: [&quot;pgdata:/var/lib/postgresql/data&quot;]
+volumes: { pgdata: }</p>
+<pre><code>
+Шлюз — это один бинарный файл Linux, который считывает конфигурацию, подключается к Postgres и применяет миграции схемы, выполняет обнаружение OIDC для вашего IdP, создаёт клиенты вышестоящих провайдеров и начинает прослушивание.
+
+Запуск работает по принципу fail-closed в отношении конфигурации, подключения к Postgres, обнаружения OIDC и создания клиентов вышестоящих провайдеров: при сбое любого из этих этапов шлюз отказывается запускаться. Если что-либо из этого недоступно или неправильно настроено, шлюз завершает работу с ошибкой, а не обслуживает трафик в деградированном состоянии.
+
+Успешный запуск не проверяет путь инференса, поскольку учётные данные экземпляра Amazon Bedrock и Agent Platform от Google Cloud разрешаются при первом запросе, а не при запуске.
+
+Следите за последовательностью запуска в stderr. По умолчанию строки лога имеют формат `[gateway] &lt;timestamp&gt; &lt;level&gt; &lt;message&gt;`, а между строками миграций и строкой о начале прослушивания выводится баннер запуска (ниже он опущен). События аудита — однострочный JSON с полем `evt`. Для новой базы данных выводится по одной строке `migration N applied` на каждую миграцию схемы; для уже мигрированной базы такие строки не выводятся. Вы должны увидеть по порядку:
+</code></pre>
+<p>{&quot;ts&quot;:&quot;2026-06-10T17:03:21.114Z&quot;,&quot;evt&quot;:&quot;config.load&quot;,&quot;path&quot;:&quot;/etc/claude/gateway.yaml&quot;,&quot;sha256&quot;:&quot;…&quot;}
+[gateway] 2026-06-10T17:03:21.395Z info waiting for migration lock (another replica may be migrating; check pg_locks for key 6775156 if this persists)
+[gateway] 2026-06-10T17:03:21.408Z info migration 1 applied
+…
+[gateway] 2026-06-10T17:03:21.431Z info migration 6 applied
+[gateway] 2026-06-10T17:03:21.512Z info claude gateway listening on http://0.0.0.0:8080</p>
+<pre><code>
+Шлюз также записывает в лог предупреждение о том, что `access_control.allow_cidrs` пуст. Здесь это ожидаемо, поскольку до тех пор, пока вы не зададите список разрешённых адресов, ничто не ограничивает, какие клиентские адреса обслуживает шлюз. Рекомендуемые диапазоны приведены в [справочнике по `access_control`](https://code.claude.com/docs/ru/claude-apps-gateway-config#http-tuning).
+
+Если запуск завершается до строки `claude gateway listening on`, последняя строка stderr указывает на проблему:
+
+* недоступный Postgres
+* роль Postgres без права на DDL
+* недоступный или недействительный документ обнаружения OIDC
+* нарушение схемы конфигурации с путём к проблемному полю
+
+Исправьте проблему и перезапустите шлюз.
+
+Если у вас уже есть ingress с терминированием TLS, пропустите Compose и запустите бинарный файл напрямую с помощью `claude gateway --config gateway.yaml`. Задайте в `public_url` origin ingress и привяжите `listen` к loopback-адресу или внутреннему адресу кластера.
+
+**5. Проверьте аутентификацию**
+
+Три проверки подтверждают, что шлюз может аутентифицировать реального пользователя, прежде чем вы предоставите его разработчику.
+
+В примерах используется публичный URL шлюза; для локальной конфигурации Compose без ingress подставьте `http://localhost:8080` в первых двух проверках. Третья проверка открывает `verification_uri_complete`, который формируется из `public_url`, поэтому для локального Compose задайте `public_url: http://localhost:8080` в `gateway.yaml` и добавьте `http://localhost:8080/oauth/callback` в качестве второго URI перенаправления для OAuth-клиента из шага 1, поскольку шлюз формирует `redirect_uri` для IdP из `public_url`. После этого ссылка проверки откроется в вашем локальном браузере.
+
+В Windows PowerShell используйте `curl.exe`; просто `curl` — это псевдоним `Invoke-WebRequest`, который не принимает эти флаги.
+
+Сначала получите документ обнаружения — это подтверждает, что шлюз работает, конфигурация корректна и все проверки при запуске пройдены:
+</code></pre>
+<p>curl -s https://claude-gateway.internal.example.com/.well-known/oauth-authorization-server | jq</p>
+<pre><code></code></pre>
+<p>{
+  &quot;issuer&quot;: &quot;https://claude-gateway.internal.example.com&quot;,
+  &quot;device_authorization_endpoint&quot;: &quot;…/oauth/device_authorization&quot;,
+  &quot;token_endpoint&quot;: &quot;…/oauth/token&quot;,
+  &quot;grant_types_supported&quot;: [&quot;urn:ietf:params:oauth:grant-type:device_code&quot;, &quot;refresh_token&quot;]
+}</p>
+<pre><code>
+Ответ содержит дополнительные поля, например `response_types_supported` и `scopes_supported`.
+
+Затем запросите авторизацию устройства — это подтверждает, что процесс входа с устройства работает, а Postgres доступен для чтения и записи:
+</code></pre>
+<p>curl -s -X POST https://claude-gateway.internal.example.com/oauth/device_authorization | jq</p>
+<pre><code></code></pre>
+<p>{
+  &quot;device_code&quot;: &quot;…&quot;,
+  &quot;user_code&quot;: &quot;WDJB-MJHT&quot;,
+  &quot;verification_uri&quot;: &quot;https://claude-gateway.internal.example.com/device&quot;,
+  &quot;verification_uri_complete&quot;: &quot;https://claude-gateway.internal.example.com/device?user_code=WDJB-MJHT&quot;,
+  &quot;expires_in&quot;: 600,
+  &quot;interval&quot;: 5
+}</p>
+<pre><code>
+Наконец, проверьте браузерную часть: откройте `verification_uri_complete` в браузере и подтвердите код. Вы должны быть перенаправлены на страницу входа вашего IdP, а после входа вернуться на шлюз с подтверждением успешного входа.
+
+Используйте первую неудачную проверку, чтобы локализовать проблему:
+
+* **Первая проверка не проходит**: запуск не завершился; проверьте stderr
+* **Вторая проверка не проходит**: Postgres недоступен со шлюза или роль не может выполнять запись; проверьте строку подключения и права
+* **Третья проверка не доходит до IdP**: убедитесь, что URI перенаправления в IdP в точности совпадает с `https://&lt;gateway&gt;/oauth/callback`
+* **Третья проверка доходит до IdP, но возвращается с ошибкой**: прочитайте журнал аудита шлюза, в котором каждое отклонение аутентификации записывается с указанием причины, например `email domain not allowed`
+
+**6. Выполните вход для разработчика**
+
+Этот последний шаг выполняется на машине разработчика, а не на сервере. В [файле управляемых настроек](https://code.claude.com/docs/ru/managed-settings.md#delivery-mechanisms) этой машины задайте для `forceLoginMethod` значение `&quot;gateway&quot;`, для `forceLoginGatewayUrl` — `public_url` вашего шлюза, а для `parentSettingsBehavior` — `&quot;merge&quot;`, затем выполните `/login`, нажмите Enter на экране **Cloud gateway** и завершите вход в браузере. В разделе [Задание URL шлюза](#set-the-gateway-url) ниже описаны эти три ключа и их распространение на все машины разработчиков.
+
+## Подключение разработчиков
+
+Разработчики подключаются со своих собственных ноутбуков с помощью одного входа в браузере, используя свою корпоративную рабочую учётную запись. Им не нужна учётная запись claude.ai, API-ключ или подписка, потому что запросы к модели идут через шлюз с использованием вышестоящих учётных данных организации. Подключение управляется [управляемыми настройками на стороне клиента](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#client-side-managed-settings), которые вы распространяете через MDM, и этот раздел описывает то, что настраивает администратор.
+
+При первом подключении CLI снимает отпечаток листового TLS-сертификата шлюза и закрепляет его для каждого имени хоста. Он снова проверяет этот закреплённый отпечаток при входе, при фоновом обновлении сессии и при получении управляемых настроек, тогда как запросы инференса используют стандартную проверку TLS без закрепления. Запросы, маршрутизируемые через HTTPS-прокси, пропускают проверку закреплённого отпечатка, поэтому добавьте хост шлюза в `NO_PROXY`, чтобы они шли напрямую.
+
+Опубликуйте ожидаемый отпечаток SHA-256 вместе с URL шлюза, чтобы разработчикам было с чем сравнивать. Запрос `/login` показывает первые 16 символов отпечатка в виде строчных шестнадцатеричных символов без двоеточий. Чтобы вывести полный отпечаток в этой форме из файла сертификата, выполните:
+</code></pre>
+<p>openssl x509 -noout -fingerprint -sha256 -in cert.pem | cut -d= -f2 | tr -d : | tr &#x27;A-F&#x27; &#x27;a-f&#x27;</p>
+<pre><code>
+При ротации сертификата каждый разработчик снова видит запрос доверия, поэтому рассматривайте ротации как запланированное событие и публикуйте отпечаток заново. Если политика вашего шлюза включает [настройки, требующие подтверждения](https://code.claude.com/docs/ru/server-managed-settings.md#security-approval-dialogs), разработчик после принятия нового сертификата также снова видит диалог подтверждения, потому что Claude Code привязывает [память о подтверждениях](https://code.claude.com/docs/ru/server-managed-settings.md#approval-memory) к закреплённому сертификату.
+
+Шлюз может возвращать в ответе с токеном необязательное поле `email`, указывающее учётную запись, которая использовалась при входе. В этом случае разработчик подтверждает учётную запись до того, как Claude Code сохранит учётные данные. После подтверждённого входа `/status` показывает эту учётную запись.
+
+Для подтверждения требуется Claude Code v2.1.275 или новее на машине разработчика; клиент более ранней версии игнорирует это поле. Сервер шлюза в бинарном файле `claude` не возвращает это поле, поэтому входы через него завершаются без подтверждения.
+
+После входа разработчика [средство выбора модели](https://code.claude.com/docs/ru/model-config.md) показывает модели из его списка разрешённых моделей `availableModels`. Управляемые настройки применяются при запуске и обновляются ежечасно, а телеметрия направляется в ваш сборщик.
+
+Сессии обновляются в фоновом режиме до истечения `ttl_hours`. Если обновление не удаётся после отзыва доступа в IdP, Claude Code предлагает разработчику войти снова.
+
+### Задание URL шлюза
+
+Три ключа помещаются в [файл управляемых настроек](https://code.claude.com/docs/ru/managed-settings.md#delivery-mechanisms) для соответствующей ОС, который вы развёртываете через MDM или непосредственно на диск. Для машины без управляемых настроек см. вместо этого раздел [Задание URL шлюза в пользовательских настройках](#set-the-gateway-url-in-user-settings). `forceLoginMethod` и `forceLoginGatewayUrl` открывают `/login` сразу на экране **Cloud gateway** с заполненным URL, а `parentSettingsBehavior: &quot;merge&quot;` позволяет Claude Desktop передавать список разрешённых исходящих соединений шлюза в запускаемые им сессии Claude Code, как описано в разделе [Доставка политики в сессии Claude Desktop](#deliver-policy-to-claude-desktop-sessions):
+</code></pre>
+<p>{
+  &quot;forceLoginMethod&quot;: &quot;gateway&quot;,
+  &quot;forceLoginGatewayUrl&quot;: &quot;https://claude-gateway.internal.example.com&quot;,
+  &quot;parentSettingsBehavior&quot;: &quot;merge&quot;
+}</p>
+<pre><code>
+Разработчик нажимает Enter для подключения. [Запрос отпечатка TLS при первом подключении](#connect-developers) по-прежнему появляется. Как только файл оказывается на машине, разработчик, не завершивший вход в шлюз, видит одно из сообщений, описанных в разделе [Administrator policy requires a Cloud gateway sign-in](https://code.claude.com/docs/ru/errors.md#administrator-policy-requires-a-cloud-gateway-sign-in). Разработчикам, которые выбирают облачного провайдера через переменную окружения, например `CLAUDE_CODE_USE_BEDROCK`, вход в шлюз не нужен.
+
+В средстве выбора способа входа нет варианта шлюза, а в управляемых настройках один `forceLoginMethod` без URL оставляет разработчика с сообщением &quot;Contact your IT administrator&quot;. Ключи входа должны находиться в файле, который вы распространяете на машины, а не в блоке `managed.policies[].cli` шлюза, который доходит только до уже подключённых клиентов.
+
+#### Задание URL шлюза в пользовательских настройках
+
+На машинах без управляемых настроек попросите каждого разработчика добавить `forceLoginMethod` и `forceLoginGatewayUrl` в собственный файл пользовательских настроек `~/.claude/settings.json`. Для этого требуется Claude Code v2.1.295 или новее на машине разработчика. В этом примере указан шлюз по адресу `claude-gateway.internal.example.com`:
+</code></pre>
+<p>{
+  &quot;forceLoginMethod&quot;: &quot;gateway&quot;,
+  &quot;forceLoginGatewayUrl&quot;: &quot;https://claude-gateway.internal.example.com&quot;
+}</p>
+<pre><code>
+Когда разработчик выполняет `/login` в промпте Claude Code, экран **Cloud gateway** открывается с этим адресом, и разработчик нажимает Enter для подключения. [Запрос отпечатка TLS при первом подключении](#connect-developers) по-прежнему появляется. Для ключей, заданных таким образом, действуют следующие ограничения:
+
+* **Только пользовательские настройки**: Claude Code читает эти два ключа из `~/.claude/settings.json`, а не из `.claude/settings.json` или `.claude/settings.local.json` проекта.
+* **Управляемые настройки их отключают**: как только настройки администратора попадают на машину через файл управляемых настроек, plist в macOS или политику HKLM в Windows либо через [вспомогательную программу политики](https://code.claude.com/docs/ru/settings-reference.md#policyhelper), Claude Code игнорирует шлюз, указанный в пользовательских настройках.
+
+### Разрешение шлюза в принадлежащем вам публичном адресном пространстве
+
+Некоторые организации нумеруют свою внутреннюю сеть из принадлежащего им публичного блока IPv4, например из собственного адресного пространства оператора связи или устаревшего `/8`, поэтому у их шлюза нет приватного адреса. Перечислите эти блоки в управляемой настройке `gatewayInternalNetworks`. Тогда `/login` принимает шлюз внутри перечисленного блока, если машина разработчика подключается к нему с адреса внутри того же блока. Для этого требуется Claude Code v2.1.268 или новее на машине разработчика; более ранние версии игнорируют ключ и применяют правило приватных адресов.
+
+&gt; [!WARNING]
+&gt;
+&gt; `gatewayInternalNetworks` предназначен для внутренних сетей, которые просто нумеруются из публичного адресного пространства. Он не делает безопасным открытие шлюза в интернет: доверенный шлюз может передавать настройки, которые запускают команды на машинах разработчиков.
+&gt;
+&gt; Сделайте шлюз недоступным извне вашей сети с помощью правил брандмауэра или балансировщика нагрузки. Задайте для [`access_control.allow_cidrs`](https://code.claude.com/docs/ru/claude-apps-gateway-config#http-tuning) шлюза те же блоки, которые вы объявляете здесь. Если балансировщик нагрузки или ingress [должен быть указан в `listen.trusted_proxies`](https://code.claude.com/docs/ru/claude-apps-gateway-config#listen), укажите его и там, потому что в противном случае шлюз сопоставляет `allow_cidrs` с адресом самого фронтенда, а не разработчика.
+
+Добавьте ключ в тот же источник управляемых настроек, что и ключи входа: файл управляемых настроек, профиль MDM или политику реестра. Claude Code игнорирует его в пользовательских, проектных и управляемых с сервера настройках.
+
+В этом примере объявлен один блок. Замените `203.0.113.0/24` своим блоком. Это диапазон для документации, и Claude Code такие диапазоны отклоняет.
+</code></pre>
+<p>{
+  &quot;gatewayInternalNetworks&quot;: [&quot;203.0.113.0/24&quot;]
+}</p>
+<pre><code>
+Claude Code проверяет список в `/login` до обращения к какому-либо шлюзу:
+
+* Каждая запись — это блок IPv4, записанный как его первый адрес и префикс от `/8` до `/32`.
+* Список содержит не более четырёх блоков, и никакие два из них не перекрываются.
+* Ни один блок не перекрывает приватное адресное пространство: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `127.0.0.0/8`, `169.254.0.0/16` и `100.64.0.0/10`. `/login` и без этого ключа принимает шлюз в этих диапазонах.
+* Ни один блок не перекрывает пространство, которое никогда не бывает сетью организации: `198.18.0.0/15` и `192.0.0.0/24`, которые клиенты VPN и NAT64 используют как локальные адреса; диапазоны для документации `192.0.2.0/24`, `198.51.100.0/24` и `203.0.113.0/24`; и зарезервированные диапазоны `0.0.0.0/8`, `192.88.99.0/24` и многоадресный `224.0.0.0/4`. Вы можете объявлять блоки внутри `240.0.0.0/4`, который некоторые крупные сети используют как внутреннее одноадресное пространство.
+
+Блоки из `managed-settings.json` и его дополнительных файлов `managed-settings.d/` объединяются в один список, и эти ограничения применяются к объединённому списку. Чтобы сузить блок, замените его запись, а не добавляйте вторую, перекрывающуюся, в дополнительный файл; `/login` отклоняет перекрытие.
+
+Если запись нарушает правило или значение не является списком строк, Claude Code отклоняет любой новый вход в шлюз на этой машине и называет проблему в сообщении. Вход в шлюз с приватным адресом тоже не удаётся, а существующие входы продолжают работать. Проверьте значение на одной машине перед развёртыванием. Claude Code также указывает значение неправильного типа среди [недопустимых управляемых настроек, о которых он сообщает](https://code.claude.com/docs/ru/managed-settings.md#keys-that-fail-closed).
+
+При корректном списке `/login` применяет три проверки к шлюзу, адрес которого находится внутри перечисленного блока:
+
+* Каждый адрес, в который разрешается имя хоста шлюза, находится внутри этого одного блока. Claude Code отклоняет имя, у которого есть записи и вне блока, включая приватные адреса и адреса IPv6.
+* Машина разработчика подключается изнутри того же блока. Claude Code отклоняет машину за NAT, внутри контейнера или WSL2, либо в VPN, пул адресов которой находится вне блока, и называет адрес, с которого подключилась машина.
+* Подключение прямое. Если `HTTPS_PROXY` применяется к хосту шлюза, `/login` отклоняет вход и называет запись `NO_PROXY`, которую нужно добавить.
+
+Когда все три проверки пройдены, [запрос доверия](#connect-developers) добавляет строку с адресом машины, адресом шлюза и объявленным блоком, который содержит оба адреса.
+
+Для других шлюзов ключ ничего не меняет: вход в шлюз с приватным адресом работает как раньше, а вход в шлюз с публичным адресом вне всех перечисленных блоков отклоняется как раньше.
+
+Объявленный блок сужает круг тех, кто может войти, но не доказывает, где находится машина, поэтому объявляйте только адресное пространство, которое контролирует ваша организация. Блок, общий с другими арендаторами, например публичный диапазон облачного провайдера, позволяет любому в нём пройти ту же проверку.
+
+### Доставка политики в сессии Claude Desktop
+
+Claude Desktop запускает свои вкладки во встроенных сессиях Claude Code и отправляет их запросы к модели через шлюз. Он передаёт политику каждой из этих сессий, сформированную из конфигурации, которую шлюз предоставляет ему по адресу `/user/bootstrap`. Эта конфигурация содержит список разрешённых моделей, отключённые инструменты и список разрешённых адресов для исходящего трафика, полученные из блока `cli` или `code` сопоставленной политики, а также [оверлей `desktop`](https://code.claude.com/docs/ru/claude-apps-gateway-config#claude-desktop-overlay).
+
+Другие ключи блока, такие как хуки, `env` и правила разрешений с ограниченной областью действия вроде `Bash(npm *)`, доходят до клиентов, которые входят через `/login`. Если они находятся в `code`, они также доходят до сессии вкладки Code, когда выполняются [условия для вкладки Code](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#apply-code-settings-in-the-code-tab). До сессий Cowork и Chat они не доходят. Claude Desktop читает URL шлюза из своей собственной управляемой конфигурации и выполняет вход по собственной схеме, независимо от ключей `forceLoginMethod` и `forceLoginGatewayUrl` из раздела [Задание URL шлюза](#set-the-gateway-url).
+
+Настройки, переданные запускающим процессом, являются родительскими настройками. Claude Code игнорирует родительские настройки на любой машине, где есть управляемый источник, развёрнутый администратором, если только [источник, доставляющий политику](https://code.claude.com/docs/ru/managed-settings.md#which-managed-source-claude-code-uses), не задаёт `parentSettingsBehavior: &quot;merge&quot;`.
+
+#### Каким машинам нужно явное включение
+
+Оно нужно машинам, на которых запускается только Claude Desktop. Claude Desktop сам применяет список моделей и список отключённых инструментов к встроенным сессиям, но список разрешённых исходящих соединений доходит до них только как родительские настройки — в виде правил доменов `WebFetch` и сетевых правил песочницы. Без явного включения эти сессии работают без ограничения исходящих соединений, и ничто вас об этом не предупредит. Шлюз по-прежнему отклоняет запросы инференса к моделям, которые политика не предоставляет.
+
+Список разрешённых маркетплейсов плагинов также доходит до встроенных сессий только как родительские настройки. Когда вы отключаете добавляемые пользователями маркетплейсы плагинов в управляемой конфигурации Claude Desktop, Claude Desktop 2.16120.0 или новее скрывает маркетплейсы, которые ваша организация не предоставила, и отклоняет установку из них. Чтобы встроенные сессии не загружали плагины, уже установленные из этих маркетплейсов, он отправляет им список `strictKnownMarketplaces` как родительские настройки. Без явного включения Claude Code игнорирует этот список, и эти плагины продолжают загружаться.
+
+Машинам, на которых разработчики входят через `/login`, оно не нужно; каждая сессия Claude Code получает свою политику от шлюза.
+
+Парки машин, в которых управляемые настройки предоставляет [`policyHelper`](https://code.claude.com/docs/ru/settings-reference#policyhelper), не могут его использовать: Claude Code никогда не объединяет родительские настройки в таких парках, потому что читает управляемые настройки только из вывода помощника.
+
+#### Явное включение
+
+Разверните фрагмент управляемых настроек из раздела [Задание URL шлюза](#set-the-gateway-url), продублируйте его в любом клиентском источнике, который имеет приоритет над файлом, затем выполните проверку.
+
+**1. Разверните явное включение в файле управляемых настроек**
+
+[Фрагмент выше](#set-the-gateway-url) уже содержит `parentSettingsBehavior: &quot;merge&quot;`, поэтому файл, который вы распространяете на машины, включает его.
+
+**2. Продублируйте фрагмент в любом источнике с приоритетом выше файла**
+
+Claude Code читает `parentSettingsBehavior` только из [выбранного источника](https://code.claude.com/docs/ru/managed-settings.md#which-managed-source-claude-code-uses). Добавление любого ключа политики в источник может сделать этот источник выбранным, поэтому в клиентском источнике дублируйте весь фрагмент, а не только `parentSettingsBehavior`. Раздел [Управляемые настройки на стороне клиента](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#client-side-managed-settings) описывает парки машин, которые доставляют политику через Group Policy или профили конфигурации. Plist управляемых предпочтений в macOS или политика HKLM в Windows имеют приоритет над файлом `managed-settings.json`, а удалённые управляемые настройки самого шлюза имеют приоритет над обоими, поэтому на машинах, которые входят в шлюз, также задайте `parentSettingsBehavior` в [блоке `cli` или `code`](https://code.claude.com/docs/ru/claude-apps-gateway-config#managed) политики шлюза.
+
+**3. Проверьте, какой источник выбран**
+
+На машине, где запускается только Claude Desktop, вызовите [`resolveSettings()`](https://code.claude.com/docs/ru/agent-sdk/typescript#resolvesettings) из Agent SDK и прочитайте `policyOrigin` в записи `managed` его списка `sources`. Значение указывает выбранный клиентский источник — `plist`, `hklm` или `file`, — именно он должен содержать фрагмент.
+
+Сессии Cowork и Chat не получают политику шлюза, поэтому блок шлюза для них не является выбранным источником.
+
+Сессия вкладки Code получает её, когда настройки политики находятся в `code` и выполняются [условия для вкладки Code](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#apply-code-settings-in-the-code-tab). В этом случае настройки `code` шлюза являются выбранным источником для этой сессии.
+
+### Ограничение родительских настроек
+
+После развёртывания `parentSettingsBehavior: &quot;merge&quot;` любой хост-процесс, который запускает Claude Code, может передавать родительские настройки — не только Claude Desktop, но и приложение на Agent SDK или расширение IDE.
+
+Claude Code фильтрует родительские настройки по списку разрешённых ограничивающих ключей, но некоторые разрешённые ключи могут предоставлять доступ, а не ограничивать его. Если вы не зададите блокировки `allowManaged*Only`, разрешающие правила разрешений и списки разрешённых для песочницы, переданные хостом, продолжают применяться. Запрещающие правила и правила запроса подтверждения вашей политики в любом случае остаются в силе; [они оцениваются раньше любого разрешающего правила](https://code.claude.com/docs/ru/permissions.md#manage-permissions).
+
+Claude Code пересылает переданные родителем записи [`sandbox.credentials`](https://code.claude.com/docs/ru/settings-reference#sandbox-credentials) в урезанном виде:
+
+* **Записи `deny`**: пересылаются только со своими `path` или `name` и режимом.
+* **Файловые записи с [`mode: mask`](https://code.claude.com/docs/ru/sandboxing#mask-credential-files)**: пересылаются только как заглушки — как маска всего файла с пустым списком `injectHosts`, поэтому прокси ни на одной платформе не подставляет реальное значение для записи, переданной родителем. Все поля структурированного маскирования также отбрасываются, поэтому переданный родителем шаблон извлечения не может вытеснить более строгую маску, которую другой источник задаёт для того же пути.
+* **Записи `envVars` с `mode: mask`**: не пересылаются. `deny` — единственное ограничение, которое родительский канал может выразить через записи `envVars`.
+* **[`awsPairs` и `sigv4`](https://code.claude.com/docs/ru/sandboxing#re-sign-aws-requests)**: пересылаются только как ограничения. Из `sigv4` сохраняются только значения `deny`, а родитель, который вообще определяет блок `sigv4`, фиксирует все три формы запросов — `streaming`, `presigned` и `sigv4a` — в значении `deny`. Пара `awsPairs` никогда не пересылается в форме, позволяющей переподписывать запросы; пара, называющая одну из стандартных переменных AWS, заменяется неактивной записью, которая сохраняет подавленным автоматическое сопоставление `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` и `AWS_SESSION_TOKEN`.
+
+#### Развёртывание блокировок
+
+Чтобы родительские настройки были настолько близки к чисто ограничивающим, насколько позволяет фильтр, добавьте все пять блокировок `allowManaged*Only` и управляемые ими списки разрешённых в те же источники, что и явное включение объединения:
+</code></pre>
+<p>{
+  &quot;forceLoginMethod&quot;: &quot;gateway&quot;,
+  &quot;forceLoginGatewayUrl&quot;: &quot;https://claude-gateway.internal.example.com&quot;,
+  &quot;parentSettingsBehavior&quot;: &quot;merge&quot;,
+  &quot;allowManagedPermissionRulesOnly&quot;: true,
+  &quot;allowManagedMcpServersOnly&quot;: true,
+  &quot;allowManagedHooksOnly&quot;: true,
+  &quot;allowedMcpServers&quot;: [{ &quot;serverUrl&quot;: &quot;https://mcp.internal.example.com/*&quot; }],
+  &quot;sandbox&quot;: {
+    &quot;network&quot;: {
+      &quot;allowManagedDomainsOnly&quot;: true,
+      &quot;allowedDomains&quot;: [&quot;github.com&quot;, &quot;*.npmjs.org&quot;]
+    },
+    &quot;filesystem&quot;: {
+      &quot;allowManagedReadPathsOnly&quot;: true,
+      &quot;denyRead&quot;: [&quot;~/&quot;],
+      &quot;allowRead&quot;: [&quot;~/projects&quot;]
+    }
+  }
+}</p>
+<pre><code>
+Политика ОС, например политика реестра HKLM или plist управляемых предпочтений, имеет приоритет над этим файлом, поэтому доставляйте весь фрагмент через неё вместо файла. Удалённые управляемые настройки шлюза имеют приоритет над политикой ОС и файловыми источниками, но доходят только до подключённых клиентов. Продублируйте блокировки, списки разрешённых и явное включение объединения в [блоке `cli` или `code`](https://code.claude.com/docs/ru/claude-apps-gateway-config#managed) политики и оставьте этот файл развёрнутым, потому что машины, которые никогда не подключаются, получают свою политику только из файла.
+
+#### Поведение блокировок в разных источниках
+
+Установка одной блокировки не ограничивает остальные; каждый ключ описан в [справочнике настроек](https://code.claude.com/docs/ru/settings-reference.md#all-settings).
+
+Из административного источника с приоритетом ниже выигравшего обе блокировки песочницы по-прежнему применяются, а `allowManagedPermissionRulesOnly` по-прежнему блокирует переданные родителем разрешающие правила и `additionalDirectories`. В Claude Code v2.1.273 или новее блокировка MCP-серверов также применяется из источника ниже выигравшего, и пока она включена, управляемый список `allowedMcpServers` берётся из административного источника с наивысшим приоритетом, в котором он задан.
+
+Блокировке хуков и действию `allowManagedPermissionRulesOnly` на собственные правила разработчика по умолчанию нужен выигравший источник; при явном включении объединения `managedSourcesBehavior`, описанном в разделе [как Claude Code объединяет управляемые источники](https://code.claude.com/docs/ru/managed-settings.md#how-claude-code-combines-managed-sources), Claude Code применяет для каждой блокировки самое строгое значение, заданное любым источником. В парках машин с [`policyHelper`](https://code.claude.com/docs/ru/settings-reference#policyhelper) Claude Code читает блокировки только из вывода помощника.
+
+Каждая блокировка заставляет Claude Code игнорировать собственные записи разработчика для этой настройки, поэтому добавляйте списки разрешённых вашей организации рядом с блокировками:
+
+* **Сетевые домены**: блокировка с пустым управляемым списком доменов блокирует весь исходящий трафик из песочницы.
+* **MCP-серверы**: блокировка без `allowedMcpServers` ни в одном административном источнике и ни в переданных родителем настройках загружает каждый сервер, который не заблокирован `deniedMcpServers`.
+* **Пути чтения**: записи `allowRead` лишь повторно разрешают пути внутри областей `denyRead`, поэтому используйте их вместе с управляемым `denyRead`.
+
+#### Настройки, на которые блокировки не распространяются
+
+Следующие настройки от родителя проходят фильтр даже при всех пяти установленных блокировках:
+
+* **`forceLoginOrgUUID`**: Claude Code учитывает значение от родителя, если применяемые им управляемые настройки не задают UUID организации. Вход в шлюз этот ключ не проверяет. UUID организации в управляемых настройках, которые применяет Claude Code, блокирует значение родителя, и именно его применяет Claude Code. Если ваш парк машин закрепляет организацию Anthropic, см. раздел [Какой управляемый источник предоставляет ключи входа](https://code.claude.com/docs/ru/managed-settings.md#which-managed-source-supplies-login-keys), чтобы узнать, где задавать `forceLoginOrgUUID`.
+* **`allowedMcpServers`**: Claude Code учитывает список разрешённых от родителя, если не действует ни один административный список. `allowManagedMcpServersOnly` его не блокирует, потому что блокировка применяет в качестве управляемого значения тот список, который выигрывает, включая список от родителя, если ни один административный источник не предоставляет список. Список в административном источнике с наивысшим приоритетом блокирует список родителя, и именно его применяет Claude Code, поэтому задайте `allowedMcpServers` там, рядом с блокировкой. До v2.1.223 значение любого из этих ключей в любом административном источнике блокировало значение родителя.
+* **`availableModels`**: Claude Code учитывает список моделей от родителя, если выигравший управляемый источник его не задаёт. Если ваш парк машин ограничивает модели, задайте `availableModels` в выигравшем источнике.
+* **`allowedProviders`**: Claude Code учитывает список разрешённых API-провайдеров от родителя, если выигравший управляемый источник его не задаёт. Если ваш парк машин ограничивает, какими API-провайдерами могут пользоваться разработчики, задайте `allowedProviders` в выигравшем источнике. Требуется Claude Code v2.1.285 или новее.
+* **`strictKnownMarketplaces`**: Claude Code учитывает список разрешённых маркетплейсов плагинов от родителя, если выигравший управляемый источник его не задаёт. Claude Desktop 2.16120.0 или новее отправляет такой список, когда его управляемая конфигурация отключает добавляемые пользователями маркетплейсы плагинов. Если ваш парк машин ограничивает маркетплейсы, задайте `strictKnownMarketplaces` в выигравшем источнике. Требуется Claude Code v2.1.282 или новее.
+* **`blockedMarketplaces`**: список запрещённых маркетплейсов от родителя проходит фильтр и добавляется к любому списку запрещённых, заданному управляемым источником, поскольку список запрещённых может только усиливать ограничения. Требуется Claude Code v2.1.282 или новее.
+* **`strictPluginOnlyCustomization`**: этот ключ проходит фильтр независимо от блокировок и заставляет Claude Code игнорировать собственные настройки разработчика, включая защитные хуки. Ни одна блокировка его не блокирует.
+
+Если вы задаёте `managedSourcesBehavior` равным `&quot;merge&quot;`, проверьте, [значение какого источника применяется для каждого вида ключей](https://code.claude.com/docs/ru/managed-settings.md#compose-every-managed-source).
+
+#### Как действуют ключи хуков и скиллов в родительских настройках
+
+Ключи, которые ваше приложение передаёт в параметре [`managedSettings`](https://code.claude.com/docs/ru/agent-sdk/typescript#options) Agent SDK, являются родительскими настройками. На машине, где администратор развёртывает управляемые настройки, Claude Code игнорирует родительские настройки, если только администратор не [разрешил встраивающему хосту добавлять политику](https://code.claude.com/docs/ru/managed-settings.md#let-an-embedding-host-add-policy).
+
+Если вы передаёте [`disableAllHooks: true`](https://code.claude.com/docs/ru/settings-reference#disableallhooks) в `managedSettings`:
+
+* **Останавливаются**: пользовательские, проектные и локальные хуки, а также хуки, объявленные во frontmatter агента или в [параметре `settings`](https://code.claude.com/docs/ru/agent-sdk/typescript#options) SDK.
+* **Продолжают выполняться**: [функции обратного вызова хуков SDK](https://code.claude.com/docs/ru/agent-sdk/hooks.md) вашего приложения и хуки администратора из управляемых настроек. Ваше приложение не может отключить хуки администратора.
+
+| Что вы передаёте | Что происходит |
+| :- | :- |
+| `hooks`, либо `allowedHttpHookUrls` или `httpHookAllowedEnvVars` с записями | Claude Code игнорирует этот ключ. Вместо этого используйте параметр `settings` SDK. |
+| `allowedHttpHookUrls: []` | Вступает в силу, если администратор не определяет `hooks` и не включает плагин. Ни один HTTP-хук не выполняется, за исключением URL, перечисленных другим источником настроек. |
+| `httpHookAllowedEnvVars: []` | Вступает в силу, если администратор не определяет `hooks` и не включает плагин. Заголовки HTTP-хуков могут включать только переменные окружения, перечисленные другим источником настроек. |
+| [`disableSkillShellExecution: true`](https://code.claude.com/docs/ru/settings-reference#disableskillshellexecution) | Вступает в силу. |
+
+Для передачи этих ключей в `managedSettings` требуется Claude Code v2.1.309 или новее либо TypeScript Agent SDK v0.3.309 или новее.
+
+### Подключение Claude Desktop
+
+[Claude Desktop](https://code.claude.com/docs/ru/desktop.md) подключается к тому же шлюзу через другой ключ MDM: задайте `bootstrapUrl` в [управляемой конфигурации](https://claude.com/docs/third-party/claude-desktop/configuration) Claude Desktop равным `&lt;listen.public_url&gt;/user/bootstrap` и включите политику пользователя с помощью ключа `desktop`. Раздел [Наложение Claude Desktop](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#claude-desktop-overlay) описывает обе части. Требуется Claude Code v2.1.203 или новее на сервере шлюза. После подключения Claude Desktop отправляет запросы к модели из каждой включённой вкладки через шлюз.
+
+Claude Desktop выполняет вход разработчика через провайдера удостоверений шлюза с тем же шагом SSO в браузере, а затем получает свою конфигурацию от шлюза, а не от Anthropic. Доступ к моделям и политика подчиняются тем же правилам для групп, что и в CLI. Разработчик, который использует и CLI, и Claude Desktop, входит в каждый из них отдельно; сессия шлюза между ними не разделяется.
+
+### Конвейеры CI и удалённые машины
+
+Схемы с сервисными токенами для автоматических конвейеров не существует. Вход в шлюз всегда использует поток авторизации устройства через браузер, поэтому задача CI, в которой нет разработчика для подтверждения входа, не может пройти аутентификацию; настройте такие задачи на прямую работу с вашим провайдером. Развёртывайте `forceLoginMethod` и `forceLoginGatewayUrl` на машинах разработчиков и не задавайте их на раннерах CI. На машине, управляемые настройки которой задают эти ключи, сессия, проходящая аутентификацию с помощью `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN` или `apiKeyHelper`, [завершается при запуске](https://code.claude.com/docs/ru/errors.md#administrator-policy-requires-a-cloud-gateway-sign-in).
+
+После входа разработчика каждая сессия Claude Code на этой машине использует сессию шлюза, включая неинтерактивные запуски `claude -p` и сессии, запущенные Agent SDK. Claude Code применяет [политику шлюза](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#managed) к каждой из них.
+
+Поток авторизации устройства разделяет опрашивающий CLI и подтверждающий браузер, поэтому удалённая машина для разработки без дисплея тоже работает: разработчик запускает `/login` по SSH на удалённой машине и открывает ссылку для проверки в браузере на своём ноутбуке.
+
+### Что применяется к разработчикам
+
+Эти гарантии действуют для каждой сессии, в которую выполнен вход через `/login`. Встроенные сессии, которые запускает Claude Desktop, получают свою политику, как описано в разделе [Доставка политики в сессии Claude Desktop](#deliver-policy-to-claude-desktop-sessions), а пункт о телеметрии указывает, куда отправляются их экспорты.
+
+* **Доступ к моделям**: запросы к моделям, которые политика не предоставляет, возвращают 400, а средство выбора `/model` фильтруется по списку разрешённых моделей `availableModels` политики. Это относится и к модели, с которой сессия запускается до того, как разработчик выберет модель; см. [Запуск сессий на модели, разрешённой политикой](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#start-sessions-on-a-model-the-policy-allows).
+* **Назначение телеметрии**: в сессиях, в которые выполнен вход через `/login`, CLI отправляет свои экспорты OTLP/HTTP в шлюз, а не в локально заданный `OTEL_EXPORTER_OTLP_ENDPOINT`, если только политика не [указывает ваш сборщик в качестве эндпоинта](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#export-directly-to-your-collector). Шлюз пересылает полученные экспорты в назначения из [`telemetry.forward_to`](https://code.claude.com/docs/ru/claude-apps-gateway-config#telemetry).
+  * Во встроенных сессиях, [которые запускает Claude Desktop](#connect-claude-desktop), CLI отправляет свои экспорты в настроенный `OTEL_EXPORTER_OTLP_ENDPOINT`. CLI прикрепляет к этим экспортам токен сессии шлюза, только когда этот эндпоинт указывает на сам шлюз.
+  * Если для сигнала не настроено назначение, шлюз принимает и отбрасывает его.
+  * Если вы уже собираете телеметрию Claude Code напрямую, добавьте свой сборщик как назначение `forward_to` или укажите его в политике, чтобы обойтись без пересылки.
+* **Учётные данные**: токен шлюза — единственные учётные данные сессии. [Профили Anthropic](https://code.claude.com/docs/ru/authentication.md#anthropic-profiles-and-federation-credentials) и любой ранее выполненный вход в claude.ai игнорируются, пока выполнен вход в шлюз, поэтому разработчикам не нужно предварительно выходить из claude.ai. О настроенных учётных данных `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN` или `apiKeyHelper`, а также об API-ключе, сохранённом при более раннем входе в Claude Console, см. [Administrator policy requires a Cloud gateway sign-in](https://code.claude.com/docs/ru/errors.md#administrator-policy-requires-a-cloud-gateway-sign-in).
+* **Управляемые настройки**: заблокированные ключи нельзя переопределить локально. CLI применяет политику при запуске и применяет изменения при каждом ежечасном опросе, за исключением [изменений, которые вступают в силу только при следующем запуске](https://code.claude.com/docs/ru/server-managed-settings.md#fetch-and-caching-behavior).
+* **Запуск при недоступном шлюзе**: сессии с выполненным входом завершаются при запуске с ошибкой примерно через 10 секунд, а не запускаются без своих настроек.
+* **Запуск после того, как шлюз завершил сессию**: см. [Принудительный запуск с отказом в закрытом режиме](https://code.claude.com/docs/ru/server-managed-settings.md#enforce-fail-closed-startup), где описаны запуски, которые открываются без входа в шлюз, и те, которые завершаются, когда шлюз отвечает `401`.
+* **Отзыв доступа**: сессия пользователя, отключённого в IdP, истекает в пределах `ttl_hours`, когда следующее обновление не удаётся.
+* **Выход**: `/logout` удаляет учётные данные шлюза с машины разработчика.
+  * Если документ обнаружения шлюза объявляет `revocation_endpoint` с той же схемой, хостом и портом, что и URL шлюза, `/logout` также отправляет сохранённые токены на этот эндпоинт, чтобы шлюз мог завершить сессию на своей стороне. Запрос выполняется по принципу best effort, поэтому выход на машине разработчика завершается независимо от того, ответит ли эндпоинт. Для отзыва требуется Claude Code v2.1.275 или новее на машине разработчика.
+  * Сервер шлюза в бинарном файле `claude` такой эндпоинт не объявляет, поэтому выход из него завершает сессию только на машине разработчика. Чтобы принудительно завершить сессии на стороне сервера, см. [Ротация секрета JWT](https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#jwt-secret-rotation).
+
+### Что может видеть организация
+
+Телеметрия использования передаёт в сборщик организации идентификатор разработчика, количество токенов, модель и задержку. Шлюз не логирует и не хранит содержимое промптов или ответов модели. Собирать ли более подробную телеметрию, например логи и трассировки, которые могут включать команды и пути к файлам, организация [решает для каждого назначения отдельно](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#telemetry).
+
+## Доступность и ограничения
+
+Таблица охватывает, какие функции Claude Code работают, когда разработчики подключаются через шлюз, и что сам сервер шлюза поддерживает. Где что-то не поддерживается, столбец Notes даёт альтернативу.
+
+Шлюз доставляет значения [`anthropic-beta`](https://platform.claude.com/docs/en/api/beta-headers), которые CLI отправляет каждому вышестоящему уровню, поэтому операторы не поддерживают список разрешённых бета-значений. Для Amazon Bedrock, который игнорирует заголовок, шлюз перемещает значения в поле `anthropic_beta` тела запроса; другие вышестоящие уровни получают заголовок как отправленный.
+
+| Функция | Статус | Примечания |
+| - | - | - |
+| Пересылка вывода в Amazon Bedrock, Claude Platform on AWS, Claude Models on Google Cloud (Anthropic managed), Google Cloud&#x27;s Agent Platform, Microsoft Foundry и Anthropic API | Доступно | С переводом модели для каждого вышестоящего уровня и отказоустойчивостью. Вышестоящий уровень Amazon Bedrock использует эндпоинт `bedrock-runtime` и цепь учётных данных AWS по умолчанию. [Вышестоящий уровень Amazon Bedrock Mantle](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#amazon-bedrock-mantle-endpoint) требует Claude Code v2.1.283 или более поздней версии на сервере шлюза, а [вышестоящий уровень Claude Platform on AWS](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#claude-platform-on-aws) требует v2.1.198 или более поздней версии. Прежде чем добавить [вышестоящий уровень Claude Models on Google Cloud (Anthropic managed)](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#claude-models-on-google-cloud-anthropic-managed), обновите сервер шлюза до v2.1.307 или более поздней версии. |
+| Контекстное окно на 1M токенов | Доступно | Модели Fable, Sonnet 5 и более поздние, а также Opus 4.7 и более поздние по умолчанию работают с контекстным окном 1M; см. [Расширенный контекст](https://code.claude.com/docs/ru/model-config.md#extended-context). Окно 1M по умолчанию для моделей Fable и Opus требует Claude Code v2.1.287 или более поздней версии на компьютере разработчика |
+| Доступ к модели и управляемые настройки по группе IdP | Доступно | Доступ к модели применяется на стороне сервера; управляемые настройки доставляются для каждой группы IdP и применяются CLI на [уровне управляемых настроек](https://code.claude.com/docs/ru/settings.md#settings-precedence) |
+| Claude Desktop | Доступно с согласия | Включите политику с помощью [ключа `desktop`](https://code.claude.com/docs/ru/claude-apps-gateway-config#claude-desktop-overlay). Требует Claude Code v2.1.203 или более поздней версии на сервере шлюза. |
+| Телеметрия fan-out (OTLP/HTTP) | Доступно | Идентификация-отмечена для каждого экспорта; оба кодирования protobuf и JSON |
+| Поставщики идентификации OIDC | Доступно | Любой совместимый с OIDC IdP; шлюз запускает стандартное обнаружение OIDC и поток авторизации-кода. См. [Настройка поставщика идентификации](https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#identity-provider-setup) для конфигурации для каждого IdP |
+| Ограничения расходов для каждого пользователя и группы | Доступно | См. [Ограничения расходов](https://code.claude.com/docs/ru/claude-apps-gateway-spend-limits.md) |
+| Веб-поиск на стороне сервера | Недоступно | CLI не может видеть, какого поставщика вышестоящего уровня маршрутизирует шлюз, поэтому он не может проверить поддержку веб-поиска и отключает WebSearch в сессиях шлюза |
+| [Remote Control](https://code.claude.com/docs/ru/remote-control.md) | Недоступно | CLI показывает [ошибку, называющую шлюз](https://code.claude.com/docs/ru/errors.md#remote-control-requires-the-anthropic-api) |
+| [`/design-sync`](https://code.claude.com/docs/ru/commands#all-commands) и `/design-login` | Недоступно | Обе нуждаются в claude.ai, к которому CLI не обращается в сессиях шлюза, поэтому ни одна команда там не появляется |
+| Функции, которые нуждаются в получении флага функции, такие как `/import` и `claude import` | Недоступно | CLI пропускает получение флага в сессиях шлюза. [Функции, которые нуждаются в получении флага функции](https://code.claude.com/docs/ru/env-vars.md#features-that-need-feature-flag-fetching) перечисляет, что это отключает |
+| Стандартное кэширование промптов | Доступно | Шлюз пересылает точки разрыва `cache_control` каждому вышестоящему уровню. [Где живёт кэш](https://code.claude.com/docs/ru/prompt-caching.md#where-the-cache-lives) охватывает, какие блоки CLI отмечает, включая системный контекст, который он добавляет в середине разговора |
+| TTL кэша 1 час | Доступно с согласия | По умолчанию CLI использует TTL 5 минут в сессиях шлюза. Чтобы запросить TTL 1 час, задайте его [в политике](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#one-hour-prompt-cache). Задавайте его, только если ваши вышестоящие уровни предлагают TTL 1 час для каждой модели, которую обслуживает шлюз, потому что запрос завершается ошибкой, если вышестоящий уровень отклоняет TTL |
+| Авторежим | Доступно | Следует [правилам поставщика третьей стороны](https://code.claude.com/docs/ru/permission-modes.md#enable-auto-mode-on-bedrock-agent-platform-or-foundry): только модели, имеющие право на поставщиков третьей стороны, могут его использовать. До версии v2.1.207 авторежим в сессиях шлюза требовал установки `CLAUDE_CODE_ENABLE_AUTO_MODE=1`, доставляемой через блок `env` управляемой политики |
+| Оптимизации только первой стороны, такие как глобальная область действия кэша и инструменты, эффективные по токенам | Недоступно | CLI не включает их в сессиях шлюза; см. примечание выше о бета-заголовке |
+| OTLP/gRPC | Не поддерживается | Только OTLP по HTTP |
+| SAML, LDAP и другая аутентификация не-OIDC | Не поддерживается | Только OIDC. Фронт с мостом OIDC, если необходимо |
+| Мультитенантность (несколько издателей OIDC) | Не поддерживается | Один издатель на шлюз. Запустите отдельные экземпляры |
+| Сервер Windows | Не поддерживается | Развёртывайте на Linux. macOS только для локальной разработки |
+| Helm chart | Недоступно | Шлюз работает как стандартное развёртывание без состояния; см. [руководство по развёртыванию](https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#kubernetes) |
+| Пользовательский интерфейс администратора | Только ограничения расходов | В Claude Desktop 4.23118.0 или более поздней версии, [подключённом к шлюзу](#connect-claude-desktop), участники [`admin.admin_groups`](https://code.claude.com/docs/ru/claude-apps-gateway-config#admin) могут управлять ограничениями расходов. Остальная конфигурация — это файл YAML; переразвёртывайте, чтобы изменить её |
+
+## Следующие шаги
+
+Быстрый старт оставляет вас с минимальной конфигурацией, работающей под Docker Compose. Чтобы пойти дальше:
+
+* Расширьте `gateway.yaml` за пределы минимальной конфигурации, например, чтобы добавить RBAC для каждой группы, многоуровневую отказоустойчивость или назначения телеметрии. [Справочник конфигурации](https://code.claude.com/docs/ru/claude-apps-gateway-config.md) охватывает каждый параметр.
+* Перейдите от Compose к развёртыванию в производстве на Kubernetes или Cloud Run, правильно настройте ваш IdP и проверьте модель безопасности. [Руководство по развёртыванию и операциям](https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md) охватывает настройку для каждого IdP, требования к образу контейнера, зонды здоровья и устранение неполадок.
+* Установите ограничения расходов для отдельных разработчиков или групп, чтобы неконтролируемая рабочая нагрузка не могла потребить всё ваше обязательство. [Ограничения расходов](https://code.claude.com/docs/ru/claude-apps-gateway-spend-limits.md) охватывает API администратора и как работает применение.
+* Для полного отработанного примера на AWS с ECS Fargate или EKS, Amazon RDS и Secrets Manager см. [Развёртывание на AWS](https://code.claude.com/docs/ru/claude-apps-gateway-on-aws.md).
+* Для полного отработанного примера на Google Cloud с Cloud Run, Cloud SQL и Secret Manager см. [Развёртывание на Google Cloud](https://code.claude.com/docs/ru/claude-apps-gateway-on-gcp.md).
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

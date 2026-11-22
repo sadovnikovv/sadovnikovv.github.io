@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru" data-book-src="../book.html">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Глава 22 — Claude Code для инженера</title>
+<meta name="description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
+<link rel="canonical" href="https://sadovnikovv.github.io/pages/">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:site_name" content="Claude Code для инженера">
+<meta property="og:title" content="Глава 22 — Claude Code для инженера">
+<meta property="og:description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
+<meta property="og:url" content="https://sadovnikovv.github.io/pages/">
+<meta property="og:image" content="https://sadovnikovv.github.io/assets/favicon.svg">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="../assets/fonts/serif-regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/sans-regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="alternate" type="text/html" href="../book.html#capstone">
+<meta name="page-index" content="37">
+</head>
+<body>
+<a class="skip-link" href="#book">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../index.html">Claude Code для инженера</a></strong>
+    <a href="../materials/index.html">Материалы</a>
+    <a href="../about.html">О книге</a>
+    <a href="../download/Книга-Claude-Code.epub" download>EPUB</a>
+  </div>
+</header>
+<div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+<main class="wrap" id="book">
+<section class="chapter"><h2 id="capstone"><span class="chapter">Глава 22</span>Итоговый проект: термостат лабораторной печи</h2>
+
+<p class="lead-in">Проект объединяет всё: схему, плату, прошивку, корпус, измерения и документацию. Он близок к металлообработке и термообработке, но требует осторожности с сетевым напряжением.</p>
+
+<div class="callout danger">
+  <span class="label">Безопасность</span>
+  <p>Проект содержит узел 220 В. Работайте только с гальванической развязкой, сертифицированным SSR, предохранителем, заземлением и защитой от перегрева. Не оставляйте стенд без присмотра. Если нет опыта работы с сетевым напряжением — соберите низковольтный макет (12–24 В) и отработайте логику на нём.</p>
+</div>
+
+<h3>22.1. Техническое задание</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Параметр</th><th>Значение</th></tr></thead>
+  <tbody>
+    <tr><td>Диапазон</td><td>50–250 °C</td></tr>
+    <tr><td>Точность</td><td>±1 °C в установившемся режиме</td></tr>
+    <tr><td>Датчик</td><td>Термопара K + MAX31855</td></tr>
+    <tr><td>Исполнительный элемент</td><td>SSR 220 В, управление 3,3 В</td></tr>
+    <tr><td>Контроллер</td><td>ESP32-WROOM-32</td></tr>
+    <tr><td>Интерфейс</td><td>UART/USB, логирование CSV</td></tr>
+    <tr><td>Питание</td><td>220 В AC → 5 В DC, изолированный модуль</td></tr>
+    <tr><td>Защита</td><td>Предохранитель, термопредохранитель, watchdog</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>22.2. Этапы</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Этап</th><th>Результат</th><th>Проверка</th></tr></thead>
+  <tbody>
+    <tr><td>0. ТЗ и безопасность</td><td>Требования, схема защиты, перечень рисков</td><td>Ревью, проверка номиналов</td></tr>
+    <tr><td>1. Архитектура</td><td>Блок-схема, распределение питания, интерфейсы</td><td>Согласование, проверка развязки</td></tr>
+    <tr><td>2. Схема</td><td>Принципиальная схема, BOM</td><td>ERC, сверка с даташитами</td></tr>
+    <tr><td>3. Расчёт и симуляция</td><td>Расчёт делителей, фильтров, тепла; SPICE</td><td>Независимый пересчёт</td></tr>
+    <tr><td>4. Плата</td><td>Топология, Gerber, сверловка</td><td>DRC, проверка зазоров и ширины</td></tr>
+    <tr><td>5. Прошивка</td><td>PID, чтение датчика, логирование, watchdog</td><td>Сборка, тесты, стенд</td></tr>
+    <tr><td>6. Корпус</td><td>3D-модель, крепёж, вентиляция</td><td>Собираемость, тепловой режим</td></tr>
+    <tr><td>7. Испытания</td><td>Протокол, графики, отклонения</td><td>Точность, перерегулирование, аварии</td></tr>
+    <tr><td>8. Документация</td><td>README, матрица требований, паспорт</td><td>Прослеживаемость</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>22.3. Промпты по этапам</h3>
+
+<pre><code>Этап 2. Схема.
+«Ты — схемотехник. Разработай принципиальную схему термостата по ТЗ в docs/spec.md.
+Раздели силовую и слаботочную части, покажи цепь защиты, укажи номиналы и допуски.
+Все спорные места вынеси в список "Требует проверки". Не выбирай компоненты без даташита».</code></pre>
+
+<pre><code>Этап 5. Прошивка.
+«Реализуй PID-регулятор для ESP32. Требования: период 1 с, антиwindup,
+ограничение выхода, watchdog, логирование CSV. Раздели код на модули,
+напиши тесты для ПИД на хосте. Не используй блокирующие delay».</code></pre>
+
+<pre><code>Этап 7. Испытания.
+«Составь протокол испытаний: точки 50, 100, 150, 200, 250 °C;
+время выхода на режим; перерегулирование; статическая ошибка;
+поведение при обрыве термопары. Формат: таблица с допусками и вердиктом».</code></pre>
+
+<h3>22.4. Критерии приёмки</h3>
+
+<ul>
+  <li>Статическая ошибка не более ±1 °C в диапазоне.</li>
+  <li>Перерегулирование не более 5 °C, время выхода — по ТЗ.</li>
+  <li>При обрыве термопары нагрев отключается, фиксируется ошибка.</li>
+  <li>Watchdog перезагружает контроллер при зависании.</li>
+  <li>ERC/DRC без критических замечаний.</li>
+  <li>Документация позволяет повторить сборку и проверку.</li>
+</ul>
+
+<div class="callout">
+  <span class="label">Опыт</span>
+  <p>Сначала отработайте всю логику на низковольтном макете: лампа 12 В вместо печи, термопара в горячей воде. Убедитесь, что PID, защита и логирование работают. И только потом переходите к силовой части.</p>
+</div>
+
+<!-- ============================================================ -->
+
+</section>
+</main>
+<footer class="site-footer">
+  <nav class="chapter-nav" aria-label="Навигация по главам">
+    <span><a data-rel="prev" href="../pages/labs.html">← Глава 21</a></span>
+    <a data-rel="toc" href="../index.html">Оглавление</a>
+    <span><a data-rel="next" href="../pages/verify.html">Глава 23 →</a></span>
+  </nav>
+  <p>Источник — <a href="../book.html">книга одним файлом</a>,
+  <a href="../download/Книга-Claude-Code.epub">EPUB</a>.</p>
+</footer>
+<script type="application/json" id="page-list">[{"title":"Глава 0 История этой книги","short":"Глава 0","url":"pages/history.html"},{"title":"Глава 1 Как читать эту книгу","short":"Глава 1","url":"pages/how-to-read.html"},{"title":"Глава 2 Ваш стенд: Claude Code → OmniRoute → DeepSeek","short":"Глава 2","url":"pages/stand.html"},{"title":"Глава 3 Что такое ИИ","short":"Глава 3","url":"pages/what-is-ai.html"},{"title":"Глава 4 Как работает языковая модель","short":"Глава 4","url":"pages/how-llm-works.html"},{"title":"Глава 5 Промпт как техническое задание","short":"Глава 5","url":"pages/prompt.html"},{"title":"Глава 6 Что такое агент","short":"Глава 6","url":"pages/agent.html"},{"title":"Глава 6A История нейронных сетей","short":"Глава 6A","url":"pages/history-nn.html"},{"title":"Глава 6B Анатомия трансформера","short":"Глава 6B","url":"pages/transformer-anatomy.html"},{"title":"Глава 6C Веса, биты и точность","short":"Глава 6C","url":"pages/weights-bits.html"},{"title":"Глава 6D Ландшафт моделей 2026","short":"Глава 6D","url":"pages/model-landscape.html"},{"title":"Глава 6E Локальные модели","short":"Глава 6E","url":"pages/local-models.html"},{"title":"Глава 6F Токены, контекст и сжатие","short":"Глава 6F","url":"pages/tokens-compression.html"},{"title":"Глава 6G Железо и вычислительность","short":"Глава 6G","url":"pages/hardware.html"},{"title":"Глава 6H Агенты и их экосистема","short":"Глава 6H","url":"pages/agents-ecosystem.html"},{"title":"Глава 6I Оптимизация: что пишут на Хабре и Пикабу","short":"Глава 6I","url":"pages/optimization-posts.html"},{"title":"Глава 6J Вопросы и ответы","short":"Глава 6J","url":"pages/faq.html"},{"title":"Глава 6K (не публикуется)","short":"Глава 6K (не публикуется)","url":"pages/deepseek-billing.html"},{"title":"Глава 7 Установка и первый запуск","short":"Глава 7","url":"pages/install.html"},{"title":"Глава 7A (не публикуется)","short":"Глава 7A (не публикуется)","url":"pages/migration.html"},{"title":"Глава 7B (не публикуется)","short":"Глава 7B (не публикуется)","url":"pages/new-pc.html"},{"title":"Глава 8 Интерфейс и команды","short":"Глава 8","url":"pages/interface.html"},{"title":"Глава 9 Память и CLAUDE.md","short":"Глава 9","url":"pages/memory.html"},{"title":"Глава 9A Память, обучение и превращение в скилл","short":"Глава 9A","url":"pages/memory-training.html"},{"title":"Глава 10 Разрешения и безопасность","short":"Глава 10","url":"pages/permissions.html"},{"title":"Глава 11 Контекст, стоимость, сессии","short":"Глава 11","url":"pages/context-cost.html"},{"title":"Глава 12 Расширения: skills, субагенты, hooks, MCP","short":"Глава 12","url":"pages/extensions.html"},{"title":"Глава 13 Принцип интеграции","short":"Глава 13","url":"pages/integration-principle.html"},{"title":"Глава 14 Схемотехника и симуляция","short":"Глава 14","url":"pages/circuit.html"},{"title":"Глава 15 EDA и трассировка плат","short":"Глава 15","url":"pages/pcb.html"},{"title":"Глава 16 Микроконтроллеры","short":"Глава 16","url":"pages/mcu.html"},{"title":"Глава 17 Отладка и измерения","short":"Глава 17","url":"pages/debug.html"},{"title":"Глава 18 Машиностроение и CAD","short":"Глава 18","url":"pages/cad.html"},{"title":"Глава 19 Документация и traceability","short":"Глава 19","url":"pages/docs.html"},{"title":"Глава 20 Карта связок","short":"Глава 20","url":"pages/integration-map.html"},{"title":"Глава 21 Десять заданий","short":"Глава 21","url":"pages/labs.html"},{"title":"Глава 22 Итоговый проект: термостат лабораторной печи","short":"Глава 22","url":"pages/capstone.html"},{"title":"Глава 23 Как проверять ИИ","short":"Глава 23","url":"pages/verify.html"},{"title":"Глава 24 Команды и флаги","short":"Глава 24","url":"pages/commands.html"},{"title":"Глава 25 Переменные, файлы, настройки","short":"Глава 25","url":"pages/files-settings.html"},{"title":"Глава 26 Шаблоны промптов","short":"Глава 26","url":"pages/prompt-templates.html"},{"title":"Глава 27 Диагностика","short":"Глава 27","url":"pages/troubleshooting.html"},{"title":"Глава 28 Файлы и папки","short":"Глава 28","url":"pages/library.html"},{"title":"Глава 29 Литература","short":"Глава 29","url":"pages/literature.html"},{"title":"Глава 29A Открытая хрестоматия","short":"Глава 29A","url":"pages/open-books.html"},{"title":"Глава 30 План на восемь недель","short":"Глава 30","url":"pages/plan.html"},{"title":"Глава 31 Словарь","short":"Глава 31","url":"pages/glossary.html"},{"title":"Глава 32 Источники","short":"Глава 32","url":"pages/sources.html"}]</script>
+<script src="../assets/app.js" defer></script>
+</body>
+</html>

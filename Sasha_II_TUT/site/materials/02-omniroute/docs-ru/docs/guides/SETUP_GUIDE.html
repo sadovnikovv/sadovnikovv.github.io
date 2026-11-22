@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>📖 Setup Guide — OmniRoute (Русский)</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/02-omniroute/index.html">02-omniroute</a> / <a href="../../../../../materials/02-omniroute/docs-ru/index.html">docs-ru</a> / <a href="../../../../../materials/02-omniroute/docs-ru/docs/index.html">docs</a> / <a href="../../../../../materials/02-omniroute/docs-ru/docs/guides/index.html">guides</a></nav>
+<h1 id="setup-guide-omniroute-русский">📖 Setup Guide — OmniRoute (Русский) <a class="h-anchor" href="#setup-guide-omniroute-русский" aria-label="Ссылка на раздел">#</a></h1>
+<p>🌐 <strong>Languages:</strong> 🇺🇸 <a href="../../../../guides/SETUP_GUIDE.md">English</a> · 🇪🇹 <a href="../../../am/docs/guides/SETUP_GUIDE.md">am</a> · 🇸🇦 <a href="../../../ar/docs/guides/SETUP_GUIDE.md">ar</a> · 🇦🇿 <a href="../../../az/docs/guides/SETUP_GUIDE.md">az</a> · 🇧🇬 <a href="../../../bg/docs/guides/SETUP_GUIDE.md">bg</a> · 🇧🇩 <a href="../../../bn/docs/guides/SETUP_GUIDE.md">bn</a> · 🇧🇦 <a href="../../../bs/docs/guides/SETUP_GUIDE.md">bs</a> · 🇨🇿 <a href="../../../cs/docs/guides/SETUP_GUIDE.md">cs</a> · 🇩🇰 <a href="../../../da/docs/guides/SETUP_GUIDE.md">da</a> · 🇩🇪 <a href="../../../de/docs/guides/SETUP_GUIDE.md">de</a> · 🇬🇷 <a href="../../../el/docs/guides/SETUP_GUIDE.md">el</a> · 🇪🇸 <a href="../../../es/docs/guides/SETUP_GUIDE.md">es</a> · 🇪🇪 <a href="../../../et/docs/guides/SETUP_GUIDE.md">et</a> · 🇮🇷 <a href="../../../fa/docs/guides/SETUP_GUIDE.md">fa</a> · 🇫🇮 <a href="../../../fi/docs/guides/SETUP_GUIDE.md">fi</a> · 🇫🇷 <a href="../../../fr/docs/guides/SETUP_GUIDE.md">fr</a> · 🇮🇪 <a href="../../../ga/docs/guides/SETUP_GUIDE.md">ga</a> · 🇮🇳 <a href="../../../gu/docs/guides/SETUP_GUIDE.md">gu</a> · 🇳🇬 <a href="../../../ha/docs/guides/SETUP_GUIDE.md">ha</a> · 🇮🇱 <a href="../../../he/docs/guides/SETUP_GUIDE.md">he</a> · 🇮🇳 <a href="../../../hi/docs/guides/SETUP_GUIDE.md">hi</a> · 🇭🇷 <a href="../../../hr/docs/guides/SETUP_GUIDE.md">hr</a> · 🇭🇺 <a href="../../../hu/docs/guides/SETUP_GUIDE.md">hu</a> · 🇦🇲 <a href="../../../hy/docs/guides/SETUP_GUIDE.md">hy</a> · 🇮🇩 <a href="../../../id/docs/guides/SETUP_GUIDE.md">id</a> · 🇳🇬 <a href="../../../ig/docs/guides/SETUP_GUIDE.md">ig</a> · 🇮🇹 <a href="../../../it/docs/guides/SETUP_GUIDE.md">it</a> · 🇯🇵 <a href="../../../ja/docs/guides/SETUP_GUIDE.md">ja</a> · 🇬🇪 <a href="../../../ka/docs/guides/SETUP_GUIDE.md">ka</a> · 🇰🇭 <a href="../../../km/docs/guides/SETUP_GUIDE.md">km</a> · 🇮🇳 <a href="../../../kn/docs/guides/SETUP_GUIDE.md">kn</a> · 🇰🇷 <a href="../../../ko/docs/guides/SETUP_GUIDE.md">ko</a> · 🇱🇹 <a href="../../../lt/docs/guides/SETUP_GUIDE.md">lt</a> · 🇱🇻 <a href="../../../lv/docs/guides/SETUP_GUIDE.md">lv</a> · 🇮🇳 <a href="../../../ml/docs/guides/SETUP_GUIDE.md">ml</a> · 🇮🇳 <a href="../../../mr/docs/guides/SETUP_GUIDE.md">mr</a> · 🇲🇾 <a href="../../../ms/docs/guides/SETUP_GUIDE.md">ms</a> · 🇲🇹 <a href="../../../mt/docs/guides/SETUP_GUIDE.md">mt</a> · 🇲🇲 <a href="../../../my/docs/guides/SETUP_GUIDE.md">my</a> · 🇳🇵 <a href="../../../ne/docs/guides/SETUP_GUIDE.md">ne</a> · 🇳🇱 <a href="../../../nl/docs/guides/SETUP_GUIDE.md">nl</a> · 🇳🇴 <a href="../../../no/docs/guides/SETUP_GUIDE.md">no</a> · 🇮🇳 <a href="../../../or/docs/guides/SETUP_GUIDE.md">or</a> · 🇮🇳 <a href="../../../pa/docs/guides/SETUP_GUIDE.md">pa</a> · 🇵🇭 <a href="../../../phi/docs/guides/SETUP_GUIDE.md">phi</a> · 🇵🇱 <a href="../../../pl/docs/guides/SETUP_GUIDE.md">pl</a> · 🇵🇹 <a href="../../../pt/docs/guides/SETUP_GUIDE.md">pt</a> · 🇧🇷 <a href="../../../pt-BR/docs/guides/SETUP_GUIDE.md">pt-BR</a> · 🇷🇴 <a href="../../../ro/docs/guides/SETUP_GUIDE.md">ro</a> · 🇱🇰 <a href="../../../si/docs/guides/SETUP_GUIDE.md">si</a> · 🇸🇰 <a href="../../../sk/docs/guides/SETUP_GUIDE.md">sk</a> · 🇸🇮 <a href="../../../sl/docs/guides/SETUP_GUIDE.md">sl</a> · 🇷🇸 <a href="../../../sr/docs/guides/SETUP_GUIDE.md">sr</a> · 🇸🇪 <a href="../../../sv/docs/guides/SETUP_GUIDE.md">sv</a> · 🇰🇪 <a href="../../../sw/docs/guides/SETUP_GUIDE.md">sw</a> · 🇮🇳 <a href="../../../ta/docs/guides/SETUP_GUIDE.md">ta</a> · 🇮🇳 <a href="../../../te/docs/guides/SETUP_GUIDE.md">te</a> · 🇹🇭 <a href="../../../th/docs/guides/SETUP_GUIDE.md">th</a> · 🇹🇷 <a href="../../../tr/docs/guides/SETUP_GUIDE.md">tr</a> · 🇺🇦 <a href="../../../uk-UA/docs/guides/SETUP_GUIDE.md">uk-UA</a> · 🇵🇰 <a href="../../../ur/docs/guides/SETUP_GUIDE.md">ur</a> · 🇺🇿 <a href="../../../uz/docs/guides/SETUP_GUIDE.md">uz</a> · 🇻🇳 <a href="../../../vi/docs/guides/SETUP_GUIDE.md">vi</a> · 🇳🇬 <a href="../../../yo/docs/guides/SETUP_GUIDE.md">yo</a> · 🇨🇳 <a href="../../../zh-CN/docs/guides/SETUP_GUIDE.md">zh-CN</a> · 🇹🇼 <a href="../../../zh-TW/docs/guides/SETUP_GUIDE.md">zh-TW</a></p>
+<hr>
+<blockquote>
+<p>Полное справочное руководство по настройке OmniRoute. Краткую версию см. в разделе <a href="../README.md#-quick-start">Быстрый старт в README</a>.</p>
+</blockquote>
+<h3 id="h">Содержание <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="#install-methods">Способы установки</a></li>
+<li><a href="#cli-tool-configuration">Настройка инструментов CLI</a></li>
+<li><a href="#protocol-setup-mcp--a2a">Настройка протоколов (MCP + A2A)</a></li>
+<li><a href="#timeout-configuration">Настройка тайм-аутов</a></li>
+<li><a href="#split-port-mode">Режим раздельных портов</a></li>
+<li><a href="#void-linux-xbps-src-template">Void Linux (xbps-src)</a></li>
+<li><a href="#uninstalling">Удаление</a></li>
+</ul>
+<hr>
+<h3 id="h-2">Методы установки <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-3">НПМ (рекомендуется) <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">npm install -g omniroute
+omniroute</code></pre>
+<p>Панель мониторинга открывается по адресу <code>http://localhost:20128</code>, а база API URL — <code>http://localhost:20128/v1</code>.</p>
+<blockquote>
+<p><strong>Пользователи нпм:</strong> Если npm предупреждает, что сценарии установки заблокированы (например, <code>omniroute</code>, <code>better-sqlite3</code>), см. <a href="./TROUBLESHOOTING.md#npm-install-scripts-blocked-warning-global-install">раздел Устранение неполадок — npm install-scripts заблокированы</a>.</p>
+</blockquote>
+<h4 id="h-4">пнпм <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">pnpm add -g omniroute@latest --allow-build=better-sqlite3 --allow-build=@swc/core
+omniroute</code></pre>
+<blockquote>
+<p><strong>Пользователи пнпм:</strong> Флаг <code>--allow-build</code> необходим для включения собственных сценариев сборки для <code>better-sqlite3</code> и <code>@swc/core</code>. Команда <code>pnpm approve-builds -g</code> не поддерживается для глобальной установки в pnpm v11.</p>
+</blockquote>
+<h4 id="арка-linux-aur">Арка Linux (AUR) <a class="h-anchor" href="#арка-linux-aur" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">yay -S omniroute-bin
+systemctl --user enable --now omniroute.service</code></pre>
+<p><a href="https://aur.archlinux.org/packages/omniroute-bin">Пакет AUR</a> устанавливает OmniRoute и предоставляет пользовательскую службу systemd.</p>
+<h4 id="h-5">Из источника <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">npm install
+PORT=20128 DASHBOARD_PORT=20129 NEXT_PUBLIC_BASE_URL=http://localhost:20129 npm run dev</code></pre>
+<blockquote>
+<p><strong>Windows Примечание:</strong> По умолчанию OmniRoute использует <code>%APPDATA%\omniroute</code>, когда устаревший каталог <code>%USERPROFILE%\.omniroute</code> отсутствует. Установите <code>DATA_DIR</code>, чтобы выбрать другое расположение каталога данных.</p>
+</blockquote>
+<blockquote>
+<p><strong>Примечание:</strong> <code>npm install</code> автоматически генерирует <code>.env</code> из <code>.env.example</code> при первом запуске. Последующие установки не будут перезаписывать существующий <code>.env</code>, поэтому настройки сохраняются. Чтобы повторно заполнить, удалите <code>.env</code> перед повторным запуском.</p>
+</blockquote>
+<h4 id="docker">Docker <a class="h-anchor" href="#docker" aria-label="Ссылка на раздел">#</a></h4>
+<p>См. <a href="./DOCKER_GUIDE.md">руководство Docker</a> для полной настройки Docker, включая профили Compose и Caddy HTTPS.</p>
+<h4 id="настольное-приложение-electron">Настольное приложение (Electron) <a class="h-anchor" href="#настольное-приложение-electron" aria-label="Ссылка на раздел">#</a></h4>
+<p>OmniRoute поставляет оболочку рабочего стола, созданную на основе Electron 41 + Electron-Builder 26.10. Доступные скрипты (корень рабочей области):</p>
+<pre><code class="language-bash">npm run electron:dev          # Run desktop with hot-reload
+npm run electron:build        # Build for current OS (auto-detected)
+npm run electron:build:win    # Windows installer (NSIS + portable)
+npm run electron:build:mac    # macOS (dmg + zip, arm64+x64)
+npm run electron:build:linux  # Linux (AppImage + deb + rpm)
+npm run electron:smoke:packaged  # Smoke-test packaged build</code></pre>
+<p>Релизы установщиков настольных компьютеров прикреплены к релизам GitHub. Полное описание Electron (подпись, мост IPC, дистрибутивы) см. <a href="./ELECTRON_GUIDE.md"><code>ELECTRON_GUIDE.md</code></a> _(criado em fase posterior)_.</p>
+<h4 id="безголовый-сервер-ci-automation">Безголовый сервер (CI/automation) <a class="h-anchor" href="#безголовый-сервер-ci-automation" aria-label="Ссылка на раздел">#</a></h4>
+<p>Для автоматической настройки (Docker, Kubernetes, CI) используйте:</p>
+<pre><code class="language-bash">omniroute setup --non-interactive
+omniroute providers test-batch</code></pre>
+<p>В сочетании с переменными env (<code>INITIAL_PASSWORD</code>, <code>OMNIROUTE_WS_BRIDGE_SECRET</code> и т. д.) это позволяет вам создать экземпляр OmniRoute полностью допускающий сценарии.</p>
+<h4 id="параметры-cli">Параметры CLI <a class="h-anchor" href="#параметры-cli" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Команда</th><th>Описание</th></tr></thead><tbody><tr><td><code>omniroute</code></td><td>Запустить сервер (<code>PORT=20128</code>, API и панель мониторинга на одном порту)</td></tr><tr><td><code>omniroute setup</code></td><td>Управляемая регистрация CLI для пароля и первого поставщика</td></tr><tr><td><code>omniroute doctor</code></td><td>Запускайте локальные проверки работоспособности без запуска сервера</td></tr><tr><td><code>omniroute providers</code></td><td>Находите, составляйте список, проверяйте и тестируйте поставщиков от CLI</td></tr><tr><td><code>omniroute config</code></td><td>Конфигурация инструмента CLI Список —, получение, установка, проверка конфигураций</td></tr><tr><td><code>omniroute status</code></td><td>Автономная панель статуса — версия, DB, инструменты, конфигурация</td></tr><tr><td><code>omniroute logs</code></td><td>Потоковая передача журналов использования из API (поддерживает <code>--follow</code>)</td></tr><tr><td><code>omniroute update</code></td><td>Проверьте наличие обновлений OmniRoute или примените их.</td></tr><tr><td><code>omniroute provider</code></td><td>Управление подключениями к провайдерам — добавление, список, удаление, тестирование, значение по умолчанию</td></tr><tr><td><code>omniroute --port 3000</code></td><td>Установите порт canonical/API на 3000.</td></tr><tr><td><code>omniroute --mcp</code></td><td>Запустить сервер MCP (транспорт stdio)</td></tr><tr><td><code>omniroute --no-open</code></td><td>Не открывать браузер автоматически</td></tr><tr><td><code>omniroute --help</code></td><td>Показать справку</td></tr></tbody></table></div>
+<p>Безголовую настройку можно записать с помощью флагов или переменных среды:</p>
+<pre><code class="language-bash">omniroute setup --non-interactive --password &quot;$OMNIROUTE_PASSWORD&quot;
+omniroute setup --non-interactive --add-provider --provider openai --api-key &quot;$OPENAI_API_KEY&quot;
+omniroute setup --non-interactive --add-provider --provider openai --api-key &quot;$OPENAI_API_KEY&quot; --test-provider</code></pre>
+<p>Запустите локальную диагностику, не открывая приборную панель:</p>
+<pre><code class="language-bash">omniroute doctor
+omniroute doctor --json
+omniroute doctor --no-liveness</code></pre>
+<p>Управляйте провайдерами из SSH или скриптов, не открывая панель управления:</p>
+<pre><code class="language-bash">omniroute providers available
+omniroute providers available --search openai
+omniroute providers available --category api-key
+omniroute providers list
+omniroute providers test &lt;id-or-name&gt;
+omniroute providers test-all
+omniroute providers validate</code></pre>
+<hr>
+<h3 id="h-6">Настройка инструментов командной строки <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="1-подключите-провайдеров-и-создайте-ключ-api">1) Подключите провайдеров и создайте ключ API <a class="h-anchor" href="#1-подключите-провайдеров-и-создайте-ключ-api" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Откройте Dashboard → <code>Providers</code> и подключите хотя бы одного провайдера (через OAuth или ключ API).</li>
+<li>Откройте Dashboard → <code>Endpoints</code> и создайте ключ API.</li>
+<li>(Необязательно) Откройте Dashboard → <code>Combos</code> и настройте цепочку резервных вариантов.</li>
+</ol>
+<h4 id="2-настройте-инструмент-для-написания-кода">2) Настройте инструмент для написания кода <a class="h-anchor" href="#2-настройте-инструмент-для-написания-кода" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-txt">Базовый URL: http://localhost:20128/v1
+Ключ API:    [скопируйте со страницы Endpoint]
+Модель:      if/qwen3.8-max-preview (или любой префикс провайдера/модели)</code></pre>
+<p>Если ваш редактор не может отправлять <code>Authorization: Bearer ...</code>, используйте вместо этого базовый URL совместимости с токеном:</p>
+<pre><code class="language-txt">Базовый URL:        http://localhost:20128/api/v1/vscode/YOUR_KEY/
+URL моделей:        http://localhost:20128/api/v1/vscode/YOUR_KEY/models
+URL чата:           http://localhost:20128/api/v1/vscode/YOUR_KEY/chat/completions
+URL тегов Ollama:   http://localhost:20128/api/v1/vscode/YOUR_KEY/api/tags</code></pre>
+<p>Работает с Claude Code, Codex CLI, Cursor, Cline, OpenClaw, OpenCode и SDK, совместимыми с OpenAI.</p>
+<h5 id="автоматическая-настройка-с-помощью-setup">Автоматическая настройка с помощью <code>setup-*</code> <a class="h-anchor" href="#автоматическая-настройка-с-помощью-setup" aria-label="Ссылка на раздел">#</a></h5>
+<p>Вместо ручного ввода базового URL и ключа позвольте OmniRoute записать собственную конфигурацию каждого инструмента на основе актуального каталога моделей. По одной команде для каждого инструмента:</p>
+<pre><code class="language-bash">omniroute setup-codex        # профили ~/.codex/&lt;name&gt;.config.toml
+omniroute setup-claude       # ~/.claude/profiles/&lt;name&gt;/settings.json
+omniroute setup-opencode     # ~/.config/opencode/opencode.json (совместимый с OpenAI)
+omniroute setup-cline        # настройки Cline CLI и расширения VS Code
+omniroute setup-kilo         # Kilo Code
+omniroute setup-continue     # ~/.continue/config.yaml (Continue / cn)
+omniroute setup-cursor       # выводит инструкции для настройки в интерфейсе Cursor
+omniroute setup-roo          # импорт Roo Code и указатель autoImport
+omniroute setup-crush        # ~/.config/crush/crush.json
+omniroute setup-zed          # ~/.config/zed/settings.json (openai_compatible)
+omniroute setup-goose        # ~/.config/goose/config.yaml
+omniroute setup-aider        # ~/.aider.conf.yml
+omniroute setup-qwen         # ~/.qwen/settings.json + ~/.qwen/.env</code></pre>
+<p>Каждая команда поддерживает <code>--remote &lt;url&gt; --api-key &lt;key&gt;</code> для настройки локального инструмента для работы с <strong>удалённым</strong> OmniRoute, а также <code>--dry-run</code> для предварительного просмотра. Чтобы запустить CLI с необходимыми переменными окружения без записи конфигурации, используйте универсальную команду запуска <code>omniroute run &lt;target&gt;</code> (claude, codex, aider, goose, opencode, qwen, gemini); устаревшие команды запуска для отдельных инструментов <code>omniroute launch</code> (Claude Code) и <code>omniroute launch-codex</code> (Codex) по-прежнему доступны.</p>
+<p>Полную таблицу (что записывает каждая команда, все флаги, локальный и удалённый режимы, соглашения для базового URL с <code>/v1</code>) см. в разделе <strong><a href="./CLI-INTEGRATIONS.md">Интеграции CLI</a></strong>.</p>
+<p>Подробную настройку отдельных инструментов (Claude Code, Codex CLI, Cursor, Cline, OpenClaw, Kilo Code, Copilot и других) см. в отдельном <strong><a href="../reference/CLI-TOOLS.md">руководстве по инструментам CLI</a></strong>.</p>
+<hr>
+<h3 id="настройка-протокола-mcp-a2a">Настройка протокола (MCP + A2A) <a class="h-anchor" href="#настройка-протокола-mcp-a2a" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="настройка-mcp-протокол-контекста-модели">Настройка MCP (протокол контекста модели) <a class="h-anchor" href="#настройка-mcp-протокол-контекста-модели" aria-label="Ссылка на раздел">#</a></h4>
+<p>Запустите транспорт MCP в режиме stdio:</p>
+<pre><code class="language-bash">omniroute --mcp</code></pre>
+<p>Рекомендуемый порядок проверки:</p>
+<pre><code class="language-bash"># 1. Start MCP server
+omniroute --mcp
+
+# 2. From your MCP client, call:
+omniroute_get_health        # Should return system health
+omniroute_list_combos       # Should return active combos
+
+# 3. Or run the full E2E suite:
+npm run test:protocols:e2e</code></pre>
+<h5 id="конфигурация-клиента-mcp">Конфигурация клиента MCP <a class="h-anchor" href="#конфигурация-клиента-mcp" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Код Claude :</strong></p>
+<p>Код Claude подключается через HTTP, который <code>omniroute --mcp</code> (stdio) не запускается. По умолчанию транспорт HTTP отключен: сначала включите его на работающем сервере. Когда вход в панель управления включен, запрос без учетных данных получает <code>401</code>, поэтому передайте ключ API, который содержит <code>mcp:connect</code> (или <code>manage</code>); для ключа без <code>manage</code>/<code>admin</code> также требуется область действия каждого инструмента (см. <a href="../frameworks/MCP-SERVER.md#mcp-tool-scopes">области действия инструмента MCP Server → MCP</a> ).</p>
+<pre><code class="language-bash">omniroute mcp enable --transport streamable-http
+claude mcp add --transport http omniroute http://localhost:20128/api/mcp/stream \
+  --header &quot;Authorization: Bearer your-key&quot;</code></pre>
+<p><strong>Cursor / Cline:</strong></p>
+<p>Добавьте в настройки MCP (stdio, с ключом, чтобы у вызывающего абонента был принципал):</p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;omniroute&quot;: {
+      &quot;command&quot;: &quot;omniroute&quot;,
+      &quot;args&quot;: [&quot;--mcp&quot;],
+      &quot;env&quot;: {
+        &quot;OMNIROUTE_API_KEY&quot;: &quot;your-key&quot;,
+        &quot;OMNIROUTE_BASE_URL&quot;: &quot;http://localhost:20128&quot;
+      }
+    }
+  }
+}</code></pre>
+<p>Или, если <code>mcpTransport</code> это <code>streamable-http</code> (установите его на <code>/dashboard/mcp</code> или с помощью <code>omniroute mcp enable --transport streamable-http</code>), укажите запись удаленного сервера MCP клиента на <code>http://localhost:20128/api/mcp/stream</code>.</p>
+<p>Ключ передается как <code>Authorization: Bearer &lt;api-key&gt;</code> (см. <a href="../frameworks/MCP-SERVER.md#remote-access-manage-scope-bypass">MCP Server → Удаленный доступ</a> для удаленных хостов; для удаленного ключа требуется <code>mcp:connect</code> плюс его области read/write ).</p>
+<p><strong>Полная документация MCP :</strong> <a href="../../open-sse/mcp-server/README.md">Сервер MCP инструменты README</a> — 110, конфигурации IDE, клиенты Python/TS/Go. Справочник оператора по инструментам сжатия CCR/dedup (маркеры, предварительные условия, области для каждого инструмента, разбиение на страницы, диагностика): <a href="../compression/COMPRESSION_ENGINES.md#prerequisites--operator-guide-ccr--session-dedup">Предварительные условия для механизмов сжатия → /руководство оператора</a>.</p>
+<h4 id="настройка-a2a-протокол-между-агентами">Настройка A2A (протокол между агентами) <a class="h-anchor" href="#настройка-a2a-протокол-между-агентами" aria-label="Ссылка на раздел">#</a></h4>
+<p>Проверьте карту агента:</p>
+<pre><code class="language-bash">curl http://localhost:20128/.well-known/agent.json</code></pre>
+<p>Отправить задачу:</p>
+<pre><code class="language-bash">curl -X POST http://localhost:20128/a2a \
+  -H &#x27;content-type: application/json&#x27; \
+  -d &#x27;{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:&quot;quickstart&quot;,&quot;method&quot;:&quot;message/send&quot;,&quot;params&quot;:{&quot;skill&quot;:&quot;quota-management&quot;,&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;Give me a short quota summary.&quot;}]}}&#x27;</code></pre>
+<p><strong>Полная документация A2A :</strong> <a href="../../src/lib/a2a/README.md">Сервер A2A README</a> — JSON-RPC 2.0, навыки, потоковая передача, жизненный цикл задач.</p>
+<hr>
+<h3 id="h-7">Настройка тайм-аутов <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-8">Основные тайм-ауты <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<p>Для большинства развертываний достаточно этих двух переменных:</p>
+<div class="table-wrap"><table><thead><tr><th>Переменная</th><th>Значение по умолчанию</th><th>Назначение</th></tr></thead><tbody><tr><td><code>REQUEST_TIMEOUT_MS</code></td><td><code>600000</code></td><td>Общая базовая величина для тайм-аута начала ответа вышестоящего сервера, скрытых тайм-аутов Undici, запросов цифрового отпечатка TLS и тайм-аутов запросов/прокси API-моста</td></tr><tr><td><code>STREAM_IDLE_TIMEOUT_MS</code></td><td>наследует <code>REQUEST_TIMEOUT_MS</code></td><td>Максимальный интервал между фрагментами потоковых данных, после которого OmniRoute прерывает SSE-поток</td></tr></tbody></table></div>
+<p>Обратная совместимость сохранена: существующие переменные <code>FETCH_TIMEOUT_MS</code>, <code>API_BRIDGE_PROXY_TIMEOUT_MS</code> и другие переменные тайм-аутов отдельных уровней по-прежнему работают и переопределяют общую базовую величину.</p>
+<h4 id="h-9">Примечания для отдельных провайдеров <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<p>Для вышестоящих серверов, совместимых с Claude Code (<code>anthropic-compatible-cc-*</code>), OmniRoute формирует исходящий заголовок <code>X-Stainless-Timeout</code> на основе итогового тайм-аута получения данных, чтобы тайм-ауты чтения на стороне провайдера соответствовали вашей конфигурации переменных окружения.</p>
+<p>Для сторонних обратных прокси, совместимых с Claude Code, OmniRoute сохраняет консервативный набор <code>anthropic-beta</code> по умолчанию и, если для <code>Client Cache Control</code> оставлено значение <code>Auto</code>, передает только предоставленные клиентом маркеры <code>cache_control</code>. Включайте переключатель «Enable redact-thinking beta» для отдельного подключения, только если вышестоящий сервер явно требует потоки рассуждений Claude с отредактированными фрагментами.</p>
+<h4 id="h-10">Расширенные переопределения тайм-аутов <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Переменная</th><th>Значение по умолчанию</th><th>Назначение</th></tr></thead><tbody><tr><td><code>FETCH_TIMEOUT_MS</code></td><td>наследует <code>REQUEST_TIMEOUT_MS</code></td><td>Тайм-аут начала ответа вышестоящего сервера, применяемый до получения заголовков ответа</td></tr><tr><td><code>FETCH_HEADERS_TIMEOUT_MS</code></td><td>наследует <code>FETCH_TIMEOUT_MS</code></td><td>Лимит времени Undici на получение заголовков ответа вышестоящего сервера</td></tr><tr><td><code>FETCH_BODY_TIMEOUT_MS</code></td><td>наследует <code>FETCH_TIMEOUT_MS</code></td><td>Лимит времени Undici между фрагментами тела ответа вышестоящего сервера (<code>0</code> отключает его)</td></tr><tr><td><code>FETCH_CONNECT_TIMEOUT_MS</code></td><td><code>30000</code></td><td>Тайм-аут установки TCP-соединения в Undici</td></tr><tr><td><code>FETCH_KEEPALIVE_TIMEOUT_MS</code></td><td><code>4000</code></td><td>Тайм-аут бездействующего keep-alive-сокета в Undici</td></tr><tr><td><code>TLS_CLIENT_TIMEOUT_MS</code></td><td>наследует <code>FETCH_TIMEOUT_MS</code></td><td>Тайм-аут запросов цифрового отпечатка TLS, выполняемых через <code>wreq-js</code></td></tr><tr><td><code>API_BRIDGE_PROXY_TIMEOUT_MS</code></td><td>наследует <code>REQUEST_TIMEOUT_MS</code> или <code>600000</code></td><td>Тайм-аут проксирования <code>/v1</code> с порта API на порт панели управления</td></tr><tr><td><code>API_BRIDGE_SERVER_REQUEST_TIMEOUT_MS</code></td><td><code>max(API_BRIDGE_PROXY_TIMEOUT_MS, 300000)</code></td><td>Тайм-аут входящего запроса на сервере API-моста</td></tr><tr><td><code>API_BRIDGE_SERVER_HEADERS_TIMEOUT_MS</code></td><td><code>60000</code></td><td>Тайм-аут входящих заголовков на сервере API-моста</td></tr><tr><td><code>API_BRIDGE_SERVER_KEEPALIVE_TIMEOUT_MS</code></td><td><code>5000</code></td><td>Тайм-аут keep-alive на сервере API-моста</td></tr><tr><td><code>API_BRIDGE_SERVER_SOCKET_TIMEOUT_MS</code></td><td><code>0</code></td><td>Тайм-аут бездействия сокета на сервере API-моста (<code>0</code> отключает его)</td></tr></tbody></table></div>
+<blockquote>
+<p><strong>Примечание:</strong> Для потоковых запросов <code>FETCH_TIMEOUT_MS</code> охватывает только установку соединения и ожидание первого ответа от вышестоящего сервера. После активации потока OmniRoute прерывает его только при фактической остановке передачи (<code>STREAM_IDLE_TIMEOUT_MS</code>) или бездействии тела ответа Undici (<code>FETCH_BODY_TIMEOUT_MS</code>).</p>
+</blockquote>
+<h4 id="h-11">Совместимость с обратными прокси <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если OmniRoute работает за Nginx, Caddy, Cloudflare или другим обратным прокси, убедитесь, что тайм-ауты прокси также превышают тайм-ауты потоковой передачи и получения данных OmniRoute.</p>
+<hr>
+<h3 id="h-12">Режим раздельных портов <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h3>
+<p>Запускайте API и панель управления на отдельных портах для сложных сценариев (обратный прокси-сервер, контейнерные сети):</p>
+<pre><code class="language-bash">PORT=20128 DASHBOARD_PORT=20129 omniroute
+# API:              http://localhost:20128/v1
+# Панель управления: http://localhost:20129</code></pre>
+<hr>
+<h3 id="шаблон-void-linux-xbps-src">Шаблон Void Linux (xbps-src) <a class="h-anchor" href="#шаблон-void-linux-xbps-src" aria-label="Ссылка на раздел">#</a></h3>
+<p>Пользователи Void Linux могут создать собственный пакет с помощью <code>xbps-src</code>. Сохраните этот блок как <code>srcpkgs/omniroute/template</code>:</p>
+<pre><code class="language-bash"># Template file for &#x27;omniroute&#x27;
+pkgname=omniroute
+version=3.8.0
+revision=1
+hostmakedepends=&quot;nodejs python3 make&quot;
+depends=&quot;openssl&quot;
+short_desc=&quot;Universal AI gateway with smart routing for multiple LLM providers&quot;
+maintainer=&quot;zenobit &lt;zenobit@disroot.org&gt;&quot;
+license=&quot;MIT&quot;
+homepage=&quot;https://github.com/diegosouzapw/OmniRoute&quot;
+distfiles=&quot;https://github.com/diegosouzapw/OmniRoute/archive/refs/tags/v${version}.tar.gz&quot;
+# Regenerate the checksum for each release with:
+#   curl -L -o /tmp/omniroute.tar.gz &quot;https://github.com/diegosouzapw/OmniRoute/archive/refs/tags/v${version}.tar.gz&quot; &amp;&amp; sha256sum /tmp/omniroute.tar.gz
+checksum=PLACEHOLDER_REGENERATE_PER_RELEASE
+system_accounts=&quot;_omniroute&quot;
+omniroute_homedir=&quot;/var/lib/omniroute&quot;
+export NODE_ENV=production
+export npm_config_engine_strict=false
+export npm_config_loglevel=error
+export npm_config_fund=false
+export npm_config_audit=false
+
+do_build() {
+	local _gyp_arch
+	case &quot;$XBPS_TARGET_MACHINE&quot; in
+		aarch64*) _gyp_arch=arm64 ;;
+		armv7*|armv6*) _gyp_arch=arm ;;
+		i686*) _gyp_arch=ia32 ;;
+		*) _gyp_arch=x64 ;;
+	esac
+
+	NODE_ENV=development npm ci --ignore-scripts
+	npm run build
+	cp -r .next/static .next/standalone/.next/static
+	[ -d public ] &amp;&amp; cp -r public .next/standalone/public || true
+
+	local _node_gyp=/usr/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js
+	(cd node_modules/better-sqlite3 &amp;&amp; node &quot;$_node_gyp&quot; rebuild --arch=&quot;$_gyp_arch&quot;)
+
+	local _bs3_release=.next/standalone/node_modules/better-sqlite3/build/Release
+	mkdir -p &quot;$_bs3_release&quot;
+	cp node_modules/better-sqlite3/build/Release/better_sqlite3.node &quot;$_bs3_release/&quot;
+
+	rm -rf .next/standalone/node_modules/@img
+
+	for _mod in pino-abstract-transport split2 process-warning; do
+		cp -r &quot;node_modules/$_mod&quot; .next/standalone/node_modules/
+	done
+}
+
+do_check() {
+	npm run test:unit
+}
+
+do_install() {
+	vmkdir usr/lib/omniroute/.next
+	vcopy .next/standalone/. usr/lib/omniroute/.next/standalone
+
+	for _d in \
+		.next/standalone/.next/server/app/dashboard \
+		.next/standalone/.next/server/app/dashboard/settings \
+		.next/standalone/.next/server/app/dashboard/providers; do
+		touch &quot;${DESTDIR}/usr/lib/omniroute/${_d}/.keep&quot;
+	done
+
+	cat &gt; &quot;${WRKDIR}/omniroute&quot; &lt;&lt;&#x27;EOF&#x27;
+#!/bin/sh
+export PORT=&quot;${PORT:-20128}&quot;
+export DATA_DIR=&quot;${DATA_DIR:-${XDG_DATA_HOME:-${HOME}/.local/share}/omniroute}&quot;
+export APP_LOG_TO_FILE=&quot;${APP_LOG_TO_FILE:-false}&quot;
+mkdir -p &quot;${DATA_DIR}&quot;
+exec node /usr/lib/omniroute/.next/standalone/server.js &quot;$@&quot;
+EOF
+	vbin &quot;${WRKDIR}/omniroute&quot;
+}
+
+post_install() {
+	vlicense LICENSE
+}</code></pre>
+<hr>
+<h3 id="h-13">Удаление <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Команда</th><th>Действие</th></tr></thead><tbody><tr><td><code>npm run uninstall</code></td><td>Удаляет системное приложение, но <strong>сохраняет вашу БД и конфигурации</strong> в <code>~/.omniroute</code>.</td></tr><tr><td><code>npm run uninstall:full</code></td><td>Удаляет приложение И навсегда <strong>стирает все конфигурации, ключи и базы данных</strong>.</td></tr></tbody></table></div>
+<blockquote>
+<p>Подробные инструкции по удалению для всех способов установки см. в <a href="./UNINSTALL.md">UNINSTALL.md</a>.</p>
+</blockquote>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

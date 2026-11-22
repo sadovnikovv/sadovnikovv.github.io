@@ -1,0 +1,1064 @@
+> ## Documentation Index
+> Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Выберите режим разрешений
+
+> Контролируйте, будет ли Claude просить разрешение перед редактированием файлов или выполнением команд. Переключайте режимы с помощью Shift+Tab в CLI, индикатора режима в VS Code или селектора режима в Desktop.
+
+Режим разрешений определяет, какие действия Claude может выполнять в сеансе без предварительного запроса у вас. В режиме Manual Claude Code останавливается и просит вас перед большинством действий, которые редактируют файлы, запускают команды оболочки или обращаются в сеть. В [режиме auto](#eliminate-prompts-with-auto-mode) вторая модель, классификатор, проверяет действия вместо вас; [как классификатор оценивает действия](#how-the-classifier-evaluates-actions) перечисляет, какие действия он проверяет и какие его пропускают.
+
+Начиная с Claude Code версии 2.1.283, авторежим является встроенным начальным режимом разрешений для интерактивных сессий в терминале и VS Code. В более ранних версиях он является встроенным начальным режимом разрешений только на планах Pro, Max, Ultra и Team. В разделе [в каком режиме запускается сессия](#which-mode-a-session-starts-in) описаны интерфейсы и настройки, которые изменяют начальный режим разрешений. Вы также можете изменить режим разрешений запущенной сессии в любой момент.
+
+## Доступные режимы
+
+Каждый режим делает различный компромисс между удобством и контролем. В таблице ниже показано, что Claude может делать без запроса разрешения в каждом режиме. Manual режим отображается под его значением конфигурации, `default`.
+
+| Режим | Что выполняется без запроса | Лучше всего для |
+| :- | :- | :- |
+| `default` | Только чтение | Проверка каждого действия самостоятельно, чувствительная работа |
+| [`acceptEdits`](#auto-approve-file-edits-with-acceptedits-mode) | Чтение, редактирование файлов и распространённые команды файловой системы (`mkdir`, `touch`, `mv`, `cp` и т.д.) | Итерация по коду, который вы проверяете |
+| [`plan`](#analyze-before-you-edit-with-plan-mode) | Чтение, плюс одобренные классификатором команды, когда [режим auto](#eliminate-prompts-with-auto-mode) доступен | Изучение кодовой базы перед её изменением |
+| [`auto`](#eliminate-prompts-with-auto-mode) | Всё, с фоновыми проверками безопасности | Длительные задачи, снижение усталости от запросов |
+| [`dontAsk`](#allow-only-pre-approved-tools-with-dontask-mode) | Чтение файлов внутри ваших рабочих каталогов и предварительно одобренные инструменты; всё, что вызвало бы запрос, отклоняется, хотя установленный вами [мод](https://code.claude.com/docs/ru/plugins/mods/overview.md) всё ещё может одобрить некоторые из этих вызовов | Заблокированные CI и скрипты |
+| [`bypassPermissions`](#skip-all-checks-with-bypasspermissions-mode) | Всё | Только изолированные контейнеры и виртуальные машины |
+
+Режим, который проверяет каждое действие, называется **Manual** в CLI, в `claude --help`, в расширениях VS Code и JetBrains, а также в настольном приложении. Его значение конфигурации — `default`, которое используют hooks и интеграции SDK. CLI принимает `manual` как псевдоним везде, где вы вводите значение, например `claude --permission-mode manual` или `"defaultMode": "manual"`.
+
+Для записи в [защищённые пути](#protected-paths) в каждом режиме действует собственное правило.
+
+Режимы устанавливают базовый уровень. Наложите [правила разрешений](https://code.claude.com/docs/ru/permissions.md#manage-permissions) сверху, чтобы предварительно одобрить или заблокировать определённые инструменты. Правила отказа блокируют в каждом режиме, включая `bypassPermissions`. Правила отказа и запроса не применяются к [`EndConversation`](https://code.claude.com/docs/ru/tools-reference#endconversation-tool-behavior), пока Claude всё ещё имеет хотя бы один другой инструмент, который он может вызвать. Правила разрешения не имеют эффекта в `bypassPermissions`.
+
+### Действия, которые ни один режим не одобряет автоматически
+
+Claude Code не одобряет автоматически следующее ни в одном режиме, включая `bypassPermissions`, хотя в режиме `bypassPermissions` вы можете [отключить запрос для опасных команд `rm`](#turn-off-the-critical-path-removal-prompt-in-bypasspermissions-mode). Каждый пункт ссылается на раздел, который говорит, что происходит вместо этого в каждом режиме:
+
+* Инструменты, соответствующие явному [правилу запроса](https://code.claude.com/docs/ru/permissions.md#manage-permissions)
+* Инструменты соединителя, которые ваша организация [установила на `ask`](https://code.claude.com/docs/ru/mcp#organization-controls-on-connector-tools), в сеансах, где эта настройка достигает Claude Code
+* Инструменты, требующие взаимодействия с пользователем: встроенный инструмент `AskUserQuestion` и MCP инструменты, отмеченные [`requiresUserInteraction`](https://code.claude.com/docs/ru/mcp#require-approval-for-a-specific-tool)
+* Распознанные удаления `rm` и `rmdir` по [критическим путям](#critical-paths), которые не одобряет ни одно правило разрешения или хук `PreToolUse` с `"allow"`, а также команды Bash, помеченные [`Dangerous rm operation not ruled out`](#dangerous-rm-operation-not-ruled-out)
+* [Защита от кросс-сеансового обмена сообщениями](#skip-all-checks-with-bypasspermissions-mode)
+* Чтение вне рабочих директорий, пока [`permissions.blockReadsOutsideWorkingDirectories`](https://code.claude.com/docs/ru/settings-reference#permissions-blockreadsoutsideworkingdirectories) включено: распознанные команды Bash для чтения файлов и любой [неизолированный повтор](https://code.claude.com/docs/ru/sandboxing.md#the-unsandboxed-retry-escape-hatch), который требует одобрения для запуска вне песочницы, запрашивают даже в режиме auto и режиме `bypassPermissions`. Требует Claude Code v2.1.257 или более поздней версии.
+
+  Команда, которую парсер оболочки не может отследить, такая как команда, которая меняет директорию более одного раза или запускает подоболочку, запрашивает то же самое, даже если она не называет никакой внешний путь. Этот запрос не применяется, когда команда выполняется в [песочнице](https://code.claude.com/docs/ru/sandboxing.md) и песочница обеспечивает блокировку.
+* Запись вне рабочих каталогов, пока [`permissions.blockWritesOutsideWorkingDirectories`](https://code.claude.com/docs/ru/settings-reference#permissions-blockwritesoutsideworkingdirectories) включено: Claude Code отклоняет там вызовы `Write`, `Edit` и `NotebookEdit`, за исключением [некоторых собственных файлов](https://code.claude.com/docs/ru/settings-reference.md#what-the-write-block-refuses-and-what-stays-writable). Этот ключ не ограничивает shell-команды, инструменты MCP или программы, которые запускают хуки, поэтому используйте [изоляцию в песочнице](https://code.claude.com/docs/ru/sandboxing.md), чтобы ограничить, куда записывают shell-команды. Требует Claude Code v2.1.314 или более поздней версии.
+
+Claude Code также не одобряет автоматически команды PowerShell, помеченные `could not fully check your permission rules`. Подтвердите запрос, если вы доверяете команде. Если Claude Code отклоняет команду, попросите Claude переформулировать её.
+
+## Распространённые конфигурации
+
+Режимы разрешений определяют, будет ли Claude просить перед действием, а [песочница Bash](https://code.claude.com/docs/ru/sandboxing.md) и внешние [границы изоляции](https://code.claude.com/docs/ru/sandbox-environments.md) определяют, что действие может достичь после запуска. Каждая строка ниже связывает цель с флагами или параметрами, которые вас туда доставляют, и необходимой изоляцией, как отправную точку. [Доступные режимы](#available-modes) перечисляют, что выполняется без запроса в каждом режиме.
+
+| Вы хотите | Начните с | Необходимая изоляция | Примечания |
+| :- | :- | :- | :- |
+| Проверить каждое действие самостоятельно | Режим Manual: `claude --permission-mode default` | Нет | Чувствительная работа, незнакомый код |
+| Итерировать локально с меньшим количеством запросов, без классификатора | Режим Manual плюс песочница Bash в [режиме auto-allow](https://code.claude.com/docs/ru/sandboxing.md#sandbox-modes): `claude --permission-mode default`, затем запустите `/sandbox` и выберите auto-allow | Встроенная песочница Bash, на macOS, Linux и WSL2 | Правила отказа по-прежнему применяются, и правила запроса, которые называют команду, такие как `Bash(git push *)`, по-прежнему запрашивают. [Режим auto-allow](https://code.claude.com/docs/ru/sandboxing.md#auto-allow-mode) охватывает другие команды, которые могут запрашивать подтверждение. Чтобы вместо этого включить песочницу из файла настроек, установите [`sandbox.enabled`](https://code.claude.com/docs/ru/settings-reference#sandbox-enabled) и [`sandbox.autoAllowBashIfSandboxed`](https://code.claude.com/docs/ru/settings-reference#sandbox-autoallowbashifsandboxed) в значение `true` |
+| Исследовать перед изменением чего-либо | `claude --permission-mode plan` | Нет | Claude Code блокирует редактирование до тех пор, пока вы не [одобрите план](#review-and-approve-a-plan) |
+| Работать в режиме auto без участия | `claude --permission-mode auto`, [встроенный начальный режим разрешений](#which-mode-a-session-starts-in) с v2.1.283 или позже | Нет; песочница или контейнер добавляет защиту в глубину | Требует [поддерживаемую модель](#eliminate-prompts-with-auto-mode), и ваша организация может [отключить режим auto](#eliminate-prompts-with-auto-mode) |
+| Запустить в CI с точным списком разрешений | `claude -p "run the test suite" --permission-mode dontAsk --allowedTools "Bash(npm test)" "Read"` | Нет, кроме того, что предоставляет ваш CI runner | [Облачные сеансы](https://code.claude.com/docs/ru/claude-code-on-the-web.md) игнорируют `dontAsk` из файлов параметров |
+| Запустить полностью автоматически внутри контейнера | `claude -p "<prompt>" --dangerously-skip-permissions` | Требуется: контейнер, виртуальная машина или [runtime песочницы](https://code.claude.com/docs/ru/sandbox-environments.md#sandbox-runtime); на Linux и macOS запустите его как [непривилегированный пользователь](#skip-all-checks-with-bypasspermissions-mode) | Облачные сеансы игнорируют этот режим из файлов параметров. В этом запуске `-p` [несколько вызовов, которые по-прежнему запрашивают](#skip-all-checks-with-bypasspermissions-mode), отклоняются вместо этого |
+
+Песочница Bash и режим auto работают независимо и объединяются, за исключением случаев, перечисленных в разделе [Режимы песочницы](https://code.claude.com/docs/ru/sandboxing.md#sandbox-modes). Для полного взаимодействия см. [Как песочница связана с разрешениями и режимами разрешений](https://code.claude.com/docs/ru/sandboxing.md#how-sandboxing-relates-to-permissions-and-permission-modes) и [Как изоляция связана с режимами разрешений](https://code.claude.com/docs/ru/sandbox-environments.md#how-isolation-relates-to-permission-modes).
+
+## В каком режиме начинается сессия
+
+Когда вы запускаете новую сессию в терминале, Claude Code берёт режим разрешений из первого применимого источника в следующем списке:
+
+1. Флаг `--permission-mode` или `--dangerously-skip-permissions`
+
+2. `permissions.defaultMode` в [файле настроек](https://code.claude.com/docs/ru/settings.md#where-settings-live)
+
+   Если вы установите `"auto"` в `.claude/settings.json` или `.claude/settings.local.json`, значение не вступает в силу, и Claude Code затем использует встроенное значение по умолчанию вместо `defaultMode` из `~/.claude/settings.json`. Если вы установите `"bypassPermissions"` в этих двух файлах, это также не вступает в силу, и сессия начинается в режиме Manual. Другие значения применяются из любого файла настроек.
+
+3. Встроенное значение по умолчанию
+
+Диалоги, которые запускает расширение VS Code, следуют собственному списку расширения в разделе [Переключение режимов разрешений](#switch-permission-modes). О режиме разрешений, в котором Claude Code запускает возобновлённую сессию, см. [режим разрешений при возобновлении](https://code.claude.com/docs/ru/sessions.md#permission-mode-on-resume).
+
+Встроенное значение по умолчанию `auto` требует Claude Code v2.1.228 или новее на macOS, Linux и WSL и v2.1.233 или новее на нативной Windows. В более ранних версиях встроенное значение по умолчанию — Manual.
+
+Встроенное значение по умолчанию зависит от того, как вы запускаете Claude Code. Применяется первая строка, которая соответствует вашей сессии. Таблица охватывает сессии, которые вы запускаете в терминале или через расширение VS Code; для настольного приложения и claude.ai см. вкладки Desktop и Web в разделе [Переключение режимов разрешений](#switch-permission-modes).
+
+| Как вы запускаете Claude Code | Встроенный начальный режим разрешений |
+| :- | :- |
+| Любой файл настроек устанавливает `disableAutoMode` в значение `"disable"` | `default` |
+| `claude -p` или [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/permissions.md#permission-modes) | `default` |
+| К вашей организации применена [конфигурация HIPAA](#hipaa-configuration), и сессия [подпадает под неё](https://code.claude.com/docs/ru/hipaa-setup.md#check-how-developers-sign-in-and-connect) | `default` в версиях с v2.1.285 по v2.1.325. Другие версии следуют следующей строке |
+| В терминале или через [расширение VS Code](https://code.claude.com/docs/ru/vs-code.md) | `auto` с Claude Code v2.1.283 или новее; в более ранних версиях `auto` на планах Pro, Max, Ultra или Team в сессиях, которые [получают флаги функций](https://code.claude.com/docs/ru/env-vars.md#features-that-need-feature-flag-fetching), и `default` в остальных случаях |
+
+Когда флаг, файл настроек или встроенное значение по умолчанию выбирает `auto`, но авторежим недоступен для сессии, Claude Code вместо этого запускает сессию в режиме Manual. Авторежим недоступен, когда сессия не соответствует [требованиям доступности](#eliminate-prompts-with-auto-mode), например если файл настроек отключает его или модель его не поддерживает, либо когда Anthropic временно отключила его на стороне сервера.
+
+Когда встроенное значение по умолчанию впервые запускает одну из ваших сессий в авторежиме, Claude Code показывает уведомление со ссылкой на эту страницу:
+
+* В терминале — один раз, в верхней части сессии
+* В расширении VS Code — в виде карточки на экране нового диалога, которая остаётся, пока вы её не закроете
+
+Если ваш `~/.claude/settings.json` устанавливает `defaultMode`, отличный от `auto`, и ни один другой файл настроек его не устанавливает, ваши сессии продолжают запускаться в этом режиме.
+
+На планах Pro, Max, Ultra и Team, а также в сессиях, которые [не получают флаги функций](https://code.claude.com/docs/ru/env-vars.md#features-that-need-feature-flag-fetching), Claude Code один раз спрашивает, следует ли изменить настройку на авторежим. Вопрос появляется в терминале или в расширении VS Code, и если вы откажетесь, ваша настройка останется без изменений.
+
+### Вызовы инструментов отклоняются в запусках `claude -p` и Agent SDK
+
+В Claude Code v2.1.302 или новее запуски `claude -p` и [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/permissions.md#permission-modes), для которых [не задан режим разрешений](#which-mode-a-session-starts-in), начинаются в режиме Manual. В параметрах SDK и настройках этот режим отображается как `default`. Вызовы, требующие подтверждения, отклоняются, если вы не подтвердите их с помощью правила разрешения, хука, обратного вызова `canUseTool` или `--permission-prompt-tool`.
+
+Чтобы эти вызовы подтверждались, добавьте правила разрешения или запускайтесь в авторежиме:
+
+* **[Добавьте правила разрешения](https://code.claude.com/docs/ru/permissions.md#manage-permissions)**: Claude выполняет перечисленные вами вызовы. Передайте [`--allowedTools "Bash(npm test)"`](https://code.claude.com/docs/ru/headless#auto-approve-tools) в `claude -p` или задайте [параметр разрешённых инструментов](https://code.claude.com/docs/ru/agent-sdk/permissions.md#allow-and-deny-rules) вашего SDK.
+* **Запускайтесь в [авторежиме](#eliminate-prompts-with-auto-mode)**: модель-классификатор проверяет вызовы, поэтому вам не нужно ничего перечислять заранее. Передайте `--permission-mode auto` в `claude -p` или задайте [параметр режима разрешений](https://code.claude.com/docs/ru/agent-sdk/permissions.md#set-permission-mode) вашего SDK.
+
+В этих примерах показан вариант с авторежимом для CLI и каждого SDK:
+
+> [tab] CLI
+>
+> ```bash theme={null}
+> claude -p "Run the test suite and fix any failures" --permission-mode auto
+> ```
+
+> [tab] TypeScript
+>
+> ```typescript theme={null}
+> const options = {
+>   permissionMode: "auto"
+> };
+> ```
+
+> [tab] Python
+>
+> ```python theme={null}
+> from claude_agent_sdk import ClaudeAgentOptions
+>
+> options = ClaudeAgentOptions(permission_mode="auto")
+> ```
+
+До v2.1.302 такие запуски могли начинаться в авторежиме, если они не [получали флаги функций](https://code.claude.com/docs/ru/env-vars.md#features-that-need-feature-flag-fetching), например при использовании [стороннего поставщика](https://code.claude.com/docs/ru/third-party-integrations.md) или с `DISABLE_TELEMETRY`.
+
+### Запуск в другом режиме разрешений
+
+Вы можете задать начальный режим разрешений для одной сессии или как значение по умолчанию для каждой сессии на компьютере, в проекте или в организации. Когда `permissions.defaultMode` задаётся более чем в одном файле настроек, решает [приоритет настроек](https://code.claude.com/docs/ru/settings.md#settings-precedence), поэтому значение проекта или управляемое значение имеет приоритет над `~/.claude/settings.json`. Чтобы изменить режим разрешений уже работающей сессии, см. [Переключение режимов разрешений](#switch-permission-modes).
+
+| Чтобы задать начальный режим разрешений для | Сделайте следующее |
+| :- | :- |
+| Одной сессии, которую вы собираетесь запустить | Передайте режим разрешений как флаг, например `claude --permission-mode default` |
+| Каждой сессии терминала, которую вы запускаете на этом компьютере | Задайте `permissions.defaultMode` в `~/.claude/settings.json`. О том, что читает расширение VS Code, см. [Переключение режимов разрешений](#switch-permission-modes) |
+| Каждой сессии терминала, которую вы запускаете в одном проекте | Задайте `permissions.defaultMode` в `.claude/settings.json` проекта. Сессии, которые вы запускаете в терминале, учитывают любое значение, кроме `auto` и `bypassPermissions`; сессии, которые запускает расширение VS Code, не читают настройки проекта для начального режима разрешений |
+| Каждой сессии терминала в вашей организации | Задайте `permissions.defaultMode` в [управляемых настройках](https://code.claude.com/docs/ru/managed-settings.md). Пользователи по-прежнему могут переключиться на авторежим; о том, что читает расширение VS Code, см. [Переключение режимов разрешений](#switch-permission-modes). Чтобы убрать авторежим, чтобы никто не мог его выбрать, вместо этого установите `permissions.disableAutoMode` в значение `"disable"` |
+
+В этом примере каждая сессия терминала на вашем компьютере начинается в режиме Manual, значение конфигурации которого — `default`. Сохраните его в `~/.claude/settings.json`:
+
+```json theme={null}
+{
+  "permissions": {
+    "defaultMode": "default"
+  }
+}
+```
+
+Следующая запущенная вами сессия покажет `⏸ manual mode on` в строке состояния.
+
+### Режимы разрешений с конфигурацией HIPAA
+
+Если к вашей организации применена [конфигурация HIPAA](https://code.claude.com/docs/ru/hipaa-setup.md), сессии терминала и VS Code в Claude Code v2.1.326 или новее [по умолчанию](#which-mode-a-session-starts-in) начинаются в авторежиме. В версиях с v2.1.285 по v2.1.325 [подпадающая под неё сессия](https://code.claude.com/docs/ru/hipaa-setup.md#check-how-developers-sign-in-and-connect) по умолчанию начинается в режиме Manual.
+
+Чтобы и дальше начинать в режиме Manual, см. [Запуск в другом режиме разрешений](#start-in-a-different-mode). Чтобы отключить авторежим или `bypassPermissions` для вашей организации:
+
+* **Убрать авторежим**: установите [`permissions.disableAutoMode`](https://code.claude.com/docs/ru/settings-reference#disableautomode) в значение `"disable"` в управляемых настройках
+* **Заблокировать `bypassPermissions`**: установите [`permissions.disableBypassPermissionsMode`](https://code.claude.com/docs/ru/settings-reference#permissions-disablebypasspermissionsmode) в значение `"disable"` в управляемых настройках
+
+## Переключение режимов разрешений
+
+Каждый интерфейс имеет свой элемент управления для переключения режимов разрешений во время сеанса и свой способ выбора режима разрешений, в котором начинаются новые сеансы. Выберите ваш интерфейс, чтобы увидеть его элементы управления.
+
+> [tab] CLI
+>
+> **Во время сессии**: нажмите `Shift+Tab` для циклического переключения режимов разрешений. Из `auto` первое нажатие переключает на `default`, а затем цикл идёт `default` → `acceptEdits` → `plan`. Дополнительные режимы вставляются после `plan`. Строка состояния показывает активный режим как серый `⏸ manual mode on` для `default`, или как `⏵⏵ accept edits on`, `⏸ plan mode on`, `⏵⏵ auto mode on`, `⏵⏵ don't ask on` или `⏵⏵ bypass permissions on`.
+>
+> Следите за строкой состояния в этом ролике сессии, которая началась в авторежиме. При каждом нажатии `Shift+Tab` она меняется с `auto mode on` на `manual mode on`, `accept edits on`, `plan mode on` и обратно на `auto mode on`.
+>
+> <video autoPlay muted loop playsInline src="https://mintcdn.com/claude-code/tA-x-5L2YsYSVdee/images/permission-modes-cycle-light.mp4?fit=max&auto=format&n=tA-x-5L2YsYSVdee&q=85&s=3927dd62d59b01efd81b3578f2a6f971" aria-label="Строка состояния под промптом Claude Code меняется при каждом нажатии Shift+Tab: auto mode on, manual mode on, accept edits on, plan mode on, затем снова auto mode on." />
+>
+> Не все режимы находятся в цикле по умолчанию:
+>
+> * `auto`: появляется, когда [режим auto доступен](#eliminate-prompts-with-auto-mode); циклическое переключение на него переключает режимы без подтверждающего запроса
+> * `bypassPermissions`: появляется после запуска с `--permission-mode bypassPermissions`, `--dangerously-skip-permissions`, `--allow-dangerously-skip-permissions` или `permissions.defaultMode: "bypassPermissions"` в [пользовательских, `--settings` или управляемых параметрах](https://code.claude.com/docs/ru/settings-reference#permissions-defaultmode). Вариант `--allow-` добавляет режим разрешений в цикл без активации
+> * `dontAsk`: никогда не появляется в цикле; установите его с помощью `--permission-mode dontAsk`
+>
+> Включённые дополнительные режимы вставляются после `plan`, с `bypassPermissions` первым и `auto` последним. Если у вас включены оба, вы будете циклически переключаться через `bypassPermissions` на пути к `auto`.
+>
+> **Из запроса разрешения Bash**: в режимах разрешений Manual и `acceptEdits`, когда [режим auto](#eliminate-prompts-with-auto-mode) доступен, Claude Code добавляет **Да, и переключиться на режим auto** к запросу разрешения команды Bash. Выберите его, чтобы одобрить команду и переключить сеанс на режим auto. Запросы инструмента [PowerShell](https://code.claude.com/docs/ru/tools-reference.md#powershell-tool) не предлагают опцию. Требует Claude Code v2.1.247 или позже.
+>
+> Claude Code не добавляет опцию к запросам, вынужденным одним из ваших [правил `ask`](https://code.claude.com/docs/ru/permissions#manage-permissions) или [hook](https://code.claude.com/docs/ru/hooks.md#pretooluse-decision-control), потому что режим auto по-прежнему показывает вам эти запросы, поэтому переключение их не удалит.
+>
+> **При запуске**: передайте режим разрешений как флаг.
+>
+> ```bash theme={null}
+> claude --permission-mode plan
+> ```
+>
+> **Как значение по умолчанию**: установите `permissions.defaultMode` в область, которую вы хотите, как описано в [Начните в другом режиме разрешений](#start-in-a-different-mode).
+>
+> Тот же флаг `--permission-mode` работает с `-p` для [неинтерактивных запусков](https://code.claude.com/docs/ru/headless.md).
+
+> [tab] VS Code
+>
+> **Во время сеанса**: нажмите индикатор режима в нижней части поля подсказки. Он использует эти метки для режимов на этой странице:
+>
+> | Метка пользовательского интерфейса | Режим |
+> | :- | :- |
+> | Manual | `default` |
+> | Edit automatically | `acceptEdits` |
+> | Plan | `plan` |
+> | Auto | `auto` |
+> | Bypass permissions | `bypassPermissions` |
+>
+> **Как значение по умолчанию**: чтобы закрепить режим разрешений, в котором начинаются разговоры, установите `claudeCode.initialPermissionMode` в параметры пользователя VS Code на `default`, `manual`, `acceptEdits`, `plan` или `bypassPermissions`. Параметр не принимает `auto`; чтобы начать в режиме Auto, оставьте его неустановленным и выберите **Auto** из индикатора режима один раз, как описано в пункте 2 ниже. Расширение запускает каждый новый разговор в первом из них, который применяется:
+>
+> 1. `claudeCode.initialPermissionMode`
+> 2. Режим, который вы последний раз выбрали из индикатора режима, если это был Manual, Edit automatically или Auto. Выбор Plan или Bypass permissions применяется только к этому разговору
+> 3. `permissions.defaultMode` из [управляемых параметров](https://code.claude.com/docs/ru/managed-settings.md) или `~/.claude/settings.json`
+> 4. [Встроенное значение по умолчанию](#which-mode-a-session-starts-in) для вашего плана, поставщика и параметров организации
+>
+> Расширение никогда не читает `.claude/settings.json` или `.claude/settings.local.json` проекта для начального режима разрешений. Когда установлен `claudeCode.claudeProcessWrapper`, пункты 3 и 4 не применяются: эти разговоры начинаются в режиме Manual, если пункт 1 или пункт 2 не устанавливает режим разрешений.
+>
+> До v2.1.283 пункт 3 применялся только на планах Pro, Max, Ultra и Team в сессиях, которые [получают флаги функций](https://code.claude.com/docs/ru/env-vars.md#features-that-need-feature-flag-fetching).
+>
+> Auto появляется в индикаторе режима, когда [режим auto доступен](#eliminate-prompts-with-auto-mode).
+>
+> Bypass permissions требует переключателя **Allow dangerously skip permissions** в параметрах расширения. Без него режим разрешений не появляется в индикаторе, и значение `bypassPermissions` из пункта 1 или пункта 3 запускает разговор в режиме Manual вместо этого. Auto из любого пункта аналогично запускает разговор в режиме Manual, когда режим auto недоступен.
+>
+> Подробности, специфичные для расширения, см. в [руководстве VS Code](https://code.claude.com/docs/ru/vs-code.md).
+
+> [tab] JetBrains
+>
+> Плагин JetBrains запускает Claude Code в терминале IDE, поэтому переключение режимов разрешений работает так же, как в CLI: нажмите `Shift+Tab` для циклического переключения или передайте `--permission-mode` при запуске.
+
+> [tab] Desktop
+>
+> **Во время сессии**: на вкладке Code используйте селектор режима в строке под полем промпта. Не все режимы появляются в селекторе:
+>
+> * **Auto**: появляется, когда [режим auto доступен](#eliminate-prompts-with-auto-mode)
+> * **Bypass permissions**: требует переключателя **Allow bypass permissions mode** в настройках Desktop на планах Pro, Max и Ultra; на планах Team и Enterprise это вместо этого контролирует политика организации
+>
+> Cowork не использует эти режимы. У него есть собственные режимы разрешений, которые включаются отдельно, и он вообще не показывает переключатель режимов, пока для вашей учётной записи не будет включён какой-либо режим помимо режима по умолчанию. См. [документацию Cowork](https://claude.com/docs/cowork/overview).
+>
+> Для деталей, специфичных для desktop, см. [Выбор режима разрешений](https://code.claude.com/docs/ru/desktop.md#choose-a-permission-mode) в руководстве Desktop.
+>
+> **Как значение по умолчанию**: установите `defaultMode` в [параметры](https://code.claude.com/docs/ru/settings.md#where-settings-live). Приложение desktop читает те же файлы параметров, что и CLI, и применяет режим разрешений к новым локальным сеансам.
+>
+> Режим, который вы выбираете в селекторе режима в локальной сессии, запоминается для каждой папки и имеет приоритет над `defaultMode` в настройках `.claude/` проекта. Новая локальная сессия всё равно может начаться в режиме из `defaultMode` в `~/.claude/settings.json` или управляемых настройках, поэтому проверьте селектор перед первым сообщением. Если вы выберете Plan, он применяется только к этой сессии.
+>
+> О том, куда помещается `defaultMode` в файле настроек, см. пример в [Начните в другом режиме разрешений](#start-in-a-different-mode).
+
+> [tab] Web and mobile
+>
+> На [claude.ai/code](https://claude.ai/code) используйте раскрывающееся меню режима в строке под полем промпта. В мобильном приложении нажмите кнопку **+** в поле промпта, затем **Permission**. Облачные сессии и сессии Remote Control предлагают разные режимы разрешений:
+>
+> * **[Облачные сессии](https://code.claude.com/docs/ru/claude-code-on-the-web.md)**: Accept edits, Plan и Auto. Accept edits соответствует режиму `default`: облачные сессии заранее разрешают редактирование файлов независимо от режима, поэтому раскрывающееся меню показывает Accept edits вместо Manual. Облачные сессии по-прежнему соблюдают `defaultMode: "acceptEdits"` из настроек. Авторежим отображается, если ваша организация его не отключила, а на claude.ai/code он неактивен (выделен серым), если выбранная модель его не [поддерживает](#eliminate-prompts-with-auto-mode). Bypass permissions недоступен.
+> * **Сессии [Remote Control](https://code.claude.com/docs/ru/remote-control.md)** на вашем локальном компьютере: Manual, Accept edits, Plan и Auto для сессии, которую вы запустили сами, и вы не можете выбрать Bypass permissions из приложения. Чтобы использовать Auto, сессия должна соответствовать [требованиям доступности](#eliminate-prompts-with-auto-mode) авторежима. Для потока проекта, работающего на вашем компьютере, см. [Запустить поток на вашем собственном компьютере](https://code.claude.com/docs/ru/claude-projects.md#run-a-thread-on-your-own-computer).
+>   * За исключением Bypass permissions, раскрывающееся меню показывает режим разрешений, в котором находится локальная сессия, включая режим, установленный из терминала. Оно обновляется, когда режим разрешений изменяется в приложении или в терминале.
+>   * Сессии, размещённые [настольным приложением](https://code.claude.com/docs/ru/desktop.md) или [расширением VS Code](https://code.claude.com/docs/ru/vs-code.md), сообщают изменения режима разрешений в claude.ai по мере их возникновения, так же как сессии, размещённые в терминале.
+>
+> Для Remote Control локальная машина, запускающая сеанс, должна быть подписана с вашей учётной записью claude.ai; ключи API не поддерживаются. Вы также можете установить начальный режим разрешений при запуске этого локального сеанса:
+>
+> ```bash theme={null}
+> claude remote-control --permission-mode acceptEdits
+> ```
+
+## Автоматическое одобрение редактирования файлов с режимом acceptEdits
+
+Режим `acceptEdits` позволяет Claude создавать и редактировать файлы в вашем рабочем каталоге без запроса. Строка состояния показывает `⏵⏵ accept edits on`, пока этот режим активен.
+
+В дополнение к редактированию файлов, режим `acceptEdits` автоматически одобряет распространённые команды Bash файловой системы: `mkdir`, `touch`, `rm`, `rmdir`, `mv`, `cp` и `sed`. За исключением `touch`, эти команды также автоматически одобряются при префиксе с безопасными переменными окружения, такими как `LANG=C` или `NO_COLOR=1`, или обёртками процессов, такими как `timeout`, `nice` или `nohup`. Как и редактирование файлов, автоматическое одобрение применяется только к путям внутри вашего рабочего каталога или `additionalDirectories`.
+
+По-прежнему требуют запроса:
+
+* Пути вне этой области действия
+* Записи в [защищённые пути](#protected-paths)
+* Распознанные удаления `rm` и `rmdir`, нацеленные на [критические пути](#critical-paths)
+* `touch` с чем-либо помимо простых путей к файлам, например с опцией, glob-шаблоном или префиксом, таким как `timeout 5` или `LANG=C`
+* Все остальные команды Bash, кроме [встроенного набора только для чтения](https://code.claude.com/docs/ru/permissions.md#read-only-commands)
+
+Каждый путь также проходит через [проверку символических ссылок](https://code.claude.com/docs/ru/permissions.md#symlinks), поэтому запись, которая разрешается вне этой области действия, также не одобряется автоматически.
+
+Когда инструмент [PowerShell](https://code.claude.com/docs/ru/tools-reference.md#powershell-tool) включен, режим `acceptEdits` также автоматически одобряет `Set-Content`, `Add-Content`, `Clear-Content` и `Remove-Item` на путях в области действия, вместе с их распространёнными псевдонимами. Применяются те же правила области действия и защищённых путей, и `Remove-Item` получает [свою собственную проверку](#remove-item-in-powershell). Позиционный аргумент, содержащий символ кавычки, такой как апостроф в `Set-Content .\notes.txt "It's done"`, по-прежнему требует запроса даже на путях в области действия, потому что Claude Code не может статически проверить аргумент, чьи цитируемые и нецитируемые прочтения отличаются. Передайте содержимое через именованный параметр, такой как `-Value`, чтобы избежать запроса.
+
+Используйте `acceptEdits`, когда вы хотите проверить изменения в вашем редакторе или через `git diff` после того, как они будут сделаны, а не одобрять каждое редактирование в строке.
+
+Нажмите `Shift+Tab` один раз из режима Manual, чтобы войти в него, или запустите его напрямую:
+
+```bash theme={null}
+claude --permission-mode acceptEdits
+```
+
+## Анализ перед редактированием в режиме планирования
+
+Режим планирования указывает Claude исследовать код и предлагать изменения, не внося их. Claude читает файлы, выполняет shell-команды для изучения и составляет план, но не редактирует ваш исходный код. За исключением интерактивных сессий в терминале, где [доступен обход разрешений](#skip-all-checks-with-bypasspermissions-mode), редактирование остаётся заблокированным, пока вы не утвердите план.
+
+Что происходит с shell-командой во время планирования, зависит от сессии; применяется первый подходящий из следующих случаев:
+
+* **Интерактивные сессии в терминале с доступным обходом разрешений**: к командам планирования не применяются ни классификатор, ни запрос разрешения. В разделе [Пропуск всех проверок с режимом bypassPermissions](#skip-all-checks-with-bypasspermissions-mode) описаны немногие случаи, когда запрос там всё же появляется.
+* **[Авторежим](https://code.claude.com/docs/ru/auto-mode-config.md) доступен и настройка `useAutoModeDuringPlan` включена**, что задано по умолчанию: классификатор проверяет shell-команды, кроме [удалений критических путей](#critical-paths), вместо того чтобы запрашивать у вас разрешение. Одобренные команды выполняются, а отклонённые блокируются.
+* **Авторежим недоступен или `useAutoModeDuringPlan` выключена**: команды вне [встроенного набора команд только для чтения](https://code.claude.com/docs/ru/permissions.md#read-only-commands) запрашивают подтверждение, в том числе когда включён [режим автоматического разрешения](https://code.claude.com/docs/ru/sandboxing.md#sandbox-modes) песочницы.
+
+Войдите в режим планирования, нажав `Shift+Tab` или добавив `/plan` в начало отдельного промпта. Вы также можете запустить сессию в режиме планирования из CLI:
+
+```bash theme={null}
+claude --permission-mode plan
+```
+
+Если запрос на утверждение не открыт, нажмите `Shift+Tab` ещё раз, чтобы выйти из режима планирования. В запросе на утверждение сначала нажмите `Esc`, поскольку нажатие `Shift+Tab` там утверждает план.
+
+### Просмотр и утверждение плана
+
+Когда план готов, Claude показывает его и спрашивает, как продолжить. В этом запросе вы можете выбрать:
+
+* **Yes, and use auto mode**: утвердить план и начать работу в [авторежиме](#eliminate-prompts-with-auto-mode). Если авторежим [недоступен в вашей сессии](#eliminate-prompts-with-auto-mode), например потому что ваша организация его отключила, этот вариант называется **Yes, auto-accept edits**. Если вы запустили сессию с включённым обходом разрешений, вариант вместо этого называется **Yes, and switch to BYPASS PERMISSIONS (no further prompts) for this session**.
+* **Yes, manually approve edits**: утвердить план и проверять каждое изменение по отдельности.
+* **No, keep planning**: остаться в режиме планирования и сообщить Claude, что изменить.
+
+Утверждение плана завершает режим планирования и переключает сессию в режим разрешений, описанный в соответствующем варианте утверждения, после чего Claude начинает редактирование. Чтобы снова перейти к планированию, вернитесь в режим планирования с помощью `Shift+Tab` или добавьте `/plan` в начало следующего промпта.
+
+Нажмите `Ctrl+G`, чтобы открыть предложенный план в текстовом редакторе по умолчанию и отредактировать его напрямую, прежде чем Claude продолжит. Когда включена настройка [`showClearContextOnPlanAccept`](https://code.claude.com/docs/ru/settings-reference#showclearcontextonplanaccept), в списке появляется первый вариант, который утверждает план и очищает контекст планирования.
+
+Принятие плана также присваивает сессии [сгенерированное название](https://code.claude.com/docs/ru/sessions.md#name-your-sessions) на основе плана, если вы ещё не назвали сессию.
+
+### Установка режима планирования по умолчанию
+
+Чтобы сделать режим планирования режимом по умолчанию для сессий проекта в терминале, задайте для `defaultMode` значение `plan` в `.claude/settings.json`, разместив его так, как показано в примере в разделе [Запуск в другом режиме разрешений](#start-in-a-different-mode). Диалоги, которые запускает [расширение VS Code](https://code.claude.com/docs/ru/vs-code.md), не считывают начальный режим разрешений из настроек проекта. В этом случае задайте для `claudeCode.initialPermissionMode` значение `plan` в пользовательских настройках VS Code.
+
+## Исключите запросы разрешений с помощью авторежима
+
+Авторежим позволяет Claude выполнять действия без рутинных запросов разрешений. Отдельная модель-классификатор проверяет действия перед их выполнением и блокирует всё, что выходит за рамки вашего запроса, нацелено на нераспознанную инфраструктуру или выглядит как результат враждебного контента, который прочитал Claude. Явные [правила ask](https://code.claude.com/docs/ru/permissions.md#manage-permissions) по-прежнему вызывают запрос разрешения.
+
+В Claude Code v2.1.283 и более поздних версиях авторежим является [встроенным начальным режимом разрешений](#which-mode-a-session-starts-in) для интерактивных сессий в терминале и VS Code на всех планах и у всех провайдеров. В более ранних версиях он является встроенным начальным режимом разрешений только на планах Pro, Max, Ultra и Team.
+
+По умолчанию классификатор не проверяет распознанные удаления критических путей с помощью `rm` и `rmdir`, такие как `rm -rf /` или `rm -rf ~`. В разделе [Критические пути](#critical-paths) описано, что происходит с ними в каждом режиме разрешений.
+
+Авторежим также побуждает Claude продолжать работу, не останавливаясь для уточняющих вопросов, хотя Claude всё равно спрашивает, когда ваш промпт или скилл явно на это рассчитывает. Для более выраженного автономного поведения в режиме, который по-прежнему запрашивает у вас подтверждение, вместо этого установите [стиль вывода Proactive](https://code.claude.com/docs/ru/output-styles.md).
+
+> [!WARNING]
+>
+> Авторежим сокращает количество запросов разрешений, но не гарантирует безопасность. Используйте его для задач, общему направлению которых вы доверяете, а не как замену проверке при чувствительных операциях.
+
+Авторежим доступен только в том случае, если ваша учётная запись соответствует всем этим требованиям:
+
+* **План**: все планы.
+* **Организация**: на Team и Enterprise авторежим доступен по умолчанию. Администраторы могут отключить его для организации, установив `permissions.disableAutoMode` в значение `"disable"` в [управляемых настройках](https://code.claude.com/docs/ru/managed-settings.md).
+* **Провайдер и модель**: доступен по умолчанию у следующих провайдеров со следующими моделями:
+
+  * **Anthropic API, [Claude Platform on AWS](https://code.claude.com/docs/ru/claude-platform-on-aws.md) и [Claude Models on Google Cloud (Anthropic managed)](https://code.claude.com/docs/ru/claude-models-on-google-cloud-anthropic-managed.md)**: Claude Opus 4.6 или новее, Sonnet 4.6 или новее, Haiku 5.5 либо [модель Fable](https://code.claude.com/docs/ru/model-config.md#work-with-fable)
+  * **Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry и сессии [Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway) с выполненным входом**: только Claude Sonnet 5 или новее, Opus 4.7 или новее, Haiku 5.5 и модели Fable
+
+  Более старые модели, включая Sonnet 4.5, Opus 4.5, Haiku 4.5 и модели claude-3, не поддерживаются ни у одного провайдера.
+
+Если Claude Code сообщает, что авторежим недоступен, сначала проверьте эти требования и то, не устанавливает ли какой-либо файл настроек [`disableAutoMode`](https://code.claude.com/docs/ru/settings-reference#disableautomode). Кроме того, Anthropic может отключить авторежим на стороне сервера, или сервер может отклонить авторежим для вашей учётной записи. Сессия, получившая любой из этих ответов, держит авторежим отключённым до своего завершения, поэтому позже начните новую сессию.
+
+Отдельное сообщение, в котором названа модель и сказано, что авторежим «не может определить безопасность» действия, означает, что запрос классификатора завершился сбоем. Такой сбой обычно временный, но в Amazon Bedrock он может повторяться, пока ваша учётная запись не получит возможность вызывать названную модель. Причины и способы решения описаны в [справочнике ошибок](https://code.claude.com/docs/ru/errors.md#auto-mode-cannot-determine-the-safety-of-an-action).
+
+Если вы установили `defaultMode: "auto"` в [настройках](https://code.claude.com/docs/ru/settings-reference.md#all-settings), а сессия в терминале запускается в режиме Manual без ошибки, вероятно, настройка находится в `.claude/settings.json` или `.claude/settings.local.json`. Значение `auto` из этих файлов не вступает в силу. Перенесите его в `~/.claude/settings.json`. Для диалога, запущенного расширением VS Code, вместо этого проверьте собственный список расширения в разделе [Переключение режимов разрешений](#switch-permission-modes).
+
+### Авторежим в Bedrock, Agent Platform или Foundry
+
+В [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md), [Google Cloud's Agent Platform](https://code.claude.com/docs/ru/google-vertex-ai.md), [Microsoft Foundry](https://code.claude.com/docs/ru/microsoft-foundry.md) и сессиях [Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway) с выполненным входом авторежим доступен по умолчанию. Если вы не задаёте там режим разрешений, интерактивные сессии запускаются в авторежиме, а запуски `claude -p` или Agent SDK — в режиме Manual, значение которого в конфигурации — `default`:
+
+* **Интерактивные сессии в терминале и VS Code**: чтобы запускать их в режиме разрешений, отличном от авторежима, установите `permissions.defaultMode`, как описано в разделе [Запуск в другом режиме разрешений](#start-in-a-different-mode), или выберите режим в [индикаторе режима](#switch-permission-modes) расширения VS Code. В разделе [В каком режиме запускается сессия](#which-mode-a-session-starts-in) перечислены версии Claude Code, которые запускают их в авторежиме.
+* **Запуски `claude -p` и Agent SDK**: чтобы запустить их в авторежиме, передайте `--permission-mode auto` в `claude -p` либо передайте `permissionMode: "auto"` в TypeScript или `permission_mode="auto"` в Python. Если вы не передаёте режим разрешений, см. раздел [Вызовы инструментов отклоняются в запусках `claude -p` и Agent SDK](#which-mode-a-non-interactive-run-starts-in), где также описаны более ранние версии Claude Code.
+
+У этих провайдеров поддерживаются только Claude Sonnet 5 или новее, Opus 4.7 или новее, Haiku 5.5 и модели Fable. На любой другой модели сессия вместо этого запускается в режиме Manual. Авторежим с Haiku 5.5 у этих провайдеров требует Claude Code v2.1.293 или новее.
+
+Чтобы запретить разработчикам использовать авторежим, установите `disableAutoMode` в значение `"disable"` в [управляемых настройках](https://code.claude.com/docs/ru/managed-settings.md). Это удаляет `auto` из цикла `Shift+Tab`, а сессия, запущенная с `--permission-mode auto`, вместо этого запускается в режиме Manual. Сессия, уже работающая в авторежиме, выходит из него, когда настройка доходит до этой сессии из [источника, развёрнутого администратором](https://code.claude.com/docs/ru/managed-settings.md#which-managed-source-claude-code-uses), и показывает `auto mode disabled by settings`. До v2.1.251 работающая сессия сохраняла авторежим до своего завершения.
+
+### Проверка классификатором на стороне сервера
+
+В авторежиме Claude Code может попросить сервер проверить действия, которые [порядок принятия решений](#how-the-classifier-evaluates-actions) отправляет на проверку, в составе запросов к модели в рамках сессии, вместо отправки собственных запросов классификатора. Сервер запрашивают следующие сессии:
+
+* **Прямое подключение к Anthropic API**: в интерактивных сессиях в терминале, а также в сессиях `-p`, Agent SDK, [расширения VS Code](https://code.claude.com/docs/ru/vs-code.md) и [десктопного приложения](https://code.claude.com/docs/ru/desktop.md), независимо от вашего плана или типа учётной записи, по мере развёртывания функции Anthropic. Сверьте тип своей сессии со следующими минимальными версиями Claude Code:
+  * В интерактивных сессиях в терминале запрос к серверу требует Claude Code v2.1.271 или новее на планах Pro, Max, Ultra и Team. На планах Enterprise и в учётных записях Claude API такие сессии требуют v2.1.278 или новее.
+  * В сессиях `-p` и расширения VS Code запрос к серверу требует Claude Code v2.1.278 или новее
+  * В сессиях Agent SDK и десктопного приложения запрос к серверу требует Claude Code v2.1.281 или новее
+  * Начиная с v2.1.282 сессия, которая [не получает флаги функций](https://code.claude.com/docs/ru/env-vars.md#features-that-need-feature-flag-fetching), например потому что вы отключили телеметрию, по умолчанию запрашивает сервер в сессии любого типа
+* **Облачный провайдер либо LLM-шлюз или прокси**: в [Claude Platform on AWS](https://code.claude.com/docs/ru/claude-platform-on-aws.md), Amazon Bedrock, Google Cloud's Agent Platform и Microsoft Foundry, а также всякий раз, когда вы направляете `ANTHROPIC_BASE_URL` на [LLM-шлюз или прокси](https://code.claude.com/docs/ru/llm-gateway), независимо от вашего плана. Запрос к серверу по умолчанию требует Claude Code v2.1.278 или новее.
+* **Сессия [Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway) с выполненным входом**: требуется Claude Code v2.1.280 или новее
+* **[Облачная сессия](https://code.claude.com/docs/ru/claude-code-on-the-web.md) в среде, размещённой Anthropic**: независимо от вашего плана, когда вы запускаете её из веба, мобильного приложения или десктопного приложения с выбранным вариантом **Cloud**. Сессии, запущенные [облачной запланированной задачей](https://code.claude.com/docs/ru/routines.md), запрашивают сервер по мере развёртывания функции Anthropic.
+
+Там, где сервер проверяет действия, решение по ним определяют его вердикты. Возможны ещё два исхода:
+
+* **Сервер не проверяет сессию**: ответ завершается без результатов проверки, или сервер отвечает, что не проверяет эту сессию. Наиболее частые причины — LLM-шлюз или прокси, который отбрасывает запрос на проверку или её результаты, а также платформа, регион или учётные данные, для которых проверки на стороне сервера ещё недоступны. Claude Code переключается на собственные запросы классификатора. Как только этот резервный вариант закрепляется на оставшуюся часть сессии, Claude Code показывает [уведомление о плате за запросы классификатора](https://code.claude.com/docs/ru/auto-mode-classifier-billing.md) в учётных записях, где эти запросы оплачиваются.
+* **Сервер не выносит вердикт по действию**: Claude Code отклоняет действие, а не выполняет его без проверки. При любом подключении это происходит, когда ответ завершается до поступления результатов проверки или результаты приходят в форме, которую Claude Code не может прочитать. К любому из этих случаев может привести LLM-шлюз или прокси, который обрывает ответы или переписывает результаты. При прямом подключении к Anthropic API это также происходит, когда проверка на сервере для действия завершается сбоем, например по тайм-ауту. В разделе [Сервер не вернул вердикт безопасности](https://code.claude.com/docs/ru/errors.md#the-server-returned-no-safety-verdict) описаны сообщение об отклонении, что происходит при повторяющихся отклонениях и что делать.
+
+  Если [хук](https://code.claude.com/docs/ru/hooks.md#pretooluse-updatedinput-in-auto-mode) или [мод](https://code.claude.com/docs/ru/plugins/mods/overview.md) изменяет входные данные действия после проверки сервером, Claude Code может отклонить действие без вердикта. В интерактивных сессиях в терминале и VS Code при прямом подключении к Anthropic API текст отклонения содержит `a hook changed this call's input after auto mode reviewed it`. Что делать, описано в [соответствующей записи об ошибке](https://code.claude.com/docs/ru/errors.md#hook-changed-input-after-review).
+
+Чтобы не запрашивать сервер и всегда использовать собственные запросы классификатора Claude Code, установите [`CLAUDE_CODE_AUTO_MODE_SERVER=0`](https://code.claude.com/docs/ru/env-vars). При прямом подключении к Anthropic API эта переменная требует Claude Code v2.1.281 или новее. Значение `1` в этом случае включает серверную проверку в сессии, где её ещё нет, если только вы также не установили `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1`. Если вы установили `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1` и оставили `CLAUDE_CODE_AUTO_MODE_SERVER` незаданной, Claude Code также перестаёт запрашивать сервер, за исключением случаев, описанных в разделе [Отключение предварительных возможностей](https://code.claude.com/docs/ru/llm-gateway-protocol.md#disable-pre-release-capabilities).
+
+### Модель классификатора по умолчанию
+
+По умолчанию запросы классификатора отправляются в Claude Sonnet 5. Если `/status` показывает `Auto mode server` как `Enabled`, они отправляются только для вызовов вне [проверки на стороне сервера](#server-side-classifier-review).
+
+Найдите в этой таблице первую строку, которая соответствует вашей сессии. Вместо Sonnet 5 вы получите модель из этой строки.
+
+| Ваша сессия | Модель классификатора |
+| - | - |
+| Имеет модель классификатора, настроенную Anthropic | Настроенная модель. [Проверьте отладочный лог](#classifier-model-check), чтобы узнать, какая именно |
+| Работает на Claude Sonnet 4.6 | Sonnet 4.6 |
+| Задана переменная [`ANTHROPIC_DEFAULT_SONNET_MODEL`](https://code.claude.com/docs/ru/model-config#environment-variables) | Её значение или Sonnet 5, если её значение — Claude Sonnet 5.5 или Claude Opus 5.5 |
+
+Если Sonnet 5 или модель из `ANTHROPIC_DEFAULT_SONNET_MODEL` недоступна у вашего провайдера или исключена [политикой моделей](https://code.claude.com/docs/ru/model-config.md#restrict-model-selection) вашей организации, Claude Code использует резервную модель. Это модель вашей сессии либо модель Opus в [сессии Fable](https://code.claude.com/docs/ru/model-config.md#work-with-fable).
+
+### Выбор модели классификатора
+
+В Claude Code v2.1.302 или новее задайте в [`CLAUDE_CODE_AUTO_MODE_MODEL`](https://code.claude.com/docs/ru/env-vars) полный идентификатор модели, чтобы запускать классификатор на модели, отличной от [модели по умолчанию](#default-classifier-model). Собственные полные идентификаторы моделей вашего облачного провайдера тоже подходят. Этот пример `~/.claude/settings.json` задаёт Claude Sonnet 4.6:
+
+```json theme={null}
+{
+  "env": {
+    "CLAUDE_CODE_AUTO_MODE_MODEL": "claude-sonnet-4-6"
+  }
+}
+```
+
+#### Когда проверку выполняет не ваша модель
+
+| Ситуация | Что происходит | Что делать |
+| - | - | - |
+| [Отладочный лог](#classifier-model-check) сообщает о модели классификатора, настроенной Anthropic | Проверку выполняет эта модель | Ничего не требуется |
+| Вы задали Claude Opus 5, Sonnet 5.5, Opus 5.5 или модель, которую исключает [политика моделей](https://code.claude.com/docs/ru/model-config.md#restrict-model-selection) вашей организации | Проверку выполняет [модель классификатора по умолчанию](#default-classifier-model) | Задайте другую модель |
+| Ваш провайдер не может обслуживать эту модель | Проверки классификатора завершаются сбоем, поэтому Claude Code [отклоняет каждое проверяемое им действие](https://code.claude.com/docs/ru/errors.md#auto-mode-cannot-determine-the-safety-of-an-action) | Задайте модель, которую он обслуживает, или удалите переменную |
+| В сессии `/status` показывает [`Auto mode server`](#server-side-classifier-review) как `Enabled` | Сервер выполняет проверку без вашей модели | Ничего не требуется |
+
+Если применимо несколько ситуаций, ориентируйтесь на первую в списке.
+
+#### Проверка того, какую модель использовал классификатор
+
+В оболочке запустите сессию в авторежиме с [`--debug-file`](https://code.claude.com/docs/ru/cli-reference#cli-flags):
+
+```bash theme={null}
+claude --permission-mode auto --debug-file classifier-debug.log
+```
+
+Чтобы дать классификатору команду для проверки, попросите Claude выполнить `curl https://example.com`, затем найдите в логе `classifier_request_started`:
+
+* **Ваша модель после `model=`**: переменная вступила в силу
+* **Другая модель после `model=`**: найдите в логе `ignoring CLAUDE_CODE_AUTO_MODE_MODEL` — там указаны причина и необходимые действия, если они есть
+* **Такой строки нет**: посмотрите значение `Auto mode server` в `/status` в промпте Claude Code:
+  * **`Enabled`**: [сервер](#server-side-classifier-review) настроен проверять вызовы этой сессии.
+  * **`Disabled`**: эта проверка ещё не протестировала вашу модель. Убедитесь, что [режим разрешений](#switch-permission-modes) — авторежим и ни одно [правило разрешений](https://code.claude.com/docs/ru/permissions.md#manage-permissions) не совпадает с `curl`, затем снова выполните проверку с отключённой [песочницей](https://code.claude.com/docs/ru/sandboxing.md).
+
+### Что классификатор блокирует по умолчанию
+
+Классификатор доверяет вашему рабочему каталогу и remote-репозиториям, которые были для него настроены на момент запуска сессии. Remote, добавленный или перенаправленный во время сессии с помощью `git remote add` или `git remote set-url`, не считается доверенным, а всё остальное рассматривается как внешнее, пока вы не [настроите доверенную инфраструктуру](https://code.claude.com/docs/ru/auto-mode-config.md).
+
+**Блокируется по умолчанию**:
+
+* Загрузка и выполнение кода, например `curl | bash`
+* Отправка чувствительных данных на внешние эндпоинты
+* Развёртывания и миграции в production
+* Массовое удаление в облачном хранилище
+* Предоставление разрешений IAM или прав на репозиторий
+* Изменение общей инфраструктуры
+* Необратимое уничтожение файлов, существовавших до начала сессии
+* Force push
+* Коммит или push изменения, которое при запуске отправит секреты или чувствительные данные за пределы репозитория или расширит то, что раскрывает развёртывание. Сюда относятся CI workflow или конфигурация развёртывания, передающие секрет получателю, который его ещё не получает, скрипт или шаг настройки, который читает хранилище секретов и отправляет данные наружу, а также изменение конфигурации, расширяющее то, что публикует развёртывание, например настройка реестра, видимости, артефакта или sourcemap. Проверка действует на любой ветке, действует даже для общедоступного репозитория и срабатывает при коммите или push изменения независимо от того, запускает ли этот коммит или push конвейер; чтобы снять блокировку, нужно назвать эффект выполнения, а не только коммит или push
+* `git reset --hard`, `git checkout -- .`, `git restore .`, `git clean -fd`, `git stash drop` или `git stash clear`, которые, по предположению классификатора, отбросят незафиксированные изменения
+* `git commit --amend`, если коммит в HEAD был создан не в этой сессии
+* Начиная с v2.1.198 — `git commit --amend`, если коммит в HEAD уже был отправлен через push. Изменение только сообщения не блокируется: `--amend -m` без новых подготовленных изменений для коммита, который Claude создал в этой сессии
+* `terraform destroy`, `pulumi destroy`, `cdk destroy` или `terragrunt destroy`, а также применение плана, который уничтожает ресурсы
+* Запись в менеджер секретов или изменение записей DNS либо сертификатов TLS
+* Слияние pull request, который не одобрил ни один человек, одобрение собственного pull request Claude или отключение проверок CI
+* Публикация комментария, который сам является командой для автоматизации, например `atlantis apply` или `/deploy` либо `/merge` бота
+* Переключение, постепенное включение или удаление feature-флага в production
+* Применение изменений инфраструктуры к защищённой области действия IaC, а также вывод узлов кластера из работы (drain) и их удаление
+* Запись в общий вычислительный кластер, выходящая за пределы названного вами ресурса, например селектор меток или `--all`, который затрагивает задания других пользователей
+* Создание ресурсов Kubernetes, которые работают на каждом узле или перехватывают трафик кластера, например DaemonSets и admission webhooks
+* Интерактивные оболочки или проброс портов на чувствительную удалённую цель
+* Открытие туннеля или обратной оболочки, делающих локальный сервис доступным из публичного интернета
+* Вывод действующих учётных данных или токена в транскрипт или файл
+* Доступ к расположению, указанному как расположение чувствительных данных в вашем [окружении](https://code.claude.com/docs/ru/auto-mode-config.md#define-trusted-infrastructure), копирование данных из него или отправка данных из него аудитории, которую запись исключает
+* Установка пакета в обход вашего внутреннего реестра пакетов через публичный реестр. Это применяется, когда внутренний реестр или зеркало указаны в вашем окружении или когда вы сообщили Claude в диалоге о его существовании
+* Запуск команды с флагом, отключающим защитный механизм, например `--insecure`
+* Запуск цикла автономного агента, который работает без подтверждения человеком или песочницы, например запущенного с `--dangerously-skip-permissions` или `--no-sandbox`. Сюда относится запуск стороннего агента или eval harness с отключёнными изоляцией и подтверждением каждого действия, например runner, запущенного с `--yes-always`
+* Действия браузера [Claude in Chrome](https://code.claude.com/docs/ru/chrome.md), которые могут отправить содержимое страницы, cookie или учётные данные за пределы источника
+* Удаление файлов в `/tmp`, `$TMPDIR` или другом общем каталоге временных файлов или кэша по подстановочному знаку, glob-шаблону или фильтру по возрасту, а не по конкретному указанному пути
+* Включение чувствительных сведений в контент, отправляемый, загружаемый, публикуемый или записываемый для других людей или в общие системы, если ваше собственное сообщение не разрешало передавать эти сведения данному получателю. Тексты PR и issue, сообщения коммитов и комментарии считаются таким исходящим контентом, когда репозиторий находится за пределами границы доверия или является общедоступным, включая собственные общедоступные репозитории вашей организации; внутренние пути к файлам, кодовые названия, данные из реальных ответов API, такие как адреса электронной почты или идентификаторы учётных записей, и идентификаторы инфраструктуры считаются чувствительными сведениями. Реальные персональные данные из ответа API в тексте PR или issue, такие как адрес электронной почты, идентификатор учётной записи или организации либо метрика использования, требуют, чтобы вы назвали эти сведения и получателя, независимо от видимости репозитория или границы доверия
+* Отправка нажатий клавиш в собственную панель tmux Claude Code для управления его собственным интерфейсом, которую классификатор рассматривает как изменение Claude собственных разрешений или надзора за собой
+* Комментирование, удаление или принудительное прохождение теста или проверки (assertion), защищающих поведение, связанное с безопасностью, например аутентификацию, контроль доступа, валидацию входных данных или изоляцию в песочнице
+* Удаление или уничтожение ресурса с состоянием, который Claude не создавал в этой сессии, когда не применяется более конкретное правило удаления и вы не назвали этот ресурс
+* Перенаправление базового URL API, эндпоинта прокси, получателя webhook или зеркала реестра на сторонний хост, не соответствующий задаче, в том числе в файлах-примерах, таких как `.env.example`
+* Изменение того, куда выполняются push, с помощью `git remote set-url` или `git remote add`, если вы не назвали новый remote
+* Push секретов, персональных или доверенных данных в репозиторий, известный как общедоступный, или push туда конфиденциальных материалов, не относящихся к собственной работе этого репозитория. Единственное исключение для персональных или доверенных данных — собственная тематика репозитория dotfiles, а контент из приватного репозитория, попадающий на любую общедоступную площадку, блокируется так же. Если видимость репозитория не установлена, классификатор не блокирует действие только на этом основании; вместо этого он оценивает контент по другим правилам
+* Открытие pull request в другой репозиторий или организацию, создание форка с помощью `gh repo fork` или push в сторонний репозиторий, если вы не назвали эту внешнюю цель
+* Попадание контента из чувствительного локального хранилища или из файла, имя, путь или тип которого указывает на его чувствительность, в коммит, push, текст PR или issue, gist или paste либо публикацию пакета, если вы не назвали и источник, и получателя. Сюда относятся транскрипты сессий и логи диалогов, скрытые каталоги с учётными данными и конфигурацией, такие как ключи SSH, облачные учётные данные, профили браузера и история оболочки, а также экспорты пользовательских данных, и то, что репозиторий приватный, блокировку не снимает
+* Запись в транскрипты сессий Claude Code — файлы истории `.jsonl` в `~/.claude/projects/` или в настроенном вами каталоге конфигурации — напрямую или через shell-команду. Правило также распространяется на строки метаданных, которые Claude Code добавляет к каждой записи транскрипта для собственных проверок. Чтение транскрипта не блокируется
+* Рекурсивное принудительное удаление, например `rm -rf "$VAR"` или `Remove-Item -Recurse -Force $dir`, целью которого является переменная оболочки, не присвоенная в диалоге, который видит классификатор, или glob-шаблон, начинающийся с такой переменной. Без такого присваивания классификатор не может определить, что удалит команда.
+
+  Блокировка снимается, когда вы называете точный удаляемый путь или когда Claude повторно запускает удаление, вписав в команду вычисленный буквальный путь. Удаления, цель которых классификатор может вычислить, не затрагиваются.
+
+  Glob-шаблон непосредственно под переменной, как в `rm -rf "$VAR"/*`, вместо этого считается [критическим путём](#critical-paths). О целях `Remove-Item`, которые представляют собой просто `*` или заканчиваются на `/*` или `\*`, см. [Remove-Item в PowerShell](#remove-item-in-powershell): Claude Code сразу отклоняет такую команду.
+
+Некоторые из этих категорий зависят от записей [окружения](https://code.claude.com/docs/ru/auto-mode-config.md#define-trusted-infrastructure), таких как чувствительные удалённые цели и защищённые области действия IaC, которые можно сузить до конкретных имён.
+
+Claude Code v2.1.257 и более поздних версий также блокирует по умолчанию следующее:
+
+* Запрос учётных данных у эндпоинта метаданных облачного экземпляра, например `169.254.169.254`, или явная аутентификация облачного, кластерного или реестрового вызова с помощью собственного сервисного аккаунта или идентификатора узла машины
+* Обращение к публичному хосту иным путём, чем прямой запрос, например через туннель, обратную оболочку или конфигурацию резолвера или прокси, переписанную так, чтобы указывать вовне
+* Чтение учётных данных, принадлежащих хосту, а не вашей задаче, например сертификатов узла или данных аутентификации узла в реестре контейнеров
+* Подключение к соседним контейнерам, подам или виртуальным машинам, которые Claude не запускал, или к узлу, на котором работает контейнер, а также их сканирование
+
+Если Claude Code работает в среде, где одно из этих действий должно быть разрешено, опишите такую конфигурацию в записи [Host containment](https://code.claude.com/docs/ru/auto-mode-config.md#define-trusted-infrastructure) в `autoMode.environment`.
+
+Claude Code v2.1.261 и более поздних версий также блокирует по умолчанию следующее:
+
+* Публикация или запись ссылки на общедоступный сервис для paste, диаграмм или обмена данными в сообщении, тексте PR или issue, документе или в любом другом месте, где ссылка будет открыта или загружена, когда сам URL содержит передаваемый контент, если вы не назвали этот сервис
+
+**Разрешено по умолчанию**:
+
+* Локальные операции с файлами в вашем рабочем каталоге
+* Установка зависимостей, объявленных в ваших lock-файлах или манифестах
+* Чтение `.env` и отправка учётных данных в соответствующий им API
+* HTTP-запросы только для чтения
+* Push в любую ветку репозитория, в котором вы работаете, включая ветку по умолчанию. Это не распространяется на ветку, не являющуюся веткой по умолчанию, имя которой обозначает её как цель развёртывания или публикации, например `production` или `gh-pages`: push в неё классификатор оценивает отдельно.
+
+  Содержимое push по-прежнему проверяется по другим правилам классификатора, а [правила `permissions.deny`](https://code.claude.com/docs/ru/permissions#manage-permissions) по-прежнему могут блокировать команды push [в том виде, в каком они написаны](https://code.claude.com/docs/ru/permissions.md#bash-rule-limits), в любом режиме. Собственная защита веток на стороне remote по-прежнему действует.
+* Удаление именно тех заданий, которые Claude создал ранее в той же сессии
+* Чтение, проверка или написание кода, конфигураций и моделей угроз, связанных с безопасностью, в рамках вашей задачи
+* Сообщения между агентами, работающими вместе в одной многоагентной сессии
+* Отправка данных на доверенные домены, в бакеты и сервисы, которые вы указали в [`environment`](https://code.claude.com/docs/ru/auto-mode-config#define-trusted-infrastructure). Это распространяется только на передачу данных, а не на деструктивные операции или операции с учётными данными в той же инфраструктуре
+* Навигация [Claude in Chrome](https://code.claude.com/docs/ru/chrome.md) на доверенный внутренний домен, localhost или названный вами URL
+
+Команды в песочнице по умолчанию не получают доступа к сети. Claude указывает хосты, необходимые команде, в самой команде, классификатор проверяет их вместе с командой, и одобренный список открывает эти хосты только для этой одной команды. В разделе [Разрешённые домены для отдельной команды](https://code.claude.com/docs/ru/sandboxing.md#per-command-allowed-domains-in-auto-mode) описано, что список может и не может открыть и что происходит, когда команда обращается к неуказанному хосту.
+
+Выполните `claude auto-mode defaults`, чтобы вывести списки правил, встроенные в Claude Code, в формате JSON. Если рутинные действия блокируются, администратор может добавить доверенные репозитории, бакеты и сервисы через настройку `autoMode.environment`: см. [Настройка авторежима](https://code.claude.com/docs/ru/auto-mode-config.md).
+
+Push в любую ветку репозитория, в котором вы работаете, и создание pull request, соответствующего вашему запросу, выполняются без запроса разрешения, если только push или pull request не подпадают под [список блокировок](#what-the-classifier-blocks-by-default), например утечку секретов или чувствительных данных за пределы репозитория или pull request в другой репозиторий или организацию. Чтобы требовать проверки человеком перед этими командами, оставаясь в авторежиме, добавьте правила `permissions.ask`, которые сопоставляются с командой [в том виде, в каком она написана](https://code.claude.com/docs/ru/permissions.md#bash-rule-limits): см. [Типичные ограничения](https://code.claude.com/docs/ru/auto-mode-config.md#common-boundaries).
+
+### Первое чтение за пределами рабочих каталогов
+
+Пока [`permissions.blockReadsOutsideWorkingDirectories`](https://code.claude.com/docs/ru/settings-reference#permissions-blockreadsoutsideworkingdirectories) отключена, чтение файлов, кроме [чтения из сетевых путей](https://code.claude.com/docs/ru/permissions.md#network-paths), в авторежиме выполняется без запроса разрешения, в том числе за пределами [рабочих каталогов](https://code.claude.com/docs/ru/permissions.md#working-directories). Когда Claude впервые использует инструмент Read, Grep или Glob для пути за их пределами, Claude Code спрашивает, разрешить ли это чтение.
+
+Запрос не появляется в неинтерактивных запусках `-p` и фоновых сессиях; чтение там выполняется как прежде.
+
+Каким бы ни был ваш ответ, Claude продолжает работу:
+
+* **Да, и и дальше разрешать любое чтение за пределами рабочих каталогов**: чтение выполняется, последующие чтения за пределами рабочих каталогов выполняются как прежде, а Claude Code сохраняет ваш ответ, чтобы запрос больше не появлялся
+* **Нет, и с этого момента блокировать чтение за пределами рабочих каталогов**: в чтении отказано, а Claude Code устанавливает [`permissions.blockReadsOutsideWorkingDirectories`](https://code.claude.com/docs/ru/settings-reference#permissions-blockreadsoutsideworkingdirectories) в значение `true` в ваших пользовательских настройках, из-за чего файловые инструменты отказывают в таком чтении в этой и во всех последующих сессиях и во всех режимах разрешений. Чтобы снять блокировку, удалите эту настройку из каждого [файла настроек](https://code.claude.com/docs/ru/settings.md#settings-files-and-who-they-affect), в котором она задана, затем перезапустите каждую работающую сессию. Для одного каталога в текущей сессии используйте `/add-dir`.
+* **Нет, и спросить снова в следующий раз**: в чтении отказано, и при следующем чтении за пределами рабочих каталогов запрос появится снова
+* **Да, но спросить снова в следующий раз**: чтение выполняется, ничего не сохраняется, и при следующем чтении за пределами рабочих каталогов запрос появится снова
+
+### Ограничения, которые вы задаёте в диалоге
+
+Классификатор воспринимает ограничения, которые вы задаёте в диалоге, как сигнал к блокировке. Если вы скажете Claude «не делай push» или «подожди, пока я проверю, прежде чем развёртывать», классификатор заблокирует соответствующие действия, даже если правила по умолчанию их бы разрешили. Ограничение действует, пока вы не снимете его в одном из следующих сообщений. Собственное суждение Claude о том, что условие выполнено, его не снимает.
+
+Ограничения не сохраняются как правила. Классификатор заново считывает их из транскрипта при каждой проверке, поэтому ограничение может быть потеряно, если [сжатие контекста](https://code.claude.com/docs/ru/costs.md#reduce-token-usage) удалит сообщение, в котором оно было задано. Для надёжной гарантии вместо этого добавьте [правило deny](https://code.claude.com/docs/ru/permissions.md#permission-rule-syntax).
+
+### Подтверждения, которые вы даёте в диалоге
+
+Если вы скажете Claude, что заблокированное действие разрешено, классификатор воспримет это как ваше подтверждение и может снять блокировку. От формулировки зависит, будет ли действие выполнено и насколько широко распространяется подтверждение:
+
+* **Назовите действие и его конкретику**: укажите конкретное обстоятельство, которое делает его опасным, например ветку для force push. Если вы называете только глагол, как в «можешь сделать force push», блокировка может остаться в силе.
+* **Рассчитывайте на одно действие**: подтверждение распространяется на названное вами деструктивное действие, поэтому последующее действие снова блокируется, если только вы не дали подтверждение как постоянное. Чтобы не подтверждать рутинный шаблон каждый раз по одному действию, добавьте его в [`autoMode.allow`](https://code.claude.com/docs/ru/auto-mode-config#override-the-block-and-allow-rules).
+* **Некоторые блокировки остаются в силе**: [порядок приоритета классификатора](https://code.claude.com/docs/ru/auto-mode-config.md#override-the-block-and-allow-rules) определяет, какие блокировки может снять ваше подтверждение. Чтобы выполнить шаг, блокировку которого оно не снимает, [выйдите из авторежима](#switch-permission-modes) и ответьте на запрос разрешения.
+
+### Когда авторежим переключается на резервный вариант
+
+Когда авторежим не может подтвердить действия вашей сессии, дальнейшее зависит от ситуации:
+
+* **Заблокированное действие**: Claude Code показывает уведомление и выводит действие в `/permissions` на вкладке **Recently blocked**, где можно [подтвердить действие, чтобы Claude мог повторить попытку](https://code.claude.com/docs/ru/auto-mode-config.md#review-denials).
+* **Повторяющиеся блокировки**: если классификатор блокирует действие 3 раза подряд или 20 раз в сумме, авторежим приостанавливается, и Claude Code снова начинает запрашивать разрешения. Подтверждение запрошенного действия возобновляет авторежим. О том, как подсчитываются блокировки, см. [Пороги повторяющихся блокировок](#repeated-block-thresholds).
+* **Нет вердикта от классификатора**: когда проверка безопасности, не связанная с авторежимом, отклоняет собственный запрос классификатора или ответ классификатора не удаётся разобрать, Claude Code блокирует действие без уведомления и без записи в **Recently blocked**. Какое сообщение показывается в каждом случае и что делать, см. в разделе [Авторежим не может определить безопасность действия](https://code.claude.com/docs/ru/errors.md#auto-mode-cannot-determine-the-safety-of-an-action).
+* **Нет вердикта от сервера**: при [проверке классификатором на стороне сервера](#server-side-classifier-review) Claude Code отклоняет действие, по которому сервер не вынес вердикт, и может остановить ход после десяти подряд ответов без вердикта. См. [Сервер не вернул вердикт безопасности](https://code.claude.com/docs/ru/errors.md#the-server-returned-no-safety-verdict).
+* **Переключение режима во время проверки**: если вы переключаете режим разрешений, пока проверка классификатора ещё не завершена, Claude Code отбрасывает вердикт, который новый режим не запросил бы. Вместо этого вам показывается запрос подтверждения, либо действие автоматически отклоняется в [режиме `dontAsk`](#allow-only-pre-approved-tools-with-dontask-mode).
+
+#### Пороги повторяющихся блокировок
+
+Пороги в 3 блокировки подряд и 20 блокировок в сумме не настраиваются. Общий счётчик сохраняется в течение сессии и сбрасывается только тогда, когда его собственный предел вызывает переключение на резервный вариант. Claude Code не учитывает отклонение ни в одном из порогов, если собственный запрос классификатора отклонила проверка безопасности, не связанная с авторежимом.
+
+У [неинтерактивного](https://code.claude.com/docs/ru/headless.md) запуска `-p` без [`--permission-prompt-tool`](https://code.claude.com/docs/ru/cli-reference#cli-flags) нет запроса разрешения, на который можно было бы переключиться. Когда повторяющиеся блокировки достигают порога, действие не выполняется, а Claude продолжает работу. Claude Code не останавливает запуск.
+
+Повторяющиеся блокировки обычно означают, что классификатору не хватает контекста о вашей инфраструктуре. Используйте `/feedback`, чтобы сообщить о ложных срабатываниях, или попросите администратора [настроить доверенную инфраструктуру](https://code.claude.com/docs/ru/auto-mode-config.md).
+
+### Как авторежим оценивает действия
+
+В следующих разделах описаны порядок, в котором Claude Code оценивает действие, то, как классификатор проверяет работу субагентов, и то, какие затраты и задержку добавляют вызовы классификатора.
+
+> [accordion] Как классификатор оценивает действия
+>
+> Каждое действие проходит через фиксированный порядок принятия решений. Срабатывает первый подходящий шаг:
+>
+> 1. Действия, соответствующие вашим [правилам allow, ask или deny](https://code.claude.com/docs/ru/permissions.md#manage-permissions), разрешаются немедленно, за следующими исключениями:
+>    * Запись в [защищённые пути](#protected-paths) направляется классификатору, даже если совпадает правило allow. Когда защищённый путь — это файл, на который указывает файл настроек, являющийся символической ссылкой, при записи вместо этого может появиться запрос подтверждения, как описано в списке [защищённых путей](#protected-paths)
+>    * Никакое правило allow не одобряет распознанные [удаления критических путей](#critical-paths) с помощью `rm` и `rmdir`
+>    * Инструменты MCP, помеченные [`requiresUserInteraction`](https://code.claude.com/docs/ru/mcp#require-approval-for-a-specific-tool), напрямую запрашивают у вас подтверждение, даже если совпадает правило allow; то же касается инструментов коннекторов, для которых [ваша организация установила `ask`](https://code.claude.com/docs/ru/mcp#organization-controls-on-connector-tools), в сессиях, где эта настройка применяется к Claude Code
+>    * Shell-команда, содержащая [разрешённые домены для отдельной команды](https://code.claude.com/docs/ru/sandboxing.md#per-command-allowed-domains-in-auto-mode), также направляется классификатору, даже если совпадает правило allow, поскольку правило одобряет команду, а не её хосты
+>    * Правила ask, сопоставляемые с содержимым команды, например `Bash(git push *)`, переходят к запросу разрешения
+>    * Запись, которую [проверка символических ссылок](https://code.claude.com/docs/ru/permissions.md#symlinks) разрешает в защищённый путь, вызывает запрос подтверждения, если путь, запрошенный Claude, сам по себе не является защищённым
+>    * Чтение по [сетевому пути](https://code.claude.com/docs/ru/permissions.md#network-paths) вызывает запрос подтверждения, даже если совпадает правило allow
+> 2. Действия только для чтения и редактирование файлов в вашем рабочем каталоге одобряются автоматически, за исключением записи в [защищённые пути](#protected-paths) и [первого чтения за пределами рабочих каталогов](#first-read-outside-the-working-directories), которое вызывает запрос подтверждения
+>    * В сессии с [проверкой классификатором на стороне сервера](#server-side-classifier-review) редактирование файлов, shell-команды только для чтения и shell-команды, [выполняемые в песочнице](https://code.claude.com/docs/ru/sandboxing.md#sandbox-modes), ожидают этой проверки и блокируются, если она их помечает
+>    * Запись внутри рабочего каталога, которую [проверка символических ссылок](https://code.claude.com/docs/ru/permissions.md#symlinks) разрешает в расположение за его пределами, вызывает запрос подтверждения
+>    * Когда Claude читает [артефакт, созданный кем-то другим](https://code.claude.com/docs/ru/artifacts.md#read-an-artifact-shared-with-you), применяются случаи подтверждения, перечисленные в том разделе
+>    * Чтение по [сетевому пути](https://code.claude.com/docs/ru/permissions.md#network-paths) вызывает запрос подтверждения
+> 3. Всё остальное передаётся классификатору, за исключением [удалений критических путей](#critical-paths) при их обработке по умолчанию. Инструменты коннекторов и инструменты MCP с `requiresUserInteraction`, которые на шаге 1 напрямую запрашивают у вас подтверждение, также никогда не попадают к классификатору, поэтому ни подтверждение, требуемое организацией, ни шаг получения согласия не одобряются автоматически
+>    * При включённом [Code Mode](https://code.claude.com/docs/ru/code-mode.md#permission-checks) код, который пишет Claude, передаётся классификатору один раз перед выполнением, а вызовы инструментов внутри него — нет. Вы по-прежнему можете заблокировать вызов правилом `deny` или потребовать запрос подтверждения правилом `ask`, но Claude может выполнять команды Bash в [формах, с которыми правила не совпадают](https://code.claude.com/docs/ru/permissions.md#bash-rule-limits)
+>    * Вне Code Mode классификатор проверяет сообщения, которые Claude отправляет другому агенту с помощью [`SendMessage`](https://code.claude.com/docs/ru/tools-reference), перед тем как Claude Code их доставит. Если правило allow совпадает с `SendMessage` или хук `PreToolUse` возвращает `"allow"`, сообщение может миновать эту проверку. Проверка также выполняется в [режиме планирования, когда классификатор проверяет команды](#analyze-before-you-edit-with-plan-mode). Требуется Claude Code v2.1.222 или новее.
+> 4. Если классификатор блокирует действие, Claude получает причину. В большинстве сессий причиной является название [политики](https://code.claude.com/docs/ru/auto-mode-config.md#fix-a-policy-denial) или правила, которому соответствовал классификатор, например `[Destructive or Unwanted Actions]`; см. [Просмотр отказов](https://code.claude.com/docs/ru/auto-mode-config.md#review-denials)
+>
+> Установленный вами [мод](https://code.claude.com/docs/ru/plugins/mods/overview.md) также может одобрить действие. О случаях, когда его одобрение не переопределяет ваши правила и хуки, см. [Расширение разрешений с помощью хуков](https://code.claude.com/docs/ru/permissions.md#precedence-among-rules-hooks-and-mods).
+>
+> О том, как подтверждаются действия браузера [Claude in Chrome](https://code.claude.com/docs/ru/chrome.md) в расширении VS Code, см. [Запросы разрешений в сессиях VS Code](https://code.claude.com/docs/ru/chrome.md#permission-prompts-in-vs-code-sessions).
+>
+> При входе в авторежим широкие правила allow, дающие возможность выполнять произвольный код, отбрасываются, в том числе:
+>
+> * Универсальные `Bash(*)` или `PowerShell(*)`
+> * Интерпретаторы с подстановочными знаками, например `Bash(python*)`
+> * [Обёртка](https://code.claude.com/docs/ru/permissions.md#process-wrappers), за которой следует только подстановочный знак, например `Bash(timeout *)`
+> * Правила оболочки, начинающиеся с подстановочного знака, например `Bash(* --version)`
+> * Некоторые пути с подстановочными знаками, например `Bash($HOME/bin/*)` или `PowerShell(C:\tools\x.exe *)`
+> * Команды запуска менеджеров пакетов
+> * Правила allow для `Agent`
+> * Правила allow для [`Monitor`](https://code.claude.com/docs/ru/tools-reference#monitor-tool), потому что Claude Code выполняет команды Monitor через оболочку
+>
+> Узкие правила, например `Bash(npm test)`, остаются в силе. Claude Code восстанавливает отброшенные правила, когда вы выходите из авторежима. До v2.1.236 Claude Code оставлял правила allow для `Monitor` в силе в авторежиме, поэтому правило, совпадавшее со всем инструментом, одобряло команды Monitor без проверки классификатором.
+>
+> Кроме того, перед командой, которая отбросила бы незафиксированную работу, например `git reset --hard` или `rm -rf`, Claude Code сам выполняет `git status` и показывает классификатору, есть ли подготовленные, изменённые или неотслеживаемые изменения. Claude Code сообщает о неотслеживаемых файлах в этой проверке, даже если конфигурация git репозитория задаёт `status.showUntrackedFiles=no`.
+>
+> В запросах классификатора, которые отправляет сам Claude Code, классификатор видит сообщения пользователя, вызовы инструментов, кроме операций поиска только для чтения, таких как чтение файлов и поиск, а также содержимое вашего CLAUDE.md. Результаты инструментов из этих запросов удаляются, поэтому враждебный контент в файле или на веб-странице не может напрямую манипулировать классификатором.
+>
+> Вы можете снабдить результат вызова аннотацией с помощью [поля `classifierContext` хука PostToolUse](https://code.claude.com/docs/ru/hooks#annotate-a-result-for-the-auto-mode-classifier), которое классификатор воспринимает как контекст, предоставленный приложением. Поле требует Claude Code v2.1.236 или новее.
+>
+> Отдельный зонд на стороне сервера сканирует входящие результаты инструментов и помечает подозрительный контент до того, как Claude его прочитает. Подробнее о том, как эти уровни работают вместе, см. в [анонсе авторежима](https://claude.com/blog/auto-mode) и [подробном инженерном разборе](https://www.anthropic.com/engineering/claude-code-auto-mode).
+
+> [accordion] Как авторежим обрабатывает субагентов
+>
+> Классификатор проверяет работу [субагентов](https://code.claude.com/docs/ru/sub-agents.md) в трёх точках:
+>
+> 1. Перед запуском субагента оценивается описание делегированной задачи, поэтому задача, выглядящая опасной, блокируется в момент создания субагента.
+> 2. Во время работы субагента каждое его действие проходит через тот же [порядок принятия решений](#how-the-classifier-evaluates-actions), что и в родительской сессии, с теми же правилами блокировки и разрешения. Любой `permissionMode` во frontmatter субагента игнорируется.
+> 3. Когда субагент завершает работу, классификатор проверяет его работу и итоговый отчёт до того, как родитель прочитает отчёт. Если классификатор помечает работу или отчёт субагента либо отдельная проверка безопасности API отклоняет проверку, отчёт всё равно доставляется, но с предупреждением о безопасности в начале. Если классификатор недоступен для проверки, отчёт приходит с примечанием о том, что работу субагента нужно проверить, прежде чем на неё опираться.
+
+> [accordion] Стоимость и задержка
+>
+> Запросы классификатора, которые отправляет Claude Code, могут выполняться на модели, отличной от выбранной через `/model`. См. [на какой модели они выполняются](#default-classifier-model).
+>
+> На планах Enterprise вызовы классификатора учитываются в вашем расходе токенов. Они также учитываются в учётных записях, использующих Claude API, [Claude Platform on AWS](https://code.claude.com/docs/ru/claude-platform-on-aws.md), Amazon Bedrock, Google Cloud's Agent Platform или Microsoft Foundry. Каждая проверка отправляет часть транскрипта вместе с ожидающим действием, добавляя один цикл запроса и ответа перед выполнением.
+>
+> Там, где сервер проверяет действия в составе запросов к модели в рамках сессии, отдельных вызовов классификатора, которые нужно учитывать, нет. См. [Проверка классификатором на стороне сервера](#server-side-classifier-review).
+>
+> Доступ к сети в песочнице не добавляет запросов классификатора для каждого соединения. Классификатор оценивает [хосты, указанные командой](https://code.claude.com/docs/ru/sandboxing.md#per-command-allowed-domains-in-auto-mode), вместе с самой командой в рамках одной проверки, а Claude Code сверяет каждое соединение с одобренным списком, не вызывая классификатор повторно.
+
+## Разрешить только предварительно одобренные инструменты с режимом dontAsk
+
+Если вы установите режим `dontAsk`, Claude Code автоматически отклоняет каждый вызов инструмента, который иначе требовал бы запроса, хотя установленный вами [мод](https://code.claude.com/docs/ru/plugins/mods/overview.md) всё же может подтвердить некоторые из этих вызовов. Чтобы узнать, какие вызовы может подтвердить мод, см. [Расширение разрешений с помощью хуков](https://code.claude.com/docs/ru/permissions.md#precedence-among-rules-hooks-and-mods).
+
+Claude по-прежнему выполняет действия, которые не требуют подтверждения в режиме Manual, такие как чтение файлов в ваших рабочих каталогах и [команды Bash только для чтения](https://code.claude.com/docs/ru/permissions.md#read-only-commands). Действия, соответствующие вашим правилам `permissions.allow`, и вызовы, одобренные [хуком PreToolUse](https://code.claude.com/docs/ru/permissions.md#extend-permissions-with-hooks), тоже выполняются. Используйте этот режим для конвейеров CI или ограниченных сред, где вы предварительно определяете, что Claude может делать; сессия никогда не ждёт ввода. Строка состояния показывает `⏵⏵ don't ask on` в этом режиме.
+
+Claude Code отклоняет вызовы, соответствующие вашим явным [правилам `ask`](https://code.claude.com/docs/ru/permissions#manage-permissions), а не запрашивает их. Он также отклоняет встроенный инструмент `AskUserQuestion`, даже если ваши правила разрешения совпадают с ним, и делает то же самое с инструментами коннекторов, для которых [ваша организация установила `ask`](https://code.claude.com/docs/ru/mcp#organization-controls-on-connector-tools), в сессиях, где эта настройка доходит до Claude Code. Он таким же образом отклоняет инструменты MCP, отмеченные [`_meta["anthropic/requiresUserInteraction"]`](https://code.claude.com/docs/ru/mcp#require-approval-for-a-specific-tool), потому что их карточка подтверждения требует ответа, который этот режим никогда не собирает.
+
+Правило разрешения или хук `PreToolUse` не могут одобрить следующее:
+
+* Распознанные удаления `rm` и `rmdir`, нацеленные на [критический путь](#critical-paths), такие как `rm -rf /` и `rm -rf ~`
+* Чтение по [сетевому пути](https://code.claude.com/docs/ru/permissions.md#network-paths)
+
+[Облачные сеансы](https://code.claude.com/docs/ru/claude-code-on-the-web.md) игнорируют `defaultMode: "dontAsk"`; см. [bypassPermissions](#skip-all-checks-with-bypasspermissions-mode) для получения подробной информации.
+
+Установите его при запуске с флагом:
+
+```bash theme={null}
+claude --permission-mode dontAsk
+```
+
+## Пропустить все проверки с режимом bypassPermissions
+
+Режим `bypassPermissions` отключает запросы разрешений и проверки безопасности, чтобы вызовы инструментов выполнялись немедленно, включая записи в [защищённые пути](#protected-paths).
+
+Даже в режиме `bypassPermissions` каждое из [действий, которые ни один режим не одобряет автоматически](#actions-no-mode-auto-approves), вызывает запрос или отклоняется, хотя вы можете [отключить запрос для опасных команд `rm`](#turn-off-the-critical-path-removal-prompt-in-bypasspermissions-mode). Чтение [публичного артефакта другой организации](https://code.claude.com/docs/ru/artifacts.md#read-an-artifact-shared-with-you) требует вашего подтверждения, а этот режим его не запрашивает, поэтому Claude не может прочитать такой артефакт. Запреты [Remove-Item в PowerShell](#remove-item-in-powershell) также применяются в этом режиме.
+
+Две [гарантии обмена сообщениями между сеансами](https://code.claude.com/docs/ru/cross-session-messaging.md) по-прежнему применяются в этом режиме, и в интерактивных сеансах режима plan, где доступны разрешения на обход:
+
+* Запрос одобрения [`isolatePeerMachines`](https://code.claude.com/docs/ru/settings-reference#isolatepeermachines) для сообщений вашим сеансам за пределами этой машины по-прежнему появляется.
+* Когда не применяется значение [`crossSessionInbound`](https://code.claude.com/docs/ru/cross-session-messaging#control-inbound-messages), Claude Code держит входящее сообщение от другого вашего сеанса для вашего одобрения и доставляет без запроса только когда отправляющий сеанс идентифицирует себя как также обходящий запросы разрешений. Если вы покидаете режим разрешений, пока сообщения удерживаются, Claude Code повторно применяет входящие правила и доставляет любое удерживаемое сообщение, которое они теперь принимают.
+
+В интерактивных сессиях терминала с доступным обходом разрешений Claude Code также не применяет [блокировки режима планирования](#analyze-before-you-edit-with-plan-mode). Claude по-прежнему инструктируется планировать без редактирования, но редактирование файла или команда оболочки, которую он пытается выполнить во время планирования, выполняется без запроса. Явные [правила ask](https://code.claude.com/docs/ru/permissions.md#manage-permissions) и распознанные удаления `rm` и `rmdir`, нацеленные на [критические пути](#critical-paths), по-прежнему требуют запроса.
+
+Режим plan сохраняет свои блокировки везде, где Claude Code работает без интерактивного терминала, включая [неинтерактивные запуски](https://code.claude.com/docs/ru/headless.md) с `-p`, сеансы [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/permissions.md#plan-mode-plan) и беседы в панели чата [расширения VS Code](https://code.claude.com/docs/ru/vs-code.md). Там `--allow-dangerously-skip-permissions` делает `bypassPermissions` доступным для выбора позже.
+
+> [!WARNING]
+>
+> Используйте этот режим только в изолированных средах, таких как контейнеры, виртуальные машины или dev containers без доступа в Интернет, где Claude Code не может повредить вашу хост-систему.
+
+Вы не можете войти в `bypassPermissions` из сеанса, который вы запустили без него включённого. Включите его при запуске с [`permissions.defaultMode: "bypassPermissions"`](https://code.claude.com/docs/ru/settings-reference#permissions-defaultmode) или с включающим флагом:
+
+```bash theme={null}
+claude --permission-mode bypassPermissions
+```
+
+Флаг `--dangerously-skip-permissions` эквивалентен.
+
+Claude Code отклоняет `bypassPermissions` в сеансе, который вы запускаете с [`--restricted`](https://code.claude.com/docs/ru/cli-reference#cli-flags). `--restricted` требует Claude Code v2.1.248 или позже.
+
+В первый раз, когда вы запускаете интерактивную сессию с включённым этим режимом, Claude Code показывает диалоговое окно предупреждения, предлагающее вам принять ответственность за действия, выполняемые без проверок разрешений:
+
+* **Если вы согласитесь**: Claude Code устанавливает `skipDangerousModePermissionPrompt` на `true` в `~/.claude/settings.json`, поэтому более поздние сеансы пропускают диалоговое окно. Чтобы увидеть диалоговое окно снова, удалите ключ из этого файла или установите его на `false`. [Справка `skipDangerousModePermissionPrompt`](https://code.claude.com/docs/ru/settings-reference#skipdangerousmodepermissionprompt) перечисляет другие файлы параметров, где вы или ваша организация можете установить его.
+* **Если вы отклоните**: Claude Code выходит.
+
+Если вы передаёте [`--setting-sources`](https://code.claude.com/docs/ru/cli-reference#cli-flags) без `user`, диалоговое окно может появиться снова, хотя вы уже приняли его ранее. Чтобы пропустить его, добавьте `user`, например `--setting-sources user,project`.
+
+В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) диалоговое окно не показывается.
+
+[Фоновая сессия](https://code.claude.com/docs/ru/agent-view.md) учитывает ваше согласие, если оно записано в пользовательских или управляемых настройках:
+
+* Если согласие не записано, `claude --bg --permission-mode bypassPermissions` отклоняется. Сначала примите диалоговое окно в интерактивной сессии.
+* Если `skipDangerousModePermissionPrompt` задан только в `.claude/settings.local.json`, фоновая сессия запускается, [игнорируя запрос на обход](#bypass-permissions-ignored-in-a-background-session):
+
+  * Если проигнорирован `--allow-dangerously-skip-permissions`, `bypassPermissions` исключается из её цикла `Shift+Tab`.
+  * Если проигнорированы `--permission-mode bypassPermissions` или `--dangerously-skip-permissions`, сессия вместо этого запускается в режиме Manual.
+
+  Добавьте `"skipDangerousModePermissionPrompt": true` в `~/.claude/settings.json`, а затем запустите новую фоновую сессию.
+
+На Linux и macOS Claude Code отказывается запускаться в режиме `bypassPermissions` при работе от пользователя root или под `sudo`:
+
+```text theme={null}
+--dangerously-skip-permissions cannot be used with root/sudo privileges for security reasons
+```
+
+Проверка пропускается автоматически внутри признанной песочницы. Чтобы запустить автономно в контейнере, используйте конфигурацию [dev container](https://code.claude.com/docs/ru/devcontainer.md), которая запускает Claude Code от непривилегированного пользователя.
+
+[Облачные сеансы](https://code.claude.com/docs/ru/claude-code-on-the-web.md) не учитывают `defaultMode: "bypassPermissions"` или `"dontAsk"` из ваших файлов параметров, поэтому проверенные в репозитории параметры не могут запустить облачный сеанс в режиме bypass-permissions. Параметр игнорируется молча, и сеанс запускается в режиме разрешений, показанном в селекторе режима вместо этого. См. [Переключение режимов разрешений](#switch-permission-modes) для информации о том, какие режимы предлагают облачные сеансы.
+
+> [!WARNING]
+>
+> `bypassPermissions` не обеспечивает защиту от инъекции подсказок или непредвиденных действий. Для фоновых проверок безопасности с гораздо меньшим количеством запросов разрешений используйте [режим auto](#eliminate-prompts-with-auto-mode) вместо этого. Администраторы могут заблокировать этот режим, установив `permissions.disableBypassPermissionsMode` на `"disable"` в [управляемых параметрах](https://code.claude.com/docs/ru/managed-settings.md).
+
+### Обход разрешений проигнорирован в фоновой сессии
+
+Это уведомление означает, что [фоновая сессия](https://code.claude.com/docs/ru/agent-view.md) не нашла вашего согласия с [предупреждением об обходе разрешений](#bypass-permissions-acceptance) в пользовательских или управляемых настройках, поэтому она проигнорировала запрос на обход, сделанный при запуске:
+
+```text theme={null}
+Bypass permissions was requested at launch and ignored · if that was you, ~/.claude/settings.json needs "skipDangerousModePermissionPrompt": true
+```
+
+Добавьте `"skipDangerousModePermissionPrompt": true` в `~/.claude/settings.json`, а затем запустите новую фоновую сессию.
+
+### `claude agents` показывает предупреждение об обходе разрешений, которое интерактивные сессии пропускают
+
+Если [`claude agents`](https://code.claude.com/docs/ru/agent-view#dispatch-defaults) показывает [предупреждение об обходе разрешений](#bypass-permissions-acceptance), хотя ваши интерактивные сессии его пропускают, проверьте, не задан ли `skipDangerousModePermissionPrompt` в `.claude/settings.local.json` или в файле `--settings`. Интерактивные сессии считают ключ в этих местах вашим согласием с предупреждением, а `claude agents` — нет. Независимо от того, найдёте ли вы его там, примите предупреждение, чтобы добавить ключ в `~/.claude/settings.json`, где `claude agents` его ищет.
+
+## Защищённые пути
+
+Небольшой набор путей содержит состояние репозитория и собственную конфигурацию Claude, поэтому в каждом режиме действует своё правило для записи в них:
+
+| Режим | Записи в защищённые пути |
+| :- | :- |
+| `default`, `acceptEdits` | Требуют подтверждения |
+| `plan` | Разрешены в интерактивных сеансах терминала с [доступными разрешениями на обход](#skip-all-checks-with-bypasspermissions-mode). В противном случае маршрутизируются классификатору, когда [режим auto](#eliminate-prompts-with-auto-mode) доступен во время планирования, и требуют подтверждения, когда он не доступен |
+| `auto` | Маршрутизируются классификатору, который принимает решение |
+| `dontAsk` | Отклоняются |
+| `bypassPermissions` | Разрешены |
+
+В сеансе, запущенном с [`--restricted`](https://code.claude.com/docs/ru/cli-reference#cli-flags), который требует Claude Code v2.1.248 или позже, классификатор не может одобрить записи в защищённые пути.
+
+Пока включён параметр [`permissions.blockWritesOutsideWorkingDirectories`](https://code.claude.com/docs/ru/settings-reference#permissions-blockwritesoutsideworkingdirectories), Claude Code отклоняет записи `Write`, `Edit` и `NotebookEdit` в файлы настроек в любом режиме разрешений.
+
+В режимах, которые маршрутизируют записи в защищённые пути классификатору, запись, которую [проверка символических ссылок](https://code.claude.com/docs/ru/permissions.md#symlinks) разрешает в защищённый путь, требует вашего подтверждения вместо этого, когда путь, который запросил Claude, сам по себе не защищён.
+
+Правила [`permissions.allow`](https://code.claude.com/docs/ru/permissions#manage-permissions) в файлах параметров не предварительно одобряют записи в защищённые пути. Проверка безопасности выполняется до того, как Claude Code оценивает правила allow из параметров, поэтому запись вроде `Edit(.claude/**)` в `~/.claude/settings.json` или `.claude/settings.json` не изменяет результат для каждого режима в таблице выше. В режимах, которые требуют подтверждения, запрос для записи в папку `.claude/` проекта или в `~/.claude/` может предложить один из этих вариантов, ограниченных сеансом:
+
+* Для папки `.claude/` проекта: **Да, и разрешить Claude редактировать файлы в папке .claude этого проекта для этого сеанса**
+* Для `~/.claude/`: **Да, и разрешить Claude редактировать файлы в своей папке \~/.claude для этого сеанса**
+
+Защищённые каталоги:
+
+* `.git`
+* `.config/git`
+* `.vscode`
+* `.idea`
+* `.husky`
+* `.cargo`
+* `.devcontainer`
+* `.yarn`
+* `.mvn`
+* `.claude`, за некоторыми исключениями, например:
+  * собственные git worktrees Claude в `.claude/worktrees/`
+  * собственные файлы планов текущей сессии в `~/.claude/plans/` или в заданном вами [`plansDirectory`](https://code.claude.com/docs/ru/settings-reference#plansdirectory)
+  * собственный временный каталог [фоновой сессии](https://code.claude.com/docs/ru/agent-view.md#where-state-is-stored) в `~/.claude/jobs/<id>/tmp/`
+  * файлы markdown в каталоге [автоматической памяти](https://code.claude.com/docs/ru/memory.md#storage-location) проекта, например `~/.claude/projects/<project>/memory/`, в сессии, запущенной без `--restricted`
+  * файлы markdown в каталоге [памяти субагента](https://code.claude.com/docs/ru/sub-agents.md#enable-persistent-memory), например `.claude/agent-memory/`, в сессии, запущенной без `--restricted`
+* Каталог, который вы загрузили с помощью [`--plugin-dir`](https://code.claude.com/docs/ru/plugins/mods/create#change-a-mod-with-claude), потому что Claude Code перезагружает и запускает код мода из него при изменении файла
+* `~/.claude/dev-mods/` или `dev-mods/` в каталоге, на который указывает [`CLAUDE_CONFIG_DIR`](https://code.claude.com/docs/ru/env-vars), куда Claude сохраняет [моды, которые он пишет для вас](https://code.claude.com/docs/ru/plugins/mods/create.md#ask-claude-for-a-mod)
+
+Защищённые файлы:
+
+* `.gitconfig`, `.gitmodules`
+* `.bashrc`, `.bash_profile`, `.bash_login`, `.bash_aliases`, `.bash_logout`, `.zshrc`, `.zprofile`, `.zshenv`, `.zlogin`, `.zlogout`, `.profile`, `.envrc`
+* `.npmrc`, `.yarnrc`, `.yarnrc.yml`, `.pnp.cjs`, `.pnp.loader.mjs`, `.pnpmfile.cjs`, `bunfig.toml`, `.bunfig.toml`
+* `.bazelrc`, `.bazelversion`, `.bazeliskrc`
+* `.pre-commit-config.yaml`, `lefthook.yml`, `lefthook.yaml`, `.lefthook.yml`, `.lefthook.yaml`
+* `gradle-wrapper.properties`, `maven-wrapper.properties`
+* `.devcontainer.json`
+* `.ripgreprc`, `pyrightconfig.json`
+* `.mcp.json`, `.claude.json`
+* `remote-settings.json` — сохранённая копия [управляемых сервером настроек](https://code.claude.com/docs/ru/server-managed-settings.md) вашей организации, а также файлы подписи, синхронизации и согласия, которые Claude Code хранит вместе с ней, в `~/.claude` или в каталоге, на который указывает [`CLAUDE_CONFIG_DIR`](https://code.claude.com/docs/ru/env-vars)
+* Файл, который вы передали в [`--settings`](https://code.claude.com/docs/ru/cli-reference#cli-flags), `--mcp-config` или `--agents` при запуске сессии
+* Файл, на который указывает ваш пользовательский, проектный или локальный [файл настроек](https://code.claude.com/docs/ru/settings.md#settings-files-and-who-they-affect), когда сам файл настроек является символической ссылкой, например в репозиторий dotfiles. В режимах, которые маршрутизируют записи в защищённые пути классификатору, запись в этот файл вместо этого требует вашего подтверждения, даже если совпадает правило allow. Если собственный путь файла также является путём файла настроек, например `.claude/settings.json` в другой папке, запись направляется классификатору, как и другие записи в защищённые пути
+
+## Критические пути
+
+Критические пути — это каталоги, которые Claude Code защищает от команд `rm` и `rmdir`, такие как корневой каталог файловой системы, ваш домашний каталог и ваш рабочий каталог. Claude Code проверяет эти команды перед их выполнением, и ни одно [правило allow](https://code.claude.com/docs/ru/permissions.md#manage-permissions) не одобряет команду, цель которой он распознаёт как критический путь. Проверка может пропустить некоторые команды, поэтому она не заменяет средства контроля на уровне операционной системы, такие как [изоляция в песочнице](https://code.claude.com/docs/ru/sandboxing.md).
+
+Удаление критического пути — это команда `rm` или `rmdir`, цель которой Claude Code распознаёт как критический путь. [Хук `PreToolUse`](https://code.claude.com/docs/ru/permissions#extend-permissions-with-hooks), который возвращает `"allow"`, также не может его одобрить. Правило allow или хук `PreToolUse` не могут одобрить такое удаление даже в режимах разрешений, которые пропускают другие запросы.
+
+> [!WARNING]
+>
+> Команда, которую проверка пропускает, не получает никакой особой обработки, поэтому всё, что одобряет команды Bash в вашей сессии, может одобрить её без запроса. Сюда относятся правило allow, режим `bypassPermissions` и [режим автоматического разрешения](https://code.claude.com/docs/ru/sandboxing.md#auto-allow-mode) песочницы. Проверка применяется к `rm` и `rmdir`, поэтому другие одобренные команды тоже могут удалить критические пути.
+
+Эти средства контроля действуют независимо от того, распознаёт ли проверка команду:
+
+* **Правила deny**: [правило deny](https://code.claude.com/docs/ru/permissions.md#manage-permissions), совпадающее с командой, блокирует её, хотя установленный вами [мод](https://code.claude.com/docs/ru/plugins/mods/overview.md) всё ещё может одобрить [некоторые из таких вызовов](https://code.claude.com/docs/ru/permissions.md#precedence-among-rules-hooks-and-mods)
+* **Изоляция в песочнице**: при [изоляции в песочнице](https://code.claude.com/docs/ru/sandboxing.md) операционная система ограничивает пути, в которые могут записывать команды Bash. Команды в песочнице всё равно могут удалить ваш рабочий каталог
+* **Строгий режим песочницы**: по умолчанию команду в песочнице можно [повторить вне песочницы](https://code.claude.com/docs/ru/sandboxing.md#the-unsandboxed-retry-escape-hatch), и правило allow или режим `bypassPermissions` могут одобрить эту повторную попытку без запроса. [Строгий режим песочницы](https://code.claude.com/docs/ru/sandboxing.md#turn-off-the-retry-with-strict-sandbox-mode) отключает повторную попытку
+
+Что происходит с удалением, которое распознаёт Claude Code, [зависит от вашего режима разрешений](#critical-path-removals-in-each-permission-mode). `Remove-Item` и встроенные команды `cmd` для удаления имеют свои собственные проверки, описанные в [Remove-Item в PowerShell](#remove-item-in-powershell).
+
+### Какие пути являются критическими
+
+Claude Code рассматривает цель `rm` или `rmdir` как критический путь, когда это любое из следующего:
+
+* Корневой каталог файловой системы
+* Каталоги верхнего уровня, то есть любой прямой потомок корня, такой как `/usr`, `/etc` или `/data`
+* Ваш домашний каталог. В Windows также учитывается его короткое имя 8.3, например `C:\Users\LONGNA~1`
+* Корни дисков Windows и их каталоги верхнего уровня, такие как `C:\` и `C:\Windows`. Такие варианты написания, как `\\?\C:\` и `\\localhost\C$`, считаются `C:\`
+* Ваш рабочий каталог и его родители
+* Ваши дополнительные рабочие каталоги и их родители, но только когда удаление — это glob под одним из них, такой как `rm -rf <dir>/*`. `rm -rf <dir>` на самом каталоге не вызывает эту проверку
+
+О путях смонтированных дисков, таких как `/mnt/c` или `/Volumes/USB`, см. [Запрос для смонтированных дисков](#the-mounted-drive-prompt).
+
+Проверки короткого имени 8.3 домашнего каталога и вариантов написания `\\?\C:\` и `\\localhost\C$` требуют Claude Code v2.1.292 или позже.
+
+### Другие цели, которые считаются критическими путями
+
+Claude Code также рассматривает следующие цели `rm` и `rmdir` как критические пути. Последний столбец объясняет, почему каждая из них считается критической.
+
+| Цель | Пример | Почему это считается критическим |
+| :- | :- | :- |
+| Glob или косая черта непосредственно под переменной оболочки | `rm -rf "$DIR"/*` | Команда становится удалением из корня файловой системы, когда переменная пуста |
+| Та же форма под позиционным параметром, таким как `$1` или `$@`, когда ничто в команде не присваивает ему значение | `rm -rf "$1"/*` | Команда расширяется в удаление из корня |
+| Переменная оболочки, за которой следует одно общее имя каталога верхнего уровня, такое как `mnt`, `tmp`, `usr` или `Users` | `rm -rf "$TMPDIR/mnt"` | Когда переменная расширяется пусто, команда удаляет `/mnt` |
+| Переменная, которую та же команда присваивает из подстановки, выводящей каталог, такой как `$(pwd)` или `$(git rev-parse --show-toplevel)` | `D=$(pwd); rm -rf "$D"` | Значение может называть ваш рабочий каталог или корень репозитория |
+| Цель, которая является только выводом подстановки команды, когда `rm` рекурсивна | `rm -rf "$(pwd)"` | Claude Code не может проверить цель перед запуском команды |
+| Завершающая подстановка команды после критического пути | `rm -rf ~/$(cmd)` | Claude Code проверяет путь, который остался бы, если бы подстановка расширилась пусто, здесь ваш домашний каталог |
+| Цель, которая состоит только из обратных косых черт | `rm -rf "\\"` | Git Bash на Windows читает одну обратную косую черту как корень текущего диска, поэтому проверка применяется на каждой платформе |
+| Путь Windows, который указывает том по GUID вместо буквы диска | `rm -rf '\\?\Volume{GUID}\work\build'` | Путь не сообщает, на каком диске он находится, поэтому он может быть критическим путём. Требуется Claude Code v2.1.292 или позже |
+| Некоторые цели, заканчивающиеся на `/*` или `/*/` | `rm -rf logs/*/*`, `rm -rf logs/*/`, `cd logs && rm -rf a/*` | Claude Code не может определить до запуска команды, каких каталогов они достигнут |
+
+Чтобы отключить проверку на цели, которая является только выводом подстановки команды, установите [`CLAUDE_CODE_DISABLE_SUBSTITUTION_RM_PROMPT=1`](https://code.claude.com/docs/ru/env-vars#variables) в окружении, которое запускает Claude Code.
+
+### Удаления внутри вложенных команд и встроенных скриптов
+
+Claude Code также смотрит внутри этих конструкций:
+
+* **Вложенные команды**: подоболочка с `(...)`, группа в фигурных скобках с `{ ...; }`, подстановка команд с `$(...)` или обратные кавычки, или подстановка процесса с `<(...)`. Claude Code находит удаление критического пути, находится ли оно внутри вложенной формы, как в `(rm -rf ~)` или `echo "$(rm -rf ~)"`, или в другом месте той же команды.
+* **Встроенные скрипты**: скрипт, переданный `sh`, `bash`, `zsh` или аналогичной POSIX-оболочке с `-c`, как в `bash -c 'rm -rf ~'`.
+  * Когда скрипт заключён в двойные кавычки, вызывающая оболочка расширяет его переменные перед тем, как внутренняя оболочка получит скрипт. В `find . -name '*.tmp' -exec sh -c "rm -rf \"$1\"/*" _ {} \;` команда расширяется в удаление из корня файловой системы один раз для каждого совпадения, и Claude Code рассматривает это как удаление критического пути.
+  * Скрипт в одинарных кавычках, который привязывает `$1` к реальному значению, как `sh -c 'rm -rf "$1"/*' _ {}`, не помечается.
+
+Чтобы отключить проверку критического пути, указанного непосредственно в скрипте `-c`, например `~`, установите [`CLAUDE_CODE_DISABLE_INLINE_SHELL_RM_PROMPT=1`](https://code.claude.com/docs/ru/env-vars#variables) в окружении, которое запускает Claude Code.
+
+### Переписать помеченную команду
+
+Как переписать команду, чтобы она прошла проверку, зависит от того, какие из [других целей](#other-targets-that-count-as-critical-paths) она использует:
+
+* **Glob или косая черта под переменной, такой как `$DIR`**: защитите каждое расширение так, чтобы оболочка остановилась с ошибкой, когда переменная не установлена или пуста, как в `rm -rf "${DIR:?}"/*`, или используйте буквальный путь. Удаление, чьи расширения защищены таким образом, проходит эту проверку, поэтому в режиме `bypassPermissions` оно выполняется без запроса, если другая [критическая-путь](#critical-paths) проверка не помечает его.
+* **Glob или косая черта под переменной, которая обычно установлена, такой как `$HOME`**: используйте буквальный путь.
+* **Переменная, присвоенная из подстановки, выводящей каталог**: используйте буквальный путь. Защита `"${D:?}"` не очищает эту проверку, потому что переменная не пуста.
+* **Цель, которая является только выводом подстановки команды**: запустите подстановку самостоятельно сначала, а затем удалите буквальные пути, которые она выводит. Запрос говорит Claude сделать то же самое.
+
+Для glob или косой черты под переменной запрос называет помеченную команду `rm` и говорит, как переписать её, чтобы проверка прошла.
+
+### Запрос `Dangerous rm operation not ruled out`
+
+Полная причина выглядит так:
+
+```text theme={null}
+Dangerous rm operation not ruled out — the shell may read this command differently than it was parsed
+```
+
+Эта причина означает, что оболочка может прочитать команду иначе, чем Claude Code, поэтому удаление может оказаться в непроверенной части, даже если `rm` в команде нет. В режиме `auto` или `bypassPermissions` отклонение с этим предложением исходит от той же проверки:
+
+```text theme={null}
+This command could not be checked for dangerous rm operations: the shell may read it differently than it was parsed.
+```
+
+Вы получаете тот же запрос или отклонение, что и для удаления критического пути [в вашем режиме разрешений](#critical-path-removals-in-each-permission-mode), включая `bypassPermissions`, хотя в режиме `bypassPermissions` этот запрос можно [отключить](#turn-off-the-critical-path-removal-prompt-in-bypasspermissions-mode). Одобрить команду с помощью правила allow `Bash` или `Bash(*)`, [режима автоматического разрешения](https://code.claude.com/docs/ru/sandboxing.md#auto-allow-mode) песочницы или хука `PreToolUse`, возвращающего `"allow"`, нельзя. Прочитайте команду, а затем одобрите запрос или, после отклонения, выполните её в своей оболочке.
+
+### Запрос для смонтированных дисков
+
+Запрос для смонтированных дисков появляется в macOS, Linux и WSL, когда рекурсивная команда `rm` нацелена на один из перечисленных [путей смонтированных дисков](#paths-that-get-the-mounted-drive-prompt), например `/mnt/c` или `/Volumes/USB/build`. Его причина выглядит так: `Dangerous rm operation on mounted drive path: <path>`. Цель `/*` получает запрос и без рекурсивного флага, поскольку Claude Code читает `rm /Volumes/USB/build/*` как удаление `/Volumes/USB/build`.
+
+Даже при наличии правила allow для `rm` Claude Code обрабатывает команду как [удаление критического пути](#critical-paths): запрос или отклонение [в зависимости от вашего режима разрешений](#critical-path-removals-in-each-permission-mode). Одобрите запрос, чтобы позволить `rm` выполниться, или [отключите запрос](#turn-off-the-mounted-drive-prompt).
+
+#### Пути, для которых появляется запрос для смонтированных дисков
+
+Сопоставьте цель вашего рекурсивного `rm` или удаления `/*` с этими формами путей, где каждый заполнитель, такой как `<drive>` или `<name>`, обозначает ровно один сегмент пути:
+
+| Под | Формы путей, которые получают запрос | Примеры |
+| :- | :- | :- |
+| `/Volumes` | `/Volumes/<drive>`, `/Volumes/<drive>/<name>` | `/Volumes/USB`, `/Volumes/USB/build` |
+| `/System/Volumes` | `/System/Volumes`, `/System/Volumes/<volume>`, `/System/Volumes/<volume>/<name>` | `/System/Volumes/Data` |
+| `/media` | `/media/<user>`, `/media/<user>/<drive>`, `/media/<user>/<drive>/<name>` | `/media/alex` |
+| `/run/media` | `/run/media`, `/run/media/<user>`, `/run/media/<user>/<drive>`, `/run/media/<user>/<drive>/<name>` | `/run/media/alex/USB/build` |
+| `/mnt` | `/mnt/<name>`, а также `/mnt/<letter>/<name>` под однобуквенной точкой монтирования, такой как `/mnt/c` в WSL | `/mnt/data`, `/mnt/c/Users` |
+
+Для рекурсивной или нерекурсивной команды `rm` на самих `/Volumes`, `/media` или `/mnt` вы вместо этого видите причину [критического пути](#which-paths-are-critical) `Dangerous rm operation on critical path: <path>`.
+
+Относительная цель отсчитывается от вашего рабочего каталога, поэтому `rm -rf build`, пока вы работаете в `/Volumes/USB`, нацелена на `/Volumes/USB/build` и получает запрос.
+
+#### Отключение запроса для смонтированных дисков
+
+Чтобы перестать получать запрос для смонтированных дисков, сохранив [запросы по другим причинам](#removals-that-still-prompt-with-the-mounted-drive-prompt-off), запустите Claude Code с [`CLAUDE_CODE_DISABLE_MOUNTED_DRIVE_RM_PROMPT=1`](https://code.claude.com/docs/ru/env-vars#variables) в его окружении. Например, установите переменную в [вашей оболочке](https://code.claude.com/docs/ru/env-vars.md#set-variables-in-your-shell) и запустите из неё `claude`:
+
+```bash theme={null}
+export CLAUDE_CODE_DISABLE_MOUNTED_DRIVE_RM_PROMPT=1
+claude
+```
+
+В сессии, запущенной таким образом, запрос для смонтированных дисков больше не появляется ни для целого диска, такого как `/Volumes/USB`, ни для других [перечисленных путей](#paths-that-get-the-mounted-drive-prompt). Если вы разрешаете `Bash(rm *)`, используете режим Manual и работаете в `/Volumes/USB`, то `rm -rf build` выполняется без запроса.
+
+Если запрос по-прежнему показывает `Dangerous rm operation on mounted drive path`, значит, переменная не доходит до сессии:
+
+* **Переменная в файле настроек**: Claude Code [игнорирует переменную в блоке `env` файла настроек](https://code.claude.com/docs/ru/settings-reference#variables-claude-code-ignores-in-env), независимо от вида файла настроек, поэтому вместо этого установите переменную там, где вы запускаете `claude`
+* **Сессия запущена без переменной**: снова запустите `claude` из окружения, в котором переменная установлена, поскольку запущенная сессия её не подхватывает
+
+#### Удаления, которые по-прежнему вызывают запрос при отключённом запросе для смонтированных дисков
+
+В режиме Manual с правилом allow для `rm` команда `rm` на пути смонтированного диска всё ещё может вызвать запрос, но без причины `Dangerous rm operation on mounted drive path`:
+
+* **Цель вне ваших рабочих каталогов**: `rm -rf /Volumes/USB/other`, пока вы работаете в `/Volumes/USB/project`, получает запрос. Чтобы убрать этот запрос, [добавьте в сессию каталог, содержащий цель](https://code.claude.com/docs/ru/permissions.md#working-directories)
+* **Цель с `*`**: `rm -rf build/*` получает запрос. Одобрите этот запрос, чтобы выполнить команду, или попросите Claude назвать каждую цель без `*`
+* **Цель, являющаяся критическим путём**: сам `/mnt` и сам ваш рабочий каталог остаются [критическими путями](#which-paths-are-critical), поэтому `rm -rf` на любом из них получает запрос. Одобрите этот запрос, чтобы позволить `rm` выполниться
+
+### Удаления критических путей в каждом режиме разрешений
+
+Что Claude Code делает с удалением критического пути, зависит от вашего режима разрешений:
+
+| Режим | Результат |
+| :- | :- |
+| `default`, `acceptEdits` | Спрашивает вас одобрить его |
+| `plan` | Спрашивает вас одобрить его. Когда [классификатор проверяет команды во время планирования](#analyze-before-you-edit-with-plan-mode) и нет доступных разрешений на обход, обрабатывает это как в режиме `auto` |
+| `auto` | Спрашивает вас одобрить это в терминале с [ограничением по времени](#time-limits-and-denials-in-auto-and-bypasspermissions-modes). В других местах отклоняет это |
+| `dontAsk` | Отклоняет его |
+| `bypassPermissions` | В терминале спрашивает вас одобрить это до истечения ограничения по времени. О других местах см. [что происходит в каждом месте](#time-limits-and-denials-in-auto-and-bypasspermissions-modes) |
+
+Если явное [правило ask](https://code.claude.com/docs/ru/permissions.md#manage-permissions) совпадает с командой, Claude Code спрашивает вас вместо этого, даже в режиме `auto` и без ограничения по времени. В режимах, которые спрашивают, hook [`PermissionRequest`](https://code.claude.com/docs/ru/hooks#permissionrequest) может ответить на запрос.
+
+Чтобы выполнять такие удаления без запроса в режиме `bypassPermissions`, см. [Отключение запроса при удалении критических путей](#turn-off-the-critical-path-removal-prompt-in-bypasspermissions-mode).
+
+### Ограничения по времени и отклонения в режимах auto и bypassPermissions
+
+В режимах `auto` и `bypassPermissions` запрос в терминале для удаления критического пути показывает обратный отсчёт в две минуты:
+
+* Если обратный отсчёт закончится до того, как вы ответите, Claude Code отклоняет команду и говорит Claude, что делать вместо этого, поэтому автоматический сеанс продолжает работать.
+* Нажмите любую клавишу, пока запрос открыт, чтобы остановить обратный отсчёт и оставить запрос в ожидании вашего ответа.
+* После трёх таких запросов, которые остаются без ответа в сеансе, Claude Code перестаёт их показывать и немедленно отклоняет дальнейшие удаления критических путей. Отправка нового сообщения начинает отсчёт заново.
+
+Ограничение по времени действует в Claude Code v2.1.281 и позже, как и отклонение в режиме `auto` вне терминала.
+
+Вне терминала вы не получаете этот запрос:
+
+| Где | `auto` | `bypassPermissions` |
+| :- | :- | :- |
+| Панель чата [расширения VS Code](https://code.claude.com/docs/ru/vs-code.md) | Отклоняет его | Отклоняет его, если [хук `PermissionRequest`](https://code.claude.com/docs/ru/hooks#permissionrequest) его не разрешает |
+| [Приложение Desktop](https://code.claude.com/docs/ru/desktop.md) | Отклоняет его | Отклоняет его, если хук `PermissionRequest` его не разрешает |
+| [Запуск с `-p`](https://code.claude.com/docs/ru/headless) или [сессия Agent SDK](https://code.claude.com/docs/ru/agent-sdk/permissions.md) | Отклоняет его | Решает ваш [`--permission-prompt-tool`](https://code.claude.com/docs/ru/cli-reference#cli-flags) или [callback `canUseTool`](https://code.claude.com/docs/ru/agent-sdk/user-input#handle-tool-approval-requests). Если нет ни того, ни другого, или при [`--permission-prompts none`](https://code.claude.com/docs/ru/headless#turn-off-permission-prompts-in-unattended-runs), отклоняет его, если хук `PermissionRequest` его не разрешает. Чтобы вместо этого выполнять такие удаления без запроса, см. [Отключение запроса при удалении критических путей](#turn-off-the-critical-path-removal-prompt-in-bypasspermissions-mode) |
+
+Везде, где удаление отклонено, вы можете прочитать всю команду и выполнить её в своей оболочке.
+
+Чтобы изменить поведение в каждом режиме, установите [`CLAUDE_CODE_DISABLE_DANGEROUS_RM_TIMEOUT`](https://code.claude.com/docs/ru/env-vars#variables) в `1`:
+
+* **`bypassPermissions`**: запрос в терминале не имеет ограничения по времени, а панель чата VS Code спрашивает вас
+* **`auto`**: решает [классификатор](#eliminate-prompts-with-auto-mode) — в терминале, в панели чата VS Code, в запусках с `-p` и в сессиях Agent SDK
+
+Устанавливайте её в окружении, которое запускает Claude Code, например в вашей оболочке или в параметре `env` SDK, а не в файле настроек Claude Code. Для панели чата добавьте её в [`claudeCode.environmentVariables`](https://code.claude.com/docs/ru/vs-code#extension-settings) в собственном пользовательском `settings.json` VS Code, а затем начните новый диалог:
+
+```json theme={null}
+{
+  "claudeCode.environmentVariables": [
+    { "name": "CLAUDE_CODE_DISABLE_DANGEROUS_RM_TIMEOUT", "value": "1" }
+  ]
+}
+```
+
+### Отключение запроса при удалении критических путей в режиме bypassPermissions
+
+Чтобы команды Bash `rm` и `rmdir`, нацеленные на [критические пути](#critical-paths), выполнялись без запроса в режиме `bypassPermissions`, запустите Claude Code с [`CLAUDE_CODE_EVEN_MORE_DANGEROUSLY_SKIP_PERMISSIONS=1`](https://code.claude.com/docs/ru/env-vars#variables) в его окружении. Для этого требуется Claude Code v2.1.311 или позже. Claude Code читает переменную только из окружения запуска и [игнорирует её в блоке `env` файла настроек](https://code.claude.com/docs/ru/settings-reference#variables-claude-code-ignores-in-env). Например, установите её в [вашей оболочке](https://code.claude.com/docs/ru/env-vars.md#set-variables-in-your-shell) и запустите `claude` оттуда:
+
+> [tab] macOS, Linux, WSL
+>
+> ```bash theme={null}
+> export CLAUDE_CODE_EVEN_MORE_DANGEROUSLY_SKIP_PERMISSIONS=1
+> claude --permission-mode bypassPermissions
+> ```
+
+> [tab] Windows PowerShell
+>
+> ```powershell theme={null}
+> $env:CLAUDE_CODE_EVEN_MORE_DANGEROUSLY_SKIP_PERMISSIONS = "1"
+> claude --permission-mode bypassPermissions
+> ```
+
+> [tab] Windows CMD
+>
+> ```batch theme={null}
+> set CLAUDE_CODE_EVEN_MORE_DANGEROUSLY_SKIP_PERMISSIONS=1
+> claude --permission-mode bypassPermissions
+> ```
+
+> [!WARNING]
+>
+> Если эта переменная установлена, вы теряете защитный запрос для разрушительных удалений: команда вроде `rm -rf ~` может выполниться, не спрашивая вас. Устанавливайте её только в [изолированном окружении](#skip-all-checks-with-bypasspermissions-mode), содержимое которого вы можете позволить себе потерять.
+
+Удаления выполняются без запроса только в самом режиме `bypassPermissions`, а не в режиме планирования, и только для того, что помечает проверка критических путей в инструментах Bash и [Monitor](https://code.claude.com/docs/ru/tools-reference.md#monitor-tool). Сюда входят команды, которые Claude Code не может полностью разобрать: они тоже выполняются без запроса.
+
+#### Уведомления при запуске о запросе при удалении критических путей
+
+Чтобы проверить, работает ли `CLAUDE_CODE_EVEN_MORE_DANGEROUSLY_SKIP_PERMISSIONS`, прочитайте строку, которую Claude Code выводит при запуске. При запуске с `-p` она выводится в stderr. В приложении Agent SDK передайте [параметр `stderr`](https://code.claude.com/docs/ru/agent-sdk/typescript#options), чтобы прочитать её. Строка содержит одно из следующего:
+
+* **`is set, so dangerous rm commands can run without a prompt`**: удаления могут выполняться без запроса после того, как загрузятся управляемые настройки и хуки плагинов. Если удаления по-прежнему получают запрос или отклонение, см. [Почему запрос при удалении критических путей остаётся включённым](#why-the-critical-path-removal-prompt-stays-on)
+* **`has no effect in this session`**: удаления сохраняют свой обычный запрос или отклонение на протяжении всей сессии. Чтобы это изменить, найдите свой случай в разделе [Почему запрос при удалении критических путей остаётся включённым](#why-the-critical-path-removal-prompt-stays-on)
+* **`has no effect while the Windows registry cannot be read for managed settings`**: удаления сохраняют свой обычный запрос или отклонение, а переменная вступает в силу без перезапуска, если последующее чтение реестра завершится успешно. Если удаления по-прежнему получают запрос или отклонение, см. [Почему запрос при удалении критических путей остаётся включённым](#why-the-critical-path-removal-prompt-stays-on)
+
+Отсутствие строки не означает, что запрос включён: приложение Agent SDK без параметра `stderr` не видит строку, а удаления всё равно могут выполняться без запроса. В остальных случаях проверьте, что вы установили переменную в окружении запуска, что сессия [может перейти в режим `bypassPermissions`](#skip-all-checks-with-bypasspermissions-mode) и что `claude` не запущен внутри другой сессии. Некоторые сессии [запускаются без переменной](#why-the-critical-path-removal-prompt-stays-on).
+
+Если вы видите одну из этих строк, но не устанавливали переменную, найдите, где она установлена, например в профиле вашей оболочки, и удалите её.
+
+#### Почему запрос при удалении критических путей остаётся включённым
+
+Если `CLAUDE_CODE_EVEN_MORE_DANGEROUSLY_SKIP_PERMISSIONS` не действует и удаления сохраняют свой [обычный запрос или отклонение](#critical-path-removals-in-each-permission-mode), проверьте наличие таких причин:
+
+* **Запросы разрешений обрабатывает что-то другое**: [`--permission-prompt-tool`](https://code.claude.com/docs/ru/cli-reference#cli-flags) или [callback `canUseTool`](https://code.claude.com/docs/ru/agent-sdk/user-input) Agent SDK без [`--permission-prompts none`](https://code.claude.com/docs/ru/headless#turn-off-permission-prompts-in-unattended-runs), [хук `PermissionRequest`](https://code.claude.com/docs/ru/hooks#permissionrequest) с любым matcher или [мод](https://code.claude.com/docs/ru/plugins/mods/events.md#hook-the-settings-hook-events), обрабатывающий это событие. Удалите хук, мод, инструмент или callback и перезапустите `claude`
+* **Сессию запускает панель чата [расширения VS Code](https://code.claude.com/docs/ru/vs-code.md) или [приложение Desktop](https://code.claude.com/docs/ru/desktop.md)**: вместо этого запустите `claude` в терминале, например во встроенном терминале IDE
+* **Правило охватывает Bash, Edit или Read**: [правило deny или ask](https://code.claude.com/docs/ru/permissions.md#manage-permissions), нацеленное на один из этих инструментов, при запуске или после того, как Claude Code прочитает его во время сессии, даже если вы позже его удалите. Удалите правило и перезапустите `claude`. Чтобы исключить инструмент, используйте [`--tools`](https://code.claude.com/docs/ru/cli-reference#cli-flags) вместо правила deny
+* **Включена настройка [`permissions.blockReadsOutsideWorkingDirectories`](https://code.claude.com/docs/ru/settings-reference#permissions-blockreadsoutsideworkingdirectories)**: удалите эту настройку из каждого файла настроек, где она установлена в `true`, затем перезапустите `claude`
+* **`claude` запущен внутри другой сессии**: `claude`, запущенный из инструмента Bash сессии или из хука, даже если переменная указана в его командной строке. Запускайте `claude` из своей оболочки. Не полагайтесь на это ограничение вложенных сессий как на границу безопасности
+* **Хук `PreToolUse` отвечает `ask` для удаления**: измените то, что возвращает хук
+* **Claude Code запускает сессию за вас**: [фоновые сессии](https://code.claude.com/docs/ru/agent-view.md), участники [команды агентов](https://code.claude.com/docs/ru/agent-teams.md) в разделённых панелях и сессии, которые создаёт сервер [Remote Control](https://code.claude.com/docs/ru/remote-control.md), запускаются без переменной. Запускайте `claude` из своей оболочки
+* **Не удаётся прочитать управляемые настройки**: Claude Code не смог успешно прочитать источники ваших [управляемых настроек](https://code.claude.com/docs/ru/managed-settings.md). Если серверные управляемые настройки по-прежнему не загружаются, см. [Remote managed settings failed to load](https://code.claude.com/docs/ru/errors.md#remote-managed-settings-failed-to-load). При любом другом сбое, не связанном с запросом к реестру, попросите того, кто управляет этим источником, исправить его
+* **Не удаётся выполнить запрос к реестру Windows**: в Windows и в WSL переменной нужен ответ от реестра, даже когда [WSL не использует его для настроек](https://code.claude.com/docs/ru/settings-reference.md#wslinheritswindowssettings). Запрос может не выполняться на протяжении всей сессии в неанглоязычной Windows, в WSL с отключённым interop или в контейнере на ядре WSL2. Если interop отключён, включите его. В противном случае выполняйте такие удаления сами
+
+### Remove-Item в PowerShell
+
+Когда вы включаете инструмент [PowerShell](https://code.claude.com/docs/ru/tools-reference.md#powershell-tool), Claude Code даёт `Remove-Item` и встроенные команды `cmd` `rd`, `rmdir`, `del` и `erase` свои собственные проверки, отдельные от списка критических путей `rm`. Для `Remove-Item` результат зависит от цели, и первый совпадающий случай применяется:
+
+* **Системные пути**: корневой каталог файловой системы и его каталоги верхнего уровня, корни дисков и их каталоги верхнего уровня, и ваш домашний каталог. Claude Code отклоняет команду в каждом режиме, без запроса у вас.
+* **Подстановочные знаки**: голый `*` или любая цель, заканчивающаяся на `/*` или `\*`, включая glob под переменной оболочки, такой как `$dir/*`. Claude Code отклоняет команду в каждом режиме, без запроса у вас, перед тем как [классификатор](#eliminate-prompts-with-auto-mode) её видит.
+* **Ваш рабочий каталог или один из его родителей, с `-Recurse`**: Claude Code рассматривает команду как любую другую, которая требует одобрения в вашем режиме разрешений, поэтому он спрашивает вас в режимах, которые спрашивают, отправляет её классификатору в режиме `auto` и отклоняет её в режиме `dontAsk`. Режим `bypassPermissions` пропускает эту проверку.
+
+Случай системных путей также применяется к `rd`, `rmdir`, `del` и `erase`, когда Claude запускает их через `cmd`, как в `cmd /c rd /s /q C:\Users`. По умолчанию Claude Code отклоняет такую команду в каждом режиме, без запроса у вас. Эта проверка `cmd` требует Claude Code v2.1.283 или позже.
+
+При оценке цели `cmd` Claude Code рассматривает переменную PowerShell, которая следует за буквальным текстом, как пустую. Это делает `cmd /c rd /s /q "C:\$name"` удалением `C:\`, поэтому она также отклоняется. Завершающий подстановочный знак считается папкой, которую он очищает, поэтому `cmd /c del /q C:\*` отклоняется, а `cmd /c del /q dist\*` в вашем проекте — нет.
+
+Чтобы отключить проверку `cmd`, установите [`CLAUDE_CODE_DISABLE_POWERSHELL_CMD_RM_DENY=1`](https://code.claude.com/docs/ru/env-vars#variables) в окружении, которое запускает Claude Code. Claude Code игнорирует эту переменную в блоке `env` файла параметров. `Remove-Item` на системном пути остаётся отклонённым в любом случае.
+
+## См. также
+
+* [Permissions](https://code.claude.com/docs/ru/permissions.md): правила allow, ask и deny; управляемые политики
+* [Configure auto mode](https://code.claude.com/docs/ru/auto-mode-config.md): скажите классификатору, какую инфраструктуру ваша организация доверяет
+* [Hooks](https://code.claude.com/docs/ru/hooks.md): пользовательская логика разрешений через hooks `PreToolUse` и `PermissionRequest`
+* [Security](https://code.claude.com/docs/ru/security.md): гарантии безопасности и лучшие практики
+* [Sandboxing](https://code.claude.com/docs/ru/sandboxing.md): изоляция файловой системы и сети для команд Bash
+* [Non-interactive mode](https://code.claude.com/docs/ru/headless.md): запустите Claude Code с флагом `-p`

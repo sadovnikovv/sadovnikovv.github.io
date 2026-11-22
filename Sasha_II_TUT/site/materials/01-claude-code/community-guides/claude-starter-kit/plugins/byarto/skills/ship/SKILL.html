@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>SKILL.md</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../../../../materials/index.html">Материалы</a> / <a href="../../../../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../../../../materials/01-claude-code/community-guides/claude-starter-kit/index.html">claude-starter-kit</a> / <a href="../../../../../../../../materials/01-claude-code/community-guides/claude-starter-kit/plugins/index.html">plugins</a> / <a href="../../../../../../../../materials/01-claude-code/community-guides/claude-starter-kit/plugins/byarto/index.html">byarto</a> / <a href="../../../../../../../../materials/01-claude-code/community-guides/claude-starter-kit/plugins/byarto/skills/index.html">skills</a> / <a href="../../../../../../../../materials/01-claude-code/community-guides/claude-starter-kit/plugins/byarto/skills/ship/index.html">ship</a></nav>
+<hr>
+<p>name: ship
+description: Подготовить проект к выкладке — сборка, переменные окружения, секреты и пошаговая инструкция для новичка.
+argument-hint: &quot;[куда: vercel, vps или пусто — подскажи]&quot;
+disable-model-invocation: true</p>
+<hr>
+<p>Куда выкладываем: $ARGUMENTS
+Если аргумент пустой — предложи вариант под этот проект и объясни, почему он.</p>
+<ol>
+<li>Проверь, что сборка проходит без ошибок. Если нет — исправь.</li>
+<li>Составь список переменных окружения: какие нужны, где их взять, какие из них секретные.</li>
+<li>Убедись, что секреты не попадут в репозиторий: .gitignore, .env.example.</li>
+<li>Сайт — на Vercel через GitHub. Бот или сервер — на VPS с Docker.</li>
+<li>Напиши инструкцию для новичка: шаги по порядку, что нажать и как проверить, что всё работает. Команды, которые я должен выполнить сам, выдели отдельно.</li>
+</ol>
+<p>Сам ничего не выкладывай и не пушь — только подготовь.</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Claude Code на Microsoft Foundry</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="claude-code-на-microsoft-foundry">Claude Code на Microsoft Foundry <a class="h-anchor" href="#claude-code-на-microsoft-foundry" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Узнайте о настройке Claude Code через Microsoft Foundry, включая установку, конфигурацию и устранение неполадок.</p>
+</blockquote>
+<p><strong>Deploying Claude Code across your organization?</strong> Talk to sales about enterprise plans, SSO, and centralized billing.</p>
+<p>View plans
+Contact sales</p>
+<h3 id="h">Предварительные требования <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Перед настройкой Claude Code с Microsoft Foundry убедитесь, что у вас есть:</p>
+<ul>
+<li>Подписка Azure с доступом к Microsoft Foundry</li>
+<li>Разрешения RBAC для создания ресурсов и развертываний Microsoft Foundry</li>
+<li>Azure CLI установлен и настроен (опционально - требуется только если у вас нет другого механизма для получения учетных данных)</li>
+</ul>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Если вы развертываете Claude Code для нескольких пользователей, <a href="#4-pin-model-versions">закрепите версии вашей модели</a> перед развертыванием.</p>
+</blockquote>
+<h3 id="h-2">Установка <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="подготовка-ресурса-microsoft-foundry">Подготовка ресурса Microsoft Foundry <a class="h-anchor" href="#подготовка-ресурса-microsoft-foundry" aria-label="Ссылка на раздел">#</a></h4>
+<p>Сначала создайте ресурс Claude в Azure:</p>
+<ol>
+<li>Перейдите на <a href="https://ai.azure.com/">портал Microsoft Foundry</a></li>
+<li>Создайте новый ресурс, отметив имя вашего ресурса</li>
+<li>Создайте развёртывания для моделей Claude, отметив имя развёртывания, которое вы даёте каждому; вы установите эти имена как переменные модели на шаге 4:</li>
+</ol>
+<ul>
+<li>Claude Opus</li>
+<li>Claude Sonnet</li>
+<li>Claude Haiku</li>
+</ul>
+<p>При настройке развёртывания вы также выбираете его <a href="https://platform.claude.com/docs/en/build-with-claude/claude-in-microsoft-foundry#hosting-options">вариант размещения</a>, который определяет, выполняется ли вывод на Azure или на инфраструктуре Anthropic.</p>
+<h4 id="настройка-учетных-данных-azure">Настройка учётных данных Azure <a class="h-anchor" href="#настройка-учетных-данных-azure" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude Code поддерживает три метода аутентификации для Microsoft Foundry. Выберите метод, который лучше всего соответствует вашим требованиям безопасности:</p>
+<ul>
+<li><a href="#use-an-api-key">API-ключ</a>: вы копируете ключ на портале Microsoft Foundry и устанавливаете его как <code>ANTHROPIC_FOUNDRY_API_KEY</code></li>
+<li><a href="#use-microsoft-entra-id">Microsoft Entra ID</a>: Claude Code получает токены через цепочку учётных данных по умолчанию Azure SDK, например из сессии <code>az login</code>, поэтому хранить API-ключ не нужно</li>
+<li><a href="#use-a-bearer-token">Bearer-токен</a>: другой процесс получает токен доступа Microsoft Entra ID, и вы передаёте его в <code>ANTHROPIC_FOUNDRY_AUTH_TOKEN</code></li>
+</ul>
+<blockquote>
+<p>[!NOTE]</p>
+<p>При использовании Microsoft Foundry команда <code>/logout</code> недоступна, так как аутентификация обрабатывается через учётные данные Azure.</p>
+</blockquote>
+<h5 id="использование-api-ключа">Использование API-ключа <a class="h-anchor" href="#использование-api-ключа" aria-label="Ссылка на раздел">#</a></h5>
+<p>Скопируйте ключ на портале Microsoft Foundry, затем установите его как переменную окружения:</p>
+<ol>
+<li>Перейдите к вашему ресурсу на портале Microsoft Foundry</li>
+<li>Откройте раздел <strong>Endpoints and keys</strong></li>
+<li>Скопируйте <strong>API Key</strong></li>
+<li>Установите переменную окружения, заменив <code>your-azure-api-key</code> на скопированный ключ:</li>
+</ol>
+<p>```bash theme={null}
+export ANTHROPIC_FOUNDRY_API_KEY=your-azure-api-key</p>
+<pre><code>
+#### Использование Microsoft Entra ID
+
+Оставьте `ANTHROPIC_FOUNDRY_API_KEY` и `ANTHROPIC_FOUNDRY_AUTH_TOKEN` неустановленными. Тогда Claude Code использует Azure SDK [цепочку учётных данных по умолчанию](https://learn.microsoft.com/en-us/azure/developer/javascript/sdk/authentication/credential-chains#defaultazurecredential-overview).
+Это поддерживает различные методы аутентификации локальных и удалённых рабочих нагрузок.
+
+На локальном компьютере войдите с помощью Azure CLI:
+</code></pre>
+<p>az login</p>
+<pre><code>
+О ролях, необходимых вашей учётной записи, см. [Конфигурация Azure RBAC](#azure-rbac-configuration).
+
+#### Использование Bearer-токена
+
+Claude Code отправляет значение `ANTHROPIC_FOUNDRY_AUTH_TOKEN` в каждом запросе в качестве заголовка `Authorization: Bearer`. Используйте этот вариант, когда другой процесс, такой как хост-приложение или скрипт входа, уже получил для вас токен доступа.
+
+Установите переменную на токен Bearer, выданный Microsoft Entra ID для вашего ресурса:
+</code></pre>
+<p>export ANTHROPIC_FOUNDRY_AUTH_TOKEN=your-entra-access-token</p>
+<pre><code>
+`ANTHROPIC_FOUNDRY_AUTH_TOKEN` имеет приоритет над `ANTHROPIC_FOUNDRY_API_KEY` и над цепочкой учётных данных по умолчанию.
+
+### Настройка Claude Code
+
+Установите следующие переменные окружения для включения интеграции Microsoft Foundry:
+</code></pre>
+<h1 id="enable-microsoft-foundry-integration">Enable Microsoft Foundry integration <a class="h-anchor" href="#enable-microsoft-foundry-integration" aria-label="Ссылка на раздел">#</a></h1>
+<p>export CLAUDE_CODE_USE_FOUNDRY=1</p>
+<h1 id="azure-resource-name-replace-resource-with-your-resource-name">Azure resource name (replace {resource} with your resource name) <a class="h-anchor" href="#azure-resource-name-replace-resource-with-your-resource-name" aria-label="Ссылка на раздел">#</a></h1>
+<p>export ANTHROPIC_FOUNDRY_RESOURCE={resource}</p>
+<h1 id="or-provide-the-full-base-url">Or provide the full base URL: <a class="h-anchor" href="#or-provide-the-full-base-url" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="export-anthropic_foundry_base_url-https-resource-services-ai-azure-com-anthropic">export ANTHROPIC_FOUNDRY_BASE_URL=https://{resource}.services.ai.azure.com/anthropic <a class="h-anchor" href="#export-anthropic_foundry_base_url-https-resource-services-ai-azure-com-anthropic" aria-label="Ссылка на раздел">#</a></h1>
+<pre><code>
+Установите в `ANTHROPIC_FOUNDRY_RESOURCE` только имя ресурса, например `my-resource`. Claude Code [отклоняет URL или имя хоста](https://code.claude.com/docs/ru/errors.md#anthropic-foundry-resource-must-be-a-foundry-resource-name) при отправке сообщения.
+
+### Закрепление версий моделей
+
+&gt; [!WARNING]
+&gt;
+&gt; Закрепите конкретные версии моделей для каждого развёртывания. Без закрепления псевдонимы моделей, такие как `sonnet` и `opus`, разрешаются во встроенное значение Claude Code по умолчанию для Microsoft Foundry. Это значение по умолчанию может отставать от последнего выпуска и может быть ещё недоступно в вашей учётной записи.
+&gt;
+&gt; Если в вашем ресурсе нет развёртывания для значения по умолчанию, Claude Code переключается на более старую модель или запрос завершается ошибкой. При переключении отображается сообщение, начинающееся с `Switched to &lt;fallback&gt; because &lt;model&gt; is not available`. При создании развёртываний Azure выберите конкретную версию модели вместо &quot;автоматического обновления до последней версии&quot;.
+
+Установите переменные модели в соответствии с именами развёртываний, которые вы создали на шаге 1.
+
+Без `ANTHROPIC_DEFAULT_OPUS_MODEL` псевдоним `opus` на Microsoft Foundry разрешается в Opus 4.6. Установите его на идентификатор более новой модели Opus, такой как Opus 4.8:
+</code></pre>
+<p>export ANTHROPIC_DEFAULT_OPUS_MODEL=&#x27;claude-opus-4-8&#x27;
+export ANTHROPIC_DEFAULT_SONNET_MODEL=&#x27;claude-sonnet-5&#x27;
+export ANTHROPIC_DEFAULT_HAIKU_MODEL=&#x27;claude-haiku-4-5&#x27;</p>
+<pre><code>
+Фоновые задачи, такие как генерация заголовков сессий, используют небольшую/быструю модель, обычно модель класса Haiku. На Microsoft Foundry Claude Code по умолчанию использует основную модель, потому что не каждая учётная запись имеет развёртывание Haiku. Чтобы использовать Haiku для фоновых задач, установите `ANTHROPIC_DEFAULT_HAIKU_MODEL` на развёртывание Haiku, доступное в вашей учётной записи, как показано выше.
+
+Для получения текущих и устаревших идентификаторов моделей см. [Обзор моделей](https://platform.claude.com/docs/en/about-claude/models/overview). Полный список переменных окружения см. в разделе [Конфигурация модели](https://code.claude.com/docs/ru/model-config.md#pin-models-for-third-party-deployments).
+
+[Кэширование промптов](https://code.claude.com/docs/ru/prompt-caching.md) включено автоматически. Чтобы запросить TTL кэша в 1 час вместо стандартного 5-минутного, установите следующую переменную; записи кэша с TTL в 1 час выставляются по более высокому тарифу:
+</code></pre>
+<p>export ENABLE_PROMPT_CACHING_1H=1</p>
+<pre><code>
+Чтобы установить разные TTL для вашего основного диалога и для запросов, которые Claude Code делает вне его, [выберите TTL самостоятельно](https://code.claude.com/docs/ru/prompt-caching.md#choose-the-ttl-yourself).
+
+### Запуск Claude Code
+
+С установленными переменными окружения запустите Claude Code из каталога вашего проекта:
+</code></pre>
+<p>claude</p>
+<pre><code>
+Claude Code читает `CLAUDE_CODE_USE_FOUNDRY` и другие переменные Microsoft Foundry из окружения и подключается к вашему ресурсу Azure при первом промпте. В отличие от Amazon Bedrock и Google Cloud&#x27;s Agent Platform, Microsoft Foundry не имеет интерактивного мастера установки, поэтому переменные окружения на шагах 3 и 4 являются единственным путём конфигурации.
+
+Чтобы проверить вашу установку, запустите `/status` внутри Claude Code. Строка поставщика API показывает `Microsoft Foundry` вместе с именем ресурса или базовым URL-адресом, который вы настроили.
+
+## Конфигурация Azure RBAC
+
+Если вы проходите аутентификацию с помощью Microsoft Entra ID или выданного им Bearer-токена, назначьте своему удостоверению роль `Foundry User` или `Cognitive Services User` в вашем ресурсе Foundry. Роль `Foundry User` может по-прежнему отображаться под своим прежним названием — `Azure AI User`.
+
+Если эти роли не соответствуют вашим потребностям, см. [документацию Microsoft Foundry RBAC](https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry), чтобы узнать о пользовательских ролях.
+
+## Контекстное окно на 1M токенов
+
+В Microsoft Foundry модели Fable, Sonnet 5 и более поздние, а также Opus 4.7 и более поздние по умолчанию работают с [контекстным окном на 1M токенов](https://platform.claude.com/docs/en/build-with-claude/context-windows#context-window-sizes-by-model). Суффикс `[1m]` для этого не требуется, если Claude Code может определить, какую модель обслуживает ваше развёртывание.
+
+&gt; [!NOTE]
+&gt;
+&gt; Claude Code определяет модель по имени развёртывания в ваших переменных модели. Назовите каждое развёртывание по идентификатору его модели, например `claude-opus-4-8`, или сопоставьте модель с именем вашего развёртывания с помощью [`modelOverrides`](https://code.claude.com/docs/ru/model-config#override-model-ids-per-version).
+
+Эта запись в `settings.json` сообщает Claude Code, что развёртывание с именем `team-opus-prod` обслуживает Opus 4.8:
+</code></pre>
+<p>{
+  &quot;modelOverrides&quot;: {
+    &quot;claude-opus-4-8&quot;: &quot;team-opus-prod&quot;
+  }
+}</p>
+<pre><code>
+Чтобы вместо этого сохранить окно размером 200K, задайте [`CLAUDE_CODE_DISABLE_1M_CONTEXT=1`](https://code.claude.com/docs/ru/model-config#turn-off-1m-context).
+
+Если Claude Code не удаётся сопоставить имя развёртывания с моделью, он по умолчанию предполагает окно на 1M, поэтому [укажите реальный размер окна](https://code.claude.com/docs/ru/model-config.md#correct-the-window-for-a-gateway-or-custom-model-id), если развёрнутая модель принимает меньше. До версии v2.1.323 Claude Code по умолчанию предполагал окно на 200K, поэтому в этих версиях добавьте `[1m]` к имени в ваших переменных модели, если модель принимает 1M.
+
+Opus 4.6 и Sonnet 4.6 получают окно на 1M, если добавить `[1m]` к имени развёртывания в `ANTHROPIC_DEFAULT_OPUS_MODEL` или `ANTHROPIC_DEFAULT_SONNET_MODEL`, как описано в разделе [Закрепление моделей для сторонних развёртываний](https://code.claude.com/docs/ru/model-config.md#pin-models-for-third-party-deployments). До версии v2.1.287 моделям Fable, а также Opus 4.7 и более поздним в Microsoft Foundry тоже требовался этот суффикс, а без него они по умолчанию работали с окном размером 200K.
+
+## Устранение неполадок
+
+Если вы получаете ошибку &quot;Failed to get token from azureADTokenProvider: ChainedTokenCredential authentication failed&quot;:
+
+* Настройте Entra ID в среде или установите `ANTHROPIC_FOUNDRY_API_KEY`.
+
+Если запросы завершаются с ошибками повторного подключения на первом запросе:
+
+* Проверьте, что `ANTHROPIC_FOUNDRY_RESOURCE` установлен на ваше фактическое имя ресурса, а не на заполнитель. Claude Code создает URL конечной точки из этого значения, поэтому неправильное имя указывает на хост, который не существует.
+
+## Дополнительные ресурсы
+
+* [Документация Microsoft Foundry](https://learn.microsoft.com/en-us/azure/ai-foundry/what-is-azure-ai-foundry)
+* [Модели Microsoft Foundry](https://ai.azure.com/explore/models)
+* [Цены Microsoft Foundry](https://azure.microsoft.com/en-us/pricing/details/ai-foundry/)
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

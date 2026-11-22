@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Отправка событий в активный сеанс через каналы</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Отправка событий в активный сеанс через каналы <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Используйте каналы для отправки сообщений, оповещений и вебхуков в ваш сеанс Claude Code из MCP-сервера. Перенаправляйте результаты CI, сообщения чата и события мониторинга, чтобы Claude мог реагировать, пока вас нет.</p>
+</blockquote>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Каналы находятся в <a href="#research-preview">исследовательском превью</a>. Они требуют аутентификации Anthropic через claude.ai или ключ API Console, и недоступны на Amazon Bedrock, Google Cloud&#x27;s Agent Platform или Microsoft Foundry. Организации Team и Enterprise должны <a href="#enterprise-controls">явно их включить</a>.</p>
+</blockquote>
+<p>Канал — это MCP-сервер, который отправляет события в ваш активный сеанс Claude Code, чтобы Claude мог реагировать на события, происходящие, пока вас нет у терминала. Каналы могут быть двусторонними: Claude читает событие и отвечает через тот же канал, как мост чата. События поступают только пока сеанс открыт, поэтому для постоянно работающей установки вы запускаете Claude в фоновом процессе или постоянном терминале.</p>
+<p>В отличие от интеграций, которые создают новый облачный сеанс или ждут опроса, событие поступает в уже открытый сеанс: см. <a href="#how-channels-compare">сравнение каналов</a>.</p>
+<p>Вы устанавливаете канал как плагин и настраиваете его со своими учетными данными. Telegram, Discord и iMessage включены в исследовательское превью.</p>
+<p>Когда Claude отвечает через канал, вы видите входящее сообщение в терминале, но не текст ответа. Терминал показывает вызов инструмента и подтверждение (например, &quot;отправлено&quot;), а фактический ответ появляется на другой платформе.</p>
+<p>Если вы управляете организацией Team, Enterprise или Console, см. <a href="#enterprise-controls">Включение каналов для вашей организации</a>. Чтобы создать свой собственный канал, см. <a href="https://code.claude.com/docs/ru/channels-reference.md">справочник по каналам</a>.</p>
+<h3 id="h-2">Поддерживаемые каналы <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Каждый поддерживаемый канал — это плагин, который требует <a href="https://bun.sh">Bun</a>. Для практической демонстрации потока плагинов перед подключением реальной платформы попробуйте <a href="#quickstart">быстрый старт fakechat</a>.</p>
+<blockquote>
+<p>[tab] Telegram</p>
+<p>Просмотрите полный <a href="https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/telegram">исходный код плагина Telegram</a>.</p>
+<p><strong>1. Создайте бота Telegram</strong></p>
+<p>Откройте <a href="https://t.me/BotFather">BotFather</a> в Telegram и отправьте <code>/newbot</code>. Дайте ему отображаемое имя и уникальное имя пользователя, заканчивающееся на <code>bot</code>. Скопируйте токен, который возвращает BotFather.</p>
+<p><strong>2. Установите плагин</strong></p>
+<p>Запустите Claude Code, выполнив <code>claude</code> в терминале, затем введите в его промпте:</p>
+<pre><code>/plugin install telegram@claude-plugins-official</code></pre>
+<p>Если установка не удалась, сопоставьте сообщение, которое сообщает Claude Code:</p>
+<ul>
+<li><code>Marketplace &quot;claude-plugins-official&quot; not found</code>: добавьте маркетплейс с помощью <code>/plugin marketplace add anthropics/claude-plugins-official</code>, затем повторите попытку установки.</li>
+<li><code>Plugin &quot;&lt;name&gt;&quot; not found in marketplace &quot;claude-plugins-official&quot;</code>: ваша локальная копия каталога маркетплейса может быть устаревшей. Обновите её с помощью <code>/plugin marketplace update claude-plugins-official</code>, затем повторите попытку установки. Если повторная попытка выводит то же сообщение, см. <a href="https://code.claude.com/docs/ru/plugins/troubleshooting.md#plugin-not-found-in-marketplace">Плагин не найден в маркетплейсе</a>.</li>
+</ul>
+<p>Когда установка запрашивает область действия установки, выберите опцию области действия пользователя, чтобы плагин был доступен во всех ваших проектах. Проверьте сводку установки: если она сообщает <code>Run /reload-plugins to apply.</code>, см. <a href="https://code.claude.com/docs/ru/plugins/cli-reference.md#reload-plugins">Применение изменений плагина без перезагрузки</a>, чтобы сделать команду настройки плагина доступной.</p>
+<p><strong>3. Настройте ваш токен</strong></p>
+<p>Выполните команду настройки с токеном от BotFather:</p>
+<pre><code>/telegram:configure &lt;token&gt;</code></pre>
+<p>Это сохранит его в <code>~/.claude/channels/telegram/.env</code>. Вы также можете установить <code>TELEGRAM_BOT_TOKEN</code> в переменной окружения вашей оболочки перед запуском Claude Code.</p>
+<p><strong>4. Перезагрузитесь с включенными каналами</strong></p>
+<p>Выйдите из Claude Code и перезагрузитесь с флагом канала. Это запустит плагин Telegram, который начнет опрашивать сообщения от вашего бота:</p>
+<p>```bash theme={null}
+claude --channels plugin:telegram@claude-plugins-official</p>
+<pre><code>
+**5. Выполните сопряжение вашей учетной записи**
+
+Откройте Telegram и отправьте любое сообщение вашему боту. Бот ответит кодом сопряжения.
+
+&gt; [!NOTE]
+&gt;
+&gt; Если ваш бот не отвечает, убедитесь, что Claude Code работает с `--channels` из предыдущего шага. Бот может отвечать только пока канал активен.
+
+Вернитесь в Claude Code и выполните:
+</code></pre>
+<p>/telegram:access pair &lt;code&gt;</p>
+<pre><code>
+Затем заблокируйте доступ, чтобы только ваша учетная запись могла отправлять сообщения:
+</code></pre>
+<p>/telegram:access policy allowlist</p>
+<pre><code></code></pre>
+</blockquote>
+<blockquote>
+<p>[tab] Discord</p>
+<p>Просмотрите полный <a href="https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/discord">исходный код плагина Discord</a>.</p>
+<p><strong>1. Создайте бота Discord</strong></p>
+<p>Перейдите на <a href="https://discord.com/developers/applications">Discord Developer Portal</a>, нажмите <strong>New Application</strong> и назовите его. В разделе <strong>Bot</strong> создайте имя пользователя, затем нажмите <strong>Reset Token</strong> и скопируйте токен.</p>
+<p><strong>2. Включите Message Content Intent</strong></p>
+<p>В настройках вашего бота прокрутите до <strong>Privileged Gateway Intents</strong> и включите <strong>Message Content Intent</strong>.</p>
+<p><strong>3. Пригласите бота на ваш сервер</strong></p>
+<p>Перейдите в <strong>OAuth2 &gt; URL Generator</strong>. Выберите область <code>bot</code> и включите эти разрешения:</p>
+<ul>
+<li>View Channels</li>
+<li>Send Messages</li>
+<li>Send Messages in Threads</li>
+<li>Create Public Threads</li>
+<li>Read Message History</li>
+<li>Attach Files</li>
+<li>Add Reactions</li>
+</ul>
+<p>Откройте созданный URL для добавления бота на ваш сервер.</p>
+<p><strong>4. Установите плагин</strong></p>
+<p>Запустите Claude Code, выполнив <code>claude</code> в терминале, затем введите в его промпте:</p>
+<pre><code>/plugin install discord@claude-plugins-official</code></pre>
+<p>Если установка не удалась, сопоставьте сообщение, которое сообщает Claude Code:</p>
+<ul>
+<li><code>Marketplace &quot;claude-plugins-official&quot; not found</code>: добавьте маркетплейс с помощью <code>/plugin marketplace add anthropics/claude-plugins-official</code>, затем повторите попытку установки.</li>
+<li><code>Plugin &quot;&lt;name&gt;&quot; not found in marketplace &quot;claude-plugins-official&quot;</code>: ваша локальная копия каталога маркетплейса может быть устаревшей. Обновите её с помощью <code>/plugin marketplace update claude-plugins-official</code>, затем повторите попытку установки. Если повторная попытка выводит то же сообщение, см. <a href="https://code.claude.com/docs/ru/plugins/troubleshooting.md#plugin-not-found-in-marketplace">Плагин не найден в маркетплейсе</a>.</li>
+</ul>
+<p>Когда установка запрашивает область действия установки, выберите опцию области действия пользователя, чтобы плагин был доступен во всех ваших проектах. Проверьте сводку установки: если она сообщает <code>Run /reload-plugins to apply.</code>, см. <a href="https://code.claude.com/docs/ru/plugins/cli-reference.md#reload-plugins">Применение изменений плагина без перезагрузки</a>, чтобы сделать команду настройки плагина доступной.</p>
+<p><strong>5. Настройте ваш токен</strong></p>
+<p>Выполните команду настройки с токеном бота, который вы скопировали:</p>
+<pre><code>/discord:configure &lt;token&gt;</code></pre>
+<p>Это сохранит его в <code>~/.claude/channels/discord/.env</code>. Вы также можете установить <code>DISCORD_BOT_TOKEN</code> в переменной окружения вашей оболочки перед запуском Claude Code.</p>
+<p><strong>6. Перезагрузитесь с включенными каналами</strong></p>
+<p>Выйдите из Claude Code и перезагрузитесь с флагом канала. Это подключит плагин Discord, чтобы ваш бот мог получать и отвечать на сообщения:</p>
+<p>```bash theme={null}
+claude --channels plugin:discord@claude-plugins-official</p>
+<pre><code>
+**7. Выполните сопряжение вашей учетной записи**
+
+Отправьте личное сообщение вашему боту в Discord. Бот ответит кодом сопряжения.
+
+&gt; [!NOTE]
+&gt;
+&gt; Если ваш бот не отвечает, убедитесь, что Claude Code работает с `--channels` из предыдущего шага. Бот может отвечать только пока канал активен.
+
+Вернитесь в Claude Code и выполните:
+</code></pre>
+<p>/discord:access pair &lt;code&gt;</p>
+<pre><code>
+Затем заблокируйте доступ, чтобы только ваша учетная запись могла отправлять сообщения:
+</code></pre>
+<p>/discord:access policy allowlist</p>
+<pre><code></code></pre>
+</blockquote>
+<blockquote>
+<p>[tab] iMessage</p>
+<p>Просмотрите полный <a href="https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/imessage">исходный код плагина iMessage</a>.</p>
+<p>Канал iMessage читает вашу базу данных Messages напрямую и отправляет ответы через AppleScript. Он требует macOS и не требует токена бота или внешнего сервиса.</p>
+<p><strong>1. Предоставьте полный доступ к диску</strong></p>
+<p>База данных Messages в <code>~/Library/Messages/chat.db</code> защищена macOS. При первом чтении сервером macOS запрашивает доступ: нажмите <strong>Allow</strong>. Запрос указывает приложение, которое запустило Bun, например Terminal, iTerm или вашу IDE.</p>
+<p>Если запрос не появляется или вы нажали Don&#x27;t Allow, предоставьте доступ вручную в <strong>System Settings &gt; Privacy &amp; Security &gt; Full Disk Access</strong> и добавьте ваш терминал. Без этого сервер немедленно завершит работу с ошибкой <code>authorization denied</code>.</p>
+<p><strong>2. Установите плагин</strong></p>
+<p>Запустите Claude Code, выполнив <code>claude</code> в терминале, затем введите в его промпте:</p>
+<pre><code>/plugin install imessage@claude-plugins-official</code></pre>
+<p>Если установка не удалась, сопоставьте сообщение, которое сообщает Claude Code:</p>
+<ul>
+<li><code>Marketplace &quot;claude-plugins-official&quot; not found</code>: добавьте маркетплейс с помощью <code>/plugin marketplace add anthropics/claude-plugins-official</code>, затем повторите попытку установки.</li>
+<li><code>Plugin &quot;&lt;name&gt;&quot; not found in marketplace &quot;claude-plugins-official&quot;</code>: ваша локальная копия каталога маркетплейса может быть устаревшей. Обновите её с помощью <code>/plugin marketplace update claude-plugins-official</code>, затем повторите попытку установки. Если повторная попытка выводит то же сообщение, см. <a href="https://code.claude.com/docs/ru/plugins/troubleshooting.md#plugin-not-found-in-marketplace">Плагин не найден в маркетплейсе</a>.</li>
+</ul>
+<p>Когда установка запрашивает область установки, выберите опцию области пользователя, чтобы плагин был доступен во всех ваших проектах.</p>
+<p>Если сводка установки сообщает <code>Run /reload-plugins to apply.</code>, здесь ничего делать не нужно, потому что перезагрузка на следующем шаге подхватит плагин.</p>
+<p><strong>3. Перезагрузитесь с включенными каналами</strong></p>
+<p>Выйдите из Claude Code и перезагрузитесь с флагом канала:</p>
+<p>```bash theme={null}
+claude --channels plugin:imessage@claude-plugins-official</p>
+<pre><code>
+**4. Напишите себе**
+
+Откройте Messages на любом устройстве, вошедшем в вашу Apple ID, и отправьте сообщение себе. Оно сразу же достигает Claude: самочат обходит контроль доступа без настройки.
+
+&gt; [!NOTE]
+&gt;
+&gt; Первый ответ, который отправляет Claude, вызывает запрос macOS Automation, спрашивающий, может ли ваш терминал управлять Messages. Нажмите **OK**.
+
+**5. Разрешите другим отправителям**
+
+По умолчанию проходят только ваши собственные сообщения. Чтобы позволить другому контакту достичь Claude, добавьте его дескриптор:
+</code></pre>
+<p>/imessage:access allow +15551234567</p>
+<pre><code>
+Дескрипторы — это номера телефонов в формате `+country` или адреса электронной почты Apple ID, такие как `user@example.com`.</code></pre>
+</blockquote>
+<h3 id="h-3">Быстрый старт <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fakechat — это официально поддерживаемый демонстрационный канал, который запускает интерфейс чата на localhost без необходимости аутентификации и без внешнего сервиса для настройки.</p>
+<p>После установки и включения fakechat вы можете печатать в браузере, и сообщение поступает в ваш сеанс Claude Code. Claude отвечает, и ответ появляется обратно в браузере. После того как вы протестировали интерфейс fakechat, попробуйте <a href="https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/telegram">Telegram</a>, <a href="https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/discord">Discord</a> или <a href="https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins/imessage">iMessage</a>.</p>
+<p>Для демонстрации fakechat вам потребуется:</p>
+<ul>
+<li>Claude Code <a href="https://code.claude.com/docs/ru/quickstart.md#step-1-install-claude-code">установлен и аутентифицирован</a> с учетной записью claude.ai или ключом API Claude Console</li>
+<li><a href="https://bun.sh">Bun</a> установлен. Встроенные плагины каналов — это скрипты Bun. Проверьте с помощью <code>bun --version</code>; если это не сработает, <a href="https://bun.sh/docs/installation">установите Bun</a>.</li>
+<li><strong>Организация Team, Enterprise или управляемая Console</strong>: ваш администратор должен <a href="#enterprise-controls">включить каналы</a> в управляемых параметрах</li>
+</ul>
+<p><strong>1. Установите плагин канала fakechat</strong></p>
+<p>Запустите Claude Code, выполнив <code>claude</code> в терминале, затем введите команду установки в его промпте:</p>
+<p>```text theme={null}
+/plugin install fakechat@claude-plugins-official</p>
+<pre><code>
+Если установка не удается, сопоставьте сообщение, которое сообщает Claude Code:
+
+* `Marketplace &quot;claude-plugins-official&quot; not found`: добавьте маркетплейс с помощью `/plugin marketplace add anthropics/claude-plugins-official`, затем повторите попытку установки.
+* `Plugin &quot;&lt;name&gt;&quot; not found in marketplace &quot;claude-plugins-official&quot;`: ваша локальная копия каталога маркетплейса может быть устаревшей. Обновите её с помощью `/plugin marketplace update claude-plugins-official`, затем повторите попытку установки. Если повторная попытка выводит то же сообщение, см. [Plugin not found in marketplace](https://code.claude.com/docs/ru/plugins/troubleshooting.md#plugin-not-found-in-marketplace).
+
+Когда установка запросит область установки, выберите опцию области пользователя, чтобы плагин был доступен во всех ваших проектах.
+
+Если сводка установки сообщает `Run /reload-plugins to apply.`, вам не нужно действовать здесь, потому что перезапуск на следующем шаге подхватит плагин.
+
+**2. Перезагрузитесь с включенным каналом**
+
+Выйдите из Claude Code, затем перезагрузитесь с `--channels` и передайте установленный плагин fakechat:
+</code></pre>
+<p>claude --channels plugin:fakechat@claude-plugins-official</p>
+<pre><code>
+Сервер fakechat запустится автоматически. На экране запуска отображается уведомление о каналах, указывающее, что сообщения от `plugin:fakechat@claude-plugins-official` вводятся непосредственно в этот сеанс. Если плагин не установлен или не находится в утвержденном списке разрешений, предупреждающая строка с указанием проблемы появляется ниже этого уведомления.
+
+&gt; [!TIP]
+&gt;
+&gt; Вы можете передать несколько плагинов в `--channels`, разделенные пробелом.
+
+**3. Отправьте сообщение**
+
+Откройте интерфейс fakechat по адресу [http://localhost:8787](http://localhost:8787) и введите сообщение:
+</code></pre>
+<p>what&#x27;s in my working directory?</p>
+<pre><code>
+Сообщение поступает в ваш сеанс Claude Code. Терминал показывает его как входящую строку канала, например `← fakechat · web: what&#x27;s in my working directory?`, в то время как модель получает его как событие `&lt;channel source=&quot;plugin:fakechat:fakechat&quot;&gt;`, используя имя сервера с областью действия плагина. Claude читает его, выполняет работу и вызывает инструмент `reply` fakechat. Если Claude Code запросит разрешение на первый ответ, одобрите его. Ответ появляется в интерфейсе чата.
+
+Если Claude столкнется с запросом разрешения, пока вас нет у терминала, сеанс приостановится до вашего ответа. Серверы каналов, которые объявляют [возможность трансляции разрешений](https://code.claude.com/docs/ru/channels-reference.md#relay-permission-prompts), могут перенаправлять эти запросы вам, чтобы вы могли одобрить или отклонить их удаленно. Для автоматического использования [`--dangerously-skip-permissions`](https://code.claude.com/docs/ru/permission-modes#skip-all-checks-with-bypasspermissions-mode) обходит большинство запросов, но используйте это только в окружениях, которым вы доверяете. Даже в этом случае ограничения на [действия, которые ни один режим не одобряет автоматически](https://code.claude.com/docs/ru/permission-modes.md#actions-no-mode-auto-approves), по-прежнему действуют.
+
+Когда вы запускаете каналы в неинтерактивном режиме с `-p`, инструменты, которые требуют ввода с терминала, такие как вопросы с множественным выбором и одобрение режима плана, отключены, чтобы сеанс никогда не зависал в ожидании ввода.
+
+## Безопасность
+
+Каждый одобренный плагин канала поддерживает список разрешенных отправителей: только ID, которые вы добавили, могут отправлять сообщения, и все остальные молча отбрасываются.
+
+Telegram и Discord инициализируют список путем сопряжения:
+
+1. Найдите своего бота в Telegram или Discord и отправьте ему любое сообщение
+2. Бот ответит кодом сопряжения
+3. В вашем сеансе Claude Code одобрите код при появлении запроса
+4. Ваш ID отправителя добавляется в список разрешенных
+
+iMessage работает иначе: отправка сообщения себе автоматически обходит ворота, и вы добавляете другие контакты по дескриптору с помощью `/imessage:access allow`.
+
+Кроме того, вы контролируете, какие серверы включены в каждом сеансе с помощью `--channels`, и ваша организация контролирует доступность с помощью [`channelsEnabled`](#enterprise-controls) на планах claude.ai Team и Enterprise и на организациях Console, которые развертывают управляемые параметры.
+
+Нахождение в `.mcp.json` недостаточно для отправки сообщений: сервер также должен быть указан в `--channels`.
+
+Список разрешенных также контролирует [трансляцию разрешений](https://code.claude.com/docs/ru/channels-reference.md#relay-permission-prompts), если канал это объявляет. Любой, кто может отвечать через канал, может одобрить или отклонить использование инструмента в вашем сеансе, поэтому добавляйте в список разрешенных только отправителей, которым вы доверяете эту власть.
+
+## Элементы управления для Enterprise
+
+Администраторы контролируют доступность через два [управляемых параметра](https://code.claude.com/docs/ru/settings.md), которые пользователи не могут переопределить. Значение по умолчанию зависит от того, как вы аутентифицируетесь:
+
+* **claude.ai Team и Enterprise**: каналы заблокированы до тех пор, пока Owner их не [включит](#enable-channels-for-your-organization).
+* **Anthropic Console с аутентификацией ключа API**: каналы разрешены по умолчанию. Этот параметр нужен только если ваша организация развертывает управляемые параметры.
+
+Во всех случаях ни один канал не запустится до тех пор, пока пользователь не выберет его для сеанса с помощью `--channels`.
+
+| Параметр | Назначение | Если не настроено |
+| :- | :- | :- |
+| `channelsEnabled` | Главный переключатель. Должен быть `true` для доставки сообщений любым каналом. Блокирует все каналы, включая флаг разработки, когда отключен. См. [Включение каналов для вашей организации](#enable-channels-for-your-organization). | claude.ai Team и Enterprise: каналы заблокированы. Console: каналы разрешены, если ваша организация не развертывает управляемые параметры, в этом случае каналы заблокированы до установки этого ключа |
+| `allowedChannelPlugins` | Какие плагины могут регистрироваться после включения каналов. Заменяет список, поддерживаемый Anthropic, когда установлен. | Применяется список по умолчанию Anthropic |
+
+Пользователи Pro, Max и Ultra без организации пропускают эти проверки полностью: каналы доступны и пользователи выбирают участие в каждой сессии с помощью `--channels`.
+
+### Включение каналов для вашей организации
+
+Включите каналы для вашей организации в [**Organization settings &gt; Claude Code &gt; Channels**](https://claude.ai/admin-settings/claude-code), что требует роли Owner, или установив `channelsEnabled` на `true` в управляемых настройках.
+
+После включения пользователи в вашей организации могут использовать `--channels` для выбора серверов каналов в отдельных сеансах. Если параметр отключен или не установлен, MCP-сервер все еще подключается и его инструменты работают, но сообщения каналов не будут поступать. Предупреждение при запуске сообщает пользователю попросить администратора включить параметр.
+
+### Ограничение того, какие плагины каналов могут работать
+
+По умолчанию любой плагин из списка разрешенных, поддерживаемого Anthropic, может регистрироваться как канал. Администраторы на планах Team и Enterprise могут заменить этот список разрешенных своим собственным, установив `allowedChannelPlugins` в управляемых параметрах. Используйте это для ограничения того, какие официальные плагины разрешены, одобрения каналов из вашего собственного внутреннего маркетплейса или обоих. Каждая запись называет плагин и маркетплейс, из которого он поступает:
+</code></pre>
+<p>{
+  &quot;channelsEnabled&quot;: true,
+  &quot;allowedChannelPlugins&quot;: [
+    { &quot;marketplace&quot;: &quot;claude-plugins-official&quot;, &quot;plugin&quot;: &quot;telegram&quot; },
+    { &quot;marketplace&quot;: &quot;claude-plugins-official&quot;, &quot;plugin&quot;: &quot;discord&quot; },
+    { &quot;marketplace&quot;: &quot;acme-corp-plugins&quot;, &quot;plugin&quot;: &quot;internal-alerts&quot; }
+  ]
+}</p>
+<pre><code>
+Если вы установите пустой массив, вы заблокируете все плагины каналов из списка разрешенных, но `--dangerously-load-development-channels` все еще может его обойти для локального тестирования. Чтобы полностью заблокировать каналы, включая флаг разработки, оставьте `channelsEnabled` неустановленным.
+
+Этот параметр требует `channelsEnabled: true`. Если пользователь передает плагин в `--channels`, который не находится в вашем списке, Claude Code запускается нормально, но канал не регистрируется, и уведомление при запуске объясняет, что плагин не находится в утвержденном списке организации. В среде выполнения MCP-клиента v2 канал также может не зарегистрироваться, потому что Claude Code [не регистрирует сервер канала, который согласовывает редакцию протокола 2026-07-28](https://code.claude.com/docs/ru/mcp.md#push-messages-with-channels).
+
+## Исследовательское превью
+
+Каналы — это функция исследовательского превью. Доступность постепенно развертывается, и синтаксис флага `--channels` и контракт протокола могут измениться на основе обратной связи.
+
+Ни `--channels`, ни `--dangerously-load-development-channels` не отображаются в `claude --help` во время превью функции. Флаги работают, несмотря на то, что они не указаны.
+
+Во время превью `--channels` принимает только плагины из списка разрешенных, поддерживаемого Anthropic, или из списка разрешенных вашей организации, если администратор установил [`allowedChannelPlugins`](#restrict-which-channel-plugins-can-run). Плагины каналов в [claude-plugins-official](https://github.com/anthropics/claude-plugins-official/tree/main/external_plugins) — это набор по умолчанию, одобренный Anthropic. Если вы передадите что-то, что не находится в действующем списке разрешенных, Claude Code запустится нормально, но канал не зарегистрируется, и уведомление при запуске скажет вам почему.
+
+Для тестирования создаваемого вами канала передайте его в `--dangerously-load-development-channels` в форме `plugin:&lt;name&gt;@&lt;marketplace&gt;` или `server:&lt;name&gt;`. См. [Тестирование во время исследовательского превью](https://code.claude.com/docs/ru/channels-reference.md#test-during-the-research-preview) для информации о тестировании пользовательских каналов, которые вы создаете.
+
+Сообщайте о проблемах или отзывах в [репозитории Claude Code на GitHub](https://github.com/anthropics/claude-code/issues).
+
+## Сравнение каналов
+
+Несколько функций Claude Code подключаются к системам вне терминала, каждая подходит для разного вида работы:
+
+| Функция | Что она делает | Хорошо для |
+| - | - | - |
+| [Облачные сессии](https://code.claude.com/docs/ru/claude-code-on-the-web.md) | Запускает задачи в свежей облачной песочнице, клонированной из GitHub | Делегирование самостоятельной асинхронной работы, которую вы проверяете позже |
+| [Claude в Slack](https://code.claude.com/docs/ru/slack.md) | Создает облачную сессию из упоминания `@Claude` в канале или потоке | Запуск задач непосредственно из командного диалога |
+| Стандартный [MCP-сервер](https://code.claude.com/docs/ru/mcp.md) | Claude запрашивает его во время задачи; ничего не отправляется в сеанс | Предоставление Claude доступа по требованию для чтения или запроса системы |
+| [Remote Control](https://code.claude.com/docs/ru/remote-control.md) | Вы управляете своим локальным сеансом из claude.ai или мобильного приложения Claude | Управление активным сеансом, пока вас нет за столом |
+
+Каналы заполняют пробел в этом списке, отправляя события из источников, не связанных с Claude, в ваш уже работающий локальный сеанс.
+
+* **Chat bridge**: спросите Claude что-то со своего телефона через Telegram, Discord или iMessage, и ответ вернется в тот же чат, пока работа выполняется на вашей машине с вашими реальными файлами.
+* **[Webhook receiver](https://code.claude.com/docs/ru/channels-reference.md#example-build-a-webhook-receiver)**: вебхук из CI, вашего трекера ошибок, конвейера развертывания или другого внешнего сервиса поступает туда, где Claude уже имеет открытые ваши файлы и помнит, что вы отлаживали.
+
+## Следующие шаги
+
+После того как у вас есть работающий канал, изучите эти связанные функции:
+
+* [Создайте свой собственный канал](https://code.claude.com/docs/ru/channels-reference.md) для систем, у которых еще нет плагинов
+* [Remote Control](https://code.claude.com/docs/ru/remote-control.md) для управления локальным сеансом со своего телефона вместо отправки событий в него
+* [Запланированные задачи в рамках сессии](https://code.claude.com/docs/ru/scheduled-tasks.md) для опроса по таймеру вместо реагирования на отправленные события
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

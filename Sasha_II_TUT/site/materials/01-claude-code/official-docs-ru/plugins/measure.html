@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Измерение стоимости и использования плагина</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/plugins/index.html">plugins</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Измерение стоимости и использования плагина <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Измерьте стоимость токенов плагина Claude Code, узнайте, используют ли его люди, и выберите события телеметрии для вопросов плагинов на уровне организации.</p>
+</blockquote>
+<p>Каждый сеанс, в котором включен плагин, включает имена и описания его skills, agents и commands в контексте Claude, и эти токены учитываются в использовании пользователя независимо от того, используется ли плагин или нет. На этой странице показано, как увидеть это число для плагина, как его уменьшить, если вы поддерживаете плагин, и где отображается использование, чтобы вы могли определить, все ли еще используется плагин.</p>
+<p>Эта страница предназначена для авторов и разработчиков плагинов. Если вы администрируете Claude Code для организации, раздел <a href="#measure-across-a-fleet">Измерение по всему парку</a> охватывает те же вопросы на каждой машине.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Эти случаи рассматриваются на других страницах:</p>
+<ul>
+<li><strong>Тестирование того, насколько надежно плагин изменяет поведение Claude</strong>: см. <a href="https://code.claude.com/docs/ru/plugin-evals.md">Тестирование плагинов с помощью evals</a></li>
+<li><strong>Сокращение контекста вашего собственного сеанса</strong>: см. <a href="https://code.claude.com/docs/ru/plugins/install.md#manage-installed-plugins">Управление установленными плагинами</a> и страницу <a href="https://code.claude.com/docs/ru/context-window.md">контекстного окна</a></li>
+</ul>
+</blockquote>
+<p>Начните с раздела <a href="#measure-what-a-plugin-costs">Измерение стоимости плагина</a>.</p>
+<h3 id="h-2">Измерение стоимости плагина <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Чтобы увидеть, что плагин добавляет в контекст Claude, запустите <a href="https://code.claude.com/docs/ru/plugins/cli-reference#plugin-details"><code>claude plugin details</code></a> с именем плагина. Вы запускаете его в своей оболочке, а не в приглашении запущенного сеанса Claude Code. Плагин должен быть загружен: установлен, находиться в каталоге skills или передан с помощью <code>--plugin-dir</code> в той же команде, как в <code>claude --plugin-dir ./formatter plugin details formatter</code>.</p>
+<p>Этот пример читает установленный плагин с именем <code>formatter</code>, который имеет два skills, команду, agent, hook и MCP server:</p>
+<p>```bash theme={null}
+claude plugin details formatter</p>
+<pre><code></code></pre>
+<p>formatter 1.0.0
+  Description: Formats and lints code on save
+  Source: formatter@my-marketplace</p>
+<p>Component inventory
+  Skills (3)  format-all, format-code, lint-fix
+  Agents (1)  style-reviewer
+  Hooks (1)  PostToolUse  (harness-only — no model context cost)
+  MCP servers (1)  formatter-tools  (tool schemas resolved at runtime; not counted)
+  LSP servers (0)</p>
+<p>Projected token cost
+  Always-on:   ~146 tok   added to every session</p>
+<p>Per-component (rounded)
+  component       always-on  on-invoke
+  format-code           ~40        ~30
+  lint-fix              ~50        ~30
+  style-reviewer        ~40        ~40
+  format-all           &lt; 20        ~30</p>
+<p>On-invoke cost is paid each time a skill or agent fires.
+  Token counts are estimates and may differ from actual usage.</p>
+<pre><code>
+Каждая часть вывода отвечает на другой вопрос:
+
+* **Component inventory**: что Claude Code нашел в плагине. Commands считаются вместе с skills, поэтому `format-all` появляется под `Skills`. Hooks и MCP servers не получают оценку стоимости и не имеют строки per-component; чтобы увидеть, что добавляют MCP tools плагина, запустите `/context` в сеансе с включенным плагином и прочитайте категорию `MCP tools`.
+* **Always-on**: токены, которые имена и описания skills, agents и commands плагина добавляют к каждому сеансу, в котором включен плагин, независимо от того, запускается ли что-либо. Это число, которое несет каждый пользователь, и то, которое нужно уменьшить.
+* **Per-component**: каждая строка разбивает один skill, agent или command на его always-on долю и его on-invoke стоимость, которая является телом, загружаемым только при запуске этого компонента. Используйте столбец always-on, чтобы найти, какой компонент вносит наибольший вклад.
+
+### Снижение значения always-on
+
+Если вы поддерживаете плагин, эти изменения уменьшают то, что он добавляет к каждому сеансу. Если вы только его используете, ваши варианты — отключить или удалить его; см. [Управление установленными плагинами](https://code.claude.com/docs/ru/plugins/install.md#manage-installed-plugins).
+
+Значение always-on считает имя каждого компонента плюс его `description` и `when_to_use` frontmatter. Чтобы его снизить:
+
+* Сократите описания skill и agent.
+* Разделите большой плагин, чтобы пользователи устанавливали только нужные им компоненты.
+
+Описание skill также то, что Claude сопоставляет с запросом, поэтому более короткое может остановить срабатывание skill. После сокращения описаний проверьте срабатывание с помощью [`tool_used: Skill` grader](https://code.claude.com/docs/ru/plugin-evals#create-your-first-eval-suite) в вашем eval suite.
+
+Для того, что вносит каждый тип компонента, см. [plugin components](https://code.claude.com/docs/ru/plugins/components.md).
+
+### Стоимость, показанная пользователям перед установкой
+
+Плагины в официальном marketplace показывают свою стоимость пользователям перед установкой. В `/plugin`, когда пользователь просматривает список плагинов marketplace и выбирает плагин, панель деталей показывает раздел **Context cost** с линией `Every turn:` и линией `When invoked:`. Когда значение always-on составляет 2000 токенов или более, линия `Every turn:` отображается выделенной.
+
+Плагин в вашем собственном marketplace не имеет раздела **Context cost**.
+
+## Проверка использования плагина
+
+Claude Code не сообщает об использовании плагина его автору. Использование записывается на машине каждого человека, который установил плагин, поэтому то, что вы можете узнать, зависит от вашего отношения к этим людям:
+
+* **Вы администрируете Claude Code для их организации**: события OpenTelemetry и Analytics API считают установки и активации skills на каждой машине. См. [Измерение по всему парку](#measure-across-a-fleet).
+* **Это товарищи по команде, которых вы можете спросить**: собственный Claude Code каждого пользователя показывает им, используют ли они все еще плагин, в четырех местах: панель [`/plugin`](#not-used-recently-in-/plugin), [`/skill-doctor`](#find-skills-that-never-run), [`/doctor`](#unused-plugins-in-/doctor) и [`/usage`](#usage-share-in-/usage). Все четыре — это команды, которые пользователь запускает в приглашении Claude Code в сеансе на своей собственной машине.
+* **Ни то, ни другое**: у вас нет сигнала об использовании Claude Code для этого плагина.
+
+Для использования плагина, указанного в каталоге Anthropic, см. [Track published plugin usage](https://claude.com/docs/connectors/building/after-publishing#track-published-plugin-usage) на claude.com.
+
+### Не использовалось недавно в `/plugin`
+
+На вкладке **Installed** в `/plugin` плагин, который пользователь установил из marketplace, перемещается под заголовок **Not used recently** после того, как он не использовался в течение как минимум 14 дней и 10 сеансов. Детали плагина также показывают линию `Last used:`. Для того, что пользователи делают с этим заголовком и линией, см. [Поиск плагинов, которые вы больше не используете](https://code.claude.com/docs/ru/plugins/install.md#find-plugins-you-no-longer-use).
+
+Заголовок **Not used recently** никогда не появляется для:
+
+* Плагинов, загруженных с помощью `--plugin-dir` или из каталога skills
+* Плагинов, включенных через управляемые параметры или смонтированных из [seed directory](https://code.claude.com/docs/ru/plugins/org.md#seed-containers-and-ci)
+* Плагинов, которые включают тему, стиль вывода, монитор или workflow, потому что они используются без отслеживаемого вызова
+
+[Language server](https://code.claude.com/docs/ru/plugins/components.md#lsp-servers) плагина считается используемым, когда он доставляет диагностику или отвечает на запрос навигации по коду, поэтому плагин LSP, сервер которого активен в ваших сеансах, не указывается как неиспользуемый.
+
+Когда организация пользователя устанавливает [`strictKnownMarketplaces`](https://code.claude.com/docs/ru/plugins/org#restrict-what-users-can-install), ни заголовок, ни линия `Last used:` не отображаются.
+
+### Поиск skills, которые никогда не запускаются
+
+Запустите `/skill-doctor`, чтобы увидеть, что стоит каждый из ваших skills и как часто он используется. Он отмечает skills, которые находятся в списке skills Claude, но никогда не были вызваны, включая skills из плагинов.
+
+В интерактивном сеансе отчет открывается на вкладке **Stats** менеджера `/plugin`. См. [Поиск неиспользуемых skills](https://code.claude.com/docs/ru/skills.md#find-unused-skills) для того, что охватывает отчет и где он доступен.
+
+### Неиспользуемые плагины в `/doctor`
+
+Проверка `/doctor` перечисляет каждый установленный пользователем skill, MCP server и плагин и рекомендует отключить те, которые не использовались. См. [`/doctor` в справочнике команд](https://code.claude.com/docs/ru/commands#all-commands).
+
+### Доля использования в `/usage`
+
+На плане Pro, Max, Ultra, Team или Enterprise разбивка `/usage` распределяет недавнее использование между скиллами, субагентами, плагинами и MCP-серверами в виде доли от общего объема. См. [Использование команды `/usage`](https://code.claude.com/docs/ru/costs#using-the-/usage-command).
+
+## Измерение по всему парку
+
+Если вы администрируете Claude Code для организации, вы можете измерить стоимость и использование плагина на каждой машине из одного из этих источников:
+
+* **События OpenTelemetry**: Claude Code экспортирует их в ваш собственный backend после [настройки экспортера](https://code.claude.com/docs/ru/monitoring-usage.md). См. [События OpenTelemetry для установок и использования плагинов](#pick-the-opentelemetry-event-for-each-question).
+* **Analytics API**: обслуживается из записей Anthropic, без необходимости в экспортере. См. [Запрос Analytics API](#query-the-analytics-api).
+
+### События OpenTelemetry для установок и использования плагинов
+
+Эти события OpenTelemetry и атрибуты отвечают на каждый вопрос плагина из вашего backend:
+
+| Вопрос | Событие или атрибут OpenTelemetry |
+| :- | :- |
+| Какие плагины устанавливаются и откуда | [`claude_code.plugin_installed`](https://code.claude.com/docs/ru/monitoring-usage#plugin-installed-event), один за установку |
+| Какие плагины активны в скольких сеансах | [`claude_code.plugin_loaded`](https://code.claude.com/docs/ru/monitoring-usage#plugin-loaded-event), один за включенный плагин в начале сеанса |
+| Какие skills активируются и какой плагин их владеет | [`claude_code.skill_activated`](https://code.claude.com/docs/ru/monitoring-usage#skill-activated-event), с `plugin.name` и `marketplace.name` для skills плагина |
+| Что сообщают hooks плагина | [`claude_code.hook_plugin_metrics`](https://code.claude.com/docs/ru/monitoring-usage#hook-plugin-metrics-event), выпускается только для hooks в плагинах официального marketplace |
+| Что стоит плагин в расходах API | `plugin.name` и `marketplace.name` на [cost counter](https://code.claude.com/docs/ru/monitoring-usage.md#cost-counter), установленные, когда активный skill или subagent принадлежит плагину |
+
+### Скрытые имена плагинов в вашем backend
+
+Плагины из официального marketplace сообщают свое имя плагина и имя marketplace в ваш backend дословно. Имя каждого другого плагина скрывается или опускается по умолчанию, включая плагин из собственного marketplace вашей организации. [Уровень доверия](https://code.claude.com/docs/ru/plugins/security.md#find-plugins-in-telemetry) плагина решает, какой.
+
+Чтобы получить реальные имена для некоторых событий, установите переменную окружения [`OTEL_LOG_TOOL_DETAILS`](https://code.claude.com/docs/ru/monitoring-usage#common-configuration-variables) на `1` на машинах, которые экспортируют телеметрию, например в блоке `env` тех же [управляемых параметров](https://code.claude.com/docs/ru/monitoring-usage.md#administrator-configuration), которые настраивают экспортер:
+
+| Событие | По умолчанию | С `OTEL_LOG_TOOL_DETAILS=1` |
+| :- | :- | :- |
+| `plugin_loaded` | `plugin.name` и `marketplace.name` — это буквальная строка `third-party` | Реальные имена |
+| `plugin_installed`, `skill_activated` | `plugin.name` и `marketplace.name` опущены; на `skill_activated`, `skill.name` — это `custom_skill` | Реальные имена |
+| Cost counter | `plugin.name` — это `third-party`; `marketplace.name` отсутствует | Реальный `plugin.name`; `marketplace.name` все еще отсутствует |
+
+На `plugin_loaded`, `plugin_id_hash` все еще идентифицирует каждый плагин по умолчанию, поэтому вы можете считать отдельные плагины третьих сторон.
+
+### Запрос Analytics API
+
+На плане Enterprise Analytics API отвечает на вопрос &quot;какие плагины устанавливает и вызывает моя организация&quot; из записей Anthropic, без необходимости в экспортере. [`GET /v1/organizations/analytics/plugins`](https://platform.claude.com/docs/en/api/admin/analytics/plugins/list) возвращает количество установок и вызовов за плагин, за день на Claude Code и Cowork, которые вы можете группировать по пользователю, группе RBAC или продукту.
+
+Активность плагина, которая достигает Anthropic без имени плагина, отображается в одной агрегированной строке `third-party`. [Поиск плагинов в телеметрии](https://code.claude.com/docs/ru/plugins/security.md#find-plugins-in-telemetry) говорит, какие плагины Claude Code сообщает по имени.
+
+Аутентифицируйте запрос с помощью ключа API, который имеет область `read:analytics`, которую Primary Owner создает, как описано в разделе [Доступ к данным программно](https://code.claude.com/docs/ru/analytics.md#access-data-programmatically).
+
+См. [справочник конечной точки](https://platform.claude.com/docs/en/api/admin/analytics/plugins/list) для параметров и полей ответа.
+
+## Следующие шаги
+
+* [Тестирование плагинов с помощью evals](https://code.claude.com/docs/ru/plugin-evals.md): измерьте, насколько надежно плагин направляет Claude, а не только то, что он стоит
+* [Снижение значения always-on](#lower-the-always-on-figure): что изменить в плагине, чтобы уменьшить его стоимость за ход
+* [Безопасность и доверие плагинов](https://code.claude.com/docs/ru/plugins/security.md#find-plugins-in-telemetry): какие поля телеметрии содержат имена плагинов и когда они скрыты
+* [Мониторинг использования](https://code.claude.com/docs/ru/monitoring-usage.md): полный справочник событий OpenTelemetry
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Что скачано по Claude Code</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../materials/index.html">Материалы</a>
+    <a href="../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../materials/index.html">Материалы</a> / <a href="../../materials/01-claude-code/index.html">01-claude-code</a></nav>
+<h1 id="что-скачано-по-claude-code">Что скачано по Claude Code <a class="h-anchor" href="#что-скачано-по-claude-code" aria-label="Ссылка на раздел">#</a></h1>
+<p>Дата сборки: 18.11.2026.</p>
+<hr>
+<h3 id="1-официальная-документация-anthropic-на-русском">1. Официальная документация Anthropic на русском <a class="h-anchor" href="#1-официальная-документация-anthropic-на-русском" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Папка:</strong> <code>official-docs-ru/</code>
+<strong>Источник:</strong> <a href="https://code.claude.com/docs/ru/overview">code.claude.com/docs/ru/overview</a>
+<strong>Объём:</strong> 205 страниц в Markdown, полное оглавление — в <code>official-docs-ru/ОГЛАВЛЕНИЕ.md</code>.</p>
+<p>Это то, чего не было в ранее скачанной книге-справочнике: <strong>первоисточник</strong> от Anthropic, а не пересказ. Документация покрывает установку, настройку, память, skills, субагентов, hooks, MCP, плагины, Agent SDK, безопасность, стоимость и устранение неполадок.</p>
+<p>Что важно знать:</p>
+<ul>
+<li>Перевод официальный, но местами неполный: отдельные заголовки остались на английском (<code>Troubleshooting</code>, <code>Output styles</code>).</li>
+<li>Структура повторяет английскую документацию, поэтому номера разделов и ссылки легко сверять с оригиналом.</li>
+<li>Страницы в Markdown удобно открывать в VS Code (<code>Ctrl+Shift+V</code>) или скармливать ИИ-агенту.</li>
+</ul>
+<p><strong>С чего начать:</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Страница</th><th>Зачем</th></tr></thead><tbody><tr><td><code>overview.md</code></td><td>Что такое Claude Code и из чего состоит</td></tr><tr><td><code>quickstart.md</code></td><td>Первый запуск</td></tr><tr><td><code>setup.md</code></td><td>Системные требования и установка</td></tr><tr><td><code>how-claude-code-works.md</code></td><td>Как устроен агентный цикл</td></tr><tr><td><code>memory.md</code></td><td><code>CLAUDE.md</code> и память проекта</td></tr><tr><td><code>common-workflows.md</code></td><td>Типовые рабочие сценарии</td></tr><tr><td><code>best-practices.md</code></td><td>Как работать эффективно</td></tr><tr><td><code>settings.md</code></td><td>Все настройки и их приоритет</td></tr><tr><td><code>cli-reference.md</code></td><td>Флаги и команды CLI</td></tr><tr><td><code>hooks.md</code>, <code>skills.md</code>, <code>sub-agents.md</code>, <code>mcp.md</code></td><td>Расширения</td></tr><tr><td><code>troubleshooting.md</code></td><td>Если что-то сломалось</td></tr></tbody></table></div>
+<hr>
+<h3 id="2-community-гайды-на-русском">2. Community-гайды на русском <a class="h-anchor" href="#2-community-гайды-на-русском" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Папка:</strong> <code>community-guides/</code>. Все репозитории скачаны как есть, код из них не запускался.</p>
+<div class="table-wrap"><table><thead><tr><th>Папка</th><th>Репозиторий</th><th>Лицензия</th><th>Что внутри</th></tr></thead><tbody><tr><td><code>claude-code-pro-course</code></td><td><a href="https://github.com/justxor/claude-code-pro-course">justxor/claude-code-pro-course</a></td><td>MIT</td><td>Самый полный курс на русском: 12 модулей, 8 лабораторных, starter kit (8 skills, 5 субагентов, 4 hooks), библиотека промптов, пример плагина, CI. Уровень: от новичка до профи.</td></tr><tr><td><code>claude-code-konspekt</code></td><td><a href="https://github.com/bashkirtsevprofi/claude-code-konspekt">bashkirtsevprofi/claude-code-konspekt</a></td><td>не указана</td><td>Конспект четырёх бесплатных курсов Anthropic Academy: 10 частей, 47 разделов, 77 правил «правило → почему → как применить», 34 промпта, шпаргалки. Один HTML-файл + README.</td></tr><tr><td><code>claude-howto-ru</code></td><td><a href="https://github.com/srpvpn/claude-howto-ru">srpvpn/claude-howto-ru</a></td><td>MIT</td><td>Визуальное руководство с Mermaid-схемами: slash-команды, memory, skills, субагенты, MCP, hooks, плагины, checkpoints, CLI. Главы на русском; главный README остался на английском.</td></tr><tr><td><code>edgelab-claude-md</code></td><td><a href="https://github.com/qwwiwi/edgelab-claude-md">qwwiwi/edgelab-claude-md</a></td><td>не указана</td><td>Полное руководство по <code>CLAUDE.md</code>: глобальный и рабочий уровни, структура, правила, опыт мультиагентной системы из 6 агентов.</td></tr><tr><td><code>state-of-ai</code></td><td><a href="https://github.com/jointime1/state-of-ai">jointime1/state-of-ai</a></td><td>не указана</td><td>Компактный гайд по агентной разработке: настройка окружения, <code>CLAUDE.md</code>, рабочий процесс. Актуален на май 2026 (v2.1.158).</td></tr><tr><td><code>claude-starter-kit</code></td><td><a href="https://github.com/byArto/claude-starter-kit">byArto/claude-starter-kit</a></td><td>MIT</td><td>8 готовых команд на русском: <code>/byarto:start</code>, <code>plan</code>, <code>fix</code>, <code>explain</code>, <code>check</code>, <code>save</code>, <code>ship</code> и др. Ставится как плагин.</td></tr><tr><td><code>claude-skill-help-ru</code></td><td><a href="https://github.com/Artemib/claude-skill-help-ru">Artemib/claude-skill-help-ru</a></td><td>не указана</td><td>Скилл <code>/help-ru</code> — справочник всех команд Claude Code на русском прямо в чате.</td></tr><tr><td><code>awesome-ai-devtools-ru</code></td><td><a href="https://github.com/justxor/awesome-ai-devtools-ru">justxor/awesome-ai-devtools-ru</a></td><td>CC0</td><td>Каталог ИИ-инструментов для разработчиков: AI-IDE, терминальные агенты, MCP, код-ревью, тесты, LLMOps, локальные модели, российские сервисы. 281 инструмент.</td></tr><tr><td><code>claude-code-guide-dly-blondinok</code></td><td><a href="https://github.com/swer40k/claude-code-guide-dly-blondinok">swer40k/claude-code-guide-dly-blondinok</a></td><td>нет</td><td>Заявлен как гайд по установке на Windows «в карточках», но в репозитории только README без материалов. Практической ценности пока нет.</td></tr></tbody></table></div>
+<h4 id="h">Как выбирать <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Нужен структурированный курс</strong> → <code>claude-code-pro-course</code>.</li>
+<li><strong>Нужен быстрый конспект после курсов Anthropic</strong> → <code>claude-code-konspekt</code> (откройте <code>index.html</code> в браузере).</li>
+<li><strong>Нужны схемы и визуальные объяснения</strong> → <code>claude-howto-ru</code>.</li>
+<li><strong>Нужно навести порядок в <code>CLAUDE.md</code></strong> → <code>edgelab-claude-md</code>.</li>
+<li><strong>Нужны готовые команды</strong> → <code>claude-starter-kit</code>.</li>
+<li><strong>Нужно понять, какие ещё инструменты бывают</strong> → <code>awesome-ai-devtools-ru</code>.</li>
+</ul>
+<hr>
+<h3 id="3-о-лицензиях-и-происхождении">3. О лицензиях и происхождении <a class="h-anchor" href="#3-о-лицензиях-и-происхождении" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Официальная документация принадлежит Anthropic; скачана для личного чтения. При публикации ссылайтесь на первоисточник.</li>
+<li>Репозитории с MIT/CC0 можно свободно использовать и распространять с сохранением условий лицензии.</li>
+<li>У части репозиториев лицензия не указана. Формально это значит «все права сохранены»: для личного обучения пользуйтесь, но не публикуйте их содержимое у себя без разрешения автора.</li>
+<li>Код и скрипты из скачанных репозиториев <strong>не запускались</strong>. Если будете ставить плагины/скиллы, читайте их содержимое.</li>
+</ul>
+<hr>
+<h3 id="4-как-это-связано-с-уже-имеющейся-книгой">4. Как это связано с уже имеющейся книгой <a class="h-anchor" href="#4-как-это-связано-с-уже-имеющейся-книгой" aria-label="Ссылка на раздел">#</a></h3>
+<p>В папке <code>../claude-code-handbook-ru/</code> лежит большой справочник <code>sfrangulov/claude-code-handbook-ru</code> (CC0) — практическая книга с большим количеством советов, шаблонов и каталогом инструментов.</p>
+<p>Новый комплект дополняет её:</p>
+<ul>
+<li><strong>первоисточник</strong> (официальные доки) вместо пересказа;</li>
+<li><strong>курс с лабораторными</strong> для последовательного обучения;</li>
+<li><strong>конспект Anthropic Academy</strong> для быстрого повторения;</li>
+<li><strong>готовые команды и скиллы</strong> для немедленного применения;</li>
+<li><strong>связка с OmniRoute</strong> — в соседней папке <code>02-omniroute</code>.</li>
+</ul>
+<p>Оптимальный порядок: официальный <code>quickstart.md</code> → <code>claude-code-pro-course</code> → практика → <code>claude-code-konspekt</code> как справочник → <code>claude-howto-ru</code> для углубления.</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

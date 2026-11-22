@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Checkpointing</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="checkpointing">Checkpointing <a class="h-anchor" href="#checkpointing" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Отслеживайте, перематывайте и суммируйте правки и беседу Claude для управления состоянием сеанса.</p>
+</blockquote>
+<p>Claude Code автоматически отслеживает правки файлов Claude по мере вашей работы. Чтобы отменить правки, выполните <code>/rewind</code> или его псевдоним <code>/undo</code> в своей сессии, чтобы открыть <a href="#rewind-and-summarize">меню перемотки</a>.</p>
+<h3 id="h">Как работают чекпоинты <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Когда вы работаете с Claude, функция чекпоинтов автоматически сохраняет состояние вашего кода перед каждым отправленным вами промптом, который начинает ход.</p>
+<h4 id="h-2">Автоматическое отслеживание <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude Code отслеживает все изменения, внесённые его инструментами редактирования файлов:</p>
+<ul>
+<li>Каждый отправленный вами промпт, который начинает ход, создаёт новый чекпоинт</li>
+<li>Claude Code хранит снимки файлов для 100 последних чекпоинтов в сессии. При удалении более старого чекпоинта удаляются файлы снимков, на которые не ссылается ни один из оставшихся чекпоинтов, за исключением первого снимка каждого файла, который расширение VS Code использует как базовую версию для diff сессии.</li>
+<li>Claude Code сохраняет чекпоинты вместе с диалогом, поэтому вы можете выполнить <code>/rewind</code> и после возобновления сессии</li>
+<li>Claude Code удаляет снимки файлов сессии при <a href="https://code.claude.com/docs/ru/claude-directory.md#cleaned-up-automatically">плановой очистке</a>, по умолчанию примерно через 30 дней после того, как сессия в последний раз сохранила снимок. Откат к чекпоинту, снимки которого уже удалены, может завершиться ошибкой <a href="https://code.claude.com/docs/ru/errors#no-files-were-restored"><code>No files were restored</code></a>. Чтобы хранить снимки дольше, задайте параметр <a href="https://code.claude.com/docs/ru/settings-reference#cleanupperioddays"><code>cleanupPeriodDays</code></a>.</li>
+</ul>
+<h4 id="h-3">Откат и сжатие в сводку <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Выполните <code>/rewind</code> или дважды нажмите <code>Esc</code>, когда поле ввода промпта пусто, чтобы открыть меню отката.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Если в поле ввода промпта есть текст, двойное нажатие <code>Esc</code> очищает его вместо открытия меню. Очищенный текст сохраняется в истории ввода, поэтому нажмите <code>Up</code>, чтобы вернуть его после завершения работы в меню отката.</p>
+</blockquote>
+<p>В меню отката перечислены промпты, которые вы отправили в ходе сессии. Выберите точку, с которой хотите работать, а затем выберите действие:</p>
+<ul>
+<li><strong>Restore code and conversation</strong>: вернуть и код, и диалог к этой точке</li>
+<li><strong>Restore conversation</strong>: откатиться к этому сообщению, сохранив текущий код</li>
+<li><strong>Restore code</strong>: отменить изменения файлов, сохранив диалог</li>
+<li><strong>Summarize from here</strong>: сжать диалог начиная с этой точки в сводку, освобождая место в контекстном окне</li>
+<li><strong>Summarize up to here</strong>: сжать диалог до этой точки в сводку, сохранив последующие сообщения без изменений</li>
+<li><strong>Never mind</strong>: вернуться к списку сообщений, ничего не меняя</li>
+</ul>
+<p>Два варианта восстановления кода появляются, только если у выбранного чекпоинта есть отслеживаемые изменения файлов, которые можно отменить. Если после этой точки не было зафиксировано правок файлов, меню предлагает только <strong>Restore conversation</strong>, варианты сжатия в сводку и <strong>Never mind</strong>.</p>
+<p>После восстановления диалога или выбора Summarize from here исходный промпт из выбранного сообщения возвращается в поле ввода, чтобы вы могли отправить его повторно или отредактировать.</p>
+<p>При выборе Summarize up to here вы остаётесь в конце диалога с пустым полем ввода. При любом из вариантов сжатия в диалоге на месте сжатых сообщений появляется отметка <strong>Summarized conversation</strong>.</p>
+<h5 id="h-4">Откаченные сообщения могут вернуться, если вы выйдете до следующего промпта <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h5>
+<p>Чтобы снова удалить вернувшиеся сообщения, выполните <code>/rewind</code> в этой сессии, выберите тот же промпт, а затем <strong>Restore conversation</strong>. Перед выходом отправьте Claude промпт, поскольку Claude Code сохраняет откаченный диалог вместе с этим промптом. Восстановленные вами файлы остаются в том состоянии, в котором их оставил откат.</p>
+<h5 id="h-5">Откат за пределы очищенного диалога <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h5>
+<p>Если ранее в том же процессе Claude Code вы выполняли <code>/clear</code>, в меню отката в верхней части списка появляется дополнительная запись с меткой <code>/resume &lt;session-id&gt; (previous session)</code>. Выберите её, чтобы возобновить диалог, который был активен до выполнения <code>/clear</code>. Эта запись доступна, пока вы не выйдете из Claude Code или не возобновите другую сессию.</p>
+<h5 id="h-6">Управление содержанием сводки <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h5>
+<p>Сжатие в сводку не изменяет файлы на диске, а исходные сообщения остаются в транскрипте сессии, поэтому Claude по-прежнему может обращаться к деталям. Чтобы задать, на чём должна сосредоточиться сводка, выделите вариант <strong>Summarize</strong> клавишами со стрелками и введите инструкции в строке с надписью <strong>add context (optional)</strong>, а затем нажмите <code>Enter</code>. Если выбрать вариант клавишей с его номером, сводка создаётся сразу, без инструкций.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Сжатие в сводку оставляет вас в той же сессии и сжимает контекст, подобно целенаправленной команде <code>/compact</code>. Чтобы создать ответвление и попробовать другой подход, сохранив исходную сессию нетронутой, используйте вместо этого <a href="https://code.claude.com/docs/ru/sessions#branch-a-session"><code>/branch</code></a> или <code>claude --continue --fork-session</code>.</p>
+</blockquote>
+<h3 id="h-7">Типичные случаи использования <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h3>
+<p>Checkpoints особенно полезны, когда:</p>
+<ul>
+<li><strong>Исследование альтернатив</strong>: попробуйте различные подходы к реализации без потери вашей начальной точки</li>
+<li><strong>Восстановление после ошибок</strong>: быстро отмените изменения, которые внесли ошибки или нарушили функциональность</li>
+<li><strong>Итерация функций</strong>: экспериментируйте с вариантами, зная, что вы можете вернуться к рабочим состояниям</li>
+<li><strong>Освобождение места контекста</strong>: суммируйте многословный сеанс отладки с середины вперёд, сохраняя ваши исходные инструкции нетронутыми</li>
+</ul>
+<h3 id="h-8">Ограничения <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="изменения-команд-bash-не-отслеживаются">Изменения команд Bash не отслеживаются <a class="h-anchor" href="#изменения-команд-bash-не-отслеживаются" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если Claude уже отредактировал файл с помощью своих инструментов редактирования файлов в вашем диалоге, <code>/rewind</code> отменяет изменения, которые команды Bash вносят в этот файл после этого. Файл, который изменяли только команды Bash, не отслеживается и остаётся как есть. Чтобы откатить его, используйте систему контроля версий, например Git.</p>
+<p>Под каждым промптом меню rewind подсчитывает изменения в файлах, которые Claude уже редактировал, независимо от того, чем они были внесены. Промпт, при котором shell-команда изменила такой файл, тоже показывает изменения файлов.</p>
+<h4 id="правки-subagent-не-восстанавливаются">Правки subagent не восстанавливаются <a class="h-anchor" href="#правки-subagent-не-восстанавливаются" aria-label="Ссылка на раздел">#</a></h4>
+<p><a href="https://code.claude.com/docs/ru/sub-agents.md">Subagent</a> вносит правки с помощью инструментов редактирования файлов Claude, но Claude Code обычно не фиксирует эти правки в checkpoints вашего сеанса. Восстанавливает ли rewind эти правки, зависит от того, как работает subagent:</p>
+<ul>
+<li><strong>Foreground forked skill</strong>: <a href="https://code.claude.com/docs/ru/skills#run-skills-in-a-subagent">skill с <code>context: fork</code></a>, который работает на переднем плане, редактирует вашу рабочую папку во время вашего хода, поэтому rewind восстанавливает его правки как обычно. Установите <code>background: false</code>, чтобы запустить fork на переднем плане; в некоторых ситуациях, <a href="https://code.claude.com/docs/ru/skills.md#run-skills-in-a-subagent">перечисленных на странице skills</a>, он запускается там независимо от этого параметра.</li>
+<li><strong>Любой другой субагент</strong>: rewind восстанавливает только те файлы, которые Claude уже редактировал в вашем диалоге. Правки субагента в других файлах остаются, поэтому используйте для их отката систему контроля версий, например Git. Это включает forked skill, который работает в фоновом режиме (по умолчанию), и фоновый запуск <a href="https://code.claude.com/docs/ru/code-review-local"><code>/code-review --fix</code></a>.</li>
+</ul>
+<h4 id="h-9">Внешние изменения не отслеживаются <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<p>Checkpointing отслеживает только файлы, которые были отредактированы в текущем сеансе. Ручные изменения, которые вы вносите в файлы вне Claude Code, и правки из других одновременных сеансов обычно не фиксируются, если они не изменяют те же файлы, что и текущий сеанс.</p>
+<h4 id="сообщения-отправленные-во-время-хода-не-сохраняются-в-checkpoint">Сообщения, отправленные во время хода, не сохраняются в checkpoint <a class="h-anchor" href="#сообщения-отправленные-во-время-хода-не-сохраняются-в-checkpoint" aria-label="Ссылка на раздел">#</a></h4>
+<p>В меню rewind сообщение, которое вы <a href="https://code.claude.com/docs/ru/interactive-mode.md#queue-messages-while-claude-works">ввели, пока Claude ещё работал</a>, может быть помечено как <strong>No code restore</strong>. У помеченного сообщения нет собственного <a href="#how-checkpoints-work">чекпоинта</a>.</p>
+<p>Чтобы отменить правки файлов, которые Claude внёс после этого сообщения, выберите промпт, с которого начался ход, и выберите <strong>Restore code</strong> или <strong>Restore code and conversation</strong>. Это откатит правки файлов, сделанные Claude за весь ход, включая те, что были сделаны до прихода вашего сообщения.</p>
+<h4 id="h-10">Пути с символическими и жёсткими ссылками не восстанавливаются <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h4>
+<p>Checkpointing не выполняет rewind для файлов с символическими или жёсткими ссылками. Когда вы выбираете <strong>Restore code</strong> или <strong>Restore code and conversation</strong> из меню <code>/rewind</code>, Claude Code пропускает любой отслеживаемый путь, который является символической или жёсткой ссылкой, и показывает предупреждение <code>Restored the code, but skipped N files</code>. Пропущенные файлы сохраняют своё текущее содержимое. Чтобы отменить изменения сеанса в одном из них, попросите Claude отменить правку или отредактируйте файл самостоятельно. Файлы конфигурации, которые менеджер dotfile создаёт как символические ссылки в вашем проекте, и файлы, которые pnpm создаёт как жёсткие ссылки, относятся к этой категории.</p>
+<p>Чтобы увидеть, какие пути пропускает восстановление, включите отладочное логирование с помощью <code>/debug</code> перед восстановлением: отладочный журнал в <code>~/.claude/debug/&lt;session-id&gt;.txt</code> указывает каждый пропущенный путь. Для каждой причины пропуска и шагов восстановления см. <a href="https://code.claude.com/docs/ru/errors.md#restored-the-code-but-skipped-files">запись skipped-files в справочнике ошибок</a>.</p>
+<h4 id="h-11">Не замена для контроля версий <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h4>
+<p>Checkpoints предназначены для быстрого восстановления на уровне сеанса. Для постоянной истории версий и сотрудничества продолжайте использовать контроль версий, такой как Git, для коммитов, веток и долгосрочной истории.</p>
+<h3 id="h-12">См. также <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/interactive-mode.md">Interactive mode</a> - Сочетания клавиш и элементы управления сеансом</li>
+<li><a href="https://code.claude.com/docs/ru/commands.md">Commands</a> - Доступ к checkpoints с использованием <code>/rewind</code></li>
+<li><a href="https://code.claude.com/docs/ru/cli-reference.md">CLI reference</a> - Параметры командной строки</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

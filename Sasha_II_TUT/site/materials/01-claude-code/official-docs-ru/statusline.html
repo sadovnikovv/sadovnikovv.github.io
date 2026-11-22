@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Настройка строки состояния</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Настройка строки состояния <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Настройте пользовательскую строку состояния для мониторинга использования контекстного окна, затрат и статуса git в Claude Code</p>
+</blockquote>
+<p>Строка состояния — это настраиваемая панель в нижней части Claude Code, которая запускает любой скрипт оболочки, который вы настроите. Она получает данные сеанса в формате JSON через stdin и отображает всё, что выводит ваш скрипт, предоставляя вам постоянный, видимый с первого взгляда обзор использования контекста, затрат, статуса git или чего-либо ещё, что вы хотите отслеживать.</p>
+<p>Строки состояния полезны, когда вы:</p>
+<ul>
+<li>Хотите отслеживать использование контекстного окна во время работы</li>
+<li>Нужно отслеживать затраты сеанса</li>
+<li>Работаете в нескольких сеансах и нужно их различать</li>
+<li>Хотите, чтобы ветка git и статус всегда были видны</li>
+</ul>
+<p>Строка состояния отображается в собственной строке над встроенными значками нижнего колонтитула и не заменяет их. С настроенной пользовательской строкой состояния Claude Code перестаёт показывать некоторые подсказки нижнего колонтитула, например <code>? for shortcuts</code> и подсказку <code>hold space to speak</code> <a href="https://code.claude.com/docs/ru/voice-dictation.md">голосовой диктовки</a>. Чтобы добавить интерактивные значки ссылок в нижний колонтитул, когда в диалоге появляется ID, без написания скрипта, вместо этого настройте <a href="https://code.claude.com/docs/ru/settings-reference#footerlinksregexes"><code>footerLinksRegexes</code></a>.</p>
+<p>Вот пример <a href="#display-multiple-lines">многострочной строки состояния</a>, которая отображает информацию git в первой строке и цветовую полосу контекста во второй.</p>
+<p><img src="https://mintcdn.com/claude-code/HDAmBwgbrZVk0pOt/images/statusline-multiline.png?fit=max\&amp;auto=format\&amp;n=HDAmBwgbrZVk0pOt\&amp;q=85\&amp;s=a9d0a2fe8e446d80b1abc46da3f93270" alt="Многострочная строка состояния, показывающая имя модели, каталог, ветку git в первой строке и полосу прогресса использования контекста с затратами и продолжительностью во второй строке" loading="lazy"></p>
+<p>На этой странице описано <a href="#set-up-a-status-line">настройка базовой строки состояния</a>, объясняется <a href="#how-status-lines-work">как данные передаются</a> из Claude Code в ваш скрипт, перечисляются <a href="#available-data">все поля, которые вы можете отображать</a>, и предоставляются <a href="#examples">готовые примеры</a> для распространённых паттернов, таких как статус git, отслеживание затрат и полосы прогресса.</p>
+<h3 id="h-2">Настройка строки состояния <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Используйте <a href="#use-the-%2Fstatusline-command">команду <code>/statusline</code></a> для автоматического создания скрипта Claude Code, или <a href="#manually-configure-a-status-line">вручную создайте скрипт</a> и добавьте его в ваши настройки.</p>
+<h4 id="использование-команды-statusline">Использование команды /statusline <a class="h-anchor" href="#использование-команды-statusline" aria-label="Ссылка на раздел">#</a></h4>
+<p>Команда <code>/statusline</code> принимает инструкции на естественном языке, описывающие то, что вы хотите отображать. Claude Code генерирует файл скрипта в <code>~/.claude/</code> и автоматически обновляет ваши настройки:</p>
+<p>```text theme={null}
+/statusline show model name and context percentage with a progress bar</p>
+<pre><code>
+Одобрите запросы на редактирование файла, если Claude Code попросит разрешение во время настройки.
+
+### Ручная настройка строки состояния
+
+Добавьте поле `statusLine` в ваши пользовательские настройки (`~/.claude/settings.json`, где `~` — это ваш домашний каталог) или [настройки проекта](https://code.claude.com/docs/ru/settings.md#where-settings-live). Установите `type` на `&quot;command&quot;` и укажите `command` на путь скрипта или встроенную команду оболочки. Для полного пошагового руководства по созданию скрипта см. [Построение строки состояния пошагово](#build-a-status-line-step-by-step).
+</code></pre>
+<p>{
+  &quot;statusLine&quot;: {
+    &quot;type&quot;: &quot;command&quot;,
+    &quot;command&quot;: &quot;~/.claude/statusline.sh&quot;,
+    &quot;padding&quot;: 2
+  }
+}</p>
+<pre><code>
+Поле `command` запускается в оболочке, поэтому вы также можете использовать встроенные команды вместо файла скрипта. Этот пример использует `jq` для разбора входных данных JSON и отображения имени модели и процента контекста:
+</code></pre>
+<p>{
+  &quot;statusLine&quot;: {
+    &quot;type&quot;: &quot;command&quot;,
+    &quot;command&quot;: &quot;jq -r &#x27;\&quot;[\\(.model.display_name)] \\(.context_window.used_percentage // 0)% context\&quot;&#x27;&quot;
+  }
+}</p>
+<pre><code>
+Необязательное поле `padding` добавляет дополнительное горизонтальное расстояние (в символах) к содержимому строки состояния. По умолчанию `0`. Это заполнение добавляется к встроенному расстоянию интерфейса, поэтому оно управляет относительным отступом, а не абсолютным расстоянием от края терминала.
+
+Необязательное поле `refreshInterval` повторно запускает вашу команду каждые N секунд в дополнение к [обновлениям, управляемым событиями](#how-status-lines-work). Минимум — `1`. Установите это, когда ваша строка состояния отображает данные на основе времени, такие как часы, или когда фоновые подагенты изменяют состояние git, пока основной сеанс неактивен. Оставьте это не установленным, чтобы запускать только при событиях.
+
+Необязательное поле `hideVimModeIndicator` подавляет встроенный текст `-- INSERT --` под приглашением. Установите это на `true`, когда ваш скрипт отображает [`vim.mode`](#available-data) самостоятельно, чтобы режим не отображался дважды.
+
+### Отключение строки состояния
+
+Запустите `/statusline` и попросите её удалить или очистить вашу строку состояния (например, `/statusline delete`, `/statusline clear`, `/statusline remove it`). Вы также можете вручную удалить поле `statusLine` из вашего settings.json.
+
+## Построение строки состояния пошагово
+
+Это пошаговое руководство показывает, что `/statusline` настраивает для вас путём ручного создания строки состояния, которая отображает текущую модель, рабочий каталог и процент использования контекстного окна.
+
+&gt; [!NOTE]
+&gt;
+&gt; Запуск [`/statusline`](#use-the-%2Fstatusline-command) с описанием того, что вы хотите, настраивает всё это автоматически.
+
+Эти примеры используют скрипты Bash, которые работают на macOS и Linux. На Windows см. [Конфигурация Windows](#windows-configuration) для примеров PowerShell и Git Bash.
+
+![Строка состояния, показывающая имя модели, каталог и процент контекста](https://mintcdn.com/claude-code/HDAmBwgbrZVk0pOt/images/statusline-quickstart.png?fit=max\&amp;auto=format\&amp;n=HDAmBwgbrZVk0pOt\&amp;q=85\&amp;s=88a7eab9c1038dd098ee8e284d96b7e6)
+
+**1. Создайте скрипт, который читает JSON и выводит результат**
+
+Claude Code отправляет данные JSON в ваш скрипт через stdin. Этот скрипт использует [`jq`](https://jqlang.org/), парсер JSON командной строки, который вам может потребоваться установить, для извлечения имени модели, каталога и процента контекста, а затем выводит отформатированную строку.
+
+Сохраните это в `~/.claude/statusline.sh` (где `~` — это ваш домашний каталог, например `/Users/username` на macOS или `/home/username` на Linux):
+</code></pre>
+<p>#!/bin/bash</p>
+<h1 id="read-json-data-that-claude-code-sends-to-stdin">Read JSON data that Claude Code sends to stdin <a class="h-anchor" href="#read-json-data-that-claude-code-sends-to-stdin" aria-label="Ссылка на раздел">#</a></h1>
+<p>input=$(cat)</p>
+<h1 id="extract-fields-using-jq">Extract fields using jq <a class="h-anchor" href="#extract-fields-using-jq" aria-label="Ссылка на раздел">#</a></h1>
+<p>MODEL=$(echo &quot;$input&quot; | jq -r &#x27;.model.display_name&#x27;)
+DIR=$(echo &quot;$input&quot; | jq -r &#x27;.workspace.current_dir&#x27;)</p>
+<h1 id="the-0-provides-a-fallback-if-the-field-is-null">The &quot;// 0&quot; provides a fallback if the field is null <a class="h-anchor" href="#the-0-provides-a-fallback-if-the-field-is-null" aria-label="Ссылка на раздел">#</a></h1>
+<p>PCT=$(echo &quot;$input&quot; | jq -r &#x27;.context_window.used_percentage // 0&#x27; | cut -d. -f1)</p>
+<h1 id="output-the-status-line-dir-extracts-just-the-folder-name">Output the status line - ${DIR##*/} extracts just the folder name <a class="h-anchor" href="#output-the-status-line-dir-extracts-just-the-folder-name" aria-label="Ссылка на раздел">#</a></h1>
+<p>echo &quot;[$MODEL] 📁 ${DIR##*/} | ${PCT}% context&quot;</p>
+<pre><code>
+**2. Сделайте его исполняемым**
+
+Отметьте скрипт как исполняемый, чтобы ваша оболочка могла его запустить:
+</code></pre>
+<p>chmod +x ~/.claude/statusline.sh</p>
+<pre><code>
+**3. Добавьте в настройки**
+
+Скажите Claude Code запустить ваш скрипт как строку состояния. Добавьте эту конфигурацию в `~/.claude/settings.json`, которая устанавливает `type` на `&quot;command&quot;` (означает «запустить эту команду оболочки») и указывает `command` на ваш скрипт:
+</code></pre>
+<p>{
+  &quot;statusLine&quot;: {
+    &quot;type&quot;: &quot;command&quot;,
+    &quot;command&quot;: &quot;~/.claude/statusline.sh&quot;
+  }
+}</p>
+<pre><code>
+Ваша строка состояния появляется в нижней части интерфейса. Claude Code автоматически перезагружает настройки и запускает ваш скрипт сразу же после сохранения файла.
+
+## Как работают строки состояния
+
+Claude Code запускает ваш скрипт с [данными сессии JSON](#available-data) на stdin и отображает всё, что скрипт выводит в stdout.
+
+&gt; [!NOTE]
+&gt;
+&gt; Строка состояния работает локально и не потребляет токены API. Она временно скрывается во время определённых взаимодействий с пользовательским интерфейсом, включая меню справки и запросы разрешений.
+
+### Когда обновляется строка состояния
+
+Ваш скрипт запускается один раз при запуске сессии, включая случаи, когда вы возобновляете её. После этого он запускается снова, когда:
+
+* Поступает новое сообщение ассистента
+* Завершается `/compact`
+* Изменяется режим разрешений
+* Переключается режим Vim
+* Вы изменяете `command` в настройках `statusLine`
+* Истекает таймер [`refreshInterval`](#manually-configure-a-status-line), если вы его установили
+* Окно [ограничения частоты запросов](#rate-limit-usage) в данных, которые последними получил ваш скрипт, достигает времени `resets_at`
+* Тёплый [кэш промптов](#prompt-cache-fields) в данных, которые последними получил ваш скрипт, достигает времени `expires_at`
+
+Claude Code дебаунсит обновления на 300 мс, поэтому быстрые изменения объединяются вместе и ваш скрипт запускается один раз после того, как изменения прекратятся. Изменение самой `command` пропускает дебаунс: Claude Code запускает новую команду сразу же. Если новое обновление срабатывает, пока ваш скрипт всё ещё работает, Claude Code отменяет выполняющийся скрипт. Если вы отредактируете свой скрипт, изменения появятся в следующий раз, когда триггер обновления его повторно запустит.
+
+Триггеры, управляемые событиями, могут затихнуть, когда основная сессия неактивна, например, пока координатор ждёт фоновых субагентов. Чтобы сегменты на основе времени или из внешних источников оставались актуальными во время периодов неактивности, установите [`refreshInterval`](#manually-configure-a-status-line), чтобы также повторно запускать команду по фиксированному таймеру.
+
+### Что может выводить ваш скрипт
+
+Ваш скрипт может выводить не только одну строку простого текста:
+
+* **Несколько строк**: каждый оператор `echo` или `print` отображается как отдельная строка. См. [пример многострочности](#display-multiple-lines).
+* **Цвета**: используйте [коды экранирования ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors), такие как `\033[32m` для зелёного (терминал должен их поддерживать). См. [пример статуса git](#git-status-with-colors).
+* **Ссылки**: используйте [последовательности экранирования OSC 8](https://en.wikipedia.org/wiki/ANSI_escape_code#OSC) для создания кликабельного текста (Cmd+клик на macOS, Ctrl+клик на Windows/Linux). Требуется терминал, поддерживающий гиперссылки, такой как iTerm2, Kitty или WezTerm. См. [пример кликабельных ссылок](#clickable-links).
+
+### Размер вывода в соответствии с терминалом
+
+Claude Code захватывает вывод вашего скрипта вместо прямого подключения к терминалу, поэтому `tput cols` и определение ширины на уровне языка не могут прочитать размер терминала изнутри скрипта. Вместо этого читайте переменные окружения `COLUMNS` и `LINES`. Claude Code устанавливает эти значения в соответствии с текущими размерами терминала перед запуском вашего скрипта.
+
+## Доступные данные
+
+Claude Code отправляет следующие поля JSON в ваш скрипт через stdin:
+
+| Поле | Описание |
+| - | - |
+| `model.id`, `model.display_name` | Текущий идентификатор модели и отображаемое имя |
+| `cwd`, `workspace.current_dir` | Текущий рабочий каталог. Оба поля содержат одно и то же значение; `workspace.current_dir` предпочтительнее для согласованности с `workspace.project_dir`. |
+| `workspace.project_dir` | Каталог, в котором был запущен Claude Code, который может отличаться от `cwd`, если рабочий каталог изменяется во время сеанса |
+| `workspace.added_dirs` | Дополнительные каталоги, добавленные через `/add-dir` или `--add-dir`. Пустой массив, если ничего не было добавлено |
+| `workspace.git_worktree` | Имя Git worktree, когда текущий каталог находится внутри связанного worktree, созданного с помощью `git worktree add`. Отсутствует в основном рабочем дереве. Заполняется для любого git worktree, в отличие от `worktree.*`, который присутствует только во время сеанса в [worktree сеансе](https://code.claude.com/docs/ru/worktrees.md) |
+| `workspace.repo.host`, `workspace.repo.owner`, `workspace.repo.name` | Идентификация репозитория, проанализированная из удалённого хранилища `origin`, например `&quot;github.com&quot;`, `&quot;anthropics&quot;`, `&quot;claude-code&quot;`. Отсутствует вне git репозитория или когда удалённое хранилище `origin` не настроено. Для проекта gitlab.com, вложенного в подгруппы, `owner` — это полный путь пространства имён с косыми чертами, например `&quot;group/subgroup&quot;`. До версии 2.1.260 `workspace.repo` отсутствовал для этих проектов |
+| `cost.total_cost_usd` | Предполагаемая стоимость сессии в USD, вычисляется на клиенте по цене списка, если не действует таблица [`modelPricing`](https://code.claude.com/docs/ru/settings-reference#modelpricing). Может отличаться от вашего фактического счёта. Сбрасывается на \$0 при запуске новой сессии с помощью `/clear` |
+| `cost.total_duration_ms` | Общее реальное время, в течение которого сеанс работал, в миллисекундах. Накапливается при возобновлении и не включает время, когда сеанс не работает |
+| `cost.total_api_duration_ms` | Общее время, потраченное на ожидание ответов API в миллисекундах |
+| `cost.total_lines_added`, `cost.total_lines_removed` | Строки кода, которые были изменены |
+| `context_window.total_input_tokens`, `context_window.total_output_tokens` | Количество токенов, находящихся в контекстном окне, из последнего ответа API. Входные данные включают чтение и запись кэша |
+| `context_window.context_window_size` | Максимальный размер контекстного окна в токенах |
+| `context_window.used_percentage` | Предварительно рассчитанный процент использованного контекстного окна |
+| `context_window.remaining_percentage` | Предварительно рассчитанный процент оставшегося контекстного окна |
+| `context_window.current_usage` | Подсчёты токенов из последнего вызова API, описанные в [полях контекстного окна](#context-window-fields) |
+| `exceeds_200k_tokens` | Превышает ли общее количество токенов (входные, кэшированные и выходные токены в сумме) из последнего ответа API 200k. Это фиксированный порог независимо от фактического размера контекстного окна. |
+| `fast_mode` | Включен ли [быстрый режим](https://code.claude.com/docs/ru/fast-mode.md) для сеанса |
+| `effort.level` | Уровень effort рассуждений, установленный для сессии (`low`, `medium`, `high`, `xhigh` или `max`), а не уровень, установленный скиллом, субагентом или `ultrathink`. Если вы установите уровень, который модель не поддерживает, здесь отображается уровень, с которым Claude Code фактически работал. Изменённый вами уровень отображается здесь ещё до того, как он [вступит в силу](https://code.claude.com/docs/ru/model-config.md#when-a-new-effort-level-starts). Если уровень задан в `CLAUDE_CODE_EFFORT_LEVEL`, здесь отображается этот уровень. Отсутствует, когда текущая модель не поддерживает параметр effort |
+| `thinking.enabled` | Включено ли расширенное мышление для сеанса |
+| `rate_limits.five_hour.used_percentage`, `rate_limits.seven_day.used_percentage` | Процент лимита скорости за 5 часов или 7 дней, потреблённый от 0 до 100 |
+| `rate_limits.five_hour.resets_at`, `rate_limits.seven_day.resets_at` | Секунды эпохи Unix, когда окно лимита скорости за 5 часов или 7 дней сбрасывается |
+| `rate_limits.spend_limit.used_percentage`, `rate_limits.spend_limit.resets_at` | За шлюзом Claude apps — какую часть лимита расходов вы использовали и когда сбрасывается его период. См. [поля лимита расходов](#spend-limit-fields). Требуется Claude Code v2.1.251 или позже |
+| `rate_limits.spend_limit.used_usd`, `rate_limits.spend_limit.limit_usd`, `rate_limits.spend_limit.period` | Ваши предполагаемые расходы и ваш лимит в долларах США, а также период лимита. Эти поля могут отсутствовать. См. [поля лимита расходов](#spend-limit-fields). Требуется v2.1.284 или позже как для Claude Code, так и для шлюза |
+| `prompt_cache` | Статистика [prompt cache](https://code.claude.com/docs/ru/prompt-caching.md) сеанса для основного разговора: коэффициент попаданий, промахи и является ли кэш тёплым. Смотрите [поля prompt cache](#prompt-cache-fields) для каждого поля. Отсутствует до первого ответа API основного разговора. Требуется Claude Code v2.1.251 или позже |
+| `session_id` | Уникальный идентификатор сеанса |
+| `session_name` | Имя сеанса. Использует пользовательское имя, установленное с флагом `--name` или `/rename`, когда оно существует, в противном случае — автоматически сгенерированный заголовок сеанса. [Имя отображения по умолчанию](https://code.claude.com/docs/ru/sessions.md#name-your-sessions), например `my-app-3f`, не заполняет это поле. Отсутствует, когда сеанс не имеет ни пользовательского имени, ни автоматически сгенерированного заголовка |
+| `prompt_id` | UUID, идентифицирующий промпт пользователя, который в настоящее время обрабатывается. Совпадает с атрибутом [`prompt.id` на событиях OpenTelemetry](https://code.claude.com/docs/ru/monitoring-usage#event-correlation-attributes). Отсутствует до первого ввода пользователя |
+| `transcript_path` | Путь к файлу стенограммы разговора |
+| `version` | Версия Claude Code |
+| `output_style.name` | Имя текущего стиля вывода |
+| `vim.mode` | Текущий режим vim (`NORMAL`, `INSERT`, `VISUAL` или `VISUAL LINE`), когда [режим vim](https://code.claude.com/docs/ru/interactive-mode.md#vim-editor-mode) включен |
+| `agent.name` | Имя агента при запуске с флагом `--agent` или настроенными параметрами агента |
+| `pr.number`, `pr.url` | Открытый pull request для текущей ветки. Отражает значок PR в нижней строке состояния. В репозитории с удалённым хранилищем GitLab Claude Code заполняет эти поля из открытого [merge request](https://code.claude.com/docs/ru/interactive-mode.md#gitlab-merge-requests) ветки, поэтому `pr.number` — это номер merge request. Данные merge request требуют Claude Code v2.1.234 или позже. Отсутствует, когда не в git репозитории, до тех пор пока не будет найден pull request или merge request, или после того как он будет объединён или закрыт |
+| `pr.review_state` | Статус проверки открытого PR: `approved`, `pending`, `changes_requested` или `draft`. Может быть независимо отсутствующим даже когда `pr` присутствует |
+| `pr.kind` | `mr`, когда `pr` описывает [GitLab merge request](https://code.claude.com/docs/ru/interactive-mode.md#gitlab-merge-requests). Отсутствует для GitHub pull requests, поэтому скрипты, написанные до этого поля, продолжают работать. Для merge request Claude Code устанавливает `review_state` на `approved`, когда GitLab сообщает, что он готов к объединению, `pending` для любого другого открытого состояния и `draft` для черновика. Требуется Claude Code v2.1.234 или позже |
+| `worktree.name` | Имя активного worktree. Присутствует только во время сеанса в [worktree сеансе](https://code.claude.com/docs/ru/worktrees.md) |
+| `worktree.path` | Абсолютный путь к каталогу worktree |
+| `worktree.branch` | Имя ветки Git для worktree (например, `&quot;worktree-my-feature&quot;`). Отсутствует для worktrees на основе hooks |
+| `worktree.original_cwd` | Каталог, в котором находился Claude перед входом в worktree |
+| `worktree.original_branch` | Ветка Git, проверенная перед входом в worktree. Отсутствует для worktrees на основе hooks |
+
+&gt; [accordion] Полная схема JSON
+&gt;
+&gt; Ваша команда строки состояния получает эту структуру JSON через stdin:
+&gt;
+&gt; ```json theme={null}
+&gt; {
+&gt;   &quot;cwd&quot;: &quot;/current/working/directory&quot;,
+&gt;   &quot;session_id&quot;: &quot;abc123...&quot;,
+&gt;   &quot;session_name&quot;: &quot;my-session&quot;,
+&gt;   &quot;prompt_id&quot;: &quot;550e8400-e29b-41d4-a716-446655440000&quot;,
+&gt;   &quot;transcript_path&quot;: &quot;/path/to/transcript.jsonl&quot;,
+&gt;   &quot;model&quot;: {
+&gt;     &quot;id&quot;: &quot;claude-opus-5-5&quot;,
+&gt;     &quot;display_name&quot;: &quot;Opus&quot;
+&gt;   },
+&gt;   &quot;workspace&quot;: {
+&gt;     &quot;current_dir&quot;: &quot;/current/working/directory&quot;,
+&gt;     &quot;project_dir&quot;: &quot;/original/project/directory&quot;,
+&gt;     &quot;added_dirs&quot;: [],
+&gt;     &quot;git_worktree&quot;: &quot;feature-xyz&quot;,
+&gt;     &quot;repo&quot;: {
+&gt;       &quot;host&quot;: &quot;github.com&quot;,
+&gt;       &quot;owner&quot;: &quot;anthropics&quot;,
+&gt;       &quot;name&quot;: &quot;claude-code&quot;
+&gt;     }
+&gt;   },
+&gt;   &quot;version&quot;: &quot;2.1.90&quot;,
+&gt;   &quot;output_style&quot;: {
+&gt;     &quot;name&quot;: &quot;default&quot;
+&gt;   },
+&gt;   &quot;cost&quot;: {
+&gt;     &quot;total_cost_usd&quot;: 0.01234,
+&gt;     &quot;total_duration_ms&quot;: 45000,
+&gt;     &quot;total_api_duration_ms&quot;: 2300,
+&gt;     &quot;total_lines_added&quot;: 156,
+&gt;     &quot;total_lines_removed&quot;: 23
+&gt;   },
+&gt;   &quot;context_window&quot;: {
+&gt;     &quot;total_input_tokens&quot;: 15500,
+&gt;     &quot;total_output_tokens&quot;: 1200,
+&gt;     &quot;context_window_size&quot;: 200000,
+&gt;     &quot;used_percentage&quot;: 8,
+&gt;     &quot;remaining_percentage&quot;: 92,
+&gt;     &quot;current_usage&quot;: {
+&gt;       &quot;input_tokens&quot;: 8500,
+&gt;       &quot;output_tokens&quot;: 1200,
+&gt;       &quot;cache_creation_input_tokens&quot;: 5000,
+&gt;       &quot;cache_read_input_tokens&quot;: 2000
+&gt;     }
+&gt;   },
+&gt;   &quot;exceeds_200k_tokens&quot;: false,
+&gt;   &quot;prompt_cache&quot;: {
+&gt;     &quot;warm&quot;: true,
+&gt;     &quot;caching_observed&quot;: true,
+&gt;     &quot;ttl&quot;: &quot;1h&quot;,
+&gt;     &quot;expires_at&quot;: 1738429200,
+&gt;     &quot;requests&quot;: 14,
+&gt;     &quot;misses&quot;: 2,
+&gt;     &quot;expected_rebuilds&quot;: 1,
+&gt;     &quot;hit_ratio&quot;: 0.91,
+&gt;     &quot;cache_write_tokens&quot;: 352000,
+&gt;     &quot;miss_recache_tokens&quot;: 310200,
+&gt;     &quot;last_miss_at&quot;: 1738425230,
+&gt;     &quot;last_miss_cause&quot;: {
+&gt;       &quot;causes&quot;: [&quot;tools_changed&quot;],
+&gt;       &quot;tools_added&quot;: 2,
+&gt;       &quot;tools_removed&quot;: 0
+&gt;     },
+&gt;     &quot;miss_causes&quot;: {
+&gt;       &quot;tools_changed&quot;: 2
+&gt;     },
+&gt;     &quot;recache_tokens_if_cold&quot;: 45000
+&gt;   },
+&gt;   &quot;fast_mode&quot;: false,
+&gt;   &quot;effort&quot;: {
+&gt;     &quot;level&quot;: &quot;high&quot;
+&gt;   },
+&gt;   &quot;thinking&quot;: {
+&gt;     &quot;enabled&quot;: true
+&gt;   },
+&gt;   &quot;rate_limits&quot;: {
+&gt;     &quot;five_hour&quot;: {
+&gt;       &quot;used_percentage&quot;: 23.5,
+&gt;       &quot;resets_at&quot;: 1738425600
+&gt;     },
+&gt;     &quot;seven_day&quot;: {
+&gt;       &quot;used_percentage&quot;: 41.2,
+&gt;       &quot;resets_at&quot;: 1738857600
+&gt;     },
+&gt;     &quot;spend_limit&quot;: {
+&gt;       &quot;used_percentage&quot;: 62.8,
+&gt;       &quot;resets_at&quot;: 1740787200,
+&gt;       &quot;used_usd&quot;: 314.12,
+&gt;       &quot;limit_usd&quot;: 500,
+&gt;       &quot;period&quot;: &quot;monthly&quot;
+&gt;     }
+&gt;   },
+&gt;   &quot;vim&quot;: {
+&gt;     &quot;mode&quot;: &quot;NORMAL&quot;
+&gt;   },
+&gt;   &quot;agent&quot;: {
+&gt;     &quot;name&quot;: &quot;security-reviewer&quot;
+&gt;   },
+&gt;   &quot;pr&quot;: {
+&gt;     &quot;number&quot;: 1234,
+&gt;     &quot;url&quot;: &quot;https://github.com/anthropics/claude-code/pull/1234&quot;,
+&gt;     &quot;review_state&quot;: &quot;pending&quot;
+&gt;   },
+&gt;   &quot;worktree&quot;: {
+&gt;     &quot;name&quot;: &quot;my-feature&quot;,
+&gt;     &quot;path&quot;: &quot;/path/to/.claude/worktrees/my-feature&quot;,
+&gt;     &quot;branch&quot;: &quot;worktree-my-feature&quot;,
+&gt;     &quot;original_cwd&quot;: &quot;/path/to/project&quot;,
+&gt;     &quot;original_branch&quot;: &quot;main&quot;
+&gt;   }
+&gt; }
+&gt; ```
+&gt;
+&gt; **Поля, которые могут отсутствовать** (не присутствуют в JSON):
+&gt;
+&gt; * `session_name`: появляется, когда пользовательское имя было установлено с `--name` или `/rename`, или после того как существует автоматически сгенерированный заголовок сеанса. Имя отображения по умолчанию, например `my-app-3f`, не заполняет это поле
+&gt; * `prompt_id`: появляется только после первого ввода пользователя
+&gt; * `workspace.git_worktree`: появляется только когда текущий каталог находится внутри связанного git worktree
+&gt; * `workspace.repo`: появляется только внутри git репозитория с настроенным удалённым хранилищем `origin`
+&gt; * `effort`: появляется только когда текущая модель поддерживает параметр reasoning effort
+&gt; * `vim`: появляется только когда режим vim включен
+&gt; * `agent`: появляется только при запуске с флагом `--agent` или настроенными параметрами агента
+&gt; * `pr`: появляется только пока открытый PR или GitLab merge request найден для текущей ветки, и удаляется после того как он будет объединён или закрыт. `pr.review_state` и `pr.kind` могут быть независимо отсутствующими
+&gt; * `worktree`: появляется только во время сеанса в [worktree сеансе](https://code.claude.com/docs/ru/worktrees.md). Когда присутствует, `branch` и `original_branch` также могут отсутствовать для worktrees на основе hooks
+&gt; * `rate_limits`: появляется только для подписчиков claude.ai Pro, Max и Ultra или за шлюзом Claude apps, который устанавливает лимит расходов для вас. Даже в этом случае поле появляется только после первого ответа API в сессии. Каждое окно (`five_hour`, `seven_day`, `spend_limit`) может быть независимо отсутствующим, и Claude Code удаляет окно после того как его время `resets_at` пройдёт. Используйте `jq -r &#x27;.rate_limits.five_hour.used_percentage // empty&#x27;` для корректной обработки отсутствия.
+&gt; * `prompt_cache`: появляется после первого ответа API основного разговора. Смотрите [поля prompt cache](#prompt-cache-fields)
+&gt;
+&gt; **Поля, которые могут быть `null`**:
+&gt;
+&gt; * `context_window.current_usage`: `null` перед первым вызовом API в сеансе и снова после `/compact` до следующего вызова API, который его переполнит
+&gt; * `context_window.used_percentage`, `context_window.remaining_percentage`: могут быть `null` в начале сеанса
+&gt;
+&gt; Обрабатывайте отсутствующие поля с условным доступом и нулевые значения с резервными значениями по умолчанию в ваших скриптах.
+
+### Поля контекстного окна
+
+Объект `context_window` описывает живое контекстное окно из последнего ответа API.
+
+* **Совокупные итоги** (`total_input_tokens`, `total_output_tokens`): токены, находящиеся в контекстном окне. `total_input_tokens` — это сумма `input_tokens`, `cache_creation_input_tokens` и `cache_read_input_tokens`; `total_output_tokens` — это выходные токены из последнего ответа. Оба равны `0` перед первым ответом API.
+* **Использование по компонентам** (`current_usage`): те же подсчёты токенов, разбитые по категориям. Используйте это, когда вам нужны попадания в кэш отдельно от свежего входа.
+
+Объект `current_usage` содержит:
+
+* `input_tokens`: входные токены в текущем контексте
+* `output_tokens`: выходные токены, которые были сгенерированы
+* `cache_creation_input_tokens`: токены, записанные в кэш
+* `cache_read_input_tokens`: токены, прочитанные из кэша
+
+Для получения информации о том, что означают поля кэша и как они выставляются счётом, см. [проверка производительности кэша](https://code.claude.com/docs/ru/prompt-caching.md#check-cache-performance).
+
+Поле `used_percentage` рассчитывается только из входных токенов: `input_tokens + cache_creation_input_tokens + cache_read_input_tokens`. Оно не включает `output_tokens`.
+
+Если вы рассчитываете процент контекста вручную из `current_usage`, используйте ту же формулу только для входных данных, чтобы соответствовать `used_percentage`.
+
+Объект `current_usage` равен `null` перед первым вызовом API в сеансе и снова сразу после `/compact` до следующего вызова API, который его переполнит.
+
+### Поля лимита расходов
+
+За [шлюзом Claude apps с лимитами расходов](https://code.claude.com/docs/ru/claude-apps-gateway-spend-limits.md#usage-warnings-in-claude-code) объект `rate_limits.spend_limit` описывает лимит расходов, который применяется к вам. Он появляется после первого ответа API в сессии и требует Claude Code v2.1.251 или позже. Ваш скрипт получает его поля по разным графикам:
+
+* `used_percentage` и `resets_at`: приходят с каждым ответом, поэтому присутствуют всегда, когда присутствует `spend_limit`. `used_percentage` варьируется от 0 до 100 или выше 100, когда вы превышаете лимит, а `resets_at` — это секунды эпохи Unix, когда сбрасывается период лимита.
+* `used_usd`, `limit_usd` и `period`: ваши предполагаемые расходы на данный момент и ваш лимит в долларах США, а также период, на который распространяется лимит: `daily`, `weekly` или `monthly`. Шлюз [вычисляет `used_usd` на основе подсчётов токенов](https://code.claude.com/docs/ru/claude-apps-gateway-spend-limits#how-requests-are-priced), поэтому это оценка, а не выставленная к оплате сумма. Claude Code получает их от шлюза отдельным запросом примерно каждые пять минут, пока вы отправляете запросы. Суммы в долларах могут быть примерно на пять минут старше, чем `used_percentage`, поэтому эти значения могут ненадолго расходиться. Требуется v2.1.284 или позже как для Claude Code, так и для шлюза.
+
+Считайте `used_usd`, `limit_usd` и `period` необязательными, даже когда `spend_limit` присутствует, потому что ваш скрипт получает процент раньше них. Считывайте каждое из них с резервным вариантом в скрипте, например `jq -r &#x27;.rate_limits.spend_limit.used_usd // empty&#x27;`. До Claude Code v2.1.295 они оставались отсутствующими, если вы установили `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`, что отключало этот запрос.
+
+### Поля prompt cache
+
+Объект `prompt_cache` суммирует, как основной разговор сеанса использует [prompt cache](https://code.claude.com/docs/ru/prompt-caching.md). Claude Code вычисляет его из подсчётов токенов кэша в ответах API, поэтому он работает на каждом поставщике.
+
+Объект появляется после первого ответа API основного разговора. Claude Code не учитывает запросы подагентов в этой статистике. Требуется Claude Code v2.1.251 или позже.
+
+Таблица перечисляет каждое поле с его значением. Временные метки — это секунды эпохи Unix, то же самое, что и `rate_limits.*.resets_at`. Строка состояния обычно показывает одно или два из них; `warm` и `hit_ratio` наиболее прямо суммируют состояние кэша.
+
+| Поле | Описание |
+| - | - |
+| `warm` | Находится ли кэшированный префикс всё ещё в пределах своего TTL. `false`, когда последний ответ не сообщил о токенах кэша, даже если `caching_observed` равен `true` |
+| `caching_observed` | Сообщил ли какой-либо ответ в этом сеансе о токенах кэша. `false` означает, что prompt caching отключен, или ваш поставщик или шлюз его не сообщает |
+| `ttl` | [Время жизни кэша](https://code.claude.com/docs/ru/prompt-caching.md#cache-lifetime) текущего кэшированного префикса: `&quot;5m&quot;` или `&quot;1h&quot;` |
+| `expires_at` | Когда кэшированный префикс выходит из своего TTL и становится холодным, в секундах эпохи. `null`, когда последний ответ не сообщил о токенах кэша |
+| `requests` | Запросы API, записанные для основного разговора в этом сеансе |
+| `misses` | Запросы, которые переобработали содержимое, которое кэш уже содержал: более 5% и по крайней мере 2000 токенов того, что запрос мог бы прочитать из кэша, без компактирования или очистки результатов инструментов, чтобы объяснить недостаток чтений из кэша |
+| `expected_rebuilds` | Перестройки кэша, которые последовали за компактированием или очисткой старых результатов инструментов |
+| `hit_ratio` | Токены чтения кэша как доля всех входных токенов в этом сеансе, от 0 до 1. Знаменатель учитывает чтения кэша, записи кэша и некэшированный вход. `null`, пока все эти подсчёты равны нулю |
+| `cache_write_tokens` | Все токены, записанные в кэш в этом сеансе, включая начальную запись первого запроса |
+| `miss_recache_tokens` | Токены, записанные в кэш запросами, которые учитываются как промахи |
+| `last_miss_at` | Когда произошёл последний промах, в секундах эпохи. `null`, пока в сеансе нет промахов |
+| `last_miss_cause` | Что Claude Code определил как вероятную причину последнего промаха, описанную в разделе [Причина последнего промаха](#last-miss-cause). Требуется Claude Code v2.1.260 или позже |
+| `miss_causes` | Сколько диагностированных промахов этого сеанса имели каждую причину, ключ по тем же названиям причин, что и `last_miss_cause`. Требуется Claude Code v2.1.260 или позже |
+| `recache_tokens_if_cold` | Токены, которые следующий запрос переполнит в кэш, если кэш к тому времени стал холодным. `null` сразу после компактирования или очистки старых результатов инструментов, до следующего запроса, который записывает размер переписанного разговора |
+
+Claude Code показывает ту же статистику в терминале на строке [`/usage` команды `Prompt cache (main)`](https://code.claude.com/docs/ru/costs#prompt-cache-statistics).
+
+#### Причина последнего промаха
+
+Объект `last_miss_cause` сообщает, что Claude Code определил как вероятную причину самого последнего промаха. Его массив `causes` содержит одно или несколько названий причин, таких как `tools_changed`, `system_prompt_changed`, `ttl_expired_5m` или `likely_server_side`. Объект равен `null` до первого промаха сеанса и снова всякий раз, когда Claude Code не может определить причину самого последнего промаха. Требуется Claude Code v2.1.260 или позже.
+
+Две причины добавляют подсчёты к объекту:
+
+* `tools_added` и `tools_removed`: с `tools_changed`, сколько инструментов было добавлено в запрос или удалено из него
+* `system_char_delta`: с `system_prompt_changed`, изменение длины системного приглашения в символах
+
+## Примеры
+
+Эти примеры показывают распространённые паттерны строк состояния. Чтобы использовать любой пример:
+
+1. Сохраните скрипт в файл, например `~/.claude/statusline.sh` (или `.py`/`.js`)
+2. Сделайте его исполняемым: `chmod +x ~/.claude/statusline.sh`
+3. Добавьте путь в ваши [настройки](#manually-configure-a-status-line)
+
+Примеры Bash используют [`jq`](https://jqlang.org/) для разбора JSON. Python и Node.js имеют встроенный разбор JSON.
+
+### Использование контекстного окна
+
+Отобразите текущую модель и использование контекстного окна с визуальной полосой прогресса. Каждый скрипт читает JSON из stdin, извлекает поле `used_percentage` и строит 10-символьную полосу, где заполненные блоки (▓) представляют использование:
+
+![Строка состояния, показывающая имя модели и полосу прогресса с процентом](https://mintcdn.com/claude-code/HDAmBwgbrZVk0pOt/images/statusline-context-window-usage.png?fit=max\&amp;auto=format\&amp;n=HDAmBwgbrZVk0pOt\&amp;q=85\&amp;s=f3918a549912dc47e90f2b69e68bc847)
+</code></pre>
+<p>#!/bin/bash</p>
+<h1 id="read-all-of-stdin-into-a-variable">Read all of stdin into a variable <a class="h-anchor" href="#read-all-of-stdin-into-a-variable" aria-label="Ссылка на раздел">#</a></h1>
+<p>input=$(cat)</p>
+<h1 id="extract-fields-with-jq-0-provides-fallback-for-null">Extract fields with jq, &quot;// 0&quot; provides fallback for null <a class="h-anchor" href="#extract-fields-with-jq-0-provides-fallback-for-null" aria-label="Ссылка на раздел">#</a></h1>
+<p>MODEL=$(echo &quot;$input&quot; | jq -r &#x27;.model.display_name&#x27;)
+PCT=$(echo &quot;$input&quot; | jq -r &#x27;.context_window.used_percentage // 0&#x27; | cut -d. -f1)</p>
+<h1 id="build-progress-bar-printf-v-creates-a-run-of-spaces-then">Build progress bar: printf -v creates a run of spaces, then <a class="h-anchor" href="#build-progress-bar-printf-v-creates-a-run-of-spaces-then" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="var-replaces-each-space-with-a-block-character">${var// /▓} replaces each space with a block character <a class="h-anchor" href="#var-replaces-each-space-with-a-block-character" aria-label="Ссылка на раздел">#</a></h1>
+<p>BAR_WIDTH=10
+FILLED=$((PCT * BAR_WIDTH / 100))
+EMPTY=$((BAR_WIDTH - FILLED))
+BAR=&quot;&quot;
+[ &quot;$FILLED&quot; -gt 0 ] &amp;&amp; printf -v FILL &quot;%${FILLED}s&quot; &amp;&amp; BAR=&quot;${FILL// /▓}&quot;
+[ &quot;$EMPTY&quot; -gt 0 ] &amp;&amp; printf -v PAD &quot;%${EMPTY}s&quot; &amp;&amp; BAR=&quot;${BAR}${PAD// /░}&quot;</p>
+<p>echo &quot;[$MODEL] $BAR $PCT%&quot;</p>
+<pre><code></code></pre>
+<p>#!/usr/bin/env python3
+import json, sys</p>
+<h1 id="json-load-reads-and-parses-stdin-in-one-step">json.load reads and parses stdin in one step <a class="h-anchor" href="#json-load-reads-and-parses-stdin-in-one-step" aria-label="Ссылка на раздел">#</a></h1>
+<p>data = json.load(sys.stdin)
+model = data[&#x27;model&#x27;][&#x27;display_name&#x27;]</p>
+<h1 id="or-0-handles-null-values">&quot;or 0&quot; handles null values <a class="h-anchor" href="#or-0-handles-null-values" aria-label="Ссылка на раздел">#</a></h1>
+<p>pct = int(data.get(&#x27;context_window&#x27;, {}).get(&#x27;used_percentage&#x27;, 0) or 0)</p>
+<h1 id="string-multiplication-builds-the-bar">String multiplication builds the bar <a class="h-anchor" href="#string-multiplication-builds-the-bar" aria-label="Ссылка на раздел">#</a></h1>
+<p>filled = pct * 10 // 100
+bar = &#x27;▓&#x27; <em> filled + &#x27;░&#x27; </em> (10 - filled)</p>
+<p>print(f&quot;[{model}] {bar} {pct}%&quot;)</p>
+<pre><code></code></pre>
+<p>#!/usr/bin/env node
+// Node.js reads stdin asynchronously with events
+let input = &#x27;&#x27;;
+process.stdin.on(&#x27;data&#x27;, chunk =&gt; input += chunk);
+process.stdin.on(&#x27;end&#x27;, () =&gt; {
+    const data = JSON.parse(input);
+    const model = data.model.display_name;
+    // Optional chaining (?.) safely handles null fields
+    const pct = Math.floor(data.context_window?.used_percentage || 0);</p>
+<p>// String.repeat() builds the bar
+    const filled = Math.floor(pct * 10 / 100);
+    const bar = &#x27;▓&#x27;.repeat(filled) + &#x27;░&#x27;.repeat(10 - filled);</p>
+<p>console.log(<code>[${model}] ${bar} ${pct}%</code>);
+});</p>
+<pre><code>
+### Статус git с цветами
+
+Показывает ветку git с цветовыми индикаторами для подготовленных и изменённых файлов. Этот скрипт использует [коды экранирования ANSI](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors) для цветов терминала: `\033[32m` — зелёный, `\033[33m` — жёлтый и `\033[0m` — сброс на значение по умолчанию.
+
+![Строка состояния, показывающая модель, каталог, ветку git и цветные индикаторы для подготовленных и изменённых файлов](https://mintcdn.com/claude-code/HDAmBwgbrZVk0pOt/images/statusline-git-context.png?fit=max\&amp;auto=format\&amp;n=HDAmBwgbrZVk0pOt\&amp;q=85\&amp;s=f13c190724d9ec7188c17cd2f98b7bf4)
+
+Каждый скрипт проверяет, является ли текущий каталог репозиторием git, подсчитывает подготовленные и изменённые файлы и отображает цветные индикаторы:
+</code></pre>
+<p>#!/bin/bash
+input=$(cat)</p>
+<p>MODEL=$(echo &quot;$input&quot; | jq -r &#x27;.model.display_name&#x27;)
+DIR=$(echo &quot;$input&quot; | jq -r &#x27;.workspace.current_dir&#x27;)</p>
+<p>GREEN=&#x27;\033[32m&#x27;
+YELLOW=&#x27;\033[33m&#x27;
+RESET=&#x27;\033[0m&#x27;</p>
+<p>if git rev-parse --git-dir &gt; /dev/null 2&gt;&amp;1; then
+    BRANCH=$(git branch --show-current 2&gt;/dev/null)
+    STAGED=$(git diff --cached --numstat 2&gt;/dev/null | wc -l | tr -d &#x27; &#x27;)
+    MODIFIED=$(git diff --numstat 2&gt;/dev/null | wc -l | tr -d &#x27; &#x27;)</p>
+<p>GIT_STATUS=&quot;&quot;
+    [ &quot;$STAGED&quot; -gt 0 ] &amp;&amp; GIT_STATUS=&quot;${GREEN}+${STAGED}${RESET}&quot;
+    [ &quot;$MODIFIED&quot; -gt 0 ] &amp;&amp; GIT_STATUS=&quot;${GIT_STATUS}${YELLOW}~${MODIFIED}${RESET}&quot;</p>
+<p>echo -e &quot;[$MODEL] 📁 ${DIR##*/} | 🌿 $BRANCH $GIT_STATUS&quot;
+else
+    echo &quot;[$MODEL] 📁 ${DIR##*/}&quot;
+fi</p>
+<pre><code></code></pre>
+<p>#!/usr/bin/env python3
+import json, sys, subprocess, os</p>
+<p>data = json.load(sys.stdin)
+model = data[&#x27;model&#x27;][&#x27;display_name&#x27;]
+directory = os.path.basename(data[&#x27;workspace&#x27;][&#x27;current_dir&#x27;])</p>
+<p>GREEN, YELLOW, RESET = &#x27;\033[32m&#x27;, &#x27;\033[33m&#x27;, &#x27;\033[0m&#x27;</p>
+<p>try:
+    subprocess.check_output([&#x27;git&#x27;, &#x27;rev-parse&#x27;, &#x27;--git-dir&#x27;], stderr=subprocess.DEVNULL)
+    branch = subprocess.check_output([&#x27;git&#x27;, &#x27;branch&#x27;, &#x27;--show-current&#x27;], text=True).strip()
+    staged_output = subprocess.check_output([&#x27;git&#x27;, &#x27;diff&#x27;, &#x27;--cached&#x27;, &#x27;--numstat&#x27;], text=True).strip()
+    modified_output = subprocess.check_output([&#x27;git&#x27;, &#x27;diff&#x27;, &#x27;--numstat&#x27;], text=True).strip()
+    staged = len(staged_output.split(&#x27;\n&#x27;)) if staged_output else 0
+    modified = len(modified_output.split(&#x27;\n&#x27;)) if modified_output else 0</p>
+<p>git_status = f&quot;{GREEN}+{staged}{RESET}&quot; if staged else &quot;&quot;
+    git_status += f&quot;{YELLOW}~{modified}{RESET}&quot; if modified else &quot;&quot;</p>
+<p>print(f&quot;[{model}] 📁 {directory} | 🌿 {branch} {git_status}&quot;)
+except:
+    print(f&quot;[{model}] 📁 {directory}&quot;)</p>
+<pre><code></code></pre>
+<p>#!/usr/bin/env node
+const { execSync } = require(&#x27;child_process&#x27;);
+const path = require(&#x27;path&#x27;);</p>
+<p>let input = &#x27;&#x27;;
+process.stdin.on(&#x27;data&#x27;, chunk =&gt; input += chunk);
+process.stdin.on(&#x27;end&#x27;, () =&gt; {
+    const data = JSON.parse(input);
+    const model = data.model.display_name;
+    const dir = path.basename(data.workspace.current_dir);</p>
+<p>const GREEN = &#x27;\x1b[32m&#x27;, YELLOW = &#x27;\x1b[33m&#x27;, RESET = &#x27;\x1b[0m&#x27;;</p>
+<p>try {
+        execSync(&#x27;git rev-parse --git-dir&#x27;, { stdio: &#x27;ignore&#x27; });
+        const branch = execSync(&#x27;git branch --show-current&#x27;, { encoding: &#x27;utf8&#x27; }).trim();
+        const staged = execSync(&#x27;git diff --cached --numstat&#x27;, { encoding: &#x27;utf8&#x27; }).trim().split(&#x27;\n&#x27;).filter(Boolean).length;
+        const modified = execSync(&#x27;git diff --numstat&#x27;, { encoding: &#x27;utf8&#x27; }).trim().split(&#x27;\n&#x27;).filter(Boolean).length;</p>
+<p>let gitStatus = staged ? <code>${GREEN}+${staged}${RESET}</code> : &#x27;&#x27;;
+        gitStatus += modified ? <code>${YELLOW}~${modified}${RESET}</code> : &#x27;&#x27;;</p>
+<p>console.log(<code>[${model}] 📁 ${dir} | 🌿 ${branch} ${gitStatus}</code>);
+    } catch {
+        console.log(<code>[${model}] 📁 ${dir}</code>);
+    }
+});</p>
+<pre><code>
+### Отслеживание затрат и продолжительности
+
+Отслеживайте затраты API вашего сеанса и прошедшее время. Поле `cost.total_cost_usd` накапливает стоимость всех вызовов API в текущем сеансе. Поле `cost.total_duration_ms` измеряет общее прошедшее время с момента начала сеанса, а `cost.total_api_duration_ms` отслеживает только время, потраченное на ожидание ответов API.
+
+Каждый скрипт форматирует стоимость как валюту и преобразует миллисекунды в минуты и секунды:
+
+![Строка состояния, показывающая имя модели, стоимость сеанса и продолжительность](https://mintcdn.com/claude-code/HDAmBwgbrZVk0pOt/images/statusline-cost-tracking.png?fit=max\&amp;auto=format\&amp;n=HDAmBwgbrZVk0pOt\&amp;q=85\&amp;s=925f7024c3b38be0f0eca63564bfb52f)
+</code></pre>
+<p>#!/bin/bash
+input=$(cat)</p>
+<p>MODEL=$(echo &quot;$input&quot; | jq -r &#x27;.model.display_name&#x27;)
+COST=$(echo &quot;$input&quot; | jq -r &#x27;.cost.total_cost_usd // 0&#x27;)
+DURATION_MS=$(echo &quot;$input&quot; | jq -r &#x27;.cost.total_duration_ms // 0&#x27;)</p>
+<p>COST_FMT=$(printf &#x27;$%.2f&#x27; &quot;$COST&quot;)
+DURATION_SEC=$((DURATION_MS / 1000))
+MINS=$((DURATION_SEC / 60))
+SECS=$((DURATION_SEC % 60))</p>
+<p>echo &quot;[$MODEL] 💰 $COST_FMT | ⏱️ ${MINS}m ${SECS}s&quot;</p>
+<pre><code></code></pre>
+<p>#!/usr/bin/env python3
+import json, sys</p>
+<p>data = json.load(sys.stdin)
+model = data[&#x27;model&#x27;][&#x27;display_name&#x27;]
+cost = data.get(&#x27;cost&#x27;, {}).get(&#x27;total_cost_usd&#x27;, 0) or 0
+duration_ms = data.get(&#x27;cost&#x27;, {}).get(&#x27;total_duration_ms&#x27;, 0) or 0</p>
+<p>duration_sec = duration_ms // 1000
+mins, secs = duration_sec // 60, duration_sec % 60</p>
+<p>print(f&quot;[{model}] 💰 ${cost:.2f} | ⏱️ {mins}m {secs}s&quot;)</p>
+<pre><code></code></pre>
+<p>#!/usr/bin/env node
+let input = &#x27;&#x27;;
+process.stdin.on(&#x27;data&#x27;, chunk =&gt; input += chunk);
+process.stdin.on(&#x27;end&#x27;, () =&gt; {
+    const data = JSON.parse(input);
+    const model = data.model.display_name;
+    const cost = data.cost?.total_cost_usd || 0;
+    const durationMs = data.cost?.total_duration_ms || 0;</p>
+<p>const durationSec = Math.floor(durationMs / 1000);
+    const mins = Math.floor(durationSec / 60);
+    const secs = durationSec % 60;</p>
+<p>console.log(<code>[${model}] 💰 $${cost.toFixed(2)} | ⏱️ ${mins}m ${secs}s</code>);
+});</p>
+<pre><code>
+### Отображение нескольких строк
+
+Ваш скрипт может выводить несколько строк для создания более богатого отображения.
+
+![Многострочная строка состояния, показывающая имя модели, каталог, ветку git в первой строке и полосу прогресса использования контекста с затратами и продолжительностью во второй строке](https://mintcdn.com/claude-code/HDAmBwgbrZVk0pOt/images/statusline-multiline.png?fit=max\&amp;auto=format\&amp;n=HDAmBwgbrZVk0pOt\&amp;q=85\&amp;s=a9d0a2fe8e446d80b1abc46da3f93270)
+
+Этот пример объединяет несколько методов: цвета на основе порогов (зелёный ниже 70%, жёлтый 70-89%, красный 90%+), полосу прогресса и информацию о ветке git. Каждый оператор `print` или `echo` создаёт отдельную строку:
+</code></pre>
+<p>#!/bin/bash
+input=$(cat)</p>
+<p>MODEL=$(echo &quot;$input&quot; | jq -r &#x27;.model.display_name&#x27;)
+DIR=$(echo &quot;$input&quot; | jq -r &#x27;.workspace.current_dir&#x27;)
+COST=$(echo &quot;$input&quot; | jq -r &#x27;.cost.total_cost_usd // 0&#x27;)
+PCT=$(echo &quot;$input&quot; | jq -r &#x27;.context_window.used_percentage // 0&#x27; | cut -d. -f1)
+DURATION_MS=$(echo &quot;$input&quot; | jq -r &#x27;.cost.total_duration_ms // 0&#x27;)</p>
+<p>CYAN=&#x27;\033[36m&#x27;; GREEN=&#x27;\033[32m&#x27;; YELLOW=&#x27;\033[33m&#x27;; RED=&#x27;\033[31m&#x27;; RESET=&#x27;\033[0m&#x27;</p>
+<h1 id="pick-bar-color-based-on-context-usage">Pick bar color based on context usage <a class="h-anchor" href="#pick-bar-color-based-on-context-usage" aria-label="Ссылка на раздел">#</a></h1>
+<p>if [ &quot;$PCT&quot; -ge 90 ]; then BAR_COLOR=&quot;$RED&quot;
+elif [ &quot;$PCT&quot; -ge 70 ]; then BAR_COLOR=&quot;$YELLOW&quot;
+else BAR_COLOR=&quot;$GREEN&quot;; fi</p>
+<p>FILLED=$((PCT / 10)); EMPTY=$((10 - FILLED))
+printf -v FILL &quot;%${FILLED}s&quot;; printf -v PAD &quot;%${EMPTY}s&quot;
+BAR=&quot;${FILL// /█}${PAD// /░}&quot;</p>
+<p>MINS=$((DURATION_MS / 60000)); SECS=$(((DURATION_MS % 60000) / 1000))</p>
+<p>BRANCH=&quot;&quot;
+git rev-parse --git-dir &gt; /dev/null 2&gt;&amp;1 &amp;&amp; BRANCH=&quot; | 🌿 $(git branch --show-current 2&gt;/dev/null)&quot;</p>
+<p>echo -e &quot;${CYAN}[$MODEL]${RESET} 📁 ${DIR##*/}$BRANCH&quot;
+COST_FMT=$(printf &#x27;$%.2f&#x27; &quot;$COST&quot;)
+echo -e &quot;${BAR_COLOR}${BAR}${RESET} ${PCT}% | ${YELLOW}${COST_FMT}${RESET} | ⏱️ ${MINS}m ${SECS}s&quot;</p>
+<pre><code></code></pre>
+<p>#!/usr/bin/env python3
+import json, sys, subprocess, os</p>
+<p>data = json.load(sys.stdin)
+model = data[&#x27;model&#x27;][&#x27;display_name&#x27;]
+directory = os.path.basename(data[&#x27;workspace&#x27;][&#x27;current_dir&#x27;])
+cost = data.get(&#x27;cost&#x27;, {}).get(&#x27;total_cost_usd&#x27;, 0) or 0
+pct = int(data.get(&#x27;context_window&#x27;, {}).get(&#x27;used_percentage&#x27;, 0) or 0)
+duration_ms = data.get(&#x27;cost&#x27;, {}).get(&#x27;total_duration_ms&#x27;, 0) or 0</p>
+<p>CYAN, GREEN, YELLOW, RED, RESET = &#x27;\033[36m&#x27;, &#x27;\033[32m&#x27;, &#x27;\033[33m&#x27;, &#x27;\033[31m&#x27;, &#x27;\033[0m&#x27;</p>
+<p>bar_color = RED if pct &gt;= 90 else YELLOW if pct &gt;= 70 else GREEN
+filled = pct // 10
+bar = &#x27;█&#x27; <em> filled + &#x27;░&#x27; </em> (10 - filled)</p>
+<p>mins, secs = duration_ms // 60000, (duration_ms % 60000) // 1000</p>
+<p>try:
+    branch = subprocess.check_output([&#x27;git&#x27;, &#x27;branch&#x27;, &#x27;--show-current&#x27;], text=True, stderr=subprocess.DEVNULL).strip()
+    branch = f&quot; | 🌿 {branch}&quot; if branch else &quot;&quot;
+except:
+    branch = &quot;&quot;</p>
+<p>print(f&quot;{CYAN}[{model}]{RESET} 📁 {directory}{branch}&quot;)
+print(f&quot;{bar_color}{bar}{RESET} {pct}% | {YELLOW}${cost:.2f}{RESET} | ⏱️ {mins}m {secs}s&quot;)</p>
+<pre><code></code></pre>
+<p>#!/usr/bin/env node
+const { execSync } = require(&#x27;child_process&#x27;);
+const path = require(&#x27;path&#x27;);</p>
+<p>let input = &#x27;&#x27;;
+process.stdin.on(&#x27;data&#x27;, chunk =&gt; input += chunk);
+process.stdin.on(&#x27;end&#x27;, () =&gt; {
+    const data = JSON.parse(input);
+    const model = data.model.display_name;
+    const dir = path.basename(data.workspace.current_dir);
+    const cost = data.cost?.total_cost_usd || 0;
+    const pct = Math.floor(data.context_window?.used_percentage || 0);
+    const durationMs = data.cost?.total_duration_ms || 0;</p>
+<p>const CYAN = &#x27;\x1b[36m&#x27;, GREEN = &#x27;\x1b[32m&#x27;, YELLOW = &#x27;\x1b[33m&#x27;, RED = &#x27;\x1b[31m&#x27;, RESET = &#x27;\x1b[0m&#x27;;</p>
+<p>const barColor = pct &gt;= 90 ? RED : pct &gt;= 70 ? YELLOW : GREEN;
+    const filled = Math.floor(pct / 10);
+    const bar = &#x27;█&#x27;.repeat(filled) + &#x27;░&#x27;.repeat(10 - filled);</p>
+<p>const mins = Math.floor(durationMs / 60000);
+    const secs = Math.floor((durationMs % 60000) / 1000);</p>
+<p>let branch = &#x27;&#x27;;
+    try {
+        branch = execSync(&#x27;git branch --show-current&#x27;, { encoding: &#x27;utf8&#x27;, stdio: [&#x27;pipe&#x27;, &#x27;pipe&#x27;, &#x27;ignore&#x27;] }).trim();
+        branch = branch ? <code> | 🌿 ${branch}</code> : &#x27;&#x27;;
+    } catch {}</p>
+<p>console.log(<code>${CYAN}[${model}]${RESET} 📁 ${dir}${branch}</code>);
+    console.log(<code>${barColor}${bar}${RESET} ${pct}% | ${YELLOW}$${cost.toFixed(2)}${RESET} | ⏱️ ${mins}m ${secs}s</code>);
+});</p>
+<pre><code>
+### Кликабельные ссылки
+
+Этот пример создаёт кликабельную ссылку на ваш репозиторий GitHub. Удерживайте Cmd (macOS) или Ctrl (Windows/Linux) и нажмите, чтобы открыть ссылку в браузере.
+
+![Строка состояния, показывающая кликабельную ссылку на репозиторий GitHub](https://mintcdn.com/claude-code/HDAmBwgbrZVk0pOt/images/statusline-links.png?fit=max\&amp;auto=format\&amp;n=HDAmBwgbrZVk0pOt\&amp;q=85\&amp;s=4778a144a28cb498c99d5fa018bb374a)
+
+Каждый скрипт получает URL удалённого репозитория, преобразует формат SSH в HTTPS и оборачивает имя репозитория в коды экранирования OSC 8. Версия Bash использует `printf &#x27;%b&#x27;`, которая более надёжно интерпретирует экранирующие последовательности, чем `echo -e` в разных оболочках:
+</code></pre>
+<p>#!/bin/bash
+input=$(cat)</p>
+<p>MODEL=$(echo &quot;$input&quot; | jq -r &#x27;.model.display_name&#x27;)</p>
+<h1 id="convert-git-ssh-url-to-https">Convert git SSH URL to HTTPS <a class="h-anchor" href="#convert-git-ssh-url-to-https" aria-label="Ссылка на раздел">#</a></h1>
+<p>REMOTE=$(git remote get-url origin 2&gt;/dev/null | sed &#x27;s/git@github.com:/https:\/\/github.com\//&#x27; | sed &#x27;s/\.git$//&#x27;)</p>
+<p>if [ -n &quot;$REMOTE&quot; ]; then
+    REPO_NAME=$(basename &quot;$REMOTE&quot;)
+    # OSC 8 format: \e]8;;URL\a then TEXT then \e]8;;\a
+    # printf %b interprets escape sequences reliably across shells
+    printf &#x27;%b&#x27; &quot;[$MODEL] 🔗 \e]8;;${REMOTE}\a${REPO_NAME}\e]8;;\a\n&quot;
+else
+    echo &quot;[$MODEL]&quot;
+fi</p>
+<pre><code></code></pre>
+<p>#!/usr/bin/env python3
+import json, sys, subprocess, re, os</p>
+<p>data = json.load(sys.stdin)
+model = data[&#x27;model&#x27;][&#x27;display_name&#x27;]</p>
+<h1 id="get-git-remote-url">Get git remote URL <a class="h-anchor" href="#get-git-remote-url" aria-label="Ссылка на раздел">#</a></h1>
+<p>try:
+    remote = subprocess.check_output(
+        [&#x27;git&#x27;, &#x27;remote&#x27;, &#x27;get-url&#x27;, &#x27;origin&#x27;],
+        stderr=subprocess.DEVNULL, text=True
+    ).strip()
+    # Convert SSH to HTTPS format
+    remote = re.sub(r&#x27;^git@github\.com:&#x27;, &#x27;https://github.com/&#x27;, remote)
+    remote = re.sub(r&#x27;\.git$&#x27;, &#x27;&#x27;, remote)
+    repo_name = os.path.basename(remote)
+    # OSC 8 escape sequences
+    link = f&quot;\033]8;;{remote}\a{repo_name}\033]8;;\a&quot;
+    print(f&quot;[{model}] 🔗 {link}&quot;)
+except:
+    print(f&quot;[{model}]&quot;)</p>
+<pre><code></code></pre>
+<p>#!/usr/bin/env node
+const { execSync } = require(&#x27;child_process&#x27;);
+const path = require(&#x27;path&#x27;);</p>
+<p>let input = &#x27;&#x27;;
+process.stdin.on(&#x27;data&#x27;, chunk =&gt; input += chunk);
+process.stdin.on(&#x27;end&#x27;, () =&gt; {
+    const data = JSON.parse(input);
+    const model = data.model.display_name;</p>
+<p>try {
+        let remote = execSync(&#x27;git remote get-url origin&#x27;, { encoding: &#x27;utf8&#x27;, stdio: [&#x27;pipe&#x27;, &#x27;pipe&#x27;, &#x27;ignore&#x27;] }).trim();
+        // Convert SSH to HTTPS format
+        remote = remote.replace(/^git@github\.com:/, &#x27;https://github.com/&#x27;).replace(/\.git$/, &#x27;&#x27;);
+        const repoName = path.basename(remote);
+        // OSC 8 escape sequences
+        const link = <code>\x1b]8;;${remote}\x07${repoName}\x1b]8;;\x07</code>;
+        console.log(<code>[${model}] 🔗 ${link}</code>);
+    } catch {
+        console.log(<code>[${model}]</code>);
+    }
+});</p>
+<pre><code>
+### Использование лимита скорости
+
+Отобразите в строке состояния использование ограничения частоты запросов подписки claude.ai или ваши расходы относительно лимита расходов шлюза приложений Claude. Для подписчиков объект `rate_limits` может содержать скользящее окно `five_hour` и еженедельное окно `seven_day`. Каждое окно предоставляет `used_percentage` (от 0 до 100) и `resets_at` (секунды эпохи Unix, когда окно сбрасывается). За шлюзом считывайте объект `spend_limit`, описанный в разделе [поля лимита расходов](#spend-limit-fields).
+
+Объект `rate_limits` присутствует только для подписчиков claude.ai Pro, Max и Ultra или за шлюзом приложений Claude с лимитами расходов, и только после первого ответа API. Каждый скрипт корректно обрабатывает отсутствующие поля, а за шлюзом выводит `spend: $314.12 / $500` или `spend: 63%`, пока поля в долларах отсутствуют:
+</code></pre>
+<p>#!/bin/bash
+input=$(cat)</p>
+<p>MODEL=$(echo &quot;$input&quot; | jq -r &#x27;.model.display_name&#x27;)</p>
+<h1 id="empty-produces-no-output-when-rate_limits-is-absent">&quot;// empty&quot; produces no output when rate_limits is absent <a class="h-anchor" href="#empty-produces-no-output-when-rate_limits-is-absent" aria-label="Ссылка на раздел">#</a></h1>
+<p>FIVE_H=$(echo &quot;$input&quot; | jq -r &#x27;.rate_limits.five_hour.used_percentage // empty&#x27;)
+WEEK=$(echo &quot;$input&quot; | jq -r &#x27;.rate_limits.seven_day.used_percentage // empty&#x27;)</p>
+<p>LIMITS=&quot;&quot;
+[ -n &quot;$FIVE_H&quot; ] &amp;&amp; LIMITS=&quot;5h: $(printf &#x27;%.0f&#x27; &quot;$FIVE_H&quot;)%&quot;
+[ -n &quot;$WEEK&quot; ] &amp;&amp; LIMITS=&quot;${LIMITS:+$LIMITS }7d: $(printf &#x27;%.0f&#x27; &quot;$WEEK&quot;)%&quot;</p>
+<h1 id="behind-a-claude-apps-gateway-dollars-when-the-gateway-reports-them-else-the-percentage">Behind a Claude apps gateway: dollars when the gateway reports them, else the percentage <a class="h-anchor" href="#behind-a-claude-apps-gateway-dollars-when-the-gateway-reports-them-else-the-percentage" aria-label="Ссылка на раздел">#</a></h1>
+<p>SPEND_PCT=$(echo &quot;$input&quot; | jq -r &#x27;.rate_limits.spend_limit.used_percentage // empty&#x27;)
+SPEND_USD=$(echo &quot;$input&quot; | jq -r &#x27;.rate_limits.spend_limit | select(.used_usd != null) | &quot;$\(.used_usd) / $\(.limit_usd)&quot;&#x27;)
+[ -n &quot;$SPEND_PCT&quot; ] &amp;&amp; LIMITS=&quot;${LIMITS:+$LIMITS }spend: ${SPEND_USD:-$(printf &#x27;%.0f&#x27; &quot;$SPEND_PCT&quot;)%}&quot;</p>
+<p>[ -n &quot;$LIMITS&quot; ] &amp;&amp; echo &quot;[$MODEL] | $LIMITS&quot; || echo &quot;[$MODEL]&quot;</p>
+<pre><code></code></pre>
+<p>#!/usr/bin/env python3
+import json, sys</p>
+<p>data = json.load(sys.stdin)
+model = data[&#x27;model&#x27;][&#x27;display_name&#x27;]</p>
+<p>parts = []
+rate = data.get(&#x27;rate_limits&#x27;, {})
+five_h = rate.get(&#x27;five_hour&#x27;, {}).get(&#x27;used_percentage&#x27;)
+week = rate.get(&#x27;seven_day&#x27;, {}).get(&#x27;used_percentage&#x27;)</p>
+<p>if five_h is not None:
+    parts.append(f&quot;5h: {five_h:.0f}%&quot;)
+if week is not None:
+    parts.append(f&quot;7d: {week:.0f}%&quot;)</p>
+<h1 id="behind-a-claude-apps-gateway-dollars-when-the-gateway-reports-them-else-the-percentage-2">Behind a Claude apps gateway: dollars when the gateway reports them, else the percentage <a class="h-anchor" href="#behind-a-claude-apps-gateway-dollars-when-the-gateway-reports-them-else-the-percentage-2" aria-label="Ссылка на раздел">#</a></h1>
+<p>spend = rate.get(&#x27;spend_limit&#x27;, {})
+if spend.get(&#x27;used_percentage&#x27;) is not None:
+    if spend.get(&#x27;used_usd&#x27;) is not None:
+        parts.append(f&quot;spend: ${spend[&#x27;used_usd&#x27;]} / ${spend[&#x27;limit_usd&#x27;]}&quot;)
+    else:
+        parts.append(f&quot;spend: {spend[&#x27;used_percentage&#x27;]:.0f}%&quot;)</p>
+<p>if parts:
+    print(f&quot;[{model}] | {&#x27; &#x27;.join(parts)}&quot;)
+else:
+    print(f&quot;[{model}]&quot;)</p>
+<pre><code></code></pre>
+<p>#!/usr/bin/env node
+let input = &#x27;&#x27;;
+process.stdin.on(&#x27;data&#x27;, chunk =&gt; input += chunk);
+process.stdin.on(&#x27;end&#x27;, () =&gt; {
+    const data = JSON.parse(input);
+    const model = data.model.display_name;</p>
+<p>const parts = [];
+    const fiveH = data.rate_limits?.five_hour?.used_percentage;
+    const week = data.rate_limits?.seven_day?.used_percentage;</p>
+<p>if (fiveH != null) parts.push(<code>5h: ${Math.round(fiveH)}%</code>);
+    if (week != null) parts.push(<code>7d: ${Math.round(week)}%</code>);</p>
+<p>// Behind a Claude apps gateway: dollars when the gateway reports them, else the percentage
+    const spend = data.rate_limits?.spend_limit;
+    if (spend?.used_percentage != null) {
+        parts.push(spend.used_usd != null
+            ? <code>spend: $${spend.used_usd} / $${spend.limit_usd}</code>
+            : <code>spend: ${Math.round(spend.used_percentage)}%</code>);
+    }</p>
+<p>console.log(parts.length ? <code>[${model}] | ${parts.join(&#x27; &#x27;)}</code> : <code>[${model}]</code>);
+});</p>
+<pre><code>
+### Кэширование дорогостоящих операций
+
+Ваш скрипт строки состояния запускается часто во время активных сеансов. Команды, такие как `git status` или `git diff`, могут быть медленными, особенно в больших репозиториях. Этот пример кэширует информацию git во временный файл и обновляет её только каждые 5 секунд.
+
+Имя файла кэша должно быть стабильным во время вызовов строки состояния в рамках сеанса, но уникальным для разных сеансов, чтобы одновременные сеансы в разных репозиториях не читали состояние git друг друга. Идентификаторы на основе процесса, такие как `$$`, `os.getpid()` или `process.pid`, изменяются при каждом вызове и нарушают кэш. Вместо этого используйте `session_id` из входных данных JSON: он стабилен в течение жизни сеанса и уникален для каждого сеанса.
+
+Каждый скрипт проверяет, отсутствует ли файл кэша или он старше 5 секунд, перед запуском команд git:
+</code></pre>
+<p>#!/bin/bash
+input=$(cat)</p>
+<p>MODEL=$(echo &quot;$input&quot; | jq -r &#x27;.model.display_name&#x27;)
+DIR=$(echo &quot;$input&quot; | jq -r &#x27;.workspace.current_dir&#x27;)
+SESSION_ID=$(echo &quot;$input&quot; | jq -r &#x27;.session_id&#x27;)</p>
+<p>CACHE_FILE=&quot;/tmp/statusline-git-cache-$SESSION_ID&quot;
+CACHE_MAX_AGE=5  # seconds</p>
+<p>cache_is_stale() {
+    [ ! -f &quot;$CACHE_FILE&quot; ] || \
+    # stat -c %Y (Linux) or stat -f %m (macOS) prints the file&#x27;s last-modified
+    # time. The Linux form must run first: on Linux, the macOS form prints a
+    # filesystem report to stdout before failing, and that output would be
+    # captured by the command substitution and break the arithmetic.
+    [ $(($(date +%s) - $(stat -c %Y &quot;$CACHE_FILE&quot; 2&gt;/dev/null || stat -f %m &quot;$CACHE_FILE&quot; 2&gt;/dev/null || echo 0))) -gt $CACHE_MAX_AGE ]
+}</p>
+<p>if cache_is_stale; then
+    if git rev-parse --git-dir &gt; /dev/null 2&gt;&amp;1; then
+        BRANCH=$(git branch --show-current 2&gt;/dev/null)
+        STAGED=$(git diff --cached --numstat 2&gt;/dev/null | wc -l | tr -d &#x27; &#x27;)
+        MODIFIED=$(git diff --numstat 2&gt;/dev/null | wc -l | tr -d &#x27; &#x27;)
+        echo &quot;$BRANCH|$STAGED|$MODIFIED&quot; &gt; &quot;$CACHE_FILE&quot;
+    else
+        echo &quot;||&quot; &gt; &quot;$CACHE_FILE&quot;
+    fi
+fi</p>
+<p>IFS=&#x27;|&#x27; read -r BRANCH STAGED MODIFIED &lt; &quot;$CACHE_FILE&quot;</p>
+<p>if [ -n &quot;$BRANCH&quot; ]; then
+    echo &quot;[$MODEL] 📁 ${DIR##*/} | 🌿 $BRANCH +$STAGED ~$MODIFIED&quot;
+else
+    echo &quot;[$MODEL] 📁 ${DIR##*/}&quot;
+fi</p>
+<pre><code></code></pre>
+<p>#!/usr/bin/env python3
+import json, sys, subprocess, os, time</p>
+<p>data = json.load(sys.stdin)
+model = data[&#x27;model&#x27;][&#x27;display_name&#x27;]
+directory = os.path.basename(data[&#x27;workspace&#x27;][&#x27;current_dir&#x27;])
+session_id = data[&#x27;session_id&#x27;]</p>
+<p>CACHE_FILE = f&quot;/tmp/statusline-git-cache-{session_id}&quot;
+CACHE_MAX_AGE = 5  # seconds</p>
+<p>def cache_is_stale():
+    if not os.path.exists(CACHE_FILE):
+        return True
+    return time.time() - os.path.getmtime(CACHE_FILE) &gt; CACHE_MAX_AGE</p>
+<p>if cache_is_stale():
+    try:
+        subprocess.check_output([&#x27;git&#x27;, &#x27;rev-parse&#x27;, &#x27;--git-dir&#x27;], stderr=subprocess.DEVNULL)
+        branch = subprocess.check_output([&#x27;git&#x27;, &#x27;branch&#x27;, &#x27;--show-current&#x27;], text=True).strip()
+        staged = subprocess.check_output([&#x27;git&#x27;, &#x27;diff&#x27;, &#x27;--cached&#x27;, &#x27;--numstat&#x27;], text=True).strip()
+        modified = subprocess.check_output([&#x27;git&#x27;, &#x27;diff&#x27;, &#x27;--numstat&#x27;], text=True).strip()
+        staged_count = len(staged.split(&#x27;\n&#x27;)) if staged else 0
+        modified_count = len(modified.split(&#x27;\n&#x27;)) if modified else 0
+        with open(CACHE_FILE, &#x27;w&#x27;) as f:
+            f.write(f&quot;{branch}|{staged_count}|{modified_count}&quot;)
+    except:
+        with open(CACHE_FILE, &#x27;w&#x27;) as f:
+            f.write(&quot;||&quot;)</p>
+<p>with open(CACHE_FILE) as f:
+    branch, staged, modified = f.read().strip().split(&#x27;|&#x27;)</p>
+<p>if branch:
+    print(f&quot;[{model}] 📁 {directory} | 🌿 {branch} +{staged} ~{modified}&quot;)
+else:
+    print(f&quot;[{model}] 📁 {directory}&quot;)</p>
+<pre><code></code></pre>
+<p>#!/usr/bin/env node
+const { execSync } = require(&#x27;child_process&#x27;);
+const fs = require(&#x27;fs&#x27;);
+const path = require(&#x27;path&#x27;);</p>
+<p>let input = &#x27;&#x27;;
+process.stdin.on(&#x27;data&#x27;, chunk =&gt; input += chunk);
+process.stdin.on(&#x27;end&#x27;, () =&gt; {
+    const data = JSON.parse(input);
+    const model = data.model.display_name;
+    const dir = path.basename(data.workspace.current_dir);
+    const sessionId = data.session_id;</p>
+<p>const CACHE_FILE = <code>/tmp/statusline-git-cache-${sessionId}</code>;
+    const CACHE_MAX_AGE = 5; // seconds</p>
+<p>const cacheIsStale = () =&gt; {
+        if (!fs.existsSync(CACHE_FILE)) return true;
+        return (Date.now() / 1000) - fs.statSync(CACHE_FILE).mtimeMs / 1000 &gt; CACHE_MAX_AGE;
+    };</p>
+<p>if (cacheIsStale()) {
+        try {
+            execSync(&#x27;git rev-parse --git-dir&#x27;, { stdio: &#x27;ignore&#x27; });
+            const branch = execSync(&#x27;git branch --show-current&#x27;, { encoding: &#x27;utf8&#x27; }).trim();
+            const staged = execSync(&#x27;git diff --cached --numstat&#x27;, { encoding: &#x27;utf8&#x27; }).trim().split(&#x27;\n&#x27;).filter(Boolean).length;
+            const modified = execSync(&#x27;git diff --numstat&#x27;, { encoding: &#x27;utf8&#x27; }).trim().split(&#x27;\n&#x27;).filter(Boolean).length;
+            fs.writeFileSync(CACHE_FILE, <code>${branch}|${staged}|${modified}</code>);
+        } catch {
+            fs.writeFileSync(CACHE_FILE, &#x27;||&#x27;);
+        }
+    }</p>
+<p>const [branch, staged, modified] = fs.readFileSync(CACHE_FILE, &#x27;utf8&#x27;).trim().split(&#x27;|&#x27;);</p>
+<p>if (branch) {
+        console.log(<code>[${model}] 📁 ${dir} | 🌿 ${branch} +${staged} ~${modified}</code>);
+    } else {
+        console.log(<code>[${model}] 📁 ${dir}</code>);
+    }
+});</p>
+<pre><code>
+### Конфигурация Windows
+
+На Windows Claude Code запускает команды строки состояния через Git Bash, когда Git Bash установлен, или через PowerShell, когда Git Bash отсутствует.
+
+Git Bash обрабатывает неэкранированные обратные слэши как символы экранирования, поэтому путь в стиле Windows, такой как `C:\Users\username\script.mjs`, достигает средства запуска скрипта с удалёнными разделителями и команда не выполняется без видимой ошибки. Записывайте пути к файлам в строке `command` с прямыми слэшами, как показано в примерах ниже. Сокращение `~` также работает и расширяется до вашего домашнего каталога Windows.
+
+Чтобы запустить скрипт PowerShell как вашу строку состояния, вызовите его через `powershell`. Это работает независимо от того, маршрутизирует ли Claude Code команду через Git Bash или PowerShell:
+</code></pre>
+<p>{
+  &quot;statusLine&quot;: {
+    &quot;type&quot;: &quot;command&quot;,
+    &quot;command&quot;: &quot;powershell -NoProfile -File C:/Users/username/.claude/statusline.ps1&quot;
+  }
+}</p>
+<pre><code></code></pre>
+<p>$input_json = $input | Out-String | ConvertFrom-Json
+$cwd = $input_json.cwd
+$model = $input_json.model.display_name
+$used = $input_json.context_window.used_percentage
+$dirname = Split-Path $cwd -Leaf</p>
+<p>if ($used) {
+    Write-Host &quot;$dirname [$model] ctx: $used%&quot;
+} else {
+    Write-Host &quot;$dirname [$model]&quot;
+}</p>
+<pre><code>
+Или запустите скрипт Bash напрямую, когда Git Bash установлен:
+</code></pre>
+<p>{
+  &quot;statusLine&quot;: {
+    &quot;type&quot;: &quot;command&quot;,
+    &quot;command&quot;: &quot;~/.claude/statusline.sh&quot;
+  }
+}</p>
+<pre><code></code></pre>
+<p>#!/usr/bin/env bash
+input=$(cat)
+cwd=$(echo &quot;$input&quot; | grep -o &#x27;&quot;cwd&quot;:&quot;[^&quot;]*&quot;&#x27; | cut -d&#x27;&quot;&#x27; -f4)
+model=$(echo &quot;$input&quot; | grep -o &#x27;&quot;display_name&quot;:&quot;[^&quot;]*&quot;&#x27; | cut -d&#x27;&quot;&#x27; -f4)
+dirname=&quot;${cwd##*[/\\]}&quot;
+echo &quot;$dirname [$model]&quot;</p>
+<pre><code>
+## Советы
+
+* **Тестирование с макетными входными данными**: `echo &#x27;{&quot;model&quot;:{&quot;display_name&quot;:&quot;Opus&quot;},&quot;workspace&quot;:{&quot;current_dir&quot;:&quot;/home/user/project&quot;},&quot;context_window&quot;:{&quot;used_percentage&quot;:25},&quot;session_id&quot;:&quot;test-session-abc&quot;}&#x27; | ./statusline.sh`
+* **Сохраняйте вывод коротким**: строка состояния имеет ограниченную ширину, поэтому длинный вывод может быть обрезан или неправильно обёрнут
+* **Кэшируйте медленные операции**: ваш скрипт запускается часто во время активных сеансов, поэтому команды, такие как `git status`, могут вызвать задержку. См. [пример кэширования](#cache-expensive-operations) для того, как это обработать.
+
+Проекты сообщества, такие как [ccstatusline](https://github.com/sirmalloc/ccstatusline) и [starship-claude](https://github.com/martinemde/starship-claude), предоставляют предварительно построенные конфигурации с темами и дополнительными функциями.
+
+## Устранение неполадок
+
+Если строка состояния пустая, начните с раздела [Строка состояния не отображается](#status-line-not-appearing). Папка, которой вы не доверяете, и скрипт, завершающийся с ошибкой, также оставляют её пустой, как описано в разделах [Требуется доверие рабочего пространства](#workspace-trust-required) и [Ошибки скрипта или зависания](#script-errors-or-hangs).
+
+### Строка состояния не отображается
+
+Если вы настроили строку состояния, но внизу интерфейса ничего не отображается, выполните следующие проверки:
+
+* Убедитесь, что ваш скрипт исполняемый: `chmod +x ~/.claude/statusline.sh`
+* Проверьте, что ваш скрипт выводит в stdout, а не stderr
+* Запустите ваш скрипт вручную, чтобы убедиться, что он выводит результат
+* В Windows с установленным Git Bash обратные слэши в пути `command` вероятно будут использованы как символы экранирования перед запуском скрипта. Используйте прямые слэши в пути. См. [Конфигурация Windows](#windows-configuration).
+* Если `disableAllHooks` установлен на `true` вне управляемых настроек после применения [приоритета настроек](https://code.claude.com/docs/ru/hooks.md#disable-or-remove-hooks), Claude Code запускает только `statusLine` из управляемых настроек, и без управляемого `statusLine` строка состояния отключена. Удалите эту настройку или установите её на `false` в файле, который её устанавливает, чтобы повторно включить. См. [`disableAllHooks`](https://code.claude.com/docs/ru/settings-reference#disableallhooks).
+* Если ваша организация устанавливает `allowManagedHooksOnly` в управляемых настройках, ваша пользовательская строка состояния исчезает без предупреждения: вы можете получить строку состояния только из значения `statusLine` в этих управляемых настройках. См. [что запускается под `allowManagedHooksOnly`](https://code.claude.com/docs/ru/settings-reference#what-runs-under-allowmanagedhooksonly) для полного поведения и спросите у вашего администратора, применяется ли эта настройка к вам.
+* Запустите `claude --debug`, чтобы записать stderr вашего скрипта при каждом вызове строки состояния и его код выхода при первом вызове в сессии
+* Попросите Claude прочитать ваш файл настроек и выполнить команду `statusLine` напрямую, чтобы выявить ошибки
+
+### Строка состояния показывает `--` или пустые значения
+
+Поля могут быть `null` до завершения первого ответа API, поэтому обрабатывайте значения null в вашем скрипте с резервными вариантами, такими как `// 0` в jq. Перезапустите Claude Code, если значения остаются пустыми после нескольких сообщений.
+
+### Процент контекста показывает неожиданные значения
+
+Строка состояния сообщает количества из последнего ответа API, в то время как `/context` добавляет оценку для сообщений, добавленных с момента этого ответа, поэтому `/context` может показывать более высокие значения до следующего ответа. Используйте `used_percentage` для простейшего точного состояния контекста. Формулу, по которой вычисляется `used_percentage`, см. в разделе [Поля контекстного окна](#context-window-fields).
+
+### Ссылки OSC 8 не кликабельны
+
+Будет ли ссылка кликабельной, зависит от вашего терминала, от того, обнаруживает ли Claude Code в нём поддержку гиперссылок, от того, удаляют ли SSH или tmux управляющую последовательность, и от того, как ваш скрипт её выводит:
+
+* Убедитесь, что ваш терминал поддерживает гиперссылки OSC 8 (iTerm2, Kitty, WezTerm)
+
+* Terminal.app не поддерживает кликабельные ссылки
+
+* Если текст ссылки отображается, но не кликабелен, Claude Code может не обнаружить поддержку гиперссылок в вашем терминале. Установите переменную окружения `FORCE_HYPERLINK` для переопределения обнаружения перед запуском Claude Code:
+</code></pre>
+<p>FORCE_HYPERLINK=1 claude</p>
+<pre><code>
+  В PowerShell сначала установите переменную в текущей сессии:
+</code></pre>
+<p>$env:FORCE_HYPERLINK = &quot;1&quot;; claude</p>
+<pre><code>
+* Сессии SSH и tmux могут удалять последовательности OSC в зависимости от конфигурации
+
+* Если последовательности экранирования отображаются как буквальный текст, например `\e]8;;`, используйте `printf &#x27;%b&#x27;` вместо `echo -e` для более надёжной обработки экранирования
+
+### Глюки отображения с последовательностями экранирования
+
+Сложные последовательности экранирования (цвета ANSI, ссылки OSC 8) могут иногда вызывать искажённый вывод, если они перекрываются с другими обновлениями пользовательского интерфейса. Многострочные строки состояния с кодами экранирования более подвержены проблемам отображения, чем однострочный простой текст.
+
+Если вы видите повреждённый текст, попробуйте упростить ваш скрипт до простого текстового вывода.
+
+### Требуется доверие рабочего пространства
+
+Пока вы не примете диалог доверия рабочего пространства, строка состояния остаётся пустой. Поскольку `statusLine` выполняет команду оболочки, Claude Code запускает её под тем же [правилом доверия рабочего пространства, что и хуки в файлах настроек](https://code.claude.com/docs/ru/permissions.md#what-runs-before-you-trust-a-folder). Достаточно принять диалог для папки или для родительского каталога, чьё доверие распространяется на неё.
+
+До этого `claude --debug` записывает в лог `Status line command skipped: workspace trust not accepted`. Перезапустите Claude Code и примите диалог доверия, чтобы включить её.
+
+### Ошибки скрипта или зависания
+
+Claude Code отображает вывод вашего скрипта только после того, как скрипт завершится с кодом 0:
+
+* Скрипты, которые выходят с ненулевыми кодами или не выводят результат, вызывают пустую строку состояния
+* Медленные скрипты блокируют обновление строки состояния до их завершения. Держите скрипты быстрыми, чтобы избежать устаревшего вывода.
+* Если новое обновление срабатывает, пока медленный скрипт работает, выполнение скрипта отменяется
+* Протестируйте ваш скрипт независимо с макетными входными данными перед его настройкой
+
+### Уведомления делят строку со строкой состояния
+
+Вне [полноэкранного отображения](https://code.claude.com/docs/ru/fullscreen.md) Claude Code показывает уведомления на той же строке, что и ваша строка состояния. При полноэкранном отображении Claude Code выделяет уведомлениям отдельную строку.
+
+* Системные уведомления, такие как ошибки MCP-сервера и автоматические обновления, отображаются на правой стороне строки. Временные уведомления, такие как предупреждение о низком контексте, также циклически сменяются в этой области.
+* Включение подробного режима добавляет в эту область счётчик токенов, который показывает размер вашего контекста согласно последнему ответу API, а не [счётчик за ход рядом со спиннером](https://code.claude.com/docs/ru/costs.md#read-the-token-count-beside-the-spinner)
+* На узких терминалах эти уведомления могут обрезать вывод вашей строки состояния
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

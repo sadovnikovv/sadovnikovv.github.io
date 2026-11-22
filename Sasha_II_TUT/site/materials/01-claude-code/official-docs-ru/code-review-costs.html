@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Стоимость и использование Code Review</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="стоимость-и-использование-code-review">Стоимость и использование Code Review <a class="h-anchor" href="#стоимость-и-использование-code-review" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Оцените и ограничьте расходы вашей организации на Claude Code Review: как ревью оплачиваются через кредиты использования, что влияет на стоимость и где отслеживать использование.</p>
+</blockquote>
+<p>У <a href="https://code.claude.com/docs/ru/code-review.md">Code Review</a> нет фиксированной цены за одно ревью. Ваши расходы зависят от стоимости каждого ревью и от того, сколько ревью выполняется:</p>
+<ul>
+<li><strong>Стоимость каждого ревью</strong>: зависит от <a href="https://code.claude.com/docs/ru/code-review-setup.md#set-the-default-review-level">уровня ревью</a>, размера изменения, сложности окружающего кода и количества потенциальных проблем, требующих проверки</li>
+<li><strong>Количество ревью</strong>: определяется тем, <a href="#how-often-reviews-run">как часто выполняются ревью</a> в каждом репозитории</li>
+</ul>
+<h3 id="h">Цены <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Code Review тарифицируется по использованию токенов через <a href="https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans">кредиты использования</a>, отдельно от использования, включённого в ваш план. Ревью оплачиваются вашей организацией, а не разработчиком, который открыл PR или запросил ревью. Расходы отображаются в вашем счёте Anthropic независимо от того, использует ли ваша организация Amazon Bedrock, Google Cloud&#x27;s Agent Platform или Microsoft Foundry для других функций Claude Code.</p>
+<h4 id="h-2">Как часто выполняются ревью <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<p>Репозиторий, который вы добавляете на странице администратора, по умолчанию использует режим <strong>After every push</strong>, при котором выполняется больше всего ревью. Настройка <a href="https://code.claude.com/docs/ru/code-review-setup.md#set-when-reviews-run"><strong>Review runs</strong></a> каждого репозитория определяет, сколько ревью получает pull request:</p>
+<ul>
+<li><strong>Once after PR creation</strong>: ревью выполняется, когда pull request открывается, открывается повторно или помечается как готовый к ревью</li>
+<li><strong>After every push</strong>: ревью выполняется при каждом push, умножая стоимость на количество push</li>
+<li><strong>Manual (@claude review)</strong>: ревью не выполняются ни при открытии, ни при push</li>
+</ul>
+<p>Команды в комментариях, черновики и pull request из форков влияют на это количество:</p>
+<ul>
+<li><strong><code>@claude review always</code> в режиме Once after PR creation или Manual</strong>: <a href="https://code.claude.com/docs/ru/code-review-pull-requests.md#comment-commands">подписывает PR на ревью, запускаемые при push</a>, поэтому после этого комментария за каждый push начисляется дополнительная стоимость</li>
+<li><strong><code>@claude review always</code> в режиме After every push</strong>: push уже запускают ревью, поэтому подписка не меняет стоимость за push</li>
+<li><strong><code>@claude review</code></strong>: выполняет одно ревью без подписки на будущие push</li>
+<li><strong>Черновики и pull request из форков</strong>: <a href="https://code.claude.com/docs/ru/code-review-pull-requests.md#review-drafts-and-pull-requests-from-forks">автоматические ревью пропускают и те, и другие</a>, поэтому push в них не добавляют ревью</li>
+</ul>
+<h3 id="h-3">Оценка расходов <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Перед широким развёртыванием проведите небольшой пилот, чтобы оценить ежемесячные расходы на основе ваших собственных pull request.</p>
+<ol>
+<li>Установите <a href="#limit-your-spend">ежемесячный лимит расходов</a> для пилота.</li>
+<li>Включите Code Review для нескольких репрезентативных репозиториев, установив для <strong>Review runs</strong> значение <strong>Once after PR creation</strong> или <strong>Manual (@claude review)</strong>.</li>
+<li>После выполнения нескольких ревью посмотрите среднюю стоимость одного ревью для каждого репозитория в столбце <strong>Average cost</strong> таблицы <strong>Repositories</strong> в разделе <strong>Code review</strong> на странице <a href="https://claude.ai/admin-settings/claude-code#code-review"><strong>Admin settings &gt; Claude Code</strong></a>.</li>
+<li>Умножьте это среднее значение на количество pull request, открываемых в репозитории за месяц. Для <strong>After every push</strong> умножьте ещё раз на типичное количество push на один pull request.</li>
+</ol>
+<p>Среднее значение для репозитория меняется в зависимости от размера его pull request и выбранного вами уровня ревью.</p>
+<h3 id="h-4">Ограничение расходов <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Чтобы установить ежемесячный лимит расходов для Code Review, перейдите на <a href="https://claude.ai/admin-settings/usage">claude.ai/admin-settings/usage</a> и настройте лимит для сервиса Claude Code Review. Лимит применяется ко всей организации.</p>
+<p>Code Review пропускает ревью, когда исчерпывается любой из следующих ресурсов:</p>
+<ul>
+<li><strong>Лимит расходов Code Review</strong>: ежемесячный лимит, который вы установили для сервиса Claude Code Review. Он сбрасывается в начале следующего расчётного периода, а если вы его повысите, ревью возобновятся раньше.</li>
+<li><strong>Лимит расходов организации</strong>: общий ежемесячный лимит расходов вашей организации на кредиты использования. Его можно повысить на той же странице.</li>
+<li><strong>Баланс кредитов использования</strong>: баланс кредитов использования вашей организации. Кредиты можно добавить на той же странице.</li>
+</ul>
+<p>Code Review также пропускает ревью, если оставшаяся сумма меньше ожидаемой стоимости одного ревью. Когда ревью пропускается, разработчики видят <a href="https://code.claude.com/docs/ru/code-review-troubleshooting.md#review-didn’t-run-and-the-pr-shows-a-budget-message">комментарий в PR</a>, в котором указана причина и есть ссылка на настройки использования.</p>
+<p>Для мониторинга расходов используйте <a href="#view-usage">панель аналитики</a>.</p>
+<h3 id="h-5">Просмотр использования <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<p>Перейдите на <a href="https://claude.ai/analytics/code-review">claude.ai/analytics/code-review</a>, чтобы увидеть активность Code Review по всей вашей организации.</p>
+<p>| Раздел | Что отображается |
+| :- | :- |
+| PRs reviewed by Code Review | Ежедневное количество pull request, прошедших ревью, за выбранный период |
+| Code Review cost | Расходы на Code Review с начала текущего месяца |
+| Code Review feedback | Количество комментариев ревью, которые были автоматически закрыты, потому что разработчик устранил проблему |
+| Code Review findings | Ежедневное количество <a href="https://code.claude.com/docs/ru/code-review-pull-requests.md#severity-levels">находок по уровню серьёзности</a> из ревью, которые Claude опубликовал за выбранный период |
+| Repository breakdown | Количество PR, прошедших ревью, закрытых комментариев и запусков ревью по каждому репозиторию с оценочной стоимостью и представлением по каждому PR |</p>
+<p>Карточка Code Review cost показывает сумму, только когда выбран текущий месяц. Данные о стоимости в аналитике могут отличаться от вашего счёта. Стоимость в Repository breakdown рассчитывается по прейскурантной цене, без учёта скидок и кредитов, и охватывает только ревью, которые Claude опубликовал в pull request. Для получения точных данных о расходах обращайтесь к своему счёту Anthropic.</p>
+<h3 id="h-6">Связанные ресурсы <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/code-review-setup.md">Настройка Code Review</a>: где выбрать уровень ревью и момент запуска ревью в каждом репозитории</li>
+<li><a href="https://code.claude.com/docs/ru/code-review-pull-requests.md">Чтение и запрос ревью в pull request</a>: команды в комментариях, pull request из форков и сообщение о бюджете, которое видят разработчики при пропуске ревью</li>
+<li><a href="https://code.claude.com/docs/ru/code-review.md">Code Review</a>: что проверяет ревью и что оно публикует</li>
+<li><a href="https://code.claude.com/docs/ru/costs.md">Эффективное управление затратами</a>: контроль расходов и отслеживание использования для остальных функций Claude Code</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

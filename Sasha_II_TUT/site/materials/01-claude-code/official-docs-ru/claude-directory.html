@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Изучите директорию .claude</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="изучите-директорию-claude">Изучите директорию .claude <a class="h-anchor" href="#изучите-директорию-claude" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Где Claude Code читает CLAUDE.md, settings.json, hooks, skills, commands, subagents, workflows, rules и auto memory. Изучите директорию .claude в вашем проекте и ~/.claude в вашей домашней директории.</p>
+</blockquote>
+<p>Claude Code читает инструкции, параметры, skills, subagents и память из директории вашего проекта и из <code>~/.claude</code> в вашей домашней директории. Зафиксируйте файлы проекта в git, чтобы поделиться ими с вашей командой; файлы в <code>~/.claude</code> — это личная конфигурация, которая применяется ко всем вашим проектам.</p>
+<p>На Windows <code>~/.claude</code> разрешается в <code>%USERPROFILE%\.claude</code>. Если вы зададите <a href="https://code.claude.com/docs/ru/env-vars"><code>CLAUDE_CONFIG_DIR</code></a>, каждый путь <code>~/.claude</code> на этой странице будет находиться в этом каталоге. То же относится к <code>.claude.json</code>, который в противном случае находится в <code>~/.claude.json</code>.</p>
+<p>Большинство пользователей редактируют только <code>CLAUDE.md</code> и <code>settings.json</code>. Если ваш репозиторий уже содержит <code>AGENTS.md</code> для других агентов кодирования, Claude Code <a href="https://code.claude.com/docs/ru/memory.md#agents-md">может читать его</a> вместо <code>CLAUDE.md</code>. Остальная часть директории опциональна: добавляйте skills, rules или subagents по мере необходимости.</p>
+<h3 id="h">Изучите директорию <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Нажимайте на файлы в дереве, чтобы увидеть, что каждый из них делает, когда он загружается и пример.</p>
+<p>Configuration files</p>
+<p><strong><code>CLAUDE.md</code></strong></p>
+<p><strong>When it loads</strong>: Загружается в контекст при запуске сессии</p>
+<p>Инструкции для конкретного проекта, определяющие, как Claude работает в этом репозитории. Разместите здесь свои соглашения, часто используемые команды и архитектурный контекст.</p>
+<p><strong><code>.mcp.json</code></strong></p>
+<p><strong>When it loads</strong>: В интерактивных сессиях MCP-серверы, которые вы <a href="https://code.claude.com/docs/ru/mcp.md#project-scope">одобрили</a>, загружаются в начале сессии. Схемы инструментов по умолчанию откладываются и загружаются по требованию через <a href="https://code.claude.com/docs/ru/mcp.md#scale-with-mcp-tool-search">поиск инструментов</a></p>
+<p>Настраивает серверы Model Context Protocol (MCP), которые дают Claude доступ к внешним инструментам: базам данных, API, браузерам и многому другому. Этот файл содержит MCP-серверы уровня проекта, которые использует вся ваша команда. Личные серверы, которые вы хотите оставить только для себя, размещаются в <code>~/.claude.json</code>.</p>
+<p><strong><code>.worktreeinclude</code></strong></p>
+<p><strong>When it loads</strong>: Читается, когда Claude создаёт <a href="https://code.claude.com/docs/ru/worktrees.md">git worktree</a> через <code>--worktree</code>, инструмент <code>EnterWorktree</code> или <code>isolation: worktree</code> субагента</p>
+<p>Перечисляет игнорируемые git файлы, которые нужно скопировать из основного репозитория в каждый новый worktree. Worktree — это чистые checkout&#x27;ы, поэтому неотслеживаемые файлы, такие как <code>.env</code>, по умолчанию отсутствуют. Шаблоны здесь используют синтаксис <code>.gitignore</code>. Копируются только файлы, которые соответствуют шаблону и при этом игнорируются git.</p>
+<p><strong><code>.claude/</code></strong></p>
+<p>Настройки проекта, правила, скиллы, субагенты и другая конфигурация. Если вы используете git, добавляйте большинство этих файлов в коммиты, чтобы ваша команда имела к ним общий доступ, а личные файлы, такие как <code>settings.local.json</code>, не включайте в коммиты.</p>
+<p><strong><code>.claude/settings.json</code></strong></p>
+<p><strong>When it loads</strong>: Читается при запуске сессии. Большинство изменений <a href="https://code.claude.com/docs/ru/settings.md#when-edits-take-effect">применяются к текущей сессии</a></p>
+<p>Настройки, которые Claude Code применяет напрямую. Разрешения определяют, какие команды и инструменты может использовать Claude; хуки запускают ваши скрипты в определённые моменты сессии. В отличие от CLAUDE.md, который Claude читает как рекомендации, эти настройки применяются принудительно, независимо от того, следует ли им Claude.</p>
+<p>В <a href="https://code.claude.com/docs/ru/settings.md#settings-precedence">приоритете настроек</a> этот файл стоит выше <code>~/.claude/settings.json</code> и ниже <code>.claude/settings.local.json</code>, флага <code>--settings</code> и управляемых настроек. Для большинства ключей с одним значением, таких как <code>model</code>, Claude Code использует значение с наивысшим приоритетом. Большинство списков, таких как <code>permissions.allow</code>, <a href="https://code.claude.com/docs/ru/settings.md#lists-merge-instead-of-overriding">объединяются между файлами</a>.</p>
+<p><strong><code>.claude/settings.local.json</code></strong></p>
+<p><strong>When it loads</strong>: Читается при запуске сессии. Большинство изменений <a href="https://code.claude.com/docs/ru/settings.md#when-edits-take-effect">применяются к текущей сессии</a></p>
+<p>Ваши личные настройки для этого проекта. Тот же формат JSON, что и у <code>settings.json</code>; файл добавляется в gitignore, когда Claude Code сохраняет в него настройку.</p>
+<p>В <a href="https://code.claude.com/docs/ru/settings.md#settings-precedence">приоритете настроек</a> этот файл стоит выше <code>.claude/settings.json</code> и ниже флага <code>--settings</code> и управляемых настроек. Для большинства ключей с одним значением, таких как <code>model</code>, Claude Code использует значение с наивысшим приоритетом. Большинство списков, таких как <code>permissions.allow</code>, <a href="https://code.claude.com/docs/ru/settings.md#lists-merge-instead-of-overriding">объединяются между файлами</a>.</p>
+<p><strong><code>.claude/rules/</code></strong></p>
+<p><strong>When it loads</strong>: Правила без frontmatter <code>paths:</code> загружаются при запуске сессии. Правила с <code>paths:</code> загружаются, когда Claude читает, записывает или редактирует соответствующий файл</p>
+<p>Инструкции проекта, разделённые на тематические файлы. Как и CLAUDE.md, правила — это рекомендации, которые Claude Code не применяет принудительно. Для принудительного поведения используйте <a href="https://code.claude.com/docs/ru/hooks.md">хуки</a> или <a href="https://code.claude.com/docs/ru/permissions.md">разрешения</a>.</p>
+<p><strong><code>.claude/skills/</code></strong></p>
+<p><strong>When it loads</strong>: Вызывается с помощью <code>/skill-name</code> или когда Claude сопоставляет задачу со скиллом</p>
+<p>Каждый скилл — это папка с файлом <code>SKILL.md</code> и любыми необходимыми вспомогательными файлами. По умолчанию скилл могут вызывать как вы, так и Claude. Используйте <a href="https://code.claude.com/docs/ru/skills.md#frontmatter-reference">frontmatter</a>, чтобы управлять этим: <code>disable-model-invocation: true</code>, чтобы Claude не мог самостоятельно вызвать скилл, такой как <code>/deploy</code>, или <code>user-invocable: false</code>, чтобы скилл мог вызывать только Claude.</p>
+<p><strong><code>.claude/commands/</code></strong></p>
+<p><strong>When it loads</strong>: Вызывается с помощью <code>/command-name</code> или когда Claude сопоставляет задачу с командой</p>
+<p>Содержит однофайловые команды: промпт, сохранённый как <code>.claude/commands/deploy.md</code>, запускается как <code>/deploy</code>. Для новой команды используйте <a href="#ce-skills">скилл</a>, который может включать справочную документацию, шаблоны или скрипты вместе с промптом.</p>
+<p><strong><code>.claude/output-styles/</code></strong></p>
+<p><strong>When it loads</strong>: Читается при запуске в терминале, поэтому перезапустите Claude Code после добавления или редактирования стиля</p>
+<p>Каждый Markdown-файл определяет <a href="https://code.claude.com/docs/ru/output-styles.md#how-output-styles-work">стиль вывода</a> — набор инструкций, который изменяет то, как работает Claude. Разместите стиль здесь, если ваша команда использует его совместно, например режим ревью, которым пользуются все. О том, как выбрать стиль, см. <a href="#ce-global-output-styles"><code>~/.claude/output-styles/</code></a>.</p>
+<p><strong><code>.claude/agents/</code></strong></p>
+<p><strong>When it loads</strong>: Каждый субагент работает в собственном контекстном окне, когда вы или Claude его вызываете</p>
+<p>Каждый Markdown-файл с frontmatter <code>name</code> и <code>description</code> определяет субагента с собственным системным промптом, доступом к инструментам и, при необходимости, собственной моделью. Полезно для параллельной работы или изолированных задач.</p>
+<p><strong><code>.claude/workflows/</code></strong></p>
+<p><strong>When it loads</strong>: Загружается при запуске, когда <a href="https://code.claude.com/docs/ru/workflows.md">рабочие процессы включены</a>. Каждый сохранённый рабочий процесс запускается как команда <code>/&lt;name&gt;</code></p>
+<p>Каждый файл <code>.js</code> — это <a href="https://code.claude.com/docs/ru/workflows.md">динамический рабочий процесс</a>: скрипт, который среда выполнения исполняет для запуска и координации множества субагентов. Чтобы добавить его, попросите Claude написать рабочий процесс, затем выполните <code>/workflows</code> в сессии и сохраните его здесь.</p>
+<p><strong><code>.claude/agent-memory/</code></strong></p>
+<p><strong>When it loads</strong>: Первые 200 строк файла <code>MEMORY.md</code> субагента, но не более 25 КБ, загружаются в его системный промпт при запуске субагента</p>
+<p>Субагенты с <a href="https://code.claude.com/docs/ru/sub-agents#enable-persistent-memory"><code>memory: project</code></a> во frontmatter получают здесь выделенную директорию памяти, пока включена <a href="https://code.claude.com/docs/ru/memory.md#auto-memory">автоматическая память</a>. Каждый субагент читает и записывает собственный <code>MEMORY.md</code>, отдельный от автоматической памяти вашей основной сессии в <code>~/.claude/projects/</code>.</p>
+<p><strong><code>.claude/agent-memory/&lt;agent-name&gt;/MEMORY.md</code></strong></p>
+<p><strong>When it loads</strong>: Первые 200 строк, но не более 25 КБ, загружаются в системный промпт субагента при его запуске</p>
+<p>Индекс заметок, сохранённых субагентом. Субагент сам создаёт и обновляет этот файл в том же формате, что и индекс вашей основной <a href="https://code.claude.com/docs/ru/memory.md#storage-location">автоматической памяти</a>.</p>
+<p><strong><code>~/.claude.json</code></strong></p>
+<p><strong>When it loads</strong>: Читается при запуске сессии для получения ваших предпочтений и MCP-серверов. Claude Code записывает в него изменения, когда вы меняете <a href="https://code.claude.com/docs/ru/settings-reference.md#global-config-settings">глобальный параметр конфигурации</a> в <code>/config</code> или доверяете папке проекта</p>
+<p>Содержит данные учётной записи, решения о доверии для каждого проекта, ваши личные MCP-серверы и переключатели интерфейса.</p>
+<p><strong><code>~/.claude/</code></strong></p>
+<p>Глобальный аналог директории <a href="#ce-dot-claude"><code>.claude/</code></a> вашего проекта. Файлы конфигурации в этой директории применяются к вам во всех проектах на этом компьютере.</p>
+<p><strong><code>~/.claude/CLAUDE.md</code></strong></p>
+<p><strong>When it loads</strong>: Загружается при запуске сессии в каждом проекте на этом компьютере</p>
+<p>Ваш глобальный файл инструкций. Загружается вместе с CLAUDE.md проекта. Если они противоречат друг другу, Claude может следовать любому из них. Храните в этом файле только предпочтения, которые применяются везде: стиль ответов, формат коммитов, личные соглашения.</p>
+<p><strong><code>~/.claude/settings.json</code></strong></p>
+<p><strong>When it loads</strong>: Читается при запуске сессии. Большинство изменений <a href="https://code.claude.com/docs/ru/settings.md#when-edits-take-effect">применяются к текущей сессии</a></p>
+<p>Тот же формат, что и у <code>settings.json</code> проекта: разрешения, хуки, модель и переменные окружения. Разместите здесь настройки, которые нужны вам в каждом проекте, например разрешающие правила, предпочитаемую модель или хук уведомлений.</p>
+<p>В <a href="https://code.claude.com/docs/ru/settings.md#settings-precedence">приоритете настроек</a> этот файл стоит ниже файлов настроек проекта, флага <code>--settings</code> и управляемых настроек. Для большинства ключей с одним значением, таких как <code>model</code>, Claude Code использует значение с наивысшим приоритетом. Большинство списков, таких как <code>permissions.allow</code>, <a href="https://code.claude.com/docs/ru/settings.md#lists-merge-instead-of-overriding">объединяются между файлами</a>.</p>
+<p><strong><code>~/.claude/keybindings.json</code></strong></p>
+<p><strong>When it loads</strong>: Читается при запуске сессии и перезагружается на лету при редактировании файла</p>
+<p>Переназначайте сочетания клавиш в интерактивном CLI. Выполните <code>/keybindings</code> в сессии, чтобы создать или открыть этот файл. Прежде чем выбрать клавишу, проверьте <a href="https://code.claude.com/docs/ru/keybindings.md#reserved-shortcuts">зарезервированные сочетания клавиш</a>.</p>
+<p><strong><code>~/.claude/themes/</code></strong></p>
+<p><strong>When it loads</strong>: Читается при запуске сессии и <a href="https://code.claude.com/docs/ru/terminal-config.md#create-a-custom-theme">перезагружается на лету</a> при изменении файлов. Отображается в <code>/theme</code></p>
+<p>Каждый файл <code>.json</code> определяет пользовательскую цветовую тему: встроенный пресет <code>base</code> плюс карту <code>overrides</code> с цветовыми токенами. Выполните <code>/theme</code> в сессии, чтобы создать тему, или напишите JSON самостоятельно. При выборе пользовательской темы в качестве предпочитаемой темы сохраняется <code>custom:&lt;slug&gt;</code>.</p>
+<p><strong><code>~/.claude/projects/</code></strong></p>
+<p><strong>When it loads</strong>: Файл <code>memory/MEMORY.md</code> текущего проекта загружается при запуске сессии, пока включена автоматическая память. Перечисленные в нём тематические файлы читаются по требованию</p>
+<p>Содержит <a href="https://code.claude.com/docs/ru/memory.md#auto-memory">автоматическую память</a> — заметки, которые Claude сохраняет между сессиями: вашу роль и предпочтения, ваши исправления, решения по проекту и то, где найти информацию за пределами проекта. Каждый проект получает собственную директорию памяти, привязанную к пути репозитория.</p>
+<p><strong><code>~/.claude/projects/&lt;project&gt;/memory/MEMORY.md</code></strong></p>
+<p><strong>When it loads</strong>: Первые 200 строк, но не более 25 КБ, загружаются при запуске сессии, пока включена <a href="https://code.claude.com/docs/ru/memory.md#auto-memory">автоматическая память</a></p>
+<p>Индекс, указывающий на тематические файлы с подробностями. Claude создаёт и обновляет этот файл в процессе работы. Вы можете редактировать или удалить его.</p>
+<p><strong><code>~/.claude/projects/&lt;project&gt;/memory/user_role.md</code></strong></p>
+<p><strong>When it loads</strong>: Claude читает этот файл, когда возникает связанная задача</p>
+<p>Пример тематического файла. Claude сохраняет каждое воспоминание в отдельном тематическом файле, выбирает имя файла и добавляет его в <code>MEMORY.md</code>.</p>
+<p><strong><code>~/.claude/rules/</code></strong></p>
+<p><strong>When it loads</strong>: Правила без frontmatter <code>paths:</code> загружаются при запуске сессии. Правила с <code>paths:</code> загружаются, когда Claude читает, записывает или редактирует соответствующий файл</p>
+<p>Тот же формат, что и у <a href="#ce-rules"><code>.claude/rules/</code></a> проекта, но применяется к каждому проекту на этом компьютере. Используйте для соглашений, которые нужны вам во всей вашей работе, например личного стиля кода или формата сообщений коммитов.</p>
+<p><strong><code>~/.claude/skills/</code></strong></p>
+<p><strong>When it loads</strong>: Вызывается с помощью <code>/skill-name</code> или когда Claude сопоставляет задачу со скиллом</p>
+<p>Скиллы, созданные вами для себя и доступные во всех ваших проектах на этом компьютере. Тот же формат, что и у <a href="#ce-skills"><code>.claude/skills/</code></a> проекта.</p>
+<p><strong><code>~/.claude/commands/</code></strong></p>
+<p><strong>When it loads</strong>: Вызывается с помощью <code>/command-name</code> или когда Claude сопоставляет задачу с командой</p>
+<p>Тот же формат, что и у <a href="#ce-commands"><code>.claude/commands/</code></a> проекта; доступны во всех ваших проектах на этом компьютере.</p>
+<p><strong><code>~/.claude/output-styles/</code></strong></p>
+<p><strong>When it loads</strong>: Читается при запуске в терминале, поэтому перезапустите Claude Code после добавления или редактирования стиля</p>
+<p>Каждый Markdown-файл определяет <a href="https://code.claude.com/docs/ru/output-styles.md#how-output-styles-work">стиль вывода</a> — набор инструкций, который изменяет то, как работает Claude. Используйте стиль, чтобы адаптировать Claude Code для задач за пределами программирования или добавить режимы обучения или ревью.</p>
+<p>Выберите встроенный или пользовательский стиль с помощью <code>/output-style</code> или <code>/config</code> в сессии либо с помощью ключа <code>outputStyle</code> в настройках. Стили здесь доступны в каждом проекте на этом компьютере. Если у стиля проекта то же имя, Claude Code использует стиль проекта.</p>
+<p><strong><code>~/.claude/agents/</code></strong></p>
+<p><strong>When it loads</strong>: Каждый субагент работает в собственном контекстном окне, когда вы или Claude его вызываете</p>
+<p>Субагенты, определённые здесь, доступны во всех ваших проектах на этом компьютере. Тот же формат, что и у <a href="#ce-agents"><code>.claude/agents/</code></a> проекта.</p>
+<p><strong><code>~/.claude/workflows/</code></strong></p>
+<p><strong>When it loads</strong>: Загружается при запуске, когда <a href="https://code.claude.com/docs/ru/workflows.md">рабочие процессы включены</a>. Каждый сохранённый рабочий процесс запускается как команда <code>/&lt;name&gt;</code></p>
+<p>Скрипты рабочих процессов, сохранённые здесь, доступны во всех ваших проектах на этом компьютере. Рабочий процесс проекта с тем же именем в <code>.claude/workflows/</code> имеет приоритет.</p>
+<p><strong><code>~/.claude/agent-memory/</code></strong></p>
+<p><strong>When it loads</strong>: Первые 200 строк файла <code>MEMORY.md</code> субагента, но не более 25 КБ, загружаются в его системный промпт при запуске субагента</p>
+<p>Субагенты с <code>memory: user</code> во frontmatter хранят здесь знания, пока включена <a href="https://code.claude.com/docs/ru/memory.md#auto-memory">автоматическая память</a>. Эти знания сохраняются во всех проектах. О памяти субагентов уровня проекта см. <a href="#ce-agent-memory"><code>.claude/agent-memory/</code></a>.</p>
+<h3 id="h-2">Что не показано <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Обозреватель охватывает файлы, которые вы создаёте и редактируете. Несколько связанных файлов находятся в других местах:</p>
+<p>| Файл | Расположение | Назначение |
+| - | - | - |
+| <code>managed-settings.json</code> | Уровень системы, варьируется в зависимости от ОС | Настройки, применяемые предприятием, которые не могут переопределить ни ваши собственные файлы настроек, ни значения <code>--settings</code>, за исключением <a href="https://code.claude.com/docs/ru/settings.md#exceptions-to-managed-settings-precedence">узких исключений</a>. См. <a href="https://code.claude.com/docs/ru/managed-settings.md#deploy-a-managed-settings-file">где сохранить файл</a> и <a href="https://code.claude.com/docs/ru/managed-settings.md#precedence-within-the-managed-tier">какой управляемый источник использует Claude Code</a>. |
+| <code>CLAUDE.local.md</code> | Корень проекта | Ваши личные предпочтения для этого проекта, загружаемые вместе с CLAUDE.md. Создайте его вручную и добавьте в <code>.gitignore</code>. |
+| <code>AGENTS.md</code> | Корень проекта, <code>.claude/</code> или любой каталог | Инструкции проекта, которые вы пишете для агентов AI кодирования. Claude Code может <a href="https://code.claude.com/docs/ru/memory.md#agents-md">загрузить его</a> вместо <code>CLAUDE.md</code>. |
+| Установленные плагины | <code>~/.claude/plugins</code> | Клонированные маркетплейсы, установленные версии плагинов, запись установки <code>installed_plugins.json</code> и данные для каждого плагина, управляемые командами <code>claude plugin</code>. Плагины, <a href="https://code.claude.com/docs/ru/plugins/loading.md#synced-plugins">синхронизированные с вашей учётной записью claude.ai</a>, загружаются в <code>~/.claude/plugins/synced/</code>. Для плагина, установленного из маркетплейса с источником <a href="https://code.claude.com/docs/ru/plugins/marketplace-reference#command-plugin-source"><code>command</code></a> в режиме ссылки, Claude Code хранит здесь ссылки вместо копии, и файлы плагина остаются в каталоге, который выводит команда. Источник <code>command</code> требует Claude Code v2.1.229 или позже. Плагин, указанный относительным путём в маркетплейсе, который вы добавили из локального пути, также <a href="https://code.claude.com/docs/ru/plugins/loading.md#find-plugins-on-disk">загружается на месте</a> из своего исходного каталога, а не из копии в кэше. См. <a href="https://code.claude.com/docs/ru/plugins/loading.md#find-plugins-on-disk">кэширование плагинов</a>, чтобы узнать, как очищаются заброшенные версии. |</p>
+<p><code>~/.claude</code> также содержит данные, которые Claude Code записывает во время работы: стенограммы, историю подсказок, снимки файлов, кэши и журналы. См. <a href="#application-data">данные приложения</a> ниже.</p>
+<h3 id="h-3">Выберите правильный файл <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Различные виды настройки находятся в разных файлах. Используйте эту таблицу, чтобы найти, где должно быть изменение.</p>
+<p>| Вы хотите | Редактировать | Область | Справочник |
+| :- | :- | :- | :- |
+| Дать Claude контекст проекта и соглашения | <code>CLAUDE.md</code> | проект или глобально | <a href="https://code.claude.com/docs/ru/memory.md">Memory</a> |
+| Разрешить или заблокировать определённые вызовы инструментов | <code>settings.json</code> <code>permissions</code> или <code>hooks</code> | проект или глобально | <a href="https://code.claude.com/docs/ru/permissions.md">Permissions</a>, <a href="https://code.claude.com/docs/ru/hooks.md">Hooks</a> |
+| Запустить скрипт до или после вызовов инструментов | <code>settings.json</code> <code>hooks</code> | проект или глобально | <a href="https://code.claude.com/docs/ru/hooks.md">Hooks</a> |
+| Установить переменные окружения для сеанса | <code>settings.json</code> <code>env</code> | проект или глобально | <a href="https://code.claude.com/docs/ru/settings-reference.md#all-settings">Settings</a> |
+| Сохранить личные переопределения вне git | <code>settings.local.json</code> | только проект | <a href="https://code.claude.com/docs/ru/settings.md#where-settings-live">Области параметров</a> |
+| Добавить подсказку или возможность, которую вы вызываете с <code>/name</code> | <code>skills/&lt;name&gt;/SKILL.md</code> | проект или глобально | <a href="https://code.claude.com/docs/ru/skills.md">Skills</a> |
+| Определить специализированный subagent с его собственными инструментами | <code>agents/*.md</code> | проект или глобально | <a href="https://code.claude.com/docs/ru/sub-agents.md">Subagents</a> |
+| Организовать множество subagents из скрипта | <code>workflows/*.js</code> | проект или глобально | <a href="https://code.claude.com/docs/ru/workflows.md">Dynamic workflows</a> |
+| Подключить внешние инструменты через MCP | <code>.mcp.json</code> | только проект | <a href="https://code.claude.com/docs/ru/mcp.md">MCP</a> |
+| Изменить способ форматирования ответов Claude | <code>output-styles/*.md</code> | проект или глобально | <a href="https://code.claude.com/docs/ru/output-styles.md">Output styles</a> |</p>
+<h3 id="h-4">Справочник файлов <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Эта таблица перечисляет каждый файл, который охватывает обозреватель. Файлы с областью действия проекта находятся в вашем репозитории под <code>.claude/</code> (или в корне для <code>CLAUDE.md</code>, <code>.mcp.json</code> и <code>.worktreeinclude</code>). Файлы с глобальной областью действия находятся в <code>~/.claude/</code> и применяются ко всем проектам.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Несколько вещей могут переопределить то, что вы поместили в эти файлы:</p>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/server-managed-settings.md">Управляемые настройки</a>, развёрнутые вашей организацией, имеют приоритет над всеми файлами настроек и значениями <code>--settings</code>, за исключением <a href="https://code.claude.com/docs/ru/settings.md#exceptions-to-managed-settings-precedence">исключений, описанных в разделе «Приоритет настроек»</a></li>
+<li>Флаги CLI, такие как <code>--permission-mode</code> или <code>--settings</code>, переопределяют <code>settings.json</code> для этого сеанса</li>
+<li>Некоторые переменные окружения имеют приоритет над их эквивалентным параметром, но это варьируется: проверьте <a href="https://code.claude.com/docs/ru/env-vars.md">справочник переменных окружения</a> для каждого из них</li>
+</ul>
+<p>См. <a href="https://code.claude.com/docs/ru/settings.md#settings-precedence">приоритет параметров</a> для полного порядка.</p>
+</blockquote>
+<p>Нажмите на имя файла, чтобы открыть этот узел в обозревателе выше.</p>
+<p>| Файл | Область | Зафиксировать | Что он делает | Справочник |
+| - | - | - | - | - |
+| <a href="#ce-claude-md"><code>CLAUDE.md</code></a> | Проект и глобально | ✓ | Инструкции, загруженные каждый сеанс | <a href="https://code.claude.com/docs/ru/memory.md">Memory</a> |
+| <a href="#ce-rules"><code>rules/*.md</code></a> | Проект и глобально | ✓ | Инструкции с областью действия темы, опционально с ограничением по пути | <a href="https://code.claude.com/docs/ru/memory.md#organize-rules-with-claude/rules/">Rules</a> |
+| <a href="#ce-settings-json"><code>settings.json</code></a> | Проект и глобально | ✓ | Разрешения, hooks, переменные окружения, значения по умолчанию модели | <a href="https://code.claude.com/docs/ru/settings.md">Settings</a> |
+| <a href="#ce-settings-local-json"><code>settings.local.json</code></a> | Только проект | | Ваши личные переопределения, автоматически добавлены в .gitignore при сохранении параметра Claude Code | <a href="https://code.claude.com/docs/ru/settings.md#where-settings-live">Области параметров</a> |
+| <a href="#ce-mcp-json"><code>.mcp.json</code></a> | Только проект | ✓ | Серверы MCP, общие для команды | <a href="https://code.claude.com/docs/ru/mcp.md#mcp-installation-scopes">Области MCP</a> |
+| <a href="#ce-worktreeinclude"><code>.worktreeinclude</code></a> | Только проект | ✓ | Файлы, игнорируемые Git, для копирования в новые worktrees | <a href="https://code.claude.com/docs/ru/worktrees.md#copy-gitignored-files-into-worktrees">Worktrees</a> |
+| <a href="#ce-skills"><code>skills/&lt;name&gt;/SKILL.md</code></a> | Проект и глобально | ✓ | Переиспользуемые подсказки, вызываемые с <code>/name</code> или автоматически вызываемые | <a href="https://code.claude.com/docs/ru/skills.md">Skills</a> |
+| <a href="#ce-commands"><code>commands/*.md</code></a> | Проект и глобально | ✓ | Подсказки в одном файле; тот же механизм, что и skills | <a href="https://code.claude.com/docs/ru/skills.md">Skills</a> |
+| <a href="#ce-output-styles"><code>output-styles/*.md</code></a> | Проект и глобально | ✓ | Пользовательские наборы инструкций, которые изменяют способ работы Claude | <a href="https://code.claude.com/docs/ru/output-styles.md">Output styles</a> |
+| <a href="#ce-agents"><code>agents/*.md</code></a> | Проект и глобально | ✓ | Определения subagents с их собственной подсказкой и инструментами | <a href="https://code.claude.com/docs/ru/sub-agents.md">Subagents</a> |
+| <a href="#ce-workflows"><code>workflows/*.js</code></a> | Проект и глобально | ✓ | Скрипты динамических рабочих процессов, написанные Claude и сохранённые из <code>/workflows</code>; каждый сохранённый рабочий процесс запускается как команда <code>/&lt;name&gt;</code> | <a href="https://code.claude.com/docs/ru/workflows.md">Динамические рабочие процессы</a> |
+| <a href="#ce-agent-memory"><code>agent-memory/&lt;name&gt;/</code></a> | Проект и глобально | ✓ | Постоянная память для subagents | <a href="https://code.claude.com/docs/ru/sub-agents.md#enable-persistent-memory">Постоянная память</a> |
+| <a href="#ce-claude-json"><code>~/.claude.json</code></a> | Только глобально | | Состояние приложения, данные учётной записи, переключатели UI, личные MCP-серверы. Если файл отсутствует, Claude Code создаёт его при запуске сессии или выполнении подкоманды, например <code>claude auth status</code>, но не при <code>--version</code> или <code>--help</code>. | <a href="https://code.claude.com/docs/ru/settings-reference.md#global-config-settings">Глобальная конфигурация</a> |
+| <a href="#ce-global-projects"><code>projects/&lt;project&gt;/memory/</code></a> | Только глобально | | Auto memory: заметки Claude самому себе между сеансами | <a href="https://code.claude.com/docs/ru/memory.md#auto-memory">Auto memory</a> |
+| <a href="#ce-keybindings"><code>keybindings.json</code></a> | Только глобально | | Пользовательские сочетания клавиш | <a href="https://code.claude.com/docs/ru/keybindings.md">Keybindings</a> |
+| <a href="#ce-themes"><code>themes/*.json</code></a> | Только глобально | | Пользовательские цветовые темы | <a href="https://code.claude.com/docs/ru/terminal-config.md#create-a-custom-theme">Пользовательские темы</a> |</p>
+<h3 id="frontmatter-fields-by-file">Frontmatter fields by file <a class="h-anchor" href="#frontmatter-fields-by-file" aria-label="Ссылка на раздел">#</a></h3>
+<p>Skills, command files, subagents, output styles, and rules read their configuration from YAML <a href="https://code.claude.com/docs/ru/glossary.md#frontmatter">frontmatter</a> at the top of the file, and each accepts its own set of fields. This table lists the field names for each file and links to the reference that describes them.</p>
+<p>| File | Frontmatter fields | Reference |
+| - | - | - |
+| <code>skills/&lt;name&gt;/SKILL.md</code> | <code>name</code>, <code>description</code>, <code>when_to_use</code>, <code>argument-hint</code>, <code>arguments</code>, <code>disable-model-invocation</code>, <code>user-invocable</code>, <code>allowed-tools</code>, <code>disallowed-tools</code>, <code>model</code>, <code>effort</code>, <code>context</code>, <code>agent</code>, <code>background</code>, <code>hooks</code>, <code>paths</code>, <code>shell</code>, <code>metadata</code>, <code>license</code>, <code>compatibility</code> | <a href="https://code.claude.com/docs/ru/skills.md#frontmatter-reference">Skill frontmatter</a> |
+| <code>commands/*.md</code> | The skill fields except <code>name</code> and <code>paths</code> | <a href="https://code.claude.com/docs/ru/skills.md#frontmatter-reference">Skill frontmatter</a> |
+| <code>agents/*.md</code> | <code>name</code>, <code>description</code>, <code>tools</code>, <code>disallowedTools</code>, <code>model</code>, <code>permissionMode</code>, <code>maxTurns</code>, <code>autoCompactWindow</code>, <code>skills</code>, <code>mcpServers</code>, <code>hooks</code>, <code>memory</code>, <code>background</code>, <code>effort</code>, <code>isolation</code>, <code>color</code>, <code>initialPrompt</code>, <code>omitClaudeMd</code>, <code>experimental</code> | <a href="https://code.claude.com/docs/ru/sub-agents.md#supported-frontmatter-fields">Frontmatter субагента</a> |
+| <code>output-styles/*.md</code> | <code>name</code>, <code>description</code>, <code>keep-coding-instructions</code>, <code>force-for-plugin</code> | <a href="https://code.claude.com/docs/ru/output-styles.md#frontmatter">Output style frontmatter</a> |
+| <code>rules/*.md</code> | <code>paths</code> | <a href="https://code.claude.com/docs/ru/memory.md#rules-frontmatter-reference">Rule frontmatter</a> |</p>
+<p>Agents shipped in a <a href="https://code.claude.com/docs/ru/plugins/components.md#agents">plugin</a> honor a subset of the subagent fields.</p>
+<h3 id="h-5">Устранение неполадок конфигурации <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<p>Если параметр, hook или файл не вступает в силу, см. <a href="https://code.claude.com/docs/ru/debug-your-config.md">Отладка вашей конфигурации</a> для команд проверки и таблицы поиска по симптомам.</p>
+<h3 id="h-6">Данные приложения <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<p>Помимо конфигурации, которую вы создаёте сами, <code>~/.claude</code> содержит данные, которые Claude Code записывает во время сессий. Эти файлы хранятся в открытом виде. Всё, что проходит через инструмент, записывается в транскрипт на диске: содержимое файлов, вывод команд, вставленный текст.</p>
+<p>Транскрипт также может содержать то, что Claude Code отправляет модели вместе с вашими сообщениями:</p>
+<ul>
+<li>Системный промпт</li>
+<li>Определения инструментов</li>
+<li>Параметры запросов</li>
+<li>Загруженные им файлы инструкций, например CLAUDE.md</li>
+</ul>
+<h4 id="h-7">Автоматически очищаемые данные <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude Code удаляет файлы по указанным ниже путям, когда они становятся старше <a href="https://code.claude.com/docs/ru/settings-reference#cleanupperioddays"><code>cleanupPeriodDays</code></a>, при условии что он может надёжно определить срок хранения. Значение по умолчанию — 30 дней, минимальное — 1; значение <code>0</code> приводит к ошибке валидации. Тот же порог возраста применяется к автоматическому удалению <a href="https://code.claude.com/docs/ru/worktrees.md#clean-up-subagent-and-background-session-worktrees">осиротевших worktree</a>.</p>
+<p>| Путь в <code>~/.claude/</code> | Содержимое |
+| - | - |
+| <code>projects/&lt;project&gt;/&lt;session&gt;.jsonl</code> | Транскрипт диалога: сообщения, вызовы инструментов и результаты инструментов, а также системный промпт, определения инструментов и параметры запросов, которые Claude Code отправлял модели |
+| <code>projects/&lt;project&gt;/&lt;session&gt;.orphaned-&lt;timestamp&gt;-&lt;suffix&gt;.jsonl</code>, <code>projects/&lt;project&gt;/&lt;session&gt;.jsonl.superseded-&lt;timestamp&gt;</code> | Предыдущий транскрипт сессии, который Claude Code отложил вместо того, чтобы перезаписать или удалить его. Он не отображается в списке выбора сессий |
+| <code>projects/&lt;project&gt;/&lt;session&gt;/subagents/</code> | Транскрипты <a href="https://code.claude.com/docs/ru/sub-agents.md">субагентов</a> в том же формате, что и транскрипт сессии; удаляются вместе с транскриптом родительской сессии, когда истекает его срок хранения |
+| <code>projects/&lt;project&gt;/&lt;session&gt;/tool-results/</code> | Большие выводы инструментов, вынесенные в отдельные файлы, и полноразмерные копии <a href="https://code.claude.com/docs/ru/mcp.md#images-in-tool-results">изображений, которые возвращают инструменты MCP</a> |
+| <code>projects/&lt;project&gt;/&lt;session&gt;/mcp-tasks/</code> | Данные, необходимые возобновлённой сессии, чтобы снова отслеживать выполняющиеся <a href="https://code.claude.com/docs/ru/mcp.md#mcp-tasks-that-run-on-the-server">задачи MCP</a>, и результаты завершённых задач, которые Claude ещё не прочитал |
+| <code>file-history/&lt;session&gt;/</code> | Снимки файлов до редактирования, изменённых Claude, используемые для <a href="https://code.claude.com/docs/ru/checkpointing.md">восстановления чекпоинтов</a>. Хранит снимки для 100 последних чекпоинтов; файлы снимков, на которые не ссылается ни один сохранённый чекпоинт, удаляются, за исключением первого снимка каждого файла |
+| <code>plans/</code> | Файлы планов, записанные в <a href="https://code.claude.com/docs/ru/permission-modes.md#analyze-before-you-edit-with-plan-mode">режиме планирования</a> |
+| <code>debug/</code> | Отладочные логи для каждой сессии, записываемые при включённом отладочном логировании, например когда вы запускаете с <a href="https://code.claude.com/docs/ru/cli-reference#cli-flags"><code>--debug</code></a> или выполняете <code>/debug</code> |
+| <code>paste-cache/</code> | Содержимое больших вставок |
+| <code>image-cache/&lt;session&gt;/</code> | Прикреплённые изображения, сохранённые Claude Code v2.1.274 и более ранними версиями. Более поздние версии сохраняют вставленные и прикреплённые изображения вне <code>~/.claude</code>, в каталоге <code>images/</code> для каждой сессии во временном каталоге, который задаёт <a href="https://code.claude.com/docs/ru/env-vars"><code>CLAUDE_CODE_TMPDIR</code></a>. Очистка удаляет оставшиеся здесь каталоги других сессий независимо от их возраста. |
+| <code>uploads/&lt;session&gt;/</code> | Файлы, которые вы прикрепляете из веб- или мобильного приложения, и фотографии, которые вы прикрепляете из мобильного приложения, при отправке сообщений в сессию <a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a>. Вложение в <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">облачную сессию</a> вместо этого сохраняется в собственном облачном окружении этой сессии, а не на вашем компьютере. |
+| <code>dev-mods/&lt;session&gt;/</code> | <a href="https://code.claude.com/docs/ru/plugins/mods/create.md#ask-claude-for-a-mod">Моды, написанные Claude</a> во время сессии |
+| <code>session-env/</code> | Метаданные окружения для каждой сессии |
+| <code>tasks/</code> | Списки задач, записанные инструментами задач, по одному каталогу на список |
+| <code>shell-snapshots/</code> | Псевдонимы, функции и параметры оболочки, захваченные при запуске и применяемые <a href="https://code.claude.com/docs/ru/tools-reference.md#bash-tool-behavior">инструментом Bash</a> к каждой команде. Удаляются при корректном завершении. Очистка удаляет всё, что осталось после сбоя. |
+| <code>backups/</code> | Предыдущие версии <code>~/.claude.json</code>, копируемые, когда Claude Code перезаписывает файл. Claude Code хранит пять самых новых, а также копию любой версии, которую не удалось разобрать. По истечении порога возраста удаляется и последняя копия, содержащая вашу конфигурацию. Если текущий файл успешно разбирается, содержит вашу конфигурацию и занимает менее 8 MiB, у вас остаётся его новая копия. |
+| <code>feedback-bundles/</code> | Архивы транскриптов с удалёнными конфиденциальными данными, записанные <code>/feedback</code> у сторонних провайдеров или когда учётные данные Anthropic не настроены, для отправки вашей команде по работе с клиентами Anthropic |
+| <code>feedback/drafts/</code> | Поставленные в очередь <a href="https://code.claude.com/docs/ru/tools-reference.md#sendfeedback-tool-behavior">отзывы, составленные Claude</a>, ожидающие вашей проверки в <code>/feedback</code>. Удаляются по истечении <code>cleanupPeriodDays</code> или 30 дней, в зависимости от того, что короче. Когда очередь достигает лимита в 10 черновиков, Claude Code удаляет самый старый черновик, чтобы освободить место. |
+| <code>usage-data/</code> | <code>report.html</code> и копии отчётов с отметкой времени, записанные <a href="https://code.claude.com/docs/ru/costs#analyze-your-usage-patterns"><code>/insights</code></a>, а также кэшированные данные анализа по каждой сессии, используемые для их построения |
+| <code>skills/.trash/</code>, <code>plugins/.trash/</code> | <a href="https://code.claude.com/docs/ru/skills.md#how-synced-skills-behave">Скиллы</a> и <a href="https://code.claude.com/docs/ru/plugins/loading.md#synced-plugins">плагины</a>, удалённые синхронизацией с claude.ai, например после того как вы отключили один из них на claude.ai или прекратили синхронизацию. Файлы остаются здесь, чтобы вы могли восстановить их, пока очистка их не удалит |
+| <code>plugins/installed_plugins.set-aside.&lt;date&gt;.&lt;hash&gt;.json</code>, <code>plugins/installed_plugins.unreadable.&lt;date&gt;.&lt;hash&gt;.kept</code> | Датированные копии, которые Claude Code создаёт перед перезаписью <a href="https://code.claude.com/docs/ru/plugins/loading#find-plugins-on-disk"><code>installed_plugins.json</code></a>: записи об установке, которые он отбросил, и содержимое файла, который он не смог прочитать. |
+| <code>plugins/mcpb/</code> | Файлы, которые Claude Code извлёк из <a href="https://code.claude.com/docs/ru/plugins/components.md#include-a-packaged-mcpb-server">пакетов MCP</a>, объявленных плагинами. Возраст пакета отсчитывается от последней сессии, которая его использовала. |
+| <code>todos/</code>, <code>statsig/</code>, <code>logs/</code> | Устаревшие каталоги из старых версий. Больше не записываются. Очистка удаляет их содержимое, а затем и пустой каталог. |</p>
+<p>Файлы сессий в <code>sessions/</code>, автоматическая память и транскрипты Claude Desktop и Cowork подчиняются собственным правилам хранения:</p>
+<ul>
+<li><strong><code>sessions/</code></strong>: содержит по одному небольшому файлу на каждую запущенную сессию; используется для обнаружения параллельных сессий и сбоев. Этот каталог не входит в очистку по возрасту: Claude Code удаляет каждый файл при завершении его сессии и очищает остатки после сбоев при следующем запуске.</li>
+<li><strong><code>seed-admin/</code></strong>: временные git-каталоги, которые Claude Code создаёт при упаковке вашего репозитория для <a href="https://code.claude.com/docs/ru/ultrareview.md">ultrareview</a> или <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md#send-local-repositories-without-github">загрузки в облачную сессию</a>. Когда загрузка завершается (или в одной из последующих сессий, если загрузка была прервана), Claude Code удаляет каталог этой загрузки, а сам <code>seed-admin/</code> оставляет на месте.</li>
+<li><strong>Автоматическая память</strong>: очистка не удаляет файлы памяти в каталоге <a href="https://code.claude.com/docs/ru/memory.md#auto-memory">автоматической памяти</a> проекта, <code>projects/&lt;project&gt;/memory/</code>. Claude Code удаляет этот каталог, только если он оставался пустым в течение всего срока хранения. До v2.1.228 очистка считала папки внутри каталога памяти данными сессий и могла удалять старые файлы в нём.</li>
+<li><strong>Транскрипты Claude Desktop и Cowork</strong>: Claude Code хранит транскрипт сессии, которую вы начали или последней продолжили в Claude Desktop или Cowork, независимо от её возраста. Чтобы задать для этих транскриптов ограничение по возрасту, установите <a href="https://code.claude.com/docs/ru/settings-reference#desktopsessioncleanupperioddays"><code>desktopSessionCleanupPeriodDays</code></a>. Требуется Claude Code v2.1.248 или новее; более ранние версии удаляют их по истечении <code>cleanupPeriodDays</code>.</li>
+</ul>
+<p>Вместо этого Claude Code удаляет эти транскрипты по истечении <code>cleanupPeriodDays</code>, например, в следующих случаях:</p>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/managed-settings.md">Управляемые настройки</a> задают <code>cleanupPeriodDays</code></li>
+<li><a href="https://code.claude.com/docs/ru/hipaa-setup.md#check-how-developers-sign-in-and-connect">К вашим сессиям применяется конфигурация HIPAA</a></li>
+</ul>
+<p>Claude Code пропускает очистку по возрасту в следующих случаях:</p>
+<ul>
+<li><strong>Режим bare</strong>: когда вы запускаете <code>claude -p</code> с <a href="https://code.claude.com/docs/ru/headless#start-faster-with-bare-mode"><code>--bare</code></a>, Claude Code не выполняет очистку в этой сессии.</li>
+<li><strong>Приостановленная очистка</strong>: если Claude Code не может надёжно определить срок хранения, он приостанавливает очистку; <a href="https://code.claude.com/docs/ru/monitoring-usage#retention-sweep-event">событие <code>retention_sweep</code></a> перечисляет все конфигурации, которые её приостанавливают. Если причина — файл настроек, который не удаётся прочитать или разобрать, или ошибки настроек при заданных <code>cleanupPeriodDays</code> или <code>desktopSessionCleanupPeriodDays</code>, <code>/status</code> показывает предупреждение, пока вы не устраните причину.</li>
+</ul>
+<p>Когда <a href="https://code.claude.com/docs/ru/managed-settings.md">управляемые настройки</a> задают <code>cleanupPeriodDays</code>, Claude Code выполняет очистку с управляемым значением, даже если в файле настроек с более низким приоритетом есть ошибки.</p>
+<p>Чтобы убедиться, что компьютеры в вашей организации выполняют очистку с заданным вами сроком хранения, см. раздел <a href="https://code.claude.com/docs/ru/monitoring-usage.md#check-the-retention-sweep">Проверка очистки по сроку хранения</a>.</p>
+<h4 id="h-8">Каталог черновиков сессии <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<p>Каталог черновиков (scratchpad) — это отдельный для каждой сессии каталог, который Claude Code предоставляет Claude для временных файлов: промежуточных результатов, вспомогательных скриптов и черновиков, которым не место в вашем проекте. Когда Claude сообщает, что сохранил что-то «в scratchpad», файл находится именно там. Claude использует его вместо <code>/tmp</code> и может создавать, редактировать и читать в нём файлы без запроса разрешения.</p>
+<p>Каталог черновиков находится во временном каталоге Claude Code, а не в <code>~/.claude</code>. Путь для текущей сессии на вашей платформе:</p>
+<ul>
+<li><strong>macOS</strong>: <code>/private/tmp/claude-&lt;uid&gt;/&lt;project&gt;/&lt;session-id&gt;/scratchpad/</code></li>
+<li><strong>Linux</strong>: <code>/tmp/claude-&lt;uid&gt;/&lt;project&gt;/&lt;session-id&gt;/scratchpad/</code> или такой же путь внутри <code>$TMPDIR</code>, если он задан в вашей системе</li>
+<li><strong>Windows</strong>: <code>%TEMP%\claude\&lt;project&gt;\&lt;session-id&gt;\scratchpad\</code></li>
+</ul>
+<p><code>&lt;project&gt;</code> — это путь к вашему рабочему каталогу, в котором каждый символ, кроме букв и цифр, заменён на <code>-</code>, например <code>-Users-you-my-project</code>. В Windows <code>&lt;project&gt;</code> — это 16-символьный хеш этой строки, например <code>73295dabccd14c56</code>. В сессии приложения Desktop это может быть сама строка. Чтобы узнать точный путь, спросите Claude. Если вы задали <a href="https://code.claude.com/docs/ru/env-vars"><code>CLAUDE_CODE_TMPDIR</code></a>, всё дерево перемещается в этот каталог. Хуки получают путь текущей сессии в поле <a href="https://code.claude.com/docs/ru/hooks#common-input-fields"><code>scratchpad_dir</code></a>.</p>
+<p>Файлы каталога черновиков хранятся столько же, сколько транскрипт сессии: <a href="#cleaned-up-automatically">очистка по сроку хранения</a> удаляет каталог вместе с транскриптом, а <a href="#clear-local-data"><code>claude purge</code></a> не затрагивает временный каталог. Поскольку каталог находится в системном временном расположении, ваша операционная система также может очистить его, например при перезагрузке. Чтобы сохранить что-то, что Claude там записал, попросите Claude переместить это в ваш проект.</p>
+<p>Каталог черновиков есть у сессии, только если выполнены все следующие условия:</p>
+<ul>
+<li>Вы вошли с учётной записью claude.ai, а не с API-ключом</li>
+<li>Сессия использует Anthropic API, а не Amazon Bedrock, Google Cloud&#x27;s Agent Platform или Microsoft Foundry</li>
+<li><a href="https://code.claude.com/docs/ru/settings-reference#enableartifact"><code>enableArtifact</code></a> не установлен в <code>false</code></li>
+</ul>
+<h4 id="h-9">Хранятся, пока вы их не удалите <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<p>За исключением строк, где указано иное, очистка по сроку хранения не удаляет указанные ниже пути, и Claude Code хранит их, пока вы их не удалите.</p>
+<p>| Путь в <code>~/.claude/</code> | Содержимое |
+| - | - |
+| <code>history.jsonl</code> | Введённые вами промпты с отметкой времени и путём к проекту. Используется для вызова по стрелке вверх, поиска по истории <code>Ctrl+R</code> и автодополнения shell-команд <code>!</code>. Каждая очистка удаляет записи старше <code>cleanupPeriodDays</code>, когда <a href="https://code.claude.com/docs/ru/hipaa-setup.md#check-how-developers-sign-in-and-connect">к вашим сессиям применяется конфигурация HIPAA</a>. |
+| <code>stats-cache.json</code> | Агрегированные данные о токенах и стоимости, отображаемые <code>/usage</code> |
+| <code>remote-settings.json</code> | Кэшированная копия <a href="https://code.claude.com/docs/ru/server-managed-settings.md">серверных управляемых настроек</a> для вашей организации или <code>{}</code>, если ваша организация их не настроила. Присутствует, только если сессия <a href="https://code.claude.com/docs/ru/server-managed-settings.md#platform-availability">загружает их</a>. Claude Code проверяет наличие обновлений при запуске и ежечасно во время сессии. Claude Code удаляет этот файл, когда вы выходите из учётной записи. |
+| <code>cache/changelog.md</code> | Кэшированная копия журнала изменений Claude Code, отображаемая <code>/release-notes</code>. Обновляется в фоновом режиме. |
+| <code>policy-limits.json</code> | Кэшированные настройки политик функций для вашей организации. Присутствует только для некоторых типов учётных записей. Обновляется автоматически. Сопутствующий файл <code>policy-limits.json.stamp.json</code> фиксирует, какой учётной записи или API-ключу принадлежит кэш. Claude Code удаляет оба файла, когда вы выходите из учётной записи. |</p>
+<h5 id="h-10">Файлы состояния, которые нужно сохранить <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h5>
+<p>В зависимости от используемых функций <code>~/.claude/</code> также содержит файлы, не перечисленные в таблицах раздела <a href="#application-data">Данные приложения</a>. Из них кэши и файлы блокировок можно безопасно удалять. Сохраните следующие файлы состояния:</p>
+<ul>
+<li><code>.credentials.json</code>: ваши <a href="https://code.claude.com/docs/ru/authentication.md#credential-management">учётные данные для входа</a></li>
+<li><code>agent-memory/</code>: <a href="https://code.claude.com/docs/ru/sub-agents.md#enable-persistent-memory">память субагентов</a></li>
+<li><code>jobs/</code> и <code>daemon/</code>: состояние <a href="https://code.claude.com/docs/ru/agent-view.md#where-state-is-stored">фоновых сессий</a></li>
+</ul>
+<h4 id="h-11">Хранение в открытом виде <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h4>
+<p>Транскрипты и история не шифруются при хранении. Единственная защита — права доступа к файлам ОС. Если инструмент читает файл <code>.env</code> или команда выводит учётные данные, это значение записывается в <code>projects/&lt;project&gt;/&lt;session&gt;.jsonl</code>. Чтобы снизить риск:</p>
+<ul>
+<li>Уменьшите <code>cleanupPeriodDays</code>, чтобы сократить срок хранения транскриптов в Claude Code</li>
+<li>Установите <a href="https://code.claude.com/docs/ru/settings-reference#desktopsessioncleanupperioddays"><code>desktopSessionCleanupPeriodDays</code></a>, чтобы задать ограничение по возрасту и для транскриптов Claude Desktop и Cowork</li>
+<li>Установите переменную окружения <a href="https://code.claude.com/docs/ru/env-vars"><code>CLAUDE_CODE_SKIP_PROMPT_HISTORY</code></a>, чтобы не записывать транскрипты и историю промптов в любом режиме. В неинтерактивном режиме вместо этого можно передать <code>--no-session-persistence</code> вместе с <code>-p</code> или установить <code>persistSession: false</code> в TypeScript Agent SDK; в Python SDK эквивалентного параметра нет.</li>
+<li>Используйте <a href="https://code.claude.com/docs/ru/permissions.md">правила разрешений</a>, чтобы запретить чтение файлов с учётными данными</li>
+</ul>
+<h4 id="h-12">Очистка локальных данных <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h4>
+<p>Выполните <code>claude purge</code>, чтобы удалить состояние, которое Claude Code хранит для одного проекта. Команда удаляет:</p>
+<ul>
+<li>Транскрипты и автоматическую память в <code>projects/</code></li>
+<li>Записи <code>tasks/</code>, <code>debug/</code> и <code>file-history/</code> для каждой сессии</li>
+<li>Соответствующие строки промптов в <code>history.jsonl</code></li>
+<li>Запись проекта в <code>~/.claude.json</code></li>
+</ul>
+<p>Изображения, которые вы вставляли или прикрепляли в сессиях проекта, и <a href="#session-scratchpad-directory">каталог черновиков</a> каждой сессии хранятся во временном каталоге Claude Code, а не в <code>~/.claude</code>, поэтому очистка их не удаляет. <a href="#cleaned-up-automatically">Очистка по сроку хранения</a> по-прежнему удаляет изображения, когда они становятся старше <code>cleanupPeriodDays</code>; каталог черновиков очищенной сессии остаётся, пока вы его не удалите или ваша операционная система не очистит временный каталог.</p>
+<p>Команда выводит полный план удаления и запрашивает подтверждение, прежде чем что-либо удалить.</p>
+<p>До v2.1.288 команда называлась <code>claude project purge</code>.</p>
+<p>В примерах ниже <code>~/work/my-repo</code> используется как условное значение. Замените его путём к вашему проекту. Если для указанного пути нет соответствующего состояния, команда выводит ошибку и завершается с кодом 1.</p>
+<p>Предварительный просмотр плана без удаления:</p>
+<p>```bash theme={null}
+claude purge ~/work/my-repo --dry-run</p>
+<pre><code>
+План перечисляет каждый подходящий элемент и причину его включения:
+</code></pre>
+<p>Purge plan for /home/user/work/my-repo:</p>
+<p>dir:    /home/user/.claude/projects/-home-user-work-my-repo
+           project transcripts (.jsonl) and memory/
+  config: projects[&quot;/home/user/work/my-repo&quot;]
+           project entry in ~/.claude.json (trust, history, MCP servers)
+  filter: /home/user/.claude/history.jsonl
+           12 prompt(s) typed in this project</p>
+<p>shell-snapshots/ are not project-scoped and will not be touched
+backups/ may still contain this project entry in old .claude.json snapshots (/home/user/.claude/backups); at most 5 are kept and they rotate out automatically
+Dry run: 3 item(s) would be deleted.</p>
+<pre><code>
+Удаление с одним запросом подтверждения:
+</code></pre>
+<p>claude purge ~/work/my-repo</p>
+<pre><code>
+Команда выводит тот же план, затем спрашивает `Delete 3 item(s) for /home/user/work/my-repo? This cannot be undone. [y/N]` и выполняет удаление, только если вы ответите `y`.
+
+Не указывайте путь, чтобы выбрать проект из интерактивного списка.
+
+Пропуск запроса подтверждения для использования в скриптах:
+</code></pre>
+<p>claude purge ~/work/my-repo --yes</p>
+<pre><code>
+Другие параметры:
+
+* Передайте `--all` вместо пути, чтобы очистить состояние всех проектов сразу; в этом случае `history.jsonl` удаляется целиком, а не фильтруется.
+* Передайте `-i`, чтобы пройти по плану удаления поэлементно.
+
+Команда не трогает `shell-snapshots/` и `backups/`, поскольку они не привязаны к проекту, и предупреждает о них в выводе плана. Если кто-либо выполнял [`/heapdump`](https://code.claude.com/docs/ru/troubleshooting#high-cpu-or-memory-usage) на этом компьютере, удалите также записанные им файлы `.heapsnapshot`. Снимок кучи содержит весь диалог и все учётные данные, которые хранил процесс, и ни очистка по сроку хранения, ни команда purge его не затрагивают.
+
+Вы также можете самостоятельно удалить любые из указанных выше путей данных приложения, за исключением [файлов состояния, которые нужно сохранить](#state-files-to-keep).
+
+| Удалить | Что вы потеряете |
+| - | - |
+| `~/.claude/projects/` | Возобновление, продолжение и откат прошлых сессий, а также автоматическую память для всех проектов |
+| `~/.claude/history.jsonl` | Вызов промптов по стрелке вверх, поиск по истории `Ctrl+R` и автодополнение shell-команд `!` |
+| `~/.claude/paste-cache/` | Вставленный текст в вызванных промптах; см. [вставка большого содержимого](https://code.claude.com/docs/ru/terminal-config.md#paste-large-content) |
+| `~/.claude/uploads/` | Вложения, на которые по пути ссылаются прошлые сессии [Remote Control](https://code.claude.com/docs/ru/remote-control.md) |
+| `~/.claude/file-history/` | Восстановление чекпоинтов для прошлых сессий |
+| `~/.claude/stats-cache.json` | Исторические итоги, отображаемые `/usage` |
+| `~/.claude/usage-data/` | Прошлые отчёты [`/insights`](https://code.claude.com/docs/ru/costs#analyze-your-usage-patterns) и кэшированные данные анализа, использованные для их построения |
+| `~/.claude/feedback-bundles/` | Архивы отзывов и отчётов об ошибках, которые вы ещё не отправили своей команде по работе с клиентами Anthropic |
+| `~/.claude/feedback/drafts/` | [Отзывы, составленные Claude](https://code.claude.com/docs/ru/tools-reference.md#sendfeedback-tool-behavior), которые вы не отправили |
+| `~/.claude/remote-settings.json` | Ничего. Загружается заново при следующем запуске. |
+| `~/.claude/cache/changelog.md` | Ничего. Обновляется в фоновом режиме. |
+| `~/.claude/policy-limits.json` | Ничего. Обновляется автоматически. |
+| `~/.claude/tasks/` | Ваши [списки задач](https://code.claude.com/docs/ru/interactive-mode.md#task-list), включая те, что ещё используются |
+| `~/.claude/skills/.trash/`, `~/.claude/plugins/.trash/` | Возможность восстановить [синхронизированные скиллы](https://code.claude.com/docs/ru/skills.md#how-synced-skills-behave) и [синхронизированные плагины](https://code.claude.com/docs/ru/plugins/loading.md#synced-plugins), удалённые Claude Code |
+| `~/.claude/plugins/installed_plugins.set-aside.&lt;date&gt;.&lt;hash&gt;.json`, `~/.claude/plugins/installed_plugins.unreadable.&lt;date&gt;.&lt;hash&gt;.kept` | Копии записей об установке плагинов, которые Claude Code отбросил или не смог прочитать. Ничто их обратно не считывает |
+| `~/.claude/debug/`, `~/.claude/plans/`, `~/.claude/session-env/`, `~/.claude/shell-snapshots/` | Ничего значимого для пользователя |
+| `~/.claude/backups/` | Предыдущие копии, из которых можно [восстановить `~/.claude.json`](https://code.claude.com/docs/ru/errors#configuration-error-in-claude-json) |
+| `~/.claude/todos/`, `~/.claude/statsig/`, `~/.claude/logs/`, `~/.claude/image-cache/` | Ничего. Устаревшие каталоги, которые текущие версии не записывают. |
+
+Не удаляйте `~/.claude.json`, `~/.claude/settings.json` или `~/.claude/plugins/`: в них хранятся данные вашей учётной записи, ваши настройки и установленные плагины.
+
+## Связанные ресурсы
+
+* [Управляйте памятью Claude](https://code.claude.com/docs/ru/memory.md): пишите и организуйте CLAUDE.md, rules и auto memory
+* [Настройте параметры](https://code.claude.com/docs/ru/settings.md): установите разрешения, hooks, переменные окружения и значения по умолчанию модели
+* [Создавайте skills](https://code.claude.com/docs/ru/skills.md): создавайте переиспользуемые подсказки и рабочие процессы
+* [Настройте subagents](https://code.claude.com/docs/ru/sub-agents.md): определите специализированные агенты с их собственным контекстом
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

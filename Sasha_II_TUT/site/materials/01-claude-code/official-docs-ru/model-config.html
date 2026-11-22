@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Конфигурация модели</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Конфигурация модели <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Настройте, какую модель использует Claude Code, уровни усилий, расширенный контекст и окно auto-compact</p>
+</blockquote>
+<h3 id="h-2">Доступные модели <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Для настройки <code>model</code> в Claude Code вы можете указать либо:</p>
+<ul>
+<li><strong>Псевдоним модели</strong></li>
+<li><strong>Имя модели</strong></li>
+<li>Anthropic API: полное <strong><a href="https://platform.claude.com/docs/en/about-claude/models/overview">имя модели</a></strong></li>
+<li>Amazon Bedrock: ARN профиля вывода</li>
+<li>Microsoft Foundry: имя развёртывания</li>
+<li>Google Cloud&#x27;s Agent Platform: имя версии</li>
+</ul>
+<p>Рекомендации по выбору модели и уровня усилий для различных типов работ см. в статье <a href="https://claude.com/blog/claude-model-and-effort-level-in-claude-code">Choosing a Claude model and effort level in Claude Code</a> в блоге.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p><code>ANTHROPIC_BASE_URL</code> изменяет, куда отправляются запросы, а не какая модель на них отвечает. Чтобы маршрутизировать Claude через LLM-шлюз, см. <a href="https://code.claude.com/docs/ru/llm-gateway">LLM gateways</a>.</p>
+</blockquote>
+<h4 id="h-3">Псевдонимы моделей <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте псевдоним модели для выбора параметров модели без необходимости запоминать точные номера версий:</p>
+<p>| Псевдоним модели | Поведение |
+| - | - |
+| <strong><code>default</code></strong> | Специальное значение, которое очищает любое переопределение модели и возвращается к <a href="#default-model-setting">стандартной модели для вашей учётной записи</a>. Сам по себе не является псевдонимом модели |
+| <strong><code>best</code></strong> | Использует ту же модель, что и <code>opus</code> |
+| <strong><code>fable</code></strong> | Использует <a href="#fable-alias-resolution">модель Fable для вашего поставщика</a> для ваших самых сложных и долгоживущих задач |
+| <strong><code>sonnet</code></strong> | Использует последнюю модель Sonnet для ежедневных задач кодирования |
+| <strong><code>opus</code></strong> | Использует последнюю модель Opus для сложных задач рассуждения |
+| <strong><code>haiku</code></strong> | Использует быструю и эффективную модель Haiku для простых задач |
+| <strong><code>sonnet[1m]</code></strong> | Использует Sonnet с <a href="https://platform.claude.com/docs/en/build-with-claude/context-windows#context-window-sizes-by-model">контекстным окном в 1 миллион токенов</a> для длительных сессий. Не имеет эффекта, когда <code>sonnet</code> уже разрешается на Sonnet 5.5 или Sonnet 5 с их встроенным окном 1M |
+| <strong><code>opus[1m]</code></strong> | Использует Opus с <a href="https://platform.claude.com/docs/en/build-with-claude/context-windows#context-window-sizes-by-model">контекстным окном в 1 миллион токенов</a> для длительных сессий. Не имеет эффекта, когда <code>opus</code> уже разрешается на Opus 4.7 или более позднюю версию со встроенным окном 1M |
+| <strong><code>opusplan</code></strong> | Специальный режим, который использует <code>opus</code> в режиме планирования, затем переключается на <code>sonnet</code> для выполнения |</p>
+<p>Псевдонимы <code>opus</code>, <code>sonnet</code> и <code>haiku</code> разрешаются на новейшую версию в Anthropic API и на более раннюю версию у некоторых других поставщиков:</p>
+<p>| Поставщик | <code>opus</code> | <code>sonnet</code> | <code>haiku</code> |
+| :- | :- | :- | :- |
+| Anthropic API | Opus 5.5 | Sonnet 5.5 | Haiku 5.5 |
+| <a href="https://code.claude.com/docs/ru/claude-platform-on-aws.md">Claude Platform on AWS</a> | Opus 5.5 | Sonnet 4.6 | Haiku 4.5 |
+| <a href="https://code.claude.com/docs/ru/claude-models-on-google-cloud-anthropic-managed.md">Claude Models on Google Cloud (Anthropic managed)</a> | Opus 5.5 | Sonnet 5.5 | Haiku 4.5 |
+| Amazon Bedrock, Google Cloud&#x27;s Agent Platform | Opus 5.5 | Sonnet 4.5 | Haiku 4.5 |
+| Microsoft Foundry | Opus 4.6 | Sonnet 4.5 | Haiku 4.5 |</p>
+<p>Если вы не установили <code>ANTHROPIC_DEFAULT_FABLE_MODEL</code>, псевдоним <code>fable</code> разрешается на Fable 5 в сессиях <a href="https://code.claude.com/docs/ru/claude-apps-gateway">Claude apps gateway</a> и на Fable 5.2 во всех остальных случаях.</p>
+<p>Шлюз, который не настроен на обслуживание <code>claude-fable-5-2</code>, отклоняет запросы для этой модели. Чтобы использовать Fable 5.2 через шлюз, который её обслуживает, выберите её с помощью <code>/model claude-fable-5-2</code>.</p>
+<p>Где <code>opus</code> или <code>sonnet</code> разрешается на более старую модель, более новые модели доступны путём явного выбора полного имени модели или установки <code>ANTHROPIC_DEFAULT_OPUS_MODEL</code> или <code>ANTHROPIC_DEFAULT_SONNET_MODEL</code>.</p>
+<p>Более ранние версии разрешают эти псевдонимы на более старые модели. Для версии, в которой каждый псевдоним изменился, см. <a href="#version-history">Version history</a>.</p>
+<p>Псевдонимы указывают на рекомендуемую версию для вашего поставщика и обновляются со временем. Чтобы закрепить определённую версию, используйте полное имя модели, например <code>claude-opus-5-5</code>, или установите соответствующую переменную окружения, например <code>ANTHROPIC_DEFAULT_OPUS_MODEL</code>.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Sonnet 5.5 требует Claude Code версии 2.1.284 или позже, а Opus 5.5 требует версии 2.1.280 или позже. Если запрос для одной из них из более старой версии не удаётся, см. <a href="https://code.claude.com/docs/ru/errors.md#claude-code-does-not-support-this-model">Claude Code does not support this model</a>. Используйте версию 2.1.293 или позже с Haiku 5.5. Запустите <code>claude update</code> для обновления.</p>
+</blockquote>
+<h4 id="работа-с-fable">Работа с Fable <a class="h-anchor" href="#работа-с-fable" aria-label="Ссылка на раздел">#</a></h4>
+<p><a href="https://platform.claude.com/docs/en/about-claude/models/overview">Модели Claude Fable</a> — это наиболее мощные модели в Claude Code, подходящие для задач, требующих более одной сессии. Они поддерживают длительные автономные сессии, исследуют перед действием и проверяют свою работу чаще, чем меньшие модели.</p>
+<p>Ни одна из моделей Fable не является стандартной для типа учётной записи ни на одном плане или поставщике. Выберите одну явно:</p>
+<ul>
+<li><strong>Fable 5.2</strong>: запустите <code>/model fable</code> или запустите с помощью <code>claude --model fable</code>. В сессиях <a href="https://code.claude.com/docs/ru/claude-apps-gateway">Claude apps gateway</a> вместо этого запустите <code>/model claude-fable-5-2</code>.</li>
+<li><strong>Fable 5.1 или Fable 5</strong>: выберите её по ID модели. В Anthropic API запустите <code>/model claude-fable-5-1</code> или <code>/model claude-fable-5</code> либо запустите с помощью <code>claude --model claude-fable-5-1</code>. На других поставщиках используйте ID модели вашего поставщика или <a href="#pin-models-for-third-party-deployments">закрепите её</a> с помощью <code>ANTHROPIC_DEFAULT_FABLE_MODEL</code>.</li>
+</ul>
+<p>На планах Pro, Max, Ultra, Team и Enterprise модель <code>claude-fable-5-1</code>, сохранённая в ваших пользовательских настройках, переводится на псевдоним <code>fable</code>:</p>
+<ul>
+<li><strong>План Pro, Max или Ultra</strong>: перевод происходит при первом запуске версии 2.1.321 или позже. В терминале строка модели при запуске может один раз показать <code>(auto-updated)</code>.</li>
+<li><strong>План Team или Enterprise</strong>: перевод ожидает настроек вашей организации, поэтому он может произойти при одном из последующих запусков или не произойти вовсе. Он применяется со следующей сессии, без строки <code>(auto-updated)</code>. Чтобы проверить вашу модель, запустите <code>/model</code>.</li>
+</ul>
+<p>После перевода сессии запускаются со стандартным уровнем усилий Fable 5.2, если вы не <a href="#adjust-effort-level">установили уровень</a> для неё. Учётные записи Console, сторонние поставщики, а также настройки проекта, локальные и управляемые настройки сохраняют <code>claude-fable-5-1</code>.</p>
+<p>Запросы, которые классификаторы безопасности модели Fable помечают, чаще всего в областях кибербезопасности и биологии, запускают <a href="#automatic-model-fallback">автоматическое переключение на резервную модель</a>.</p>
+<p>Чтобы получить максимум от Fable:</p>
+<ul>
+<li><strong>Описывайте результат, а не шаги</strong>: дайте ей результат, который вы хотите, и позвольте ей спланировать путь. Чтобы она продолжала работать над этим результатом, <a href="https://code.claude.com/docs/ru/goal.md">установите цель</a>.</li>
+<li><strong>Дайте ей неоднозначные проблемы</strong>: исследования коренных причин, отладка сбоев и решения по архитектуре — это то, где дополнительное исследование и проверка окупаются.</li>
+<li><strong>Пропустите напоминания о проверке</strong>: она проверяет свою работу с меньшим количеством напоминаний, поэтому напоминания о тестировании или проверке обычно не требуются.</li>
+<li><strong>Масштабируйте более крупные задачи</strong>: дайте ей работу, которую вы обычно разбиваете на части. Она выдерживает длительные сессии без потери нити.</li>
+</ul>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Fable 5.2 требует Claude Code версии 2.1.321 или позже, а Fable 5.1 требует версии 2.1.257 или позже. Если запрос для одной из них из более старой версии не удаётся, см. <a href="https://code.claude.com/docs/ru/errors.md#claude-code-does-not-support-this-model">Claude Code does not support this model</a>. Запустите <code>claude update</code> для обновления. Для доступности при нулевом сохранении данных см. <a href="https://code.claude.com/docs/ru/zero-data-retention.md#model-availability-under-zdr">Model availability under ZDR</a>.</p>
+</blockquote>
+<p>В Anthropic API модель Fable появляется в средстве выбора <code>/model</code>, если <a href="#restrict-model-selection"><code>availableModels</code></a> или <a href="#organization-model-restrictions">ограничения модели организации</a> её не исключают. Когда ваша организация вообще не может использовать Fable, например при <a href="https://code.claude.com/docs/ru/zero-data-retention.md#model-availability-under-zdr">нулевом сохранении данных</a>, строка остаётся в средстве выбора неактивной с примечанием о причине.</p>
+<h5 id="fable-и-кредиты-использования">Fable и кредиты использования <a class="h-anchor" href="#fable-и-кредиты-использования" aria-label="Ссылка на раздел">#</a></h5>
+<p>В зависимости от вашего плана и уровня места использование Fable может оплачиваться из <a href="https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans">кредитов использования</a> вместо использования включённых лимитов вашего плана. Когда это происходит, средство выбора <code>/model</code> показывает &quot;Requires usage credits&quot; в строке Fable. Для управления кредитами использования см. <a href="https://code.claude.com/docs/ru/costs.md#add-usage-credits-to-your-subscription">Add usage credits to your subscription</a>.</p>
+<p>В интерактивных сессиях Claude Code может показывать запрос согласия на использование кредитов для Fable. Вы можете продолжить работу на Fable, используя кредиты использования, или переключиться на вашу модель по умолчанию. Вы также можете отклонить запрос:</p>
+<ul>
+<li>Когда вы выбираете модель Fable с помощью <code>/model</code>, вы сохраняете вашу текущую модель.</li>
+<li>Во время сессии Claude Code продолжает ход на вашей модели по умолчанию.</li>
+</ul>
+<p>После того как вы выберете продолжить работу на Fable, используя кредиты использования, Claude Code больше не показывает запрос.</p>
+<p>В сессии с подключённым <a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a>, <a href="https://code.claude.com/docs/ru/agent-view.md">фоновой сессии</a> или сессии участника <a href="https://code.claude.com/docs/ru/agent-teams.md">команды агентов</a> у терминала может никого не быть, поэтому Claude Code удерживает запрос согласия во время сессии до крайнего срока <a href="https://code.claude.com/docs/ru/settings-reference#dialogexpiry"><code>dialogExpiry</code></a>, пять минут по умолчанию. Если никто не ответил к крайнему сроку, Claude Code завершает ход без отправки запроса и добавляет примечание в транскрипт, которое также показывает клиент Remote Control. Ваш выбор модели не изменяется, и Claude Code снова запрашивает согласие при следующем сообщении.</p>
+<p>То, что вы можете делать во время ожидания запроса, зависит от сессии:</p>
+<ul>
+<li>С подключённым Remote Control или в сессии участника команды нажмите любую клавишу у терминала, чтобы отменить крайний срок, и Claude Code будет ждать вашего ответа.</li>
+<li>С подключённым Remote Control в интерактивной сессии терминала вы также можете ответить на подключённом устройстве, и этот ответ действует в течение этой сессии. Требует Claude Code версии 2.1.323 или позже.</li>
+<li>В фоновой сессии ответьте до крайнего срока.</li>
+<li>Если вы отправите новое сообщение от удалённого клиента до того, как кто-нибудь напечатает у терминала, Claude Code завершит ход так же, и ваше новое сообщение начнёт следующий ход. После того как кто-нибудь напечатает у терминала, Claude Code продолжит ждать ответа и поставит ваше новое сообщение в очередь позади него.</li>
+</ul>
+<p>В сессии, размещённой другим приложением через <a href="https://code.claude.com/docs/ru/agent-sdk/overview.md">Agent SDK</a>, появляется ли запрос, зависит от этого приложения. Если он появляется и никто не ответит до того же крайнего срока <a href="https://code.claude.com/docs/ru/settings-reference#dialogexpiry"><code>dialogExpiry</code></a>, Claude Code завершает ход без отправки запроса.</p>
+<p>В <a href="https://code.claude.com/docs/ru/headless.md">неинтерактивном режиме</a> с флагом <code>-p</code> и в приложении Agent SDK, которое не показывает запрос, Claude Code никогда не запрашивает согласие. Когда запрос Fable там должен оплачиваться из кредитов использования, Claude Code оплачивает его без запроса.</p>
+<h4 id="h-4">Установка вашей модели <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<p>Вы можете настроить вашу модель несколькими способами, перечисленными в порядке приоритета:</p>
+<ol>
+<li><strong>Во время сессии</strong>: используйте <code>/model &lt;alias|name&gt;</code> для немедленного переключения или запустите <code>/model</code> без аргумента, чтобы открыть средство выбора. См. <a href="https://code.claude.com/docs/ru/prompt-caching.md#switching-models">когда Claude Code просит вас подтвердить переключение</a></li>
+<li><strong>При запуске</strong>: запустите с помощью <code>claude --model &lt;alias|name&gt;</code></li>
+<li><strong>Переменная окружения</strong>: установите <code>ANTHROPIC_MODEL=&lt;alias|name&gt;</code></li>
+<li><strong>Настройки</strong>: настройте постоянно в файле настроек, используя поле <code>model</code></li>
+<li><strong><a href="#set-a-default-model-for-new-sessions">Стандартная для новых сессий</a></strong>: установите <code>ANTHROPIC_DEFAULT_MODEL=&lt;alias|name&gt;</code></li>
+</ol>
+<p><code>/model</code> сохраняет ваш выбор как стандартный для новых сессий, записывая поле <code>model</code> в ваши пользовательские настройки. В средстве выбора:</p>
+<ul>
+<li><code>Enter</code>: переключить модель и сохранить как вашу стандартную</li>
+<li><code>s</code>: переключить модель только для этой сессии и оставить вашу стандартную без изменений. Чтобы использовать другую клавишу, переназначьте <a href="https://code.claude.com/docs/ru/keybindings#model-picker-actions"><code>modelPicker:thisSessionOnly</code></a></li>
+</ul>
+<p>Ввод <code>/model &lt;name&gt;</code> напрямую ведёт себя как <code>Enter</code>. Чтобы переключиться только для этой сессии, откройте средство выбора с помощью <code>/model</code> и нажмите <code>s</code> в строке модели.</p>
+<p>На плане Enterprise, когда вы вошли в систему с помощью своей учётной записи claude.ai и сохранили стандартную с помощью <code>/model</code>, Claude Code также записывает выбор на эту учётную запись. Это требует Claude Code версии 2.1.280 или позже.</p>
+<ul>
+<li>Когда ваш администратор не установил <a href="#organization-default-model">стандартную модель организации</a>, опция <a href="#default-model-setting">Default</a> может разрешиться на записанную модель, и когда это происходит, строка Default в средстве выбора показывает имя этой модели.</li>
+<li>Если <a href="#restrict-model-selection">ограничения модели</a> исключают записанную модель или она недоступна для вашей учётной записи, и ваш администратор не установил стандартную модель организации, опция Default разрешается так, как если бы ничего не было записано.</li>
+<li>Если вы выберете Default или <code>opusplan</code> в <code>/model</code>, записанный выбор не изменяется.</li>
+</ul>
+<p>Если вы переключаете модели с помощью <code>/model</code>, переключение также достигает <a href="https://code.claude.com/docs/ru/sub-agents.md#choose-a-model">субагентов, которые наследуют модель основного диалога</a>, потому что Claude Code разрешает их модель из той, которую использует ваша сессия, когда Claude их запускает. Переключитесь на Opus перед тем, как Claude делегирует исследование или тестовые запуски одному из них, и эта работа также будет выполняться на Opus. Чтобы оставить пользовательского субагента на меньшей модели, установите <code>model</code> в его определении.</p>
+<p>Если вы установите модель с помощью <code>/model</code> в <a href="https://code.claude.com/docs/ru/headless.md">неинтерактивном режиме</a>, с флагом <code>-p</code>, ваш выбор применяется только к текущей сессии и не сохраняется как ваша стандартная. <code>/model</code> в этом режиме требует Claude Code версии 2.1.205 или позже.</p>
+<p>В версиях 2.1.144 по 2.1.152 <code>/model</code> применялся только к текущей сессии, а <code>d</code> в средстве выбора сохранял стандартную.</p>
+<p>Флаг <code>--model</code> и переменная окружения <code>ANTHROPIC_MODEL</code> применяются только к сессии, которую вы запускаете с ними. Чтобы запустить разные модели в разных терминалах одновременно, запустите каждую с её собственным флагом <code>--model</code> вместо переключения с помощью <code>/model</code>.</p>
+<p>Цены в средстве выбора <code>/model</code> появляются, когда Claude Code взаимодействует с Anthropic API, напрямую или через <a href="https://code.claude.com/docs/ru/llm-gateway">LLM-шлюз</a>, который его проксирует, и цена в строке — это цена модели, которую выбирает эта строка. На <a href="https://code.claude.com/docs/ru/third-party-integrations.md">поставщиках третьих сторон</a>, таких как Amazon Bedrock, и на <a href="https://code.claude.com/docs/ru/claude-apps-gateway">шлюзе Claude apps gateway</a> ваш поставщик или шлюз определяет, что вы платите, поэтому строки средства выбора не показывают цену. Цена — это только метка отображения; она не влияет на то, какую модель выбирает строка, или что выставляет в счёт ваш поставщик. До версии 2.1.206 <a href="https://code.claude.com/docs/ru/claude-platform-on-aws.md">Claude Platform on AWS</a> и сессии шлюза показывали цены списка Anthropic, и строка могла показывать цену другой модели, чем та, которую она выбирала.</p>
+<p>Если вы или ваша организация настроите <a href="https://code.claude.com/docs/ru/hooks.md#premodelswitch">хуки PreModelSwitch</a>, они запускаются перед применением запрошенного переключения и могут его заблокировать или попросить вас подтвердить. Чтобы узнать, почему хук заблокировал переключение и что делать, см. <a href="https://code.claude.com/docs/ru/errors.md#model-switch-was-blocked-by-a-premodelswitch-hook">Model switch was blocked by a PreModelSwitch hook</a>.</p>
+<p>Если <a href="https://code.claude.com/docs/ru/settings-reference.md#enabledplugins">управляемый плагин</a> или его хуки не загрузились, вы всё равно можете переключать модели. Хуки PreModelSwitch этого плагина не запускаются, поэтому переключение, которое один из них заблокировал бы, может пройти. Другие хуки PreModelSwitch, которые загрузились, по-прежнему запускаются и могут его заблокировать. Если Claude Code версии до 2.1.323 отказывает в переключении с сообщением <code>so organization-managed PreModelSwitch hooks could not be checked</code>, обновите Claude Code.</p>
+<p>Чтобы увидеть, что не загрузилось, запустите <code>/plugin</code> в вашей сессии и откройте <a href="https://code.claude.com/docs/ru/plugins/troubleshooting.md#failed-to-load-hooks-from-and-hooks-that-dont-fire">вкладку <strong>Errors</strong></a>. Если там ничего не указано, запустите новую сессию с помощью <code>claude --debug</code> из вашей оболочки и переключитесь на другую модель, затем прочитайте <a href="https://code.claude.com/docs/ru/hooks.md#debug-hooks">лог отладки</a>. После того как вы исправите плагин или <a href="https://code.claude.com/docs/ru/plugins/install.md#keep-plugins-updated">обновление плагина</a> доставит исправление вашего администратора на ваш компьютер, запустите <code>/reload-plugins</code> в вашей сессии, чтобы его хуки заработали.</p>
+<p>Когда вы переключаете модели через метод <a href="https://code.claude.com/docs/ru/agent-sdk/overview.md">Agent SDK</a> <code>setModel()</code>, через приложение, такое как <a href="https://code.claude.com/docs/ru/desktop.md">Desktop app</a>, или с устройства, подключённого через <a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a>, Claude Code проверяет значение при переключении:</p>
+<ul>
+<li><strong>Agent SDK или приложение</strong>: с Claude Code версии 2.1.268 или позже, если Claude Code не принимает ID модели локально, как это происходит для вашего <a href="#add-a-custom-model-option">пользовательского варианта модели</a>, он подтверждает ID у вашего поставщика при первом переключении сессии на него. Подтверждение выполняется на каждом поставщике, и ID, который ваш поставщик не предлагает, отклоняется при переключении вместо сбоя при следующем запросе.</li>
+<li><strong>Remote Control</strong>: в Anthropic API Claude Code проверяет значение локально и не отправляет запрос.</li>
+</ul>
+<p>См. <a href="https://code.claude.com/docs/ru/errors.md#model-is-not-a-recognized-model-id">Model is not a recognized model id</a> и <a href="https://code.claude.com/docs/ru/errors.md#model-not-found">Model not found</a> для сообщений.</p>
+<p>Если вы установите модель с флагом <code>--model</code>, переменной окружения <code>ANTHROPIC_MODEL</code> или настройкой <code>model</code>, Claude Code не отклоняет неправильно введённое значение заранее. Сессия запускается, а первый запрос приводит к <a href="https://code.claude.com/docs/ru/errors.md#theres-an-issue-with-the-selected-model">There&#x27;s an issue with the selected model</a>. В Anthropic API вы можете увидеть <a href="#fix-a-mistyped-model-name">предупреждение с предложением ближайшего имени</a>, если значение почти совпадает с именем или псевдонимом модели и не начинается с <code>claude-</code>.</p>
+<p>Когда запрошенная модель имеет запланированную дату снятия с производства или автоматически переназначается на более новую версию, Claude Code показывает предупреждение, которое называет запрошенную модель. Интерактивные сессии показывают его как уведомление при запуске. Начиная с версии 2.1.182, то же предупреждение записывается в stderr в <a href="https://code.claude.com/docs/ru/headless.md">неинтерактивном режиме</a> при использовании формата вывода текста по умолчанию. Проверка также охватывает <code>model</code>, установленный во <a href="https://code.claude.com/docs/ru/sub-agents.md">frontmatter субагента</a>. Предупреждение stderr подавляется для <code>--output-format json</code> и <code>stream-json</code>; вместо этого прочитайте фактическую модель из поля <code>modelUsage</code> <a href="https://code.claude.com/docs/ru/headless.md#get-structured-output">результирующего сообщения</a>.</p>
+<p>Например, запустите сессию на Opus:</p>
+<p>```bash theme={null}
+claude --model opus</p>
+<pre><code>
+Затем переключайте модели из сессии:
+</code></pre>
+<p>/model sonnet</p>
+<pre><code>
+&gt; [!NOTE]
+&gt;
+&gt; По умолчанию сессия, которую вы запускаете в Anthropic API с ID Claude Opus 4 или Opus 4.1, например `claude-opus-4-1`, работает на модели, на которую разрешается `opus`.
+
+Пример файла настроек:
+</code></pre>
+<p>{
+    &quot;permissions&quot;: {
+        &quot;allow&quot;: [&quot;Bash(npm run lint)&quot;]
+    },
+    &quot;model&quot;: &quot;opus&quot;
+}</p>
+<pre><code>
+Когда активная модель при запуске поступает из настроек проекта или управляемых настроек, а не из вашего собственного выбора, заголовок запуска показывает, какой файл настроек её установил. Запустите `/model` для переопределения; настройка проекта или управляемая настройка переприменяется в новых сессиях.
+
+На платформах, которые встраивают Claude Code и устанавливают [`CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST`](https://code.claude.com/docs/ru/env-vars), конфигурация модели хоста имеет приоритет над управляемыми настройками модели. Управляемый список разрешённых моделей `availableModels` остаётся в силе, если только хост не предоставляет свой собственный. [Exceptions to managed settings precedence](https://code.claude.com/docs/ru/settings.md#exceptions-to-managed-settings-precedence) говорит, какие ключи и переменные переопределяет хост.
+
+#### Какую модель использует возобновлённая сессия
+
+Сессия, которую вы возобновляете с помощью `claude --resume` или `--continue`, сохраняет модель, на которой она была сохранена, за исключением таких случаев, как перечисленные ниже, когда она вместо этого следует [порядку приоритета](#setting-your-model):
+
+* Вы установили переменную псевдонима, например [`ANTHROPIC_DEFAULT_OPUS_MODEL`](#environment-variables), или [`ANTHROPIC_DEFAULT_MODEL`](#set-a-default-model-for-new-sessions) при условиях, перечисленных в её разделе
+* Сохранённая модель снята с производства или исключена [`availableModels`](#restrict-model-selection)
+* Ваш поставщик использует специфичные для поставщика ID развёртывания вместо ID моделей Anthropic, как это делают Amazon Bedrock, Google Cloud&#x27;s Agent Platform и Microsoft Foundry
+* Ваша настройка `model` — `haiku`, и сессия была сохранена на модели Haiku или Sonnet. Например, как только `haiku` начнёт разрешаться на Haiku 5.5, сессия, сохранённая на Haiku 4.5, возобновится на Haiku 5.5.
+* Ваша настройка `model` — `opusplan`, и сессия была сохранена на модели Opus или Sonnet
+
+Чтобы возобновить сессию на выбранной вами модели, передайте `--model` или установите `ANTHROPIC_MODEL`.
+
+#### Исправление опечатки в имени модели
+
+Любое из этих предупреждений означает, что Claude Code не распознаёт заданный вами ID модели, и этот ID почти совпадает с именем или псевдонимом модели, которые он распознаёт:
+</code></pre>
+<p>⚠ Model &quot;&lt;model&gt;&quot; isn&#x27;t recognized · did you mean &quot;&lt;suggestion&gt;&quot;?
+Claude Code doesn&#x27;t recognize the model &quot;&lt;model&gt;&quot;. Did you mean &quot;&lt;suggestion&gt;&quot;?</p>
+<pre><code>
+* **Вы ошиблись при вводе ID**: замените его на предложенный вариант [там, где вы задали модель](#setting-your-model)
+* **ID указан намеренно**: оставьте его как есть. Сессия отправляет его в том виде, в котором вы его написали. Если контекстное окно, которое Claude Code предполагает для него, неверно, [исправьте окно](#correct-the-window-for-a-gateway-or-custom-model-id)
+
+#### Установка стандартной модели для новых сессий
+
+Установите `ANTHROPIC_DEFAULT_MODEL=&lt;alias|name&gt;` для выбора модели, на которой ваши сессии запускаются по умолчанию. Требует Claude Code версии 2.1.236 или позже.
+
+Claude Code запускает новую сессию на модели переменной, только когда ни один из этих вариантов не выбирает модель:
+
+* Флаг `--model`
+* `ANTHROPIC_MODEL`
+* Значение `model` в любом файле настроек, включая выбор, который вы сохраняете с помощью `/model`
+* [Стандартная модель организации](#organization-default-model)
+
+Выбор, который вы сохраняете с помощью `/model`, имеет приоритет над переменной и при последующих запусках. Если же установлена `ANTHROPIC_MODEL`, Claude Code возвращается к модели этой переменной при следующем запуске, независимо от того, что вы сохранили с помощью `/model`.
+
+Claude Code также разрешает опцию Default на модель переменной, если не применяется стандартная модель организации. Когда опция Default разрешается на модель переменной, строка Default в средстве выбора `/model` показывает метку Set by ANTHROPIC\_DEFAULT\_MODEL.
+
+Claude Code игнорирует переменную в этих случаях, и опция Default разрешается так, как если бы вы её не установили:
+
+* Вы установили её на `default`, `inherit`, `opusplan` или `haiku`
+* [`enforceAvailableModels`](#enforce-the-allowlist-for-the-default-model) включена
+* [Ограничения модели](#restrict-model-selection) вашей организации исключают модель
+* Модель недоступна для вашей учётной записи
+
+Когда новая сессия запустилась бы на модели переменной, сессия, которую вы возобновляете с помощью `claude --resume`, `--continue` или средства выбора `/resume`, также запускается на ней. Claude Code не восстанавливает модель, сохранённую в транскрипте этой сессии. В противном случае Claude Code не использует переменную, когда вы [возобновляете сессию](#which-model-a-resumed-session-uses).
+
+#### Новая сессия запускается на другой модели, чем вы выбрали
+
+Когда вы выбираете модель с помощью `/model`, а ваша следующая сессия запускается на чём-то другом, обычные причины таковы:
+
+* **Вы выбрали её для одной сессии.** Нажатие `s` в средстве выбора, запуск с помощью `--model` и запуск `/model` в неинтерактивном режиме применяются к текущей сессии и оставляют вашу сохранённую стандартную без изменений.
+* **Что-то с более высоким приоритетом устанавливает модель.** Значение `model` в настройках проекта или управляемых настройках, `ANTHROPIC_MODEL` в вашей оболочке или [стандартная модель организации](#organization-default-model), которую ваш администратор установил для переопределения выбора пользователя, применяется снова при каждом запуске новой сессии. Ваш выбор `/model` по-прежнему сохранён; просто у него более низкий приоритет. Когда настройки проекта или управляемые настройки устанавливают модель, заголовок запуска называет файл.
+* **Claude Code не смог сохранить ваш выбор.** `/model` записывает `model` в `~/.claude/settings.json`. Если вы не можете писать в этот файл, например потому что другой инструмент его генерирует или связывает его с копией только для чтения, выбранная вами модель действует в течение сессии, а следующий запуск читает старое значение. Установите `model` в инструменте, который генерирует файл, или сделайте файл доступным для записи. См. [Изменение, которое вы сделали в Claude Code, теряется в новых сессиях](https://code.claude.com/docs/ru/settings.md#a-change-you-made-in-claude-code-is-lost-in-new-sessions).
+* **Вы возобновили сессию.** Сессия, которую вы возобновляете с помощью `claude --resume` или `--continue`, обычно [сохраняет модель, которую она использовала](#which-model-a-resumed-session-uses), вместо вашей текущей стандартной.
+
+## Ограничение выбора модели
+
+Администраторы могут использовать `availableModels` в [управляемых настройках или настройках политики](https://code.claude.com/docs/ru/managed-settings.md), чтобы ограничить, какие модели могут выбирать пользователи. Каждая запись соответствует одному из следующего:
+
+* Семейство моделей, например `sonnet`
+* Префикс версии, например `claude-sonnet-4-5`. Он также соответствует более поздним идентификаторам моделей, которые расширяют его ещё одним сегментом. Например, `claude-fable-5` разрешает Fable 5, Fable 5.1 и Fable 5.2, а `claude-fable-5-1` разрешает только Fable 5.1
+* Полный идентификатор модели, например `claude-sonnet-4-5-20250929`
+
+Чтобы заблокировать модель, которую разрешает список, или чтобы каждая запись с идентификатором модели разрешала только указанную в ней версию, см. [Блокировка конкретных моделей или версий](#block-specific-models-or-versions).
+
+На платформах, которые встраивают Claude Code и устанавливают [`CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST`](https://code.claude.com/docs/ru/env-vars), конфигурация модели хоста имеет приоритет над управляемыми параметрами модели, в то время как управляемый список разрешений `availableModels` остается в силе, если только хост не предоставляет свой собственный; [Исключения из приоритета управляемых параметров](https://code.claude.com/docs/ru/settings.md#exceptions-to-managed-settings-precedence) указывает, какие ключи и переменные переопределяет хост.
+
+Когда установлен `availableModels`, список разрешений применяется везде, где пользователь может указать модель:
+
+* **Модель основной сессии**: `/model`, флаг `--model`, переменная окружения `ANTHROPIC_MODEL`, параметр `model`, [`ANTHROPIC_DEFAULT_MODEL`](#set-a-default-model-for-new-sessions) и модель, восстановленная при [возобновлении сессии](#setting-your-model)
+* **Разрешение псевдонимов**: переменные окружения `ANTHROPIC_DEFAULT_OPUS_MODEL`, `ANTHROPIC_DEFAULT_SONNET_MODEL`, `ANTHROPIC_DEFAULT_HAIKU_MODEL` и `ANTHROPIC_DEFAULT_FABLE_MODEL` не могут перенаправить разрешенный псевдоним на модель вне списка
+* **Fast mode**: команда `/fast` отказывает переключаться, когда это неявно переключилось бы на модель Opus вне списка, с сообщением &quot;is not in your organization&#x27;s allowed models&quot;
+* **Модели подагента и товарища**: поле `model` в [подагенте](https://code.claude.com/docs/ru/sub-agents.md#choose-a-model) frontmatter, параметр `model` инструмента Agent, модели товарищей [команды агентов](https://code.claude.com/docs/ru/agent-teams.md#specify-teammates-and-models), `CLAUDE_CODE_SUBAGENT_MODEL` и, в v2.1.197 и более ранних версиях, средство выбора модели в мастере `/agents`&amp;#x20;
+* **Модели skills и команд**: frontmatter `model` в [skills и командах](https://code.claude.com/docs/ru/skills.md)
+* **Модель советника**: настроенный параметр [`advisorModel`](https://code.claude.com/docs/ru/advisor) и флаг `--advisor`
+* **Модель фонового агента**: модель, выбранная в [средстве выбора диспетчеризации](https://code.claude.com/docs/ru/agent-view.md)
+
+На Anthropic API и [Claude Platform on AWS](https://code.claude.com/docs/ru/claude-platform-on-aws.md) псевдоним семейства моделей, `opus`, `sonnet`, `haiku` или `fable`, разрешается в его обычную модель, когда список разрешений разрешает эту модель. Когда список разрешений блокирует эту модель, Claude Code подставляет самую новую версию семейства, которую разрешает список разрешений, и показывает уведомление с названием как запрошенной, так и подставленной моделей. С `[&quot;sonnet&quot;, &quot;claude-opus-4-6&quot;]`, например, как `/model opus`, так и `--model opus` выбирают Claude Opus 4.6, самую новую разрешенную версию Opus. До v2.1.205 псевдоним, самая новая выпущенная версия которого была вне списка, отклонялась или заменялась как любой другой заблокированный выбор, даже когда список разрешал более старую версию.
+
+Подстановка требует разрешенную версию для приземления: когда список разрешений не разрешает никакую версию семейства псевдонима, псевдоним следует поведению отклонения и замены ниже, как любое другое заблокированное значение.
+
+Claude Code обрабатывает любой другой заблокированный выбор в соответствии с тем, где была установлена модель:
+
+* **`/model`**: Claude Code отклоняет переключение с ошибкой
+* **Флаг `--model`, `ANTHROPIC_MODEL` или параметр `model`**: Claude Code заменяет значение при запуске с предупреждением, называющим как запрошенную, так и подставленную модели, и сессия начинается на модели по умолчанию
+* **[`ANTHROPIC_DEFAULT_MODEL`](#set-a-default-model-for-new-sessions)**: Claude Code игнорирует переменную
+* **Переопределение для субагента или участника команды**: Claude Code запускает субагента или участника команды на резервной модели, а не завершает запрос ошибкой. О резервном варианте для субагента см. [Когда список разрешённых моделей блокирует модель субагента](https://code.claude.com/docs/ru/sub-agents.md#when-an-allowlist-blocks-a-subagent-model), а о резервном варианте для участника команды — [Указание участников команды и моделей](https://code.claude.com/docs/ru/agent-teams.md#specify-teammates-and-models).
+
+  В интерактивных сессиях Claude Code предупреждает вас, когда подставляет модель субагента верхнего уровня. О резервном варианте для участника команды он не сообщает.
+
+  Где работает подстановка самой новой разрешенной версии выше, заблокированный псевдоним семейства следует ей вместо этого. До v2.1.222 псевдоним отступал как любое другое заблокированное значение на каждом поставщике
+* **Переопределение skill или команды**: Claude Code игнорирует переопределение, включая заблокированный псевдоним семейства, и skill или команда запускаются на модели сессии. Skill или команда, которая [запускается в подагенте](https://code.claude.com/docs/ru/skills.md#run-skills-in-a-subagent), следует поведению подагента выше вместо этого
+* **Параметр `advisorModel`**: советник отключен для сессии
+* **Флаг `--advisor`**: Claude Code выходит с ошибкой при запуске. В [фоновой сессии](https://code.claude.com/docs/ru/agent-view.md) он запускает сессию без советника вместо выхода
+* **`CLAUDE_CODE_AUTO_MODE_MODEL`**: Claude Code игнорирует переменную и выбирает модель для [запросов классификатора авторежима](https://code.claude.com/docs/ru/permission-modes.md#default-classifier-model) так, будто вы её не задавали
+
+Claude Code скрывает исключённые модели из средства выбора `/model`. Получит ли указанный вами идентификатор модели собственную строку, зависит от провайдера:
+
+* **Anthropic API, [Claude Platform on AWS](https://code.claude.com/docs/ru/claude-platform-on-aws.md), [Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway) или [LLM-шлюз](https://code.claude.com/docs/ru/llm-gateway), заданный через `ANTHROPIC_BASE_URL`**: указанный в списке идентификатор модели Anthropic, для которого нет встроенной строки в средстве выбора, отображается как отдельная подписанная строка. Claude Code добавляет такую строку для версий Opus, Sonnet и Haiku — например, для более старой версии, закреплённой в списке. Если вы задаёте `replaceBuiltInOptions` в наборе [`modelPicker`](https://code.claude.com/docs/ru/settings-reference#modelpicker), такая строка не отображается. До v2.1.199 такой идентификатор можно было выбрать, только введя `/model &lt;id&gt;`.
+* **Amazon Bedrock, Agent Platform Google Cloud или Microsoft Foundry**: если указанный вами идентификатор модели не начинается с `anthropic.`, Claude Code не добавляет для него строку — ни для идентификатора модели Anthropic, ни для идентификатора, специфичного для провайдера. [Идентификаторы моделей Mantle](#mantle-model-ids) имеют этот префикс. Чтобы показать указанную версию, у которой нет встроенной строки, также добавьте её в набор [`modelPicker`](https://code.claude.com/docs/ru/settings-reference#modelpicker), который принимает идентификаторы в формате вашего провайдера.
+
+Изменения модели, которые Claude Code делает от вашего имени, проверяются таким же образом:
+
+* **[Цепочки резервных моделей](#fallback-model-chains)**: записи вне списка разрешений удаляются
+* **Обновления Plan Mode**: на Anthropic API и Claude Platform on AWS обновление, такое как [`opusplan`](#opusplan-model-setting) на исключенную модель, использует самую новую разрешенную версию семейства обновления. На поставщиках с идентификаторами моделей, специфичными для поставщика, и когда никакая версия не разрешена, обновление пропускается и планирование продолжается на модели сессии
+* **[Автоматический резервный вариант модели](#automatic-model-fallback)**: резервный вариант, целевой объект которого исключен, не запускается, поэтому помеченный запрос заканчивается отказом вместо этого
+* **[Классификатор авторежима](https://code.claude.com/docs/ru/permission-modes.md#eliminate-prompts-with-auto-mode)**: если список разрешённых моделей исключает [модель классификатора по умолчанию](https://code.claude.com/docs/ru/permission-modes.md#default-classifier-model), запросы классификатора, которые использовали бы эту модель, выполняются на модели сессии или на модели Opus в сессиях [Fable](#work-with-fable). У провайдеров, отличных от Anthropic API, этот резервный вариант Opus работает на модели, заданной в `ANTHROPIC_DEFAULT_OPUS_MODEL`, а если она не задана — на Opus 5, без проверки списка разрешённых моделей. Требуется Claude Code v2.1.210 или новее
+* **[Fast mode](https://code.claude.com/docs/ru/fast-mode.md)**: включение fast mode отказывается, когда модель, на которой сессия будет запускаться впоследствии, находится вне списка разрешений
+* **Переключение из-за доступности в Amazon Bedrock и Agent Platform Google Cloud**: если ваша учётная запись теряет доступ к модели посреди сессии, при переключении на другую модель исключённые модели пропускаются. Проверки модели при запуске в [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md#when-your-organization-enforces-a-model-allowlist) и [Agent Platform Google Cloud](https://code.claude.com/docs/ru/google-vertex-ai.md#when-your-organization-enforces-a-model-allowlist) пропускают исключённые модели, только если управляемые настройки также задают [`enforceAvailableModels`](#enforce-the-allowlist-for-the-default-model)
+</code></pre>
+<p>{
+  &quot;availableModels&quot;: [&quot;sonnet&quot;, &quot;haiku&quot;]
+}</p>
+<pre><code>
+### Охват поверхности
+
+Каждая поверхность применяет полученный ею список разрешений. Какой механизм доставки достигает каждой поверхности, отличается:
+
+| Механизм доставки | CLI и IDE | Локальные сессии Desktop | Веб-, мобильные и облачные сессии | Agent SDK и неинтерактивные | Cowork |
+| :- | :- | :- | :- | :- | :- |
+| [Настройки, управляемые сервером](https://code.claude.com/docs/ru/server-managed-settings.md), из консоли администратора | Применяется | Применяется | Применяется, но не доставляется в сессии [Claude Tag](https://claude.com/docs/claude-tag/overview) и в сессии на самостоятельно размещённом runner, который [использует Amazon Bedrock или Agent Platform Google Cloud](https://code.claude.com/docs/ru/self-hosted-environments-configuration.md#what-differs-from-sessions-on-the-anthropic-api) | Применяется | Удалённые сессии Cowork: сервер проверяет модель. На машине пользователя: не доставляется. |
+| [MDM или файлы управляемых параметров](https://code.claude.com/docs/ru/managed-settings.md#delivery-mechanisms) | Применяется | Применяется | Не доставляется в средах, размещенных Anthropic; в [самостоятельно размещенных средах](https://code.claude.com/docs/ru/self-hosted-environments) применяется из образа runner согласно [как Claude Code объединяет управляемые источники](https://code.claude.com/docs/ru/managed-settings.md#how-claude-code-combines-managed-sources) | Применяется | Применяется где развернуто |
+
+* [Облачные сессии](https://code.claude.com/docs/ru/claude-code-on-the-web.md), включая те, которые вы запускаете из приложения Desktop, по умолчанию запускаются на управляемых Anthropic виртуальных машинах: параметры, развернутые на вашем устройстве, не достигают их, поэтому доставляйте список разрешений через управляемые параметры сервера. Сессии, которые ваша организация маршрутизирует в [самостоятельно размещенную среду](https://code.claude.com/docs/ru/self-hosted-environments), запускаются на вашем собственном вычислении и также читают файл управляемых параметров в образе runner. [Как Claude Code объединяет управляемые источники](https://code.claude.com/docs/ru/managed-settings.md#how-claude-code-combines-managed-sources) указывает, когда этот файл применяется. Переключение модели в середине сессии в облачной сессии отклоняется, когда запрошенная модель исключена списком разрешений. Когда список `availableModels` в ваших управляемых параметрах сервера не пуст, сервер отклоняет запрос на запуск облачной сессии на модели, которую список исключает, на claude.ai/code или из приложения Desktop.
+* Сессии [Claude Tag](https://claude.com/docs/claude-tag/overview) запускаются в облачных средах, но не получают управляемые параметры сервера; в [самостоятельно размещенной среде](https://code.claude.com/docs/ru/self-hosted-environments) они все еще читают файл управляемых параметров в образе runner. Чтобы установить модель для этих сессий, см. [Выбор модели для области](https://claude.com/docs/claude-tag/admins/customize#choose-the-model-for-a-scope) в руководстве администратора Claude Tag.
+* Cowork, вкладка агентской работы в приложении Claude Desktop, запускает свои сессии на Claude Code, но по замыслу не получает управляемые параметры сервера из консоли администратора claude.ai. Когда список `availableModels` в ваших управляемых параметрах сервера не пуст и пользователь выбирает модель вне него, сервер отклоняет эту модель для удаленной сессии Cowork. Файл управляемых параметров применяется к сессиям Cowork, когда он присутствует там, где запускается сессия; удаленные сессии Cowork запускаются на управляемых Anthropic виртуальных машинах, где развернутый на устройстве файл отсутствует.
+* Сессии на [поставщиках третьих сторон](https://code.claude.com/docs/ru/server-managed-settings.md#platform-availability), таких как Amazon Bedrock, Agent Platform Google Cloud, Microsoft Foundry и [Claude Platform on AWS](https://code.claude.com/docs/ru/claude-platform-on-aws.md), не получают управляемые параметры сервера, поэтому доставляйте список разрешений через MDM или файлы управляемых параметров там.
+* Доставка из консоли администратора также требует, чтобы сессия получала настройки с [подходящим входом](https://code.claude.com/docs/ru/server-managed-settings.md#platform-availability) в вашу организацию или с OAuth-токеном, выданным для неё. Для парков устройств, которые аутентифицируются с помощью API-ключей — заданных напрямую или сгенерированных скриптом [`apiKeyHelper`](https://code.claude.com/docs/ru/settings-reference#apikeyhelper), — доставляйте список разрешённых моделей через MDM или файлы управляемых настроек.
+* Вкладка Desktop Code также размещает [сессии SSH](https://code.claude.com/docs/ru/desktop.md#ssh-sessions), которые читают файл управляемых параметров с удаленного хоста, на котором они запускаются. См. [Управляемые параметры Desktop](https://code.claude.com/docs/ru/desktop.md#managed-settings).
+* Средства выбора модели на claude.ai и в приложении Desktop скрывают или затемняют модели, исключенные списком разрешений вашей организации. Состояние средства выбора — это удобство для пользователей; оно не применяет список разрешений.
+
+### Поведение модели по умолчанию
+
+С префиксным сопоставлением по умолчанию, `availableModels` сам по себе оставляет параметр Default на [значении по умолчанию runtime](#default-model-setting) системы для учетной записи, пока вы также не установите [`enforceAvailableModels`](#enforce-the-allowlist-for-the-default-model). Если это значение по умолчанию — это модель, которую вы намереваетесь ограничить, установите `enforceAvailableModels` также или [заблокируйте эту модель](#block-specific-models-or-versions).
+
+С `availableModels: []`, именованные выборы моделей блокируются и `enforceAvailableModels` не имеет никакого эффекта.
+
+### Применение списка разрешений к модели Default
+
+Установите `enforceAvailableModels: true` рядом с непустым `availableModels` в управляемых параметрах, чтобы расширить список разрешений на параметр Default. Это требует Claude Code v2.1.175 или позже.
+</code></pre>
+<p>{
+  &quot;availableModels&quot;: [&quot;sonnet&quot;, &quot;haiku&quot;],
+  &quot;enforceAvailableModels&quot;: true
+}</p>
+<pre><code>
+Для члена без модели [записанной на его учетной записи](#setting-your-model), параметр Default разрешается в значение по умолчанию типа учетной записи, или в [модель по умолчанию организации](#organization-default-model), когда администратор установил одну. Когда эта модель не находится в списке разрешений, параметр Default вместо этого разрешается в первую запись `availableModels`, которая называет разрешенную, доступную модель, и строка Default средства выбора `/model` показывает эту модель. Это применяется везде, где достигается значение по умолчанию: запуск сессии, выбор Default в `/model`, ключевое слово `&quot;default&quot;` в [цепочках резервных моделей](#fallback-model-chains) и резервный вариант, используемый при удалении исключенного выбора. Модель, записанная на учетной записи члена, также проверяется против `availableModels`; [Установка вашей модели](#setting-your-model) описывает, как параметр Default ее обрабатывает.
+
+`enforceAvailableModels` переназначает параметр Default только когда `availableModels` непуст. Когда `availableModels` непуст, но ни одна запись не разрешается в разрешенную и доступную модель, применение пропускается с предупреждением, видимым только под `--debug`. Сохраняйте по крайней мере одну гарантированно доступную запись в списке, чтобы избежать этого.
+
+Развертывайте оба ключа вместе в источнике управляемых параметров с наивысшим рейтингом, который вы доставляете. По умолчанию Claude Code читает только этот источник, поэтому пара, размещенная в файле управляемых параметров, игнорируется, когда консоль администратора доставляет какие-либо параметры; при выборе слияния в [как Claude Code объединяет управляемые источники](https://code.claude.com/docs/ru/managed-settings.md#how-claude-code-combines-managed-sources), Claude Code все еще игнорирует карту `modelOverrides` из источника, ранжированного ниже того, который устанавливает `availableModels`.
+
+### Управление моделью, на которой работают пользователи
+
+Параметр `model` — это начальный выбор, а не применение. Он устанавливает, какая модель активна при запуске сессии, но пользователи все еще могут открыть `/model` и выбрать Default, который разрешается в [значение по умолчанию runtime](#default-model-setting) системы независимо от того, что установлено в `model`, если только [`enforceAvailableModels`](#enforce-the-allowlist-for-the-default-model) или [ключи, которые блокируют конкретные версии](#block-specific-models-or-versions), не применяются к нему.
+
+Чтобы полностью управлять опытом модели, объедините эти параметры:
+
+* **`availableModels`**: ограничивает, какие именованные модели пользователи могут переключать
+* **`enforceAvailableModels`**: расширяет список разрешений `availableModels` на параметр Default, поэтому Default не может разрешиться в модель вне списка
+* **`deniedModels`** и **`availableModelsMatch`**: [блокируют конкретные версии](#block-specific-models-or-versions), которые запись `availableModels` иначе разрешила бы
+* **`model`**: устанавливает начальный выбор модели при запуске сессии
+* **`ANTHROPIC_DEFAULT_SONNET_MODEL`** / **`ANTHROPIC_DEFAULT_OPUS_MODEL`** / **`ANTHROPIC_DEFAULT_HAIKU_MODEL`** / **`ANTHROPIC_DEFAULT_FABLE_MODEL`**: управляют тем, на что разрешаются псевдонимы `sonnet`, `opus`, `haiku` и `fable`, и какую версию использует [значение по умолчанию типа учетной записи](#default-model-setting)
+
+Этот пример запускает пользователей на Sonnet 4.5, ограничивает средство выбора Sonnet и Haiku и гарантирует, что Default разрешается в модель в списке разрешений, а не в значение по умолчанию уровня:
+</code></pre>
+<p>{
+  &quot;model&quot;: &quot;claude-sonnet-4-5&quot;,
+  &quot;availableModels&quot;: [&quot;claude-sonnet-4-5&quot;, &quot;haiku&quot;],
+  &quot;enforceAvailableModels&quot;: true,
+  &quot;env&quot;: {
+    &quot;ANTHROPIC_DEFAULT_SONNET_MODEL&quot;: &quot;claude-sonnet-4-5&quot;
+  }
+}</p>
+<pre><code>
+Без `enforceAvailableModels` или блока `env` пользователь, который выбирает Default в средстве выбора, получает [значение по умолчанию runtime](#default-model-setting) вместо версии, закрепленной в `model`. Два параметра охватывают разные области: `enforceAvailableModels` делает Default послушным списку разрешений, в то время как блок `env` закрепляет, на какую версию разрешается разрешенный псевдоним, такой как `sonnet`. Используйте `enforceAvailableModels` отдельно, когда ограничения семейств моделей достаточно; добавьте блок `env`, когда вам также нужно закрепить конкретную версию.
+
+### Поведение слияния
+
+Когда управляемые параметры, которые применяет Claude Code, определяют `availableModels`, этот список один применяется, кроме [платформы хоста, которая предоставляет свой собственный](https://code.claude.com/docs/ru/settings.md#exceptions-to-managed-settings-precedence): записи в параметрах пользователя, проекта или локальных параметрах не могут расширить его, и Claude Code никогда не объединяет `availableModels` между управляемыми источниками либо; [как Claude Code объединяет управляемые источники](https://code.claude.com/docs/ru/managed-settings.md#how-claude-code-combines-managed-sources) указывает, какой список источника применяется. В противном случае списки из параметров пользователя, проекта и локальных параметров [объединяются и дедублицируются](https://code.claude.com/docs/ru/settings.md#settings-precedence) как другие параметры массива. До Claude Code v2.1.175 записи из областей с более низким приоритетом объединялись с управляемым списком, а не заменялись им.
+
+В действующем списке запись, называющая конкретную модель семейства — префикс версии или полный идентификатор модели, — отключает запись-подстановку для этого семейства. Например, с `[&quot;sonnet&quot;, &quot;claude-sonnet-4-5&quot;]` пользователи могут выбрать только те идентификаторы моделей, которым [соответствует](#restrict-model-selection) `claude-sonnet-4-5`, а не любую модель Sonnet.
+
+### Идентификаторы моделей Mantle
+
+Записи в `availableModels`, начинающиеся с `anthropic.`, добавляются в средство выбора `/model` как пользовательские варианты. Это исключение из сопоставления псевдонимов, описанного в разделе [Закрепление моделей для сторонних развёртываний](#pin-models-for-third-party-deployments). Если включён [эндпоинт Amazon Bedrock Mantle](https://code.claude.com/docs/ru/amazon-bedrock.md#use-the-mantle-endpoint), Claude Code направляет записи, соответствующие формату Mantle, на этот эндпоинт. Настройка по-прежнему ограничивает средство выбора перечисленными записями, а идентификатор Mantle содержит название семейства, поэтому он считается конкретной записью и отключает подстановку для этого семейства: вместе с идентификаторами Mantle перечислите префиксы версий или полные идентификаторы, которые должны оставаться доступными для выбора. См. [Поведение при объединении](#merge-behavior).
+
+### Блокировка конкретных моделей или версий
+
+Запись `availableModels`, такая как `claude-opus-5`, также разрешает более поздние выпуски, которые расширяют ее, такие как Opus 5.5, как только Claude Code их поддерживает. Два управляемых параметра позволяют вам задержать выпуск, и оба требуют Claude Code v2.1.283 или позже:
+
+* [`deniedModels`](https://code.claude.com/docs/ru/settings-reference#deniedmodels): перечислите модели для блокировки. Перечисленная модель блокируется даже когда `availableModels` ее разрешает, и ключ также работает без списка разрешений вообще. Выпуск, который ни одна запись не блокирует, остается разрешенным
+* [`availableModelsMatch`](https://code.claude.com/docs/ru/settings-reference#availablemodelsmatch): установите его на `&quot;exact&quot;`, чтобы каждый идентификатор модели в `availableModels` разрешал только версию, которую он называет. Более новая версия перечисленного идентификатора модели затем остается заблокированной, пока вы не добавите ее в список
+
+Более ранние версии игнорируют оба ключа, поэтому также установите [`requiredMinimumVersion`](https://code.claude.com/docs/ru/settings-reference#requiredminimumversion), чтобы предотвратить запуск этих версий.
+
+Этот пример разрешает модели Opus и Sonnet и блокирует Opus 5.5 в каждом написании, включая датированные и специфичные для поставщика идентификаторы:
+</code></pre>
+<p>{
+  &quot;availableModels&quot;: [&quot;opus&quot;, &quot;sonnet&quot;],
+  &quot;deniedModels&quot;: [&quot;claude-opus-5-5&quot;]
+}</p>
+<pre><code>
+Заблокированная модель, будь то `deniedModels` называет ее или список `&quot;exact&quot;` ее опускает, рассматривается как заблокированный выбор везде, [где применяется список разрешений](#restrict-model-selection). Она скрыта из средства выбора `/model`, и `/model &lt;name&gt;` отклоняет ее. Если вы назовете заблокированный идентификатор модели с помощью `--model`, `ANTHROPIC_MODEL` или параметра `model`, Claude Code удаляет его при запуске и разрешает параметр Default вместо этого. Если [hook](https://code.claude.com/docs/ru/hooks.md) или фоновый запрос называет модель, которую `deniedModels` блокирует, такую как поле `model` hook агента, этот запрос запускается на модели сессии вместо этого.
+
+Параметр Default следует обоим ключам также, независимо от того, установили ли вы [`enforceAvailableModels`](#enforce-the-allowlist-for-the-default-model). Если вы установите его с непустым `availableModels`, заблокированный default считается моделью вне списка разрешений. В противном случае параметр Default, который разрешился бы в заблокированную модель, понижается в этом порядке:
+
+1. Самая новая разрешенная версия того же семейства
+2. Самая новая разрешенная модель каждого семейства с более низкой стоимостью по очереди: Sonnet, затем Haiku
+3. Первая запись `availableModels`, которая называет разрешенную модель
+
+Если ни один из них не разрешен, сессия, запускаемая на параметре Default, [отказывает запуститься](https://code.claude.com/docs/ru/errors.md#managed-settings-block-the-default-model) с ошибкой, которая называет ключ для исправления. Список `&quot;exact&quot;` влияет на параметр Default только когда управляемый список `availableModels` называет по крайней мере одну модель или семейство.
+
+Claude Code читает оба ключа только из управляемых параметров. Если вы установите любой из них в параметрах пользователя, проекта или локальных параметрах или с `--settings`, Claude Code игнорирует его с предупреждением.
+
+### Ограничения модели организации
+
+Администраторы организации на планах Claude Enterprise ограничивают, какие модели могут запускать члены, отключая отдельные модели в консоли администратора claude.ai. Это ограничение доставляется с правами учетной записи, когда Claude Code аутентифицируется, отдельно от любого списка `availableModels` в параметрах, и сервер независимо применяет то же ограничение при создании сессии. Требуется Claude Code v2.1.187 или позже.
+
+Ограничение применяется, когда член входит или использует свой собственный ключ API. Учетные данные в области организации, такие как ключи служб организации, не привязаны к пользователю, поэтому ограничение не применяется к ним.
+
+Claude Console не имеет управления ограничением модели. Организации без плана Claude Enterprise, включая те, члены которых аутентифицируются через Anthropic API, ограничивают модели с помощью [`availableModels`](#restrict-model-selection) в [управляемых параметрах](https://code.claude.com/docs/ru/managed-settings.md) вместо этого, добавляя [`enforceAvailableModels`](#enforce-the-allowlist-for-the-default-model) для охвата параметра Default. [Охват поверхности](#surface-coverage) указывает, как каждая поверхность получает и применяет эти параметры.
+
+Ограниченная модель скрыта из средства выбора `/model`. Выбор ее по имени с помощью `--model`, переменной окружения `ANTHROPIC_MODEL` или параметра `model` показывает уведомление `Model &quot;&lt;name&gt;&quot; is restricted by your organization&#x27;s settings. Using &lt;model&gt; instead.` и сессия запускается на разрешенной модели. Ввод `/model &lt;name&gt;` для ограниченной модели отклоняется с `Model &#x27;&lt;name&gt;&#x27; is restricted by your organization&#x27;s settings. Run /model to choose a different model.` и сессия сохраняет свою текущую модель.
+
+[Псевдоним семейства моделей](#restrict-model-selection), такой как `opus`, разрешается в его обычную модель, когда организация его разрешает. Когда организация ограничивает эту модель, Claude Code подставляет самую новую версию семейства, которую организация разрешает, с тем же уведомлением подстановки. `/model &lt;alias&gt;` отклоняется только когда каждая версия его семейства ограничена; псевдоним, установленный с помощью `--model`, `ANTHROPIC_MODEL` или параметра `model`, все еще заменяется при запуске в этом случае. До v2.1.205 псевдоним семейства подставлялся или отклонялся на основе только его самой новой выпущенной версии, даже когда была разрешена более старая версия.
+
+Ограничения применяются на уровне организации или по ролям:
+
+* Отключение модели на уровне организации удаляет ее для каждого члена.
+* Доступ на уровне ролей предоставляет разные модели разным пользовательским ролям, и член, который имеет несколько ролей, может использовать любую модель, которую разрешает одна из его ролей.
+* Модели Haiku всегда доступны и не могут быть отключены, поэтому каждый член сохраняет по крайней мере одну пригодную для использования модель.
+* Изменение доступа вступает в силу на новых запросах в течение примерно минуты; средство выбора `/model` отражает это при следующем запуске сессии.
+
+Оба ограничения применяются вместе: модель выбираемая только когда она разрешена `availableModels` и не ограничена организацией. Ограничения организации достигают сессий на Anthropic API и развертываниях [LLM gateway](https://code.claude.com/docs/ru/llm-gateway) только; на любом другом поставщике используйте `availableModels` вместо этого.
+
+## Модель по умолчанию для организации
+
+Администраторы организации на планах Claude Enterprise могут установить модель по умолчанию для членов Claude Code из консоли администратора claude.ai для всей организации или для каждой пользовательской роли. Когда модель установлена, опция Default разрешается в эту модель. Требуется Claude Code v2.1.196 или позже.
+
+Строка Default в средстве выбора `/model` показывает имя организационного значения по умолчанию с меткой Org default. Метка читается как Org default независимо от того, установил ли администратор значение по умолчанию для всей организации или для вашей роли. Значение по умолчанию для роли охватывает членов этой пользовательской роли и имеет приоритет над организационным значением по умолчанию; когда несколько ваших ролей устанавливают разные значения по умолчанию, применяется наиболее мощная модель.
+
+Организационное значение по умолчанию является отправной точкой, а не ограничением. Эти выборы имеют приоритет над ним:
+
+* флаг `--model` и переменная окружения `ANTHROPIC_MODEL`
+* значение `model` в [управляемых параметрах](https://code.claude.com/docs/ru/managed-settings.md) или предоставленное через `--settings`
+* значение `model` в ваших пользовательских, проектных или локальных параметрах, включая модель, которую вы сохраняете с помощью `/model`
+
+Администраторы также могут настроить организационное значение по умолчанию для переопределения выбора пользователя. При включённом переопределении оно имеет приоритет над значением `model` в пользовательских, проектных и локальных настройках. В этом случае модель, которую вы сохраняете с помощью `/model`, применяется для текущей сессии, а в новых сессиях снова действует организационное значение по умолчанию. Когда ваш выбор отличается, `/model` показывает `Your organization&#x27;s default (&lt;model&gt;) applies on restart`.
+
+Флаг `--model`, `ANTHROPIC_MODEL`, управляемые настройки и `--settings` по-прежнему имеют приоритет даже при включённом переопределении. Чтобы ограничить, какие модели могут выбирать члены, используйте вместо этого [ограничения модели организации](#organization-model-restrictions) или [`availableModels`](#restrict-model-selection).
+
+Claude Code читает организационное значение по умолчанию один раз при запуске, поэтому значение по умолчанию, которое администратор изменяет во время сеанса, вступает в силу при следующем запуске.
+
+Когда организационное значение по умолчанию не переопределяет выбор пользователя, первый интерактивный запуск после изменения администратором очищает ключ `model` из ваших пользовательских параметров один раз, чтобы применилось новое значение по умолчанию. Это не изменяет ничего другого в файле, и модель, которую вы сохраняете с помощью `/model` после этого запуска, сохраняется.
+
+Организационное значение по умолчанию проходит эти проверки ограничений перед его принятием:
+
+* при сопоставлении префиксов по умолчанию и установленном [`enforceAvailableModels`](#enforce-the-allowlist-for-the-default-model) организационное значение по умолчанию вне списка разрешённых моделей [`availableModels`](#restrict-model-selection) переназначается на модель из этого списка
+* организационное значение по умолчанию, которое [ограничения модели организации](#organization-model-restrictions) запрещают для вашего аккаунта, заменяется самой новой разрешенной моделью в его семействе или моделью с более низкой стоимостью, когда каждая версия ее ограничена
+* для организационного значения по умолчанию, которое `deniedModels` или список `&quot;exact&quot;` блокирует, см. [Блокировка определенных моделей или версий](#block-specific-models-or-versions)
+* организационное значение по умолчанию, которое вообще недоступно для вашего аккаунта, пропускается, и опция Default разрешается так, как это было бы [без организационного значения по умолчанию](#default-model-setting)
+
+Начиная с v2.1.199, когда организационное значение по умолчанию является другим семейством моделей от обычного значения по умолчанию типа вашего аккаунта, средство выбора `/model` сохраняет отдельную строку для этого обычного семейства, чтобы вы все еще могли переключиться на него для сеанса. В версиях v2.1.196 по v2.1.198 эта строка отсутствует в средстве выбора.
+
+Организационное значение по умолчанию достигает только сеансов, аутентифицированных с помощью Anthropic API. Чтобы установить значение по умолчанию где-либо еще, включая развертывания [LLM gateway](https://code.claude.com/docs/ru/llm-gateway), используйте вместо этого ключ `model` в [управляемых параметрах](https://code.claude.com/docs/ru/managed-settings.md).
+
+## Ограничения уровня усилий организации
+
+Ваша организация может ограничить [уровень усилий](#adjust-effort-level) двумя способами. В плане Claude Enterprise администраторы организации устанавливают ограничения уровня усилий для каждой роли, описанные ниже. В любом плане и у любого поставщика, включая Amazon Bedrock, Google Cloud&#x27;s Agent Platform и Microsoft Foundry, управляемый параметр [`maxEffortLevel`](https://code.claude.com/docs/ru/settings-reference#maxeffortlevel) ограничивает усилия на стороне клиента. Когда оба ограничения применяются к модели, действует более низкий лимит.
+
+Администраторы организации в планах Claude Enterprise могут установить максимальный [уровень усилий](#adjust-effort-level) для каждой модели для каждой пользовательской роли, наряду с [ограничениями моделей организации](#organization-model-restrictions) на уровне роли. Требуется Claude Code v2.1.195 или более поздняя версия.
+
+* Уровни выше лимита не предлагаются в средстве выбора `/effort`, а указание более высокого уровня с помощью `--effort` или `/effort` приводит к выполнению на уровне лимита. Если вы запускаете `--print` в обычном текстовом режиме с `--effort` выше лимита, предупреждение в stderr указывает запрошенный и применённый уровни. В интерактивных сессиях, при выводе `json` или `stream-json` или в фоновых агентах это предупреждение вместо этого записывается в [лог отладки](https://code.claude.com/docs/ru/errors.md#configuration-warnings).
+* Ограничения действуют для каждой модели, поэтому переключение моделей может изменить доступные уровни.
+* Когда несколько ваших ролей предоставляют одну и ту же модель, применяется наименее ограничивающий лимит.
+
+Ограничения уровня усилий доставляются вместе с [ограничениями модели организации](#organization-model-restrictions) и достигают одних и тех же сеансов.
+
+## Специальное поведение модели
+
+### Настройка модели `default`
+
+Поведение `default` зависит от типа вашей учётной записи:
+
+* **Pro, Max, Ultra, Team, Enterprise и Anthropic API**: по умолчанию Opus 5.5
+* **Claude Platform on AWS, Claude Models on Google Cloud (Anthropic managed), Amazon Bedrock и Google Cloud&#x27;s Agent Platform**: по умолчанию Opus 5.5
+* **Microsoft Foundry**: по умолчанию Sonnet 4.5
+
+До версии 2.1.280 `default` разрешался в Sonnet 5 на Pro и Team Standard, а в Opus 5 на Max, Ultra, Team Premium, Enterprise, Anthropic API, Claude Platform on AWS, Amazon Bedrock и Google Cloud&#x27;s Agent Platform с версии 2.1.219. До версии 2.1.219 `default` разрешался в Opus 4.8 на Anthropic API, Max, Ultra, Team Premium и Enterprise с оплатой по мере использования с версии 2.1.154, а также на Claude Platform on AWS, Amazon Bedrock и Google Cloud&#x27;s Agent Platform с версии 2.1.207. До версии 2.1.207 `default` разрешался в Opus 4.7 на Claude Platform on AWS и в Sonnet 4.5 на Amazon Bedrock и Google Cloud&#x27;s Agent Platform.
+
+Когда администратор установил [модель по умолчанию организации](#organization-default-model), `default` разрешается в эту модель вместо стандартного значения для типа учётной записи выше. Требуется Claude Code версии 2.1.196 или позже. `default` также может разрешаться в модель, которую вы установили с помощью [`ANTHROPIC_DEFAULT_MODEL`](#set-a-default-model-for-new-sessions), при условиях, указанных в его разделе, или в модель, [записанную в вашей учётной записи](#setting-your-model).
+
+Когда в вашей учётной записи ничего не записано, управляемые настройки [принудительно применяют список разрешённых моделей для модели Default](#enforce-the-allowlist-for-the-default-model), а стандартное значение для типа учётной записи отсутствует в `availableModels`, `default` разрешается в принудительный Default вместо стандартного значения для типа учётной записи выше. Когда применяются и модель по умолчанию организации, и принудительное применение, модель по умолчанию организации сначала заменяет стандартное значение для типа учётной записи, а затем к ней применяется принудительное ограничение: модель по умолчанию организации из списка разрешённых сохраняется, а модель вне списка разрешается в принудительный Default.
+
+&gt; [!NOTE]
+&gt;
+&gt; Модели Fable не являются стандартным значением для типа учётной записи ни на одном тарифе или у одного поставщика. Выбор одной из них с помощью `/model` сохраняет её как выбранную модель в пользовательских настройках, поэтому последующие сессии начинаются с неё, за исключением [одноразового изменения сохранённого выбора Fable 5.1](#work-with-fable).
+
+### Настройка модели `opusplan`
+
+Псевдоним модели `opusplan` обеспечивает автоматизированный гибридный подход:
+
+* **В режиме планирования**: использует `opus` для сложных рассуждений и решений по архитектуре
+* **В режиме выполнения**: автоматически переключается на `sonnet` для генерации кода и реализации
+
+Это сочетает рассуждения Opus для планирования с эффективностью Sonnet для выполнения.
+
+Фаза Opus в режиме планирования использует то же контекстное окно, что и настройка модели `opus`, а фаза выполнения использует то же окно, что и `sonnet`. Когда `opus` и `sonnet` разрешаются в модели, которые по умолчанию работают с [контекстным окном 1M](#extended-context), как текущие модели на Anthropic API, обе фазы работают с ним. Чтобы запросить контекст 1M для обеих фаз там, где это не так, [установите модель](#setting-your-model) `opusplan[1m]`, например с помощью `/model opusplan[1m]`. Установка с помощью `/model` требует Claude Code версии 2.1.265 или позже; в более ранних версиях используйте вместо этого флаг `--model` или настройку `model`.
+
+Когда [`availableModels`](#restrict-model-selection) исключает новейший Opus, но разрешает более старую версию, например `[&quot;sonnet&quot;, &quot;claude-opus-4-6&quot;]`, `opusplan` использует для планирования новейший разрешённый Opus и остаётся на Sonnet, только когда исключены все версии Opus. Сессия Haiku, которая обычно переключается на Sonnet в режиме планирования, аналогично использует новейший разрешённый Sonnet и остаётся на Haiku, только когда исключены все версии Sonnet. До версии 2.1.205 режим планирования оставался на модели сессии всякий раз, когда исключалась новейшая версия семейства для переключения, даже если список разрешённых моделей разрешал более старую версию.
+
+Подстановка более старой разрешённой версии применяется на Anthropic API и [Claude Platform on AWS](https://code.claude.com/docs/ru/claude-platform-on-aws.md). На Amazon Bedrock, Google Cloud&#x27;s Agent Platform, Microsoft Foundry и Mantle, развёртывания которых используют специфичные для поставщика идентификаторы моделей, режим планирования остаётся на модели сессии всякий раз, когда модель для переключения исключена.
+
+Для гибридного подхода, при котором Claude решает во время выполнения задачи, когда обратиться ко второй модели, а не переключаться на границе плана, см. [инструмент advisor](https://code.claude.com/docs/ru/advisor.md).
+
+### Цепочки резервных моделей
+
+Когда основная модель перегружена, недоступна или возвращает другую ошибку сервера, не подлежащую повторной попытке, Claude Code может переключиться на резервную модель вместо того, чтобы завершить запрос ошибкой. Ошибки аутентификации, биллинга, ограничения частоты запросов, размера запроса и транспорта, а также [отказ по результатам проверки политики вашей организации](https://code.claude.com/docs/ru/errors.md#automatic-retries) никогда не вызывают переключение; они обрабатываются обычным механизмом повторных попыток и обработки ошибок. Переключение происходит, когда [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md#when-a-model-is-disabled-mid-session) или [Google Cloud&#x27;s Agent Platform](https://code.claude.com/docs/ru/google-vertex-ai.md#when-a-model-is-disabled-mid-session) отказывает в модели, которую ваша учётная запись не может вызвать: Claude Code рассматривает это как недоступность модели, а не как ошибку аутентификации.
+
+Настройте одну или несколько резервных моделей, и Claude Code будет пробовать их по порядку, показывая уведомление при переключении. Переключение действует только в течение текущего хода, поэтому ваше следующее сообщение снова сначала пробует основную модель. Claude Code ограничивает цепочки тремя моделями после удаления дубликатов и игнорирует лишние записи.
+
+Задайте цепочку для одной сессии с помощью флага `--fallback-model`, который принимает список, разделённый запятыми:
+</code></pre>
+<p>claude --fallback-model sonnet,haiku</p>
+<pre><code>
+Чтобы сохранить цепочку между сессиями, задайте `fallbackModel` в [настройках](https://code.claude.com/docs/ru/settings.md) как массив:
+</code></pre>
+<p>{
+  &quot;fallbackModel&quot;: [&quot;claude-sonnet-5&quot;, &quot;claude-haiku-5-5&quot;]
+}</p>
+<pre><code>
+Флаг `--fallback-model` имеет приоритет над настройкой `fallbackModel`. Каждая запись принимает имя модели или псевдоним, а `&quot;default&quot;` раскрывается в модель по умолчанию.
+
+Claude Code не подтверждает цепочку при запуске, и `/status` её не отображает. Уведомление, показываемое при переключении, — первый видимый признак того, что резервная модель настроена.
+
+#### Какие записи пробует Claude Code
+
+Когда запрос переключается на резервную модель, Claude Code пробует каждую запись по порядку, пока одна из них не примет запрос. Запись, которая тоже недоступна, например снятая с поддержки модель, закреплённая в настройках, точно так же переключается на следующую. Claude Code исключает запись в следующих случаях:
+
+* **Вне списка разрешённых моделей**: Claude Code отбрасывает любую запись, не разрешённую [`availableModels`](#restrict-model-selection), при чтении цепочки.
+* **Меньшее контекстное окно при сжатии контекста**: цепочка также охватывает [сжатие контекста](https://code.claude.com/docs/ru/context-window.md#what-survives-compaction), но Claude Code не переключится на модель с меньшим контекстным окном, чем у основной, поскольку суммирование на ней сначала отрезало бы часть диалога. Если все резервные модели меньше, сжатие показывает исходную ошибку, и вы можете повторить попытку.
+* **Не поддерживается в авторежиме**: в [авторежиме](https://code.claude.com/docs/ru/permission-modes.md#eliminate-prompts-with-auto-mode), а также в режиме планирования, пока классификатор проверяет команды, Claude Code пропускает модели, которые авторежим не поддерживает. Если вы используете любой из этих режимов, включите в цепочку поддерживаемую модель.
+
+Claude Code также применяет цепочку к [субагентам](https://code.claude.com/docs/ru/sub-agents.md). Когда запрос субагента переключается на резервную модель, Claude Code пробует настроенные вами резервные модели по порядку, и субагент продолжает работу на модели, которая приняла запрос. Модель вашей сессии не изменяется. До версии 2.1.247 сбой, на который распространяется цепочка, вместо этого завершал работу субагента.
+
+### Автоматическое переключение на резервную модель
+
+Этот раздел описывает переключение на резервную модель на основе содержимого для моделей Fable, Opus 5.5, Sonnet 5.5 и Opus 5. О переключении на основе доступности, когда модель перегружена или недоступна, см. [Цепочки резервных моделей](#fallback-model-chains).
+
+Модели Fable, Opus 5.5, Sonnet 5.5 и Opus 5 работают с классификаторами безопасности, которые чаще всего помечают содержимое, связанное с кибербезопасностью и биологией. Для этих двух категорий резервная модель зависит от того, какая модель отказала:
+
+* **Модели Fable и Opus 5.5**: запросы, помеченные как связанные с биологией, повторно выполняются на Opus 5, а запросы, помеченные как связанные с кибербезопасностью, — на Opus 4.8.
+* **Sonnet 5.5**: запросы, помеченные как связанные с кибербезопасностью, повторно выполняются на Sonnet 5. Запросы, помеченные как связанные с биологией, вместо этого завершаются отказом, потому что у Sonnet 5.5 нет резервной модели для биологии.
+* **Opus 5**: запросы, помеченные как связанные с кибербезопасностью, повторно выполняются на Opus 4.8. Запросы, помеченные как связанные с биологией, вместо этого завершаются отказом, потому что Opus 5 использует собственные классификаторы биологии без резервной модели.
+
+На Amazon Bedrock, Google Cloud&#x27;s Agent Platform и Microsoft Foundry Claude Code вместо этого разрешает эти целевые модели через идентификаторы моделей вашего развёртывания. См. [Включение резервного варианта на Bedrock, Agent Platform и Foundry](#enable-fallback-on-bedrock-agent-platform-and-foundry).
+
+Когда Claude Code переключает помеченный запрос на резервную модель для его категории, он повторно выполняет запрос на этой модели. В основном диалоге он показывает уведомление в транскрипте. Чтобы получать вопрос перед переключением, см. [Запрос перед переключением](#ask-before-switching).
+
+После переключения на резервную модель сессия продолжается на ней. Чтобы вернуться к исходной модели, выполните [`/model`](#setting-your-model).
+
+Переключение на основе категории требует Claude Code версии 2.1.219 или позже. До версии 2.1.219 каждый помеченный запрос Fable 5 повторно выполнялся на модели Opus по умолчанию вашего поставщика, а Opus 5 не был источником переключения.
+
+Резервная модель проверяется по [`availableModels`](#restrict-model-selection). Если она заблокирована, переключение не происходит. Отказ показывается как обычная ошибка, и модель сессии не изменяется.
+
+#### Уровень усилий после переключения на резервную модель
+
+Когда Claude Code переключает вашу сессию на резервную модель, он сохраняет уровень усилий, с которым выполнялся помеченный запрос. Например, сессия на Opus 5.5 с уровнем по умолчанию `medium`, переключившаяся на Opus 4.8, остаётся на `medium`, хотя Opus 4.8 по умолчанию использует `high`.
+
+Другой уровень применяется, например, в следующих случаях:
+
+* **Ваше собственное изменение**: как только вы выбираете уровень усилий, выбираете модель в `/model` или позже возобновляете сессию, уровень помеченного запроса больше не переносится.
+* **Уровень усилий, заданный для одного хода**: если вы повысили уровень помеченного хода с помощью `ultrathink` или его уровень задал frontmatter `effort` скилла, этот уровень применяется к этому ходу. Последующие ходы выполняются на уровне, который [порядок разрешения усилий](#adjust-effort-level) даёт резервной модели.
+
+Чтобы увидеть уровень, установленный для вашей сессии после переключения на резервную модель, выполните `/effort status`. Чтобы изменить его, выполните `/effort`.
+
+#### Проверка того, что вызвало переключение
+
+Переключение на резервную модель может произойти уже на первом запросе сессии, прежде чем вы отправите что-либо необычное, потому что первый запрос содержит контекст рабочего пространства, например содержимое вашего CLAUDE.md и статус git. Репозиторий, содержащий материалы по безопасности или биологии, может сработать на классификаторе только из-за этого контекста.
+
+Чтобы проверить, не являются ли причиной ваши настройки, запустите сессию с `claude --safe-mode`, что отключает такие настройки, как CLAUDE.md, скиллы, MCP-серверы и хуки. Статус Git и имена каталогов не являются настройками и по-прежнему включаются.
+
+#### Запрос перед переключением
+
+Чтобы самостоятельно решать, что происходит каждый раз, когда запрос помечен, выполните `/config`, выберите **Switch models when a message is flagged** и выберите **Ask each time**. Вы также можете установить [`switchModelsOnFlag`](https://code.claude.com/docs/ru/settings-reference#switchmodelsonflag) в `false` в файле настроек. Тогда Claude Code приостанавливается на помеченном запросе, который привёл бы к переключению моделей, и предлагает два варианта: переключиться на резервную модель или отредактировать промпт и повторить попытку.
+
+В первый раз, когда помеченный запрос в интерактивной сессии должен привести к переключению моделей, Claude Code может спросить, переключаться ли автоматически в дальнейшем. Он спрашивает, только если вы не установили `switchModelsOnFlag`, и сохраняет ваш выбор в этом ключе в пользовательских настройках.
+
+Если вы решите остаться на текущей модели, сохраняется значение `false`, так же как для **Ask each time**. Если вы закроете вопрос, Claude Code ничего не сохраняет и спросит снова в следующий раз, когда помеченный запрос должен будет привести к переключению моделей.
+
+Если вы выбрали **Ask each time**, некоторые случаи ведут себя иначе:
+
+* Когда у помеченной категории нет резервной модели, например при пометке биологии на Opus 5 или Sonnet 5.5, Claude Code не показывает запрос, и запрос к модели завершается отказом.
+* Если обе модели помечают один и тот же запрос, вы можете отредактировать промпт и повторить попытку или начать новую сессию.
+* В [облачных сессиях](https://code.claude.com/docs/ru/claude-code-on-the-web.md) в мобильном приложении редактирование и повторная попытка не поддерживаются. Переключите модели или продолжите сессию в браузере на компьютере или в настольном приложении.
+* В [неинтерактивном режиме](https://code.claude.com/docs/ru/cli-reference.md#cli-flags) и интеграциях SDK, которые не могут показать запрос, помеченный запрос вместо этого завершает ход отказом.
+* В субагенте, которого Claude запускает с помощью [инструмента Agent](https://code.claude.com/docs/ru/tools-reference.md#agent-tool-behavior), Claude Code не приостанавливается, чтобы спросить, и субагент завершается сбоем вместо переключения моделей. См. [Субагенты переключаются или завершаются сбоем без запроса](#subagents-switch-or-fail-without-asking).
+* Когда целевая резервная модель заблокирована [`availableModels`](#restrict-model-selection), Claude Code не показывает запрос. Помеченный запрос завершается отказом, так же как при автоматическом переключении, когда целевая модель заблокирована.
+
+#### Субагенты переключаются или завершаются сбоем без запроса
+
+Во встроенном или пользовательском [субагенте](https://code.claude.com/docs/ru/sub-agents.md), которого Claude запускает с помощью [инструмента Agent](https://code.claude.com/docs/ru/tools-reference.md#agent-tool-behavior), Claude Code не [приостанавливается, чтобы спросить](#ask-before-switching), на помеченном запросе. Если резервная модель доступна, запрос повторно выполняется на ней или субагент завершается сбоем — в зависимости от вашего выбора **Switch models when a message is flagged** в `/config`:
+
+* **Switch automatically** или если выбор ещё не сделан: запрос повторно выполняется на резервной модели, а модель вашей сессии не изменяется
+* **Ask each time**: субагент завершается сбоем с [`Agent terminated early due to an API error`](https://code.claude.com/docs/ru/errors#agent-terminated-early-due-to-an-api-error) и сообщением об отказе. Claude получает эту ошибку и решает, что делать с незавершённой задачей. Чтобы субагенты могли переключать модели, выберите **Switch automatically**. Тогда ваш основной диалог тоже будет переключаться без запроса.
+
+Когда резервная модель недоступна, субагент завершается сбоем так же при любом выборе. До версии 2.1.318 помеченный запрос субагента повторно выполнялся на доступной резервной модели независимо от вашего выбора.
+
+#### Включение резервного варианта на Bedrock, Agent Platform и Foundry
+
+На [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md), [Google Cloud&#x27;s Agent Platform](https://code.claude.com/docs/ru/google-vertex-ai.md) и [Microsoft Foundry](https://code.claude.com/docs/ru/microsoft-foundry.md) идентификаторы моделей специфичны для поставщика, поэтому автоматическое переключение на резервную модель работает, только когда Claude Code может идентифицировать каждую задействованную модель:
+
+* Claude Code должен распознавать текущую модель как источник переключения. Модели Fable распознаются, когда идентификатор модели содержит `claude-fable-5`, совпадает со значением `ANTHROPIC_DEFAULT_FABLE_MODEL` или сопоставлен через [`modelOverrides`](#override-model-ids-per-version). Opus 5.5, Sonnet 5.5 и Opus 5 распознаются по идентификатору модели поставщика или по сопоставлению в [`modelOverrides`](#override-model-ids-per-version).
+* Целевая модель Opus должна разрешаться в вашем развёртывании, независимо от того, какая модель отказала: установите `ANTHROPIC_DEFAULT_OPUS_MODEL` или сохраните запись Opus 4.8 в списке моделей поставщика. Без этого переключение остаётся отключённым для всех исходных моделей, включая Sonnet 5.5, и помеченные запросы завершаются отказом.
+* Резервная модель для помеченной категории должна разрешаться в вашем развёртывании. Для модели Fable, Opus 5.5 или Opus 5, если вы установите `ANTHROPIC_DEFAULT_OPUS_MODEL`, помеченные запросы повторно выполняются на этой модели для каждой категории, у которой есть резервная модель; пометка биологии на Opus 5 по-прежнему завершается отказом. Если вы его не установите, запросы, помеченные как связанные с кибербезопасностью, повторно выполняются на записи Opus 4.8, а запросы, помеченные как связанные с биологией, от модели Fable или Opus 5.5 — на записи Opus 5. Для Sonnet 5.5 запросы, помеченные как связанные с кибербезопасностью, повторно выполняются на модели, которую вы задали в `ANTHROPIC_DEFAULT_SONNET_MODEL`, или, если вы её не задали, на записи Sonnet 5 в списке моделей поставщика.
+
+Если какую-либо из моделей не удаётся идентифицировать, Claude Code не переключается. Помеченный запрос завершается сообщением об отказе, и вы можете переключить модель с помощью [`/model`](#setting-your-model) и повторить попытку. Чтобы обе модели можно было идентифицировать, задайте закрепления для вашей исходной модели:
+
+* **Модели Fable**: установите `ANTHROPIC_DEFAULT_FABLE_MODEL` в идентификатор вашей модели Fable, чтобы Claude Code распознавал её как источник переключения.
+* **Любая исходная модель**: установите `ANTHROPIC_DEFAULT_OPUS_MODEL` в идентификатор модели Opus, чтобы включить переключение и дать помеченным категориям целевую модель. Закрепление, указывающее модель вне семейства Opus или ту модель, которая отказала, оставляет отказ в силе.
+* **Sonnet 5.5**: помимо закрепления Opus установите `ANTHROPIC_DEFAULT_SONNET_MODEL` или сохраните запись Sonnet 5 в списке моделей поставщика, чтобы указать модель, на которой запрос будет выполнен повторно. Закрепление Sonnet, указывающее модель вне семейства Sonnet или саму Sonnet 5.5, оставляет отказ в силе.
+
+Резервная модель также должна иметь контекстное окно не меньше, чем у сессии, иначе Claude Code не переключается, и помеченный запрос завершается тем же отказом. У этих поставщиков исходные модели по умолчанию работают с [контекстным окном 1M](#extended-context). Закрепите модель, которая тоже работает с ним, например Opus 4.8 в `ANTHROPIC_DEFAULT_OPUS_MODEL` или Sonnet 5 в `ANTHROPIC_DEFAULT_SONNET_MODEL`, по идентификатору, который Claude Code [может сопоставить с этой моделью](#pin-models-for-third-party-deployments).
+
+#### Исследования безопасности и рабочие нагрузки в области биологии
+
+Рабочие нагрузки в наступательной безопасности или биологии, включая тестирование на проникновение, упражнения Capture the Flag (CTF) и кодовые базы, связанные с биологией, часто вызывают переключение на резервную модель, нередко уже при первом запросе. Это ожидаемая маршрутизация для этих областей, а не пометка учётной записи. Если вашей организации для этой работы нужны возможности класса Fable, обратитесь к своей команде по работе с клиентами Anthropic по поводу программ доверенного доступа.
+
+При серьёзной работе по биологии на модели Fable или Opus 5.5 первый помеченный запрос, приводящий к переключению моделей, переводит сессию на Opus 5. Последующие запросы, помеченные как связанные с биологией, завершаются там отказами, потому что у Opus 5 нет резервной модели для биологии. На Opus 5 и Sonnet 5.5 эти отказы начинаются с первого помеченного запроса.
+
+### Регулировка уровня усилий
+
+[Уровни усилий](https://platform.claude.com/docs/en/build-with-claude/effort) управляют адаптивными рассуждениями, которые позволяют модели решать, нужно ли и сколько думать на каждом шаге в зависимости от сложности задачи. Более низкий уровень быстрее и дешевле для простых задач, а более высокий обеспечивает более глубокие рассуждения для сложных проблем.
+
+Доступные уровни усилий зависят от модели. Модели, не указанные здесь, не поддерживают effort:
+
+| Модель | Уровни |
+| :- | :- |
+| Модели Fable | `low`, `medium`, `high`, `xhigh`, `max` |
+| Opus 5.5, Sonnet 5.5, Haiku 5.5, Opus 5, Sonnet 5, Opus 4.8 и Opus 4.7 | `low`, `medium`, `high`, `xhigh`, `max` |
+| Opus 4.6 и Sonnet 4.6 | `low`, `medium`, `high`, `max` |
+
+Если вы установите уровень, который активная модель не поддерживает, Claude Code использует наивысший поддерживаемый уровень, не превышающий установленный. Например, `xhigh` работает как `high` на Opus 4.6. Ваша организация или ваши собственные настройки также могут ограничивать уровни, которые предлагает модель; см. [Ограничения усилий организации](#organization-effort-limits).
+
+Claude Code определяет уровень усилий сессии в следующем порядке, используя первый применимый:
+
+1. Переменная окружения [`CLAUDE_CODE_EFFORT_LEVEL`](https://code.claude.com/docs/ru/env-vars#variables)
+2. Уровень, выбранный вами в сессии, например с помощью `/effort`, средства выбора `/model` или [`applyFlagSettings()`](https://code.claude.com/docs/ru/agent-sdk/typescript#applyflagsettings)
+3. Запуск с `--effort`
+4. Ваши настройки: уровень, сохранённый вами для модели, или ключ [`effortLevel`](https://code.claude.com/docs/ru/settings-reference#effortlevel); приоритет между ними и между файлами настроек описан в [`modelSettings`](https://code.claude.com/docs/ru/settings-reference#modelsettings)
+5. Уровень усилий модели по умолчанию: Fable 5.2, Opus 5.5, Sonnet 5.5 и Haiku 5.5 по умолчанию используют `medium`, а Opus 4.7 — `xhigh`. Остальные модели из [таблицы уровней усилий](#adjust-effort-level) по умолчанию используют `high`. Если ваша организация задаёт уровень усилий по умолчанию для своей [модели по умолчанию организации](#organization-default-model), этот уровень используется по умолчанию при работе с этой моделью.
+
+Об уровне, который применяется после автоматического переключения на резервную модель, см. [Уровень усилий после переключения на резервную модель](#effort-level-after-a-fallback). О субагентах и участниках команды см. [Уровень усилий субагентов и участников команды](#effort-level-of-subagents-and-teammates).
+
+Opus 5.5 начинает с `medium`, если ни один из перечисленных выше источников не задаёт для него уровень, а ключ `effortLevel` верхнего уровня в вашем файле пользовательских настроек для Opus 5.5 не учитывается. Этот ключ — старая форма, которую `/effort` записывал до того, как Claude Code стал сохранять уровни для каждой модели: он продолжает действовать там, где действовал раньше, — на Opus 5, Fable 5.1 и более ранних моделях, тогда как Opus 5.5 и модели, выпущенные после неё, начинают со своего собственного уровня по умолчанию, пока вы не выберете для них уровень с помощью `/effort` или средства выбора `/model`. Ключ `effortLevel` верхнего уровня в настройках проекта, локальных или управляемых настройках или переданный с `--settings` применяется ко всем моделям.
+
+Когда вы устанавливаете `low`, `medium`, `high` или `xhigh` в интерактивной сессии на своём компьютере, срок действия уровня определяется тем, как вы его подтверждаете:
+
+* `Enter` в ползунке `/effort` или средстве выбора `/model` либо уровень, введённый после `/effort`: уровень сохраняется как ваш уровень по умолчанию и применяется в последующих сессиях
+* `s` в ползунке `/effort` или средстве выбора `/model`: уровень применяется только к этой сессии. Требуется Claude Code версии 2.1.257 или позже
+
+Claude Code сохраняет уровень для каждой модели в ключе [`modelSettings`](https://code.claude.com/docs/ru/settings-reference#modelsettings) в пользовательских настройках, поэтому у каждой модели свой сохранённый уровень.
+
+`max` — самый глубокий уровень рассуждений. Если вы не задаёте его через переменную окружения `CLAUDE_CODE_EFFORT_LEVEL`, Claude Code применяет `max` только к текущей сессии.
+
+&gt; [!NOTE]
+&gt;
+&gt; Уровень, который вы выбираете в элементе управления усилиями на телефоне или в браузере, подключённом через [Remote Control](https://code.claude.com/docs/ru/remote-control.md#what-connected-devices-see), применяется только к этой сессии.
+
+Когда вы устанавливаете уровень с помощью `/effort` при [запуске с `-p`](https://code.claude.com/docs/ru/headless), Claude Code применяет его только к этой сессии и не сохраняет как уровень по умолчанию.
+
+В ползунке `/effort` также есть переключатель **Ultracode**. Ultracode — это настройка Claude Code, а не уровень усилий модели: когда она включена, Claude организует [динамические рабочие процессы](https://code.claude.com/docs/ru/workflows.md) для существенных задач на любом уровне усилий, на котором работает сессия. О том, где её можно задать постоянно, см. настройку [`ultracode`](https://code.claude.com/docs/ru/settings-reference#ultracode).
+
+Включение или отключение ultracode с помощью `/effort` или настройки `ultracode` не меняет уровень усилий. Флаг `--effort ultracode` и значение Agent SDK `effortLevel: &quot;ultracode&quot;` включают его и также устанавливают уровень `xhigh`. Выбор уровня в ползунке `/effort` или средстве выбора `/model` оставляет ultracode в прежнем состоянии.
+
+Включить ultracode можно любым из следующих способов:
+
+* **`/effort`**: выполните `/effort ultracode`, чтобы включить его для текущей сессии, или `/effort ultracode off`, чтобы отключить. В ползунке `/effort` нажмите `Tab`, чтобы переключить **Ultracode**, затем `Enter`, чтобы применить
+* **Флаг `--effort`**: запустите `claude --effort ultracode`, что начинает сессию с уровнем `xhigh` и включённым ultracode
+* **Настройка `ultracode`**: задайте [`&quot;ultracode&quot;: true`](https://code.claude.com/docs/ru/settings-reference#ultracode) в файле настроек, с `--settings` или в управляющем запросе Agent SDK. Запрос [`applyFlagSettings()`](https://code.claude.com/docs/ru/agent-sdk/typescript#applyflagsettings) также принимает `effortLevel: &quot;ultracode&quot;`, что включает его и устанавливает уровень усилий `xhigh`
+
+Форма `/effort ultracode off`, переключатель в ползунке и сохранение ultracode включённым на уровнях усилий, отличных от `xhigh`, требуют Claude Code версии 2.1.284 или позже. До версии 2.1.284 включение ultracode устанавливало для сессии уровень `xhigh`, выбор другого уровня отключал его, а ограничение усилий ниже `xhigh` делало его недоступным.
+
+Передача `ultracode` во флаг `--effort` или в значение Agent SDK `effortLevel` требует Claude Code версии 2.1.203 или позже. До версии 2.1.203 `--effort ultracode` выводил `Unknown --effort value &#x27;ultracode&#x27;`, и сессия начиналась с уровнем усилий по умолчанию.
+
+Сохраняемая настройка `effortLevel` и переменная окружения `CLAUDE_CODE_EFFORT_LEVEL` не принимают `ultracode`. Если `CLAUDE_CODE_EFFORT_LEVEL` или [ограничение усилий](#organization-effort-limits) задаёт уровень сессии, ultracode остаётся включённым на этом уровне.
+
+Ultracode недоступен, когда:
+
+* [Рабочие процессы отключены](https://code.claude.com/docs/ru/workflows.md#turn-workflows-off)
+* Модель не поддерживает уровень `xhigh`
+
+В этих случаях `--effort ultracode` запускает сессию с отключённым ultracode на наивысшем уровне усилий, который допускают модель и любое ограничение, но не выше `xhigh`.
+
+#### Выбор уровня усилий
+
+Каждый уровень — это компромисс между расходом токенов и возможностями. Уровень по умолчанию подходит для большинства задач программирования; меняйте его, когда вам нужен другой баланс.
+
+| Уровень | Когда его использовать |
+| :- | :- |
+| `low` | Быстрые обмены, где вы проверяете каждый результат, например мозговой штурм, первый набросок или небольшое изменение вроде переименования |
+| `medium` | Уровень по умолчанию на моделях Fable 5.2, Opus 5.5, Sonnet 5.5 и Haiku 5.5. На Opus 5.5 и Sonnet 5.5 подходит для повседневной инженерной работы с чётко определёнными рамками, например реализации новой функции. На моделях с более высоким уровнем по умолчанию снижает расход токенов для работы, чувствительной к затратам, где можно пожертвовать частью интеллекта |
+| `high` | Работа, где важна проверка или вероятны граничные случаи, например исправление ошибки в существующей кодовой базе. Уровень по умолчанию на остальных моделях из таблицы уровней усилий |
+| `xhigh` | Более глубокие рассуждения при большем расходе токенов. Уровень по умолчанию на Opus 4.7 |
+| `max` | Сложные проблемы, которые вы хотите, чтобы Claude проработал без вас, например поиск уязвимостей безопасности. `max` может давать убывающую отдачу и склонен к чрезмерному обдумыванию, поэтому протестируйте его перед широким внедрением |
+| `ultracode` | Настройка Claude Code, а не уровень: планирует [динамический рабочий процесс](https://code.claude.com/docs/ru/workflows.md) для каждой существенной задачи на любом уровне усилий |
+
+В тестах на Opus 5.5 и Fable 5.1 Claude на более высоком уровне проверял больше граничных случаев и больше перепроверял свою работу перед ответом. Он также принимал больше решений самостоятельно. На более низком уровне Claude быстрее возвращал отправную точку, что подходит для работы, где вы проверяете каждый результат и направляете следующий шаг. Чтобы увидеть, как одни и те же задачи выполняются на каждом уровне, прочитайте [Using Claude Code: Spending your effort](https://claude.dev/blog/spending-your-effort/) в блоге.
+
+Шкала усилий откалибрована для каждой модели отдельно, поэтому одно и то же имя уровня не соответствует одному и тому же базовому значению у разных моделей.
+
+Opus 5.5 [по умолчанию использует `medium`](#adjust-effort-level) — на один уровень ниже, чем `high` по умолчанию у Opus 5. В тестировании Anthropic Opus 5.5 на `medium` не уступает или превосходит Opus 5 на `high` в оценках по программированию и работе со знаниями. На одном и том же уровне Opus 5.5 обычно думает за ход больше, чем Opus 5. При переходе с Opus 5 на Opus 5.5 начните с `medium`, а не переносите уровень, который вы использовали на Opus 5. Чтобы протестировать уровни на своей работе, см. [Calibrate effort](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5#calibrate-effort) в руководстве по составлению промптов для Opus 5.5.
+
+#### Использование ultrathink для разовых глубоких рассуждений
+
+Включите `ultrathink` в любое место промпта, чтобы запросить более глубокие рассуждения на этом ходе, не меняя настройку усилий сессии. Claude Code распознаёт ключевое слово и добавляет инструкцию в контекст. Другие фразы, такие как &quot;think&quot;, &quot;think hard&quot; и &quot;think more&quot;, Claude Code передаёт как обычный текст промпта и не распознаёт как ключевые слова.
+
+Чтобы также повысить уровень усилий этого хода до `xhigh`, введите слово в одном из следующих мест:
+
+* Промпт в терминале, где слово отображается радужными цветами, когда оно может повысить уровень хода. Требуется Claude Code версии 2.1.311 или позже.
+* Поле чата VS Code, где слово также отображается радужными цветами. Требуется Claude Code версии 2.1.316 или позже.
+* Локальная сессия на вкладке Code настольного приложения. Требуется Claude Code версии 2.1.316 или позже.
+
+Если слово не становится радужным, когда вы начинаете новый ход, попробуйте одно из следующего:
+
+* Введите его заново вне кавычек, скобок, пути или команды, в промпте, который не начинается с `/`
+* Удалите `CLAUDE_CODE_EFFORT_LEVEL`, если она задана ниже `xhigh`, повысьте собственный [`maxEffortLevel`](https://code.claude.com/docs/ru/settings-reference#maxeffortlevel) до `xhigh` или выше либо попросите администратора организации повысить [ограничение вашей организации](#organization-effort-limits)
+* Выполните `/model` в сессии, чтобы переключиться на модель Opus 5.5, Sonnet 5.5, Haiku 5.5, Fable 5.2 или Fable 5.1. Там, где слово не может повысить уровень хода, например на Amazon Bedrock, Google Cloud&#x27;s Agent Platform или в [Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway), вместо этого [установите уровень усилий](#set-the-effort-level)
+
+Чтобы отключить ключевое слово вместе с его инструкцией в контексте, установите `CLAUDE_CODE_DISABLE_ULTRATHINK` в `1` в оболочке или в [файле настроек](https://code.claude.com/docs/ru/env-vars.md#in-settings-files). Требуется Claude Code версии 2.1.316 или позже.
+
+#### Установка уровня усилий
+
+Изменить уровень усилий можно любым из следующих способов:
+
+* **`/effort`**: выполните `/effort` без аргументов, чтобы открыть интерактивный ползунок, `/effort` с именем уровня, чтобы задать его напрямую, или `/effort auto`, чтобы сбросить сохранённый уровень для активной модели
+* **В `/model`**: при выборе модели используйте клавиши со стрелками влево/вправо, чтобы отрегулировать ползунок усилий. Новый уровень начинает действовать самое позднее с вашего следующего сообщения. До этого Claude может продолжать работать на прежнем уровне, даже на новой модели. Пока действует [источник, имеющий приоритет над вашим выбором](#adjust-effort-level), например `CLAUDE_CODE_EFFORT_LEVEL`, Claude вместо этого работает на уровне этого источника.
+* **Флаг `--effort`**: передайте имя уровня при запуске Claude Code, чтобы задать его для одной сессии
+* **Переменная окружения**: установите `CLAUDE_CODE_EFFORT_LEVEL` в имя уровня. Чтобы Claude Code [не отправлял уровень усилий](#send-no-effort-level), установите её вместо этого в `auto` или `unset`
+* **Настройки**: задайте уровень для отдельной модели в [`modelSettings`](https://code.claude.com/docs/ru/settings-reference#modelsettings) или установите [`effortLevel`](https://code.claude.com/docs/ru/settings-reference#effortlevel) в `low`, `medium`, `high` или `xhigh` как уровень по умолчанию для моделей без собственного уровня. `max` не принимается как уровень ни в одном из этих ключей, а у `ultracode` есть собственный ключ [`ultracode`](https://code.claude.com/docs/ru/settings-reference#ultracode)
+* **С подключённого устройства**: в сессии [Remote Control](https://code.claude.com/docs/ru/remote-control.md#what-connected-devices-see) выберите уровень в элементе управления усилиями на телефоне или в браузере. Уровень применяется только к текущей сессии. Требуется Claude Code версии 2.1.234 или позже
+* **Frontmatter скиллов и субагентов**: задайте `effort` в markdown-файле [скилла](https://code.claude.com/docs/ru/skills.md#frontmatter-reference) или [субагента](https://code.claude.com/docs/ru/sub-agents.md#supported-frontmatter-fields), чтобы переопределить уровень усилий при работе этого скилла или субагента
+
+`effort` скилла действует до конца хода, в котором скилл выполняется, или на время работы ответвлённого субагента при `context: fork`. `effort` субагента действует, пока работает субагент, если только [его вызов не переопределяет его](https://code.claude.com/docs/ru/sub-agents.md#choose-an-effort-level). Пока действует любой из них, скилл или субагент работает на своём уровне, независимо от того, с каким уровнем вы запускаете сессию, какой сохраняете или выбираете. Если задана `CLAUDE_CODE_EFFORT_LEVEL`, вместо этого применяется её уровень.
+
+[`maxEffortLevel`](https://code.claude.com/docs/ru/settings-reference#maxeffortlevel) или [ограничение усилий организации](#organization-effort-limits) по-прежнему ограничивают уровень, на котором работает скилл или субагент. Если вы задаёте `effortLevel` в [управляемых настройках](https://code.claude.com/docs/ru/managed-settings.md), Claude Code применяет его на шаге настроек [порядка разрешения усилий](#adjust-effort-level), и пользователи по-прежнему могут менять уровень с помощью `/effort` или `--effort`. Чтобы пользователи не превышали определённый уровень, задайте [`maxEffortLevel`](https://code.claude.com/docs/ru/settings-reference#maxeffortlevel).
+
+#### Уровень усилий субагентов и участников команды
+
+На модели основного диалога [субагент](https://code.claude.com/docs/ru/sub-agents.md#choose-an-effort-level) или [участник команды](https://code.claude.com/docs/ru/agent-teams.md#specify-teammates-and-models) без собственного `effort` работает на уровне, который вы выбираете в сессии или задаёте с помощью `--effort`. На другой модели этот уровень не применяется. Чтобы выбрать уровень субагента, задайте `effort` в его определении.
+
+#### Проверка установленного уровня усилий
+
+Ползунок усилий появляется в `/model`, когда выбрана поддерживаемая модель. Уровень в заголовке сессии, например &quot;with low effort&quot;, берётся из вашей настройки усилий, даже если Claude [всё ещё работает на прежнем уровне](#when-a-new-effort-level-starts). При запуске и при его изменении нижняя строка также ненадолго показывает уровень, установленный для вашей сессии.
+
+#### Когда начинает действовать новый уровень усилий
+
+В терминальной сессии, как только `/effort` подтверждает новый уровень, следующее отправленное вами сообщение выполняется на этом уровне. Вы можете отправить его после завершения текущего хода или [пока Claude ещё работает](https://code.claude.com/docs/ru/interactive-mode.md#queue-messages-while-claude-works):
+
+* **После завершения хода**: до этого момента ничего делать не нужно, и это ожидаемо, если ход завершится на прежнем уровне
+* **Пока Claude ещё работает**: введите сообщение, например `keep going`, и нажмите `Enter`, чтобы поставить его в очередь, не прерывая ход. Claude получит его, когда завершатся текущие вызовы инструментов, или самое позднее по окончании хода, и с этого момента будет работать на новом уровне.
+
+До версии 2.1.242 Claude Code мог сам ставить `/effort` в очередь до завершения хода и всегда делал это в сессии, которая не [получает флаги функций](https://code.claude.com/docs/ru/env-vars.md#features-that-need-feature-flag-fetching), например у [стороннего поставщика](https://code.claude.com/docs/ru/third-party-integrations.md).
+
+#### Работа без отправки уровня усилий
+
+Когда Claude Code не отправляет уровень усилий [поддерживаемой модели](#adjust-effort-level), вместо значения по умолчанию Claude Code применяется [значение по умолчанию API](https://platform.claude.com/docs/en/build-with-claude/effort). Чтобы Claude Code не отправлял уровень, запускайте `claude` из оболочки, которая экспортирует `CLAUDE_CODE_EFFORT_LEVEL` со значением `auto` или `unset` — они действуют одинаково:
+</code></pre>
+<p>export CLAUDE_CODE_EFFORT_LEVEL=auto</p>
+<pre><code>
+Пока уровень не отправляется, заголовок и нижняя строка сессии не показывают уровень усилий. Чтобы убедиться, что уровень не отправляется, выполните `/effort status` в промпте Claude Code:
+
+* **`Effort level: auto`**: уровень усилий не отправляется.
+* **`Effort level: auto (currently &lt;level&gt;)`**: уровень всё ещё отправляется. Если к активной модели применяется настройка [`maxEffortLevel`](https://code.claude.com/docs/ru/settings-reference#maxeffortlevel) ниже `max`, Claude Code отправляет собственное значение по умолчанию для модели, понижённое до этого ограничения. Удалите эту настройку или установите её в `max`.
+
+&gt; [!NOTE]
+&gt;
+&gt; До версии 2.1.304 `/effort status` выводил `Effort level: auto (currently high)`, даже когда уровень не отправлялся.
+
+#### Адаптивные рассуждения и фиксированные бюджеты мышления
+
+Адаптивные рассуждения делают мышление необязательным на каждом шаге, поэтому Claude может быстрее отвечать на рутинные промпты и приберегать более глубокое мышление для шагов, которым оно полезно. Если вы хотите, чтобы Claude думал чаще или реже, чем при текущем уровне, можно сказать об этом прямо в промпте или в `CLAUDE.md`; модель учитывает такие указания в рамках своей настройки усилий.
+
+Модели Fable, Sonnet 5 и новее, Haiku 5.5, а также Opus 4.7 и новее всегда используют адаптивные рассуждения. Режим фиксированного бюджета мышления и `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` к ним не применяются.
+
+На Opus 4.6 и Sonnet 4.6 можно установить `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1`, чтобы вернуться к прежнему фиксированному бюджету мышления, управляемому `MAX_THINKING_TOKENS`. См. [переменные окружения](https://code.claude.com/docs/ru/env-vars.md).
+
+### Расширенное мышление
+
+Расширенное мышление — это размышления, которые Claude выдаёт перед ответом. На моделях, поддерживающих [адаптивные рассуждения](#adjust-effort-level), основным регулятором объёма мышления является уровень усилий; настройки ниже включают или отключают мышление и управляют его отображением. Когда мышление отключено на Anthropic API, Claude Code отправляет уровень `high` вместо более высокого уровня моделям, которые, как ему известно, [не принимают такую комбинацию](https://code.claude.com/docs/ru/errors.md#effort-isnt-available-with-thinking-turned-off), например Opus 5.
+
+| Способ управления | Как его задать |
+| :- | :- |
+| Переключение для текущей сессии | Нажмите `Option+T` на macOS или `Alt+T` на Windows и Linux |
+| Установка глобального значения по умолчанию | Выполните `/config` и переключите режим мышления. Сохраняется как `alwaysThinkingEnabled` в `~/.claude/settings.json` |
+| Отключение через переменную окружения | Задайте [`MAX_THINKING_TOKENS=0`](https://code.claude.com/docs/ru/env-vars) |
+
+По умолчанию Claude Code сворачивает вывод размышлений. Нажмите `Ctrl+O`, чтобы переключить подробный режим и увидеть рассуждения серым курсивным текстом. Интерактивные сессии на Anthropic API по умолчанию получают скрытые блоки размышлений, поэтому установите [`showThinkingSummaries: true`](https://code.claude.com/docs/ru/settings-reference#showthinkingsummaries) в настройках, если хотите, чтобы при развороте были доступны полные резюме. Оплачиваются все сгенерированные токены мышления, даже если они свёрнуты или скрыты.
+
+#### Где нельзя отключить мышление
+
+Мышление нельзя отключить на Opus 5.5, Sonnet 5.5, Haiku 5.5 и моделях Fable. Переключатель сессии и строка в `/config` для этих моделей показывают `Thinking can&#x27;t be turned off` вместо переключателя, а сохранённые `alwaysThinkingEnabled: false` или `MAX_THINKING_TOKENS=0` на них не действуют. На этих моделях модель сама решает на каждом шаге, сколько размышлять, исходя из уровня усилий. Сохранённая настройка снова начинает действовать, когда вы переключаетесь на модель, которая её поддерживает.
+
+Чтобы остановить или сократить мышление, выполните шаг для вашего поставщика:
+
+* **Anthropic API**: вы можете отключить мышление на таких моделях, как `claude-opus-5`, `claude-sonnet-5` и `claude-haiku-4-5`. [Псевдонимы](#model-aliases), такие как `sonnet`, выбирают модели, на которых это невозможно, поэтому [задайте модель](#setting-your-model) по её идентификатору.
+* **[Сторонние поставщики](https://code.claude.com/docs/ru/third-party-integrations.md)**: у таких поставщиков, как Amazon Bedrock и Microsoft Foundry, модели с [адаптивными рассуждениями](#adaptive-reasoning-and-fixed-thinking-budgets) могут размышлять даже при отключённом мышлении. [Понизьте уровень усилий](#set-the-effort-level), чтобы сократить мышление.
+
+### Расширенный контекст
+
+Длительные сессии с большими кодовыми базами могут использовать [контекстное окно в 1 миллион токенов](https://platform.claude.com/docs/en/build-with-claude/context-windows#context-window-sizes-by-model). Его поддерживают модели Fable, Sonnet 5 и новее, Haiku 5.5, Opus 4.6 и новее, а также Sonnet 4.6.
+
+Модели Fable, Sonnet 5 и новее, Haiku 5.5, а также Opus 4.7 и новее по умолчанию работают с окном 1M, и суффикс `[1m]` не нужен. Это относится и к сессиям на Amazon Bedrock, Google Cloud&#x27;s Agent Platform и Microsoft Foundry, а также к сессиям [Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway). Чтобы вместо этого запускать их с окном 200K, см. [Отключение контекста 1M](#turn-off-1m-context).
+
+Opus 4.6 и Sonnet 4.6 получают 1M только через свой вариант `[1m]`, и доступ к этому варианту зависит от вашего тарифа. На тарифах Max, Ultra, Team и Enterprise, включая места как Team Standard, так и Team Premium, Opus 4.6 с контекстом 1M входит в вашу подписку. Sonnet 4.6 с контекстом 1M требует [кредитов использования](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans) на любом тарифе подписки, включая Max и Ultra.
+
+| Тариф | Opus 4.6 с контекстом 1M | Sonnet 4.6 с контекстом 1M |
+| - | - | - |
+| Max, Ultra, Team и Enterprise | Входит в подписку | Требует [кредитов использования](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans) |
+| Pro | Требует [кредитов использования](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans) | Требует [кредитов использования](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans) |
+| API и оплата по мере использования | Полный доступ | Полный доступ |
+
+Claude Code проверяет эти требования тарифа, только когда подключается к Anthropic API напрямую. Если вы направляете `ANTHROPIC_BASE_URL` на [LLM-шлюз](https://code.claude.com/docs/ru/llm-gateway#subscriptions-and-gateways), а ваш сохранённый вход в claude.ai остаётся активными учётными данными, Claude Code не проверяет кредиты использования вашего тарифа. Варианты `[1m]` остаются доступными в `/model`, и шлюз решает, будет ли запрос успешным. До версии 2.1.229 Claude Code в такой конфигурации отклонял `/model sonnet[1m]`, если не мог подтвердить наличие кредитов использования в учётной записи.
+
+На Anthropic API контекстное окно 1M использует стандартные цены модели без надбавки за токены сверх 200K, за исключением Haiku 5.5, который [стоит дороже на промптах длиннее 100K токенов](#haiku-5-5-context-window-and-pricing). На тарифах, где расширенный контекст входит в подписку, использование по-прежнему покрывается подпиской. На тарифах, где доступ к расширенному контексту предоставляется через кредиты использования, токены оплачиваются из кредитов.
+
+#### Выбор контекста 1M для Opus 4.6 или Sonnet 4.6
+
+Чтобы выбрать вариант 1M по имени, добавьте суффикс `[1m]` к псевдониму модели или полному имени модели:
+</code></pre>
+<h1 id="добавьте-1m-к-полному-имени-модели">Добавьте [1m] к полному имени модели <a class="h-anchor" href="#добавьте-1m-к-полному-имени-модели" aria-label="Ссылка на раздел">#</a></h1>
+<p>/model claude-opus-4-6[1m]
+/model claude-sonnet-4-6[1m]</p>
+<h1 id="h-5">Или к псевдониму: суффикс применяется к модели, в которую разрешается псевдоним <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h1>
+<p>/model opus[1m]</p>
+<pre><code>
+#### Контекстное окно за LLM-шлюзом
+
+Если вы установите `ANTHROPIC_BASE_URL` на [LLM-шлюз](https://code.claude.com/docs/ru/llm-gateway) или другой прокси, Claude Code даёт каждой распознанной модели то же контекстное окно, что и на Anthropic API. Модели Fable, Sonnet 5 и новее, Haiku 5.5, а также Opus 4.7 и новее получают окно 1M без варианта `[1m]`. Модель, которая получает 1M только через свой вариант `[1m]`, например Opus 4.6, без него работает с 200K.
+
+Claude Code не может обнаружить более низкий предел, установленный шлюзом или сервером за ним. Если ваш шлюз отклоняет запросы свыше 200K токенов, установите [`CLAUDE_CODE_AUTO_COMPACT_WINDOW=200000`](https://code.claude.com/docs/ru/env-vars) в окружении, из которого запускается Claude Code, чтобы сессии на всех моделях [сжимались на этой границе](#set-the-auto-compact-window).
+
+#### Отключение контекста 1M
+
+Чтобы сессии оставались в окне 200K, установите `CLAUDE_CODE_DISABLE_1M_CONTEXT=1` в оболочке или в [файле настроек](https://code.claude.com/docs/ru/env-vars.md#set-environment-variables). Claude Code удаляет варианты моделей `[1m]` из средства выбора модели. На моделях, которые по умолчанию работают с окном 1M, таких как модели Fable, Sonnet 5 и новее, а также Opus 4.7 и новее, он также рассматривает модель как имеющую контекстное окно 200K:
+
+* При включённом автосжатии сессии сжимаются на границе 200K с помощью [автосжатия](#set-the-auto-compact-window). Установка окна автосжатия выше 200K не снимает это ограничение, потому что Claude Code ограничивает это окно контекстным окном модели.
+* При отключённом автосжатии сессии останавливаются на границе 200K с [ошибкой превышения контекста](https://code.claude.com/docs/ru/errors.md#prompt-is-too-long) вместо сжатия.
+
+#### Контекстное окно и цены Haiku 5.5
+
+На Anthropic API Haiku 5.5 работает с контекстным окном 1M на любом тарифе, и суффикс `[1m]` выбирать не нужно. Идентификатор модели — `claude-haiku-5-5`. Чтобы использовать её, выполните `/model claude-haiku-5-5` в сессии или запустите Claude Code из оболочки командой `claude --model claude-haiku-5-5`.
+
+Запрос к Haiku 5.5 стоит дороже за токен, если его промпт длиннее 100K токенов. Обе ставки см. в разделе [цены Anthropic](https://platform.claude.com/docs/en/about-claude/pricing).
+
+По умолчанию сессии автоматически сжимаются при достижении примерно 967K токенов. Чтобы сжатие происходило раньше, [задайте для модели меньшее окно автосжатия](#set-the-auto-compact-window).
+
+## Контекстное окно и автосжатие
+
+Окно автосжатия определяет, насколько может заполниться контекстное окно, прежде чем Claude Code выполнит сжатие контекста диалога. Информацию о том, что сохраняется и что удаляется при каждом механизме, см. в разделе [Что сохраняется после сжатия контекста](https://code.claude.com/docs/ru/context-window.md#what-survives-compaction).
+
+### Установка окна автосжатия
+
+&gt; [!NOTE]
+&gt;
+&gt; Если Claude Code выдал предупреждение о значении `CLAUDE_CODE_AUTO_COMPACT_WINDOW`, см. раздел [о значениях и предупреждениях этой переменной](#claude_code_auto_compact_window-values).
+
+Задать окно автосжатия можно в следующих местах:
+
+* **Для текущей модели, в этой сессии и последующих**: выполните `/autocompact` со значением, например `/autocompact 500k`. Claude Code сохраняет его в ваших пользовательских настройках для текущей модели в [`modelSettings`](https://code.claude.com/docs/ru/settings-reference#modelsettings) и применяет к текущей сессии. Если [область действия настроек](https://code.claude.com/docs/ru/settings.md#settings-precedence) с более высоким приоритетом, например управляемые настройки, задаёт собственное окно для этой модели или для всех моделей, команда сохраняет ваше значение, но сессия использует окно этой области действия, и команда сообщает об этом. Выполните `/autocompact auto`, чтобы вернуться к окну, оптимизированному для вашей модели. До версии v2.1.288 команда сохраняла одно окно для всех моделей в виде ключа верхнего уровня `autoCompactWindow`.
+* **Для всех моделей**: задайте [`autoCompactWindow`](https://code.claude.com/docs/ru/settings-reference#autocompactwindow) в файле настроек, например `&quot;autoCompactWindow&quot;: 200000` в `~/.claude/settings.json`. Окно, сохранённое для модели с помощью `/autocompact`, имеет приоритет над этим ключом в том же файле для этой модели.
+* **Для одного запуска**: передайте [`--autocompact`](https://code.claude.com/docs/ru/cli-reference#cli-flags) при запуске Claude Code. Флаг переопределяет вашу сохранённую настройку для этого запуска, не изменяя её, а `claude --autocompact auto` запускает сессию с оптимизированным окном, даже если в вашей сохранённой настройке задано значение. В отличие от `/autocompact`, флаг не вытесняется областью действия настроек с более высоким приоритетом, например управляемыми настройками.
+* **В скриптах и облачных окружениях**: задайте [`CLAUDE_CODE_AUTO_COMPACT_WINDOW`](https://code.claude.com/docs/ru/env-vars) равным количеству токенов, например `200000`. Если только Claude Code не [игнорирует это значение](#claude_code_auto_compact_window-values), переменная имеет приоритет над командой, флагом и настройкой `autoCompactWindow`. В этом случае `/autocompact` сообщает о переопределении, ничего не сохраняя. Значение `used_percentage` в строке состояния рассчитывается относительно полного контекстного окна модели, поэтому, пока переменная задана, этот процент не показывает, когда будет выполнено сжатие контекста.
+* **Для одного субагента**: см. [Установка окна автосжатия для одного субагента](https://code.claude.com/docs/ru/sub-agents.md#subagent-auto-compact-window).
+
+Команда и флаг принимают размер окна от 100K до 1M токенов в любой из следующих форм:
+
+* Простое количество токенов, например `200000`
+* Суффикс `k` или `M`, например `500k` или `1M`
+* Простое число от 100 до 1000, означающее тысячи, поэтому `200` задаёт 200 000
+
+Каким бы способом вы ни задали окно, Claude Code ограничивает его размером контекстного окна модели.
+
+#### Значения и предупреждения для `CLAUDE_CODE_AUTO_COMPACT_WINDOW`
+
+Предупреждение, в котором приводится ваше значение `CLAUDE_CODE_AUTO_COMPACT_WINDOW`, означает, что значение выходит за пределы диапазона от 100 000 до 1 000 000 или не является количеством токенов. Чтобы убрать предупреждение, задайте число из этого диапазона, например `CLAUDE_CODE_AUTO_COMPACT_WINDOW=200000`. В Claude Code v2.1.304 и более поздних версиях число также можно записать с `k` для тысяч или `M` для миллионов, например `200k` или `1M`.
+
+Найдите формулировку вашего предупреждения в первом столбце, а затем посмотрите в той же строке, какое окно использует ваша сессия и что нужно изменить:
+
+| Ваше предупреждение содержит | Окно, которое использует сессия | Что изменить |
+| :- | :- | :- |
+| `reads as &lt;N&gt; tokens, so Claude Code treats it as the 100k minimum` | Меньшее из значений: 100 000 токенов или контекстное окно вашей модели | Задайте не менее `100000`, например `200000`, или `200k`, если вы имели в виду `200` как тысячи |
+| `is too large, so Claude Code treats it as the 1M maximum` | Меньшее из значений: 1 000 000 токенов или контекстное окно вашей модели | У вас уже максимальное окно. Чтобы убрать предупреждение, задайте `1M` или `1000000` |
+| `isn&#x27;t a usable size, so Claude Code ignores it` | Окно из `--autocompact`, `/autocompact` или `autoCompactWindow` либо окно [по умолчанию](#default-auto-compact-thresholds), если ничего из этого не задано | Задайте число, например `200000`, или удалите переменную |
+
+Число без суффикса считывается как соответствующее количество токенов, поэтому `CLAUDE_CODE_AUTO_COMPACT_WINDOW=200` означает 200 токенов, хотя `/autocompact 200` означает 200 000.
+
+### Пороги автосжатия по умолчанию
+
+Если вы не задали окно автосжатия, Claude Code выполняет сжатие контекста, когда диалог достигает предела контекста модели, за исключением следующих сессий:
+
+* [Облачные сессии](https://code.claude.com/docs/ru/claude-code-on-the-web.md) выполняют сжатие контекста по мере приближения диалога к пределу модели
+* Sonnet 4.6 и Opus 4.6 без [расширенного контекста](#extended-context) выполняют сжатие контекста на границе 200K
+* Когда вы задаёте [`CLAUDE_CODE_DISABLE_1M_CONTEXT=1`](https://code.claude.com/docs/ru/env-vars), модели с собственным окном 1M, такие как Sonnet 5 и модели Fable, выполняют сжатие контекста на границе 200K
+* Модели, работающие с собственным окном 1M, выполняют сжатие контекста до заполнения окна, по умолчанию при достижении примерно 967K токенов. К ним относятся модели Fable, Sonnet 5 и более поздние версии, Haiku 5.5, а также Opus 4.7 и более поздние версии. При использовании пользовательского `ANTHROPIC_BASE_URL` см. раздел [контекстное окно за шлюзом](#context-window-behind-a-gateway)
+* Сессии с ID модели, который Claude Code не распознаёт, например псевдонимом [LLM-шлюза](https://code.claude.com/docs/ru/llm-gateway), выполняют сжатие контекста при контекстном окне, которое Claude Code предполагает для этого ID; см. [Исправление окна для шлюза или пользовательского ID модели](#correct-the-window-for-a-gateway-or-custom-model-id)
+
+О том, когда Claude Code также выполняет сжатие контекста диалога, оставленного без активности, см. настройку [`idleCompaction`](https://code.claude.com/docs/ru/settings-reference#idlecompaction).
+
+### Исправление окна для шлюза или пользовательского ID модели
+
+Любое из этих предупреждений означает, что Claude Code не распознаёт ID модели вашей сессии и предполагает контекстное окно, указанное в предупреждении:
+</code></pre>
+<p>⚠ Model &quot;my-gateway-opus&quot; isn&#x27;t recognized · context assumed to be 1m tokens · ...
+Claude Code doesn&#x27;t recognize the model &quot;my-gateway-opus&quot;, so it assumes a context window of 1m tokens. Update Claude Code, or see https://code.claude.com/docs/en/model-config#correct-the-window-for-a-gateway-or-custom-model-id to set the window.</p>
+<pre><code>
+Claude Code [автоматически сжимает](#default-auto-compact-thresholds) диалог, чтобы он помещался в предполагаемое окно, поэтому если в предупреждении указано реальное контекстное окно модели, исправлять ничего не нужно. В противном случае сообщите Claude Code реальное окно:
+
+* **Модель новее вашей версии Claude Code**: выполните `claude update` в оболочке. Если после обновления Claude Code распознаёт ID, больше ничего настраивать не нужно.
+* **Имя, которое ваш шлюз или поставщик использует для модели, известной Claude Code**: добавьте запись [`modelOverrides`](#override-model-ids-per-version), которая сопоставляет ID модели Anthropic с вашим ID, например `&quot;claude-opus-4-8&quot;: &quot;my-gateway-opus&quot;`. Вместо этого можно указать ваш ID в строке [`modelPicker`](https://code.claude.com/docs/ru/settings-reference#fields-for-modelpicker), задав для `behavesAs` эту модель. В любом случае Claude Code затем рассматривает ID как эту модель.
+* **Модель с окном 1M**: добавьте `[1m]` к ID там, где вы задаёте модель, например `claude --model &#x27;my-gateway-opus[1m]&#x27;` в оболочке. Если вы [отключили контекст 1M](#turn-off-1m-context), вы получите то же окно с суффиксом или без него.
+* **Любое другое окно**: задайте [`CLAUDE_CODE_MAX_CONTEXT_TOKENS`](https://code.claude.com/docs/ru/env-vars) равным размеру окна в токенах в окружении, из которого запускается Claude Code, например `CLAUDE_CODE_MAX_CONTEXT_TOKENS=400000`. Для нераспознанного ID, который не начинается с `claude-` и не имеет суффикса `[1m]`, переменная вступает в силу сама по себе. Для любого другого ID сначала проверьте, [к каким ID она применяется](#which-ids-claude_code_max_context_tokens-applies-to).
+
+Как только Claude Code распознает ID или начнёт использовать указанное вами окно, предупреждение перестанет появляться при запуске сессии с этим ID.
+
+#### К каким ID применяется `CLAUDE_CODE_MAX_CONTEXT_TOKENS`
+
+При использовании [LLM-шлюза](https://code.claude.com/docs/ru/llm-gateway) или другого пользовательского развёртывания Claude Code может предполагать для ID модели контекстное окно, которое отличается от реального окна модели, независимо от того, сопоставляет ли он ID с моделью Claude. Задайте в [`CLAUDE_CODE_MAX_CONTEXT_TOKENS`](https://code.claude.com/docs/ru/env-vars) окно, которое Claude Code должен предполагать вместо этого.
+
+Переменная работает по-разному для нераспознанного ID, нераспознанного ID с `[1m]` и ID, который Claude Code распознаёт:
+
+* Если Claude Code не распознаёт ID и ID не содержит `[1m]`, переменная применяется сама по себе, и упреждающее сжатие контекста продолжается при объявленном окне. Для ID, такого как `claude-sonnet-latest`, для этого требуется Claude Code v2.1.324 или более поздней версии.
+* Если Claude Code не распознаёт ID и ID содержит `[1m]` (в любом регистре), Claude Code предполагает для него окно 1M. Значение переменной меньше 1M само по себе не применяется. Чтобы исправить окно, сохранив упреждающее сжатие контекста, также задайте [`CLAUDE_CODE_DISABLE_1M_CONTEXT=1`](https://code.claude.com/docs/ru/env-vars). Когда эта переменная задана, Claude Code определяет размер для ID так же, как для того же ID без `[1m]`, поэтому `CLAUDE_CODE_MAX_CONTEXT_TOKENS` применяется.
+
+  Если объявленное окно превышает 200K, предупреждение о том, что [предел 200K не применяется](https://code.claude.com/docs/ru/errors.md#the-200k-limit-isnt-enforced), в этой конфигурации ожидаемо.
+* Если ID сопоставляется с моделью, которую Claude Code распознаёт, переменная вступает в силу, только если вы также задаёте [`DISABLE_COMPACT`](https://code.claude.com/docs/ru/env-vars), что отключает любое сжатие контекста.
+
+  Например, ID, содержащий известное Claude Code имя модели Claude, такой как `anthropic/claude-opus-4-8`, `us.anthropic.claude-…-v1:0` или датированный `claude-sonnet-4-5@20250929`, сопоставляется с этой моделью. Это относится и к ID, которые также содержат `[1m]`: Claude Code сопоставляет `claude-opus-4-8[1m]` с Opus 4.8 даже при заданной `CLAUDE_CODE_DISABLE_1M_CONTEXT`.
+
+Для ID модели, который Claude Code не распознаёт, задайте [`CLAUDE_CODE_DISABLE_UNKNOWN_MODEL_WINDOW_ENFORCEMENT=1`](https://code.claude.com/docs/ru/env-vars), чтобы Claude Code выполнял сжатие контекста только после того, как API отклонит диалог с [ошибкой превышения длины, которую распознаёт Claude Code](https://code.claude.com/docs/ru/errors.md#prompt-is-too-long). Claude Code не выполняет это восстановление, если шлюз [переписывает текст ошибки](https://code.claude.com/docs/ru/llm-gateway-connect.md#troubleshoot-gateway-errors) в формулировку, которую Claude Code не распознаёт.
+
+## Проверка вашей текущей модели
+
+Вы можете увидеть, какую модель вы используете в настоящее время, в двух местах:
+
+* В [строке состояния](https://code.claude.com/docs/ru/statusline.md), если у вас она настроена
+* В `/status`, который также отображает информацию вашей учетной записи
+
+## Добавление пользовательского варианта модели
+
+Используйте `ANTHROPIC_CUSTOM_MODEL_OPTION` для добавления одной пользовательской записи в средство выбора `/model` без замены встроенных псевдонимов. Это полезно для тестирования идентификаторов моделей, которые Claude Code не указывает по умолчанию. Для развертываний шлюза LLM Claude Code может заполнять средство выбора из конечной точки `/v1/models` шлюза, когда установлено значение `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1`, поэтому эта переменная требуется только в том случае, если обнаружение отключено или не возвращает нужную вам модель. См. [обнаружение модели шлюза](https://code.claude.com/docs/ru/llm-gateway-protocol.md#model-discovery).
+
+Чтобы вместо этого перечислить несколько моделей в собственном порядке и под выбранными вами метками, установите [`modelPicker`](https://code.claude.com/docs/ru/settings-reference#modelpicker). Его запись указывает, какие строки средство выбора сохраняет, когда эта комбинация заменяет встроенную.
+
+Этот пример устанавливает все три переменные, чтобы сделать развертывание Opus с маршрутизацией через шлюз выбираемым. Claude Code читает переменные окружения при запуске, поэтому запустите экспорты перед запуском `claude` или перезагрузите существующий сеанс, чтобы их применить:
+</code></pre>
+<p>export ANTHROPIC_CUSTOM_MODEL_OPTION=&quot;my-gateway/claude-opus-5-5&quot;
+export ANTHROPIC_CUSTOM_MODEL_OPTION_NAME=&quot;Opus via Gateway&quot;
+export ANTHROPIC_CUSTOM_MODEL_OPTION_DESCRIPTION=&quot;Custom deployment routed through the internal LLM gateway&quot;</p>
+<pre><code>
+`ANTHROPIC_CUSTOM_MODEL_OPTION_NAME` и `ANTHROPIC_CUSTOM_MODEL_OPTION_DESCRIPTION` являются необязательными:
+
+* Если вы опустите имя, запись показывает имя модели, когда Claude Code [распознает идентификатор](#customize-pinned-model-display-and-capabilities), и идентификатор модели в противном случае.
+* Если вы опустите описание, Claude Code использует `Custom model (&lt;model-id&gt;)`.
+
+Claude Code перечисляет пользовательскую запись после встроенных записей, и любые строки [`modelPicker`](https://code.claude.com/docs/ru/settings-reference#modelpicker), которые вы добавляете, появляются после неё.
+
+Claude Code пропускает валидацию для идентификатора модели, установленного в `ANTHROPIC_CUSTOM_MODEL_OPTION`, поэтому вы можете использовать любую строку, которую принимает ваша конечная точка API.
+
+Когда установлено значение [`availableModels`](#restrict-model-selection), включите пользовательский идентификатор модели в список разрешений. В противном случае Claude Code фильтрует пользовательскую запись из средства выбора и отклоняет выбор `--model` для неё, как и для любой другой исключённой модели.
+
+Пользовательский идентификатор, который встраивает имя семейства, такой как `my-gateway/claude-opus-5-5`, считается конкретной записью для этого семейства и отключает его подстановочный знак, поэтому также перечислите версии, которые вы намереваетесь оставить выбираемыми. См. [Поведение слияния](#merge-behavior).
+
+## Переменные окружения
+
+Используйте следующие переменные окружения для управления именами моделей, на которые отображаются псевдонимы. Каждое значение должно быть полным именем модели или эквивалентным идентификатором для вашего поставщика API. Чтобы выбрать модель, на которой начинаются ваши сессии, установите [`ANTHROPIC_DEFAULT_MODEL`](#set-a-default-model-for-new-sessions), которую эта таблица опускает.
+
+| Переменная окружения | Описание |
+| - | - |
+| `ANTHROPIC_DEFAULT_FABLE_MODEL` | Модель для использования с `fable` и идентификатор модели, который Claude Code распознаёт как модель Fable для [автоматического переключения на резервную модель](#automatic-model-fallback) у сторонних поставщиков |
+| `ANTHROPIC_DEFAULT_OPUS_MODEL` | Модель для использования с `opus` или для `opusplan`, когда активен Plan Mode. |
+| `ANTHROPIC_DEFAULT_SONNET_MODEL` | Модель для использования с `sonnet` или для `opusplan`, когда Plan Mode неактивен. |
+| `ANTHROPIC_DEFAULT_HAIKU_MODEL` | Модель для использования с `haiku` или для фоновой функциональности |
+| `CLAUDE_CODE_SUBAGENT_MODEL` | Модель по умолчанию для [субагентов](https://code.claude.com/docs/ru/sub-agents.md#choose-a-model), участников [команды агентов](https://code.claude.com/docs/ru/agent-teams.md#specify-teammates-and-models) и агентов [workflow](https://code.claude.com/docs/ru/workflows.md), которым не назначена модель другим способом. Принимает псевдоним, такой как `haiku`, или полное имя модели. Модель для каждого вызова или поле `model` определения, включая `inherit`, имеет приоритет. Чтобы изменить это, установите [`CLAUDE_CODE_SUBAGENT_MODEL_FORCE`](https://code.claude.com/docs/ru/sub-agents#run-every-subagent-on-one-model) |
+
+У сторонних поставщиков [Настройка отображения и возможностей закреплённой модели](#customize-pinned-model-display-and-capabilities) описывает, что показывает строка закреплённой модели в средстве выбора `/model`.
+
+Примечание: `ANTHROPIC_SMALL_FAST_MODEL` устарела в пользу
+`ANTHROPIC_DEFAULT_HAIKU_MODEL`.
+
+### Закрепление моделей для развёртываний у сторонних поставщиков
+
+При развёртывании Claude Code через [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md), [Google Cloud&#x27;s Agent Platform](https://code.claude.com/docs/ru/google-vertex-ai.md), [Microsoft Foundry](https://code.claude.com/docs/ru/microsoft-foundry.md) или [Claude Platform on AWS](https://code.claude.com/docs/ru/claude-platform-on-aws.md) закрепите версии моделей перед развёртыванием для пользователей.
+
+Без закрепления Claude Code использует псевдонимы моделей, такие как `fable`, `opus`, `sonnet` и `haiku`, которые разрешаются во встроенный идентификатор модели по умолчанию для каждого поставщика. Этот идентификатор по умолчанию может отставать от последнего выпуска Anthropic, и модель, на которую он указывает, может быть ещё не включена в учётной записи пользователя. Когда идентификатор по умолчанию недоступен:
+
+* **Amazon Bedrock и Google Cloud&#x27;s Agent Platform**: после [проверки при запуске](https://code.claude.com/docs/ru/amazon-bedrock.md#startup-model-checks) пользователи видят уведомление, и сессия переключается на более раннюю версию модели по умолчанию. Когда идентификатор по умолчанию является моделью Opus и нет доступной версии Opus, сессия переключается на модель Sonnet по умолчанию.
+* **Microsoft Foundry**: Claude Code переключается на более старую модель, или запрос завершается ошибкой.
+
+На Amazon Bedrock и Google Cloud&#x27;s Agent Platform пользователь, который запускает сессию на конкретной версии Sonnet или Opus, например с помощью `--model`, `ANTHROPIC_MODEL` или настройки `model`, закрепляет эту версию как идентификатор по умолчанию сессии для соответствующего псевдонима: проверка при запуске пропускает встроенный идентификатор по умолчанию, который она заменяет, и не показывает уведомление о переключении. До версии 2.1.211 проверка выполнялась и могла показать уведомление, даже когда модель сессии была явно настроена.
+
+&gt; [!WARNING]
+&gt;
+&gt; Установите переменные окружения модели на конкретные идентификаторы версий как часть вашей начальной настройки. Закрепление позволяет вам контролировать, когда ваши пользователи переходят на новую модель.
+
+Используйте следующие переменные окружения с идентификаторами моделей для конкретных версий вашего поставщика:
+
+| Поставщик | Пример |
+| :- | :- |
+| Amazon Bedrock | `export ANTHROPIC_DEFAULT_OPUS_MODEL=&#x27;us.anthropic.claude-opus-4-8&#x27;` |
+| Google Cloud&#x27;s Agent Platform | `export ANTHROPIC_DEFAULT_OPUS_MODEL=&#x27;claude-opus-4-8&#x27;` |
+| Microsoft Foundry | `export ANTHROPIC_DEFAULT_OPUS_MODEL=&#x27;claude-opus-4-8&#x27;` |
+
+Применяйте тот же шаблон для `ANTHROPIC_DEFAULT_FABLE_MODEL`, `ANTHROPIC_DEFAULT_SONNET_MODEL` и `ANTHROPIC_DEFAULT_HAIKU_MODEL`. Для текущих и устаревших идентификаторов моделей у всех поставщиков см. [Обзор моделей](https://platform.claude.com/docs/en/about-claude/models/overview). Чтобы обновить пользователей до новой версии модели, обновите эти переменные окружения и переразверните.
+
+По умолчанию Claude Code считает, что закреплённый идентификатор имеет [контекстное окно 1M](#extended-context), без необходимости в суффиксе `[1m]`, в следующих случаях:
+
+* **Идентификатор, который Claude Code сопоставляет с моделью с нативным окном 1M, такой как Opus 4.8 или Sonnet 5**: идентификатор совпадает, когда он содержит идентификатор модели в Anthropic API, как `us.anthropic.claude-opus-4-8` содержит `claude-opus-4-8`, или когда запись [`modelOverrides`](#override-model-ids-per-version) отображает модель на него
+* **Идентификатор, который Claude Code не может сопоставить с моделью**: [установите реальное окно](#correct-the-window-for-a-gateway-or-custom-model-id), если модель, стоящая за этим идентификатором, принимает меньше. До версии 2.1.323 Claude Code по умолчанию предполагал 200K, поэтому в этих версиях добавляйте `[1m]` к идентификатору, если модель принимает 1M.
+
+Для модели, которая достигает 1M через свой вариант `[1m]`, такой как Opus 4.6 или Sonnet 4.6, включите расширенный контекст, добавив `[1m]` к идентификатору модели в `ANTHROPIC_DEFAULT_OPUS_MODEL` или `ANTHROPIC_DEFAULT_SONNET_MODEL`:
+</code></pre>
+<p>export ANTHROPIC_DEFAULT_OPUS_MODEL=&#x27;claude-opus-4-6[1m]&#x27;</p>
+<pre><code>
+С суффиксом `[1m]` контекстное окно 1M применяется ко всему использованию закреплённого псевдонима, включая фазу Opus в режиме планирования [`opusplan`](#opusplan-model-setting) и [субагентов](https://code.claude.com/docs/ru/sub-agents.md#choose-a-model), чьё frontmatter `model` называет псевдоним.
+
+* Claude Code удаляет суффикс перед отправкой идентификатора модели вашему поставщику.
+* Добавляйте `[1m]` только когда базовая модель [поддерживает контекст 1M](https://platform.claude.com/docs/en/build-with-claude/context-windows#context-window-sizes-by-model).
+* Суффикс читается для каждой переменной, а не для каждой модели. На Amazon Bedrock, Google Cloud&#x27;s Agent Platform и Microsoft Foundry идентификатор Opus 4.6 или Sonnet 4.6 без `[1m]` в одной переменной использует контекст 200K, даже если другая переменная устанавливает ту же модель с суффиксом.
+
+Когда вы устанавливаете переменную `ANTHROPIC_DEFAULT_*_MODEL`, средство выбора `/model` показывает одну строку для этой модели вместо встроенных строк семейства, включая любые строки контекста 1M. Чтобы достичь окна 1M без добавления суффикса к этой переменной, ваши пользователи запускают `/model opus[1m]`, и Claude Code применяет суффикс к модели, которую называет переменная. `/model sonnet[1m]` работает так же.
+
+&gt; [!NOTE]
+&gt;
+&gt; Список разрешённых моделей `availableModels`, доставленный через [MDM или файл управляемых настроек](https://code.claude.com/docs/ru/managed-settings.md#delivery-mechanisms), по-прежнему применяется при использовании сторонних поставщиков; [настройки, управляемые сервером, туда не доставляются](https://code.claude.com/docs/ru/server-managed-settings.md#platform-availability).
+&gt;
+&gt; Фильтрация соответствует псевдониму модели, такому как `opus`, префиксу версии, такому как `claude-opus-4-8`, или полному идентификатору модели в форме поставщика. Префиксы, специфичные для поставщика, такие как `us.anthropic.`, не удаляются, поэтому чтобы разрешить конкретную модель, отобразите её через [`modelOverrides`](#override-model-ids-per-version) или укажите её полный идентификатор в форме поставщика:
+&gt;
+&gt; * **Google Cloud&#x27;s Agent Platform**: когда идентификатор, который запрашивает Claude Code, содержит дату после `@`, например `claude-sonnet-4-5@20250929`, включите дату в запись списка разрешённых моделей. Сам по себе `claude-sonnet-4-5` не соответствует этому идентификатору ни при одном значении настройки [`availableModelsMatch`](https://code.claude.com/docs/ru/settings-reference#availablemodelsmatch).
+&gt; * **Закреплённые модели**: укажите значение, которое вы установили в переменной `ANTHROPIC_DEFAULT_*_MODEL` этой модели
+&gt;
+&gt; Любой суффикс `[1m]` удаляется из записи списка разрешённых моделей и запрошенной модели перед сопоставлением.
+
+### Настройка отображения и возможностей закреплённой модели
+
+Когда вы закрепляете модель у стороннего поставщика, её строка в средстве выбора `/model` показывает имя модели по умолчанию, если Claude Code распознаёт закреплённый идентификатор, и необработанный идентификатор в противном случае:
+
+* **Распознана**: точный идентификатор модели, которую Claude Code знает, такой как её идентификатор Anthropic API или форма вашего поставщика или шлюза, с суффиксом `[1m]` или без него. Закрепите `us.anthropic.claude-sonnet-4-5-20250929-v1:0`, и строка будет читаться как `Sonnet 4.5`.
+* **Не распознана**: любой другой идентификатор, такой как ARN профиля вывода приложения или версия модели, которую Claude Code не знает, если только запись [`modelOverrides`](#override-model-ids-per-version) не отображает модель на этот идентификатор. На Microsoft Foundry имена развёртываний определяются пользователем, поэтому Claude Code никогда не распознаёт закреплённый идентификатор там, отображённый или нет, и строка показывает имя развёртывания по умолчанию.
+
+Когда строка показывает имя модели, её описание по умолчанию включает закреплённый идентификатор, чтобы вы всё ещё могли видеть, какой идентификатор закреплён.
+
+Claude Code также может не распознать, какие функции поддерживает закреплённая модель. Вы можете установить имя отображения и описание самостоятельно и объявить возможности с помощью переменных окружения-спутников для каждой закреплённой модели.
+
+Эти переменные вступают в силу у сторонних поставщиков, таких как Amazon Bedrock, Google Cloud&#x27;s Agent Platform и Microsoft Foundry. Переменные `_NAME` и `_DESCRIPTION` также вступают в силу, когда `ANTHROPIC_BASE_URL` указывает на [LLM-шлюз](https://code.claude.com/docs/ru/llm-gateway). Они не имеют эффекта при прямом подключении к `api.anthropic.com`.
+
+| Переменная окружения | Описание |
+| - | - |
+| `ANTHROPIC_DEFAULT_OPUS_MODEL_NAME` | Имя отображения для закреплённой модели Opus в средстве выбора `/model`. Когда не установлено, строка показывает имя модели, если Claude Code распознаёт закреплённый идентификатор, и закреплённый идентификатор в противном случае |
+| `ANTHROPIC_DEFAULT_OPUS_MODEL_DESCRIPTION` | Описание отображения для закреплённой модели Opus в средстве выбора `/model`. Когда не установлено, строка показывает описание по умолчанию, которое начинается с `Custom Opus model` |
+| `ANTHROPIC_DEFAULT_OPUS_MODEL_SUPPORTED_CAPABILITIES` | Список возможностей, разделённый запятыми, которые поддерживает закреплённая модель Opus |
+
+Те же суффиксы `_NAME`, `_DESCRIPTION` и `_SUPPORTED_CAPABILITIES` доступны для `ANTHROPIC_DEFAULT_SONNET_MODEL`, `ANTHROPIC_DEFAULT_HAIKU_MODEL`, `ANTHROPIC_DEFAULT_FABLE_MODEL` и `ANTHROPIC_CUSTOM_MODEL_OPTION`.
+
+Claude Code включает функции, такие как [уровни усилий](#adjust-effort-level) и [расширенное мышление](#extended-thinking), путём сопоставления идентификатора модели с известными шаблонами. Идентификаторы, специфичные для поставщика, такие как ARN Amazon Bedrock или пользовательские имена развёртываний, часто не соответствуют этим шаблонам, оставляя поддерживаемые функции отключёнными. Установите `_SUPPORTED_CAPABILITIES`, чтобы сообщить Claude Code, какие функции фактически поддерживает модель:
+
+| Значение возможности | Включает |
+| - | - |
+| `effort` | [Уровни усилий](#adjust-effort-level) и команду `/effort` |
+| `xhigh_effort` | Уровень усилий `xhigh` |
+| `max_effort` | Уровень усилий `max` |
+| `thinking` | [Расширенное мышление](#extended-thinking) |
+| `adaptive_thinking` | Адаптивное рассуждение, которое динамически распределяет мышление на основе сложности задачи |
+| `interleaved_thinking` | Мышление между вызовами инструментов |
+
+Когда `_SUPPORTED_CAPABILITIES` установлена, Claude Code включает перечисленные возможности и отключает неперечисленные для соответствующей закреплённой модели. Когда переменная не установлена, Claude Code использует как резервный вариант встроенное обнаружение на основе идентификатора модели.
+
+Этот пример закрепляет Opus на пользовательский ARN модели Amazon Bedrock, устанавливает понятное имя и объявляет его возможности:
+</code></pre>
+<p>export ANTHROPIC_DEFAULT_OPUS_MODEL=&#x27;arn:aws:bedrock:us-east-1:123456789012:custom-model/abc&#x27;
+export ANTHROPIC_DEFAULT_OPUS_MODEL_NAME=&#x27;Opus via Bedrock&#x27;
+export ANTHROPIC_DEFAULT_OPUS_MODEL_DESCRIPTION=&#x27;Opus 4.7 routed through a Bedrock custom endpoint&#x27;
+export ANTHROPIC_DEFAULT_OPUS_MODEL_SUPPORTED_CAPABILITIES=&#x27;effort,xhigh_effort,max_effort,thinking,adaptive_thinking,interleaved_thinking&#x27;</p>
+<pre><code>
+### Переопределение идентификаторов моделей для каждой версии
+
+На платформах, которые встраивают Claude Code и устанавливают [`CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST`](https://code.claude.com/docs/ru/env-vars), конфигурация модели хоста имеет приоритет над управляемыми настройками модели, в то время как управляемый список разрешённых моделей `availableModels` остаётся в силе, если только хост не предоставляет свой собственный; [Исключения из приоритета управляемых настроек](https://code.claude.com/docs/ru/settings.md#exceptions-to-managed-settings-precedence) указывает, какие ключи и переменные переопределяет хост.
+
+Переменные окружения уровня семейства выше настраивают один идентификатор модели для каждого псевдонима семейства. Если вам нужно отобразить несколько версий в одном семействе на различные идентификаторы поставщика, используйте вместо этого настройку `modelOverrides`.
+
+`modelOverrides` отображает отдельные идентификаторы моделей Anthropic на строки, специфичные для поставщика, которые Claude Code отправляет API вашего поставщика. Когда пользователь выбирает отображённую модель в средстве выбора `/model`, Claude Code использует ваше настроенное значение вместо встроенного значения по умолчанию.
+
+Это позволяет администраторам предприятия маршрутизировать каждую версию модели на конкретный ARN профиля вывода приложения Amazon Bedrock, имя версии Google Cloud&#x27;s Agent Platform или имя развёртывания Microsoft Foundry для управления, распределения затрат или региональной маршрутизации.
+
+Установите `modelOverrides` в вашем [файле настроек](https://code.claude.com/docs/ru/settings.md#where-settings-live):
+</code></pre>
+<p>{
+  &quot;modelOverrides&quot;: {
+    &quot;claude-opus-4-7&quot;: &quot;arn:aws:bedrock:us-east-2:123456789012:application-inference-profile/opus-prod&quot;,
+    &quot;claude-opus-4-6&quot;: &quot;arn:aws:bedrock:us-east-2:123456789012:application-inference-profile/opus-46-prod&quot;,
+    &quot;claude-sonnet-4-6&quot;: &quot;arn:aws:bedrock:us-east-2:123456789012:application-inference-profile/sonnet-prod&quot;
+  }
+}</p>
+<pre><code>
+Ключи должны быть идентификаторами моделей Anthropic, как указано в [Обзоре моделей](https://platform.claude.com/docs/en/about-claude/models/overview). Для датированных идентификаторов моделей включите суффикс даты точно так, как он там появляется. Неизвестные ключи игнорируются.
+
+Чтобы остановить [диагностическую строку](https://code.claude.com/docs/ru/errors.md#unrecognized-model-id-on-a-request) `[claude-code:unrecognized_model]` для идентификатора, такого как псевдоним шлюза, добавьте запись с этим идентификатором в качестве её значения.
+
+Переопределения заменяют встроенные идентификаторы моделей, которые стоят за каждой записью в средстве выбора `/model`. На Amazon Bedrock записи `modelOverrides` имеют приоритет над любыми профилями вывода, которые Claude Code автоматически обнаруживает при запуске. Claude Code передаёт значения, которые уже являются собственными для поставщика, такие как ARN профиля вывода Amazon Bedrock или имена развёртываний Microsoft Foundry, поставщику как есть.
+
+Переопределения также применяются, когда вы передаёте идентификатор модели Anthropic непосредственно через `--model`, переменную окружения `ANTHROPIC_MODEL` или переменную окружения `ANTHROPIC_DEFAULT_*_MODEL`. На Amazon Bedrock, Google Cloud&#x27;s Agent Platform и [Mantle](https://code.claude.com/docs/ru/amazon-bedrock.md#use-the-mantle-endpoint) идентификатор модели Anthropic без записи `modelOverrides` разрешается в тот же идентификатор, специфичный для поставщика, что и строка средства выбора `/model` для этой версии, когда поставщик поддерживает эту версию. Mantle поддерживает подмножество версий. Для идентификатора модели Anthropic вне этого подмножества Claude Code отправляет необработанный идентификатор в Mantle без отображения, если только запись `modelOverrides` не охватывает его. До версии 2.1.200 `--model` и значения переменных окружения достигали поставщика как есть, без прохождения через карту переопределений.
+
+`modelOverrides` работает вместе с `availableModels`. Список разрешённых моделей оценивается по идентификатору модели Anthropic, а не по значению переопределения, поэтому запись, такая как `&quot;opus&quot;` в `availableModels`, продолжает соответствовать, даже когда версии Opus отображаются на ARN. Когда `enforceAvailableModels` установлена в управляемых настройках, принудительный Default разрешается через `modelOverrides` только из [управляемых настроек](https://code.claude.com/docs/ru/managed-settings.md#how-claude-code-combines-managed-sources). Отображение администратора, такое как версия, закреплённая на ARN профиля вывода, соблюдается в принудительном Default. Переопределения из настроек пользователя или проекта не влияют на него.
+
+Когда `availableModels` установлена в [управляемых настройках](https://code.claude.com/docs/ru/managed-settings.md), к идентификатору модели Anthropic, переданному непосредственно через `--model` или переменные окружения выше, применяются только `modelOverrides` из управляемых настроек. Claude Code игнорирует переопределения в настройках пользователя или проекта для этих идентификаторов и никогда не разрешает идентификатор, который управляемый список исключает, через `modelOverrides` из любого источника настроек. Это ограничение источника управляемых настроек требует Claude Code версии 2.1.200 или более поздней. См. [Ограничение выбора модели](#restrict-model-selection), чтобы узнать, как обрабатываются заблокированные идентификаторы.
+
+### Конфигурация кэширования промптов
+
+Claude Code автоматически использует [кэширование промптов](https://code.claude.com/docs/ru/prompt-caching.md) для оптимизации производительности и снижения затрат. Вы можете отключить кэширование промптов глобально или для конкретных уровней моделей:
+
+| Переменная окружения | Описание |
+| - | - |
+| `DISABLE_PROMPT_CACHING` | Установите на `1`, чтобы отключить кэширование промптов для всех моделей. Имеет приоритет над настройками для каждой модели |
+| `DISABLE_PROMPT_CACHING_HAIKU` | Установите на `1`, чтобы отключить кэширование промптов для [модели Haiku по умолчанию](https://code.claude.com/docs/ru/prompt-caching.md#disable-prompt-caching) |
+| `DISABLE_PROMPT_CACHING_SONNET` | Установите на `1`, чтобы отключить кэширование промптов для [модели Sonnet по умолчанию](https://code.claude.com/docs/ru/prompt-caching.md#disable-prompt-caching) |
+| `DISABLE_PROMPT_CACHING_OPUS` | Установите на `1`, чтобы отключить кэширование промптов для [модели Opus по умолчанию](https://code.claude.com/docs/ru/prompt-caching.md#disable-prompt-caching) |
+| `DISABLE_PROMPT_CACHING_FABLE` | Установите на `1`, чтобы отключить кэширование промптов только для моделей Fable |
+
+Чтобы выбрать TTL кэша для основного диалога и для субагентов отдельно, см. [выберите TTL самостоятельно](https://code.claude.com/docs/ru/prompt-caching.md#choose-the-ttl-yourself). О том, что вызывает промах кэша, см. [Как Claude Code использует кэширование промптов](https://code.claude.com/docs/ru/prompt-caching.md).
+
+## История версий
+
+В этой таблице перечислены версии Claude Code, в которых каждый псевдоним модели изменил модель, на которую он разрешается, начиная с самых новых.
+
+| Версия | Изменение |
+| :- | :- |
+| v2.1.321 | `fable` разрешается на Fable 5.2, кроме сессий шлюза приложений Claude |
+| v2.1.321 | `best` разрешается на ту же модель, что и `opus`. Более ранние версии используют модель, на которую разрешается `fable`, если Fable доступна |
+| v2.1.293 | `haiku` разрешается на Haiku 5.5 в Anthropic API |
+| v2.1.284 | `sonnet` разрешается на Sonnet 5.5 в Anthropic API |
+| v2.1.280 | `opus` разрешается на Opus 5.5 в Anthropic API, Claude Platform на AWS, Amazon Bedrock и Agent Platform Google Cloud |
+| v2.1.257 | `fable` разрешается на Fable 5.1, кроме сеансов шлюза приложений Claude |
+| v2.1.219 | `opus` разрешается на Opus 5 в Anthropic API, Claude Platform на AWS, Amazon Bedrock и Agent Platform |
+| v2.1.207 | `opus` разрешается на Opus 4.8 в Claude Platform на AWS, Amazon Bedrock и Agent Platform |
+| v2.1.197 | `sonnet` разрешается на Sonnet 5 в Anthropic API |
+| v2.1.154 | `opus` разрешается на Opus 4.8 в Anthropic API |
+| Более ранние | `opus` разрешается на Opus 4.7 в Claude Platform на AWS и на Opus 4.6 в Amazon Bedrock и Agent Platform. `fable` разрешается на Fable 5, а `haiku` разрешается на Haiku 4.5 у каждого поставщика |
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

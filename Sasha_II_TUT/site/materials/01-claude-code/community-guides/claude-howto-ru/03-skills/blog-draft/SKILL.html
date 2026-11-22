@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>SKILL.md</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../../materials/index.html">Материалы</a> / <a href="../../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/03-skills/index.html">03-skills</a> / <a href="../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/03-skills/blog-draft/index.html">blog-draft</a></nav>
+<hr>
+<p>name: blog-draft
+description: Draft a blog post from ideas and resources. Use when users want to write a blog post, create content from research, or draft articles. Guides through research, brainstorming, outlining, and iterative drafting with version control.</p>
+<hr>
+<h3 id="user-input">User Input <a class="h-anchor" href="#user-input" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-text">$ARGUMENTS</code></pre>
+<p>Вы <strong>должны</strong> учитывать ввод пользователя перед продолжением. Пользователь должен указать:</p>
+<ul>
+<li><strong>Idea/Topic</strong>: основная тема или идея поста</li>
+<li><strong>Resources</strong>: URL, файлы или ссылки на исследования (опционально, но желательно)</li>
+<li><strong>Target audience</strong>: для кого предназначен пост (опционально)</li>
+<li><strong>Tone/Style</strong>: формальный, разговорный, технический и т. п. (опционально)</li>
+</ul>
+<p><strong>ВАЖНО</strong>: если пользователь просит изменить <strong>уже существующий</strong> пост, пропустите шаги 0-8 и сразу переходите к <strong>Step 9</strong>. Сначала прочитайте существующие черновики, затем начинайте итерации.</p>
+<h3 id="h">Поток выполнения <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Следуйте шагам последовательно. <strong>Не пропускайте шаги и не идите дальше без согласования там, где оно требуется.</strong></p>
+<h4 id="step-0-создать-папку-проекта">Step 0: Создать папку проекта <a class="h-anchor" href="#step-0-создать-папку-проекта" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Сгенерируйте имя папки по формату: <code>YYYY-MM-DD-short-topic-name</code></li>
+<li>Используйте сегодняшнюю дату</li>
+<li>Создайте короткий slug, удобный для URL (lowercase, hyphens, максимум 5 слов)</li>
+</ol>
+<ol>
+<li>Создайте структуру:</li>
+</ol>
+<pre><code>   blog-posts/
+   └── YYYY-MM-DD-short-topic-name/
+       └── resources/</code></pre>
+<ol>
+<li>Подтвердите создание папки с пользователем перед продолжением.</li>
+</ol>
+<h4 id="step-1-исследование-и-сбор-ресурсов">Step 1: Исследование и сбор ресурсов <a class="h-anchor" href="#step-1-исследование-и-сбор-ресурсов" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Создайте подпапку <code>resources/</code> в директории поста</li>
+</ol>
+<ol>
+<li>Для каждого предоставленного ресурса:</li>
+<li><strong>URLs</strong>: извлеките и сохраните ключевую информацию в <code>resources/</code> как markdown-файлы</li>
+<li><strong>Files</strong>: прочитайте и кратко изложите в <code>resources/</code></li>
+<li><strong>Topics</strong>: используйте web search для сбора актуальной информации</li>
+</ol>
+<ol>
+<li>Для каждого ресурса создайте summary-файл в <code>resources/</code>:</li>
+<li><code>resources/source-1-[short-name].md</code></li>
+<li><code>resources/source-2-[short-name].md</code></li>
+<li>и т. д.</li>
+</ol>
+<ol>
+<li>Каждый summary должен содержать:</li>
+</ol>
+<pre><code class="language-markdown">   # Source: [Title/URL]
+
+   ## Key Points
+   - Point 1
+   - Point 2
+
+   ## Relevant Quotes/Data
+   - Quote or statistic 1
+   - Quote or statistic 2
+
+   ## How This Relates to Topic
+   Brief explanation of relevance</code></pre>
+<ol>
+<li>Представьте пользователю summary исследований.</li>
+</ol>
+<h4 id="step-2-brainstorm-clarify">Step 2: Brainstorm &amp; Clarify <a class="h-anchor" href="#step-2-brainstorm-clarify" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>На основе темы и собранных ресурсов покажите:</li>
+<li><strong>Main themes</strong> из исследования</li>
+<li><strong>Potential angles</strong> для поста</li>
+<li><strong>Key points</strong>, которые стоит раскрыть</li>
+<li><strong>Gaps</strong> в информации, которые нужно уточнить</li>
+</ol>
+<ol>
+<li>Задайте уточняющие вопросы:</li>
+<li>Какой главный вывод вы хотите донести до читателя?</li>
+<li>Какие пункты из исследования нужно подчеркнуть?</li>
+<li>Какой нужен объём? (short: 500-800 words, medium: 1000-1500, long: 2000+)</li>
+<li>Что нужно исключить?</li>
+</ol>
+<ol>
+<li><strong>Ждите ответа пользователя, прежде чем продолжать.</strong></li>
+</ol>
+<h4 id="step-3-предложить-outline">Step 3: Предложить outline <a class="h-anchor" href="#step-3-предложить-outline" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Создайте структурированный outline:</li>
+</ol>
+<pre><code class="language-markdown">   # Blog Post Outline: [Title]
+
+   ## Meta Information
+   - **Target Audience**: [who]
+   - **Tone**: [style]
+   - **Target Length**: [word count]
+   - **Main Takeaway**: [key message]
+
+   ## Proposed Structure
+
+   ### Hook/Introduction
+   - Opening hook idea
+   - Context setting
+   - Thesis statement
+
+   ### Section 1: [Title]
+   - Key point A
+   - Key point B
+   - Supporting evidence from [source]
+
+   ### Section 2: [Title]
+   - Key point A
+   - Key point B
+
+   [Continue for all sections...]
+
+   ### Conclusion
+   - Summary of key points
+   - Call to action or final thought
+
+   ## Sources to Cite
+   - Source 1
+   - Source 2</code></pre>
+<ol>
+<li>Представьте outline пользователю и <strong>попросите утвердить его или внести правки</strong>.</li>
+</ol>
+<h4 id="step-4-сохранить-утвержденный-outline">Step 4: Сохранить утверждённый outline <a class="h-anchor" href="#step-4-сохранить-утвержденный-outline" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>После утверждения сохраните его в <code>OUTLINE.md</code> в папке поста.</li>
+</ol>
+<ol>
+<li>Подтвердите, что outline сохранён.</li>
+</ol>
+<h4 id="step-5-зафиксировать-outline-в-git-если-репозиторий-git">Step 5: Зафиксировать outline в git (если репозиторий git) <a class="h-anchor" href="#step-5-зафиксировать-outline-в-git-если-репозиторий-git" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Проверьте, является ли текущая директория git-репозиторием.</li>
+</ol>
+<ol>
+<li>Если да:</li>
+<li>Добавьте новые файлы в stage: папку поста, ресурсы и <code>OUTLINE.md</code></li>
+<li>Создайте commit с сообщением: <code>docs: Add outline for blog post - [topic-name]</code></li>
+<li>Отправьте изменения в remote</li>
+</ol>
+<ol>
+<li>Если это не git-репозиторий, пропустите шаг и сообщите пользователю.</li>
+</ol>
+<h4 id="step-6-написать-черновик">Step 6: Написать черновик <a class="h-anchor" href="#step-6-написать-черновик" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>На основе утверждённого outline напишите полный черновик поста.</li>
+</ol>
+<ol>
+<li>Строго следуйте структуре из <code>OUTLINE.md</code>.</li>
+</ol>
+<ol>
+<li>Включите:</li>
+<li>Захватывающее вступление</li>
+<li>Чёткие заголовки секций</li>
+<li>Подтверждения и примеры из исследования</li>
+<li>Плавные переходы между секциями</li>
+<li>Сильное заключение с основным выводом</li>
+<li><strong>Citations</strong>: все сравнения, статистика, данные и факты должны иметь ссылку на источник</li>
+</ol>
+<ol>
+<li>Сохраните черновик как <code>draft-v0.1.md</code> в папке поста.</li>
+</ol>
+<ol>
+<li>Формат:</li>
+</ol>
+<pre><code class="language-markdown">   # [Blog Post Title]
+
+   *[Optional: subtitle or tagline]*
+
+   [Full content with inline citations...]
+
+   ---
+
+   ## References
+   - [1] Source 1 Title - URL or Citation
+   - [2] Source 2 Title - URL or Citation
+   - [3] Source 3 Title - URL or Citation</code></pre>
+<ol>
+<li><strong>Требования к цитированию</strong>:</li>
+<li>Каждый факт, статистика и сравнение должны иметь inline citation</li>
+<li>Используйте нумерованные ссылки [1], [2] и т. п. или именованные цитаты [Source Name]</li>
+<li>Связывайте цитаты с разделом References в конце</li>
+<li>Пример: &quot;Исследования показывают, что 65% разработчиков предпочитают TypeScript [1]&quot;</li>
+<li>Пример: &quot;React превосходит Vue по скорости рендеринга на 20% [React Benchmarks 2024]&quot;</li>
+</ol>
+<h4 id="step-7-зафиксировать-черновик-в-git-если-репозиторий-git">Step 7: Зафиксировать черновик в git (если репозиторий git) <a class="h-anchor" href="#step-7-зафиксировать-черновик-в-git-если-репозиторий-git" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Проверьте, находитесь ли вы в git-репозитории.</li>
+</ol>
+<ol>
+<li>Если да:</li>
+<li>Добавьте файл черновика в stage</li>
+<li>Создайте commit с сообщением: <code>docs: Add draft v0.1 for blog post - [topic-name]</code></li>
+<li>Отправьте изменения в remote</li>
+</ol>
+<ol>
+<li>Если нет, пропустите шаг и сообщите пользователю.</li>
+</ol>
+<h4 id="step-8-показать-черновик-на-ревью">Step 8: Показать черновик на ревью <a class="h-anchor" href="#step-8-показать-черновик-на-ревью" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Покажите пользователю содержимое черновика.</li>
+</ol>
+<ol>
+<li>Попросите обратную связь:</li>
+<li>Общее впечатление?</li>
+<li>Какие секции нужно расширить или сократить?</li>
+<li>Нужны ли изменения тона?</li>
+<li>Чего не хватает?</li>
+<li>Какие правки или переписывание нужны?</li>
+</ol>
+<ol>
+<li><strong>Ждите ответа пользователя.</strong></li>
+</ol>
+<h4 id="step-9-итерация-или-финализация">Step 9: Итерация или финализация <a class="h-anchor" href="#step-9-итерация-или-финализация" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Если пользователь просит изменения:</strong></p>
+<ol>
+<li>Зафиксируйте все изменения</li>
+<li>Вернитесь к Step 6 со следующими корректировками:</li>
+<li>Увеличьте номер версии (v0.2, v0.3 и т. д.)</li>
+<li>Учтите всю обратную связь</li>
+<li>Сохраняйте как <code>draft-v[X.Y].md</code></li>
+<li>Повторяйте Steps 7-8</li>
+</ol>
+<p><strong>Если пользователь одобряет:</strong></p>
+<ol>
+<li>Подтвердите финальную версию черновика</li>
+</ol>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

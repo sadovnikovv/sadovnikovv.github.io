@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Модуль 01. Основы работы и промптинг</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/index.html">claude-code-pro-course</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/course/index.html">course</a></nav>
+<h1 id="модуль-01-основы-работы-и-промптинг">Модуль 01. Основы работы и промптинг <a class="h-anchor" href="#модуль-01-основы-работы-и-промптинг" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="h">Главная идея <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code — это сильный инженер, который <strong>впервые видит ваш проект</strong> и <strong>не помнит прошлых разговоров</strong> (кроме CLAUDE.md и авто-памяти). Качество результата = качество постановки задачи + контекст + способ проверки.</p>
+<h3 id="h-2">Формула хорошего промпта <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>[Что сделать] + [Где] + [Ограничения] + [Как проверить]</code></pre>
+<p>❌ Плохо:</p>
+<pre><code>почини логин</code></pre>
+<p>✅ Хорошо:</p>
+<pre><code>Пользователи жалуются, что после истечения сессии логин падает с 500.
+Посмотри src/auth/ — особенно refresh токена. Напиши падающий тест,
+который воспроизводит проблему, потом исправь. Не меняй публичный API.
+Проверь: npm test -- auth</code></pre>
+<h3 id="h-3">Приёмы <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="1-указывайте-файлы-через">1. Указывайте файлы через <code>@</code> <a class="h-anchor" href="#1-указывайте-файлы-через" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>&gt; отрефактори @src/utils/date.ts по примеру @src/utils/money.ts</code></pre>
+<h4 id="2-давайте-примеры-и-паттерны">2. Давайте примеры и паттерны <a class="h-anchor" href="#2-давайте-примеры-и-паттерны" aria-label="Ссылка на раздел">#</a></h4>
+<p>«Сделай как в X» работает лучше длинных описаний стиля.</p>
+<h4 id="3-вставляйте-изображения">3. Вставляйте изображения <a class="h-anchor" href="#3-вставляйте-изображения" aria-label="Ссылка на раздел">#</a></h4>
+<p>Перетащите скриншот в терминал (или <code>Ctrl+V</code>) — макеты, ошибки, графики.</p>
+<pre><code>&gt; сверстай компонент по этому макету, потом сделай скриншот и сравни</code></pre>
+<h4 id="4-передавайте-данные-через-pipe">4. Передавайте данные через pipe <a class="h-anchor" href="#4-передавайте-данные-через-pipe" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">cat error.log | claude -p &quot;найди первопричину ошибки&quot;
+git diff main | claude -p &quot;сделай ревью изменений&quot;</code></pre>
+<h4 id="5-просите-подумать">5. Просите подумать <a class="h-anchor" href="#5-просите-подумать" aria-label="Ссылка на раздел">#</a></h4>
+<p>Для сложных задач: «продумай несколько вариантов и выбери лучший», «подумай внимательно (think hard)». Расширенное мышление также включается в <code>/config</code> или <code>Tab</code> в некоторых версиях.</p>
+<h4 id="6-задавайте-вопросы-о-коде">6. Задавайте вопросы о коде <a class="h-anchor" href="#6-задавайте-вопросы-о-коде" aria-label="Ссылка на раздел">#</a></h4>
+<p>Онбординг в новый проект — одно из лучших применений:</p>
+<pre><code>&gt; как работает логирование?
+&gt; почему здесь вызывается foo(), а не bar()? посмотри историю git
+&gt; какие edge cases не покрыты в @src/parser.ts?</code></pre>
+<h4 id="7-корректируйте-рано">7. Корректируйте рано <a class="h-anchor" href="#7-корректируйте-рано" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><code>Esc</code> — остановить, если Claude пошёл не туда.</li>
+<li><code>Esc Esc</code> — откатиться и переформулировать.</li>
+<li>«Стоп, сначала покажи план» — лучше, чем исправлять 20 файлов.</li>
+</ul>
+<h4 id="8-одна-сессия-одна-задача">8. Одна сессия — одна задача <a class="h-anchor" href="#8-одна-сессия-одна-задача" aria-label="Ссылка на раздел">#</a></h4>
+<p>Переключились на другую задачу → <code>/clear</code>. Мусор в контексте ухудшает ответы и стоит денег.</p>
+<h3 id="h-4">Анти-паттерны <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Анти-паттерн</th><th>Что делать</th></tr></thead><tbody><tr><td>«Сделай всё хорошо»</td><td>Критерии готовности, команды проверки</td></tr><tr><td>3 часа в одной сессии на 5 задач</td><td><code>/clear</code> между задачами</td></tr><tr><td>Исправлять ошибку Claude 5-й раз подряд</td><td><code>/clear</code> + лучший промпт с учётом уроков</td></tr><tr><td>«Исследуй весь проект»</td><td>Конкретизируйте или используйте subagent</td></tr><tr><td>Слепо принимать всё</td><td>Читайте диффы, особенно в auth/платежах/миграциях</td></tr></tbody></table></div>
+<h3 id="h-5">Практика <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li>Возьмите реальный баг. Сформулируйте задачу по формуле: что, где, ограничения, проверка.</li>
+<li>Попросите Claude сначала <strong>только</strong> исследовать и описать причину — без правок.</li>
+<li>Потом попросите тест + исправление.</li>
+</ol>
+<p>➡️ Далее: <a href="02-claude-md.md">02. CLAUDE.md — память проекта</a></p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

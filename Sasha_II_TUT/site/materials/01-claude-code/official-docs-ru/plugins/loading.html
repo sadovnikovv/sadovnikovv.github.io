@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Справочник по загрузке плагинов</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/plugins/index.html">plugins</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Справочник по загрузке плагинов <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Отследите, откуда Claude Code загружает каждый плагин, какой файл параметров решает, загружается ли он, и почему обновление ничего не изменило.</p>
+</blockquote>
+<p>Используйте эту страницу, когда плагин не загрузился, загрузилась другая копия, чем вы ожидали, или плагин не подхватил обновление, и вы хотите увидеть, какой источник, область параметров или файл на диске это решил. На ней приведены правила, которые Claude Code применяет при запуске сеанса и каждый раз при запуске <code>/reload-plugins</code>. Вы также можете попросить Claude прочитать эту страницу и диагностировать вашу конфигурацию.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Эти случаи рассмотрены на других страницах:</p>
+<ul>
+<li><strong>Шаги установки, включения, отключения и обновления</strong>: см. <a href="https://code.claude.com/docs/ru/plugins/install.md">Установка и управление плагинами</a></li>
+<li><strong>У вас есть конкретное сообщение об ошибке</strong>: см. <a href="https://code.claude.com/docs/ru/plugins/troubleshooting.md">Устранение неполадок плагинов</a></li>
+</ul>
+</blockquote>
+<p>Начните с раздела <a href="#check-which-stage-a-plugin-reached">Проверьте, на каком этапе находится плагин</a> для трёх этапов, через которые проходит установленный плагин, или перейдите в раздел, соответствующий тому, что вы видите:</p>
+<ul>
+<li>Плагин, который вы отключили, всё ещё загружается: <a href="#find-where-a-plugin-is-enabled">Найдите, где плагин включен</a></li>
+<li>Обновление ничего не изменило: <a href="#versions-and-updates">Версии и обновления</a></li>
+<li>Вы смотрите на файлы в <code>~/.claude/plugins/</code>: <a href="#find-plugins-on-disk">Найдите плагины на диске</a></li>
+<li>Плагин <code>--plugin-dir</code> не загрузился, или вместо него загрузился плагин с тем же именем: <a href="#name-conflicts">Конфликты имён</a></li>
+<li>Плагин в <code>~/.claude/skills/</code> или <code>.claude/skills/</code> не загрузился, и никакая ошибка не объясняет причину: <a href="#skills-directory-plugins-blocked-by-managed-settings">Плагины из каталога скиллов, заблокированные управляемыми настройками</a></li>
+</ul>
+<h3 id="h-2">Проверьте, на каком этапе находится плагин <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Запись <code>enabledPlugins</code> становится плагином, который вы можете использовать, в несколько этапов: ваши параметры объявляют его, Claude Code загружает его на диск, и работающий сеанс загружает его. Когда плагин ведёт себя не так, как предполагает файл параметров, проверьте, на каком этапе он находится:</p>
+<ul>
+<li><strong>Объявлен в параметрах</strong>: <code>enabledPlugins</code> указывает, какие плагины должны быть включены, а <code>extraKnownMarketplaces</code> указывает, какие маркетплейсы должны существовать. Когда вы запускаете <code>claude plugin marketplace add</code>, Claude Code записывает маркетплейс в <code>extraKnownMarketplaces</code> в ваши пользовательские параметры, а также на диск</li>
+<li><strong>Загружен на диск в <code>~/.claude/plugins/</code></strong>: записи о том, что Claude Code загрузил, и сами загруженные файлы:</li>
+<li><code>known_marketplaces.json</code> записывает каждый маркетплейс, который Claude Code загрузил, с его <code>source</code>, <code>installLocation</code>, <code>lastUpdated</code> и <code>autoUpdate</code>. На одного пользователя приходится один <code>known_marketplaces.json</code>, поэтому маркетплейс, который вы добавляете в одном проекте, доступен в каждом проекте</li>
+<li><code>installed_plugins.json</code> записывает каждую установку с её <code>scope</code>, <code>installPath</code> и <code>version</code></li>
+<li><code>cache/</code> содержит файлы плагинов</li>
+<li><strong>Загружен в работающем сеансе</strong>: набор плагинов, который Claude Code загрузил при запуске или при последнем <code>/reload-plugins</code>. Изменения параметров или диска не достигают этого уровня до тех пор, пока вы не запустите <code>/reload-plugins</code> или не начнёте новый сеанс. Вот почему <code>claude plugin update</code> заканчивается на <code>Restart to apply changes.</code> и фоновые обновления предлагают вам <code>Run /reload-plugins to apply</code></li>
+</ul>
+<h4 id="h-3">Плагины и маркетплейсы, которых нет на диске при запуске сеанса <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Плагины загружаются при запуске сеанса из <code>installed_plugins.json</code> и кэша без использования сети. После запуска сеанса Claude Code проверяет объявленные маркетплейсы в фоновом режиме:</p>
+<ul>
+<li><strong>Маркетплейс, который параметры объявляют, но <code>known_marketplaces.json</code> не содержит</strong>: Claude Code клонирует его, затем перезагружает плагины и загружает включённые плагины, которые ещё не кэшированы</li>
+<li><strong>Объявленный маркетплейс, чей источник изменился в параметрах</strong>: Claude Code повторно загружает его из нового источника и показывает <code>Plugins changed. Run /reload-plugins to activate.</code></li>
+</ul>
+<p>Включённый плагин, который ни один путь не загрузил и у которого нет пригодного для использования каталога кэша, показывает <code>Plugin &quot;&lt;name&gt;&quot; not cached at &lt;path&gt;</code> на вкладке <code>/plugin</code> <strong>Errors</strong>. Для исправления см. <a href="https://code.claude.com/docs/ru/plugins/troubleshooting#plugin-not-cached-at"><code>Plugin &quot;&lt;name&gt;&quot; not cached at &lt;path&gt;</code></a>.</p>
+<h3 id="h-4">Как узнать, откуда взялся плагин <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>У каждого плагина есть идентификатор вида <code>&lt;name&gt;@&lt;origin&gt;</code>, который вы видите в файлах настроек и в выводе <code>claude plugin list --json</code>. Часть после <code>@</code> показывает, где Claude Code нашёл плагин:</p>
+<p>| ID заканчивается на | Как плагин туда попал | Как его включить или отключить |
+| :- | :- | :- |
+| <code>@&lt;marketplace&gt;</code> | Вы установили его из добавленного вами маркетплейса | <code>&quot;&lt;name&gt;@&lt;marketplace&gt;&quot;: true</code> или <code>false</code> в <code>enabledPlugins</code> в файле настроек |
+| <code>@inline</code> | Вы запустили Claude Code с <code>--plugin-dir</code> или <code>--plugin-url</code>, задали <a href="https://code.claude.com/docs/ru/env-vars#variables"><code>CLAUDE_CODE_PLUGIN_DIRS</code></a> или приложение на Agent SDK передало параметр <code>plugins</code>. Он загружается только для этой сессии | Включён на время сессии, если только манифест не задаёт <code>defaultEnabled: false</code> или файл настроек не задаёт <code>&quot;&lt;name&gt;@inline&quot;: false</code> |
+| <code>@skills-dir</code> | Вы сохранили каталог плагина, содержащий <code>.claude-plugin/plugin.json</code>, в <code>~/.claude/skills/</code> или в <code>.claude/skills/</code> проекта | Определяется значением <code>defaultEnabled</code> в манифесте, если только файл настроек не задаёт <code>&quot;&lt;name&gt;@skills-dir&quot;</code> равным <code>true</code> или <code>false</code> |
+| <code>@synced</code> | Вы или ваша организация включили его для вашей учётной записи claude.ai, и Claude Code <a href="#synced-plugins">скачал его</a> | Включён, если только манифест не задаёт <code>defaultEnabled: false</code> или файл настроек не задаёт <code>&quot;&lt;name&gt;@synced&quot;: false</code>. Плагин, который ваша организация пометила как обязательный, загружается в любом случае |</p>
+<p>Для плагина из маркетплейса <code>&lt;name&gt;</code> — это имя записи в <code>marketplace.json</code>; для <code>@inline</code> и <code>@skills-dir</code> — это <code>name</code> в манифесте плагина.</p>
+<p>Имена источников из этой таблицы зарезервированы, поэтому ни один маркетплейс не может называться <code>inline</code>, <code>skills-dir</code> или <code>synced</code>.</p>
+<h4 id="h-5">Имя записи и имя в манифесте <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<p>У плагина из маркетплейса есть два имени, и они могут различаться:</p>
+<ul>
+<li><strong>Имя записи в <code>marketplace.json</code></strong>: ключ для установки и включения. Именно его вы пишете в <code>enabledPlugins</code>, по нему называется каталог кэша, и его показывает <code>claude plugin list</code></li>
+<li><strong><code>name</code> в манифесте</strong>: пространство имён, в котором находятся компоненты плагина, и то, что сравнивается при <a href="#name-conflicts">конфликтах имён</a></li>
+</ul>
+<h4 id="h-6">Плагины, распространяемые через репозиторий <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<p>Чтобы поделиться плагином через репозиторий, укажите его в <code>enabledPlugins</code> в <code>.claude/settings.json</code> или поместите его в <code>.claude/skills/</code>. Claude Code не сканирует каталог <code>.claude/plugins/</code> проекта.</p>
+<p>Облачная сессия не добавляет маркетплейсы, которые репозиторий перечисляет в <a href="https://code.claude.com/docs/ru/settings-reference#extraknownmarketplaces"><code>extraKnownMarketplaces</code></a>, поскольку для этого требуется диалог доверия к рабочему пространству, который облачная сессия никогда не показывает.</p>
+<h5 id="h-7">Проверка доверия и ограничения компонентов для плагинов из репозитория <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h5>
+<p>Плагин уровня проекта хранится в репозитории и попадает к каждому участнику, который его клонирует. Поскольку это содержимое поступает из репозитория, а не от вас, оно загружается только после той же проверки доверия, которая применяется к правилам разрешений проекта в <code>.claude/settings.json</code>. Доверия к родительской папке или запуска с <code>-p</code> недостаточно. Компоненты, выполняющие код, ограничены ещё сильнее:</p>
+<ul>
+<li>Объявленные в нём MCP-серверы проходят <a href="https://code.claude.com/docs/ru/mcp.md">такое же подтверждение для каждого сервера</a>, как и в <code>.mcp.json</code> проекта</li>
+<li>Объявленные в нём MCP-серверы в виде <a href="https://code.claude.com/docs/ru/plugins/manifest-reference.md#mcpservers">MCP bundle</a> — файла <code>.mcpb</code> или <code>.dxt</code> — или из файла вне каталога плагина пропускаются. Объявляйте их встроенно или в <code>.mcp.json</code> внутри каталога плагина</li>
+<li><a href="https://code.claude.com/docs/ru/plugins/components.md#monitors">Фоновые мониторы</a> не загружаются</li>
+</ul>
+<p>Ни проверка доверия, ни эти ограничения компонентов не применяются к плагину в вашем собственном <code>~/.claude/skills/</code>.</p>
+<p>О том, как писать плагины для <code>--plugin-dir</code> и каталога скиллов, см. <a href="https://code.claude.com/docs/ru/plugins/create.md">Создание плагинов</a>.</p>
+<h5 id="h-8">Выяснение, почему плагин из репозитория не загрузился <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h5>
+<p>Если плагин в <code>.claude/skills/</code> вашего репозитория не загружается, проверьте следующие причины:</p>
+<ul>
+<li><strong>В подкаталоге</strong>: плагин в корне репозитория не загружается. Claude Code читает <code>.claude/skills/</code> <a href="https://code.claude.com/docs/ru/permissions.md#working-directories">основного рабочего каталога</a> сессии и, в отличие от обычных скиллов и команд, не <a href="https://code.claude.com/docs/ru/skills.md#discovery-from-parent-and-nested-directories">ищет плагины в родительских каталогах</a>. Вместо этого запускайте из корня репозитория или <a href="https://code.claude.com/docs/ru/permissions#move-the-session-to-another-directory">переместите туда сессию с помощью <code>/cd</code></a> в версии v2.1.246 или новее</li>
+<li><strong>Из десктопного приложения, в worktree</strong>: плагин загружается из <code>.claude/skills/</code> основного checkout, а не из worktree. См. <a href="https://code.claude.com/docs/ru/worktrees.md#what-worktrees-share-with-the-main-checkout">Что worktree разделяют с основным checkout</a></li>
+<li><strong>В папке, которой вы не доверяете</strong>: плагин загружается только после того, как вы примете <a href="https://code.claude.com/docs/ru/permissions.md#what-runs-before-you-trust-a-folder">диалог доверия к рабочему пространству</a> для этой папки</li>
+<li><strong>В организации, которая управляет Claude Code</strong>: см. <a href="#skills-directory-plugins-blocked-by-managed-settings">Плагины из каталога скиллов, заблокированные управляемыми настройками</a></li>
+</ul>
+<h4 id="h-9">Плагины из каталога скиллов, заблокированные управляемыми настройками <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если папка плагина в <code>~/.claude/skills/</code> или в <code>.claude/skills/</code> проекта не загрузилась и вы не видите ошибки, возможно, ваш администратор заблокировал её через <a href="https://code.claude.com/docs/ru/managed-settings.md">управляемые настройки</a>. Эти папки поступают от вас или из вашего репозитория, а не из маркетплейса, поэтому Claude Code пропускает их, когда администратор задаёт одно из следующих ограничений:</p>
+<ul>
+<li><strong>Настройка ограничена плагинами</strong>: <a href="https://code.claude.com/docs/ru/settings-reference#strictpluginonlycustomization"><code>strictPluginOnlyCustomization</code></a> имеет значение <code>true</code> или массив, называющий один или несколько видов настройки, которые нужно заблокировать. Плагин пропускается целиком, если заблокирован хотя бы один вид, например <code>mcp</code>, независимо от того, какие компоненты в нём есть.</li>
+<li><strong>Источники маркетплейсов ограничены</strong>: список разрешённых источников <a href="https://code.claude.com/docs/ru/settings-reference#strictknownmarketplaces"><code>strictKnownMarketplaces</code></a> без записи <code>{ &quot;source&quot;: &quot;skills-dir&quot; }</code> или список <a href="https://code.claude.com/docs/ru/settings-reference#blockedmarketplaces"><code>blockedMarketplaces</code></a>, содержащий такую запись.</li>
+</ul>
+<p><code>/plugin</code> и <code>claude plugin list</code> не показывают ни плагина, ни ошибки для пропущенной папки. Её команды <code>/&lt;name&gt;:&lt;skill&gt;</code> и агенты отсутствуют, как и её хуки и MCP-серверы.</p>
+<p>Если скиллы не входят в число заблокированных видов, <code>SKILL.md</code> в корне папки по-прежнему загружается как обычный скилл. В этом случае <code>/&lt;name&gt;</code> продолжает работать, а вкладка <strong>Installed</strong> в <code>/plugin</code> показывает этот скилл в разделе <strong>Skills</strong>.</p>
+<ul>
+<li><strong>Подтвердите причину</strong>: выполните <code>/status</code> в сессии Claude Code. Если в строке <code>Setting sources</code> указано <code>Enterprise managed settings</code>, спросите администратора, применяется ли к вам одна из этих настроек. Если нет, см. <a href="#check-why-a-repository-plugin-didnt-load">Выяснение, почему плагин из репозитория не загрузился</a>, чтобы найти другие причины.</li>
+<li><strong>Загрузите плагин целиком</strong>: добавьте его в <a href="https://code.claude.com/docs/ru/plugins/create-marketplace.md#create-a-marketplace">маркетплейс</a>, разрешённый вашей организацией, и установите оттуда. Чтобы вместо этого загрузить его на одну сессию, запустите <code>claude</code> из оболочки с <a href="https://code.claude.com/docs/ru/plugins/cli-reference#flags-that-load-a-plugin-for-one-session"><code>--plugin-dir</code></a> и путём к папке — это работает, если только администратор не отключил и этот флаг.</li>
+</ul>
+<h4 id="плагины-синхронизированные-с-claude-ai">Плагины, синхронизированные с claude.ai <a class="h-anchor" href="#плагины-синхронизированные-с-claude-ai" aria-label="Ссылка на раздел">#</a></h4>
+<p>Плагин, который вы включаете для своей учётной записи claude.ai, также загружается в Claude Code наряду с плагинами, которые вы устанавливаете из маркетплейсов. Сюда входят и плагины, которые ваша организация включает для своих участников. Каждый из этих плагинов загружается как <code>&lt;name&gt;@synced</code>, без маркетплейса и без <a href="#check-which-stage-a-plugin-reached">записи об установке</a>.</p>
+<p>В терминальных сессиях загружаются все скиллы, агенты, хуки, MCP-серверы и LSP-серверы синхронизированного плагина с тем же уровнем доверия, что и у установленного вами плагина из маркетплейса.</p>
+<p>О компонентах, которые загружает Cowork, см. <a href="https://claude.com/docs/plugins/platform-support#compare-component-support-by-app">таблицу поддержки компонентов</a> на claude.com.</p>
+<p>Синхронизированные плагины загружаются в сессиях Cowork и в терминальных сессиях, в которых вы входите с помощью своей учётной записи claude.ai:</p>
+<ul>
+<li><strong><a href="https://claude.com/product/cowork">Cowork</a></strong>: Claude Code скачивает их в собственное окружение сессии при её запуске</li>
+<li><strong>Терминальные сессии</strong>: при каждом запуске Claude Code один раз выполняет синхронизацию в фоновом режиме, скачивая новые и обновлённые плагины и удаляя те, которые вы или ваша организация отключили. Для синхронизации в терминальных сессиях требуется Claude Code v2.1.273 или новее</li>
+</ul>
+<h5 id="время-синхронизации-в-облачных-сессиях-cowork">Время синхронизации в облачных сессиях Cowork <a class="h-anchor" href="#время-синхронизации-в-облачных-сессиях-cowork" aria-label="Ссылка на раздел">#</a></h5>
+<p>Если вы включаете или отключаете плагин для своей учётной записи claude.ai во время сессии Cowork, которая выполняется в облаке, продолжайте работать в этой сессии. Если после нескольких сообщений ничего не изменилось, начните новую сессию.</p>
+<h5 id="h-10">Время синхронизации в терминальных сессиях <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h5>
+<p>Поскольку синхронизация в терминале выполняется в фоновом режиме, она может завершиться уже после начала сессии. Когда она добавляет, обновляет или удаляет синхронизированный плагин в интерактивной сессии, вы видите <code>Plugins changed. Run /reload-plugins to activate.</code> Выполните <code>/reload-plugins</code>, чтобы загрузить изменение в этой сессии, или оставьте его до следующего запуска Claude Code.</p>
+<p>Если вы включаете или отключаете плагин для своей учётной записи claude.ai во время терминальной сессии, Claude Code скачивает или удаляет его при следующем запуске Claude Code.</p>
+<h5 id="h-11">Требования ко входу для синхронизации в терминале <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h5>
+<p>В терминале плагины синхронизируются только в сессиях, в которых вы входите с помощью своей учётной записи claude.ai.</p>
+<p>Claude Code не скачивает и не загружает синхронизированные плагины в следующих терминальных сессиях, даже после входа с помощью <code>/login</code>:</p>
+<ul>
+<li>Сессия, в которой <code>ANTHROPIC_AUTH_TOKEN</code>, <code>CLAUDE_CODE_OAUTH_TOKEN</code> или скрипт <code>apiKeyHelper</code> предоставляет учётные данные вместо такого входа</li>
+<li>Сессия, которая не <a href="https://code.claude.com/docs/ru/env-vars.md#features-that-need-feature-flag-fetching">получает флаги функций от Anthropic</a>, например сессия, в которой вы задали <code>CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC</code></li>
+<li>Сессия в <a href="https://code.claude.com/docs/ru/headless.md#start-faster-with-bare-mode">режиме bare</a> или сессия, запущенная с <code>--safe-mode</code></li>
+<li>Сессия, запущенная со списком <a href="https://code.claude.com/docs/ru/cli-reference#cli-flags"><code>--setting-sources</code></a>, в который не входит <code>user</code></li>
+</ul>
+<p>Если вы вошли в более ранней версии Claude Code, этот вход не распространяется на плагины, пока Claude Code не обновит его в фоновом режиме. Чтобы получить доступ раньше, снова выполните <code>/login</code>. Синхронизация плагинов начнётся при следующем запуске Claude Code.</p>
+<h5 id="h-12">Управление загрузкой синхронизированных плагинов <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h5>
+<p>Вы можете отключать синхронизированные плагины по одному, за исключением плагина, обязательного для вашей организации, или отключить все синхронизированные плагины на компьютере:</p>
+<ul>
+<li><strong>Один плагин</strong>: <code>claude plugin disable &lt;name&gt;@synced</code> в оболочке и вкладка <strong>Installed</strong> в <code>/plugin</code> в сессии сохраняют <code>&quot;&lt;name&gt;@synced&quot;: false</code> в ваших пользовательских <a href="https://code.claude.com/docs/ru/settings-reference#enabledplugins"><code>enabledPlugins</code></a>. Чтобы исключить плагин из проекта во всех окружениях, задайте тот же ключ в закоммиченном <code>.claude/settings.json</code> проекта</li>
+<li><strong>Все синхронизированные плагины на компьютере</strong>: задайте <a href="https://code.claude.com/docs/ru/settings-reference#syncclaudeaiplugins"><code>syncClaudeAiPlugins</code></a> равным <code>false</code> в пользовательских настройках, или ваша организация задаёт его в <a href="https://code.claude.com/docs/ru/managed-settings.md">управляемых настройках</a>. Claude Code прекращает скачивание, а при следующем запуске перемещает уже синхронизированные плагины в <code>~/.claude/plugins/.trash/</code> и больше не загружает их. Если ваша организация отключает Skills на claude.ai, синхронизация плагинов также прекращается</li>
+<li><strong>Плагин, обязательный для вашей организации</strong>: плагин, который ваша организация пометила как обязательный на claude.ai, загружается, даже если вы ранее его отключили. <code>claude plugin disable</code> отклоняет его с сообщением <code>Plugin &quot;&lt;name&gt;@synced&quot; is required by your organization and can&#x27;t be disabled here. Contact your admin to change it.</code>, а <code>claude plugin list</code> помечает его как <code>required by your org</code></li>
+</ul>
+<p>Об удалении плагина на claude.ai см. <a href="https://code.claude.com/docs/ru/plugins/install.md#manage-installed-plugins">Управление установленными плагинами</a>.</p>
+<h3 id="h-13">Найдите, где плагин включен <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h3>
+<p>Вы можете установить запись <code>enabledPlugins</code> в любом из шести источников. Таблица перечисляет их от самого низкого приоритета к самому высокому и указывает, к кому применяется каждый. Для самих файлов параметров см. <a href="https://code.claude.com/docs/ru/settings.md#where-settings-live">Файлы параметров и кто они затрагивают</a>.</p>
+<p>| Источник | Где вы его устанавливаете | Достигает |
+| :- | :- | :- |
+| <code>--add-dir</code> | <code>.claude/settings.json</code> или <code>.claude/settings.local.json</code> в каталоге, который вы передаёте с <code>--add-dir</code> | Только этот сеанс. Только значение <code>true</code> имеет эффект, и каждый другой источник его переопределяет |
+| <code>user</code> | <code>~/.claude/settings.json</code> | Вас, в каждом проекте |
+| <code>project</code> | <code>.claude/settings.json</code> | Каждого, кто клонирует репозиторий |
+| <code>local</code> | <code>.claude/settings.local.json</code> | Вас, только в этом репозитории |
+| <code>flag</code> | Значение <code>--settings</code>, которое вы передаёте при запуске | Только этот сеанс |
+| <code>managed</code> | <a href="https://code.claude.com/docs/ru/managed-settings.md">Управляемые параметры</a> | Каждого пользователя, который охватывает политика. <code>true</code> принудительно включает и <code>false</code> блокирует, и ни один другой источник их не переопределяет |</p>
+<p>Эти источники объединяются ключ за ключом. Для каждого идентификатора плагина применяемое значение — это значение из источника с наивысшим приоритетом, который упоминает идентификатор. Источник, который не упоминает идентификатор, оставляет значение из источника с более низким приоритетом в силе.</p>
+<h4 id="h-14">Отключено в пользовательских параметрах, но всё ещё загружается <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если вы установили плагин в <code>false</code> в <code>~/.claude/settings.json</code> и он всё ещё загружается, <code>true</code> в источнике с более высоким приоритетом его переопределяет. Строка плагина в <code>claude plugin list</code> и в <code>/plugin</code> показывает <code>Disabled in ~/.claude/settings.json but still loads — project settings enable it, which overrides your user setting</code>. Сообщение называет источник, который вас переопределил: <code>project</code>, <code>project, gitignored</code> для <code>.claude/settings.local.json</code>, <code>cli flag</code>, или <code>managed</code>.</p>
+<p>Чтобы отказаться от плагина, включённого проектом, на вашей машине, установите идентификатор в <code>false</code> в <code>.claude/settings.local.json</code>, который имеет более высокий приоритет, чем файл проекта.</p>
+<h4 id="включено-в-каталоге-add-dir-но-не-загружается">Включено в каталоге <code>--add-dir</code>, но не загружается <a class="h-anchor" href="#включено-в-каталоге-add-dir-но-не-загружается" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude Code читает запись <code>enabledPlugins</code> со значением <code>true</code> в одном из файлов добавленного каталога, только если включены источники настроек этого файла:</p>
+<ul>
+<li><strong><code>.claude/settings.json</code></strong>: <code>project</code></li>
+<li><strong><code>.claude/settings.local.json</code></strong>: <code>project</code> и <code>local</code></li>
+</ul>
+<p>Проверьте, какие источники настроек загружает сессия. Они задаются с помощью <a href="https://code.claude.com/docs/ru/cli-reference#cli-flags"><code>--setting-sources</code></a>. В CLI источники <code>user</code>, <code>project</code> и <code>local</code> включены по умолчанию.</p>
+<p>Например, если вы запускаете <code>claude --setting-sources user --add-dir ./shared</code> в оболочке, Claude Code не читает ни один из файлов в <code>./shared</code>. Передайте флаг для файла, содержащего <code>true</code>:</p>
+<ul>
+<li><strong><code>settings.json</code></strong>: <code>--setting-sources user,project</code></li>
+<li><strong><code>settings.local.json</code></strong>: <code>--setting-sources user,project,local</code></li>
+</ul>
+<h4 id="h-15">Включено в параметрах проекта, но не установлено <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h4>
+<p>По умолчанию плагин, включённый только в <code>.claude/settings.json</code> вашего проекта, не загружается при запуске сессии, пока вы не установите его на своей машине. Если маркетплейс есть на вашей машине, вкладка <code>/plugin</code> <strong>Errors</strong> показывает <a href="https://code.claude.com/docs/ru/plugins/troubleshooting#plugin-is-enabled-in-project-settings-but-isnt-installed-here"><code>Plugin &quot;&lt;name&gt;&quot; is enabled in project settings but isn&#x27;t installed here</code></a> или <a href="https://code.claude.com/docs/ru/plugins/troubleshooting#plugin-not-cached-at"><code>Plugin &quot;&lt;name&gt;&quot; not cached at &lt;path&gt;</code></a>.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Если вкладка не показывает ни одного из этих сообщений, <a href="https://code.claude.com/docs/ru/plugins/install.md#add-a-marketplace">добавьте маркетплейс</a> перед установкой. Найдите его источник в настройке <code>extraKnownMarketplaces</code> файла <code>.claude/settings.json</code> или спросите у сопровождающего.</p>
+</blockquote>
+<p>Чтобы установить плагин, выполните эту команду в оболочке из каталога проекта, используя ключ плагина в <code>enabledPlugins</code>:</p>
+<p>```shell theme={null}
+claude plugin install &lt;name&gt;@&lt;marketplace&gt; --scope project</p>
+<pre><code>
+Чтобы загрузить плагин, выполните `/reload-plugins` в вашей сессии или начните новую сессию. Повторите установку в каждом из ваших клонов или используйте `--scope user`, чтобы охватить все ваши проекты.
+
+Вы можете загрузить плагин без установки в следующих случаях:
+
+* **В [каталоге семян](https://code.claude.com/docs/ru/plugins/org.md#seed-containers-and-ci)**: вам ничего не нужно запускать
+* **Указан по [относительному пути](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#plugin-sources) в маркетплейсе, который вы добавили из локального пути**: вам ничего не нужно запускать, потому что плагин загружается при запуске сессии
+* **Указан по относительному пути, например `./plugins/formatter`, в `marketplace.json` добавленного вами git-маркетплейса**: выполните `/reload-plugins`, чтобы загрузить его только для текущей сессии. Чтобы загрузить его для одного [неинтерактивного запуска `-p`](https://code.claude.com/docs/ru/headless), установите [`CLAUDE_CODE_SYNC_PLUGIN_INSTALL=1`](https://code.claude.com/docs/ru/env-vars).
+
+Claude Code загружает плагин с внешним источником только когда один из этих источников устанавливает его в `true`:
+
+* Ваши пользовательские параметры
+* `.claude/settings.local.json`, который git не отслеживает
+* Флаг `--settings`
+* Управляемые параметры
+
+## Найдите плагины на диске
+
+Claude Code хранит файлы плагинов и записи состояния в одном корне плагинов, который является `~/.claude/plugins`, если вы не установили [`CLAUDE_CODE_PLUGIN_CACHE_DIR`](https://code.claude.com/docs/ru/env-vars). Каждый путь в таблице относителен к этому корню.
+
+| Путь | Что он содержит |
+| :- | :- |
+| `cache/&lt;marketplace&gt;/&lt;plugin&gt;/&lt;version&gt;/` | Один каталог на установленную версию плагина маркетплейса. `&lt;plugin&gt;` — это имя записи маркетплейса и `&lt;version&gt;` — это [разрешённая версия](#versions-and-updates). `${CLAUDE_PLUGIN_ROOT}` указывает на этот каталог |
+| `data/&lt;plugin-id&gt;/` | Постоянный каталог плагина, открытый как `${CLAUDE_PLUGIN_DATA}`. О том, как формируется `&lt;plugin-id&gt;`, см. [Переменные пути и постоянные данные](https://code.claude.com/docs/ru/plugins/components.md#path-variables-and-persistent-data). Claude Code создаёт его, когда компонент плагина впервые его использует, и сохраняет его при обновлениях. По умолчанию Claude Code удаляет его, когда вы удаляете плагин из его последней области. О `--keep-data` и других случаях, когда он остаётся, см. [удаление плагина](https://code.claude.com/docs/ru/plugins/cli-reference.md#plugin-uninstall) |
+| `marketplaces/&lt;name&gt;/` | Клон или загрузка маркетплейса, добавленного с GitHub, другого хоста Git или URL. Маркетплейс, добавленный из локального источника `file` или `directory`, не имеет копии здесь, и его `installLocation` в `known_marketplaces.json` — это путь, который вы дали |
+| `mcpb/` | Файлы, которые Claude Code извлекает из [пакетов MCP](https://code.claude.com/docs/ru/plugins/components.md#include-a-packaged-mcpb-server), объявленных плагинами. Требуется Claude Code v2.1.324 или новее |
+| `synced/` | Плагины, которые Claude Code [синхронизировал с вашей учётной записью claude.ai](#synced-plugins) |
+| `.trash/` | Плагины, которые синхронизация claude.ai удалила, например, после того как вы отключили один на claude.ai или прекратили синхронизацию |
+| `installed_plugins.json` и `known_marketplaces.json` | Записи о том, что Claude Code установил и какие маркетплейсы он загрузил, описанные в разделе [Проверьте, на каком этапе находится плагин](#check-which-stage-a-plugin-reached). [Маркетплейс, размещённый на claude.ai](https://code.claude.com/docs/ru/plugins/install.md#add-from-claude-ai), записывается в `known_marketplaces_claudeai.json` вместо этого |
+| `flagged-plugins.json` | Плагины, которые Claude Code удалил, потому что их маркетплейс их исключил. Они появляются в разделе **Flagged** в `/plugin`; см. [Размещение маркетплейса](https://code.claude.com/docs/ru/plugins/host-marketplace.md) |
+| `installed_plugins.set-aside.&lt;date&gt;.&lt;hash&gt;.json` и `installed_plugins.unreadable.&lt;date&gt;.&lt;hash&gt;.kept` | Датированные копии, которые Claude Code сохраняет перед тем, как удалить записи установки, которые ни одна версия Claude Code не может использовать, или перестроить нечитаемый `installed_plugins.json`. См. [примечания по восстановлению](https://code.claude.com/docs/ru/plugins/troubleshooting.md#installed-plugins-json-could-not-be-read-and-was-rebuilt). Они устаревают по расписанию [`cleanupPeriodDays`](https://code.claude.com/docs/ru/settings-reference#cleanupperioddays) |
+
+Поскольку `${CLAUDE_PLUGIN_ROOT}` указывает на каталог версии, путь корня плагина изменяется с каждой версией. Сохраняйте постоянные файлы плагина в `${CLAUDE_PLUGIN_DATA}` вместо этого.
+
+### Плагины на месте и скопированные плагины
+
+Claude Code загружает некоторые плагины на месте из того места, где вы их храните, и копирует остальные в кэш, в соответствии с их источником:
+
+* **Плагины `--plugin-dir` и каталога навыков**: каталог загружается на месте и никогда не копируется. Архив `--plugin-url` или `.zip` `--plugin-dir` сначала извлекается во временный каталог сеанса
+* **Плагины с относительным путём в маркетплейсе, который вы добавили из локального пути**: плагин загружается на месте из его пути внутри папки маркетплейса. Ваши правки в исходный каталог вступают в силу при следующем запуске сессии или `/reload-plugins`, и вам не нужно увеличивать версию. Процессы хуков плагина и серверы MCP и LSP получают `CLAUDE_PLUGIN_ROOT`, который указывает на исходный каталог. О его зависимостях пакета Node.js см. [Когда запускается установка зависимостей](#when-the-dependency-install-runs)
+* **Плагины источника `command` в [режиме ссылки](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#command-plugin-source)**: каталог, который напечатала команда, загружается на месте через ссылки в записи кэша
+* **Каждый другой плагин маркетплейса**: Claude Code копирует плагин в `cache/&lt;marketplace&gt;/&lt;plugin&gt;/&lt;version&gt;/` при установке и загружает эту копию. Файлы вне каталога плагина не копируются, поэтому когда скрипт внутри скопированного плагина читает путь выше корня плагина, такой как `../shared`, он их не находит
+
+### Пути, которые выходят за пределы каталога плагина
+
+Загружается ли плагин на месте или из кэшированной копии, Claude Code не позволяет ему объявлять компоненты вне его собственного каталога. Он отклоняет путь компонента, который разрешается вне корня плагина, независимо от того, объявлен ли путь в `plugin.json` или в записи маркетплейса:
+
+* **Путь, который указывает вне плагина в написанном виде**, такой как `../shared-utils`
+* **Символическая ссылка, которая ведёт вне плагина**, кроме [ссылок между плагинами в одном маркетплейсе](https://code.claude.com/docs/ru/plugins/host-marketplace.md#share-files-within-a-marketplace-with-symlinks)
+* **На macOS и Linux, путь, который содержит обратную косую черту где-либо в нём**, даже когда путь остаётся внутри плагина. Компоненты, объявленные с путями обратной косой черты, поэтому загружаются только на Windows, поэтому пишите пути компонентов с прямыми косыми чертами, такие как `./commands/deploy.md`
+
+Отклонённый путь появляется как ошибка [`path escapes plugin directory`](https://code.claude.com/docs/ru/errors#path-escapes-plugin-directory), и плагин загружается без этого компонента.
+
+### Очистка предыдущих версий
+
+Когда вы обновляете или удаляете плагин, Claude Code записывает маркер `.orphaned_at` в каталог предыдущей версии. Он удаляет этот каталог в фоновой очистке через 14 дней, поэтому сеанс, который уже загрузил старую версию, продолжает работать.
+
+Очистка выполняется только пока `installed_plugins.json` записывает по крайней мере одну установку. После удаления последнего плагина осиротелые каталоги остаются до тех пор, пока вы не установите другой.
+
+### Зависимости пакета Node.js
+
+Когда Claude Code копирует плагин в кэш, он также устанавливает зависимости пакета Node.js плагина там, поэтому hooks и MCP серверы плагина могут их загружать.
+
+Этот раздел охватывает пакеты npm и Bun, которые плагин объявляет в своём собственном `package.json`. О плагинах, которые зависят от других плагинов, см. [версии зависимостей плагина](https://code.claude.com/docs/ru/plugins/dependencies.md).
+
+#### Когда запускается установка зависимостей
+
+Claude Code устанавливает зависимости в скопированный каталог версии каждый раз, когда создаёт его:
+
+* Когда вы устанавливаете плагин
+* Когда Claude Code обновляет плагин до новой версии
+* При запуске сеанса, когда включённый плагин ещё не кэширован, например, на новой машине
+
+Для плагина с относительным путём, [загруженного на месте](#in-place-and-copied-plugins) из маркетплейса, который вы добавили из локального пути, Claude Code не устанавливает зависимости в исходный каталог. Установите их там сами, или из хука в [`${CLAUDE_PLUGIN_DATA}`](https://code.claude.com/docs/ru/plugins/components#path-variables-and-persistent-data).
+
+Установка запускается только когда каталог корня плагина содержит как `package.json`, так и поддерживаемый файл блокировки.
+
+Файл блокировки решает, какой менеджер пакетов запускает Claude Code:
+
+| Файл блокировки | Менеджер пакетов |
+| :- | :- |
+| `bun.lock` | Bun |
+| `npm-shrinkwrap.json` или `package-lock.json` | npm |
+
+Если плагин содержит более одного из этих файлов блокировки, Claude Code использует первое совпадение, проверяя по порядку: `bun.lock`, `npm-shrinkwrap.json`, `package-lock.json`.
+
+Claude Code пропускает установку в следующих случаях, связанных с файлом блокировки:
+
+* **`bun.lockb`**: двоичный файл блокировки Bun невозможно проверить. Поставляйте вместо него текстовый `bun.lock` или файл блокировки npm
+* **`yarn.lock` или `pnpm-lock.yaml`**: замените его файлом блокировки npm
+* **Файл блокировки в формате, который Claude Code не читает**: файлу блокировки npm нужен `lockfileVersion` равный `2` или `3`, который записывает npm 7 или новее, а `bun.lock` нужен `lockfileVersion` не выше `2`
+
+Включите файл блокировки npm, чтобы достичь большинства пользователей. Claude Code запускает менеджер пакетов файла блокировки из PATH пользователя и не пытается использовать другой файл блокировки вместо этого, если этот менеджер пакетов отсутствует.
+
+Для плагина, распространяемого через источник npm, используйте `npm-shrinkwrap.json`, потому что npm исключает `package-lock.json` из опубликованных пакетов.
+
+#### Ограничения на установку зависимостей
+
+Claude Code ограничивает эту установку зависимостей так, чтобы никакой код из плагина или его пакетов не выполнялся во время неё, и ограничивает, как долго она может выполняться:
+
+* **Только пакеты из реестра**: каждая зависимость должна быть пакетом из реестра, закреплённым в файле блокировки на точной версии. Плагин с зависимостью из git, GitHub, папки, рабочего пространства или связанной зависимостью не получает установки.
+* **Загрузки по `https`**: ссылка для загрузки в файле блокировки должна использовать `https`, если только она не указывает на собственный реестр npm по умолчанию устанавливающего пользователя.
+* **Отдельная папка установки**: менеджер пакетов запускается в собственной папке, которая содержит только копию проверенного списка зависимостей, поэтому npm и Bun не читают `.npmrc`, `.env` или `bunfig.toml` плагина. Когда установка завершается успешно, Claude Code перемещает полученный `node_modules` в плагин.
+* **Замороженное разрешение**: установка использует ровно те версии, которые закрепляет файл блокировки, и Claude Code пропускает её, когда `package.json` и файл блокировки перечисляют разные зависимости
+* **Нет скриптов жизненного цикла**: `--ignore-scripts` предотвращает запуск скриптов `preinstall`, `install` и `postinstall`, поэтому зависимости, которые собирают собственные модули в этих скриптах, загружаются, но не компилируются во время этой установки
+* **Нет переопределений или патчей**: плагин, чей `package.json` задаёт `overrides` npm, не получает установки из файла блокировки npm, а плагин, который задаёт `patchedDependencies` Bun, не получает установки из `bun.lock`
+* **Тайм-аут 60 секунд**: Claude Code останавливает установку, которая выполняется дольше, и рассматривает её как неудачную
+
+Claude Code загружает плагин источника npm перед этой установкой зависимостей, и ни один из собственных скриптов установки пакета не запускается во время загрузки. См. [источник плагина npm](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#npm-plugin-source).
+
+Вы не можете отключить автоматическую установку. Ни один параметр или переменная окружения её не отключает.
+
+В ограниченных сетях см. [требования доступа в сеть](https://code.claude.com/docs/ru/network-config.md#network-access-requirements) для хостов, которые нужно разрешить.
+
+#### Когда установка зависимостей не удаётся или пропускается
+
+Если установка не удаётся или пропускается, плагин всё равно загружается, но те его части, которым нужны отсутствующие пакеты, могут не работать.
+
+`/plugin` и `claude plugin list` показывают примечание для включённого плагина, кэшированная копия которого содержит файл блокировки и `package.json` со списком зависимостей времени выполнения, но не содержит каталога `node_modules`. В примечании указано, не завершилась ли установка или она не может быть выполнена для этого плагина. О том, что делать в каждом случае, см. [соответствующий раздел по устранению неполадок](https://code.claude.com/docs/ru/plugins/troubleshooting.md#the-packages-it-lists-are-not-installed).
+
+Когда автоматическая установка не может предоставить зависимость, установите её из хука в [каталог постоянных данных](https://code.claude.com/docs/ru/plugins/components.md#path-variables-and-persistent-data). Это включает пакеты, которым нужны их скрипты жизненного цикла для сборки, зависимости Python, плагины, заблокированные Yarn или pnpm, и зависимости, которые не являются пакетами из реестра, например зависимости из git.
+
+## Версии и обновления
+
+Если автор плагина отправил новые коммиты и `claude plugin update` печатает `&lt;name&gt; is already at the latest version (&lt;version&gt;).`, версия, которую Claude Code вычисляет для плагина, не изменяется, поэтому файлы плагина на диске не изменяются.
+
+Claude Code вычисляет версию для каждого плагина, который он устанавливает, и эта версия — это то, как он обнаруживает обновление. `claude plugin update` и фоновое автоматическое обновление вычисляют версию снова и не заменяют кэшированную копию, когда она совпадает с тем, что записывает `installed_plugins.json`. Обновление, которое запускаете вы, всё равно может [повторить попытку незавершённой установки зависимостей](https://code.claude.com/docs/ru/plugins/troubleshooting.md#the-packages-it-lists-are-not-installed) в этой копии.
+
+Версия также называет каталог кэша плагина.
+
+Манифест, который закрепляет `&quot;version&quot;`, — это один способ, которым вычисленная версия остаётся неизменной при коммитах. См. [Как Claude Code вычисляет версию](#how-claude-code-computes-the-version) для порядка разрешения.
+
+Плагин, [загруженный на месте](#in-place-and-copied-plugins) из маркетплейса, который вы добавили из локального пути, загружает свои текущие исходные файлы при каждом запуске сессии, независимо от того, что говорит его строка версии. Для плагина из [маркетплейса, размещённого на claude.ai](https://code.claude.com/docs/ru/plugins/install.md#add-from-claude-ai), версия, которую claude.ai записывает для плагина, — это его версия, и `version` манифеста не читается.
+
+### Как Claude Code вычисляет версию
+
+Для маркетплейса, который вы добавили по источнику, Claude Code выбирает правило по типу `source` записи маркетплейса плагина. [Справочник маркетплейса](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#plugin-sources) перечисляет типы источников. Для каждого типа источника в этом списке, кроме `command`:
+
+1. Поле `version` в манифесте плагина идёт первым
+2. Затем поле `version` в записи маркетплейса плагина
+3. Когда ни один не установлен, версия поступает из типа источника:
+
+| Тип источника | Версия, когда поле `version` не установлено |
+| :- | :- |
+| `github`, `url` или `git-subdir` | SHA коммита источника, сокращённый до 12 символов. Версия `git-subdir` также содержит хэш пути подкаталога |
+| `archive` | Дайджест SHA-256, сокращённый до 12 символов: закрепление `sha256` в записи маркетплейса, или дайджест загруженного файла, когда нет закрепления |
+| Относительный путь внутри маркетплейса, размещённого на Git | SHA коммита установленного каталога |
+| Локальный каталог, когда ни каталог плагина, ни его маркетплейс не являются репозиторием git | `unknown` |
+| `npm` | `unknown` |
+
+Claude Code не берёт версию из репозитория, который охватывает путь установки, такого как управляемый git `~/.claude`.
+
+Для источника `command` Claude Code всегда выводит версию из того, что произвела команда: 12-символьный хэш сам по себе, или `&lt;manifest version&gt;-&lt;hash&gt;`, когда манифест устанавливает один. `version` записи маркетплейса игнорируется для источников команд. О том, что охватывает хэш, см. [Режим копирования и режим ссылки](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#copy-mode-and-link-mode).
+
+Поскольку манифест идёт первым, манифест, который закрепляет `&quot;version&quot;: &quot;1.0.0&quot;`, держит каждого пользователя на кэшированной копии до тех пор, пока его автор не изменит строку, сколько бы коммитов они ни отправили. Чтобы позволить пользователям отслеживать коммиты вместо этого, оставьте `version` вне манифеста и записи. [Размещение маркетплейса](https://code.claude.com/docs/ru/plugins/host-marketplace.md) охватывает, какой выбор подходит для какой установки выпуска.
+
+### Когда Claude Code обновляет маркетплейс перед установкой
+
+Когда вы устанавливаете плагин, Claude Code ищет его в своей локальной копии каталога маркетплейса. Вы можете запустить `/plugin install` в сеансе или `claude plugin install` в вашей оболочке и назвать плагин с его маркетплейсом или без. Таблица показывает, какие из этих комбинаций обновляют локальную копию.
+
+| Имя плагина | Команда | Что Claude Code обновляет |
+| :- | :- | :- |
+| `name@marketplace` | `/plugin install` или `claude plugin install` | Названный маркетплейс перед поиском |
+| `name` один | `/plugin install` | Только маркетплейсы, у которых автоматическое обновление включено, и только после того, как поиск не найдёт |
+| `name` один | `claude plugin install` | Ничего. Он читает кэшированные каталоги без обновления |
+
+Обновление перед установкой `name@marketplace` не зависит от параметра автоматического обновления маркетплейса или от `DISABLE_AUTOUPDATER`.
+
+Когда обновление не удаётся, установка продолжается из кэшированного каталога и `claude plugin install` сообщает `marketplace not refreshed`.
+
+Claude Code пропускает обновление перед установкой `name@marketplace`, когда:
+
+* Маркетплейс был добавлен из локального источника `file` или `directory`, или определён встроенным в параметрах с источником [`settings`](https://code.claude.com/docs/ru/settings-reference#extraknownmarketplaces)
+* [Каталог семян](https://code.claude.com/docs/ru/env-vars.md) предоставляет маркетплейс
+* Claude Code обновил маркетплейс в течение последних 30 секунд
+* Вы установили `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`
+* [Управляемые параметры](https://code.claude.com/docs/ru/plugins/org.md#restrict-what-users-can-install) блокируют маркетплейс, в этом случае Claude Code также отказывает в установке
+
+### Когда запускается автоматическое обновление
+
+В интерактивном сеансе, после того как вы отправите своё первое сообщение, Claude Code ждёт случайную задержку до десяти минут. Затем он обновляет каждый маркетплейс с включённым автоматическим обновлением и обновляет плагины, установленные из них, на диске.
+
+Работающий сеанс сохраняет версии, которые он загрузил, и вы видите `Plugin updated: &lt;name&gt; · Run /reload-plugins to apply`. Загружаете ли вы или нет, новые версии загружаются при следующем запуске.
+
+#### Какие маркетплейсы и плагины автоматически обновляются
+
+Автоматическое обновление маркетплейса следует первому из этих, что установлено:
+
+1. **`autoUpdate` на его записи `extraKnownMarketplaces`** в файле параметров
+2. **`autoUpdate` на его записи `known_marketplaces.json`**, которую переключатель **Enable auto-update** под `/plugin` **Marketplaces** пишет. Когда файл параметров также объявляет маркетплейс под `extraKnownMarketplaces`, переключатель пишет `autoUpdate` в эту запись параметров также
+3. **По умолчанию**: включено для официальных маркетплейсов Anthropic, таких как `claude-plugins-official`, отключено для `knowledge-work-plugins` и `first-party-plugins`, включено для [маркетплейсов, добавленных с claude.ai](https://code.claude.com/docs/ru/plugins/install.md#add-from-claude-ai), и отключено для каждого другого маркетплейса
+
+Если вы установите `DISABLE_UPDATES=1`, `DISABLE_AUTOUPDATER=1` или `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1`, весь проход отключен и переключатель **Enable auto-update** скрыт, если вы также не установите `FORCE_AUTOUPDATE_PLUGINS=1`. [Справочник переменных окружения](https://code.claude.com/docs/ru/env-vars.md) охватывает более широкий эффект каждой переменной.
+
+Автоматическое обновление также пропускает плагин, чья запись маркетплейса объявляет `headersHelper`. [Установки и обновления, которые отказывают команде вместо запроса](https://code.claude.com/docs/ru/plugins/host-marketplace.md#installs-and-updates-that-refuse-the-command-instead-of-asking) объясняют, когда такой плагин появляется на вкладке `/plugin` **Errors** и как вы его обновляете оттуда.
+
+Когда скопированный плагин обновляется в середине сеанса, команды hooks, мониторы, MCP серверы и LSP серверы продолжают использовать путь предыдущей версии. Запустите `/reload-plugins`, чтобы переключить hooks, MCP серверы и LSP серверы на новый путь. Мониторы требуют перезагрузки сеанса.
+
+### Когда источник команды повторно запускается
+
+Плагины с источником `command` не ждут [прохода автоматического обновления](#when-auto-update-runs). Напечатанный каталог отражает состояние инструмента в момент запуска команды, поэтому Claude Code запускает [команду, которую вы приняли](https://code.claude.com/docs/ru/plugins/host-marketplace.md#change-the-command-of-a-command-source), снова в эти моменты:
+
+* Каждый раз, когда вы устанавливаете или обновляете плагин
+* Один раз за сеанс для каждого включённого плагина с источником команды, в фоновом режиме, вскоре после запуска сеанса. Этот запуск не зависит от параметра автоматического обновления маркетплейса или от `DISABLE_AUTOUPDATER`
+* При запуске или на `/reload-plugins`, когда установленная версия включённого плагина отсутствует в кэше плагина
+
+Claude Code пропускает два фоновых запуска, когда вы установили [`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`](https://code.claude.com/docs/ru/env-vars). Явные установки и обновления всё ещё запускают команду с этой переменной установленной.
+
+Когда хэшированный вывод команды изменился, Claude Code устанавливает результат как новую версию и перезагружает его в работающем интерактивном сеансе, переключая [те же компоненты, которые переключает `/reload-plugins`](https://code.claude.com/docs/ru/plugins/cli-reference#reload-plugins). Вы видите уведомление о том, что плагин был перезагружен.
+
+Если перезагрузка на месте сделает кэш подсказок сеанса недействительным, Claude Code вместо этого предлагает вам запустить `/reload-plugins`, который [предупреждает о стоимости кэша и применяется при повторном запуске с `--force`](https://code.claude.com/docs/ru/prompt-caching#enabling-or-disabling-a-plugin).
+
+## Конфликты имён
+
+Когда включённые плагины из разных источников имеют одно имя манифеста, этот порядок решает, какой загружается, от наивысшего приоритета к самому низкому:
+
+1. Плагин, чей идентификатор появляется в управляемых параметрах `enabledPlugins`, как `true` или `false`. Копия `--plugin-dir`, чьё имя манифеста совпадает с частью имени идентификатора, не загружается, и вы видите `--plugin-dir copy of &quot;&lt;name&gt;&quot; ignored: plugin is locked by managed settings`
+2. Включённый плагин `--plugin-dir`, `--plugin-url` или `CLAUDE_CODE_PLUGIN_DIRS`. Он заменяет установленный плагин маркетплейса с тем же именем или плагин каталога навыков:
+   * **Установленный плагин маркетплейса**: заменён молча. `claude plugin list` всё ещё показывает строку маркетплейса как включённую, потому что эта строка отражает ваши параметры. Только журнал, который Claude Code пишет в `~/.claude/debug/`, когда вы запускаете с `--debug`, записывает `Plugin &quot;&lt;name&gt;&quot; from --plugin-dir overrides installed version`
+   * **Плагин каталога навыков**: заменён строкой вкладки `/plugin` **Errors**, которая читает `Not loaded — the name &quot;&lt;name&gt;&quot; is already taken by a session-only plugin (--plugin-dir / --plugin-url), which takes precedence`
+3. Установленный плагин маркетплейса. Плагин каталога навыков с тем же именем получает ту же строку `Not loaded`, называя установленный плагин
+4. Плагин каталога навыков. Между двумя из них копия под `~/.claude/skills/` загружается и копия проекта `.claude/skills/` отбрасывается, со строкой, которая говорит, какой путь её затенил
+5. Плагин [синхронизированный с claude.ai](#synced-plugins). Когда включённый плагин из любого другого источника совпадает с его именем, Claude Code загружает этот плагин и сообщает о синхронизированной копии как не загруженной. Чтобы использовать копию claude.ai вместо этого, отключите свою собственную копию
+
+Поскольку порядок сравнивает имена манифестов, плагин `--plugin-dir` с именем `hello-plugin` заменяет `hello@example-marketplace`, когда манифест этого плагина также говорит `&quot;name&quot;: &quot;hello-plugin&quot;`.
+
+### Хуки, когда два включённых плагина имеют одно имя
+
+Когда вы устанавливаете и включаете два плагина с одинаковым именем манифеста из разных маркетплейсов, оба отображаются как включённые в `/plugin`, но хуки одного из них не используются. Для каждого имени только один плагин регистрирует хуки из своего `hooks/hooks.json`, и только один плагин загружает [модуль хуков](https://code.claude.com/docs/ru/plugins/mods/overview.md). Когда управляемые настройки вашей организации включают одну из копий, имя закрепляется за этой копией. В противном случае имя закрепляется за копией, которую Claude Code загружает первой.
+
+Чтобы узнать, за какой копией закреплено имя, выполните `/plugin` в своей сессии и откройте вкладку **Errors**. Там для копии, хуки которой не используются, есть примечание с названием копии, за которой закреплено имя, и то же примечание отображается в сведениях о неиспользуемой копии. Для хуков из `hooks/hooks.json` примечание начинается с `Its hooks.json hooks do not run`, а для модуля хуков — с `Its hooks module does not load`. Примечание требует Claude Code v2.1.296 или новее.
+
+Чтобы вместо этого запускать хуки неиспользуемой копии, отключите или удалите копию, за которой закреплено имя, затем выполните `/reload-plugins` в своей сессии. Перезагрузка регистрирует хуки оставшейся копии и убирает примечание. Если копия, за которой закреплено имя, включена вашими управляемыми настройками, вы не можете её отключить, и хуки другой копии остаются выключенными, пока установлены обе.
+
+### Держите плагин только для сеанса от загрузки
+
+Чтобы плагин `--plugin-dir` не затенял ничего, или чтобы отключить его, когда родительский процесс передаёт флаг для вас, установите его идентификатор в `false` в любом файле параметров. Для плагина, чьё имя манифеста — `hello-plugin`, запись — `&quot;enabledPlugins&quot;: {&quot;hello-plugin@inline&quot;: false}`. Отключённый плагин только для сеанса не затеняет, поэтому вместо этого загружается копия маркетплейса или каталога навыков.
+
+## Следующие шаги
+
+* [Установка и управление плагинами](https://code.claude.com/docs/ru/plugins/install.md): сами шаги установки, включения, отключения и обновления
+* [Устранение неполадок плагинов](https://code.claude.com/docs/ru/plugins/troubleshooting.md): сообщения об ошибках по этапам, которые их производят
+* [Справочник команд плагинов](https://code.claude.com/docs/ru/plugins/cli-reference.md): флаги и команды, названные на этой странице
+* [Управление плагинами для вашей организации](https://code.claude.com/docs/ru/plugins/org.md): управляемые параметры, которые принудительно включают или блокируют плагины
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

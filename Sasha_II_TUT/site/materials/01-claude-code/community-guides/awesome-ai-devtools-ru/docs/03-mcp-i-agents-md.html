@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Урок 03. MCP, AGENTS.md и навыки: как дать агенту правильный контекст</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/awesome-ai-devtools-ru/index.html">awesome-ai-devtools-ru</a> / <a href="../../../../../materials/01-claude-code/community-guides/awesome-ai-devtools-ru/docs/index.html">docs</a></nav>
+<h1 id="урок-03-mcp-agents-md-и-навыки-как-дать-агенту-правильный-контекст">Урок 03. MCP, AGENTS.md и навыки: как дать агенту правильный контекст <a class="h-anchor" href="#урок-03-mcp-agents-md-и-навыки-как-дать-агенту-правильный-контекст" aria-label="Ссылка на раздел">#</a></h1>
+<p><a href="../README.md">← К оглавлению</a></p>
+<p>Агент знает языки программирования, но не знает <strong>твой</strong> проект: как его собрать, где что лежит, какие правила у команды. Хороший контекст — самый дешёвый способ улучшить результат.</p>
+<h3 id="1-agents-md-инструкция-для-агентов">1. AGENTS.md — инструкция для агентов <a class="h-anchor" href="#1-agents-md-инструкция-для-агентов" aria-label="Ссылка на раздел">#</a></h3>
+<p><code>AGENTS.md</code> — открытый формат файла в корне репозитория. Его читают Codex, Cursor, GitHub Copilot, Gemini CLI, Aider, Zed, Jules и многие другие. Claude Code читает <code>CLAUDE.md</code> (можно сделать его ссылкой на <code>AGENTS.md</code> или просто продублировать).</p>
+<h4 id="h">Что писать <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Раздел</th><th>Пример</th></tr></thead><tbody><tr><td>Обзор</td><td>«Монорепо: <code>apps/web</code> — Next.js, <code>apps/api</code> — FastAPI, <code>packages/ui</code> — общие компоненты»</td></tr><tr><td>Команды</td><td>установка, запуск, тесты, линтер, сборка — точные команды</td></tr><tr><td>Стиль</td><td>форматтер, соглашения об именах, запреты (<code>any</code>, <code>print</code> в проде)</td></tr><tr><td>Архитектура</td><td>куда класть новый код, какие слои нельзя смешивать</td></tr><tr><td>Тесты</td><td>как запускать один тест, требование покрывать новый код</td></tr><tr><td>Опасные зоны</td><td>миграции, секреты, генерируемые файлы — «не трогать без просьбы»</td></tr><tr><td>Git</td><td>формат коммитов, правила веток</td></tr></tbody></table></div>
+<h4 id="h-2">Чего не писать <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Общие советы вроде «пиши чистый код» — модель это и так знает.</li>
+<li>Секреты и токены.</li>
+<li>Тысячи строк: держи файл коротким (до ~200 строк), подробности — в отдельных документах со ссылками.</li>
+</ul>
+<h4 id="h-3">Вложенные файлы <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>В монорепо можно положить <code>AGENTS.md</code> в подпапки — агент возьмёт ближайший к редактируемому файлу.</p>
+<h4 id="h-4">Проверка и генерация <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><a href="https://github.com/YawLabs/ctxlint">ctxlint</a>, <a href="https://github.com/sisyphusse1-ops/cc-audit">cc-audit</a> — линтеры файлов правил.</li>
+<li><a href="https://github.com/rely-ai-org/caliber">Caliber</a>, <a href="https://github.com/maroondlabs/sourcebook">sourcebook</a>, <a href="https://nova-labs.dev/contextkit/generate">ContextKit</a> — генерация черновика из кода.</li>
+<li><a href="https://github.com/ainova-systems/intelligence-sync">intelligence-sync</a>, <a href="https://github.com/GeiserX/LynxPrompt">LynxPrompt</a> — синхронизация правил между инструментами.</li>
+</ul>
+<h3 id="2-mcp-подключение-агента-к-миру">2. MCP — подключение агента к миру <a class="h-anchor" href="#2-mcp-подключение-агента-к-миру" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Model Context Protocol</strong> — открытый стандарт: MCP-сервер описывает набор инструментов (функций), а клиент (Claude Code, Cursor, Cline, Windsurf, VS Code, Codex, Gemini CLI и др.) даёт модели возможность их вызывать.</p>
+<pre><code class="language-mermaid">flowchart LR
+    A[Агент / IDE&lt;br/&gt;MCP-клиент] --&gt;|вызов инструмента| B[MCP-сервер&lt;br/&gt;документации]
+    A --&gt; C[MCP-сервер&lt;br/&gt;базы данных]
+    A --&gt; D[MCP-сервер&lt;br/&gt;браузера]
+    A --&gt; E[MCP-сервер&lt;br/&gt;трекера задач]</code></pre>
+<h4 id="полезные-типы-mcp-серверов">Полезные типы MCP-серверов <a class="h-anchor" href="#полезные-типы-mcp-серверов" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Тип</th><th>Зачем</th><th>Пример из каталога</th></tr></thead><tbody><tr><td>Документация библиотек</td><td>Актуальные API вместо устаревших знаний модели</td><td><a href="https://context7.com/">Context7</a></td></tr><tr><td>Поиск по коду</td><td>Быстрый поиск в большом репозитории</td><td><a href="https://github.com/reflex-search/reflex">Reflex</a>, <a href="https://github.com/Houseofmvps/codesight">codesight</a></td></tr><tr><td>Знания команды</td><td>Документы, решения, переписка</td><td><a href="https://github.com/swarmclawai/swarmvault">SwarmVault</a>, <a href="https://github.com/nex-crm/nex-as-a-skill">Nex</a></td></tr><tr><td>UI-компоненты</td><td>Генерация по дизайн-системе</td><td><a href="https://shadcnstudio.com/mcp">shadcn/studio MCP</a>, <a href="https://flyonui.com/mcp">FlyonUI MCP</a></td></tr><tr><td>Инфраструктура</td><td>Kubernetes, облака</td><td><a href="https://github.com/kubestellar/console">kc-agent</a></td></tr></tbody></table></div>
+<h4 id="h-5">Как подключить <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Claude Code:</strong></p>
+<pre><code class="language-bash">claude mcp add context7 -- npx -y @upstash/context7-mcp
+claude mcp list</code></pre>
+<p><strong>Cursor / Cline / Windsurf / VS Code</strong> — JSON-конфиг MCP (расположение файла зависит от инструмента):</p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;context7&quot;: {
+      &quot;command&quot;: &quot;npx&quot;,
+      &quot;args&quot;: [&quot;-y&quot;, &quot;@upstash/context7-mcp&quot;]
+    }
+  }
+}</code></pre>
+<h4 id="безопасность-mcp">Безопасность MCP <a class="h-anchor" href="#безопасность-mcp" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Устанавливай серверы только из доверенных источников: MCP-сервер выполняется на твоей машине с твоими правами.</li>
+<li>Не подключай одновременно сервер, читающий недоверенный контент (веб, чужие issues), и сервер с доступом к секретам или продакшену — это открывает дорогу prompt injection.</li>
+<li>Давай токены с минимальными правами (только чтение, где возможно).</li>
+</ul>
+<h3 id="3-навыки-skills">3. Навыки (Skills) <a class="h-anchor" href="#3-навыки-skills" aria-label="Ссылка на раздел">#</a></h3>
+<p>Навык — папка с <code>SKILL.md</code> (описание и инструкции) и, при необходимости, скриптами. Агент видит только краткое описание навыка и загружает его целиком, когда задача подходит. Так можно хранить десятки процедур («как выпускать релиз», «как писать миграции») без раздувания контекста.</p>
+<p>Каталоги навыков: <a href="https://github.com/conduit8/conduit8">Conduit8</a>, <a href="https://github.com/henu-wang/tokrepo">TokRepo</a>. Проверка качества навыков на разных моделях: <a href="https://github.com/fastxyz/skill-optimizer">skill-optimizer</a>.</p>
+<h3 id="4-экономия-контекста">4. Экономия контекста <a class="h-anchor" href="#4-экономия-контекста" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Приём</th><th>Эффект</th></tr></thead><tbody><tr><td>Новая сессия на новую задачу</td><td>Модель не путается в старом контексте</td></tr><tr><td>Короткий AGENTS.md + ссылки на детали</td><td>Меньше токенов в каждой сессии</td></tr><tr><td>Инструменты сжатия контекста (<a href="https://leanctx.com">lean-ctx</a>, <a href="https://github.com/juyterman1000/entroly">Entroly</a>)</td><td>Меньше токенов на чтение файлов и вывод команд</td></tr><tr><td>Субагенты для поиска</td><td>Основной контекст не засоряется результатами поиска</td></tr></tbody></table></div>
+<p><a href="02-lokalnye-modeli.md">← Урок 02</a> · <a href="04-teoriya.md">Урок 04 →</a></p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

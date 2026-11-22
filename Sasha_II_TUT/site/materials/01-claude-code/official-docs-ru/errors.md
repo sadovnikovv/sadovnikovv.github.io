@@ -1,0 +1,6801 @@
+> ## Documentation Index
+> Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Справочник по ошибкам
+
+> Найдите сообщения об ошибках времени выполнения Claude Code с объяснением их значения и способов исправления.
+
+На этой странице перечислены ошибки времени выполнения, которые отображает Claude Code, и способы восстановления после каждой из них, а также что проверить, когда ответы кажутся неправильными без ошибки. Для ошибок установки, таких как `command not found` или сбои TLS во время установки, см. [Устранение неполадок при установке и входе](https://code.claude.com/docs/ru/troubleshoot-install.md).
+
+За исключением [ошибок Wrapper и IDE](#wrapper-and-ide-errors), которые выводит запускающая программа, а не сам Claude Code, эти ошибки и команды восстановления применяются во всех интерфейсах: CLI, [приложении Desktop](https://code.claude.com/docs/ru/desktop.md) и [облачных сессиях](https://code.claude.com/docs/ru/claude-code-on-the-web.md), поскольку все три используют один и тот же Claude Code CLI. Для других проблем, специфичных для конкретного интерфейса, см. раздел устранения неполадок на странице этого интерфейса.
+
+> [!NOTE]
+>
+> Claude Code вызывает Claude API для получения ответов модели, поэтому большинство ошибок времени выполнения соответствуют базовому коду ошибки API. На этой странице описано, что означает каждая ошибка в Claude Code и как восстановиться. Для определений кодов состояния HTTP в исходном виде см. [справочник по ошибкам платформы Claude](https://platform.claude.com/docs/en/api/errors).
+
+## Найдите вашу ошибку
+
+Сопоставьте сообщение, которое вы видите, с разделом ниже.
+
+| Сообщение | Раздел |
+| :- | :- |
+| `API Error: 500 Internal server error` | [Server errors](#api-error-500-internal-server-error) |
+| `API Error: Repeated 529 Overloaded errors` | [Server errors](#api-error-repeated-529-overloaded-errors) |
+| `Opus is experiencing high load` / `Fable is experiencing high load` | [Server errors](#api-error-repeated-529-overloaded-errors) |
+| `Request timed out` | [Server errors](#request-timed-out), или [Network](#unable-to-connect-to-api) если сообщение упоминает ваше интернет-соединение |
+| `API Error: No response from API` | [Server errors](#no-response-from-api) |
+| `API Error: Stream idle timeout - no chunks received` | [Streaming idle watchdogs](https://code.claude.com/docs/ru/network-config.md#streaming-idle-watchdogs) или [Long thinking ends in proxy timeouts](https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#long-thinking-ends-in-proxy-timeouts) при работе через шлюз Claude apps |
+| `Server error mid-response. The response above may be incomplete.` | [Server errors](#the-response-above-may-be-incomplete) |
+| `Connection lost mid-response` / `Your computer went to sleep mid-response` / `The response stopped arriving` | [Server errors](#the-response-above-may-be-incomplete) |
+| `Connection closed mid-response` / `Response stalled mid-stream` | [Server errors](#the-response-above-may-be-incomplete) |
+| `Part of the response never arrived` / `The response stream was malformed` | [Server errors](#the-response-above-may-be-incomplete) |
+| `API Error: Content block not found` / `API Error: Content block already closed` / `API Error: Stream event unreadable` | [Server errors](#the-response-above-may-be-incomplete) |
+| `Connection lost before a response was produced` / `Your computer went to sleep before a response was produced` / `The response stalled before a response was produced` | [Automatic retries](#automatic-retries) |
+| `Connection closed while thinking` / `Response stalled while thinking` | [Automatic retries](#automatic-retries) |
+| `Connection lost while your computer was asleep` | [Automatic retries](#automatic-retries) |
+| `The model's tool call could not be parsed (retry also failed).` | [Automatic retries](#automatic-retries) |
+| `<model> is temporarily unavailable, so auto mode cannot determine the safety of...` | [Server errors](#auto-mode-cannot-determine-the-safety-of-an-action) |
+| `Auto mode could not evaluate this action and is blocking it for safety` | [Server errors](#auto-mode-cannot-determine-the-safety-of-an-action) |
+| `Not run · auto mode's check had no usable answer` | [Server errors](#auto-mode-cannot-determine-the-safety-of-an-action) |
+| `Auto mode classifier transcript exceeded context window` | [Server errors](#auto-mode-cannot-determine-the-safety-of-an-action) |
+| `Agent aborted: auto mode classifier request refused by the safety safeguard` | [Server errors](#auto-mode-cannot-determine-the-safety-of-an-action) |
+| `The server-side auto mode classifier gave no verdict` | [Server errors](#the-server-returned-no-safety-verdict) |
+| `<tool> was not reviewed and did not run: the conversation is too long for auto mode's classifier` | [Server errors](#was-not-reviewed-and-did-not-run) |
+| `Auto mode is unavailable — the server returned no safety verdict for the last 10 responses` | [Server errors](#the-server-returned-no-safety-verdict) |
+| `Agent terminated early due to an API error` | [Server errors](#agent-terminated-early-due-to-an-api-error) |
+| `You've hit your session limit` / `You've hit your weekly limit` / `You've hit your Opus limit` / `You've hit your Sonnet limit` | [Usage limits](#youve-hit-your-session-limit) |
+| `Usage credits required for 1M context` | [Usage limits](#usage-credits-required-for-1m-context) |
+| `the prompt to confirm went unanswered · nothing was sent`, начиная с v2.1.324 | [Лимиты использования](#the-prompt-to-confirm-went-unanswered) |
+| `Claude stopped here · send a message to be asked again` | [Лимиты использования](#the-prompt-to-confirm-went-unanswered) |
+| `Server is temporarily limiting requests` | [Usage limits](#server-is-temporarily-limiting-requests) |
+| `Request rejected (429)` | [Usage limits](#request-rejected-429) |
+| `Credit balance is too low` | [Usage limits](#credit-balance-is-too-low) |
+| `You've hit your monthly spend limit` / `You've hit your individual spend limit` / `You've hit your org's monthly spend limit` / `You've hit your channel's monthly spend limit` / `You've hit your team's shared budget` / `You've hit your individual usage limit` | [Usage limits](#youve-hit-your-monthly-spend-limit) |
+| `Could not update your spend limit` | [Usage limits](#could-not-update-your-spend-limit) |
+| `spend limit reached` / `spend limit unavailable` / `This request exceeds your group's budget` | [Лимиты использования](#spend-limit-reached) |
+| `Not logged in · Please run /login` | [Authentication](#not-logged-in) |
+| `Couldn't save your login` | [Authentication](#couldnt-save-your-login) |
+| `Sign in again to take your previous account or API key off the config file.` | [Аутентификация](#sign-in-again-to-take-your-previous-account-or-api-key-off-the-config-file) |
+| `Your account or API key may still be in the config file. Run claude auth logout.` | [Аутентификация](#your-account-or-api-key-may-still-be-in-the-config-file) |
+| `Authentication required · Sign in again to continue` | [Authentication](#not-logged-in) |
+| `Could not resolve authentication method` | [Authentication](#could-not-resolve-authentication-method) |
+| `Invalid API key` | [Authentication](#invalid-api-key) |
+| `Your apiKeyHelper script is failing` | [Authentication](#your-apikeyhelper-script-is-failing) |
+| `Your organization's settings need an update` | [Аутентификация](#claude-code-didnt-send-your-claude-ai-login) |
+| `Couldn't load your organization's settings. Check your connection` | [Аутентификация](#claude-code-didnt-send-your-claude-ai-login) |
+| `Restart Claude Code to finish signing in` | [Аутентификация](#claude-code-didnt-send-your-claude-ai-login) |
+| `Invalid auth token · Fix external auth token` | [Authentication](#invalid-request-header-value) |
+| `Invalid ANTHROPIC_CUSTOM_HEADERS · Fix the environment variable` | [Authentication](#invalid-request-header-value) |
+| `Invalid request header from the environment · Fix the environment variable` | [Authentication](#invalid-request-header-value) |
+| `This organization has been disabled` | [Authentication](#this-organization-has-been-disabled) |
+| `Your organization has disabled API key authentication` | [Authentication](#your-organization-has-disabled-api-key-authentication) |
+| `Your organization has disabled Claude subscription access` | [Authentication](#your-organization-has-disabled-claude-subscription-access) |
+| `Scheduled tasks are off for your organization` | [Аутентификация](#routines-are-disabled-by-your-organizations-policy) |
+| `Routines are off for your organization` | [Аутентификация](#routines-are-disabled-by-your-organizations-policy) |
+| `Remote Control is only available when using Claude via api.anthropic.com` | [Authentication](#remote-control-requires-the-anthropic-api) |
+| `OAuth token refresh failed — run /login to re-authenticate` | [Authentication](#remote-control-couldnt-refresh-your-login) |
+| `JWT refresh failed: no OAuth token — run /login` | [Authentication](#remote-control-couldnt-refresh-your-login) |
+| `Claude.ai login expired` | [Authentication](#remote-control-couldnt-refresh-your-login) |
+| `Claude.ai login was rejected — run /login, then /remote-control` | [Authentication](#remote-control-couldnt-refresh-your-login) |
+| `OAuth token unavailable — run /login to restore Remote Control` | [Authentication](#remote-control-couldnt-refresh-your-login) |
+| `Signed out of Claude — run /login, then /remote-control` | [Authentication](#remote-control-couldnt-refresh-your-login) |
+| `Remote Control could not renew this computer's connection` | [Authentication](#remote-control-could-not-renew-this-computers-connection) |
+| `signed-in claude.ai account or organization changed on this machine` | [Authentication](#remote-control-stopped-because-the-signed-in-account-changed) |
+| `Remote Control stopped — the app running this session is now signed in to a different Claude account` | [Authentication](#remote-control-stopped-because-the-app-running-the-session-signed-out-or-switched-accounts) |
+| `Remote Control stopped — the app running this session is signed out of Claude` | [Authentication](#remote-control-stopped-because-the-app-running-the-session-signed-out-or-switched-accounts) |
+| `Couldn't verify your organization's policy for remote control` | [Troubleshoot Remote Control](https://code.claude.com/docs/ru/remote-control.md#couldnt-verify-your-organizations-policy-for-remote-control) |
+| `Remote Control didn't finish connecting` | [Запуск сессии Remote Control](https://code.claude.com/docs/ru/remote-control.md#start-a-remote-control-session) |
+| `Remote Control is disabled by your organization's policy` | [Troubleshoot Remote Control](https://code.claude.com/docs/ru/remote-control.md#remote-control-is-disabled-by-your-organizations-policy) |
+| `Remote Control was turned off by your organization's policy` | [Troubleshoot Remote Control](https://code.claude.com/docs/ru/remote-control.md#remote-control-was-turned-off-by-your-organizations-policy) |
+| `Session failed: working folder not found:` | [Устранение неполадок Remote Control](https://code.claude.com/docs/ru/remote-control.md#working-folder-not-found) |
+| `The program file this Remote Control started from is gone` | [Устранение неполадок Remote Control](https://code.claude.com/docs/ru/remote-control.md#program-file-is-gone) |
+| `Session failed: spawn error:` с последующим сообщением `ENOENT` | [Устранение неполадок Remote Control](https://code.claude.com/docs/ru/remote-control.md#program-file-is-gone) |
+| `Remote Control disconnected:` с последующей причиной, в которой упоминается `share link` | [Remote Control](https://code.claude.com/docs/ru/remote-control.md#what-connected-devices-see) |
+| `OAuth token revoked` / `OAuth token has expired` | [Authentication](#oauth-token-revoked-or-expired) |
+| `Failed to authenticate: OAuth token revoked` | [Authentication](#oauth-token-revoked-or-expired) |
+| `Your account does not have access to Claude. Please login again or contact your administrator.` | [Authentication](#oauth-token-revoked-or-expired) |
+| `API Error: 401 Invalid authentication credentials` | [Authentication](#api-error-401-invalid-authentication-credentials) |
+| `Login expired · Please run /login` | [Authentication](#login-expired) |
+| `The browser can't return the sign-in to Claude Code automatically` | [Authentication](#couldnt-start-the-local-sign-in-listener) |
+| `Couldn't start the local listener that receives the browser sign-in. Try again.` | [Authentication](#couldnt-start-the-local-sign-in-listener) |
+| `Failed to start OAuth callback server` | [Authentication](#failed-to-start-oauth-callback-server) |
+| `Claude login not accepted · Run /login, then try again` | [Authentication](#claude-login-not-accepted) |
+| `Artifacts need a claude.ai login` | [Authentication](#artifacts-need-a-claude-ai-login) |
+| `Not signed in to the Cloud gateway — run /login.` | [Authentication](#administrator-policy-requires-a-cloud-gateway-sign-in) |
+| `Administrator policy requires a Cloud gateway sign-in on this machine` | [Authentication](#administrator-policy-requires-a-cloud-gateway-sign-in) |
+| `Failed to authenticate: OAuth session expired and could not be refreshed` | [Authentication](#login-expired) |
+| `Login reached its time limit · Please run /login` / `Failed to authenticate: this login reached its time limit` | [Аутентификация](#login-expired) |
+| `Failed to authenticate: your claude.ai login expired` | [После истечения срока входа](https://code.claude.com/docs/ru/authentication.md#after-the-login-expires) |
+| `claude.ai login ended · usage now billed to` / `Warning: the claude.ai login on this machine has ended` | [После истечения срока входа](https://code.claude.com/docs/ru/authentication.md#after-the-login-expires) |
+| `Could not refresh your login because another Claude Code process is refreshing it` | [Authentication](#could-not-refresh-your-login) |
+| `Failed to refresh OAuth token: another Claude Code process is refreshing it or exited mid-refresh` | [Authentication](#could-not-refresh-your-login) |
+| `Could not refresh your login: the disk that holds the Claude Code config directory (~/.claude by default), or your disk quota on it, is full` | [Аутентификация](#could-not-refresh-your-login-disk-full) |
+| `Failed to refresh OAuth token: the disk that holds the Claude Code config directory (~/.claude by default), or your disk quota on it, is full` | [Аутентификация](#could-not-refresh-your-login-disk-full) |
+| `Your account is on hold and can't use Claude Code. View details or appeal: https://claude.ai/restricted` | [Authentication](#your-account-is-on-hold) |
+| `Your account is on hold and can't sign in to Claude Code. View details or appeal: https://claude.ai/restricted` | [Authentication](#your-account-is-on-hold) |
+| `Anthropic profile login expired · Re-authenticate your Anthropic profile` | [Authentication](#anthropic-profile-login-expired) |
+| `Login expired · Run /login to sign in again, or re-authenticate your Anthropic profile` | [Authentication](#anthropic-profile-login-expired) |
+| `Anthropic profile login expired · Run /login to use your claude.ai account instead, or re-authenticate the profile` | [Authentication](#anthropic-profile-login-expired) |
+| `does not meet scope requirement user:profile` | [Authentication](#oauth-scope-requirement) |
+| `claude.ai rejected the session token` / `session token rejected` | [Authentication](#claude-ai-rejected-the-session-token) |
+| `MCP server "<name>" needs you to sign in again (run /mcp to re-authenticate)` | [Authentication](#mcp-server-needs-you-to-sign-in-again) |
+| `rejected the credential from its headersHelper` / `rejected the Authorization header in its config` | [Authentication](#mcp-server-needs-you-to-sign-in-again) |
+| `(check the helper, then start a new task or chat)` / `(update it, then start a new task or chat)` | [Authentication](#mcp-credential-rejected-in-cowork) |
+| `MCP server "<name>" needs additional permissions (scope: "<scope>") — run /mcp to re-authenticate` | [Authentication](#mcp-server-needs-you-to-sign-in-again) |
+| `MCP server "<name>" requires re-authorization (token expired)` | [Authentication](#mcp-server-needs-you-to-sign-in-again) |
+| `Couldn't read the stored credentials for MCP server "<name>", so the request didn't run` | [Authentication](#couldnt-read-the-stored-credentials-for-mcp-server) |
+| `A request to MCP server "<name>" was sent without your stored credentials` | [Authentication](#couldnt-read-the-stored-credentials-for-mcp-server) |
+| `This server's URL is missing or not a valid URL, so sign-in can't start` | [Authentication](#mcp-server-url-is-missing-or-not-a-valid-url) |
+| `Issuer mismatch in authorization response (RFC 9207)` | [Authentication](#issuer-mismatch-in-authorization-response) |
+| `Stopped an OAuth request` | [Аутентификация](#stopped-an-oauth-request) |
+| `Refusing to send credentials to non-https token endpoint` / `<short-name> from the MCP SDK for <server-url>` | [Authentication](#refusing-to-send-credentials-to-non-https-token-endpoint) |
+| `Cloud gateway session expired — run /login to reconnect.` | [Authentication](#cloud-gateway-session-expired) |
+| `Cloud gateway <url> no longer accepts this session` | [Authentication](#cloud-gateway-session-expired) |
+| `Sign-in timed out while waiting for you to continue. Try again.` | [Authentication](#sign-in-timed-out-while-waiting-for-you-to-continue) |
+| `AWS credentials expired or invalid` | [Authentication](#aws-credentials-expired-or-invalid) |
+| `AWS authentication failed` | [Authentication](#aws-authentication-failed) |
+| `Google Cloud credentials expired or invalid` | [Authentication](#google-cloud-credentials-expired-or-invalid) |
+| `Google Cloud authentication failed` | [Authentication](#google-cloud-authentication-failed) |
+| `Microsoft Foundry authentication failed` | [Authentication](#microsoft-foundry-authentication-failed) |
+| `Gateway refused the request` | [Authentication](#gateway-refused-the-request) |
+| `Could not load AWS credentials` / `Could not load Google Cloud credentials` | [Authentication](#could-not-load-aws-or-google-cloud-credentials) |
+| `AWS default-chain credential resolve timed out` | [Authentication](#aws-default-chain-credential-resolve-timed-out) |
+| `Timed out after 60s waiting for AWS` | [Authentication](#bedrock-setup-verification-timed-out-waiting-for-aws) |
+| `A request to AWS timed out. Check your network and proxy settings, then try again.` | [Authentication](#bedrock-setup-verification-timed-out-waiting-for-aws) |
+| `Could not load the default credentials` on Google Cloud's Agent Platform | [Authentication](#could-not-load-aws-or-google-cloud-credentials) |
+| `Unable to connect to API` | [Network](#unable-to-connect-to-api) |
+| `Connection refused —` / `Can't reach the API server —` / `No internet route —` / `Couldn't connect through your proxy` / `Connection dropped`, каждое с кодом ошибки в скобках | [Network](#unable-to-connect-to-api) |
+| `Unable to connect to Anthropic services` during setup | [Network](#unable-to-connect-to-anthropic-services) |
+| `Unable to fetch your privacy settings at this time` | [Настройки конфиденциальности на claude.ai](https://claude.ai/settings/data-privacy-controls) |
+| `Socket is closed` | [Network](#socket-is-closed) |
+| `Waiting for API response · will retry in` | [Automatic retries](#automatic-retries), или [Network](#unable-to-connect-to-api) если это продолжается |
+| `API returned an empty or malformed response` | [Network](#api-returned-an-empty-or-malformed-response) |
+| `Streaming response ended before any complete data was received` | [Network](#streaming-response-ended-before-any-complete-data-was-received) |
+| `Bedrock streaming response has content-type "..."; expected "application/vnd.amazon.eventstream"` | [Network](#bedrock-streaming-response-has-an-unexpected-content-type) |
+| `Claude Code used only the certificates that it could read in full from the NODE_EXTRA_CA_CERTS file` / `Claude Code ignored all of the NODE_EXTRA_CA_CERTS file: it holds no certificate that Claude Code can read` | [Пользовательские сертификаты CA](https://code.claude.com/docs/ru/network-config.md#custom-ca-certificates) |
+| `SSL certificate verification failed` | [Network](#ssl-certificate-errors) |
+| `SSL certificate error (...)` during login or startup | [Network](#ssl-certificate-errors) |
+| `unable to get local issuer certificate` | [Network](#ssl-certificate-errors) |
+| `403` с `x-deny-reason: host_not_allowed` в облачной сессии или облачной запланированной задаче | [Network](#host-not-allowed-in-a-cloud-session) |
+| `proxy refused the connection` | [Network](#the-proxy-refused-the-connection) |
+| `403` с `GitHub GraphQL is not available from Claude Code sessions` в облачной сессии | [GitHub proxy](https://code.claude.com/docs/ru/cloud-environments.md#github-proxy) |
+| `The cloud environments service returned an empty response` / `The cloud environments service returned a response in an unexpected format` | [Network](#the-cloud-environments-service-returned-an-empty-or-unexpected-response) |
+| `Failed to fetch session from Sessions API: Failed to fetch session logs` | [Network](#failed-to-fetch-session-from-sessions-api) |
+| `Couldn't load the history of cloud session` | [Сеть](#couldnt-load-the-history-of-cloud-session) |
+| `Couldn't reconnect to your Remote Control session` | [Network](#couldnt-reconnect-to-your-remote-control-session) |
+| `N sessions ended while this machine was offline — the environment was cleaned up on the server and can't be resumed.` | [Network](#sessions-ended-while-this-machine-was-offline) |
+| `Couldn't share the transcript.` | [Network](#couldnt-share-the-transcript) |
+| `Couldn't send feedback` | [Network](#couldnt-send-feedback) |
+| `Feedback payload too large. Try again without the transcript, or shorten the details.` | [Сеть](#feedback-payload-too-large) |
+| `MCP server "<name>" connection timed out. Your computer went to sleep or its clock changed while connecting.` | [Network](#mcp-server-connection-timed-out-during-a-sleep-or-clock-change) |
+| `Prompt is too long` / `Input is too long for requested model` | [Request errors](#prompt-is-too-long) |
+| `Prompt is too long · automatic compaction failed:` | [Request errors](#prompt-is-too-long) |
+| `Prompt is too long · this conversation is a single exchange` / `A single-exchange conversation cannot be compacted` | [Request errors](#prompt-is-too-long) |
+| `Context limit reached · /compact or /clear to continue` | [Request errors](#prompt-is-too-long) |
+| `Context limit reached · /clear to continue` | [Request errors](#prompt-is-too-long) |
+| `capability_rejected: prompt_too_long` on a Claude apps gateway session | [Request errors](#prompt-is-too-long) |
+| `upstream rejected the request` / `request too large for this upstream` on a Claude apps gateway session | [Upstream error messages](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#upstream-error-messages) |
+| `upstream rate limit exceeded` on a Claude apps gateway session | [Upstream error messages](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#upstream-error-messages) |
+| `all upstreams failed (N attempted)` on a Claude apps gateway session | [Upstream error messages](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#upstream-error-messages) |
+| `Claude Code may not be enabled for your organization` after a Claude apps gateway sign-in | [Claude apps gateway troubleshooting](https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#troubleshooting) |
+| `Context exceeds the ...-token limit by ... tokens` in `/context` output | [Request errors](#context-exceeds-the-token-limit) |
+| `Request too large` | [Request errors](#request-too-large) |
+| `Request too large for the API's 32MB request limit` | [Request errors](#request-too-large) |
+| `Image was too large` | [Request errors](#image-was-too-large) |
+| `API Error: an image in the conversation could not be processed and was removed` | [Request errors](#image-was-too-large) |
+| `An image in the conversation exceeds the dimension limit for many-image requests` | [Ошибки запросов](#image-was-too-large) |
+| `Unable to resize image` | [Request errors](#unable-to-resize-image) |
+| `Request rejected as unprocessable by the model` | [Request errors](#request-rejected-as-unprocessable-by-the-model) |
+| `PDF too large` / `PDF is password protected` / `pdftoppm is not installed` | [Request errors](#pdf-errors) |
+| `Extra inputs are not permitted` | [Request errors](#extra-inputs-are-not-permitted) |
+| `API Error: 400 ... tools.N.custom.input_schema: JSON schema is invalid` / `Property keys should match pattern` | [Request errors](#tool-input-schema-is-invalid) |
+| `N tools left out` рядом с сервером в `/mcp` / `Claude wasn't given N tools because the Anthropic API would reject their input schemas` | [Инструменты с недопустимыми входными схемами](https://code.claude.com/docs/ru/mcp.md#tools-with-invalid-input-schemas) |
+| `Tool "mcp__<server>__<tool>" is not sent to Claude: its name has <N> characters and the API accepts at most 128` | [Request errors](#mcp-tool-name-over-128-characters) |
+| `tools.N.custom.name: String should have at most 128 characters` | [Request errors](#mcp-tool-name-over-128-characters) |
+| `tool_use.name: String should have at most 200 characters` | [Request errors](#tool-use-name-over-200-characters) |
+| `There's an issue with the selected model` | [Request errors](#theres-an-issue-with-the-selected-model) |
+| `Model ... is not a recognized model id` | [Request errors](#model-is-not-a-recognized-model-id) |
+| `Model ... not found` | [Request errors](#model-not-found) |
+| `Couldn't confirm model ... with the API` | [Request errors](#couldnt-confirm-model-with-the-api) |
+| `API error: ... · model not changed` | [Request errors](#api-error-model-not-changed) |
+| `Claude Opus is not available with the Claude Pro plan` | [Request errors](#claude-opus-is-not-available-with-the-claude-pro-plan) |
+| `Claude Code ... does not support this model; version ... or newer is required` | [Request errors](#claude-code-does-not-support-this-model) |
+| `Claude Code ... is older than the minimum version required by your organization's policy` | [Request errors](#claude-code-does-not-support-this-model) |
+| `Model ... is restricted by your organization's settings` | [Request errors](#model-is-restricted-by-your-organizations-settings) |
+| `Model ... is not available. Your organization restricts model selection.` | [Request errors](#model-is-restricted-by-your-organizations-settings) |
+| `Can't switch to the default model` | [Request errors](#cant-switch-to-the-default-model) |
+| `Model switch ... blocked by a PreModelSwitch hook` | [Request errors](#model-switch-was-blocked-by-a-premodelswitch-hook) |
+| `couldn't save it as your default` / `couldn't confirm it was saved as your default` | [Request errors](#couldnt-save-it-as-your-default) |
+| `is less capable than the current main model` / `Advisor will not activate on the main model` / `cannot advise` | [Request errors](#advisor-is-less-capable-than-the-current-main-model) |
+| `thinking.type.enabled is not supported for this model` | [Request errors](#thinking-type-enabled-is-not-supported-for-this-model) |
+| `Effort '<level>' isn't available with thinking turned off on this model` | [Request errors](#effort-isnt-available-with-thinking-turned-off) |
+| `effort '<level>' is not supported when thinking is disabled` | [Request errors](#effort-isnt-available-with-thinking-turned-off) |
+| `max_tokens must be greater than thinking.budget_tokens` | [Request errors](#thinking-budget-exceeds-output-limit) |
+| `Claude's response exceeded the ... output token maximum` | [Request errors](#response-exceeded-the-output-token-maximum) |
+| `API Error: 400 due to tool use concurrency issues` | [Request errors](#tool-use-or-thinking-block-mismatch) |
+| `API Error: 400 orphaned tool_result in conversation history` | [Request errors](#tool-use-or-thinking-block-mismatch) |
+| `API Error: 400 duplicate tool_use ID in conversation history` | [Request errors](#tool-use-or-thinking-block-mismatch) |
+| `Invalid data in redacted_thinking block` | [Request errors](#invalid-data-in-redacted-thinking-block) |
+| `[Unsupported tool content removed]` | [Request errors](#unsupported-tool-content-removed) |
+| `role 'system' must precede an 'assistant' message` | [Request errors](#role-system-must-precede-an-assistant-message) |
+| `Invalid encrypted_content in search_result block` / `Invalid encrypted_index in text block` / `Failed to decrypt web search result content` | [Request errors](#invalid-encrypted-content-in-search-result-block) |
+| `Invalid encrypted_stdout in encrypted_code_execution_result block` | [Request errors](#invalid-encrypted-content-in-search-result-block) |
+| `server_tool_use.name: Input should be` on every turn of a resumed session | [Request errors](#unsupported-tool-content-removed) |
+| `<model> can't help with this. Start a new session to continue` | [Request errors](#usage-policy-refusal) |
+| `Claude Code is unable to respond to this request, which appears to violate our Usage Policy` | [Request errors](#usage-policy-refusal) |
+| `<model>'s safeguards flagged this message` | [Request errors](#safety-measures-flagged-a-cybersecurity-topic) |
+| `<model>'s safeguards flagged this session` | [Request errors](#safety-measures-flagged-a-cybersecurity-topic) |
+| `<model> has safety measures that flagged this message for a cybersecurity topic` | [Request errors](#safety-measures-flagged-a-cybersecurity-topic) |
+| `` Details: `[reasoning_extraction]` `` | [Request errors](#safeguards-flagged-a-request-for-claudes-reasoning) |
+| `API Error: Output blocked by content filtering policy` | [Request errors](#output-blocked-by-content-filtering-policy) |
+| `Installation was killed before it could finish (exit code 137)` | [Troubleshoot installation and login](https://code.claude.com/docs/ru/troubleshoot-install.md#installation-was-killed-before-it-could-finish) |
+| `The connection dropped while downloading the update` | [Troubleshoot installation and login](https://code.claude.com/docs/ru/troubleshoot-install.md#the-connection-dropped-while-downloading-the-update) |
+| `Download timed out: exceeded the total deadline` | [Troubleshoot installation and login](https://code.claude.com/docs/ru/troubleshoot-install.md#the-connection-dropped-while-downloading-the-update) |
+| `Release verification failed for Claude Code <version> (<reason>). The update was not installed.` | [Troubleshoot installation and login](https://code.claude.com/docs/ru/troubleshoot-install.md#release-verification-failed) |
+| `Auto-update failed · Run claude doctor` | [Troubleshoot installation and login](https://code.claude.com/docs/ru/troubleshoot-install.md#auto-update-failed) |
+| `--bg and --print conflict` | [Command-line errors](#conflict-between-bg-and-print) |
+| `Couldn't tell whether --bg is a flag or text here, so nothing was started` | [Command-line errors](#couldnt-tell-whether-bg-is-a-flag-or-text) |
+| `Error: Cannot use both --append-subagent-system-prompt and --append-subagent-system-prompt-file. Please use only one.` | [Command-line errors](#conflict-between-a-system-prompt-flag-and-its-file-form) |
+| `Cloud sessions cannot be created from a --restricted session` | [Command-line errors](#cloud-sessions-cannot-be-created-from-a-restricted-session) |
+| `Cloud sessions are disabled by your organization's policy` | [Command-line errors](#cloud-sessions-are-disabled-by-your-organizations-policy) |
+| `Cloud sessions use your claude.ai login`, в конце отказа по политике, в котором указаны учётные данные | [Command-line errors](#cloud-sessions-use-your-claude-ai-login) |
+| `Couldn't verify your organization's policy for cloud sessions` | [Command-line errors](#couldnt-verify-your-organizations-policy-for-cloud-sessions) |
+| `Cloud sessions aren't available:`, за которым следует причина, по которой не удалось загрузить политику вашей организации | [Command-line errors](#couldnt-verify-your-organizations-policy-for-cloud-sessions) |
+| `Cloud sessions aren't available with this Console sign-in. They need a claude.ai sign-in.` | [Не удаётся получить UUID организации](https://code.claude.com/docs/ru/claude-code-on-the-web.md#unable-to-get-organization-uuid) |
+| `Cloud sessions need a claude.ai sign-in` | [Unable to get organization UUID](https://code.claude.com/docs/ru/claude-code-on-the-web.md#unable-to-get-organization-uuid) |
+| `Nothing was stashed: "<path>" is now a folder in place of a tracked file or link` / `are now folders in place of tracked files or links` | [Command-line errors](#nothing-was-stashed-because-a-folder-replaced-a-tracked-file) |
+| `Error: --json-schema is not a valid JSON Schema` | [Command-line errors](#the-json-schema-value-is-not-a-valid-json-schema) |
+| `Error: Invalid --agents configuration:` | [Command-line errors](#invalid-agents-configuration) |
+| `Error: --agents takes a JSON object, or a file path only with --print (-p)` | [Command-line errors](#invalid-agents-configuration) |
+| `Error: --agents file not found` | [Command-line errors](#invalid-agents-configuration) |
+| `Error: Settings file exceeds the 2MiB limit` | [Command-line errors](#settings-file-exceeds-the-2mib-limit) |
+| `Configuration error in` | [Ошибки командной строки](#configuration-error-in-claude-json) |
+| `Claude configuration file at <path> was empty and no backup holds anything: starting with defaults.` | [Ошибки командной строки](#claude-configuration-file-was-empty) |
+| `The current directory no longer exists (it was deleted or moved)` / `Can't read the current directory` | [Command-line errors](#the-current-directory-no-longer-exists) |
+| `Temp directory <dir> ... Refusing to use it` / `Claude Code's temporary directory <dir> could not be created` | [Command-line errors](#temp-directory-refused-or-cannot-be-created) |
+| `ENOSPC: no space left on device, mkdir '<dir>'` | [Command-line errors](#temp-directory-refused-or-cannot-be-created) |
+| `Error: Claude Code could not save ... because the disk is full (ENOSPC)` / `because your disk quota is used up (EDQUOT)` | [Ошибки командной строки](#could-not-save-because-the-disk-is-full) |
+| `couldn't be resolved to a real location, so its skills, commands, and agents weren't loaded` | [Command-line errors](#directory-couldnt-be-resolved-to-a-real-location) |
+| `Error: Workspace not trusted` when starting Remote Control | [Command-line errors](#workspace-not-trusted-when-starting-remote-control) |
+| `Error: Workspace not trusted` при запуске `claude ultrareview` | [Command-line errors](#workspace-not-trusted-when-running-claude-ultrareview) |
+| `Ultrareview did not start` | [Command-line errors](#ultrareview-did-not-start) |
+| `Remote Control did not start: "<question>" got no answer` | [Ошибки командной строки](#remote-control-did-not-start-got-no-answer) |
+| `` `<flag>` before `remote-control` is not carried over to the sessions Remote Control starts `` | [Command-line errors](#not-carried-over-to-the-sessions-remote-control-starts) |
+| `Remote Control did not start, because sessions would skip part or all of the --settings file` | [Ошибки командной строки](#remote-control-did-not-start-because-of-the-settings-file) |
+| `The settings file <file> has changed since Remote Control started, so this session did not start` | [Ошибки командной строки](#settings-file-changed-since-remote-control-started) |
+| `--sandbox is not supported by claude remote-control` / `--no-sandbox is not supported by claude remote-control` | [Command-line errors](#sandbox-is-not-supported-by-claude-remote-control) |
+| `` `claude import` is not yet available in this build `` | [Command-line errors](#claude-import-is-not-yet-available-in-this-build) |
+| `Could not read Claude Code config` | [Command-line errors](#could-not-read-claude-code-config) |
+| `Could not import <server>: <reason>` | [Command-line errors](#could-not-import-a-server-from-claude-desktop) |
+| `Cannot add MCP server to scope: managed` | [Command-line errors](#cannot-add-mcp-server-to-the-managed-scope) |
+| `Cannot add MCP server: your organization's managed settings allow only MCP servers that plugins provide` | [Command-line errors](#cannot-add-mcp-server-when-managed-settings-allow-only-plugin-servers) |
+| `is Anthropic-hosted and doesn't support local OAuth` | [Command-line errors](#anthropic-hosted-and-doesnt-support-local-oauth) |
+| `Can't read .mcp.json: it isn't a regular file or is larger than 2097152 bytes` | [Command-line errors](#cant-read-mcp-json) |
+| `MCP server "<name>" was not saved to` / `was not removed from` | [Command-line errors](#mcp-server-was-not-saved-or-removed) |
+| `MCP server "<name>" may not have been saved` / `may not have been removed` | [Command-line errors](#mcp-server-may-not-have-been-saved-or-removed) |
+| `Server rejected the Authorization header minted by the configured headersHelper` | [Command-line errors](#server-rejected-the-authorization-header-minted-by-the-configured-headershelper) |
+| `This server (Java MCP SDK 0.17.0 or older) rejected Claude Code's elicitation capability` | [Ошибки командной строки](#mcp-server-rejected-the-elicitation-capability) |
+| `Error: MCP tool <name> (passed via --permission-prompt-tool) not found` | [Command-line errors](#mcp-permission-prompt-tool-not-found) |
+| `OAuth callback port <port> is already in use — another process may be holding it` | [Command-line errors](#oauth-callback-port-is-already-in-use) |
+| `No available ports for OAuth redirect` | [Command-line errors](#no-available-ports-for-oauth-redirect) |
+| `Shell command failed for pattern "..."`, from `/security-review` or any skill that injects dynamic context | [Command-line errors](#security-review-fails-without-origin-head) |
+| `Shell command permission check failed for pattern "..."`, from a skill that injects dynamic context | [Command-line errors](#security-review-fails-without-origin-head) |
+| ``Couldn't run `<command>` for <name>. A file named HEAD or .git in this folder or one above it may not be yours`` от скилла, который внедряет динамический контекст | [Проверки разрешений для внедряемых команд](https://code.claude.com/docs/ru/skills.md#permission-checks-on-injected-commands) |
+| ``Skill <name> requires bash (`shell: bash` in frontmatter) but Git Bash was not found`` | [Command-line errors](#security-review-fails-without-origin-head) |
+| `No shell command in <name> was run, because the <tool> tool does not accept one of them` | [Command-line errors](#no-shell-command-was-run) |
+| `This skill, command or hook and the arguments filled into it add up to more than 4,000,000 characters` | [Ошибки командной строки](#skill-command-or-hook-over-the-4000000-character-limit) |
+| `Input must be provided either through stdin or as a prompt argument when using --print` | [Command-line errors](#input-must-be-provided-when-using-print) |
+| `Claude Code can't read the keyboard here: stdin is not a terminal` | [Command-line errors](#claude-code-cant-read-the-keyboard-here) |
+| `Error: Input contained only whitespace` | [Command-line errors](#input-contained-only-whitespace) |
+| `Blank prompt — the message was only whitespace, so nothing was sent to the model.` | [Command-line errors](#input-contained-only-whitespace) |
+| `Error: stream-json input carried over 256M characters with no newline` | [Command-line errors](#stream-json-input-carried-over-256m-characters-with-no-newline) |
+| `Unknown command: /<name>`, with or without a `Did you mean` suggestion | [Command-line errors](#unknown-command) |
+| `Diff is too large for ultrareview` / `PR #<N> is too large for ultrareview` | [Command-line errors](#diff-is-too-large-for-ultrareview) |
+| `Could not find merge-base with <branch>` | [Command-line errors](#could-not-find-merge-base-with-the-base-branch) |
+| `Your checkout has no branches (detached HEAD only)` | [Command-line errors](#your-checkout-has-no-branches) |
+| `Ultrareview clones <owner>/<repo> in the cloud with the GitHub account connected to your Claude account, and none is connected` | [Command-line errors](#no-github-account-is-connected-to-your-claude-account) |
+| `Your connected GitHub account can't see <owner>/<repo>` | [Command-line errors](#your-connected-github-account-cant-see-the-repository) |
+| `The GitHub App preflight failed transiently (network or service hiccup) — retry in a moment to start from GitHub instead` | [Command-line errors](#the-github-app-preflight-failed-transiently) |
+| `Not uploading this working tree` with `the upload cannot follow that setting` | [Command-line errors](#the-repository-upload-cant-follow-a-git-setting) |
+| `Not uploading this working tree` с другой причиной / `Git will not work in this checkout because its folder, or the .git in it, belongs to another user` | [Отправка локальных репозиториев без GitHub](https://code.claude.com/docs/ru/claude-code-on-the-web.md#send-local-repositories-without-github) |
+| `GitHub isn't connected to your Claude account, so this repository can't be cloned in the cloud` | [Command-line errors](#github-isnt-connected-to-your-claude-account) |
+| `Your GitHub organization has an IP allowlist that is blocking Claude` | [Command-line errors](#a-github-organization-policy-is-blocking-claude) |
+| `Your GitHub organization requires single sign-on` | [Command-line errors](#a-github-organization-policy-is-blocking-claude) |
+| `Your GitHub organization's identity provider (Microsoft Entra ID) has a Conditional Access policy that is blocking Claude` | [Command-line errors](#a-github-organization-policy-is-blocking-claude) |
+| `Single sign-on authorization needed` | [Command-line errors](#single-sign-on-authorization-needed) |
+| `Failed to resume the conversation` | [Command-line errors](#failed-to-resume-the-conversation) |
+| `No conversation found with session ID: <session-id>` | [Command-line errors](#no-conversation-found-with-the-session-id) |
+| `Windows reported an error (EBADF) when Claude Code read this session's transcript file` | [Command-line errors](#windows-reported-an-error-ebadf) |
+| `Cannot switch renderers in this session` | [Command-line errors](#cannot-switch-renderers-in-this-session) |
+| `Cannot switch renderers while work is running in the background` | [Command-line errors](#cannot-switch-renderers-in-this-session) |
+| `Can't restart while work is running in the background — wait for it to finish (or stop it via /tasks), then try again.` | [Ошибки командной строки](#cant-restart-while-work-is-running-or-remote-control-is-connected) |
+| `Can't restart while Remote Control is connected. To use the installed version, exit and start Claude Code again, then run /resume.` | [Ошибки командной строки](#cant-restart-while-work-is-running-or-remote-control-is-connected) |
+| `Claude Code couldn't restart` | [Command-line errors](#claude-code-couldnt-restart) |
+| `Couldn't open Claude Desktop` | [Command-line errors](#couldnt-open-claude-desktop) |
+| `Failed to open Claude Desktop. Please try opening it manually.` | [Command-line errors](#couldnt-open-claude-desktop) |
+| `Couldn't read your Zed keymap` / `Couldn't back up your Zed keymap` / `Couldn't update your Zed keymap` | [Command-line errors](#terminal-setup-left-your-zed-keymap-unchanged) |
+| `Your Zed keymap isn't a readable list of keybindings` | [Command-line errors](#terminal-setup-left-your-zed-keymap-unchanged) |
+| `Skill usage reports are not available on this connection.` | [Command-line errors](#skill-usage-reports-are-not-available-on-this-connection) |
+| `Custom output styles can't be selected over Remote Control or from a relayed message` | [Command-line errors](#custom-output-styles-cant-be-selected-over-remote-control) |
+| `Output styles are saved to local settings (.claude/settings.local.json), which this session doesn't load` | [Command-line errors](#output-styles-are-saved-to-local-settings-which-this-session-doesnt-load) |
+| `/recap only runs when you ask for it yourself in this session` | [Command-line errors](#recap-only-runs-when-you-ask-for-it-yourself) |
+| `/feedback is disabled by your organization's policy` или то же сообщение для `/bug` или `/share` | [Command-line errors](#feedback-is-disabled-by-your-organizations-policy) |
+| `` `plugin eval` is currently in early access `` / `` `plugin eval` is currently unavailable `` | [Plugin errors](#plugin-eval-is-currently-in-early-access) |
+| `credential store on this machine holds a symbolic link inside it` | [Предоставление инструментов](https://code.claude.com/docs/ru/plugin-evals.md#grant-tools) |
+| `cannot be evaluated where sessions load it` | [Test plugins with evals](https://code.claude.com/docs/ru/plugin-evals.md#cannot-be-evaluated-where-sessions-load-it) |
+| `Marketplace "<name>" is registered from an untrusted source` | [Plugin errors](#marketplace-is-registered-from-an-untrusted-source) |
+| `Claude Code refuses the marketplace name "<name>"` | [Plugin errors](#claude-code-refuses-the-marketplace-name) |
+| `Marketplace name impersonates an official Anthropic/Claude marketplace` | [Plugin errors](#claude-code-refuses-the-marketplace-name) |
+| `Marketplace "<name>" is already added from a different source` | [Plugin errors](#marketplace-is-already-added-from-a-different-source) |
+| `"<name>" is another spelling of "<reserved>", a reserved marketplace name` | [Plugin errors](#marketplace-name-is-another-spelling-of-a-reserved-name) |
+| `Cannot add marketplace "<name>": Claude Code cannot install plugins from a marketplace with this name` | [Plugin troubleshooting](https://code.claude.com/docs/ru/plugins/troubleshooting.md#cannot-install-plugins-from-a-marketplace-with-this-name) |
+| `Cannot add marketplace "<name>": Claude Code reserves this name and cannot register a marketplace under it` | [Plugin troubleshooting](https://code.claude.com/docs/ru/plugins/troubleshooting.md#claude-code-reserves-this-name) |
+| `Marketplace "<name>" is added but ignored` | [Plugin troubleshooting](https://code.claude.com/docs/ru/plugins/troubleshooting.md#marketplace-is-added-but-ignored) |
+| `Marketplace "<name>" is registered but was refused (see the debug log)` | [Plugin troubleshooting](https://code.claude.com/docs/ru/plugins/troubleshooting.md#marketplace-is-added-but-ignored) |
+| `references ${user_config.*} in a shell-form command` | [Plugin errors](#plugin-command-references-user-config) |
+| `Monitor "<name>" from plugin <plugin> references ${user_config.*} in its command` | [Plugin errors](#plugin-command-references-user-config) |
+| `headersHelper for MCP server '<name>' references ${user_config.*}` | [Plugin errors](#plugin-command-references-user-config) |
+| `Plugin archive integrity check failed` | [Plugin errors](#plugin-archive-integrity-check-failed) |
+| `An npm plugin source must name a registry package` | [Plugin troubleshooting](https://code.claude.com/docs/ru/plugins/troubleshooting.md#an-npm-plugin-source-must-name-a-registry-package) |
+| `The packages it lists are not installed` / `The packages it lists were not installed, because` | [Plugin troubleshooting](https://code.claude.com/docs/ru/plugins/troubleshooting.md#the-packages-it-lists-are-not-installed) |
+| `does not load (...), so Claude Code ignores the whole file` | [Plugin troubleshooting](https://code.claude.com/docs/ru/plugins/troubleshooting.md#does-not-load-so-claude-code-ignores-the-whole-file) |
+| `path escapes plugin directory` | [Plugin errors](#path-escapes-plugin-directory) |
+| `path not read: <path> is absolute or has a ".." part` | [Ошибки плагинов](#server-file-path-not-read) |
+| `Plugin not loaded: its manifest <path> was not read` | [Plugin errors](#plugin-not-loaded-its-manifest-was-not-read) |
+| `path could not be checked` | [Plugin errors](#path-could-not-be-checked) |
+| `its marketplace entry path does not stay inside the marketplace directory` | [Plugin errors](#marketplace-entry-path-does-not-stay-inside-the-marketplace-directory) |
+| `Plugin source path refused` | [Plugin errors](#marketplace-entry-path-does-not-stay-inside-the-marketplace-directory) |
+| `Failed to load marketplace configuration` | [Plugin errors](#failed-to-load-marketplace-configuration) |
+| `Marketplace configuration file is corrupted` | [Plugin errors](#failed-to-load-marketplace-configuration) |
+| `Plugin "<name>@synced" is required by your organization and can't be disabled here` | [Plugin errors](#plugin-is-required-by-your-organization) |
+| `"<plugin>" was not uninstalled: it is still switched on in <file>` | [Plugin errors](#plugin-was-not-uninstalled) |
+| `"<plugin>" was not uninstalled: <file> is there and could not be read` | [Plugin errors](#plugin-was-not-uninstalled) |
+| `Plugin "<plugin>" was not uninstalled: installed_plugins.json` | [Plugin troubleshooting](https://code.claude.com/docs/ru/plugins/troubleshooting.md#installed-plugins-json-holds-a-record-this-version-cannot-read) |
+| `Plugin directory does not exist: <path>` | [Plugin troubleshooting](https://code.claude.com/docs/ru/plugins/troubleshooting.md#plugin-directory-does-not-exist) |
+| `Skipping connection (recent failure cached; retries automatically in 15 min, or edit the plugin config to retry now)` | [Plugin errors](#skipping-connection-recent-failure-cached) |
+| `is not added on this machine, so your organization's marketplace policy keeps its plugins off` | [Добавление маркетплейса](https://code.claude.com/docs/ru/plugins/install.md#add-a-marketplace) |
+| `A mod's http.fetch hook stopped this request` | [Включение и отключение модов](https://code.claude.com/docs/ru/plugins/mods/overview.md#turn-mods-on-or-off) |
+| `Error: No such tool available: <tool name>` | [Tool errors](#no-such-tool-available) |
+| `MCP server "<name>" connection closed before the tool call was answered` | [Tool errors](#connection-closed-before-the-tool-call-was-answered) |
+| `MCP server "<name>" is disabled — re-enable it via /mcp to use its tools` | [Ошибки инструментов](#mcp-server-is-disabled) |
+| `MCP server "<name>" tool "<tool>" timed out after <N>s. The server asked the user a question, and no answer came before the time limit.` | [Tool errors](#mcp-tool-call-timed-out-with-the-servers-question-unanswered) |
+| `Permission prompt tool returned an invalid result` | [Ошибки инструментов](#permission-prompt-tool-returned-an-invalid-result) |
+| `would be spawned with zero tools — refusing` | [Tool errors](#agent-would-be-spawned-with-zero-tools) |
+| `File is covered by a Read deny rule in your permission settings` | [Tool errors](#file-is-covered-by-a-read-deny-rule) |
+| `<path> is outside <dirs>; the permissions.blockWritesOutsideWorkingDirectories setting blocks writes outside the working directories` | [Ошибки инструментов](#setting-blocks-writes-outside-the-working-directories) |
+| `<path>: Writes outside the working directories are blocked (permissions.blockWritesOutsideWorkingDirectories)` | [Ошибки инструментов](#setting-blocks-writes-outside-the-working-directories) |
+| `Writes to Claude Code settings files are blocked while permissions.blockWritesOutsideWorkingDirectories is on` | [Ошибки инструментов](#writes-to-claude-code-settings-files-are-blocked) |
+| `cannot contain null bytes (\0)` | [Tool errors](#path-cannot-contain-null-bytes) |
+| `Path contains null bytes` | [Tool errors](#path-cannot-contain-null-bytes) |
+| `command contains the invisible character U+FEFF (byte order mark) or U+180E (Mongolian vowel separator), and was not run` | [Ошибки инструментов](#command-contains-an-invisible-character) |
+| `This call was not run. Claude Code could not confirm that the shell is back in the directory`, начиная с v2.1.323 | [Ошибки инструментов](#command-approved-before-a-restart-was-not-run) |
+| `File is too large to read as an image (the limit is 128MB)` | [Tool errors](#file-is-too-large-to-read-as-an-image) |
+| `Cannot read this as an image: <path> is a pipe or a device` | [Tool errors](#file-is-too-large-to-read-as-an-image) |
+| `could not fully check your permission rules` | [Действия, которые ни один режим не одобряет автоматически](https://code.claude.com/docs/ru/permission-modes.md#actions-no-mode-auto-approves) |
+| `subagent_type is required: the general-purpose agent is not available in this session` | [Tool errors](#subagent-type-is-required) |
+| `Error: this write left the memory index at MEMORY.md at ..., over its ... read limit` | [Tool errors](#memory-index-is-over-its-read-limit) |
+| `Sandbox is required but failed to initialize: <reason>` | [Устранение неполадок изоляции в песочнице](https://code.claude.com/docs/ru/sandboxing.md#commands-refused-with-sandbox-is-required) |
+| `Sandbox is required (sandbox.failIfUnavailable) and stopped being available in this session: <reason>` | [Устранение неполадок изоляции в песочнице](https://code.claude.com/docs/ru/sandboxing.md#commands-refused-with-sandbox-is-required) |
+| `pkill: refusing to run` | [Tool errors](#pkill-pattern-matches-the-claude-code-process) |
+| `Failed to write to <name>'s inbox — nothing was sent` | [Tool errors](#failed-to-write-to-a-teammate-inbox) |
+| `Failed to write the plan approval request to the lead's inbox — plan not submitted` | [Tool errors](#failed-to-write-to-a-teammate-inbox) |
+| `Its agent definition was not restored: the folder its definition file came from is not trusted` | [Tool errors](#teammate-agent-definition-not-restored) |
+| `Only a teammate can approve a shutdown request` | [Tool errors](#only-a-teammate-can-approve-a-shutdown-request) |
+| `A command-line deny rule cannot be handed to a teammate intact` | [Ошибки инструментов](#command-line-deny-rule-cannot-be-handed-to-a-teammate) |
+| `Message too large for cross-session delivery` | [Tool errors](#message-too-large-for-cross-session-delivery) |
+| `Too many messages to this session just now` | [Tool errors](#too-many-messages-to-this-session-just-now) |
+| `Cross-session message was dropped at the recipient session's inbox` | [Tool errors](#cross-session-message-dropped-at-the-inbox) |
+| `Refusing to send: reply target is a symlink` / `Refusing to send: cannot vet reply target` | [Tool errors](#refusing-to-send-a-cross-session-message) |
+| `Refusing to read <path>: its symlink resolution changed after permission was checked (<reason>)` / `Refusing to search <path>: its symlink resolution changed after permission was checked` | [Tool errors](#refusing-after-a-symlink-changed) |
+| `Refusing to write <path>: its parent-directory symlink resolution changed after permission was checked` / `Refusing to write <path>: it is a symbolic link. Write to the link's target path instead` | [Tool errors](#refusing-after-a-symlink-changed) |
+| `Refusing to write through symlink: <path>` / `Refusing to write into symlinked directory: <path>` | [Tool errors](#refusing-after-a-symlink-changed) |
+| `Refusing to write <path>: where it leads on disk could not be determined` / `Refusing to read <path>: where it leads on disk could not be determined` | [Tool errors](#refusing-after-a-symlink-changed) |
+| `Refusing to search <path>: a path one of its Read deny rules is written through changed while the search was being prepared` / `Refusing to search <path>: it could not be opened` | [Tool errors](#refusing-after-a-symlink-changed) |
+| `its permission check expired before it ran (too many concurrent file operations)` / `ripgrep was found only by name on PATH` | [Tool errors](#refusing-after-a-symlink-changed) |
+| `The search failed, so this is not a "no matches" result: matches may exist` | [Ошибки инструментов](#the-search-failed) |
+| `task output swap refused (tasks dir moved or linked)` | [Tool errors](#task-output-swap-refused) |
+| `Command killed: its output file was replaced or could no longer be verified` | [Tool errors](#task-output-swap-refused) |
+| `Disk full: this computer's volume holding <dir> (Claude Code's temporary directory) has <n> MB free` / `Nearly out of inodes: this computer's volume holding <dir>` | [Tool errors](#disk-quota-or-temp-filesystem-is-full) |
+| `Disk full: a test write beside this command's output file` / `Disk quota used up: a test write beside this command's output file` | [Tool errors](#disk-quota-or-temp-filesystem-is-full) |
+| `The command was not started: this computer's disk is full (ENOSPC)` / `the user's disk quota is used up (EDQUOT)` | [Tool errors](#disk-quota-or-temp-filesystem-is-full) |
+| `Your disk quota is full on the filesystem with Claude Code's temp directory <dir> (EDQUOT)` / `The filesystem with Claude Code's temp directory <dir>, or your disk quota on it, is full (ENOSPC)` | [Tool errors](#disk-quota-or-temp-filesystem-is-full) |
+| `Command output was lost: the temp filesystem at <dir> is full` / `is out of inodes` | [Tool errors](#disk-quota-or-temp-filesystem-is-full) |
+| `File is not valid UTF-8. It may use a legacy encoding such as Windows-1252, Shift-JIS or GBK, or be binary` | [Tool errors](#file-is-not-valid-utf-8) |
+| `git is not installed on this Mac. To install it, run xcode-select --install, then try again.` | [Ошибки инструментов](#git-is-not-installed-on-this-mac) |
+| `Refusing to apply edits to <path>: a hook is configured for file edits in this session` | [Ошибки инструментов](#a-hook-is-configured-for-file-edits) |
+| `the source file is not valid UTF-8 text` / `the source file is not valid UTF-16 text` | [Tool errors](#the-source-file-is-not-valid-utf-8-text) |
+| `the source file has the replacement character U+FFFD` | [Tool errors](#the-source-file-is-not-valid-utf-8-text) |
+| `Not published: that file is on a network share` | [Tool errors](#not-published-that-file-is-on-a-network-share) |
+| `Not published: Claude sent the same content again after a newer version of the artifact turned it away` / `Not published: Claude sent its changes again over the same file after a newer version of the artifact turned them away` | [Tool errors](#not-published-a-newer-version-of-the-artifact-turned-it-away) |
+| `Reading a local file from outside this session's connected folders, or through a link, needs the approval card` | [Tool errors](#reading-a-local-file-from-outside-the-connected-folders) |
+| `cannot read file_path (...) — the file could not be examined, and no one can answer the approval card` | [Tool errors](#reading-a-local-file-from-outside-the-connected-folders) |
+| `WebFetch cannot fetch localhost or other hostnames without a dot` | [Tool errors](#webfetch-cannot-fetch-localhost) |
+| `Claude Code is unable to fetch from ...` | [Ошибки инструментов](#claude-code-is-unable-to-fetch-from-a-host) |
+| `The safety check for domain ... is rate-limited` | [Tool errors](#webfetch-domain-safety-check-failed) |
+| `The safety check for domain ... is temporarily rate-limited` | [Tool errors](#webfetch-domain-safety-check-failed) |
+| `Unable to verify if domain ... is safe to fetch` | [Tool errors](#webfetch-domain-safety-check-failed) |
+| `MCP tool "<tool>" on server "<server>" gave no answer that could be read` / `answered without its text` | [Как читается результат хука MCP-инструмента](https://code.claude.com/docs/ru/hooks.md#how-the-tools-result-is-read) |
+| `Can't open MCP settings while no terminal is attached to this background session` | [Background session errors](#commands-refused-in-a-background-session) |
+| `Can't open MCP settings in a background session` | [Background session errors](#commands-refused-in-a-background-session) |
+| `blocked because the path is spelled in a form that cannot be safely resolved` | [Background session errors](#write-or-command-blocked-because-the-path-cannot-be-safely-resolved) |
+| `blocked because the path is network-shaped` | [Background session errors](#write-or-command-blocked-because-the-path-names-a-network-location) |
+| `is isolated in the worktree <path>, but this command <reason>. Refusing to run it` | [Background session errors](#command-blocked-by-the-worktree-isolation-checks) |
+| `too complex to verify that it stays inside the worktree` | [Background session errors](#command-blocked-by-the-worktree-isolation-checks) |
+| `This session has no saved transcript` | [Background session errors](#this-session-has-no-saved-transcript) |
+| `Can't open — this session is running in another terminal` | [Background session errors](#this-session-is-running-in-another-terminal) |
+| `This conversation is already open in another running Claude session` | [Background session errors](#this-session-is-running-in-another-terminal) |
+| `This session's saved conversation is no longer on disk` | [Background session errors](#this-sessions-saved-conversation-is-no-longer-on-disk) |
+| `This forked session could not be started. Fork the conversation again to retry.` | [Ошибки фоновых сессий](#this-forked-session-could-not-be-started) |
+| `Bypass permissions was requested at launch and ignored` | [Режим bypassPermissions игнорируется в фоновой сессии](https://code.claude.com/docs/ru/permission-modes.md#bypass-permissions-ignored-in-a-background-session) |
+| `kept <id> — its worktree is still at <path>` | [Ошибки фоновых сессий](#worktree-has-commits-that-are-not-pushed-anywhere), если в следующей строке сообщения упоминаются неотправленные коммиты, иначе [Что удаляется при удалении сессии](https://code.claude.com/docs/ru/agent-view.md#what-deleting-a-session-removes) |
+| `kept <id> — <n> unpushed commits on <branch>` | [Background session errors](#worktree-has-commits-that-are-not-pushed-anywhere) |
+| `kept <id> — worktree has commits that are not pushed anywhere` | [Background session errors](#worktree-has-commits-that-are-not-pushed-anywhere) |
+| `terminal host process died — press Enter to restart` / `This session's terminal host process died` | [Background session errors](#terminal-host-process-died) |
+| `Session isn't responding` / `Press enter again to restart this session — it isn't responding` | [Background session errors](#session-isnt-responding) |
+| `Session <id> was stopped while the respawn was in flight` | [Background session errors](#session-was-stopped-while-the-respawn-was-in-flight) |
+| `This session was running agent '<name>', which is no longer available` | [Background session errors](#session-agent-no-longer-available) |
+| `This session restarted <time> after its next /loop wakeup was due, so that wakeup will not fire` | [Background session errors](#restarted-after-its-next-loop-wakeup-was-due) |
+| `No LLM gateway: a gateway set in your shell isn't passed to a session opened from another folder` | [Background session errors](#no-llm-gateway-opened-from-another-folder) |
+| `No LLM gateway: opened from another folder · respawn from <folder>` | [Background session errors](#no-llm-gateway-opened-from-another-folder) |
+| `CLAUDE_CODE_PROCESS_WRAPPER: launcher ...` | [Background session errors](#claude_code_process_wrapper-launcher-errors) |
+| `EUNKNOWN: unknown error, uv_spawn` | [Background session errors](#eunknown-when-starting-a-background-session) |
+| `EACCES: permission denied, posix_spawn` | [Background session errors](#eacces-when-starting-a-background-session) |
+| `exited before it became reachable` | [Background session errors](#background-service-exited-before-it-became-reachable) |
+| `Couldn't start a background session (working directory no longer exists or is not accessible: ...)` | [Background session errors](#working-directory-no-longer-exists-when-starting-a-background-session) |
+| `Workspace not trusted.` when starting or restarting a background session | [Background session errors](#workspace-not-trusted-when-dispatching-a-background-session) |
+| `Claude Code is being updated by npm on this machine (still not runnable after 2 min, ...)` | [Background session errors](#eacces-when-starting-a-background-session) |
+| `Claude Code process exited with code N` | [Wrapper and IDE errors](#claude-code-process-exited-with-code-n) |
+| `Subprocess initialization did not complete within 60000ms` | [Ошибки обёрток и IDE](#subprocess-initialization-did-not-complete-within-60000ms) |
+| `Claude Code did not finish starting` | [Ошибки обёрток и IDE](#subprocess-initialization-did-not-complete-within-60000ms) |
+| `The connection to Claude Code ended before this message completed` | [Wrapper and IDE errors](#the-connection-to-claude-code-ended-before-this-message-completed) |
+| `Could not locate the Claude CLI on PATH` | [Wrapper and IDE errors](#could-not-locate-the-claude-cli-on-path) |
+| `The Claude Code program for this computer, the <build> build, could not be found` | [Ошибки обёрток и IDE](#the-claude-code-program-for-this-computer-could-not-be-found) |
+| `Restored the code, but skipped N files` | [Rewind warnings and errors](#restored-the-code-but-skipped-files) |
+| `No files were restored: N files failed (backup missing, or the file could not be updated)` | [Rewind warnings and errors](#no-files-were-restored) |
+| `The file backups are still being copied. Nothing was changed. Try again in a moment.` | Снова выберите ту же точку в [`/rewind`](https://code.claude.com/docs/ru/checkpointing). Если вы восстанавливаете код вскоре после [`/branch`](https://code.claude.com/docs/ru/sessions#branch-a-session), Claude Code может всё ещё копировать резервные копии файлов в новую сессию. |
+| `Transcript writes are failing (...)` | [Session saving warnings](#transcript-writes-are-failing) |
+| `Transcript saving is off — CLAUDE_CODE_SKIP_PROMPT_HISTORY is set` | [Session saving warnings](#transcript-saving-is-off-skip-prompt-history) |
+| `Transcript saving is off — inherited CLAUDE_CODE_CHILD_SESSION marker` | [Session saving warnings](#transcript-saving-is-off-child-session-marker) |
+| `Claude Code's fullscreen renderer didn't finish starting last time on this machine` / `Claude Code's fullscreen renderer has repeatedly failed to start on this machine` | [Fullscreen rendering](https://code.claude.com/docs/ru/fullscreen.md#fullscreen-renderer-didnt-finish-starting) |
+| `Claude Code exited after an unrecoverable interface error (...)` | [Configuration warnings](#exited-after-an-unrecoverable-interface-error) |
+| `Agent descriptions are over the 15.0k-token limit` | [Configuration warnings](#agent-descriptions-are-over-the-15000-token-limit) |
+| `declares type "claudeai-proxy", which only claude.ai connectors use` | Удалите эту запись из конфигурации MCP. См. [Использование MCP-серверов из claude.ai](https://code.claude.com/docs/ru/mcp.md#use-mcp-servers-from-claude-ai). |
+| `hook needs quotes around a path with a space` | [Configuration warnings](#hook-needs-quotes-around-a-path-with-a-space) |
+| `Instruction file not loaded` | [Configuration warnings](#instruction-file-not-loaded) |
+| `Not loaded: rename <path>, then restart — its name uses "<name>", a name reserved for the skills synced from your claude.ai account` | [Configuration warnings](#a-skill-command-or-workflow-wasnt-loaded-because-its-name-is-reserved) |
+| `N skill or command names refused: run with --debug to see which ([names]), rename, then restart` | [Configuration warnings](#skill-or-command-name-refused) |
+| `Ignoring N permissions.allow entries from ... this workspace has not been trusted` | [Configuration warnings](#workspace-has-not-been-trusted) |
+| `Two Claude Code config files exist: this run uses <path>, not <path>` | [Предупреждения конфигурации](#two-claude-code-config-files-exist) |
+| `Make this change again later: <path> could not be updated, so it applies to this session only` | [Предупреждения конфигурации](#make-this-change-again-later) |
+| `is a network path, which cannot be added as a working directory` | [Configuration warnings](#working-directory-is-a-network-path) |
+| `Remote managed settings failed to load (<cause>)` | [Configuration warnings](#remote-managed-settings-failed-to-load) |
+| `Your organization requires remote managed settings to load, but they could not be loaded` | [Принудительный запуск с блокировкой при сбое](https://code.claude.com/docs/ru/server-managed-settings.md#enforce-fail-closed-startup) |
+| `Remote managed settings are still loading` | [Предупреждения конфигурации](#remote-managed-settings-failed-to-load) |
+| `Remote managed settings did not load` | [Предупреждения конфигурации](#remote-managed-settings-failed-to-load) |
+| `Claude Code couldn't load your organization's settings` / `Claude Code couldn't reach Anthropic to load your organization's settings` / `requires them before a session can start` | [Предупреждения конфигурации](#couldnt-load-your-organizations-settings) |
+| `Claude Code can't start this session yet` | [Предупреждения конфигурации](#couldnt-load-your-organizations-settings) |
+| `Your Claude session has expired. Sign in again to continue (claude auth login).` | [Предупреждения конфигурации](#couldnt-load-your-organizations-settings) |
+| `Managed settings were not approved; exiting without applying them.` | [Configuration warnings](#managed-settings-were-not-approved) |
+| `Your organization's managed settings need your approval, which couldn't be asked for here.` | [Configuration warnings](#managed-settings-need-your-approval) |
+| `Claude Code can't start: your organization's managed settings block the default model` / `Claude Code can't start: your organization allows only the models listed in "availableModels"` | [Configuration warnings](#managed-settings-block-the-default-model) |
+| `Your organization's managed settings allow Claude Code to use: <providers>` | [Configuration warnings](#managed-settings-dont-allow-this-api-provider) |
+| `Your organization's managed settings allow Claude Code to use no API provider at all` | [Configuration warnings](#managed-settings-dont-allow-this-api-provider) |
+| `MCP server <name> is blocked by enterprise managed policy` | [Configuration warnings](#mcp-server-is-blocked-by-enterprise-managed-policy) |
+| `"<name>" is a reserved MCP server name and was not loaded` | [Configuration warnings](#mcp-server-name-is-reserved) |
+| `Managed settings document could not be parsed as a JSON object; none of its settings are in effect. Fix or remove it.` | [Configuration warnings](#managed-settings-document-could-not-be-parsed) |
+| `Managed settings drop-in directory could not be read` | [Configuration warnings](#managed-settings-document-could-not-be-parsed) |
+| `Unable to read managed policy settings` | [Configuration warnings](#unable-to-read-managed-policy-settings) |
+| `Managed settings contain invalid entries, including PreToolUse/PermissionRequest hooks that are NOT loaded; fix or remove each entry:` | [Configuration warnings](#managed-settings-hooks-not-loaded) |
+| `otelHeadersHelper failed; telemetry is not being exported. See /status: ...` | [Configuration warnings](#otelheadershelper-failed) |
+| `apply_flag_settings: nothing in this request was applied and earlier settings stay in force. Fix or remove these invalid settings and send it again` | [`applyFlagSettings()`](https://code.claude.com/docs/ru/agent-sdk/typescript#applyflagsettings) |
+| `"crossSessionInbound" must be one of "accept", "hold", "refuse"` | [Configuration warnings](#crosssessioninbound-must-be-one-of-accept-hold-refuse) |
+| `API Error: ANTHROPIC_FOUNDRY_RESOURCE must be a Foundry resource name` | [Configuration warnings](#anthropic-foundry-resource-must-be-a-foundry-resource-name) |
+| `headersHelper not run — this workspace has no persisted trust` | [Configuration warnings](#headershelper-not-run) |
+| `Invalid permission rule "..." was skipped: Malformed Tool(content) rule` | [Configuration warnings](#malformed-tool-content-rule) |
+| `matches no tool · check for typos` / `matches no known tool — check for typos` | [Configuration warnings](#matches-no-tool) |
+| `... is not matched by file permission checks` | [Configuration warnings](#is-not-matched-by-file-permission-checks) |
+| `Write(<path>) never matches · use Edit(<path>)` / `Glob(<path>) never matches · use Read(<path>)` | [Configuration warnings](#is-not-matched-by-file-permission-checks) |
+| `... has a wildcard before the rest of the command` | [Configuration warnings](#has-a-wildcard-before-the-rest-of-the-command) |
+| `allows any option at its * · use an exact value` | [Configuration warnings](#has-a-wildcard-before-the-rest-of-the-command) |
+| `Denying Bash also turns off the PowerShell tool, so Claude has neither` | [Configuration warnings](#denying-bash-also-turns-off-the-powershell-tool) |
+| `CLAUDE_CODE_DISABLE_1M_CONTEXT is set, but the 200K limit isn't enforced` | [Configuration warnings](#the-200k-limit-isnt-enforced) |
+| `CLAUDE_CODE_AUTO_COMPACT_WINDOW="<value>" reads as <N> tokens, so Claude Code treats it as the 100k minimum` | [Значения и предупреждения для `CLAUDE_CODE_AUTO_COMPACT_WINDOW`](https://code.claude.com/docs/ru/model-config#claude_code_auto_compact_window-values) |
+| `CLAUDE_CODE_AUTO_COMPACT_WINDOW="<value>" is too large, so Claude Code treats it as the 1M maximum` | [Значения и предупреждения для `CLAUDE_CODE_AUTO_COMPACT_WINDOW`](https://code.claude.com/docs/ru/model-config#claude_code_auto_compact_window-values) |
+| `CLAUDE_CODE_AUTO_COMPACT_WINDOW="<value>" isn't a usable size, so Claude Code ignores it` | [Значения и предупреждения для `CLAUDE_CODE_AUTO_COMPACT_WINDOW`](https://code.claude.com/docs/ru/model-config#claude_code_auto_compact_window-values) |
+| `Model "<model>" isn't recognized · context assumed to be <N> tokens` / `Claude Code doesn't recognize the model "<model>", so it assumes a context window of <N> tokens` | [Исправление контекстного окна для шлюза или пользовательского ID модели](https://code.claude.com/docs/ru/model-config.md#correct-the-window-for-a-gateway-or-custom-model-id) |
+| `Model "<model>" isn't recognized · did you mean "<suggestion>"?` / `Claude Code doesn't recognize the model "<model>". Did you mean "<suggestion>"?` | [Исправление опечатки в имени модели](https://code.claude.com/docs/ru/model-config.md#fix-a-mistyped-model-name) |
+| `[claude-code:unrecognized_model]` | [Configuration warnings](#unrecognized-model-id-on-a-request) |
+| `is ignored — managed settings set allowManagedReadPathsOnly` / `is ignored — managed settings set allowManagedDomainsOnly` | [Configuration warnings](#sandbox-allow-entries-are-ignored-under-a-managed-lock) |
+| `Sandbox mask files left behind at write-deny paths` | [Configuration warnings](#stale-sandbox-mask-files-left-by-a-killed-session) |
+| `Stale sandbox mask files left by a killed session` | [Configuration warnings](#stale-sandbox-mask-files-left-by-a-killed-session) |
+| `Ubuntu's AppArmor restriction on user namespaces stops bubblewrap here` | [Устранение неполадок изоляции в песочнице](https://code.claude.com/docs/ru/sandboxing.md#apparmor-restriction-stops-bubblewrap) |
+| `bwrap: setting up uid map: Permission denied` / `bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted` | [Устранение неполадок изоляции в песочнице](https://code.claude.com/docs/ru/sandboxing.md#bwrap-uid-map-permission-denied) |
+| Responses seem lower quality than usual | [Response quality](#responses-seem-lower-quality-than-usual) |
+
+## Автоматические повторные попытки
+
+Claude Code повторяет временные сбои до 10 раз с экспоненциальной задержкой перед отображением ошибки. Он не всегда повторяет сбой, который происходит в середине ответа Claude. Когда вы видите одну из ошибок на этой странице, Claude Code уже выполнил все применимые повторные попытки для этого сбоя.
+
+Claude Code повторяет эти сбои:
+
+* Ошибки сервера, перегруженные ответы и таймауты запросов, которые приходят до того, как какая-либо часть ответа Claude начнёт передаваться потоком.
+* Ошибка сервера или ответ о перегрузке, который приходит после того, как Claude завершил размышления, но до того, как он начал какой-либо текст или вызов инструмента. В этот момент Claude Code повторяет попытку при ошибке сервера до двух раз. До v2.1.284 Claude Code в этот момент завершал ход с ошибкой.
+* Разорванные соединения. Когда соединение разрывается в середине запроса до того, как Claude завершит какую-либо часть своего ответа, включая его размышления, Claude Code повторно отправляет запрос с той же задержкой и ход продолжается, даже если некоторый текст уже начал передаваться потоком. Когда оно разрывается после того, как Claude завершил размышления, но до того, как он начал какой-либо текст или вызов инструмента, Claude Code вместо этого повторно отправляет запрос до двух раз в быстрой последовательности и завершает ход с `Connection lost before a response was produced`, если соединение продолжает разрываться в этот момент.
+* Соединение, которое, как обнаружил Claude Code, было разорвано тем, что ваш компьютер перешёл в режим сна в середине запроса. Claude Code считает это разорванным соединением в соответствии с приведёнными выше правилами; как только метка повторной попытки назовёт конкретную причину, она будет читаться как `Connection lost while your computer was asleep`, и если ход завершается после того, как Claude завершил размышления, но до любого текста или вызова инструмента, сообщение читается как `Your computer went to sleep before a response was produced`.
+* Застопорившийся поток ответа, когда заголовки ответа прибыли, но ни одна часть ответа Claude не прибыла, или когда Claude завершил размышления, но не начал какой-либо текст или вызов инструмента: Claude Code прерывает застопорившееся соединение и повторно отправляет запрос в потоковом режиме максимум один раз. Если ответ застопорится во второй раз после того, как Claude завершил размышления, но до любого текста или вызова инструмента, Claude Code завершает ход с `The response stalled before a response was produced`.
+* Потоковый запрос, на который API никогда не отвечает заголовками ответа, на соединении, где [действует дедлайн первого байта](https://code.claude.com/docs/ru/network-config.md#streaming-idle-watchdogs). По истечении дедлайна Claude Code прерывает запрос и повторно отправляет его в пределах бюджета повторных попыток. Если дедлайн срабатывает и для повторной отправки, ход завершается с [No response from API](#no-response-from-api). Когда вы устанавливаете `CLAUDE_CODE_RETRY_WATCHDOG`, Claude Code вместо этого продолжает повторные отправки в пределах бюджета.
+* Потоковый ответ, который выходной фильтр содержимого API останавливает до того, как Claude либо завершил размышления, либо начал какой-либо текст или вызов инструмента. Claude Code повторно отправляет запрос один раз, в пределах бюджета повторных попыток, и показывает [Output blocked by content filtering policy](#output-blocked-by-content-filtering-policy), если фильтр останавливает и второй ответ.
+* Временные дроссели 429, но не `429` лимита расходов шлюза, который не является дросселем; см. [Spend limit reached](#spend-limit-reached).
+  * Когда вы вошли с подпиской claude.ai, это включает дроссели 429, которые не содержат заголовков квоты вашего плана. До v2.1.199 Claude Code повторял эти дроссели только при входе с API-ключом и через Enterprise.
+* Запрос отклонён, потому что входные данные плюс `max_tokens` превышают лимит контекста. Повторная отправка его без изменений приведёт к тому же результату, поэтому Claude Code повторяет с уменьшенным `max_tokens` и прекращает повторные попытки и вместо этого выполняет компактирование в двух случаях:
+  * Когда никакое сокращение не может поместиться, например когда сам диалог почти заполняет контекстное окно.
+  * Когда повторная попытка не может больше сокращать `max_tokens`. До v2.1.218 Claude Code мог повторно отправить уменьшенный запрос, который всё ещё не подходил, например когда бюджет расширенного мышления превышал оставшийся контекст, пока не закончился бюджет повторных попыток.
+* Ответ, в котором указано, что Claude вызывает инструмент, но который не содержит вызова инструмента. Claude Code повторяет попытку, запрашивая у Claude вызов инструмента, до двух раз. Если обе повторные попытки завершаются так же, вы видите `The model's tool call could not be parsed (retry also failed).` и ход завершается. Чтобы попробовать снова, отправьте ещё одно сообщение. До v2.1.307 Claude Code выполнял одну повторную попытку перед завершением хода.
+* Истёкшие или отсутствующие учётные данные Google Cloud на [Google Cloud's Agent Platform](https://code.claude.com/docs/ru/google-vertex-ai.md), или учётные данные AWS, которые не загружаются на вашей машине. Claude Code отбрасывает свои кэшированные учётные данные и повторяет попытку до двух раз, затем сообщает об ошибке, чтобы вы могли повторно пройти аутентификацию сразу же, как описано в разделе [Could not load AWS or Google Cloud credentials](#could-not-load-aws-or-google-cloud-credentials). До v2.1.228 Claude Code повторял неудачные учётные данные Google Cloud через полный бюджет повторных попыток перед отображением ошибки.
+* `401` или `403` из Anthropic API, напрямую или через [LLM-шлюз](https://code.claude.com/docs/ru/llm-gateway), пока скрипт [`apiKeyHelper`](https://code.claude.com/docs/ru/settings-reference#apikeyhelper) предоставляет учётные данные. Claude Code повторно запускает скрипт и повторяет попытку с его свежим выводом, в пределах полного бюджета повторных попыток. Когда сам скрипт не работает при повторном запуске, Claude Code вместо этого показывает [Your apiKeyHelper script is failing](#your-apikeyhelper-script-is-failing).
+
+До v2.1.227 `Connection lost before a response was produced` читалось как `Connection closed while thinking, before producing a response` и `The response stalled before a response was produced` читалось как `Response stalled while thinking, before producing a response`.
+
+Claude Code не повторяет эти сбои:
+
+* Сбой проверки сертификата TLS, такой как TLS-инспектирующий прокси, отсутствующий пакет `NODE_EXTRA_CA_CERTS` или истёкший сертификат. Claude Code сообщает об ошибке при первой попытке, чтобы вы могли сразу же исправить настройку сертификата; см. [SSL certificate errors](#ssl-certificate-errors). Claude Code по-прежнему повторяет временные условия TLS, такие как таймаут рукопожатия. До v2.1.199 Claude Code повторял сбои сертификатов через полный бюджет повторных попыток перед отображением ошибки.
+* Ошибка сервера, разорванное соединение или застопорившийся поток, который приходит после того, как Claude завершил блок текста или вызов инструмента, или начал один после завершения своих размышлений, но до завершения ответа. Claude Code не запускает запрос повторно, потому что это может выполнить одни и те же вызовы инструментов дважды. Он сохраняет то, что Claude завершил, запускает любые вызовы инструментов, которые Claude завершил, и продолжает ход из их результатов. О том, что вы видите в интерактивной сессии и в неинтерактивной, прочитайте [The response above may be incomplete](#the-response-above-may-be-incomplete). До v2.1.199 Claude Code отбрасывал частичный вывод и сообщал обо всём ходе как об ошибке, когда ошибка сервера приходила в середине потока.
+* Сбой, который приходит после того, как Claude завершил ответ: повторная попытка не требуется, поэтому Claude Code сохраняет полный ответ и завершает ход нормально.
+* [Amazon Bedrock streaming response with an unexpected content-type](#bedrock-streaming-response-has-an-unexpected-content-type), потому что шлюз или прокси, переписывающие ответ, переписали бы повторную попытку таким же образом. Требуется Claude Code v2.1.208 или позже.
+* Непотоковая повторная попытка неудавшегося потокового запроса, которая получает статус успеха, но [no Claude API message in the body](#api-returned-an-empty-or-malformed-response). Claude Code завершает ход с этой ошибкой.
+* Запрос, который проверка политики вашей организации отклонила, который отображается как строка `API Error:`, содержащая сообщение об отказе. Администраторы вашей организации настроили проверку с помощью [Inference hooks](https://platform.claude.com/docs/en/manage-claude/inference-hooks), функции Claude Enterprise, и сообщение заканчивается инструкциями, которые они настроили, или по умолчанию говорит вам связаться с ними. Claude Code не отправляет отклонённый запрос повторно на ту же модель или на [резервную модель](https://code.claude.com/docs/ru/model-config.md#fallback-model-chains), потому что отказ касается содержимого запроса, а не модели. До v2.1.239 Claude Code мог повторно отправить отклонённый запрос без потоковой передачи или на настроенную резервную модель перед отображением отказа.
+
+### Что вы видите, пока Claude Code повторяет или ждёт
+
+Во время повторной попытки спиннер показывает обратный отсчёт `Retrying in Ns · attempt x/y` после метки ошибки. Метка называет конкретную причину с первой попытки для сбоев, на которые вы можете действовать сразу же: сеть отключена, рукопожатие TLS не удалось, или вы достигли ограничения частоты запросов. Для других ошибок сначала читается `API error`. Начиная с v2.1.198 он переключается на конкретную причину с третьей попытки, или при последней попытке, когда `CLAUDE_CODE_MAX_RETRIES` позволяет менее трёх; более ранние версии переключаются только при последней попытке.
+
+Начиная с v2.1.198 обычный совет спиннера подавляется во время повторных попыток. После того как причина ошибки раскрыта, если сбой является перегрузкой 529, строка ниже обратного отсчёта также называет, где проверить статус услуги: `status.claude.com` на Anthropic API, или хост поставщика или шлюза, названный в сообщении, в других конфигурациях.
+
+#### Waiting for API response
+
+Баннер `Waiting for API response · will retry in … · check your network` означает, что Claude Code ждал не менее 20 секунд, не получая никаких данных по запросу. Запрос ещё не завершился неудачей: обратный отсчёт идёт до момента, когда Claude Code прерывает застопорившееся соединение. Если прерывание происходит:
+
+* До того, как Claude завершил блок текста или вызов инструмента, или начал один после завершения своих размышлений, Claude Code повторяет запрос или завершает ход с ошибкой. [Automatic retries](#automatic-retries) говорит, какие застои он повторяет и сколько раз.
+* После того, как Claude завершил блок текста или вызов инструмента, или начал один после завершения своих размышлений, но до того, как Claude завершил ответ, Claude Code сохраняет то, что Claude завершил, продолжает ход из любых вызовов инструментов, которые Claude завершил, и показывает [The response above may be incomplete](#the-response-above-may-be-incomplete). В неинтерактивной сессии и для ответа субагента в любой сессии Claude Code может сначала предложить Claude продолжить ответ; эта запись говорит, когда это происходит и когда вы всё ещё видите уведомление там.
+* После того, как Claude завершил ответ, Claude Code завершает ход нормально.
+
+Баннер очищается сам по себе, как только данные возобновляются или повторная попытка успешна. Если он появляется при каждой попытке, рассматривайте это как [network issue](#unable-to-connect-to-api). Если вы подключаетесь через шлюз, см. [Баннер ожидания появляется и исчезает при работе через шлюз](#waiting-banner-behind-a-gateway). До v2.1.185 баннер появлялся через 10 секунд с другой формулировкой.
+
+#### Баннер ожидания появляется и исчезает при работе через шлюз
+
+Если баннер `Waiting for API response` появляется и исчезает, пока Claude размышляет, и вы подключаетесь через шлюз, [обновите Claude Code](https://code.claude.com/docs/ru/setup.md#update-claude-code) до v2.1.309 или более поздней версии. На этих соединениях баннер появляется через 45 секунд без данных:
+
+* [`ANTHROPIC_BASE_URL`](https://code.claude.com/docs/ru/env-vars), указывающая на хост, отличный от Anthropic API, например на [LLM-шлюз](https://code.claude.com/docs/ru/llm-gateway)
+* Сессия [Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway)
+* [Claude Platform on AWS](https://code.claude.com/docs/ru/claude-platform-on-aws.md) с установленной `ANTHROPIC_AWS_BASE_URL`
+
+До v2.1.309 баннер на этих соединениях появлялся через 20 секунд.
+
+### Настройка поведения повторных попыток
+
+Вы можете настроить поведение повторных попыток с помощью этих переменных окружения:
+
+| Переменная | По умолчанию | Эффект |
+| :- | :- | :- |
+| [`CLAUDE_CODE_MAX_RETRIES`](https://code.claude.com/docs/ru/env-vars) | 10 | Количество повторных попыток. Ограничено 15 начиная с v2.1.186; начиная с v2.1.199 `CLAUDE_CODE_RETRY_WATCHDOG` повышает значение по умолчанию и удаляет ограничение. Снизьте его, чтобы быстрее выявлять сбои в скриптах. |
+| [`CLAUDE_CODE_RETRY_WATCHDOG`](https://code.claude.com/docs/ru/env-vars) | не установлено | Установите значение `1` в автоматических сессиях, таких как задания CI, чтобы повторять ошибки пропускной способности `429` и `529` бесконечно вместо отказа после `CLAUDE_CODE_MAX_RETRIES` попыток. Claude Code сразу завершается с ошибкой, когда запрос со стандартной скоростью получает `429`, который сообщает о лимите расходов или исчерпанных кредитах использования, даже если это `429` от [gateway spend cap](#spend-limit-reached), который сбрасывается по расписанию. До v2.1.239 сторож повторял такие запросы бесконечно. Для запросов в быстром режиме см. [Handle rate limits](https://code.claude.com/docs/ru/fast-mode.md#handle-rate-limits). На v2.1.199 или позже он также повышает количество повторных попыток по умолчанию для других временных ошибок, таких как ошибки сервера, таймауты и разорванные соединения, до 300, примерно три часа задержки, и удаляет ограничение 15 на `CLAUDE_CODE_MAX_RETRIES`, если вы явно установите эту переменную. |
+| [`CLAUDE_CODE_RETRY_WATCHDOG_MAX_WAIT_MS`](https://code.claude.com/docs/ru/env-vars) | не установлено | Максимальное время в миллисекундах, которое каждый запрос к API тратит на ожидание при ошибках `429` и `529`, когда установлена `CLAUDE_CODE_RETRY_WATCHDOG`. Если переменная не установлена, время ожидания не ограничено. Требуется Claude Code v2.1.295 или позже. |
+| `CLAUDE_CODE_RETRY_WATCHDOG_MAX_USAGE_LIMIT_WAIT_MS` | без ограничения | При установленной `CLAUDE_CODE_RETRY_WATCHDOG` — максимальное время в миллисекундах, в течение которого один запрос ожидает сброса [лимита использования](#youve-hit-your-session-limit) вашего плана, например сессионного или недельного лимита. Если до сброса остаётся больше этого предела, запрос сразу завершается с ошибкой, кроме случаев, когда остаётся запас кредитов использования или API не удалось их проверить. В этих случаях попытка повторяется, а запрос завершается с ошибкой, если предел истекает до успешного выполнения. Требуется Claude Code v2.1.301 или позже. |
+| [`CLAUDE_CODE_RETRY_WATCHDOG_USAGE_LIMIT_RECHECK_MS`](https://code.claude.com/docs/ru/env-vars) | не установлено | Минимальный интервал в миллисекундах между проверками того, не был ли [лимит использования](#youve-hit-your-session-limit) уже снят, пока запрос ожидает сброса этого лимита при установленной `CLAUDE_CODE_RETRY_WATCHDOG`. Когда проверка обнаруживает, что лимит снят, запрос отправляется сразу. Укажите значение только цифрами, от `60000` до `10800000`. Если переменная не установлена или значение выходит за пределы этого диапазона, проверки не выполняются. О том, когда Claude Code пропускает эти проверки, см. [справочник по переменным окружения](https://code.claude.com/docs/ru/env-vars.md). Требуется Claude Code v2.1.305 или позже. |
+| [`CLAUDE_CODE_OVERLOADED_RETRY_BASE_DELAY_MS`](https://code.claude.com/docs/ru/env-vars) | 500 | Начальная задержка в миллисекундах для экспоненциальной задержки между повторными попытками запроса, который API отклоняет с ошибкой перегрузки `529`. Увеличьте её, вплоть до 32000, чтобы распределить повторные попытки на более длительный период, когда API работает на пределе пропускной способности. Не действует, если `CLAUDE_CODE_RETRY_WATCHDOG` установлена в `1` или если отклонённый запрос был отправлен в [быстром режиме](https://code.claude.com/docs/ru/fast-mode.md#handle-rate-limits). Требуется Claude Code v2.1.292 или позже. |
+| [`CLAUDE_CODE_OVERLOADED_RETRY_MAX_DELAY_MS`](https://code.claude.com/docs/ru/env-vars) | 32000 | Верхний предел в миллисекундах для экспоненциальной задержки между повторными попытками запроса, который API отклоняет с ошибкой перегрузки `529`. Увеличьте его, вплоть до 300000, чтобы последующие повторные попытки продолжали всё сильнее разноситься во времени, когда API работает на пределе пропускной способности. Значения выше 64000 требуют v2.1.323 или более поздней версии. Не действует в тех же случаях, что и `CLAUDE_CODE_OVERLOADED_RETRY_BASE_DELAY_MS`. Требуется Claude Code v2.1.296 или позже. |
+| [`API_TIMEOUT_MS`](https://code.claude.com/docs/ru/env-vars) | 600000 | Время в миллисекундах, за которое каждая попытка запроса должна получить заголовки ответа. Оно не ограничивает, как долго после этого длится потоковый ответ. Повысьте его для медленных сетей или прокси. О том, как оно ограничивает дедлайн первого байта, см. [No response from API](#no-response-from-api). |
+| [`CLAUDE_CODE_NONSTREAMING_TIMEOUT_RETRIES`](https://code.claude.com/docs/ru/env-vars) | не установлено | Лимит повторных отправок [непотокового запроса](#streaming-response-ended-before-any-complete-data-was-received), который завершается по таймауту. При достижении лимита запрос завершается с ошибкой. Ответ Claude, генерация которого занимает больше времени, чем таймаут, снова завершается по таймауту при каждой повторной отправке, поэтому установите небольшое число, например `0`, чтобы получить ошибку быстрее. О таймауте каждой попытки см. [Сколько ждёт непотоковая попытка](#how-long-a-non-streaming-attempt-waits). Требуется Claude Code v2.1.285 или позже. |
+| [`CLAUDE_STREAM_FIRST_BYTE_TIMEOUT_MS`](https://code.claude.com/docs/ru/env-vars) | не установлено | Дедлайн в миллисекундах для первого байта ответа потокового запроса. Требуется Claude Code v2.1.242 или позже. О том, как Claude Code выбирает дедлайн, когда эта переменная не установлена, см. [No response from API](#no-response-from-api). |
+
+#### Сколько ждёт непотоковая попытка
+
+Непотоковая попытка завершается по истечении таймаута запроса или таймаута простоя тела ответа, в зависимости от того, что наступит раньше:
+
+* **Таймаут запроса**: `API_TIMEOUT_MS`, если вы задали положительное значение, иначе 300 секунд в локальной сессии.
+* **[Таймаут простоя тела ответа](https://code.claude.com/docs/ru/network-config.md#streaming-idle-watchdogs)**: от 5 до 6 минут без ответа, независимо от того, насколько большое значение `API_TIMEOUT_MS` вы задали, в тех случаях, когда он действует и вы его не отключили.
+
+## Ошибки сервера
+
+Большинство этих ошибок поступают от поставщика вывода: сервиса Anthropic на Anthropic API и сервиса за эндпоинтом этого поставщика на Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry или пользовательском шлюзе. Разделы [Auto mode cannot determine the safety of an action](#auto-mode-cannot-determine-the-safety-of-an-action) и [Agent terminated early due to an API error](#agent-terminated-early-due-to-an-api-error) также охватывают причины на вашей стороне, например учетную запись Amazon Bedrock, которая не может вызвать модель классификатора, или субагента, который достиг лимита использования.
+
+### API Error: 500 Internal server error
+
+Claude Code отображает код состояния и сообщение об ошибке API для любого ответа 5xx. Пример ниже показывает ответ 500 на Anthropic API:
+
+```text theme={null}
+API Error: 500 Internal server error. This is a server-side issue, usually temporary — try again in a moment. If it persists, check https://status.claude.com.
+```
+
+Завершающее предложение указывает, где проверить состояние сервиса, и зависит от поставщика. Для конфигураций Amazon Bedrock, Google Cloud's Agent Platform и Microsoft Foundry указывается страница статуса этого поставщика. Для пользовательского `ANTHROPIC_BASE_URL` указывается хост шлюза.
+
+Ошибка 5xx от самого API указывает на неожиданный сбой внутри API. Она не вызвана вашим промптом, настройками или учетной записью.
+
+Когда прокси, балансировщик нагрузки или шлюз отвечает HTML-страницей ошибки, сообщение показывает код состояния и заголовок страницы, например `API Error: 502 Bad Gateway`. Для страницы без заголовка сообщение вместо этого показывает код состояния и его стандартное название. До v2.1.281 код состояния терялся, если у страницы был заголовок, а если заголовка не было, выводилась необработанная разметка страницы.
+
+**Что делать:**
+
+* Проверьте [status.claude.com](https://status.claude.com) или страницу статуса поставщика, указанную в сообщении, на предмет активных инцидентов
+* Подождите минуту, затем отправьте сообщение еще раз. Ваше исходное сообщение все еще находится в диалоге, поэтому для длинного промпта вы можете ввести `try again` вместо вставки всего текста.
+* Если [`ANTHROPIC_BASE_URL`](https://code.claude.com/docs/ru/env-vars) указывает на [LLM-шлюз](https://code.claude.com/docs/ru/llm-gateway) и каждый запрос завершается такой ошибкой, проверьте, принимают ли ваш шлюз и его вышестоящий сервис поля [поиска инструментов](https://code.claude.com/docs/ru/mcp.md#tool-search-through-a-gateway). По умолчанию Claude Code отправляет поля инструментов `defer_loading` и блоки `tool_reference` вместе с заголовком `anthropic-beta`, который их включает. До v2.1.304 поиск инструментов за шлюзом был отключен, если вы не включали его с помощью `ENABLE_TOOL_SEARCH`.
+* Если ошибка сохраняется без опубликованного инцидента, запустите `/feedback`, чтобы Anthropic могла расследовать проблему с деталями вашего запроса. См. [Сообщить об ошибке](#report-an-error), если `/feedback` недоступен в вашей среде.
+
+### API Error: Repeated 529 Overloaded errors
+
+API временно работает на пределе мощности для всех пользователей. Claude Code уже несколько раз повторил попытку перед отображением этого сообщения:
+
+```text theme={null}
+API Error: Repeated 529 Overloaded errors. The API is at capacity — this is usually temporary. Try again in a moment. If it persists, check https://status.claude.com.
+```
+
+Завершающее предложение зависит от поставщика так же, как в ошибке 500 выше.
+
+Ошибка 529 — это не ваш лимит использования, и она не учитывается в вашей квоте.
+
+**Что делать:**
+
+* Проверьте [status.claude.com](https://status.claude.com) или страницу статуса поставщика, указанную в сообщении, на предмет уведомлений о нехватке мощности
+* Повторите попытку через несколько минут
+* Запустите `/model` и переключитесь на другую модель, чтобы продолжить работу, так как мощность отслеживается для каждой модели отдельно. Claude Code предлагает вам это сделать, когда одна модель испытывает особенно высокую нагрузку, например `Opus is experiencing high load, please use /model to switch to Sonnet`. На моделях Fable сообщение называет Fable.
+
+  В сессии, которую запускает приложение Claude Desktop, например во вкладке Code или в Cowork, сообщение выглядит как `Opus is experiencing high load. Switch to Sonnet.`, и вы переключаете модели с помощью средства выбора модели в приложении.
+
+### Request timed out
+
+API не ответил до истечения срока подключения.
+
+```text theme={null}
+Request timed out
+```
+
+Таймаут запроса по умолчанию составляет 10 минут. Если вы установите [`API_TIMEOUT_MS`](https://code.claude.com/docs/ru/env-vars) в значение `0`, этот таймаут запроса отключается. [Срок ожидания первого байта](#no-response-from-api) и таймаут простоя тела ответа не отключаются при значении `0`, поэтому потоковый запрос по-прежнему выполняется с учетом [тех из них, которые применяются к вашему соединению](https://code.claude.com/docs/ru/network-config.md#streaming-idle-watchdogs). Непотоковая попытка в локальной сессии сохраняет свой лимит в 300 секунд и по-прежнему может завершиться этим сообщением.
+
+**Что делать:**
+
+* Если каждый запрос завершается этим сообщением и вы установили `API_TIMEOUT_MS` в `0`, проверьте `claude --version`. В версии до v2.1.305 обновите Claude Code или задайте положительное значение.
+* Повторите запрос
+* Если причина в медленной сети или прокси, увеличьте `API_TIMEOUT_MS`, как описано в разделе [Автоматические повторные попытки](#automatic-retries)
+* Если таймауты частые, а сеть в остальном работает нормально, см. [Ошибки сети и подключения](#network-and-connection-errors) ниже
+
+### No response from API
+
+Claude Code отправил потоковый запрос, и API не вернул заголовки ответа в течение срока ожидания первого байта. Claude Code прерывает такой запрос вместо ожидания полного таймаута запроса `API_TIMEOUT_MS` и отправляет его повторно, если это позволяет [бюджет повторных попыток](#tune-retry-behavior). Когда срок истекает и для повторной попытки, ход завершается этим сообщением, которое показывает, сколько ждала каждая попытка.
+
+Если вы установите [`CLAUDE_CODE_RETRY_WATCHDOG`](https://code.claude.com/docs/ru/env-vars), Claude Code продолжает повторять попытки в рамках бюджета, описанного в разделе [Настройка поведения повторных попыток](#tune-retry-behavior), вместо завершения хода.
+
+```text theme={null}
+API Error: No response from API (waited 3m, then 10m on the retry). If a proxy or gateway on your network holds responses until they complete, raise API_TIMEOUT_MS or CLAUDE_STREAM_FIRST_BYTE_TIMEOUT_MS to wait longer.
+```
+
+Claude Code задает время ожидания заголовков ответа для первой попытки и для повторной попытки отдельно:
+
+* **Первая попытка**: [`CLAUDE_STREAM_FIRST_BYTE_TIMEOUT_MS`](https://code.claude.com/docs/ru/env-vars), если вы установили значение 1 или больше, ограниченное диапазоном от 10 секунд до 30 минут. В противном случае Claude Code использует таймаут байтового watchdog, указанный в разделе [Streaming idle watchdogs](https://code.claude.com/docs/ru/network-config.md#streaming-idle-watchdogs), поэтому переменные, изменяющие этот таймаут, изменяют и это ожидание. В любом случае Claude Code добавляет одну секунду на каждые 32 КБ тела запроса.
+* **Повторная попытка**: на одну секунду меньше `API_TIMEOUT_MS`, по умолчанию чуть менее 10 минут, чтобы повторная попытка могла дождаться прокси или шлюза, который удерживает ответ до завершения генерации. На Amazon Bedrock повторная попытка использует тот же срок, что и первая, и сообщение показывает одну длительность вместо двух.
+
+  За исключением Amazon Bedrock, если вы установите `API_TIMEOUT_MS` в `0`, повторная попытка ждет 10 минут плюс одну секунду на каждые 32 КБ либо столько же, сколько первая попытка, если это дольше.
+
+Ни одно ожидание не превышает положительное значение `API_TIMEOUT_MS` минус одна секунда, а положительное значение `API_TIMEOUT_MS` менее 11 секунд отключает этот срок. Байтовый watchdog запускается только после получения заголовков ответа, поэтому ответ, который после этого перестает отправлять байты, подчиняется [правилам для зависших потоков](#automatic-retries), а не этому сроку.
+
+В сессии [шлюза приложений Claude](https://code.claude.com/docs/ru/claude-apps-gateway) этот срок действует, только если вы [включите его](https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#retry-an-unanswered-request-sooner-with-the-first-byte-deadline), установив `CLAUDE_STREAM_FIRST_BYTE_TIMEOUT_MS` в значение `1` или больше.
+
+**Что делать:**
+
+* Отправьте сообщение еще раз. Ваше исходное сообщение все еще находится в диалоге, поэтому для длинного промпта вы можете ввести `try again` вместо вставки всего текста.
+* Если это повторяется, рассматривайте это как [проблему сети или прокси](#unable-to-connect-to-api).
+* Если прокси или шлюз в вашей сети удерживает ответы до их завершения, увеличьте `API_TIMEOUT_MS`, чтобы повторная попытка ждала дольше. На Amazon Bedrock также увеличьте `CLAUDE_STREAM_FIRST_BYTE_TIMEOUT_MS`.
+* Если первая попытка постоянно завершается по таймауту, а повторная затем проходит успешно, увеличьте `CLAUDE_STREAM_FIRST_BYTE_TIMEOUT_MS`, чтобы первая попытка тоже ждала достаточно долго.
+
+До v2.1.242 Claude Code ждал полного таймаута запроса `API_TIMEOUT_MS`, по умолчанию 10 минут, прежде чем завершить потоковый запрос без ответа ошибкой. До v2.1.261 повторная попытка ждала тот же срок, что и первая, и сообщение не показывало длительности. До v2.1.307 Claude Code игнорировал `CLAUDE_STREAM_FIRST_BYTE_TIMEOUT_MS` в сессии шлюза приложений Claude.
+
+### The response above may be incomplete
+
+Потоковый запрос завершился сбоем, когда ответ еще формировался, после того как Claude завершил блок текста или вызов инструмента либо начал его после завершения размышлений. Повторная отправка запроса может привести к двойному выполнению тех же вызовов инструментов, поэтому Claude Code сохраняет вывод, который Claude успел завершить, и добавляет это уведомление вместо того, чтобы отбросить ход. Вариант сообщения указывает на причину:
+
+```text theme={null}
+API Error: Server error mid-response. The response above may be incomplete.
+API Error: Connection lost mid-response. The response above may be incomplete.
+API Error: Your computer went to sleep mid-response. The response above may be incomplete.
+API Error: The response stopped arriving. The response above may be incomplete.
+API Error: Part of the response never arrived. The response above may be incomplete.
+API Error: The response stream was malformed. The response above may be incomplete.
+```
+
+* `Server error mid-response`: ошибка перегрузки или серверная ошибка 5xx посреди потока. Этот вариант требует Claude Code v2.1.199 или новее; до этого в таком случае частичный вывод отбрасывался, а весь ход сообщался как ошибка.
+* `Connection lost mid-response`: соединение разорвалось. Вы также видите этот вариант, когда прокси или шлюз корректно закрывает тело ответа до того, как ответ завершен.
+* `Your computer went to sleep mid-response`: Claude Code обнаружил, что ваш компьютер перешел в режим сна во время потоковой передачи ответа. После пробуждения компьютера Claude Code считает соединение разорванным и прекращает чтение из него.
+* `Part of the response never arrived`: событие потока было потеряно между API и Claude Code, поэтому более позднее событие ссылалось на содержимое, которое так и не поступило. До v2.1.281 в этом случае ход завершался с `API Error: Content block not found`.
+* `The response stream was malformed`: поступило событие для блока содержимого, который уже завершился, или событие поступило поврежденным. Поврежденное событие — это событие, данные которого не являются допустимым JSON, содержимое которого отсутствует или не соответствует типу события. До v2.1.284 вместо этого появлялась необработанная ошибка парсера, например начинающаяся с `API Error: JSON Parse error`, когда событие с недопустимым JSON поступало после того, как Claude завершил размышления, блок текста или вызов инструмента.
+* `The response stopped arriving`: соединение оставалось открытым, но перестало доставлять данные, поэтому потоковый idle watchdog прервал его. До v2.1.222 Claude Code также мог сообщать об этом сбое на соединениях со [шлюзом](https://code.claude.com/docs/ru/gateways.md) через `ANTHROPIC_BASE_URL` или `ANTHROPIC_AWS_BASE_URL`, пока от сервера все еще поступали keep-alive пинги, потому что там он учитывал только разобранные события ответа; обновление устраняет эти ложные таймауты на этих маршрутах. Шлюзы, к которым обращаются через базовый URL поставщика, например `ANTHROPIC_BEDROCK_BASE_URL`, не охватываются байтовым watchdog; см. [Streaming idle watchdogs](https://code.claude.com/docs/ru/network-config.md#streaming-idle-watchdogs).
+
+До v2.1.227 `Connection lost mid-response` выглядело как `Connection closed mid-response`, а `The response stopped arriving` — как `Response stalled mid-stream`.
+
+Когда потерянное, дублированное или поврежденное событие потока поступает до того, как Claude начал какой-либо текст или вызов инструмента, вы не видите это уведомление:
+
+* Если Claude завершил только размышления, Claude Code отправляет запрос заново. Если повторные потоки прерываются таким же образом, ход завершается с `Part of the response never arrived and no response was produced. Try again.` или `The response stream was malformed and no response was produced. Try again.`
+* Если ничего не было завершено, Claude Code вместо этого повторно отправляет запрос без потоковой передачи. Если вы отключили этот резервный вариант с помощью [`CLAUDE_CODE_DISABLE_NONSTREAMING_FALLBACK`](https://code.claude.com/docs/ru/env-vars), ход завершается с `API Error: Content block not found` для потерянного события или `API Error: Content block already closed` для дублированного. Для поврежденного события при отключенном резервном варианте ход завершается с `API Error: Stream event unreadable` или необработанной ошибкой парсера.
+
+В четырех случаях Claude Code обрабатывает сбой, не показывая это уведомление сразу:
+
+* На более раннем этапе ответа Claude Code либо повторяет попытку после сбоя, либо завершает ход с другой ошибкой. См. [Автоматические повторные попытки](#automatic-retries).
+* Когда один из этих сбоев происходит после того, как Claude завершил ответ, Claude Code сохраняет полный ответ и завершает ход обычным образом, без этого уведомления. До v2.1.222 Claude Code показывал это уведомление, когда соединение разрывалось или зависало после завершения ответа, и сообщал о ходе как об ошибке, хотя ответ был полным.
+* В [неинтерактивной сессии](https://code.claude.com/docs/ru/headless.md), например при запуске с `-p`, запуске через [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md) или в [облачной сессии](https://code.claude.com/docs/ru/claude-code-on-the-web.md), вам не нужно самостоятельно отправлять `continue`, когда обрезанный ответ находится в основном диалоге и содержит текст, но не содержит вызовов инструментов: Claude Code сохраняет частичный вывод и предлагает Claude продолжить с того места, где он остановился, до трех раз подряд. Вы видите это уведомление для такого ответа только после того, как Claude Code исчерпал эти продолжения. До v2.1.246 Claude Code завершал неинтерактивный ход с этим уведомлением при первом же обрыве.
+* В [субагенте](https://code.claude.com/docs/ru/sub-agents.md#api-errors-in-subagents), независимо от того, интерактивна ли сессия: когда его обрезанный ответ содержит текст, но не содержит вызовов инструментов, Claude Code предлагает субагенту продолжить. Уведомление становится последним сообщением субагента только после того, как эти продолжения исчерпаны. До v2.1.257 субагент показывал это уведомление при первом же обрыве.
+
+**Что делать:**
+
+* В интерактивной сессии прочитайте ответ, оставшийся на экране: Claude Code сохраняет каждый блок, который Claude завершил до ошибки, но отбрасывает прерванный последний блок при завершении хода, поэтому последние предложения или вызовы инструментов могут отсутствовать. Ответьте `continue`, чтобы Claude продолжил с последнего завершенного блока.
+* В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) (`-p`):
+  * При текстовом выводе по умолчанию Claude Code выводит последний завершенный блок текста, который у него еще сохранился с более ранней части хода, а за ним это сообщение. Если такого блока нет, Claude Code выводит только это сообщение — например, потому что Claude Code сжал диалог посреди хода и очистил этот текст. До v2.1.219 Claude Code выводил только это сообщение в текстовом выводе `-p` и отбрасывал уже сформированный ответ.
+  * При `--output-format json` или `stream-json` Claude Code передает это сообщение в поле `result`.
+  * Чтобы продолжить ход после стабилизации соединения, возобновите сессию и отправьте `continue`, как описано в разделе [Продолжение диалогов](https://code.claude.com/docs/ru/headless.md#continue-conversations).
+
+### Auto mode cannot determine the safety of an action
+
+Модель, которую [авторежим](https://code.claude.com/docs/ru/permission-modes.md#eliminate-prompts-with-auto-mode) использует для классификации действий, не смогла вынести решение, поэтому авторежим не одобрил действие автоматически. Сообщение, которое вы видите, зависит от характера сбоя классификатора.
+
+Когда модель классификатора недоступна:
+
+```text theme={null}
+<model> is temporarily unavailable, so auto mode cannot determine the safety of <tool> right now. Wait a moment and then try this action again.
+```
+
+В интерактивной сессии вместо этого сообщения под вызовом инструмента появляется приглушенная строка `Not run · auto mode's check had no usable answer`. Эта строка также может заменять сообщение о том, что [сервер не вынес вердикт](#the-server-returned-no-safety-verdict), или, вне удаленной сессии, сообщение, начинающееся с `Auto mode could not evaluate`. Нажмите `Ctrl+O`, чтобы прочитать ее сообщение в [средстве просмотра транскрипта](https://code.claude.com/docs/ru/interactive-mode.md#transcript-viewer). До v2.1.296 сообщение появлялось как красная ошибка.
+
+Когда Claude Code может определить категорию сбоя, он указывает ее в скобках после `temporarily unavailable`, например `<model> is temporarily unavailable (rate-limited), so auto mode cannot determine the safety of <tool> right now`. Категории: `(rate-limited)`, `(overloaded)`, `(server error)`, `(timed out)` и `(connection failed)`. Если `(timed out)` или `(connection failed)` повторяется, проверьте соединение; см. [Unable to connect to API](#unable-to-connect-to-api). До v2.1.229 сообщение никогда не указывало категорию и выглядело как `Wait briefly and then try this action again`.
+
+Когда ни одна категория не подходит, сообщение появляется без категории в скобках; эту форму дают и несколько сбоев одновременно. На [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md), включая [эндпоинт Mantle](https://code.claude.com/docs/ru/amazon-bedrock.md#use-the-mantle-endpoint), оно также появляется, когда ваша учетная запись AWS не может вызвать модель, указанную в сообщении, и этот сбой повторяется при каждой повторной попытке, пока вашей учетной записи не будет предоставлен доступ к модели.
+
+**Что делать:**
+
+* Повторите попытку через несколько секунд; Claude видит то же сообщение и обычно повторяет попытку самостоятельно. Временный сбой не связан с [доступностью авторежима](https://code.claude.com/docs/ru/permission-modes.md#eliminate-prompts-with-auto-mode); менять настройки не нужно
+* Если повторные попытки продолжают завершаться неудачей, продолжайте работу с задачами только для чтения и вернитесь к заблокированному действию позже
+* На Amazon Bedrock, если сообщение появляется при каждой повторной попытке, проверьте, может ли ваша учетная запись вызвать указанную в нем модель: для стандартных моделей Amazon Bedrock убедитесь, что ваша [политика IAM](https://code.claude.com/docs/ru/amazon-bedrock.md#iam-configuration) разрешает ее вызов; для ID моделей Mantle [свяжитесь с командой вашей учетной записи AWS](https://code.claude.com/docs/ru/amazon-bedrock.md#mantle-endpoint-errors)
+* Если сообщение появляется при каждой повторной попытке и указывает модель, которую вы задали в [`CLAUDE_CODE_AUTO_MODE_MODEL`](https://code.claude.com/docs/ru/permission-modes#choose-the-classifier-model), проверьте, обслуживает ли API или облачный поставщик, на котором работает ваша сессия, этот ID модели. Если нет, задайте в переменной ID модели, которую он обслуживает, или удалите переменную, чтобы использовать [модель классификатора по умолчанию](https://code.claude.com/docs/ru/permission-modes.md#default-classifier-model).
+
+Когда запрос классификатора завершается сбоем, потому что ваш OAuth-токен истек или был заменен другой сессией, Claude Code обновляет токен и повторяет запрос один раз, поэтому обычное истечение срока действия токена не приводит к этому сообщению. До v2.1.216 истекший или замененный токен приводил к сбою каждого запроса классификатора, и авторежим отклонял каждое проверяемое действие с этим сообщением, пока токен не был обновлен.
+
+Когда классификатор вернул ответ, который не удалось разобрать:
+
+```text theme={null}
+Auto mode could not evaluate this action and is blocking it for safety — run with --debug for details
+```
+
+**Что делать:**
+
+* Повторите действие; обычно следующая попытка проходит успешно
+* Запустите `claude --debug` и повторите действие, чтобы получить подробности в логе отладки
+
+Когда отдельная проверка безопасности API заблокировала запрос классификатора из-за более раннего содержимого диалога:
+
+```text theme={null}
+Auto mode could not evaluate this action and is blocking it for safety — a safety check separate from auto mode blocked this request because of earlier conversation content — it isn't about the action itself — run with --debug for details
+```
+
+Claude Code отклоняет действие, но сообщает Claude, что это не оценка действия как небезопасного, и что следует продолжить другие задачи, а не повторять попытку. Эти отказы не учитываются в [порогах приостановки авторежима](https://code.claude.com/docs/ru/permission-modes.md#when-auto-mode-falls-back). При [неинтерактивном](https://code.claude.com/docs/ru/headless.md) запуске с `-p` Claude Code не останавливает выполнение. Что получает Claude, зависит от того, где было запрошено действие:
+
+* [Фоновому субагенту](https://code.claude.com/docs/ru/sub-agents.md#run-subagents-in-foreground-or-background) при запуске с `-p` без `--input-format stream-json` Claude Code возвращает результат с ошибкой, содержащий `Agent aborted: auto mode classifier request refused by the safety safeguard in headless mode`
+* Во всех остальных случаях, включая интерактивные сессии и основной диалог запуска с `-p`, Claude Code возвращает Claude этот отказ
+
+До v2.1.225 Claude Code учитывал эти отказы в порогах приостановки и возвращал то же сообщение об отклонении, что и при настоящей блокировке классификатором.
+
+**Что делать:**
+
+* Это не решение относительно вашего действия. Содержимое, уже находящееся в вашем диалоге, вызвало срабатывание фильтра безопасности на стороне API, когда авторежим отправил диалог классификатору
+* Повторная попытка не поможет; то же содержимое диалога снова вызовет срабатывание фильтра
+* В интерактивной сессии переключитесь на другой [режим разрешений](https://code.claude.com/docs/ru/permission-modes.md), чтобы вы могли одобрить действие при появлении запроса
+* Начните новый диалог без содержимого, вызывающего срабатывание
+
+Когда диалог слишком длинный для запроса Claude Code к классификатору и Claude Code не может [сжать его самостоятельно](#was-not-reviewed-and-did-not-run):
+
+```text theme={null}
+Auto mode classifier transcript exceeded context window — falling back to manual approval (try /compact to reduce conversation size)
+```
+
+Что происходит с действием, зависит от того, где Claude его запросил:
+
+* В интерактивной сессии авторежим переключается на обычный запрос разрешения для этого действия, чтобы вы могли одобрить или отклонить его вручную
+* [Фоновому субагенту](https://code.claude.com/docs/ru/sub-agents.md#run-subagents-in-foreground-or-background) при [неинтерактивном](https://code.claude.com/docs/ru/headless.md) запуске с `-p` без `--input-format stream-json` Claude Code возвращает результат с ошибкой, содержащий `Agent aborted: auto mode classifier transcript exceeded context window in headless mode`, и выполнение продолжается
+* В других местах запуска с `-p` без [`--permission-prompt-tool`](https://code.claude.com/docs/ru/cli-reference#cli-flags) запросить разрешение негде, поэтому действие не выполняется, а выполнение продолжается
+
+**Что делать:**
+
+* В интерактивной сессии одобрите или отклоните действие в появившемся запросе
+* В интерактивной сессии запустите `/compact`, чтобы уменьшить размер диалога и последующие действия снова помещались в окно классификатора
+
+### The server returned no safety verdict
+
+При [проверке классификатором на стороне сервера](https://code.claude.com/docs/ru/permission-modes.md#server-side-classifier-review) авторежим отклоняет действие, когда сервер не выносит по нему вердикт. Отказ указывает категорию в скобках, если Claude Code может ее определить, например `(timed out)`:
+
+```text theme={null}
+The server-side auto mode classifier gave no verdict (timed out), so auto mode cannot determine the safety of <tool>.
+```
+
+Остальная часть сообщения сообщает Claude, может ли помочь одна повторная попытка. Перед некоторыми из этих отказов Claude Code делает паузу, чтобы следующая попытка Claude не последовала сразу. Во время ожидания в интерактивной сессии индикатор показывает `Auto mode check unavailable` с обратным отсчетом, а нажатие `Esc` прерывает ход.
+
+После десяти ответов подряд без вердикта авторежим останавливает ход:
+
+```text theme={null}
+Auto mode is unavailable — the server returned no safety verdict for the last 10 responses, so Claude stopped. Send a message to try again, or switch out of auto mode.
+```
+
+Некоторые отказы не учитываются в этих десяти, включая [отказ из-за изменения, внесенного хуком или модом](#hook-changed-input-after-review).
+
+Сообщение об остановке появляется в разных местах в зависимости от типа сессии:
+
+* В интерактивной сессии сообщение появляется как предупреждение в транскрипте, и ход завершается
+* При [неинтерактивном](https://code.claude.com/docs/ru/headless.md) запуске с `-p` выполнение завершается с ошибкой выполнения. При текстовом выводе по умолчанию сообщение выводится в stderr.
+* Когда лимит достигнут [субагентом](https://code.claude.com/docs/ru/sub-agents.md), субагент останавливается, не завершив работу, и Claude получает то, что он успел сформировать, с пометкой, что его остановил авторежим
+
+**Что делать:**
+
+* В интерактивной сессии нажмите `Ctrl+O`, чтобы прочитать текст отказа в [средстве просмотра транскрипта](https://code.claude.com/docs/ru/interactive-mode.md#transcript-viewer).
+* Если отказ указывает `(the conversation is too long for the check)`, запустите `/compact` в промпте Claude Code, чтобы сократить диалог. Пока диалог не станет короче, отправка нового сообщения будет приводить к тому же отказу. Если вы отключили [автосжатие](https://code.claude.com/docs/ru/settings-reference.md#autocompactenabled), включите его снова, чтобы в следующий раз Claude Code выполнял сжатие самостоятельно.
+* Отправьте еще одно сообщение, чтобы Claude попробовал снова. Счетчик ответов начинается заново.
+* Если остановка повторяется и ваши запросы проходят через [LLM-шлюз или прокси](https://code.claude.com/docs/ru/llm-gateway), проверьте, не обрывает ли он потоковые ответы или не переписывает ли их. В разделе [Проверка классификатором на стороне сервера](https://code.claude.com/docs/ru/permission-modes.md#server-side-classifier-review) описано, какое поведение шлюза вызывает отказы, а [руководство по совместимости шлюзов](https://code.claude.com/docs/ru/llm-gateway-protocol.md#feature-pass-through) перечисляет, что нужно пропускать без изменений.
+* Установите `CLAUDE_CODE_AUTO_MODE_SERVER=0` перед запуском Claude Code, чтобы вместо этого использовать его собственные запросы к классификатору. До v2.1.281 Claude Code не учитывал эту переменную при прямом подключении к Anthropic API.
+* Чтобы вместо этого одобрять действия самостоятельно, [выйдите из авторежима](https://code.claude.com/docs/ru/permission-modes.md#switch-permission-modes)
+
+До v2.1.280 Claude Code немедленно отклонял каждое действие из ответа без вердикта и никогда не останавливал ход.
+
+До v2.1.302 при прямом подключении к Anthropic API Claude Code не сжимал диалог, который стал слишком длинным для проверки на стороне сервера.
+
+#### `a hook changed this call's input after auto mode reviewed it`
+
+Этот отказ означает, что хук или мод [изменил входные данные вызова](https://code.claude.com/docs/ru/hooks.md#pretooluse-updatedinput-in-auto-mode) после того, как сервер его проверил, поэтому проверка не охватывает то, что было бы выполнено. Это не оценка действия как небезопасного.
+
+Последующие вызовы в том же ответе Claude могут быть отклонены по этой причине:
+
+```text theme={null}
+another call in this response was changed after auto mode reviewed it, or could not be confirmed unchanged
+```
+
+Затем Claude может повторно выполнить каждый отклоненный вызов, чтобы сервер его проверил. Если появится запрос разрешения, ответьте на него. Больше ничего делать не нужно, если только Claude не сообщит в своем ответе, что авторежим не смог проверить вызов. В этом случае остановите изменение или одобрите вызов самостоятельно и попросите Claude повторить вызов:
+
+* **Остановите изменение**: отключите [хук](https://code.claude.com/docs/ru/hooks.md#disable-or-remove-hooks) или [мод](https://code.claude.com/docs/ru/plugins/mods/overview.md#turn-mods-on-or-off), который изменил этот вызов или более ранний вызов в том же ответе Claude, либо попросите администратора отключить его. Чтобы найти хук, запустите [`/hooks`](https://code.claude.com/docs/ru/hooks#the-%2Fhooks-menu) в промпте Claude Code. В терминальной сессии запустите `/plugin`, чтобы увидеть активные моды.
+* **Одобрите вызов самостоятельно**: [переключитесь в режим Manual](https://code.claude.com/docs/ru/permission-modes.md#switch-permission-modes)
+
+### Was not reviewed and did not run
+
+Отказ `was not reviewed and did not run` означает, что диалог слишком длинный, чтобы классификатор [авторежима](https://code.claude.com/docs/ru/permission-modes.md#eliminate-prompts-with-auto-mode) мог проверить действие, поэтому действие не было выполнено. Claude Code возвращает Claude это сообщение:
+
+```text theme={null}
+<tool> was not reviewed and did not run: the conversation is too long for auto mode's classifier. Claude Code will try to compact the conversation before the next request; if this action is still needed after that, issue it again and it will be reviewed normally.
+```
+
+Если сжатие контекста не удается, последующие действия, которые классификатор не может проверить, получают одно из двух других сообщений:
+
+* Отказ [`gave no verdict (the conversation is too long for the check)`](#the-server-returned-no-safety-verdict)
+* Сообщение [`Auto mode classifier transcript exceeded context window`](#auto-mode-cannot-determine-the-safety-of-an-action)
+
+**Что делать:**
+
+* Если сжатие контекста, о котором говорится в сообщении, проходит успешно, ничего делать не нужно.
+* Если вы видите одно из этих двух сообщений, запустите `/compact` в промпте Claude Code, чтобы сократить диалог самостоятельно. Если вы отключили [автосжатие](https://code.claude.com/docs/ru/settings-reference.md#autocompactenabled), включите его снова, чтобы в следующий раз Claude Code выполнял сжатие самостоятельно.
+
+### Agent terminated early due to an API error
+
+API-запрос [субагента](https://code.claude.com/docs/ru/sub-agents.md) окончательно завершился сбоем, например потому что был достигнут лимит использования или были исчерпаны повторные попытки после ошибки сервера, поэтому субагент остановился, не завершив задачу. Это сообщение требует Claude Code v2.1.199 или новее; до этого текст ошибки API возвращался Claude так, как если бы это был результат субагента.
+
+```text theme={null}
+Agent terminated early due to an API error: <error detail>
+```
+
+**Что делать:**
+
+* Найдите на этой странице раздел, соответствующий описанию ошибки после двоеточия, например [Лимиты использования](#usage-limits) или [Ошибки сервера](#server-errors), и следуйте шагам из этого раздела
+* После устранения исходной ошибки попросите Claude повторить задачу или [возобновите субагента](https://code.claude.com/docs/ru/sub-agents.md#resume-subagents)
+
+Когда ограничение частоты запросов, перегрузка или ошибка сервера прерывает субагента переднего плана, который уже сформировал текстовый вывод, Claude вместо этой ошибки получает этот частичный вывод с пометкой о неполноте. Субагент, весь вывод которого состоял из вызовов инструментов, тоже получает эту ошибку; в v2.1.199 в таком случае вместо этого возвращался пустой частичный результат. См. [Ошибки API в субагентах](https://code.claude.com/docs/ru/sub-agents.md#api-errors-in-subagents).
+
+## Лимиты использования
+
+Большинство ошибок в этом разделе означают, что достигнута квота, привязанная к вашей учётной записи или плану. Три работают по-другому: [`Server is temporarily limiting requests`](#server-is-temporarily-limiting-requests) — это серверное ограничение частоты запросов, не связанное с квотой вашего плана, [`Usage credits required for 1M context`](#usage-credits-required-for-1m-context) — это проверка прав доступа, а не исчерпанная квота, и [`The prompt to confirm went unanswered`](#the-prompt-to-confirm-went-unanswered) означает, что запрос согласия на использование кредитов закрыт без ответа, независимо от того, была ли достигнута квота.
+
+### You've hit your session limit
+
+Планы подписки включают скользящий лимит использования. Когда он заканчивается, вы видите одно из этих сообщений:
+
+```text theme={null}
+You've hit your session limit · resets 3:45pm
+You've hit your weekly limit · resets Mon 12:00am
+You've hit your Opus limit · resets 3:45pm
+You've hit your Sonnet limit · resets 3:45pm
+```
+
+Claude Code блокирует дальнейшие запросы до времени сброса, указанного в сообщении. Лимиты сессии и недели являются общими для всех моделей, поэтому переключение моделей не восстанавливает доступ. Лимиты Opus и Sonnet применяются только к запросам к соответствующему семейству моделей, поэтому переключение на модель вне семейства с помощью `/model` позволяет вам продолжить работу.
+
+В интерактивной сессии, в которую выполнен вход с подпиской claude.ai, Claude Code также может ждать в открытой сессии и продолжить прерванную задачу вскоре после сброса. См. [Wait for a usage limit to reset](https://code.claude.com/docs/ru/interactive-mode.md#wait-for-a-usage-limit-to-reset), чтобы узнать, что вы увидите, как начать или отменить ожидание и как отключить автоматическое продолжение. До версии v2.1.234 Claude Code не предлагал это ожидание.
+
+Использование учитывается одновременно в лимитах сессии и недели. Один всплеск интенсивной активности, такой как большой fanout рабочего процесса, может исчерпать недельный лимит до сброса окна сессии.
+
+**Что делать:**
+
+* Дождитесь времени сброса, указанного в ошибке
+* На вкладке Code в [Desktop app](https://code.claude.com/docs/ru/desktop.md) карточка session-limit предлагает флажок **Auto-continue when limits reset**. Карточка weekly-limit этого не предлагает. Когда он отмечен, Desktop app повторяет прерванный ход после сброса и показывает время повторной попытки на карточке. Флажок Desktop и настройка **Continue automatically at usage limit** в CLI в `/config` являются отдельными, поэтому отключайте каждую отдельно.
+* Для лимита Opus или Sonnet запустите `/model` и переключитесь на модель вне этого семейства, чтобы продолжить работу. Каждая модель имеет свой собственный кэш промптов, поэтому следующий запрос повторно читает весь диалог без попаданий в кэш; см. [Switching models](https://code.claude.com/docs/ru/prompt-caching.md#switching-models)
+* Запустите `/usage`, чтобы увидеть лимиты вашего плана и когда они сбрасываются
+* Запустите `/usage-credits`, чтобы купить дополнительное использование на Pro, Max и Ultra, или запросить его у администратора на Team и Enterprise. См. [usage credits for paid plans](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans), чтобы узнать, как это оплачивается.
+* Чтобы обновить ваш план для более высоких базовых лимитов, см. [claude.com/pricing](https://claude.com/pricing)
+
+Перед тем как окно закончится, Claude Code может предупредить вас, что вы использовали большую его часть, сообщением, таким как `You've used 85% of your session limit · resets 3:45pm`. Чтобы отслеживать оставшийся лимит, добавьте поля `rate_limits` в [custom status line](https://code.claude.com/docs/ru/statusline.md#rate-limit-usage), или в Desktop app нажмите [usage ring](https://code.claude.com/docs/ru/desktop.md#check-usage).
+
+### Usage credits required for 1M context
+
+Выбранная модель использует расширенное контекстное окно на 1M токенов, и ваш план включает его только через кредиты использования.
+
+```text theme={null}
+API Error: Usage credits required for 1M context · run /usage-credits to turn them on (they take effect after you restart Claude Code), or /model to switch to standard context
+```
+
+В сессии, которую запускает Claude Desktop app, подсказка не называет команды: она указывает на страницу настроек использования claude.ai, или на планах Team и Enterprise говорит включить кредиты использования на claude.ai/admin-settings/usage или попросить вашего администратора.
+
+Это проверка прав доступа, а не исчерпание квоты. Она срабатывает, даже когда в ваших лимитах сессии и недели остаётся запас. См. [Extended context](https://code.claude.com/docs/ru/model-config.md#extended-context), чтобы узнать, какие планы включают контекст 1M напрямую, а какие требуют кредитов использования.
+
+Когда эта ошибка появляется в середине диалога, потому что контекст превысил 200K токенов, Claude Code автоматически сжимает диалог обратно под стандартный лимит контекста и в дальнейшем сохраняет сессию на этом лимите, поэтому никаких действий не требуется. В версиях до v2.1.172 ошибка повторялась при каждом последующем запросе, включая `/compact`; для восстановления на этих версиях запустите `/clear`. Приведённые ниже шаги применяются, когда вы явно выбрали модель `[1m]`.
+
+**Что делать:**
+
+* Запустите `/model` и выберите вариант без суффикса `[1m]`, чтобы вернуться к стандартному контекстному окну
+* Если сообщение называет `/usage-credits`, запустите эту команду, чтобы включить биллинг по факту использования для варианта 1M на Pro, Max и Ultra, или запросить кредиты использования у администратора на Team и Enterprise. После включения кредитов использования перезапустите Claude Code или начните новую сессию, в зависимости от того, что говорит сообщение. До этого сессия остаётся на стандартном лимите контекста.
+* Если ошибка сохраняется после `/model`, ID модели 1M может быть задан в другом месте. См. [Setting your model](https://code.claude.com/docs/ru/model-config.md#setting-your-model), где перечислены места конфигурации для проверки в порядке приоритета.
+* Чтобы полностью удалить варианты 1M из выбора модели, установите [`CLAUDE_CODE_DISABLE_1M_CONTEXT=1`](https://code.claude.com/docs/ru/env-vars)
+
+До версии v2.1.268 сообщение заканчивалось на `run /usage-credits to turn them on, or /model to switch to standard context` и не упоминало перезапуск.
+
+### The prompt to confirm went unanswered
+
+Когда [запрос согласия на использование кредитов для Fable](https://code.claude.com/docs/ru/model-config.md#fable-and-usage-credits) закрывается, так и не получив ответа, Claude Code завершает ход одним из этих сообщений:
+
+```text theme={null}
+Fable limit reached · continuing on Fable 5.1 uses usage credits, and the prompt to confirm went unanswered · nothing was sent · answer it where this session is running, or /model to change
+Fable 5.1 now uses usage credits · the prompt to confirm went unanswered · nothing was sent · answer it where this session is running, or /model to change
+```
+
+Сообщения называют модель Fable сессии, поэтому на Fable 5.2 они гласят `continuing on Fable 5.2` и `Fable 5.2 now uses usage credits`. При подключённом [Remote Control](https://code.claude.com/docs/ru/remote-control.md) каждое сообщение может вместо этого заканчиваться на `Claude stopped here · send a message to be asked again, or switch models`. До версии v2.1.257 первое сообщение начиналось с `Fable 5 limit reached`.
+
+Это происходит в сессиях [Remote Control](https://code.claude.com/docs/ru/remote-control.md), [фоновых сессиях](https://code.claude.com/docs/ru/agent-view.md), сессиях участников [команды агентов](https://code.claude.com/docs/ru/agent-teams.md) и сессиях, которые другое приложение размещает через Agent SDK. О том, когда Claude Code закрывает запрос, см. [Fable and usage credits](https://code.claude.com/docs/ru/model-config.md#fable-and-usage-credits).
+
+**Что делать:**
+
+* Там, где работает сессия, в терминале или в приложении, которое её размещает, отправьте ещё один промпт и ответьте на запрос согласия, когда он появится снова. Для фоновой сессии сначала подключитесь к ней из [agents view](https://code.claude.com/docs/ru/agent-view.md). Если сообщение говорит `Claude stopped here`, вы также можете ответить со своего подключённого устройства и ответить на запрос согласия там.
+* Запустите `/model`, чтобы переключиться на модель, которая не оплачивается кредитами использования
+* Чтобы дать себе больше времени, установите для [`dialogExpiry`](https://code.claude.com/docs/ru/settings-reference#dialogexpiry) более длительное значение или `"never"`
+
+До версии v2.1.236 это сообщение не появлялось: пока был подключён клиент Remote Control, Claude Code ждал ответа 60 секунд, а затем продолжал ход на вашей модели по умолчанию.
+
+### Server is temporarily limiting requests
+
+API применил кратковременное ограничение частоты запросов, которое не связано с квотой вашего плана.
+
+```text theme={null}
+API Error: Server is temporarily limiting requests (not your usage limit)
+```
+
+Claude Code отличает это от лимита вашего плана по отсутствию унифицированных заголовков квоты, которые содержит ответ при реальном лимите. Начиная с версии v2.1.199 для этой ошибки [автоматически выполняются повторные попытки](#automatic-retries) с backoff перед отображением, независимо от способа аутентификации. В более ранних версиях сессия, в которую выполнен вход с подпиской claude.ai, завершала ход с ошибкой при первом же возникновении; повторные попытки выполнялись только при входе с API-ключом и через Enterprise.
+
+**Что делать:**
+
+* Подождите немного и попробуйте снова
+* Проверьте [status.claude.com](https://status.claude.com), если проблема сохраняется
+
+### Request rejected (429)
+
+Вы достигли ограничения частоты запросов, настроенного для вашего API-ключа, проекта Amazon Bedrock или проекта Google Cloud.
+
+```text theme={null}
+API Error: Request rejected (429) · this may be a temporary capacity issue. If it persists, check https://status.claude.com.
+```
+
+Завершающее предложение указывает, где проверить состояние сервиса, и зависит от поставщика. Конфигурации Amazon Bedrock, Google Cloud's Agent Platform и Microsoft Foundry указывают страницу статуса соответствующего поставщика вместо страницы статуса Anthropic. Пользовательский `ANTHROPIC_BASE_URL` указывает хост шлюза.
+
+Когда прокси, балансировщик нагрузки или шлюз между Claude Code и API отвечает своей собственной HTML-страницей 429, текст после `·` — это заголовок этой страницы, если он есть, например `Too Many Requests`. До версии v2.1.281 после `·` выводилась вся разметка страницы.
+
+**Что делать:**
+
+* Запустите `/status` и убедитесь, что активные учётные данные — те, которые вы ожидаете. Случайный `ANTHROPIC_API_KEY` в вашей среде может направлять запросы через ключ низкого уровня вместо вашей подписки.
+* Проверьте в консоли вашего поставщика действующие лимиты и при необходимости запросите более высокий уровень
+* Для API-ключей Anthropic см. [rate limits reference](https://platform.claude.com/docs/en/api/rate-limits), чтобы узнать, как работают уровни и как установить ограничения для рабочего пространства
+* Снизьте параллелизм: избегайте запуска множества параллельных субагентов или переключитесь на меньшую модель с помощью `/model` для высокообъёмных скриптовых запусков
+
+### You've hit your monthly spend limit
+
+Включённое в ваш план использование не может покрыть этот запрос, а [usage credits](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans), которые в противном случае оплатили бы его, достигли лимита расходов. Ваш план не может покрыть запрос, когда одно из его окон использования закончилось или когда запрос оплачивается только кредитами использования. Один из примеров — запрос к модели, которая [оплачивается кредитами использования](https://code.claude.com/docs/ru/model-config.md#fable-and-usage-credits).
+
+Слова перед `·` называют лимит, который вас заблокировал, например ежемесячный лимит расходов вашей организации, а текст после него говорит, как добиться увеличения этого лимита. В облачной сессии или при работе через [Remote Control](https://code.claude.com/docs/ru/remote-control.md) этот текст не содержит URL, а сообщение о вашем собственном `monthly spend limit` не говорит, как его повысить. Другие сессии показывают такие формы:
+
+```text theme={null}
+You've hit your monthly spend limit · raise it at https://claude.ai/settings/usage?from=cc_cli_limit_message
+You've hit your individual spend limit · ask your admin for a higher limit
+You've hit your org's monthly spend limit · visit https://claude.ai/admin-settings/usage to raise it
+You've hit your team's shared budget · ask your admin to raise it at https://claude.ai/admin-settings/usage
+You've hit your channel's monthly spend limit · an org owner or channel manager can raise it in the channel's Claude settings
+```
+
+`team's shared budget` — это общий бюджет, который администратор назначил группе, в которую вы входите; сообщение не называет группу. `channel's monthly spend limit` — это бюджет того канала Slack, в котором работает сессия, поэтому у вашей организации может оставаться бюджет за его пределами.
+
+Когда закончилось одно из окон вашего плана, сообщение также говорит, когда это окно сбрасывается, например `· your session limit resets 3:45pm`, и в это время доступ возвращается без повышения лимита. В организациях с биллингом на основе использования сообщение говорит `usage limit` вместо `spend limit`, как в `You've hit your individual usage limit`.
+
+Если вы подключаетесь через шлюз приложений Claude и видите `spend limit reached` в нижнем регистре, это ограничение вашего оператора шлюза; см. [Spend limit reached](#spend-limit-reached).
+
+**Что делать:**
+
+* На Pro, Max и Ultra увеличьте ваш ежемесячный лимит расходов в [**Settings > Usage**](https://claude.ai/settings/usage) на claude.ai или запустите `/usage-credits`
+* На Team и Enterprise увеличьте лимит в [**Organization settings > Usage**](https://claude.ai/admin-settings/usage), если вы управляете биллингом, или попросите администратора. `/usage-credits` отправляет этот запрос вашему администратору за вас
+* Для лимита канала попросите владельца организации или менеджера канала повысить его на claude.ai. См. [Per-channel limits](https://claude.com/docs/claude-tag/admins/set-spend-limit#per-channel-limits) в документации Claude Tag
+* Если сообщение называет время сброса окна вашего плана, вы можете вместо этого дождаться его
+* Запустите `/usage`, чтобы увидеть окна вашего плана и время сброса каждого
+
+### Spend limit reached
+
+Вы подключаетесь через [Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway) и достигли [spend cap](https://code.claude.com/docs/ru/claude-apps-gateway-spend-limits.md), установленного вашим оператором шлюза. Шлюз блокирует ваши запросы, пока оператор не повысит ограничение или пока ограничение не сбросится, если оно больше \$0. Он помечает каждый заблокированный ответ `429` как `x-should-retry: false`, поэтому в терминале Claude Code показывает это сообщение без повторных попыток.
+
+```text theme={null}
+spend limit reached · resets Dec 1
+```
+
+Проверьте, есть ли в сообщении дата:
+
+* **С датой**: ограничение сбрасывается в 00:00 UTC в указанную дату
+* **Без даты**: ваше ограничение равно \$0, или ваш шлюз работает на версии более ранней, чем v2.1.225
+
+Любой дополнительный текст в сообщении — это примечание от вашего оператора шлюза.
+
+Начиная с версии v2.1.225 и до v2.1.319 на сервере шлюза сообщение указывало период ограничения и время сброса, как в `spend limit reached (daily; resets 2026-08-09 00:00 UTC)`.
+
+**Что делать:**
+
+* Если в сообщении есть дата, дождитесь сброса или следуйте примечанию оператора, если сообщение его содержит
+* Попросите вашего оператора шлюза повысить ограничение, если в сообщении нет даты, если вы по-прежнему заблокированы после этой даты или если вы регулярно достигаете ограничения
+
+Второе сообщение шлюза, `This request exceeds your group's budget`, означает, что [общий бюджет](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#pooled-budget-order) вашей группы исчерпан. Выполните указанные в нём шаги:
+
+```text theme={null}
+This request exceeds your group's budget. Ask your organization's admins to raise it, or try again after it resets on November 1 at 00:00 UTC.
+```
+
+Связанное сообщение, `spend limit unavailable`, означает, что шлюз не смог прочитать свои записи о расходах и заблокировал запрос в качестве меры предосторожности, а не из-за превышения вашего ограничения. Обычно это проходит само; если проблема сохраняется, сообщите вашему оператору шлюза.
+
+### Credit balance is too low
+
+В вашей организации Console закончились предоплаченные кредиты, или Claude Code отправляет ваши запросы с API-ключом Console, хотя вы собирались использовать вашу подписку.
+
+```text theme={null}
+Credit balance is too low
+Credit balance too low · Add funds: https://platform.claude.com/settings/billing
+```
+
+**Что делать:**
+
+* Если у вас план Pro, Max, Ultra, Team или Enterprise и вы видите это сообщение, запустите `/status` и проверьте строку `API key`. Одобренный `ANTHROPIC_API_KEY` в вашей среде направляет запросы через этот ключ вместо вашей подписки. Удалите его из текущей оболочки и из профиля оболочки, затем перезапустите `claude`. Запустите `/login`, если вы ещё не вошли с вашей подпиской.
+* Пополните кредиты на [platform.claude.com/settings/billing](https://platform.claude.com/settings/billing) и рассмотрите возможность включить там автоматическое пополнение, чтобы баланс пополнялся до того, как опустится до нуля
+* Установите ограничения расходов для рабочих пространств в Console, чтобы один проект не исчерпал баланс организации. См. [Manage costs effectively](https://code.claude.com/docs/ru/costs.md).
+
+### Could not update your spend limit
+
+Сервер отклонил изменение лимита расходов, которое вы внесли в окне запроса, появляющемся при достижении лимита расходов.
+
+```text theme={null}
+Could not update your spend limit: <reason from the server>
+```
+
+Когда сервер объясняет отклонение, сообщение заканчивается этой причиной, и повторная попытка с тем же значением снова завершится неудачей. Когда у сбоя нет причины от сервера, например при разрыве соединения, сообщение гласит `Could not update your spend limit. Press Enter to retry.`, и повторная попытка может оказаться успешной. До версии v2.1.216 Claude Code показывал общую форму при любом сбое.
+
+**Что делать:**
+
+* Если сообщение содержит причину, выберите лимит, который ей удовлетворяет, например меньшую сумму
+* Если сообщение показывает только общую форму, повторите попытку; сбой может быть временным
+* Если изменение по-прежнему не удаётся, внесите его вместо этого в [claude.ai billing settings](https://support.claude.com/en/articles/12429409-extra-usage-for-paid-claude-plans) в браузере
+
+## Ошибки аутентификации
+
+Эти ошибки означают, что Claude Code не может подтвердить API вашу личность. Запустите `/status` в любой момент, чтобы узнать, какие учётные данные сейчас активны.
+
+### Не выполнен вход
+
+Для этой сессии нет действительных учётных данных.
+
+```text theme={null}
+Not logged in · Please run /login
+```
+
+В сессии, которую запускает приложение Claude Desktop, например на вкладке Code или в Cowork, сообщение выглядит как `Authentication required · Sign in again to continue`, и повторный вход выполняется из приложения.
+
+Если вы входите со своей учётной записью claude.ai в другом окне Claude Code, которое использует тот же [каталог конфигурации](https://code.claude.com/docs/ru/claude-directory.md), интерактивная сессия, показывающая это сообщение, начинает использовать этот вход самостоятельно. Перезапускать её не нужно.
+
+До версии v2.1.286 в macOS сессия могла продолжать показывать это сообщение после того, как вы вошли из другого окна. В этих версиях перезапустите сессию, которая показывает сообщение.
+
+**Что делать:**
+
+* Запустите `/login`, чтобы пройти аутентификацию с подпиской Claude или учётной записью Console
+* Если вы ожидали, что аутентификация пройдёт через переменную окружения, убедитесь, что `ANTHROPIC_API_KEY` задана и экспортирована в оболочке, в которой вы запустили `claude`
+* Для CI или автоматизации, где интерактивный вход невозможен, настройте скрипт [`apiKeyHelper`](https://code.claude.com/docs/ru/settings-reference#apikeyhelper), который получает ключ при запуске
+* Если задания `claude -p` завершаются с этим сообщением, когда кто-то заново входит в ту же учётную запись и организацию claude.ai, обновите Claude Code там, где выполняется этот вход. До v2.1.318 Claude Code удалял сохранённый вход во время такого входа, до сохранения нового.
+* См. [Приоритет аутентификации](https://code.claude.com/docs/ru/authentication.md#authentication-precedence), чтобы понять, какие учётные данные использует Claude Code, когда их несколько
+
+Если вам многократно предлагают войти, см. [Не выполнен вход или токен истёк](https://code.claude.com/docs/ru/troubleshoot-install.md#not-logged-in-or-token-expired), где описаны проверки системных часов и шаги восстановления хранилища учётных данных macOS.
+
+### Не удалось определить метод аутентификации
+
+Сессия обратилась к API-клиенту без каких-либо учётных данных. [Фоновые сессии](https://code.claude.com/docs/ru/agent-view.md) и облачные сессии показывают это сообщение, когда рабочий процесс запускается без учётных данных. Интерактивные запуски, запуски с `-p` и запуски Agent SDK сообщают о том же состоянии как [Не выполнен вход](#not-logged-in) и записывают эту строку только в свой отладочный лог, поэтому если вы нашли её там, следуйте указаниям из того раздела.
+
+```text theme={null}
+Could not resolve authentication method. Expected one of apiKey, authToken, credentials, config, or profile to be set. Or for one of the "X-Api-Key" or "Authorization" headers to be explicitly omitted
+```
+
+В текущих версиях ошибка означает, что рабочему процессу не были доступны никакие учётные данные. До версии v2.1.174 фоновая сессия, назначенная простаивающему предварительно инициализированному рабочему процессу, могла завершаться этой ошибкой, даже когда были настроены действительные учётные данные. До версии v2.1.176 то же могло происходить с облачной сессией, которая простаивала до того, как её забрали. Обновитесь, чтобы устранить проблему.
+
+**Что делать:**
+
+* Обновитесь до версии v2.1.176 или новее, если это появляется в фоновой или облачной сессии, а ваши учётные данные уже настроены
+* Убедитесь, что `ANTHROPIC_API_KEY`, `CLAUDE_CODE_OAUTH_TOKEN` или учётные данные вашего облачного провайдера заданы в окружении, которое запускает рабочий процесс, а не только в вашей интерактивной оболочке
+* Для Agent SDK см. [настройку аутентификации в быстром старте](https://code.claude.com/docs/ru/agent-sdk/quickstart.md#setup)
+* Запустите `/status` в интерактивной сессии в том же окружении, чтобы проверить, какой источник учётных данных определяется
+
+### Недействительный API-ключ
+
+Переменная окружения `ANTHROPIC_API_KEY` или скрипт `apiKeyHelper` вернули ключ, который API отклонил, или Claude Code заблокировал ключ из `ANTHROPIC_API_KEY` до его отправки.
+
+```text theme={null}
+Invalid API key · Fix external API key
+```
+
+Если после `Fix external API key` сообщение продолжается описанием вроде `Invalid X-Api-Key header value from ANTHROPIC_API_KEY: it contains a line break at character 41 (120 characters on 2 lines).`, API ключ так и не получил. Claude Code обнаружил символ, который не может передаваться в HTTP-заголовках, и остановил запрос до отправки. См. [Недопустимое значение заголовка запроса](#invalid-request-header-value), чтобы узнать, как читать описание и исправить значение.
+
+**Что делать:**
+
+* Проверьте наличие опечаток и убедитесь, что ключ не был отозван в [Console](https://platform.claude.com/settings/keys)
+* В той же оболочке выполните `env | grep ANTHROPIC` или в PowerShell `Get-ChildItem Env:ANTHROPIC*`. Такие инструменты, как direnv, плагины оболочки dotenv и терминалы IDE, могут загружать устаревший ключ из файла `.env` в вашем проекте без того, чтобы вы задавали его явно.
+* Сбросьте `ANTHROPIC_API_KEY` и запустите `/login`, чтобы использовать аутентификацию по подписке
+* Если ключ поступает из скрипта [`apiKeyHelper`](https://code.claude.com/docs/ru/settings-reference#apikeyhelper), запустите скрипт напрямую, чтобы убедиться, что он выводит действительный ключ в stdout
+* Запустите `/status`, чтобы проверить, какой источник учётных данных фактически использует Claude Code
+
+### Ваш скрипт apiKeyHelper завершается с ошибкой
+
+Claude Code выполнил команду из вашей настройки [`apiKeyHelper`](https://code.claude.com/docs/ru/settings-reference#apikeyhelper) и не получил ключ. Без него запрос доходит до API с учётными данными-заглушкой, и API отклоняет его с `401`. Панель `Authentication` в терминале показывает, что именно произошло:
+
+* Команда завершилась с ошибкой или по таймауту
+* Команда ничего не вывела в stdout
+* Команда вывела что-то помимо ключа, например баннер входа или строку лога. Панель показывает `returned output that cannot be used as an API key` и сообщает, что не так, не повторяя сам вывод. До версии v2.1.227 Claude Code отправлял всё, что выводила команда, после удаления окружающих пробелов.
+
+```text theme={null}
+Your apiKeyHelper script is failing · This usually means you need to re-authenticate with your provider · Run /status to see the script's error output
+```
+
+В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) stderr также содержит конкретную причину с префиксом `apiKeyHelper failed:`.
+
+Перед показом этого сообщения Claude Code повторно запускает скрипт и повторяет запрос ещё до двух раз, поэтому сбой проявляется в пределах трёх попыток. До версии v2.1.208 Claude Code тратил весь [лимит повторных попыток](#automatic-retries) на повторную отправку запроса с учётными данными-заглушкой, а затем сообщал об общей ошибке аутентификации `401` вместо сбоя скрипта.
+
+Запуск `/login` здесь не помогает: вывод хелпера [имеет приоритет](https://code.claude.com/docs/ru/authentication.md#authentication-precedence) над сохранённым входом, пока эта настройка присутствует.
+
+**Что делать:**
+
+* Запустите команду, настроенную в `apiKeyHelper`, напрямую в оболочке, чтобы воспроизвести сбой
+* Если команда сообщает об истёкшей сессии, пройдите повторную аутентификацию у своего провайдера учётных данных, например снова войдите в SSO или хранилище секретов
+* Исправьте команду так, чтобы она выводила в stdout только ключ — один токен из печатаемых символов ASCII длиной до 16 384 символов — и завершалась с кодом выхода 0. Рабочую настройку см. в разделе [ротация учётных данных с помощью apiKeyHelper](https://code.claude.com/docs/ru/llm-gateway-connect.md#rotate-credentials-with-apikeyhelper).
+* Запустите `/status`, чтобы увидеть сбой и убедиться, что `apiKeyHelper` — активный источник учётных данных. Строка `apiKeyHelper` показывает `Failing` с подробностями последнего сбоя, такими как код выхода и вывод ошибки команды, и исчезает после следующего успешного запуска. До версии v2.1.274 `/status` показывал только источник учётных данных, но не сбой.
+* При каждом сбое команды её код выхода и вывод ошибки также появляются в панели `Authentication` в терминале. До версии v2.1.212 панель называлась `Cloud authentication`.
+
+### Claude Code didn't send your claude.ai login
+
+Эти сообщения означают, что Claude Code отклонил ваш запрос и не отправил ваш вход claude.ai:
+
+```text theme={null}
+Your organization's settings need an update. Ask your administrator to fix the API key helper configuration.
+Couldn't load your organization's settings. Check your connection, then restart Claude Code.
+Restart Claude Code to finish signing in.
+```
+
+**Что делать:**
+
+* `Your organization's settings need an update`: попросите администратора исправить конфигурацию хелпера API-ключа
+  * Чтобы сообщить администратору, какие управляемые источники есть на вашей машине, выполните `/status` в промпте Claude Code и скопируйте [строку `Setting sources`](https://code.claude.com/docs/ru/managed-settings#read-the-source-in-/status). Если появляется строка `Skipped sources`, скопируйте и её
+  * Если настройки администрируете вы, а хелпер находится в файле управляемых настроек машины или в политике MDM, см. [Когда `apiKeyHelper` машины не действует](https://code.claude.com/docs/ru/server-managed-settings#machine-apikeyhelper-not-in-effect)
+* `Couldn't load your organization's settings`: проверьте подключение, затем перезапустите Claude Code. Если сообщение возвращается после перезапуска, сообщите администратору
+* `Restart Claude Code to finish signing in`: перезапустите Claude Code
+
+До v2.1.315 отклонённый промпт или загрузка файла выводили одно сообщение, начинавшееся с `Claude Code didn't send your claude.ai login`.
+
+### Недопустимое значение заголовка запроса
+
+Значение, которое Claude Code собирался отправить как заголовок запроса, содержит символ, который не может передаваться в HTTP-заголовках: перевод строки, байт NUL или символ выше `U+00FF`, например фигурную кавычку или пробел нулевой ширины. Claude Code останавливает запрос до какой-либо отправки и называет переменную или настройку, которую нужно исправить. Обычная причина — учётные данные, вставленные из документа или чата, которые содержали невидимый символ или случайный перевод строки.
+
+Claude Code выполняет эту проверку, когда отправляет запросы к Claude API напрямую или через [LLM-шлюз](https://code.claude.com/docs/ru/llm-gateway). При использовании стороннего облачного провайдера, например [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md), Claude Code не выполняет её перед отправкой.
+
+```text theme={null}
+Invalid auth token · Fix external auth token
+Invalid ANTHROPIC_CUSTOM_HEADERS · Fix the environment variable
+Invalid request header from the environment · Fix the environment variable
+```
+
+Первая часть сообщения зависит от того, откуда пришло неверное значение:
+
+* `Invalid auth token`: Bearer-токен из [`ANTHROPIC_AUTH_TOKEN`](https://code.claude.com/docs/ru/env-vars) или [`CLAUDE_CODE_OAUTH_TOKEN`](https://code.claude.com/docs/ru/env-vars)
+* `Invalid ANTHROPIC_CUSTOM_HEADERS`: имя или значение заголовка, которое вы задали в [`ANTHROPIC_CUSTOM_HEADERS`](https://code.claude.com/docs/ru/env-vars). Описание указывает порядковый номер проблемной пары `Name: Value`, например `distinct header 2 of 3 parsed from ANTHROPIC_CUSTOM_HEADERS`, не повторяя имя или значение, поскольку оба выбрали вы.
+* `Invalid request header from the environment`: значение, которое Claude Code копирует в заголовок запроса из другой переменной окружения, например `CLAUDE_AGENT_SDK_CLIENT_APP`. Описание называет переменную, которую нужно исправить.
+
+О неверном `ANTHROPIC_API_KEY`, обнаруженном этой проверкой, Claude Code сообщает как о [Недействительном API-ключе](#invalid-api-key), с тем же описанием в конце. О неверных сохранённых учётных данных `/login` он сообщает как о [Не выполненном входе](#not-logged-in); запустите `/login`, чтобы сохранить новые. Вывод скрипта [`apiKeyHelper`](https://code.claude.com/docs/ru/settings-reference#apikeyhelper) никогда не попадает в эту проверку: Claude Code проверяет его при запуске скрипта, и вывод, который не может передаваться в HTTP-заголовке, приводит к ошибке [Ваш скрипт apiKeyHelper завершается с ошибкой](#your-apikeyhelper-script-is-failing).
+
+После второго `·` сообщение описывает проблему, как в этом полном примере:
+
+```text theme={null}
+Invalid auth token · Fix external auth token · Invalid Authorization header value from ANTHROPIC_AUTH_TOKEN: it contains a line break at character 41 (120 characters on 2 lines).
+```
+
+Позиции символов отсчитываются с единицы. Описание строится из фиксированных фраз и счётчиков символов, поэтому никогда не содержит само значение. Оно называет проблемный символ только тогда, когда это общеизвестный невидимый или типографский символ, например метка порядка байтов, пробел нулевой ширины или фигурная кавычка, а обо всём остальном сообщает как `a non-ASCII character`.
+
+**Что делать:**
+
+* Заново задайте переменную или настройку, указанную в сообщении, перепечатав символы вокруг указанной позиции вручную, а не вставляя их снова из того же источника
+* Для `ANTHROPIC_CUSTOM_HEADERS` указывайте по одной паре `Name: Value` на строку и перепишите пару, номер которой указан в сообщении
+* Запустите `/status`, чтобы проверить, какой источник учётных данных активен
+
+### Эта организация отключена
+
+Claude Code использует устаревший `ANTHROPIC_API_KEY` из отключённой организации Console. Если у вас есть сохранённый вход по подписке, ключ имеет приоритет над ним.
+
+```text theme={null}
+Your ANTHROPIC_API_KEY belongs to a disabled organization · Unset the environment variable to use your subscription instead
+Your ANTHROPIC_API_KEY belongs to a disabled organization · Update or unset the environment variable
+API Error: 400 ... This organization has been disabled.
+```
+
+Подсказка после `·` зависит от ваших сохранённых учётных данных: первая форма появляется, когда сохранённый `/login` может взять управление на себя после сброса ключа, а вторая — когда ключ является вашими единственными учётными данными.
+
+Если вы экспортируете ключ в профиле оболочки или загружаете его из `.env`, Claude Code использует его вместо `/login`, даже при действующей подписке Pro, Max или Ultra. В неинтерактивном режиме (`-p`) ключ всегда используется, если он присутствует.
+
+**Что делать:**
+
+* Сбросьте `ANTHROPIC_API_KEY` в текущей оболочке и удалите его из профиля оболочки, затем перезапустите `claude`
+* Если в сообщении сказано `Update or unset`, у вас нет сохранённого входа, на который можно переключиться. Сбросьте ключ и запустите `/login` или замените ключ на ключ из активной организации Console.
+* После этого запустите `/status`, чтобы убедиться, что активные учётные данные — это ваша подписка
+* Если никакая переменная окружения не задана, а ошибка сохраняется, обратитесь в поддержку или войдите с другой учётной записью.
+
+### Ваша организация отключила аутентификацию по API-ключу
+
+Это сообщение требует Claude Code версии v2.1.169 или новее. Администратор вашей организации Console отключил аутентификацию по API-ключу, поэтому API отклоняет ключ, который отправляет Claude Code. Подсказка по восстановлению после `·` зависит от того, откуда взялся ключ:
+
+```text theme={null}
+Your organization has disabled API key authentication · Run /login to sign in with your claude.ai account
+Your organization has disabled API key authentication · Unset ANTHROPIC_API_KEY to use your claude.ai account instead
+Your organization has disabled API key authentication · Unset ANTHROPIC_API_KEY and run /login to sign in with your claude.ai account
+Your organization has disabled API key authentication · Unset the apiKeyHelper setting and run /login to sign in with your claude.ai account
+Your organization has disabled API key authentication · Sign in again with your claude.ai account
+```
+
+Последняя форма появляется в сессии, которую запускает приложение Claude Desktop, например на вкладке Code или в Cowork, где повторный вход выполняется из приложения.
+
+Переменные окружения и `apiKeyHelper` имеют приоритет над `/login`, поэтому один только запуск `/login` не помогает, пока любой из них всё ещё предоставляет ключ. См. [Приоритет аутентификации](https://code.claude.com/docs/ru/authentication.md#authentication-precedence).
+
+**Что делать:**
+
+* Если в сообщении названа `ANTHROPIC_API_KEY`, сбросьте её в текущей оболочке и удалите из профиля оболочки или файла `.env`, затем перезапустите `claude`
+* Если в сообщении назван `apiKeyHelper`, удалите настройку [`apiKeyHelper`](https://code.claude.com/docs/ru/settings-reference#apikeyhelper) из своего `settings.json`
+* Запустите `/login`, чтобы войти со своей учётной записью claude.ai
+* После этого запустите `/status`, чтобы убедиться, что активные учётные данные — это ваша подписка, а не API-ключ
+* Если вам нужна аутентификация по API-ключу для автоматизации, попросите администратора организации снова включить её в Console
+
+### Ваша организация отключила доступ по подписке Claude
+
+Ваша организация Claude не разрешает вход в Claude Code по подписке. Повторный запуск `/login` с той же учётной записью возвращает ту же ошибку.
+
+```text theme={null}
+Your organization has disabled Claude subscription access for Claude Code · Use an Anthropic API key instead, or ask your admin to enable access
+```
+
+Это серверная настройка организации, поэтому её нельзя переопределить локальными настройками, переменными окружения или флагами CLI.
+
+Agent SDK и неинтерактивный режим `-p` сообщают об этом кодом ошибки `oauth_org_not_allowed`.
+
+**Что делать:**
+
+* Попросите администратора включить доступ к Claude Code для вашей организации
+* Пройдите аутентификацию с API-ключом Console вместо подписки. Инструкции по настройке см. в разделе [Аутентификация через Claude Console](https://code.claude.com/docs/ru/authentication.md#claude-console-authentication).
+* Если вы администратор и не видите возможности включить доступ, обратитесь в [поддержку Anthropic](https://support.claude.com)
+
+### Scheduled tasks are off for your organization
+
+[Облачные запланированные задачи](https://code.claude.com/docs/ru/routines.md) отключены для вашей организации, поэтому вы не можете их создавать или запускать. Сообщение от claude.ai называет их scheduled tasks или routines, и за ним следует предложение о вашем администраторе:
+
+```text theme={null}
+Scheduled tasks are off for your organization. …
+Routines are off for your organization. …
+```
+
+Включить их с помощью локальных настроек, переменных окружения или флагов CLI нельзя.
+
+**Что делать:**
+
+* Спросите Owner вашего тарифа Team или Enterprise, может ли он включить переключатель **Scheduled tasks (Was Routines)** или **Routines** в разделе [**Organization settings > Capabilities > Remote sessions**](https://claude.ai/admin-settings/capabilities)
+
+### Remote Control требует Anthropic API
+
+Сессия не обращается к Anthropic API напрямую, а это необходимо для [Remote Control](https://code.claude.com/docs/ru/remote-control.md).
+
+```text theme={null}
+Remote Control is only available when using Claude via api.anthropic.com. CLAUDE_CODE_USE_BEDROCK is set, so this session is using Amazon Bedrock — unset it (or run in a shell without it) to use Remote Control.
+```
+
+Второе предложение объясняет, что направило сессию в обход Anthropic API; до версии v2.1.219 сообщение состояло только из первого предложения. В зависимости от причины сообщение называет:
+
+* Переменную провайдера `CLAUDE_CODE_USE_*`, например `CLAUDE_CODE_USE_BEDROCK` для [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md) или `CLAUDE_CODE_USE_VERTEX` для [Google Cloud's Agent Platform](https://code.claude.com/docs/ru/google-vertex-ai.md)
+* [`ANTHROPIC_BASE_URL`](https://code.claude.com/docs/ru/env-vars), указывающую на хост, отличный от `api.anthropic.com`, например на [LLM-шлюз](https://code.claude.com/docs/ru/llm-gateway) или прокси, даже если вы входите через claude.ai; до версии v2.1.196 пользовательский базовый URL не блокировал Remote Control
+* Заданную `ANTHROPIC_UNIX_SOCKET`, из-за которой сессия отправляет запросы через локальный сокет, а не на `api.anthropic.com`
+* Вход через корпоративный [облачный шлюз](https://code.claude.com/docs/ru/claude-apps-gateway), выполненный через `/login`, который не поддерживает Remote Control и не имеет переменной, которую можно сбросить
+
+**Что делать:**
+
+* Сбросьте переменную, указанную в сообщении, например `CLAUDE_CODE_USE_BEDROCK` или `ANTHROPIC_BASE_URL`, и перезапустите сессию либо запустите Remote Control из сессии, которая обращается к Anthropic API напрямую
+* Если переменная не задана в вашей оболочке, проверьте ключ `env` в ваших [файлах настроек](https://code.claude.com/docs/ru/settings.md#where-settings-live), который применяет переменные окружения к каждой сессии
+* Об этом и других сообщениях при запуске Remote Control см. [Устранение неполадок Remote Control](https://code.claude.com/docs/ru/remote-control.md#troubleshooting)
+
+### Remote Control не удалось обновить ваш вход
+
+Claude Code поддерживает активное подключение [Remote Control](https://code.claude.com/docs/ru/remote-control.md) с помощью краткосрочных учётных данных, которые он получает и обновляет, используя ваш сохранённый вход claude.ai. Когда claude.ai перестаёт принимать этот вход или у Claude Code не остаётся сохранённого входа, Claude Code останавливает Remote Control, и вам нужно войти снова. Любой из этих сбоев может произойти, пока Claude Code ещё подключается, или позже, когда он обновляет учётные данные.
+
+Когда Claude Code просит службу входа обновить ваш сохранённый вход и не получает ответа, он продолжает работу Remote Control и повторяет попытку обновления, пока текущие учётные данные подключения ещё действительны. Обновление остаётся без ответа, когда Claude Code не может связаться со службой входа, запрос завершается по таймауту или служба даёт сбой, не отклоняя ваш вход. Если служба входа так и не отвечает к моменту истечения этих учётных данных, Claude Code останавливает Remote Control и сообщает `OAuth token refresh failed`.
+
+Когда Claude Code останавливает Remote Control, он показывает причину в предупреждении и в строке транскрипта, начинающейся с `Remote Control disconnected`. Ваша локальная сессия продолжает работать без Remote Control. Этот раздел охватывает следующие строки:
+
+```text theme={null}
+Remote Control disconnected — Claude.ai login expired — run /login to restore Remote Control
+Remote Control disconnected — Claude.ai login expired — run /login, then /remote-control
+Remote Control disconnected — Claude.ai login was rejected — run /login, then /remote-control
+Remote Control disconnected — OAuth token unavailable — run /login to restore Remote Control
+Remote Control disconnected — OAuth token refresh failed — run /login to re-authenticate
+Remote Control disconnected — JWT refresh failed: no OAuth token — run /login
+Remote Control disconnected — Signed out of Claude — run /login, then /remote-control
+```
+
+Claude Code называет причину в середине сообщения:
+
+* `Claude.ai login expired` и `Claude.ai login was rejected`: claude.ai больше не принимает ваш сохранённый токен входа, потому что он истёк или был отозван
+* `OAuth token unavailable`: у Claude Code не было сохранённого токена входа, когда подошёл срок обновления учётных данных подключения
+* `OAuth token refresh failed`: claude.ai отклонил ваш сохранённый токен входа, пока Claude Code переподключался, и обновление токена не дало нового
+* `JWT refresh failed: no OAuth token`: Claude Code не нашёл сохранённого токена входа для обновления
+* `Signed out of Claude`: вы вышли из учётной записи на этой машине, например запустив `/logout` в другом терминале, поэтому у Claude Code не осталось сохранённого входа для обновления подключения
+
+**Что делать:**
+
+* Запустите `/login`, чтобы войти снова
+* Запустите `/remote-control`, чтобы переподключить сессию. Для сообщений, заканчивающихся на `run /login to restore Remote Control`, этот шаг не нужен: Claude Code переподключается самостоятельно после вашего входа.
+
+До версии v2.1.224 сообщение `OAuth token refresh failed — run /login to re-authenticate` выглядело как `OAuth token refresh failed — re-authenticate, then re-enable Remote Control`, а `JWT refresh failed: no OAuth token — run /login` — как `no OAuth token available for recovery (code <N>)`. Сообщения `Claude.ai login expired`, `Claude.ai login was rejected` и `OAuth token unavailable` были добавлены в версии v2.1.225.
+
+До версии v2.1.238 Claude Code сообщал о случаях, которые теперь отображаются как `Signed out of Claude`, как `JWT refresh failed: no OAuth token — run /login`, и останавливал Remote Control с сообщением `Claude.ai login expired — run /login to restore Remote Control`, как только одна попытка обновления входа оставалась без ответа.
+
+### Remote Control could not renew this computer's connection
+
+Это предупреждение появляется в терминале, где работает [`claude remote-control`](https://code.claude.com/docs/ru/remote-control#start-a-remote-control-session), когда сервер не может использовать ваш вход claude.ai, чтобы обновить учётные данные подключения до истечения их срока действия. Последнее предложение предупреждения сообщает, сколько ещё будут действовать текущие учётные данные или что их срок уже истёк:
+
+```text theme={null}
+Remote Control could not renew this computer's connection: claude.ai did not accept the sign-in it uses. Run `claude /login` to sign in again. The connection keeps working for about 26 hours; if it still cannot sign in then, it stops.
+```
+
+**Что делать:**
+
+* Если предупреждение предлагает выполнить `claude /login`, откройте другой терминал на компьютере, где работает сервер, выполните там `claude /login` и войдите с учётной записью claude.ai
+* Если сервер по-прежнему не может войти после истечения срока действия учётных данных подключения, он выводит ошибку, содержащую `Poll: Authentication failed (401)`, и останавливается. Войдите снова, как указано во втором предложении предупреждения, затем снова выполните `claude remote-control` в терминале, где сервер остановился.
+
+### Remote Control остановлен, потому что сменилась учётная запись, в которую выполнен вход
+
+Claude Code показывает эту строку во время сессии [Remote Control](https://code.claude.com/docs/ru/remote-control.md), когда вы входите в другую учётную запись или организацию claude.ai на этой машине. Вы выполнили переключение вне сессии Claude Code, например запустив `/login` в другом терминале.
+
+Сессия Remote Control, которую вы запустили, войдя через `/login`, принадлежит той учётной записи и организации claude.ai, в которые был выполнен вход в тот момент.
+
+```text theme={null}
+Remote Control disconnected — signed-in claude.ai account or organization changed on this machine — run /remote-control to start a session for the current account, or /login to switch back, then /remote-control
+```
+
+Claude Code останавливает сессию Remote Control, как только claude.ai подтверждает, что учётная запись или организация изменилась. Ваша локальная сессия продолжает работать без Remote Control.
+
+**Что делать:**
+
+* Запустите `/remote-control`, чтобы начать новую сессию Remote Control под текущей учётной записью или организацией
+* Чтобы переключиться обратно, запустите `/login` и снова войдите в предыдущую учётную запись или организацию. Затем запустите `/remote-control`.
+
+До версии v2.1.234 Claude Code не замечал, когда вы переключались на другую учётную запись или организацию вне сессии Claude Code. Claude Code сохранял подключение сессии Remote Control до тех пор, пока очередной запрос к серверу Remote Control не завершался ошибкой `Remote Control server rejected the request (HTTP 404)`. Этот сбой мог произойти через несколько часов после переключения.
+
+### Remote Control остановлен, потому что приложение, в котором работает сессия, вышло из учётной записи или сменило её
+
+Когда вашу сессию размещает настольное приложение Claude или IDE, Claude Code получает токен входа от этого приложения, а не от `/login`. Когда claude.ai отклоняет этот токен, Claude Code запрашивает у приложения новый. Если приложение отвечает, что из него выполнен выход или что теперь в нём выполнен вход в другую учётную запись Claude, Claude Code завершает сессию [Remote Control](https://code.claude.com/docs/ru/remote-control.md) и отправляет приложению одну из этих строк:
+
+```text theme={null}
+Remote Control stopped — the app running this session is now signed in to a different Claude account
+Remote Control stopped — the app running this session is signed out of Claude. Sign in there, then turn Remote Control back on
+```
+
+Ваша локальная сессия продолжает работать без Remote Control.
+
+**Что делать:**
+
+* Если из приложения выполнен выход, снова войдите в него, затем снова включите Remote Control в приложении
+* Если приложение сменило учётную запись, Claude Code не может продолжить завершённую сессию под новой учётной записью. Начните новую сессию Remote Control под этой учётной записью.
+
+До версии v2.1.238 в обоих случаях Claude Code отправлял приложению сообщения с `run /login`, перечисленные в разделе [Remote Control не удалось обновить ваш вход](#remote-control-couldnt-refresh-your-login).
+
+### OAuth-токен отозван или истёк
+
+Ваш сохранённый вход больше недействителен. Отозванный токен означает, что вы вышли из всех сессий или администратор отозвал доступ; истёкший токен означает, что автоматическое обновление не удалось посреди сессии.
+
+Оба сообщения сообщают об отказе, который API вернул на запрос, отправленный Claude Code. Если сохранённый вход уже был удалён после неудачного обновления, см. вместо этого [Login expired](#login-expired). Если вы проходите аутентификацию с долгосрочным токеном в [`CLAUDE_CODE_OAUTH_TOKEN`](https://code.claude.com/docs/ru/env-vars), вы увидите те же сообщения, когда срок действия этого токена истечёт или он будет отозван.
+
+```text theme={null}
+OAuth token revoked · Please run /login
+Please run /login · API Error: 401 OAuth token has expired ...
+```
+
+В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) (`-p`) и в [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md) сообщения выглядят следующим образом, а структурированный код ошибки — `authentication_failed`:
+
+```text theme={null}
+Failed to authenticate: OAuth token revoked. Please log in again or contact your administrator.
+Failed to authenticate. API Error: 401 OAuth token has expired ...
+```
+
+До версии v2.1.287 в неинтерактивном режиме и в Agent SDK сообщение об отзыве выглядело как `Your account does not have access to Claude. Please login again or contact your administrator.`
+
+**Что делать:**
+
+* Запустите `/login` в промпте Claude Code, чтобы войти снова
+* Если ваша команда `-p` или программа Agent SDK использует сохранённый вход, запустите `claude` в том же окружении, выполните `/login`, затем снова запустите команду или программу. Для автоматизации, в которой невозможен интерактивный вход, используйте аутентификацию с [`ANTHROPIC_API_KEY`](https://code.claude.com/docs/ru/env-vars) или [сгенерируйте долгосрочный токен с помощью `claude setup-token`](https://code.claude.com/docs/ru/authentication#generate-a-long-lived-token).
+* Если вы проходите аутентификацию с переменной окружения `CLAUDE_CODE_OAUTH_TOKEN`, Claude Code продолжает отправлять заданное вами значение после того, как запрос завершается ошибкой 401, а не переключается на токен сохранённого входа. [`/status`](https://code.claude.com/docs/ru/commands) показывает эти учётные данные как строку `Auth token` со значением `CLAUDE_CODE_OAUTH_TOKEN`. Сгенерируйте новый токен с помощью [`claude setup-token`](https://code.claude.com/docs/ru/authentication#generate-a-long-lived-token) и перезапустите с ним либо сбросьте переменную и запустите `/login`. До версии v2.1.225 Claude Code мог посреди сессии заменить значение переменной краткосрочным токеном доступа из сохранённого входа, и сессия снова завершалась ошибками 401 после истечения этого токена.
+* При повторяющихся предложениях войти при каждом запуске см. проверки системных часов и шаги восстановления хранилища учётных данных macOS в разделе [Устранение неполадок](https://code.claude.com/docs/ru/troubleshoot-install.md#not-logged-in-or-token-expired)
+* О других сбоях, включая `403 Forbidden` и проблемы с OAuth в браузере, см. [Вход и аутентификация](https://code.claude.com/docs/ru/troubleshoot-install.md#login-and-authentication)
+
+### API Error: 401 Invalid authentication credentials
+
+API распознал формат ваших учётных данных, но отклонил стоящую за ними учётную запись или организацию. Anthropic возвращает это сообщение, когда учётные данные были недавно отозваны, когда организация была отключена или удалила ваш доступ, или когда сама учётная запись была деактивирована, поэтому причина не в истёкшем токене. Учётными данными может быть ваш сохранённый вход или одобренный `ANTHROPIC_API_KEY`, и способ исправления различается, поэтому начните с запуска `/status`, чтобы узнать, какие из них активны.
+
+```text theme={null}
+Please run /login · API Error: 401 Invalid authentication credentials
+```
+
+**Что делать:**
+
+* Если `/status` показывает строку `API key`, которая не помечена как неиспользуемая, активными учётными данными является одобренный [`ANTHROPIC_API_KEY`](https://code.claude.com/docs/ru/authentication#authentication-precedence), и он имеет приоритет над вашим входом, поэтому `/login` его не заменяет. Выполните ротацию ключа в Claude Console или вернитесь к подписке, выполнив `unset ANTHROPIC_API_KEY` или в PowerShell `Remove-Item Env:ANTHROPIC_API_KEY`.
+* Если `/status` показывает только ваш вход, запустите `/login` один раз. Если учётные данные были отозваны, новый вход заменит их.
+* Если то же сообщение возвращается для той же учётной записи, учётная запись или организация больше не активна. Проверьте учётную запись и организацию, которые показывает `/status`, и попросите администратора организации восстановить доступ.
+* Если [`ANTHROPIC_BASE_URL`](https://code.claude.com/docs/ru/env-vars) указывает на [LLM-шлюз](https://code.claude.com/docs/ru/llm-gateway), текст после `401` — это сообщение вашего шлюза, а не Anthropic, и `/login` его не меняет. Вместо этого исправьте учётные данные, которые ожидает ваш шлюз.
+* Если каждый запрос завершается ошибкой `401` даже после того, как ваш шлюз получил ожидаемые учётные данные, проверьте, что шлюз и его вышестоящий сервис принимают поля [поиска инструментов](https://code.claude.com/docs/ru/mcp.md#tool-search-through-a-gateway). По умолчанию Claude Code отправляет поля инструментов `defer_loading` и блоки `tool_reference` с заголовком `anthropic-beta`, который их включает. До v2.1.304 поиск инструментов за шлюзом был отключён, если вы не включали его с помощью `ENABLE_TOOL_SEARCH`.
+
+### Срок входа истёк
+
+Claude Code попытался продлить ваш сохранённый вход claude.ai, и служба OAuth отклонила сохранённый токен обновления, поэтому Claude Code удалил сохранённые учётные данные. При отсутствии [других сохранённых учётных данных](https://code.claude.com/docs/ru/authentication.md#after-the-login-expires) запросы к модели затем останавливаются с этим сообщением:
+
+```text theme={null}
+Login expired · Please run /login
+```
+
+В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) (`-p`) и в [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md) сообщение выглядит следующим образом, а структурированный код ошибки — `authentication_failed`:
+
+```text theme={null}
+Failed to authenticate: OAuth session expired and could not be refreshed
+```
+
+Если вход достиг своего лимита времени, в Claude Code v2.1.318 или новее оба сообщения вместо этого содержат `reached its time limit`. О сообщении `Login expired`, которое заканчивается на `or re-authenticate your Anthropic profile`, см. [Anthropic profile login expired](#anthropic-profile-login-expired).
+
+Когда продление не удаётся, потому что сама учётная запись приостановлена, Claude Code вместо этого показывает [Your account is on hold](#your-account-is-on-hold).
+
+**Что делать:**
+
+* Выполните `/login`, чтобы войти снова.
+* Если вы входите со своей учётной записью claude.ai в другом окне Claude Code, см. [Не выполнен вход](#not-logged-in), чтобы узнать, когда эта сессия начинает использовать этот вход самостоятельно.
+* В неинтерактивном режиме запустите `claude` в том же окружении, выполните `/login`, затем повторно запустите команду. Для автоматизации, в которой невозможен интерактивный вход, используйте аутентификацию с `ANTHROPIC_API_KEY` или [сгенерируйте долгосрочный токен с помощью `claude setup-token`](https://code.claude.com/docs/ru/authentication#generate-a-long-lived-token).
+* Если вход продолжает завершаться неудачей, см. [Вход и аутентификация](https://code.claude.com/docs/ru/troubleshoot-install.md#login-and-authentication)
+
+### Не удалось обновить вход, потому что его обновляет другой процесс Claude Code
+
+Это сообщение не означает, что ваш вход был отклонён. Срок действия вашего сохранённого входа claude.ai истёк, и его нужно было обновить. Другой процесс Claude Code на той же машине удерживал общую блокировку обновления или завершился, оставив её, и пока эта сессия ждала, обновление не продвинулось. Claude Code останавливает запрос до отправки:
+
+```text theme={null}
+Could not refresh your login because another Claude Code process is refreshing it (or exited mid-refresh) · Try again in a minute; if it keeps happening, close other Claude Code windows or sign in again with /login
+```
+
+В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) (`-p`) и в [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md) сообщение выглядит следующим образом, а структурированный код ошибки — `server_error`:
+
+```text theme={null}
+Failed to refresh OAuth token: another Claude Code process is refreshing it or exited mid-refresh. This is usually transient; retry in a minute, and if it persists close other Claude Code processes or sign in again
+```
+
+**Что делать:**
+
+* Повторите попытку через минуту. Если другой процесс завершит обновление первым, эта сессия использует обновлённый вход.
+* Если сообщение продолжает появляться, закройте другие окна и процессы Claude Code, затем повторите попытку.
+* Если оно появляется, когда никакие другие процессы Claude Code не запущены, запустите `/login`. Повторный вход не ждёт снятия блокировки обновления.
+
+### Could not refresh your login: the disk that holds the Claude Code config directory is full
+
+Освободите место на диске, где находится каталог конфигурации Claude Code, затем снова отправьте своё сообщение. Повторный вход не поможет, пока диск заполнен, потому что новый вход не удастся сохранить. Каталог конфигурации — `~/.claude` в вашем домашнем каталоге, если вы не задали [`CLAUDE_CONFIG_DIR`](https://code.claude.com/docs/ru/env-vars).
+
+```text wrap theme={null}
+Could not refresh your login: the disk that holds the Claude Code config directory (~/.claude by default), or your disk quota on it, is full · Delete files you no longer need on that disk, then try again · Signing in again won't help
+```
+
+В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) (`-p`) и в [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md) сообщение выглядит так:
+
+```text wrap theme={null}
+Failed to refresh OAuth token: the disk that holds the Claude Code config directory (~/.claude by default), or your disk quota on it, is full. Delete files you no longer need on that disk and retry; signing in again won't help
+```
+
+**Что делать:**
+
+* Для скрипта повторно выполните его команду `claude -p`
+* Если на диске уже есть свободное место, то же сообщение появляется при исчерпании дисковой квоты или inode. Удалите свои файлы на этом диске. Если сообщение возвращается, удаляйте много мелких файлов, а не несколько крупных, потому что каждый файл занимает один inode независимо от размера.
+
+### Не удалось сохранить вход
+
+Вы вошли через claude.ai, но Claude Code не смог сохранить вход в своё хранилище учётных данных, поэтому вход не завершился. В macOS это может произойти, когда связка ключей входа блокируется, например при переходе в сон или простое, после того как Claude Code уже прочитал или сохранил в ней учётные данные в той же сессии.
+
+```text theme={null}
+Couldn't save your login. If your Mac's keychain is locked, unlock it and log in again.
+Couldn't save your login. Try logging in again.
+```
+
+Первая форма появляется в macOS, а вторая — на всех остальных платформах. Временный сбой хранилища учётных данных, например таймаут или нечитаемое хранилище, приводит к тому же сообщению.
+
+**Что делать:**
+
+* В macOS разблокируйте связку ключей входа, затем снова запустите `/login`
+* На других платформах снова запустите `/login`
+* Если вход по-прежнему не сохраняется, см. [Не выполнен вход или токен истёк](https://code.claude.com/docs/ru/troubleshoot-install.md#not-logged-in-or-token-expired), где приведена команда разблокировки связки ключей и другие шаги восстановления хранилища учётных данных
+
+### Sign in again to take your previous account or API key off the config file
+
+Это предупреждение после входа означает, что любая учётная запись, в которую вы были выполнили вход ранее, может всё ещё храниться в [`~/.claude.json`](https://code.claude.com/docs/ru/claude-directory#ce-claude-json):
+
+```text theme={null}
+Sign in again to take your previous account or API key off the config file.
+```
+
+API-ключ тоже может всё ещё находиться в `~/.claude.json`, если его создал вход через Console на Linux или Windows.
+
+**Что делать:**
+
+* Выполните `claude auth login` в оболочке, чтобы войти заново. Затем Claude Code повторит сохранение, которое удаляет заменённую учётную запись или API-ключ из файла.
+
+### Your account or API key may still be in the config file
+
+Вы выполнили `/logout` или `claude auth logout`, и Claude Code вывел этот процесс из системы, но не смог подтвердить, что [`~/.claude.json`](https://code.claude.com/docs/ru/claude-directory#ce-claude-json) больше не содержит вашу учётную запись. Либо сохранение не прошло, либо файл не удалось прочитать для проверки.
+
+```text theme={null}
+Your account or API key may still be in the config file. Run claude auth logout.
+```
+
+API-ключ тоже может всё ещё находиться в `~/.claude.json`, если его создал вход через Console на Linux или Windows.
+
+**Что делать:**
+
+* Выполните `claude auth logout` в оболочке, чтобы повторить сохранение. Когда сохранение пройдёт, команда выведет `Successfully logged out from your Anthropic account.`
+
+### Couldn't start the local listener that receives the browser sign-in
+
+Каждое из этих сообщений от `/login`, `claude auth login` или `claude setup-token` означает, что Claude Code не смог открыть порт на `127.0.0.1`, через который ваш браузер возвращает результат входа.
+
+При уведомлении, начинающемся с `The browser can't return the sign-in to Claude Code automatically`, вход продолжается без этого порта. Браузер не открывается, а уведомление появляется над URL, по которому вы входите вместо этого:
+
+```text wrap theme={null}
+The browser can't return the sign-in to Claude Code automatically. After you sign in, paste the code shown.
+```
+
+При сообщении, содержащем `Couldn't start the local listener`, вход остановился. Это происходит, например, когда вы передаёте входные данные в `claude auth login` через конвейер:
+
+```text theme={null}
+Couldn't start the local listener that receives the browser sign-in. Try again.
+```
+
+**Что делать:**
+
+* **`The browser can't return the sign-in to Claude Code automatically`**: сначала ничего исправлять не нужно. Откройте URL, показанный под уведомлением, в браузере и войдите. Затем браузер покажет код: вставьте его в Claude Code в промпт `Paste code here >`, и вход продолжится с этого места.
+* **`Couldn't start the local listener that receives the browser sign-in`**: запустите ту же команду снова. Если она останавливается так же, войдите с помощью токена или API-ключа вместо браузера. Или, если вы передавали входные данные в `claude auth login` через конвейер, запустите её в терминале, чтобы она могла принять вставленный код.
+* **Чтобы войти с помощью токена или API-ключа вместо браузера**: если вы используете подписку claude.ai, запустите [`claude setup-token`](https://code.claude.com/docs/ru/authentication#generate-a-long-lived-token) на компьютере, где вход работает. Затем задайте выведенный токен в переменной окружения [`CLAUDE_CODE_OAUTH_TOKEN`](https://code.claude.com/docs/ru/env-vars) на этом компьютере. В противном случае задайте в переменной окружения `ANTHROPIC_API_KEY` ключ из [Claude Console](https://platform.claude.com/settings/keys). Раздел [Приоритет аутентификации](https://code.claude.com/docs/ru/authentication.md#authentication-precedence) объясняет, как Claude Code выбирает между учётными данными.
+* **Чтобы вернуть автоматический возврат из браузера**: Claude Code должен иметь возможность прослушивать `127.0.0.1`. Если он работает в песочнице, проверьте, что политика песочницы разрешает прослушивание локальных портов, затем войдите снова. Если прослушивание там должно работать, а уведомление всё равно появляется, запустите `/feedback`, чтобы отчёт включал сведения о вашем окружении.
+
+До v2.1.305 вход останавливался, как только не удавалось открыть порт, и не показывал URL для входа. Сообщение выглядело, например, так: `Failed to start OAuth callback server: Failed to start server. Is port 0 in use?`. В этих версиях обновите Claude Code и войдите снова либо войдите с помощью токена или API-ключа вместо браузера.
+
+### Вход Claude не принят
+
+Вы попытались запустить [облачную сессию](https://code.claude.com/docs/ru/claude-code-on-the-web.md), и сервер отказался её создавать с ошибкой 401: он не принял вход Claude, отправленный этой машиной, обычно потому, что вход истёк или был отозван.
+
+Первая часть строки — это собственная причина сервера, если он её сообщает. В противном случае строка выглядит так:
+
+```text theme={null}
+Claude login not accepted · Run /login, then try again
+```
+
+**Что делать:**
+
+* Запустите `/login`, завершите вход, затем снова запустите сессию
+
+### Для артефактов нужен вход claude.ai
+
+Claude Code отказался публиковать или читать [артефакт](https://code.claude.com/docs/ru/artifacts.md), потому что у сессии нет входа claude.ai, который можно использовать для артефактов.
+
+Каждая форма сообщения начинается с одних и тех же слов, за которыми следует способ устранения, зависящий от того, как аутентифицируется ваша сессия. При отсутствии конкурирующих учётных данных оно выглядит так:
+
+```text theme={null}
+Artifacts need a claude.ai login. Run /login and select "Claude account with subscription", then retry — the "Anthropic Console account" option does not provide claude.ai credentials.
+```
+
+**Что делать:**
+
+* Запустите `/login` и выберите **Claude account with subscription**. Вариант **Anthropic Console account** не предоставляет учётные данные claude.ai.
+* Если сообщение называет учётные данные, которые имеют приоритет, например `ANTHROPIC_API_KEY`, настройку `apiKeyHelper` или ключ Console, сохранённый предыдущим `/login`, удалите их так, как указано в сообщении, затем запустите `/login`
+* Если сообщение говорит, что эта удалённая сессия аутентифицируется через машину, которая её запустила, войдите в claude.ai на той машине, затем переподключите сессию
+* Если сообщение говорит, что учётные данные внедрены хост-окружением сессии, вы не можете изменить их в этой сессии; запустите сессию, в которой выполнен вход в claude.ai
+* Другие требования к артефактам, такие как план, провайдер модели и политика организации, см. в разделе [Доступность](https://code.claude.com/docs/ru/artifacts.md#availability)
+
+### Политика администратора требует входа через Cloud gateway
+
+[Управляемые настройки](https://code.claude.com/docs/ru/managed-settings.md) администратора на этой машине задают для [`forceLoginMethod`](https://code.claude.com/docs/ru/settings-reference#forceloginmethod) значение `"gateway"` или задают [`forceLoginGatewayUrl`](https://code.claude.com/docs/ru/settings-reference#forcelogingatewayurl). Если вы не выбираете облачного провайдера через переменную, например `CLAUDE_CODE_USE_BEDROCK`, Claude Code в этом случае принимает только вход через [шлюз приложений Claude](https://code.claude.com/docs/ru/claude-apps-gateway). Вы видите одно из двух сообщений:
+
+```text theme={null}
+Not signed in to the Cloud gateway — run /login.
+```
+
+Запросы к модели завершаются этим сообщением, когда у сессии нет входа через шлюз, например потому что вы не запускали `/login` с тех пор, как политика поступила на машину.
+
+Если на машине также есть учётные данные, выданные Anthropic, а управляемые настройки задают `forceLoginMethod` или `forceLoginOrgUUID`, Claude Code вместо этого завершает работу при запуске. Такими учётными данными может быть переменная `ANTHROPIC_API_KEY` или `ANTHROPIC_AUTH_TOKEN`, настройка `apiKeyHelper` или API-ключ, сохранённый при предыдущем входе в Claude Console.
+
+Сообщение при запуске называет учётные данные, с которыми настроена сессия, место, где они заданы, и шаг, который их удаляет. Например, если в вашей оболочке задана переменная `ANTHROPIC_API_KEY`, оно выглядит так:
+
+```text theme={null}
+Administrator policy requires a Cloud gateway sign-in on this machine, but this session is configured with an API key from ANTHROPIC_API_KEY, which a gateway machine does not accept.
+
+To continue: unset ANTHROPIC_API_KEY (or run in a shell without it), then run claude and sign in with /login.
+```
+
+**Что делать:**
+
+* Для `Not signed in to the Cloud gateway` запустите `/login` и завершите вход на экране **Cloud gateway**
+* Для сообщения при запуске удалите учётные данные, следуя шагам в конце сообщения
+* Если вы считаете, что машина не должна требовать шлюз, попросите администратора, который ею управляет, удалить `forceLoginMethod` и `forceLoginGatewayUrl` из её управляемых настроек
+
+До версии v2.1.284 сообщение при запуске перечисляло возможные учётные данные вместо того, чтобы называть настроенные. Оно начиналось с `Administrator policy requires a Cloud gateway sign-in on this machine; the Anthropic-issued credential configured here (ANTHROPIC_API_KEY, ANTHROPIC_AUTH_TOKEN, or apiKeyHelper) is not used.` Если вы видите эту формулировку и не можете понять, какие учётные данные удалить, обновитесь до версии v2.1.284 или новее и снова запустите `claude`.
+
+В версии v2.1.265 из-за регрессии первое сообщение также появлялось в некоторых конфигурациях LLM-шлюзов и прокси, которые аутентифицируются с помощью API-ключа, `apiKeyHelper` или пользовательских заголовков, даже если на машине не было требования администратора. Обновитесь до версии v2.1.266 или новее. Менять конфигурацию не нужно.
+
+До версии v2.1.261 на машинах, где `forceLoginMethod` имеет значение `"gateway"`, Claude Code использовал оставшийся сохранённый вход вместо того, чтобы завершать запросы к модели ошибкой, и сообщал о настроенных учётных данных окружения сообщением `This machine's managed settings require a first-party login` вместо сообщения при запуске.
+
+### Ваша учётная запись заблокирована
+
+Учётная запись Claude, стоящая за вашим входом, приостановлена. Claude Code показывает первое сообщение, когда пытается обновить ваш сохранённый вход и узнаёт о блокировке, а второе — когда о ней сообщает вход, выполненный вами в браузере:
+
+```text theme={null}
+Your account is on hold and can't use Claude Code. View details or appeal: https://claude.ai/restricted
+Your account is on hold and can't sign in to Claude Code. View details or appeal: https://claude.ai/restricted
+```
+
+Повторный вход с той же учётной записью не убирает сообщение, потому что блокировка наложена на учётную запись, а не на вход. В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) (`-p`) и в [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md) структурированный код ошибки — `account_on_hold`. До версии v2.1.235 Claude Code сообщал о заблокированной учётной записи как [Login expired · Please run /login](#login-expired), шаги восстановления для которого не могут снять блокировку.
+
+**Что делать:**
+
+* Откройте ссылку в сообщении, чтобы просмотреть подробности блокировки или обжаловать её
+* Если у вас есть другая учётная запись Claude или API-ключ, на которые блокировка не распространяется, вы можете продолжать работу, пока блокировка не будет снята: запустите `/login` с этой учётной записью или задайте ключ через `ANTHROPIC_API_KEY`
+
+### Срок входа профиля Anthropic истёк
+
+Claude Code проходит аутентификацию через профиль учётных данных Anthropic, срок действия сохранённых учётных данных входа которого истёк, и в профиле нет учётных данных обновления, которые Claude Code мог бы использовать для их продления. Claude Code останавливает каждый запрос локально без повторных попыток.
+
+```text theme={null}
+Anthropic profile login expired · Re-authenticate your Anthropic profile
+Login expired · Run /login to sign in again, or re-authenticate your Anthropic profile
+```
+
+**Что делать:**
+
+* Если сообщение начинается с `Login expired`, выполните `/login`, чтобы войти снова
+* Чтобы обновить профиль, записанный бесключевым входом в Console или командой `ant auth login` из Claude Platform CLI, выполните `/login` на компьютере, который [предлагает бесключевой вход](https://code.claude.com/docs/ru/authentication.md#sign-in-without-an-api-key). Выберите учётную запись Anthropic Console, затем **Sign in with your Console account**. Claude Code заменит истёкшие учётные данные в этом профиле
+* Чтобы обновить профиль, созданный другим инструментом, войдите снова с помощью этого инструмента. Если вместо этого вы выберете **Sign in with your Console account** в `/login`, Claude Code оставит профиль как есть и создаст API-ключ
+* Если учётные данные профиля предоставил администратор, попросите его выдать новые
+* Запустите `/status`, чтобы проверить активный источник учётных данных и имя профиля
+* Чтобы перестать использовать профиль, сбросьте `ANTHROPIC_PROFILE`, если вы её задавали, затем пройдите аутентификацию другим способом, например через `/login` или `ANTHROPIC_API_KEY`
+
+Начало сообщения подсказывает, как Claude Code нашёл профиль:
+
+* Когда Claude Code обнаружил профиль в вашем каталоге конфигурации и его режим аутентификации — `user_oauth`, сообщение начинается с `Login expired` и первым предлагает `/login`. Claude Code отдаёт рабочему `/login` приоритет над обнаруженным профилем и затем проходит аутентификацию с вашей учётной записью claude.ai. С v2.1.234 до v2.1.277 эта форма выглядела как `Anthropic profile login expired · Run /login to use your claude.ai account instead, or re-authenticate the profile`. До v2.1.234 Claude Code и в этом случае показывал форму `Re-authenticate your Anthropic profile`.
+* Когда вы выбрали профиль с помощью `ANTHROPIC_PROFILE`, сообщение начинается с `Anthropic profile login expired`.
+
+Это появляется только тогда, когда активные учётные данные берутся из профиля учётных данных Anthropic: того, который вы выбираете с помощью переменной окружения `ANTHROPIC_PROFILE`, того, который Claude Code обнаруживает как активный профиль в вашем каталоге конфигурации Anthropic, или того, который Claude Code записал, когда вы [вошли без API-ключа](https://code.claude.com/docs/ru/authentication.md#sign-in-without-an-api-key). Сессии, которые проходят аутентификацию с API-ключом, Bearer-токеном, например `ANTHROPIC_AUTH_TOKEN`, или через стороннего провайдера, никогда не видят этого сообщения.
+
+### Требование к OAuth scope
+
+Сохранённый токен был выдан до появления scope разрешений, который нужен новой функции:
+
+```text theme={null}
+OAuth token does not meet scope requirement: user:profile
+```
+
+**Что делать:**
+
+* Запустите `/login`, чтобы получить новый токен с текущими scope. Предварительно выходить не нужно.
+
+### claude.ai отклонил токен сессии
+
+Запрос [коннектора claude.ai](https://code.claude.com/docs/ru/mcp.md#use-mcp-servers-from-claude-ai) завершился ошибкой, потому что claude.ai отклонил токен из вашего входа в Claude Code. Отклонённый токен — это ваш вход, а не собственная авторизация коннектора в claude.ai, поэтому повторная авторизация коннектора проблему не решает. В `/mcp` коннектор отображается как `session token rejected`, а в его подробном представлении написано:
+
+```text theme={null}
+claude.ai rejected the session token. Run /login, then reconnect.
+```
+
+**Что делать:**
+
+* Запустите `/login`, чтобы войти снова
+* Переподключите коннектор из `/mcp` или выполните `/mcp reconnect <server>`. Переподключение до повторного входа оставляет коннектор в том же состоянии. Вариант **Reconnect** в панели `/mcp` сообщает `your claude.ai session token was rejected`; набранная вручную форма `/mcp reconnect <server>` сообщает об успешном переподключении, хотя токен по-прежнему отклоняется.
+
+До версии v2.1.222 Claude Code вместо этого помечал коннектор как требующий аутентификации, что направляло вас в процесс авторизации коннектора, хотя его прохождение не устраняло это состояние.
+
+### MCP-сервер требует повторного входа
+
+Удалённый [MCP-сервер](https://code.claude.com/docs/ru/mcp.md) отклонил учётные данные при вызове инструмента посреди сессии, обычно потому, что вход или токен истёк, либо потому, что у токена нет разрешения, нужного инструменту. Вызов инструмента завершается ошибкой, и `/mcp` помечает сервер как [требующий аутентификации](https://code.claude.com/docs/ru/mcp.md#authenticate-with-remote-mcp-servers).
+
+Для сервера, в который вы входите из Claude Code, включая коннектор claude.ai, вход истёк или был отозван:
+
+```text theme={null}
+MCP server "<name>" needs you to sign in again (run /mcp to re-authenticate)
+```
+
+Запустите `/mcp`, выберите сервер и снова войдите из его меню.
+
+Для сервера, настроенного со скриптом [`headersHelper`](https://code.claude.com/docs/ru/mcp#use-dynamic-headers-for-custom-authentication), Claude Code уже повторно запустил хелпер и один раз повторил вызов, прежде чем показать это:
+
+```text theme={null}
+MCP server "<name>" rejected the credential from its headersHelper (check the helper and run /mcp to reconnect, or to authenticate if the server also uses OAuth)
+```
+
+Убедитесь, что хелпер возвращает учётные данные, которые принимает сервер, затем переподключитесь из `/mcp`, что снова запустит хелпер.
+
+Для сервера со статическим заголовком `Authorization` в его конфигурации:
+
+```text theme={null}
+MCP server "<name>" rejected the Authorization header in its config (update it, then run /mcp to reconnect)
+```
+
+Обновите значение заголовка там, где настроен сервер, затем переподключитесь из `/mcp`.
+
+В сессии [Cowork](https://claude.com/docs/cowork/overview) на вашем компьютере в приложении Claude Desktop эти сообщения означают, что MCP-сервер отклонил переданные ему учётные данные. Исправьте то, что названо в сообщении, затем начните новую задачу или чат в Cowork:
+
+```text theme={null}
+MCP server "<name>" rejected the credential from its headersHelper (check the helper, then start a new task or chat)
+MCP server "<name>" rejected the Authorization header in its config (update it, then start a new task or chat)
+```
+
+* **Учётные данные `headersHelper` отклонены**: убедитесь, что вспомогательный скрипт возвращает учётные данные, которые принимает сервер, затем начните новую задачу или чат в Cowork
+* **Заголовок `Authorization` отклонён**: обновите значение `Authorization` в разделе `headers` в конфигурации этого сервера, затем начните новую задачу или чат в Cowork
+
+До v2.1.302 сессия Cowork вместо этого показывала окончания `run /mcp to reconnect`, хотя `/mcp` там недоступна. Если вы видите такое окончание в Cowork, всё равно проверьте вспомогательный скрипт или обновите заголовок, затем начните новую задачу или чат. До v2.1.273 для истёкшего входа, `headersHelper` и заголовка `Authorization` во всех случаях показывалось `MCP server "<name>" requires re-authorization (token expired)`.
+
+Сервер также может отклонить вызов инструмента с HTTP 403 `insufficient_scope`, чтобы попросить вас авторизовать scope, иногда такой, который уже указан в вашем токене. Сообщение называет этот scope:
+
+```text theme={null}
+MCP server "<name>" needs additional permissions (scope: "<scope>") — run /mcp to re-authenticate
+```
+
+Запустите `/mcp`, выберите сервер и снова пройдите аутентификацию из его меню.
+
+Если в конфигурации сервера не задано ни [`oauth.scopes`](https://code.claude.com/docs/ru/mcp#restrict-oauth-scopes), ни [`authServerMetadataUrl`](https://code.claude.com/docs/ru/mcp#override-oauth-metadata-discovery), Claude Code запрашивает scope, названный сервером. Если задана любая из этих настроек, Claude Code вместо этого запрашивает scope из неё. Если вы закрепили `oauth.scopes`, добавьте недостающий scope в этот список, прежде чем снова проходить аутентификацию.
+
+До версии v2.1.274 в этом случае показывалось сообщение `needs you to sign in again`, а до версии v2.1.273 — `requires re-authorization (token expired)`, как и в остальных случаях.
+
+### Couldn't read the stored credentials for MCP server
+
+Claude Code хранит ваши входы для OAuth [MCP-серверов](https://code.claude.com/docs/ru/mcp.md) в хранилище учётных данных. Это сообщение означает, что Claude Code не смог прочитать это хранилище, поэтому запрос к серверу не был выполнен:
+
+```text theme={null}
+Couldn't read the stored credentials for MCP server "<name>", so the request didn't run. If your Mac's keychain is locked, unlock it, then try again.
+Couldn't read the stored credentials for MCP server "<name>", so the request didn't run. Try again.
+```
+
+Ваши сохранённые входы не изменились: повторите попытку, когда хранилище станет доступно для чтения, и входите снова, только если сервер после этого попросит об этом.
+
+При запуске [`claude -p`](https://code.claude.com/docs/ru/headless) или [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md) на macOS связка ключей может стать доступной для чтения уже после того, как запрос был отправлен без сохранённого входа. Такой запрос завершается ошибкой:
+
+```text theme={null}
+A request to MCP server "<name>" was sent without your stored credentials, so the server rejected it. The credentials are available now. Try again.
+```
+
+**Что делать:**
+
+* Если сообщение просит разблокировать связку ключей Mac, выполните [`claude doctor`](https://code.claude.com/docs/ru/cli-reference#cli-commands) в той сессии оболочки, из которой вы запускаете Claude Code, и проверьте, есть ли в отчёте предупреждение о связке ключей:
+  * Если в отчёте есть предупреждение, начинающееся с `macOS Keychain is not writable`, или в вашей оболочке нет команды `claude`, выполните эту команду разблокировки в той же сессии оболочки:
+
+    ```bash theme={null}
+    security unlock-keychain ~/Library/Keychains/login.keychain-db
+    ```
+
+  * Если в отчёте нет предупреждения о связке ключей, пропустите команду разблокировки
+
+* Повторите попытку там, где вы увидели сообщение:
+  * Для `claude -p` выполните команду ещё раз
+  * В интерактивной сессии переподключите сервер из `/mcp`, если он отображается там как сбойный, затем попросите Claude повторить попытку
+  * В приложении на Agent SDK, которое продолжает работать, вызовите [`reconnectMcpServer()`](https://code.claude.com/docs/ru/agent-sdk/typescript#methods) в TypeScript или [`ClaudeSDKClient.reconnect_mcp_server()`](https://code.claude.com/docs/ru/agent-sdk/python#methods) в Python либо начните новую сессию
+
+* Если после этого сервер сообщает, что ему нужна аутентификация, Claude Code не нашёл входа, который можно использовать для этого сервера. Войдите интерактивно: выполните `/mcp` в сессии Claude Code или [`claude mcp login <name>`](https://code.claude.com/docs/ru/mcp#authenticate-from-the-command-line) в своей оболочке. Для приложения на Agent SDK см. раздел [Аутентификация OAuth2 в Agent SDK](https://code.claude.com/docs/ru/agent-sdk/mcp.md#oauth2-authentication).
+
+До v2.1.307 запуск `claude -p` или Agent SDK на Mac с заблокированной связкой ключей входа сообщал, что сервер требует аутентификации, вместо того чтобы показать любое из этих сообщений.
+
+### URL MCP-сервера отсутствует или недействителен
+
+Claude Code отказался начинать вход OAuth для удалённого MCP-сервера, потому что настроенный для сервера `url` не распознаётся как URL. Если у Claude Code нет более конкретной проблемы конфигурации, о которой нужно сообщить для этого сервера, запуск [`claude mcp login <name>`](https://code.claude.com/docs/ru/mcp#authenticate-from-the-command-line) в оболочке выводит отказ так:
+
+```text theme={null}
+Couldn't complete authentication for "<name>": This server's URL is missing or not a valid URL, so sign-in can't start. Fix the URL in its MCP config (or set the environment variable it uses) and try again.
+```
+
+**Что делать:**
+
+* Задайте для `url` записи реальный эндпоинт сервера там, где настроен сервер, или задайте переменную окружения, названную в её [ссылке `${VAR}`](https://code.claude.com/docs/ru/mcp#environment-variable-expansion-in-mcp-json), затем снова выполните вход.
+
+### Несоответствие издателя в ответе авторизации
+
+Во время [входа MCP OAuth](https://code.claude.com/docs/ru/mcp.md#authenticate-with-remote-mcp-servers) сервер авторизации перенаправил обратно в Claude Code с параметром `iss`, который не называет издателя, ожидаемого Claude Code по метаданным OAuth сервера. Неверный издатель на этом шаге — признак атаки подмены сервера авторизации (mix-up), поэтому Claude Code прерывает вход, а не обменивает код авторизации. Claude Code показывает ошибку в меню сервера `/mcp` после входа в браузере:
+
+```text theme={null}
+Issuer mismatch in authorization response (RFC 9207): expected "https://auth.example.com", received "https://other.example.com"
+```
+
+`expected` — это издатель из метаданных OAuth сервера, а `received` — значение `iss`, переданное в перенаправлении. Вход, при котором перенаправление не содержит параметра `iss`, проходит проверку, если только метаданные сервера не задают `authorization_response_iss_parameter_supported`, — в этом случае Claude Code прерывает вход.
+
+**Что делать:**
+
+* Повторите вход из `/mcp`
+* Если ошибка повторяется, сообщите о ней оператору сервера. Исправление выполняется на стороне сервера: сервер авторизации должен возвращать в параметре `iss` того же издателя, которого он объявляет в своих метаданных
+* Чтобы подключиться, пока сервер исправляют, запустите Claude Code с [`MCP_SDK_GENERATION=v1`](https://code.claude.com/docs/ru/env-vars), [среда выполнения](https://code.claude.com/docs/ru/mcp.md#mcp-client-runtimes) которого не выполняет эту проверку. Это снимает защиту от атак подмены, поэтому предпочтительнее исправление на стороне сервера
+
+До версии v2.1.232 Claude Code использовал среду выполнения v2 только при постепенном развёртывании или когда вы задавали `MCP_SDK_GENERATION=v2`.
+
+### Stopped an OAuth request
+
+Это сообщение означает, что Claude Code остановил [запрос OAuth для MCP-сервера](https://code.claude.com/docs/ru/mcp.md#authenticate-with-remote-mcp-servers), потому что эндпоинт OAuth перенаправил его. В обеих формах сообщения первый адрес — тот, который отправил перенаправление:
+
+```text theme={null}
+Stopped an OAuth request, which can hold secrets: https://auth.example.com redirected it to https://other.example.com. Ask the owner of https://auth.example.com to remove that redirect.
+Stopped an OAuth request: https://auth.example.com redirected it more than 5 times. Ask the owner of https://auth.example.com to fix those redirects.
+```
+
+**Что делать:**
+
+* Попросите того, кто обслуживает первый адрес, например оператора MCP-сервера, удалить или исправить перенаправление. Затем повторите попытку из `/mcp`.
+
+### Отказ отправлять учётные данные на эндпоинт токенов без https
+
+В [среде выполнения v2](https://code.claude.com/docs/ru/mcp.md#mcp-client-runtimes) Claude Code отправляет запрос токена [MCP OAuth](https://code.claude.com/docs/ru/mcp.md#authenticate-with-remote-mcp-servers) только на эндпоинт токенов, обслуживаемый по HTTPS или по адресу `localhost`, `127.0.0.1` или `::1`. Это сообщение означает, что эндпоинт токенов сервера не удовлетворяет ни одному из этих условий, поэтому Claude Code остановился до отправки запроса. Это происходит после входа в браузере, поэтому сначала шаг в браузере завершается успешно, а затем снова — каждый раз, когда Claude Code обновляет токен сервера.
+
+В полной форме сообщение исходит от MCP SDK и приводит отклонённый эндпоинт токенов. В отладочном логе оно следует за `Error during auth completion:` для входа или `Token refresh failed:` для обновления. В оболочке `claude mcp login <name>` выводит его после `Couldn't complete authentication for "<name>":`, а в сессии `/mcp` показывает его в меню сервера:
+
+```text theme={null}
+Refusing to send credentials to non-https token endpoint 'http://192.168.1.50:8123/oauth/token'. OAuth token requests MUST use TLS (localhost / 127.0.0.1 / ::1 are exempt).
+```
+
+Claude Code считает URL сервера, содержащий строку запроса или длинный сегмент пути, похожий на случайный, потенциально секретным. Для такого сервера он скрывает ошибки входа, которые выдаёт MCP SDK, прежде чем показывать или логировать их. Тогда эта ошибка выглядит как короткое имя, которое может меняться между выпусками, например `io`, за которым следуют `from the MCP SDK for` и скрытый URL сервера. Другие ошибки MCP SDK принимают там тот же вид. Скрытое сообщение может быть этой ошибкой только в том случае, если эндпоинт токенов сервера — обычный `http://` по адресу, отличному от `localhost`, `127.0.0.1` или `::1`.
+
+**Что делать:**
+
+* Обслуживайте этот эндпоинт токенов по HTTPS, например разместив сервер за обратным прокси или туннелем, который завершает TLS, и настроив сервер объявлять адрес `https://`
+* Чтобы подключиться без изменения сервера, запустите Claude Code с [`MCP_SDK_GENERATION=v1`](https://code.claude.com/docs/ru/env-vars), [среда выполнения](https://code.claude.com/docs/ru/mcp.md#mcp-client-runtimes) которого не применяет это правило и отправляет запрос токена по обычному HTTP. Этот выбор действует до выхода из программы и применяется ко всем серверам. Среда выполнения v1 также пропускает [проверку издателя](#issuer-mismatch-in-authorization-response), поэтому предпочтительнее обслуживать эндпоинт по HTTPS
+
+### Учётные данные AWS истекли или недействительны
+
+Ваш токен сессии AWS истёк или был отклонён. Это сообщение появляется при ответе 401 от [Claude Platform on AWS](https://code.claude.com/docs/ru/claude-platform-on-aws.md) или [эндпоинта Mantle](https://code.claude.com/docs/ru/amazon-bedrock.md#use-the-mantle-endpoint) — именно так эти провайдеры сообщают об истёкшем токене безопасности.
+
+Подсказка о действии в середине зависит от вашей настройки. Неизменная часть — начальное `AWS credentials expired or invalid`:
+
+```text theme={null}
+AWS credentials expired or invalid · run /login and select "Claude Platform on AWS · refresh credentials", or run `aws sso login --profile myprofile` in another terminal · API Error: 401 ...
+```
+
+До версии v2.1.273 это сообщение появлялось только при настроенном `awsAuthRefresh`.
+
+**Что делать:**
+
+* Если в подсказке сказано, что учётными данными управляет это окружение, учётные данные принадлежат приложению, которое запустило Claude Code, и остальные шаги здесь неприменимы: повторите попытку или обратитесь к администратору
+* Если задан [`awsAuthRefresh`](https://code.claude.com/docs/ru/amazon-bedrock#advanced-credential-configuration), выполните команду, указанную в сообщении, например `aws sso login --profile myprofile`, в другом терминале и завершите вход в браузере, затем повторите попытку. В противном случае обновите используемые учётные данные AWS самостоятельно: вход SSO, ключи доступа, API-ключ или токен прокси
+* Если `awsAuthRefresh` задан в интерактивной сессии, вы можете вместо этого запустить `/login`, выбрать **3rd-party platform**, а затем выбрать **Claude Platform on AWS · refresh credentials** в разделе **Using 3rd-party platforms**, чтобы выполнить ту же команду без перезапуска Claude Code. См. [Настройка учётных данных AWS](https://code.claude.com/docs/ru/claude-platform-on-aws.md#1-configure-aws-credentials)
+* Если ошибка повторяется после успешного выполнения команды обновления, убедитесь, что идентификатор действителен вне Claude Code, выполнив `aws sts get-caller-identity` в той же оболочке и профиле
+
+### Сбой аутентификации AWS
+
+Ваш провайдер AWS вернул 403 или [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md) вернул 401.
+
+Amazon Bedrock сообщает об истёкшем токене безопасности как о 403, но 403 также используется для сообщения об отказе в авторизации, например `AccessDeniedException` из-за отсутствующего разрешения IAM. Claude Code не может отличить эти две причины.
+
+Ответ 401 от Amazon Bedrock также попадает сюда, а не в раздел [Учётные данные AWS истекли или недействительны](#aws-credentials-expired-or-invalid), потому что Amazon Bedrock не сообщает об истёкшем токене как о 401. Ответ 401 от этого эндпоинта обычно исходит от чего-то другого на пути запроса, например от корпоративного прокси.
+
+Обновление учётных данных устраняет истёкший токен, но не может устранить другие причины, поэтому сообщение предлагает оба варианта:
+
+```text theme={null}
+AWS authentication failed · run /login and select "Claude Platform on AWS · refresh credentials", or run `aws sso login --profile myprofile` in another terminal · if credentials are current, check AWS permissions and model access · API Error: 403 ...
+```
+
+Подсказка о действии в середине зависит от вашей настройки. Неизменная часть — начальное `AWS authentication failed`.
+
+Если 403 — это ответ Amazon Bedrock о том, что у вас нет доступа к модели с указанным идентификатором модели, подсказка вместо этого предлагает включить модель для вашей учётной записи и региона в консоли Amazon Bedrock.
+
+До версии v2.1.273 это сообщение появлялось только при настроенном `awsAuthRefresh`.
+
+**Что делать:**
+
+* Если в подсказке сказано, что учётными данными управляет это окружение, учётные данные принадлежат приложению, которое запустило Claude Code, и остальные шаги здесь неприменимы: повторите попытку или обратитесь к администратору
+* Обновите учётные данные AWS на случай, если причина в истёкших учётных данных: выполните команду [`awsAuthRefresh`](https://code.claude.com/docs/ru/amazon-bedrock#advanced-credential-configuration), указанную в сообщении, если она задана, или самостоятельно обновите вход SSO, ключи доступа, API-ключ или токен прокси
+* Если ваши учётные данные актуальны, убедитесь, что разрешения IAM из раздела [Конфигурация IAM](https://code.claude.com/docs/ru/amazon-bedrock.md#iam-configuration) назначены используемому вами идентификатору и что выбранная модель включена для вашей учётной записи и региона
+* Выполните `aws sts get-caller-identity`, чтобы проверить, какой идентификатор используют ваши запросы
+
+### Учётные данные Google Cloud истекли или недействительны
+
+Ваши учётные данные Google Cloud для [Google Cloud's Agent Platform](https://code.claude.com/docs/ru/google-vertex-ai.md) истекли или были отклонены: запрос вернул 401 — именно так Agent Platform сообщает об истечении учётных данных.
+
+Подсказка о действии в середине зависит от вашей настройки. Неизменная часть — начальное `Google Cloud credentials expired or invalid`:
+
+```text theme={null}
+Google Cloud credentials expired or invalid · refresh your Google Cloud credentials (application default sign-in, or the key file in GOOGLE_APPLICATION_CREDENTIALS) and retry · API Error: 401 ...
+```
+
+**Что делать:**
+
+* Если в подсказке сказано, что учётными данными управляет это окружение, учётные данные принадлежат приложению, которое запустило Claude Code, и остальные шаги здесь неприменимы: повторите попытку или обратитесь к администратору
+* Если вы задали `CLAUDE_CODE_USE_ANTHROPIC_GOOGLE_CLOUD`, следуйте вместо этого шагам для [Claude Models on Google Cloud (под управлением Anthropic)](https://code.claude.com/docs/ru/claude-models-on-google-cloud-anthropic-managed.md#google-cloud-credentials-expired-or-invalid)
+* Если вы проходите аутентификацию с учётными данными приложения по умолчанию, выполните команду [`gcpAuthRefresh`](https://code.claude.com/docs/ru/google-vertex-ai#advanced-credential-configuration), указанную в сообщении, или `gcloud auth application-default login` и завершите вход, затем повторите попытку
+* Если вы работаете через [LLM-шлюз](https://code.claude.com/docs/ru/llm-gateway) с заданной `CLAUDE_CODE_SKIP_VERTEX_AUTH`, обновите токен шлюза в `ANTHROPIC_AUTH_TOKEN` или `ANTHROPIC_CUSTOM_HEADERS`, затем повторите попытку
+* Если вы проходите аутентификацию с файлом ключа сервисного аккаунта, убедитесь, что `GOOGLE_APPLICATION_CREDENTIALS` указывает на действительный ключ. См. [Настройка учётных данных GCP](https://code.claude.com/docs/ru/google-vertex-ai.md#3-configure-gcp-credentials)
+* Если ошибка повторяется после обновления, убедитесь, что идентификатор работает вне Claude Code, выполнив `gcloud auth application-default print-access-token` в той же оболочке
+
+До версии v2.1.273 ответ 401 от Agent Platform вместо этого показывал общее сообщение `Please run /login` или `Failed to authenticate`, которое не может обновить учётные данные Google Cloud.
+
+### Google Cloud authentication failed
+
+[Google Cloud's Agent Platform](https://code.claude.com/docs/ru/google-vertex-ai.md) вернул ошибку 403, которую он использует для отказов в авторизации, а не для истёкших учётных данных. Обычно у удостоверения, с которым вы проходите аутентификацию, отсутствует разрешение IAM, или модель не включена для вашего проекта.
+
+Подсказка о действии в середине зависит от вашей конфигурации. Неизменной остаётся начальная часть `Google Cloud authentication failed`:
+
+```text theme={null}
+Google Cloud authentication failed · refresh your Google Cloud credentials (application default sign-in, or the key file in GOOGLE_APPLICATION_CREDENTIALS) and retry · if credentials are current, check GCP IAM permissions and Vertex AI model access · API Error: 403 ...
+```
+
+**Что делать:**
+
+* Если в подсказке сказано, что учётные данные управляются этой средой, учётными данными владеет приложение, запустившее Claude Code, и остальные шаги здесь неприменимы: повторите попытку или обратитесь к администратору
+* Если вы задали `CLAUDE_CODE_USE_ANTHROPIC_GOOGLE_CLOUD`, следуйте вместо этого шагам для [Claude Models on Google Cloud (под управлением Anthropic)](https://code.claude.com/docs/ru/claude-models-on-google-cloud-anthropic-managed.md#google-cloud-authentication-failed)
+* Убедитесь, что роли из раздела [Конфигурация IAM](https://code.claude.com/docs/ru/google-vertex-ai.md#iam-configuration) предоставлены удостоверению, с которым вы проходите аутентификацию
+* Убедитесь, что модель включена для вашего проекта. См. [Запрос доступа к модели](https://code.claude.com/docs/ru/google-vertex-ai.md#2-request-model-access)
+
+До версии v2.1.273 при ошибке 403 от Agent Platform вместо этого отображалось общее сообщение `Please run /login` или `Failed to authenticate`, хотя это не позволяет обновить учётные данные Google Cloud.
+
+### Microsoft Foundry authentication failed
+
+[Microsoft Foundry](https://code.claude.com/docs/ru/microsoft-foundry.md) вернул ошибку 401 или 403: учётные данные Azure в запросе были отклонены, или у стоящего за ними удостоверения нет доступа к ресурсу Foundry. `/login` не может выпустить учётные данные Azure. Подсказка о действии в середине зависит от вашей конфигурации. Неизменной остаётся начальная часть `Microsoft Foundry authentication failed`:
+
+```text theme={null}
+Microsoft Foundry authentication failed · refresh your Foundry credential (ANTHROPIC_FOUNDRY_AUTH_TOKEN, ANTHROPIC_FOUNDRY_API_KEY, Azure sign-in for Entra, or your proxy token) and retry · if credentials are current, check access to the Foundry resource · API Error: 401 ...
+```
+
+**Что делать:**
+
+* Если в подсказке сказано, что учётные данные управляются этой средой, учётными данными владеет приложение, запустившее Claude Code, и остальные шаги здесь неприменимы: повторите попытку или обратитесь к администратору
+* Обновите учётные данные, настроенные в разделе [Настройка учётных данных Azure](https://code.claude.com/docs/ru/microsoft-foundry.md#2-configure-azure-credentials): смените `ANTHROPIC_FOUNDRY_API_KEY`, выпустите новый `ANTHROPIC_FOUNDRY_AUTH_TOKEN` или выполните `az login`, чтобы цепочка учётных данных Microsoft Entra по умолчанию снова смогла выполнить вход
+* Если учётные данные актуальны, убедитесь, что у удостоверения есть доступ к ресурсу Foundry. См. [Конфигурация Azure RBAC](https://code.claude.com/docs/ru/microsoft-foundry.md#azure-rbac-configuration)
+
+До версии v2.1.273 при ошибке 401 или 403 от Microsoft Foundry вместо этого отображалось общее сообщение `Please run /login` или `Failed to authenticate`, хотя это не позволяет обновить учётные данные Azure.
+
+### Could not load AWS or Google Cloud credentials
+
+Claude Code не удалось получить пригодные учётные данные из цепочки поставщиков учётных данных AWS или из учётных данных приложения Google по умолчанию на машине, где он работает, поэтому ни один запрос не дошёл до вашего облачного провайдера. Подробности после `·` указывают конкретную причину, например истёкшую SSO-сессию, отсутствующие учётные данные приложения по умолчанию, о которых сообщается как `Could not load the default credentials`, или отозванный вход, о котором сообщается как `invalid_grant`:
+
+```text theme={null}
+API Error: Could not load AWS credentials · Could not load credentials from any providers. Check or refresh your AWS credentials and try again.
+API Error: Could not load Google Cloud credentials · invalid_grant. Check or refresh your Google Cloud credentials and try again.
+```
+
+В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) с `-p` и в [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md) структурированный код ошибки — `cloud_credential_error`. До версии v2.1.267 сообщение показывало только текст подробностей после `API Error:`, а структурированным кодом был `server_error` или `unknown`.
+
+**Что делать:**
+
+* Выполните команду входа вашего провайдера, например `aws sso login --profile myprofile` или `gcloud auth application-default login`, затем повторите попытку. В разделе [Учётные данные Bedrock, Agent Platform или Foundry не загружаются](https://code.claude.com/docs/ru/troubleshoot-install.md#bedrock-agent-platform-or-foundry-credentials-not-loading) показано, как проверить учётные данные вне Claude Code
+* Если в подробностях указано `AWS default-chain credential resolve timed out`, цепочка зависла, а не завершилась ошибкой, поэтому вместо этого следуйте инструкциям из раздела [AWS default-chain credential resolve timed out](#aws-default-chain-credential-resolve-timed-out)
+
+### AWS default-chain credential resolve timed out
+
+Цепочка поставщиков учётных данных AWS по умолчанию не предоставила учётные данные в течение 60 секунд, поэтому Claude Code остановил их получение и завершил запрос с ошибкой. Этот таймаут — одна из причин ошибки [Could not load AWS or Google Cloud credentials](#could-not-load-aws-or-google-cloud-credentials). Сбой происходит при локальном получении учётных данных: запрос так и не дошёл до [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md), [Claude Platform on AWS](https://code.claude.com/docs/ru/claude-platform-on-aws.md) или [эндпоинта Mantle](https://code.claude.com/docs/ru/amazon-bedrock.md#use-the-mantle-endpoint). Прежде чем эта ошибка появится, Claude Code очищает свой [кэш учётных данных](https://code.claude.com/docs/ru/amazon-bedrock.md#credential-caching-and-resolution-timeout) и повторяет попытку, поэтому к моменту, когда вы её видите, цепочка зависла уже на нескольких попытках.
+
+```text theme={null}
+API Error: Could not load AWS credentials · AWS default-chain credential resolve timed out. Check or refresh your AWS credentials and try again.
+```
+
+Распространённые причины — команда `credential_process` в вашем профиле AWS, которая ожидает ввода, который не может получить, а также контейнер или VM, служба метаданных экземпляра (IMDS) которых так и не отвечает на проверку цепочки.
+
+До версии v2.1.267 сообщение выглядело как `API Error: AWS default-chain credential resolve timed out`.
+До версии v2.1.207 зависшая цепочка оставляла запрос в бесконечном ожидании вместо завершения с ошибкой.
+
+**Что делать:**
+
+* Выполните `aws sts get-caller-identity` в той же оболочке с тем же `AWS_PROFILE`. Если команда тоже зависает, исправьте профиль; распространённая причина — команда `credential_process`, запрашивающая интерактивный ввод.
+* Выполните вход до запуска Claude Code, например `aws sso login --profile myprofile`
+* Если ваша цепочка выполняет интерактивный вход, которому действительно требуется больше 60 секунд, например SSO с MFA через обёртку вроде `aws-vault`, увеличьте лимит в миллисекундах с помощью [`CLAUDE_CODE_AWS_CHAIN_RESOLVE_TIMEOUT_MS`](https://code.claude.com/docs/ru/env-vars)
+
+### Bedrock setup verification timed out waiting for AWS
+
+Обращение к AWS во время проверки учётных данных в [мастере настройки Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md#sign-in-with-bedrock), например поиск учётных данных или проверка удостоверения, не завершилось в пределах 60-секундного лимита. Мастер прекращает ожидание, и шаг проверки завершается с ошибкой:
+
+```text theme={null}
+Timed out after 60s waiting for AWS. Check your network and proxy settings; if a credential helper needs longer to prompt you, raise CLAUDE_CODE_AWS_CHAIN_RESOLVE_TIMEOUT_MS.
+```
+
+Число отражает ваш лимит: 60 секунд по умолчанию или значение, заданное в [`CLAUDE_CODE_AWS_CHAIN_RESOLVE_TIMEOUT_MS`](https://code.claude.com/docs/ru/env-vars).
+
+Распространённые причины — сеть или прокси, задерживающие запросы к AWS, включая обновление токена SSO, а также вспомогательная программа учётных данных, всё ещё ожидающая ввода, который вы не видите. Увеличивайте лимит, только если вспомогательной программе действительно требуется больше времени.
+
+Отдельный зависший запрос к AWS также может завершиться ошибкой по собственному таймауту запроса, и тогда на том же шаге отображается более короткое сообщение:
+
+```text theme={null}
+A request to AWS timed out. Check your network and proxy settings, then try again.
+```
+
+Если такие же таймауты возникают на шаге закрепления модели, мастер помечает модель как `unreachable` вместо того, чтобы показывать любое из этих сообщений.
+
+**Что делать:**
+
+* Выполните `aws sts get-caller-identity` в той же оболочке. Если команда тоже зависает, проблема находится вне Claude Code — в вашей сети, прокси или вспомогательной программе учётных данных в профиле AWS; сначала устраните её.
+* Выполните любой интерактивный вход до открытия мастера, например `aws sso login --profile myprofile`
+* Если вспомогательной программе учётных данных в вашем профиле AWS действительно требуется больше 60 секунд, чтобы запросить у вас ввод, увеличьте лимит в миллисекундах с помощью [`CLAUDE_CODE_AWS_CHAIN_RESOLVE_TIMEOUT_MS`](https://code.claude.com/docs/ru/env-vars)
+
+### Cloud gateway session expired
+
+Вы вошли через [шлюз приложений Claude](https://code.claude.com/docs/ru/claude-apps-gateway), и сессия шлюза, сохранённая на этой машине, истекла и не могла быть продлена, либо шлюз больше её не принимает, например после [замены секрета JWT](https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#jwt-secret-rotation) шлюза. Если вы видите эту строку при интерактивном запуске `claude`, сессия открылась без входа в шлюз:
+
+```text theme={null}
+Cloud gateway session expired — run /login to reconnect.
+```
+
+Та же строка может появиться посреди сессии, когда учётные данные шлюза истекают и Claude Code не может их продлить.
+
+При [неинтерактивном](https://code.claude.com/docs/ru/headless.md) запуске, в фоновой или другой автономной сессии, а также в подкоманде `claude`, отличной от `claude auth`, Claude Code вместо этого завершает работу с таким сообщением, когда шлюз больше не принимает сессию:
+
+```text theme={null}
+Cloud gateway <url> no longer accepts this session. Start `claude` and sign in again with /login.
+```
+
+**Что делать:**
+
+* Выполните `/login` в сессии и завершите вход в браузере
+* Для неинтерактивного запуска запустите `claude` в той же среде, выполните `/login`, затем повторно выполните свою команду
+
+### Sign-in timed out while waiting for you to continue
+
+Во время входа через [шлюз приложений Claude](https://code.claude.com/docs/ru/claude-apps-gateway) шлюз назвал учётную запись, выполнившую вход, и Claude Code попросил вас подтвердить её перед сохранением учётных данных. Вы оставили подтверждение открытым дольше срока действия самого входа, а шлюз не выдал refresh-токен, которым его можно было бы продлить, поэтому Claude Code ничего не сохранил, когда вы продолжили:
+
+```text theme={null}
+Sign-in timed out while waiting for you to continue. Try again.
+```
+
+**Что делать:**
+
+* Снова выполните `/login` и подтвердите учётную запись до истечения срока действия входа
+
+### Gateway refused the request
+
+Вы вошли через [шлюз приложений Claude](https://code.claude.com/docs/ru/claude-apps-gateway), и запрос вернул ошибку 403: шлюз или стоящий за ним вышестоящий сервис отклонил его. Повторный вход не меняет отказ, поэтому сообщение направляет вас к администратору шлюза:
+
+```text theme={null}
+Gateway refused the request · signing in again won't change this — check with your gateway administrator · API Error: 403 ...
+```
+
+**Что делать:**
+
+* Попросите администратора шлюза найти этот запрос. Хвост `API Error:` содержит отказ, который вернул шлюз
+* Для администраторов: [правило управления доступом](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#http-tuning) на шлюзе возвращает ошибку 403, которую [журнал аудита](https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#logs) записывает вместе с причиной, а отказ в авторизации от вышестоящего сервиса передаётся дальше согласно разделу [Сообщения об ошибках вышестоящих сервисов](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#upstream-error-messages)
+
+До версии v2.1.273 при ошибке 403 в сессии шлюза вместо этого отображалось общее сообщение `Please run /login` или `Failed to authenticate`, а повторный вход не снимал отказ.
+
+## Ошибки сети и подключения
+
+Большинство этих ошибок означают, что сетевой запрос из Claude Code не достиг пункта назначения, или что-то между Claude Code и API изменило ответ на обратном пути; если у ошибки есть и локальная причина, например сбой записи архива, это указано в её описании. Обычно они возникают в вашей локальной сети, прокси или брандмауэре либо в сетевой политике облачной среды.
+
+### Unable to connect to API
+
+TCP-соединение с API не удалось установить или оно не завершилось. Для распространённых кодов ошибок подключения сообщение указывает тип сбоя и сохраняет код в скобках:
+
+```text theme={null}
+Unable to connect to API. Check your internet connection
+Connection refused — a firewall or proxy may be blocking it (ConnectionRefused)
+Can't reach the API server — check your internet or DNS (ENOTFOUND)
+No internet route — check your connection or VPN (EHOSTUNREACH)
+Couldn't connect through your proxy (ERR_PROXY_TUNNEL) — the proxy refused the tunnel: check its credentials and that it allows this host
+Connection dropped (ECONNRESET)
+Request timed out. Check your internet connection and proxy settings
+```
+
+Код, который Claude Code не распознаёт, отображается как `Unable to connect to API` с кодом в скобках. Некоторые из этих сообщений могут показывать разные коды: например, `Connection refused` может показать `ConnectionRefused` или `ECONNREFUSED`, а `Can't reach the API server` — `ENOTFOUND` или `FailedToOpenSocket`.
+
+До версии v2.1.227 каждое из этих сообщений с кодом выглядело как `Unable to connect to API` с кодом, например `Unable to connect to API (ECONNREFUSED)`.
+
+Распространённые причины: отсутствие доступа в интернет, VPN, который блокирует `api.anthropic.com`, или обязательный корпоративный прокси, который не настроен.
+
+**Что делать:**
+
+* Убедитесь, что хост API доступен из той же оболочки, выполнив `curl -I https://api.anthropic.com`. В Windows PowerShell используйте `curl.exe -I https://api.anthropic.com`, чтобы не использовался встроенный псевдоним `Invoke-WebRequest`.
+* Если вы находитесь за корпоративным прокси, задайте `HTTPS_PROXY` перед запуском Claude Code и см. [Настройка сети](https://code.claude.com/docs/ru/network-config.md)
+* Если вы направляете трафик через LLM-шлюз или ретранслятор, задайте [`ANTHROPIC_BASE_URL`](https://code.claude.com/docs/ru/env-vars) равным его адресу. Инструкции по настройке см. в разделе [Подключение Claude Code к LLM-шлюзу](https://code.claude.com/docs/ru/llm-gateway-connect.md).
+* Если `ANTHROPIC_BASE_URL` уже указывает на ваш шлюз и каждый запрос завершается `Connection dropped`, проверьте, принимают ли ваш шлюз и его вышестоящий сервис поля [поиска инструментов](https://code.claude.com/docs/ru/mcp.md#tool-search-through-a-gateway). По умолчанию Claude Code отправляет поля инструментов `defer_loading` и блоки `tool_reference` вместе с заголовком `anthropic-beta`, который их включает. До версии v2.1.304 поиск инструментов за шлюзом был отключён, если вы не включали его с помощью `ENABLE_TOOL_SEARCH`.
+* Убедитесь, что ваш брандмауэр разрешает хосты, перечисленные в разделе [Требования к сетевому доступу](https://code.claude.com/docs/ru/network-config.md#network-access-requirements)
+* Для периодических сбоев [повторные попытки выполняются автоматически](#automatic-retries)
+
+Если `curl` выполняется успешно, но Claude Code по-прежнему не работает, причина обычно находится между средой выполнения и сетью, а не в самой сети:
+
+* Проверьте, задана ли `ANTHROPIC_BASE_URL`, выполнив `echo $ANTHROPIC_BASE_URL` или `echo $env:ANTHROPIC_BASE_URL` в PowerShell, и поищите её в блоке `env` ваших [файлов настроек](https://code.claude.com/docs/ru/settings.md). Когда она задана, Claude Code отправляет запросы к модели на этот адрес вместо `api.anthropic.com`, поэтому оставшееся значение, указывающее на локальный прокси или шлюз, который больше не работает, приводит к `Connection refused`, даже если `curl` достигает API. Удалите её из профиля оболочки или из настроек и запустите Claude Code в новом терминале.
+* В Linux и WSL проверьте `/etc/resolv.conf` на наличие недоступного сервера имён. WSL, в частности, может унаследовать неработающий резолвер от хоста.
+* В macOS VPN-клиент, который был отключён или удалён, может оставить после себя туннельный интерфейс или правило маршрутизации. Проверьте `ifconfig` на наличие устаревших интерфейсов `utun` и удалите сетевое расширение VPN в System Settings.
+* Docker Desktop и аналогичные среды выполнения контейнеров могут перехватывать исходящий трафик. Закройте их и повторите попытку, чтобы исключить эту причину.
+
+### Unable to connect to Anthropic services
+
+Во время первоначальной настройки Claude Code проверяет доступность `api.anthropic.com` и `platform.claude.com` перед отображением шага входа. Если любая из проверок не проходит, Claude Code выводит причину и завершает работу.
+
+```text theme={null}
+Unable to connect to Anthropic services
+Failed to connect to api.anthropic.com: ECONNREFUSED
+Connection to api.anthropic.com timed out after 10 seconds
+A proxy is configured via HTTPS_PROXY. Check that it allows connections to the host above.
+```
+
+Claude Code выполняет проверку через ту же [конфигурацию прокси](https://code.claude.com/docs/ru/network-config.md), что и запросы к API, и отводит каждой проверке 10 секунд. Если неудачная проверка шла через прокси, сообщение называет переменную окружения, которая его задала, например `HTTPS_PROXY`. До версии v2.1.222 проверка использовала другой транспорт прокси без таймаута: за прокси с URL со схемой `https://` она могла бесконечно зависать на `Checking connectivity...`, а затем завершаться ошибкой, хотя запросы к API через тот же прокси проходили успешно.
+
+Claude Code пропускает эту проверку, когда [файл управляемых настроек, политика MDM или policy helper](https://code.claude.com/docs/ru/managed-settings.md) задаёт для [`forceLoginMethod`](https://code.claude.com/docs/ru/settings-reference#forceloginmethod) значение `"gateway"` или задаёт [`forceLoginGatewayUrl`](https://code.claude.com/docs/ru/settings-reference#forcelogingatewayurl) без `forceLoginMethod`. При любой из этих конфигураций Claude Code открывает шаг входа на экране **Cloud gateway** вместо способа входа Anthropic. Claude Code также пропускает проверку, когда источник управляемых настроек на машине существует, но не может быть прочитан, поскольку этот источник может содержать конфигурацию шлюза. До версии v2.1.247 Claude Code выполнял проверку и при такой конфигурации и завершал работу с этой ошибкой, когда эндпоинты Anthropic были недоступны.
+
+Claude Code также пропускает проверку на машине без управляемых настроек, когда ваш собственный `~/.claude/settings.json` [указывает шлюз](https://code.claude.com/docs/ru/claude-apps-gateway#set-the-gateway-url-in-user-settings) с помощью `forceLoginMethod` и `forceLoginGatewayUrl`. До версии v2.1.295 Claude Code в этом случае выполнял проверку.
+
+**Что делать:**
+
+* Если сообщение называет переменную прокси, проверьте, что её значение указывает на нужный прокси, и попросите сетевую команду разрешить HTTPS-соединения через него к хосту из сообщения. См. [Настройка сети](https://code.claude.com/docs/ru/network-config.md).
+* Выполните проверки из раздела [Unable to connect to API](#unable-to-connect-to-api). Тест с `curl` и рекомендации по брандмауэру оттуда применимы и к этой проверке.
+* Если ваша сеть открыта, а сбой сохраняется, Claude Code может быть [недоступен в вашей стране](https://www.anthropic.com/supported-countries)
+
+### Socket is closed
+
+`Socket is closed` означает, что соединение, по которому шёл потоковый ответ, было закрыто, пока ответ ещё поступал. Наиболее распространённая причина — корпоративный прокси в Windows, разрывающий установленный туннель посреди ответа.
+
+В зависимости от того, насколько продвинулся ответ, Claude Code повторяет запрос, сохраняет то, что успел сгенерировать Claude, или завершает ход. См. [Автоматические повторные попытки](#automatic-retries).
+
+До версии v2.1.214 Claude Code не повторял попытку при этом сбое, и ход останавливался с ошибкой, содержащей `Socket is closed`.
+
+**Что делать:**
+
+* Если вы видите эту ошибку, обновитесь до v2.1.214 или более поздней версии с помощью `claude update`, затем отправьте сообщение снова
+* Если после обновления ходы продолжают завершаться ошибкой за тем же прокси, выполните проверки из раздела [Unable to connect to API](#unable-to-connect-to-api) и проверьте настройку прокси в разделе [Настройка сети](https://code.claude.com/docs/ru/network-config.md)
+
+### API returned an empty or malformed response
+
+Claude Code показывает эту ошибку, когда его непотоковая повторная попытка неудавшегося потокового запроса получает успешный HTTP-статус, но тело не является сообщением Claude API: обычно это HTML-страница ошибки или входа, пустое тело или JSON в другом формате. Обычный источник — прокси, шлюз или страница входа в сеть, отвечающие вместо API. Claude Code не повторяет запрос, и ход завершается этой ошибкой.
+
+```text theme={null}
+API returned an empty or malformed response (HTTP 200) — check for a proxy or gateway intercepting the request.
+```
+
+После этого вступления сообщение сообщает, что вернулось и какой запрос завершился ошибкой:
+
+* Фрагмент `Response:` с типом содержимого, видом тела, например `body is an HTML page` или `empty body`, его размером в байтах и тем, содержал ли ответ идентификатор запроса Anthropic. Когда ответ называет узнаваемый сервер, например `nginx` или `cloudflare`, или содержит заголовки промежуточных узлов, например `cf-ray` или `via`, фрагмент перечисляет и их.
+* Предложение с идентификатором неудавшегося потокового запроса и сбоем, который вызвал повторную попытку. Если до сбоя поток был открыт, оно также сообщает, сколько событий потока пришло и, если они были, как долго поток молчал на момент сбоя попытки.
+
+До версии v2.1.234 сообщение заканчивалось после `intercepting the request`.
+
+До версии v2.1.271 ответ, содержавший корректное сообщение API с типом содержимого, отличным от JSON, например `text/plain`, также завершал ход этой ошибкой. Некоторые LLM-шлюзы используют этот тип содержимого для непотокового ответа.
+
+**Что делать:**
+
+* Прочитайте фрагмент `Response:`, чтобы понять, какая система ответила. HTML-тело, отсутствие идентификатора запроса Anthropic или названный сервер, например `nginx` или `cloudflare`, означают, что вместо API ответило что-то между Claude Code и API
+* Если вы направляете трафик через [LLM-шлюз](https://code.claude.com/docs/ru/llm-gateway-connect.md#troubleshoot-gateway-errors), проверьте маршрут прямым запросом и исправьте звено, которое возвращает ответ не от API
+* В сети со страницей входа, например в гостевом Wi-Fi, выполните вход в браузере, затем повторите попытку
+* Если не работает только непотоковый маршрут через ваш шлюз, задайте [`CLAUDE_CODE_DISABLE_NONSTREAMING_FALLBACK=1`](https://code.claude.com/docs/ru/env-vars#variables), чтобы отключить этот резервный вариант, за исключением случая, когда сам потоковый эндпоинт возвращает `404`: тогда Claude Code всё равно переключается на резервный вариант
+
+### Streaming response ended before any complete data was received
+
+Потоковый ответ от вашего поставщика модели завершился, не доставив никаких пригодных данных, поэтому Claude Code повторно отправил запрос без потоковой передачи, чтобы завершить ход. Claude Code показывает это предупреждение один раз за сессию и только в интерактивных сессиях. До версии v2.1.239 Claude Code молча повторял попытку без потоковой передачи.
+
+```text theme={null}
+Streaming response ended before any complete data was received. Retrying without streaming. If this keeps happening, check any proxy or gateway between Claude Code and your model provider.
+```
+
+Claude Code отправляет каждый затронутый запрос дважды: пустую потоковую попытку и повторную попытку. Обычная причина — прокси или шлюз, который поглощает или преобразует тело потокового ответа на обратном пути.
+
+**Что делать:**
+
+* Настройте все прокси и шлюзы между Claude Code и вашим поставщиком модели так, чтобы тела потоковых ответов и их заголовки проходили без изменений
+* Для [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md) требования к заголовкам и телу см. в разделе [Ошибки потоковой передачи за шлюзом или прокси](https://code.claude.com/docs/ru/amazon-bedrock.md#streaming-errors-behind-a-gateway-or-proxy)
+
+### Bedrock streaming response has an unexpected content-type
+
+Шлюз или прокси между Claude Code и [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md) преобразует тело потокового ответа или его заголовок `Content-Type`. Amazon Bedrock передаёт потоковые ответы как `application/vnd.amazon.eventstream`. Вместо того чтобы декодировать тело, которое он не может прочитать, Claude Code отклоняет успешный потоковый ответ с другим типом содержимого. Claude Code не повторяет запрос.
+
+```text theme={null}
+Bedrock streaming response has content-type "text/event-stream"; expected "application/vnd.amazon.eventstream". A gateway or proxy between Claude Code and Bedrock is likely transforming the response body — Bedrock's binary event-stream format must be passed through unmodified. Set CLAUDE_CODE_DISABLE_BEDROCK_CONTENT_TYPE_GUARD=1 to suppress this check while the gateway is being fixed.
+```
+
+До версии v2.1.208 та же ошибка конфигурации проявлялась как `API Error: Truncated event message received` после буферизации всего ответа.
+
+**Что делать:**
+
+* Настройте шлюз так, чтобы тело ответа `InvokeModelWithResponseStream` и его заголовок `Content-Type` проходили без изменений. Частая причина — промежуточный узел, который повторно выдаёт поток как server-sent events.
+* Установка [`CLAUDE_CODE_DISABLE_BEDROCK_CONTENT_TYPE_GUARD=1`](https://code.claude.com/docs/ru/env-vars) скрывает эту ошибку, но Claude Code не декодирует двоичное тело с переписанным заголовком, поэтому такие запросы переключаются на более медленный непотоковый путь. См. [Ошибки потоковой передачи за шлюзом или прокси](https://code.claude.com/docs/ru/amazon-bedrock.md#streaming-errors-behind-a-gateway-or-proxy).
+
+### SSL certificate errors
+
+Прокси или устройство безопасности в вашей сети перехватывает TLS-трафик с помощью собственного сертификата, которому Claude Code не доверяет.
+
+```text theme={null}
+Unable to connect to API: SSL certificate verification failed (UNABLE_TO_GET_ISSUER_CERT_LOCALLY). The certificate comes from an authority Claude Code doesn't trust, usually a TLS-inspecting corporate proxy or a gateway signed by a private CA: set NODE_EXTRA_CA_CERTS to that CA bundle, or add it to the system certificate store · see https://code.claude.com/docs/en/network-config
+Unable to connect to API: Self-signed certificate detected (SELF_SIGNED_CERT_IN_CHAIN). The certificate comes from an authority Claude Code doesn't trust, usually a TLS-inspecting corporate proxy or a gateway signed by a private CA: set NODE_EXTRA_CA_CERTS to that CA bundle, or add it to the system certificate store · see https://code.claude.com/docs/en/network-config
+```
+
+До версии v2.1.273 оба сообщения заканчивались на `Check your proxy or corporate SSL certificates`, без кода OpenSSL и подсказки про `NODE_EXTRA_CA_CERTS`.
+
+Начиная с версии v2.1.199, при сбое проверки сертификата повторные попытки не выполняются, поэтому эта ошибка появляется при первой попытке, а не после исчерпания всего [лимита повторных попыток](#automatic-retries). Более ранние версии тратили несколько минут на повторные попытки, прежде чем показать её. При временных проблемах TLS, например таймауте рукопожатия, повторные попытки по-прежнему выполняются.
+
+Во время `/login` и проверки подключения при запуске тот же сбой приводит к другому сообщению:
+
+```text theme={null}
+SSL certificate error (UNABLE_TO_GET_ISSUER_CERT_LOCALLY). If you are behind a corporate proxy or TLS-intercepting firewall, set NODE_EXTRA_CA_CERTS to your CA bundle path, or ask IT to allowlist *.anthropic.com. Run `claude doctor` for details.
+```
+
+На [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md) запросы, которые Claude Code сам отправляет в AWS, например вызовы STS и SSO для получения учётных данных роли, обнаружение моделей и проверки мастера настройки, зависят от той же конфигурации сертификатов. См. [Ошибки сертификатов за прокси с TLS-инспекцией](https://code.claude.com/docs/ru/amazon-bedrock.md#certificate-errors-behind-a-tls-inspecting-proxy).
+
+**Что делать:**
+
+* Экспортируйте пакет CA вашей организации и укажите его Claude Code с помощью `NODE_EXTRA_CA_CERTS=/path/to/ca-bundle.pem`
+* Полные инструкции по настройке см. в разделе [Настройка сети](https://code.claude.com/docs/ru/network-config.md#custom-ca-certificates)
+* Не устанавливайте `NODE_TLS_REJECT_UNAUTHORIZED=0` — это полностью отключает проверку сертификатов
+
+### Host not allowed in a cloud session
+
+В облачной сессии или облачной запланированной задаче `403` или ошибка DNS, например `ENOTFOUND`, может означать, что запрошенного хоста нет в [списке разрешённых доменов облачной среды](https://code.claude.com/docs/ru/cloud-environments.md#access-levels). Чтобы убедиться в этом, сверьте хост с этим списком. `403` с этим заголовком подтверждает блокировку, но этот заголовок есть не у каждого `403` заблокированного запроса:
+
+```text theme={null}
+HTTP 403
+x-deny-reason: host_not_allowed
+```
+
+Вы также можете увидеть TLS-сертификат, который не совпадает с настоящим сертификатом пункта назначения. Облачные сессии направляют исходящий трафик через прокси, который применяет сетевую политику, поэтому несовпадающий сертификат означает, что соединение завершил прокси, а не пункт назначения.
+
+Это не проблема сети на стороне клиента. Облачные сессии и [облачные запланированные задачи](https://code.claude.com/docs/ru/routines.md) работают внутри изолированной виртуальной машины, исходящий трафик которой через сеть сессии фильтруется по списку разрешённых доменов [облачной среды](https://code.claude.com/docs/ru/cloud-environments.md):
+
+* **Трафик GitHub и коннекторов**: [операции GitHub](https://code.claude.com/docs/ru/cloud-environments.md#github-proxy) и трафик MCP-коннекторов используют отдельные каналы, поэтому они могут продолжать работать, пока другие хосты заблокированы
+* **Среда по умолчанию**: среда **Default** использует доступ **Limited** с установленным флажком **Allow package managers**. Её сессии имеют доступ к [списку разрешённых доменов по умолчанию](https://code.claude.com/docs/ru/cloud-environments.md#default-allowed-domains): реестрам пакетов, API облачных провайдеров, реестрам контейнеров и распространённым доменам для разработки.
+
+**Что делать:**
+
+Эти шаги изменяют одну из ваших собственных сред. [Общая среда организации](https://code.claude.com/docs/ru/cloud-environments.md#organization-shared-environments) открывается в селекторе только для чтения, поэтому попросите Owner изменить её сетевой доступ на странице **Cloud environments** в [настройках администратора](https://claude.ai/admin-settings).
+
+* Откройте среду для редактирования либо из [формы облачной запланированной задачи](https://code.claude.com/docs/ru/routines.md#environments-and-network-access), либо из [селектора сред](https://code.claude.com/docs/ru/cloud-environments.md#configure-your-environment), где вы запускаете облачные сессии.
+* В диалоговом окне **Edit cloud environment** выберите **Limited** в разделе **Network access**, затем добавьте заблокированный домен в **Allowed domains**. Вводите по одному домену в строке. Установите флажок **Allow package managers**, чтобы разрешить [список разрешённых доменов по умолчанию](https://code.claude.com/docs/ru/cloud-environments.md#default-allowed-domains) вместе с вашими доменами. Если нужен неограниченный доступ, выберите вместо этого **Full**.
+* Нажмите **Save changes**. Следующий запуск использует обновлённый список разрешённых доменов. Для уже открытой облачной сессии см. [когда изменение сетевого доступа применяется к существующим сессиям](https://code.claude.com/docs/ru/cloud-environments.md#network-access).
+
+Уровни доступа и список разрешённых доменов по умолчанию описаны в разделе [Сетевой доступ](https://code.claude.com/docs/ru/cloud-environments.md#network-access). Эта политика не влияет на локальные сессии CLI.
+
+### The proxy refused the connection
+
+Вы видите это сообщение, когда Claude читает [артефакт](https://code.claude.com/docs/ru/artifacts.md) через прокси, заданный в `HTTPS_PROXY` или связанной [переменной прокси](https://code.claude.com/docs/ru/network-config.md#environment-variables). Содержимое артефакта поступает с `*.frame.claudeusercontent.com`, поэтому Claude Code сначала отправляет прокси запрос `CONNECT` с просьбой открыть туннель к этому хосту. Когда прокси отказывает, до хоста ничего не доходит, и сообщение содержит HTTP-статус прокси:
+
+```text theme={null}
+artifact content fetch failed (proxy refused the connection: HTTP 407)
+artifact content fetch failed (proxy refused the connection: HTTP 403)
+the proxy refused the connection to the artifact's content host (HTTP 502)
+```
+
+Статус — это ответ прокси на `CONNECT`. Хост не отвечал вовсе, поэтому каждый статус указывает на своё исправление:
+
+* `HTTP 407`: прокси требует учётные данные, которые не получил. Укажите их в URL прокси, как показано в разделе [Базовая аутентификация](https://code.claude.com/docs/ru/network-config.md#basic-authentication).
+* `HTTP 403`: прокси отказывается создавать туннель к `*.frame.claudeusercontent.com`. Попросите того, кто управляет прокси, разрешить этот хост, указанный в разделе [Требования к сетевому доступу](https://code.claude.com/docs/ru/network-config.md#network-access-requirements).
+* Любой другой статус, например `HTTP 502`: прокси не открыл туннель по собственной причине, например не смог достичь хоста. Найдите этот статус в логах прокси.
+* `unreadable reply` вместо статуса: то, что находится по адресу прокси, не ответило строкой HTTP-статуса. Проверьте, что по этому адресу находится HTTP-прокси.
+
+**Что делать:**
+
+* Проверьте адрес и учётные данные в переменной прокси, как описано в разделе [Конфигурация прокси](https://code.claude.com/docs/ru/network-config.md#proxy-configuration), затем выполните `curl -x http://proxy.example.com:8080 -I https://api.anthropic.com` в оболочке, из которой вы запускаете Claude Code, подставив URL своего прокси. В Windows PowerShell используйте `curl.exe`. Если эта проверка завершается так же, сначала исправьте настройку прокси. Если она проходит успешно, отказ касается только хоста артефактов.
+* Если ваша сеть позволяет Claude Code обращаться к хосту артефактов напрямую, добавьте `.frame.claudeusercontent.com` в [`NO_PROXY`](https://code.claude.com/docs/ru/network-config#environment-variables). Не расширяйте эту запись: более широкая запись `.claudeusercontent.com` также направляет в обход прокси `bridge.claudeusercontent.com`, который организациям со [списками разрешённых IP-адресов](https://code.claude.com/docs/ru/network-config.md#organization-ip-allowlists-and-proxy-egress) нужно оставлять за прокси.
+
+До версии v2.1.238 Claude Code сообщал об отказе в туннеле как об общей сетевой ошибке.
+
+### The cloud environments service returned an empty or unexpected response
+
+Claude Code запрашивает список ваших [облачных сред](https://code.claude.com/docs/ru/cloud-environments.md) в нескольких случаях, например когда вы создаёте облачную сессию из CLI или выполняете [`/remote-env`](https://code.claude.com/docs/ru/cloud-environments#select-an-environment-from-the-cli). Когда он не может прочитать ответ сервера, он показывает одно из этих сообщений:
+
+```text theme={null}
+The cloud environments service returned an empty response (HTTP 200 with no body). This is usually temporary — try again in a moment.
+The cloud environments service returned a response in an unexpected format (HTTP 200 with a non-JSON body). This is usually temporary — try again in a moment.
+The cloud environments service returned a response in an unexpected format (HTTP 200 without a usable environments list). This is usually temporary — try again in a moment.
+```
+
+Сервер принял запрос, но вернул тело, которое не является списком сред: пустое, не JSON или JSON без списка. Обычно это сопровождает сбой на стороне сервиса и проходит само. В зависимости от интерфейса, запросившего список, Claude Code может добавить префикс, например `couldn't list environments:` в диалоговом окне `/remote-env`.
+
+**Что делать:**
+
+* Повторите действие. Claude Code каждый раз запрашивает список заново
+* Если сообщение продолжает появляться, проверьте [status.claude.com](https://status.claude.com) на наличие активных инцидентов
+
+До версии v2.1.236 Claude Code вместо этих сообщений показывал необработанную ошибку JavaScript TypeError.
+
+### Failed to fetch session from Sessions API
+
+Это сообщение означает, что Claude Code нашёл [облачную сессию, которую вы попросили перенести в терминал](https://code.claude.com/docs/ru/claude-code-on-the-web.md#from-cloud-to-terminal), но не смог прочитать историю её диалога с серверов Anthropic, поэтому не открыл её:
+
+```text theme={null}
+Failed to fetch session from Sessions API: Failed to fetch session logs
+```
+
+Вы видите его после `claude --teleport`, `/teleport` или выбора сессии в списке [`/tasks`](https://code.claude.com/docs/ru/commands). `claude --teleport <session-id>` выводит его и завершает работу с кодом 1.
+
+**Что делать:**
+
+* Повторите тот же перенос сессии. Если он завершится так же, [сообщите о проблеме](#report-an-error)
+
+До версии v2.1.296 Claude Code не повторял неудавшееся чтение, и после такого сбоя мог открыть сессию с пустым диалогом и сообщить об успехе вместо вывода этого сообщения.
+
+### Couldn't load the history of cloud session
+
+Это сообщение означает, что Claude Code нашёл [облачную сессию, которую вы попросили перенести в терминал](https://code.claude.com/docs/ru/claude-code-on-the-web.md#from-cloud-to-terminal), но на запрос истории её диалога пришёл ответ, что она не найдена:
+
+```text theme={null}
+Couldn't load the history of cloud session session_01HJKLMNOPQRSTUVWXYZ. Check it at https://claude.ai/code/session_01HJKLMNOPQRSTUVWXYZ?from=cli
+```
+
+**Что делать:**
+
+* Откройте ссылку из сообщения, чтобы проверить сессию в браузере. Если там она открывается, а тот же перенос сессии снова завершается этой ошибкой, [сообщите о проблеме](#report-an-error).
+
+### Couldn't reconnect to your Remote Control session
+
+```text theme={null}
+Couldn't reconnect to your Remote Control session. Retry, or start a fresh session without --resume.
+```
+
+При возобновлении с помощью `claude --resume` или `claude --continue` Claude Code повторно подключается к сессии [Remote Control](https://code.claude.com/docs/ru/remote-control.md), записанной в этом диалоге. Это сообщение означает, что повторное подключение не удалось по причине, которая может быть временной, например из-за сетевого сбоя или ошибки сервера, поэтому Claude Code не может подтвердить, существует ли ещё удалённая сессия. Ваша локальная сессия продолжает работать без Remote Control.
+
+**Что делать:**
+
+* Выполните `/remote-control`, чтобы повторить попытку подключения
+* Запустите новую сессию с помощью `claude --remote-control`, чтобы создать новую сессию Remote Control
+* Другие сообщения при запуске Remote Control описаны в разделе [Устранение неполадок Remote Control](https://code.claude.com/docs/ru/remote-control.md#troubleshooting)
+
+Если сервер вместо этого сообщает, что предыдущей сессии больше нет, вы не увидите это сообщение. Claude Code запустит вместо неё новую сессию или покажет [`Previous session is unavailable — run /remote-control to start a new one`](https://code.claude.com/docs/ru/remote-control#previous-session-is-unavailable).
+
+### Sessions ended while this machine was offline
+
+Claude Code показывает это сообщение в терминале, где запущен [`claude remote-control`](https://code.claude.com/docs/ru/remote-control#start-a-remote-control-session), после того как ваша машина находилась офлайн настолько долго, что сервер удалил среду Remote Control, которую обслуживала ваша машина. Сессии в этой среде завершились, и возобновить их нельзя. Число в сообщении — количество завершившихся сессий.
+
+```text theme={null}
+2 sessions ended while this machine was offline — the environment was cleaned up on the server and can't be resumed.
+```
+
+**Что делать:**
+
+* Если под этим сообщением Claude Code перечисляет сохранённые worktree, заберите из них незафиксированную работу
+* Выполните `claude remote-control`, чтобы запустить новую среду
+
+### Couldn't share the transcript
+
+После того как вы соглашаетесь поделиться транскриптом сессии в окне опроса, например [опроса о качестве сессии](https://code.claude.com/docs/ru/data-usage.md#session-quality-surveys), Claude Code загружает его в Anthropic либо вместо этого сохраняет локальный архив — при использовании сторонних поставщиков, в сессиях [Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway) и когда учётные данные Anthropic недоступны. Это сообщение означает, что отправка не завершилась.
+
+```text theme={null}
+Couldn't share the transcript.
+```
+
+Загрузка должна укладываться в лимит 8 MiB. В длинной сессии Claude Code постепенно исключает части отправляемых данных. Вы видите это сообщение, когда ни одну сокращённую версию отправить не удаётся или загрузку прерывает сетевая ошибка либо ошибка сервера. Когда Claude Code вместо загрузки сохраняет локальный архив, сообщение означает, что записать архив не удалось.
+
+**Что делать:**
+
+* Выполните `/feedback`, чтобы отправить транскрипт с описанием того, что произошло. Если `/feedback` недоступна в вашей среде, см. [Сообщить об ошибке](#report-an-error)
+* Если другие запросы тоже завершаются ошибкой, проверьте сетевое подключение и см. [Unable to connect to API](#unable-to-connect-to-api)
+
+### Couldn't send feedback
+
+Сообщение, начинающееся с `Couldn't send feedback`, означает, что сервис отзывов не подтвердил получение отчёта, который вы отправили из [диалогового окна `/feedback`, `/bug` или `/share`](https://code.claude.com/docs/ru/commands#all-commands), или [черновика отзыва](https://code.claude.com/docs/ru/tools-reference.md#sendfeedback-tool-behavior) из очереди. Считайте, что он не получен. Если после двоеточия следует предложение о вашей организации, ваша организация не принимает отзывы.
+
+Второй пример — отказ организации:
+
+```text wrap theme={null}
+Couldn't send feedback (couldn't reach the service). If it keeps failing, you can file at https://github.com/anthropics/claude-code/issues instead.
+
+Couldn't send feedback: Feedback has not been enabled for your organization. To report a bug, open an issue at https://github.com/anthropics/claude-code/issues. Issues are public, so leave out anything confidential.
+```
+
+**Что делать:**
+
+* **Вход не выполнен**: сообщение продолжается текстом `: not signed in. Run /login, then retry.` Выполните `/login`, затем отправьте снова
+* **Отказ вашей организации**: например, `: Feedback has not been enabled for your organization.` или `: Feedback collection is not available for organizations with custom data retention policies.` После этого `/feedback` в течение семи дней может отвечать, что функция [отключена политикой вашей организации](#feedback-is-disabled-by-your-organizations-policy). Черновик в очереди остаётся в очереди и по-прежнему [истекает по расписанию](https://code.claude.com/docs/ru/tools-reference.md#discard-or-keep-a-draft)
+* **Отклонённые учётные данные**: сообщение продолжается текстом `: the sign-in this session uses is not allowed to send feedback` или `: the server did not accept the credentials this session uses`. Выполните `/status` в промпте Claude Code, чтобы увидеть, какой вход, токен или API-ключ отправляет эта сессия
+* **`(request timed out)` или `(couldn't reach the service)` сразу после `Couldn't send feedback`**: отправьте отчёт или черновик из очереди снова. Диалоговое окно сохраняет ваш текст, а сообщение для черновика в очереди содержит `The draft is still queued.` Если другие запросы тоже завершаются ошибкой, проверьте сетевое подключение и см. [Unable to connect to API](#unable-to-connect-to-api). Если сбой повторяется, создайте отчёт на [github.com/anthropics/claude-code/issues](https://github.com/anthropics/claude-code/issues)
+* **`(server returned <status>)` или отсутствие причины сразу после `Couldn't send feedback`**: статус — это код ответа сервиса. Если сервис прислал собственное сообщение, оно следует за статусом, например `(server returned 403: Access Forbidden)`. Если сбой повторяется, создайте отчёт на [github.com/anthropics/claude-code/issues](https://github.com/anthropics/claude-code/issues)
+
+Issues на github.com/anthropics/claude-code публичны, поэтому, создавая issue, не включайте в него код, транскрипты и всё остальное конфиденциальное.
+
+До версии v2.1.281 любая отправка завершалась этим сообщением, если, пока диалоговое окно было открыто, поступила команда **Stop** от Remote Control или срочное сообщение из другой сессии. В этих версиях закройте диалоговое окно, откройте его снова и повторите отправку.
+
+### Feedback payload too large
+
+Это сообщение на [экране проверки](https://code.claude.com/docs/ru/tools-reference.md#review-and-edit-a-draft) [черновика отзыва](https://code.claude.com/docs/ru/tools-reference.md#sendfeedback-tool-behavior) означает, что у Claude Code нет подтверждения того, что сервис принял черновик. Считайте, что он не получен. Черновик остаётся в вашей очереди `/feedback`, поэтому вы можете отправить его снова.
+
+```text wrap theme={null}
+Feedback payload too large. Try again without the transcript, or shorten the details.
+```
+
+**Что делать:**
+
+* На экране проверки установите для **Send transcript** значение `no`, затем снова отправьте черновик. Сокращение подробностей убирает не более 10 KB текста — это весь объём, который могут вместить подробности черновика.
+
+### MCP server connection timed out during a sleep or clock change
+
+Это сообщение означает, что подключение к [MCP-серверу](https://code.claude.com/docs/ru/mcp.md) завершилось по таймауту, и Claude Code обнаружил, что во время попытки системные часы скачком ушли вперёд:
+
+```text theme={null}
+MCP server "<name>" connection timed out. Your computer went to sleep or its clock changed while connecting.
+```
+
+Claude Code не может определить, перешёл ли компьютер в спящий режим или его часы были переведены вперёд, поэтому в сообщении названы оба варианта.
+
+**Что делать:**
+
+Подключитесь к серверу снова и не давайте компьютеру перейти в спящий режим, пока попытка не завершится. Если сервер подключится, исправлять ничего не нужно.
+
+* **В интерактивной сессии**: выполните `/mcp`, выберите сервер и выберите **Reconnect**
+* **В оболочке**: снова выполните команду [`claude -p`](https://code.claude.com/docs/ru/headless), [`claude mcp list`](https://code.claude.com/docs/ru/mcp#managing-your-servers) или `claude mcp get`. Если после этого сервер завершается ошибкой с сообщением, начинающимся с `Skipping connection (recent failure cached`, подождите 15 минут и выполните команду снова.
+* **В приложении на [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md)**: вызовите [`reconnectMcpServer()`](https://code.claude.com/docs/ru/agent-sdk/typescript#methods) в TypeScript или [`ClaudeSDKClient.reconnect_mcp_server()`](https://code.claude.com/docs/ru/agent-sdk/python#methods) в Python
+* **Если сервер снова не подключается**: если сообщение отличается от этого, см. [что проверить, если MCP-сервер не подключается](https://code.claude.com/docs/ru/mcp-quickstart.md#troubleshooting). Если это сообщение появляется снова, хотя компьютер не засыпал и часы ничто не меняло, см. [Сообщить об ошибке](#report-an-error).
+
+До версии v2.1.307 Claude Code вместо этого сообщения показывал сообщение о таймауте, например `MCP server "<name>" connection timed out after <N>ms`.
+
+## Ошибки запроса
+
+Эти ошибки связаны с содержимым вашего запроса. Большинство из них возвращает API после отклонения запроса; некоторые формируются локально в Claude Code ещё до отправки запроса.
+
+### Prompt is too long
+
+Диалог вместе с прикреплёнными файлами превышает контекстное окно модели.
+
+```text theme={null}
+Prompt is too long
+```
+
+В интерактивной сессии Claude Code показывает эту ошибку так:
+
+```text theme={null}
+Context limit reached · /compact or /clear to continue
+```
+
+Строка называет только `/clear`, когда задана [`DISABLE_COMPACT`](https://code.claude.com/docs/ru/env-vars). Более длинные формы ошибки, например форма со сбоем сжатия контекста ниже, сохраняют формулировку `Prompt is too long ·`. В выводе `-p` и в транскрипте текст остаётся `Prompt is too long`.
+
+Если вы отключили автосжатие в [пользовательских настройках](https://code.claude.com/docs/ru/settings-reference.md#autocompactenabled), строка также сообщает об этом:
+
+```text theme={null}
+Context limit reached · /compact or /clear to continue · auto-compact is off · /config to turn it on
+```
+
+Переключатель **Auto-compact** в `/config` записывает `autoCompactEnabled` в пользовательские настройки. Подсказка появляется только тогда, когда изменение в `/config` действительно вступит в силу. Например, она не появляется, если автосжатие отключено через [`DISABLE_AUTO_COMPACT`](https://code.claude.com/docs/ru/env-vars) или [`DISABLE_COMPACT`](https://code.claude.com/docs/ru/env-vars). Она также не появляется, если область действия с более высоким приоритетом, например настройки проекта или управляемые настройки, задала `autoCompactEnabled` значение `false`. До версии 2.1.235 строка не содержала подсказку об автосжатии.
+
+Amazon Bedrock сообщает об этом состоянии как `Input is too long for requested model.`, и Claude Code обрабатывает это так же. До версии 2.1.217 Claude Code не распознавал формулировку Bedrock, поэтому автосжатие на ней никогда не срабатывало, а `/compact` завершался с той же ошибкой.
+
+[Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#upstream-error-messages) сообщает об этом состоянии как `capability_rejected: prompt_too_long`, когда вышестоящий облачный сервис отклоняет запрос в собственном формате ошибок провайдера. Claude Code обрабатывает этот токен так же, как `Prompt is too long`. До версии 2.1.228 Claude Code не распознавал этот токен, поэтому автосжатие на нём не срабатывало.
+
+Если на этом ходе выполнялось автоматическое сжатие контекста и оно завершилось сбоем из-за другой ошибки, например недоступности модели или сбоя аутентификации, сообщение называет эту ошибку после разделителя:
+
+```text theme={null}
+Prompt is too long · automatic compaction failed: <the underlying error>
+```
+
+Сначала устраните названную ошибку; пока вы этого не сделаете, `/compact` будет завершаться с той же ошибкой. До версии 2.1.229 при неудачном автоматическом сжатии выводилось `Prompt is too long` без указания причины.
+
+Когда на этой ошибке запускается автоматическое сжатие контекста, оно обычно суммирует самые старые обмены и сохраняет самые новые. В крайнем случае Claude Code суммирует иначе:
+
+* Если не удаётся суммировать ни одного целого обмена, Claude Code сохраняет ваш последний промпт дословно и суммирует всё, что было до него.
+* Если в этом случае диалог не заканчивается вашим промптом, Claude Code вместо этого суммирует весь диалог.
+
+Claude Code пропускает такое восстановление, если переносимое содержимое не содержит ответа модели и включает менее примерно 1000 токенов вашего собственного текста, например короткую повторную попытку, отправленную после слишком большой вставки. Выполните `/clear`, чтобы начать заново. До версии 2.1.269 сжатие контекста завершалось сбоем каждый раз, когда не удавалось суммировать целый обмен, поэтому сессия в таком состоянии получала эту ошибку снова на каждом ходе.
+
+В диалоге из одного обмена нет более ранних ходов для суммирования. Когда автоматическое сжатие должно было бы запуститься для такого диалога, Claude Code пропускает попытку и объясняет, чем заполнен запрос. Если API не сообщает количество токенов в своей ошибке, сообщение выглядит так:
+
+```text theme={null}
+Prompt is too long · this conversation is a single exchange and cannot be compacted — the request size comes mostly from system prompt, tool definitions, or attachments.
+```
+
+Если API сообщает количество токенов в своей ошибке, Claude Code сравнивает его с собственной оценкой размера диалога, чтобы определить, что составляет большую часть запроса: собственное содержимое диалога или системный промпт, определения инструментов и содержимое вложений, которые Claude Code отправляет вместе с ним. Если большую часть запроса составляет собственное содержимое диалога, сообщение выглядит так:
+
+```text theme={null}
+Prompt is too long · the request is ~<request tokens> tokens (limit <limit>) and this conversation's own content is most of it. A single-exchange conversation cannot be compacted; start with less content (smaller files or pasted text).
+```
+
+Если большая часть запроса находится вне диалога, сообщение выглядит так:
+
+```text theme={null}
+Prompt is too long · the request is ~<request tokens> tokens (limit <limit>) but this conversation is only ~<conversation tokens> tokens — the rest is system prompt, tool definitions, and attachment content. A single-exchange conversation cannot be compacted; reduce attached files/tools or start with less context.
+```
+
+До версии 2.1.162 Claude Code всё равно пытался выполнить сжатие контекста и при неудаче выводил просто `Prompt is too long`.
+
+**Что делать:**
+
+* Выполните `/compact`, чтобы суммировать более ранние ходы и освободить место, или `/clear`, чтобы начать заново. Если `/compact` отвечает `Not enough messages to compact.`, диалог состоит из одного обмена и суммировать нечего, поэтому место занято этим единственным промптом и тем, что Claude Code отправляет с каждым запросом: выполните `/clear` и отправьте запрос заново с меньшим объёмом вставленного текста или меньшими вложениями либо сократите определения инструментов и файлы памяти, следуя шагам ниже
+* Выполните `/context`, чтобы увидеть разбивку того, что занимает окно: системный промпт, инструменты, файлы памяти и сообщения
+* Отключите неиспользуемые MCP-серверы с помощью `/mcp disable <name>`, чтобы убрать их определения инструментов из контекста
+* Сократите большие файлы памяти `CLAUDE.md` или перенесите инструкции в [правила, привязанные к путям](https://code.claude.com/docs/ru/memory.md#path-specific-rules), которые загружаются только при необходимости
+* Автосжатие включено по умолчанию и обычно предотвращает эту ошибку. Если вы отключили его в `/config` или с помощью [`DISABLE_AUTO_COMPACT`](https://code.claude.com/docs/ru/env-vars), включите его снова. Если вы оставляете его отключённым, выполняйте `/compact` самостоятельно до заполнения окна.
+* Если Claude Code предупредил, что не распознаёт идентификатор вашей модели, в предупреждении может быть указано окно, которое он предположил. Если реальное окно модели отличается, [сообщите Claude Code реальное окно](https://code.claude.com/docs/ru/model-config.md#correct-the-window-for-a-gateway-or-custom-model-id).
+  * Если вы используете собственный [`ANTHROPIC_BASE_URL`](https://code.claude.com/docs/ru/env-vars) и ошибка начинается с `Prompt is too long · automatic compaction failed`, [задайте контекстное окно модели](https://code.claude.com/docs/ru/model-config.md#correct-the-window-for-a-gateway-or-custom-model-id) или [обновитесь](https://code.claude.com/docs/ru/setup.md#update-claude-code) до v2.1.299 или новее. До v2.1.299 Claude Code завершал ход этим сообщением вблизи предполагаемого окна в 200K вместо того, чтобы отправить запрос.
+* Если ошибка появилась сразу после того, как вы остановили Claude во время сжатия контекста диалога, ваш диалог не изменился и по-прежнему достаточно велик, чтобы требовать сжатия. Выполните `/compact` и отправьте сообщение снова. Чтобы ошибка не повторялась, [обновите Claude Code](https://code.claude.com/docs/ru/setup.md#update-claude-code) до v2.1.304 или новее. До v2.1.304 остановка в этот момент могла завершить ход этой ошибкой.
+* В v2.1.305 при большом количестве MCP-инструментов и прямом подключении к Anthropic API эта ошибка может скрывать несвязанную ошибку 400 или 422 от API. [Обновите Claude Code](https://code.claude.com/docs/ru/setup.md#update-claude-code) до v2.1.306 или новее, чтобы увидеть исходную ошибку.
+
+Интерактивную демонстрацию того, как заполняется контекст, см. в разделе [Explore the context window](https://code.claude.com/docs/ru/context-window.md).
+
+### Context exceeds the token limit
+
+`/context` показывает это предупреждение в начале своего вывода, когда диалог вырос за пределы контекстного окна модели:
+
+```text theme={null}
+Context exceeds the 200k-token limit by 94k tokens — run /compact or /clear to continue.
+```
+
+После предупреждения `Context exceeds` вам не нужно выполнять ни одну из команд, пока включено [автосжатие](https://code.claude.com/docs/ru/settings-reference.md#autocompactenabled), что является поведением по умолчанию:
+
+* **Автосжатие включено**: отправьте следующее сообщение. Если оно всё равно завершится ошибкой [`Prompt is too long`](#prompt-is-too-long), см. соответствующий раздел.
+* **Автосжатие отключено**: в сессии выполните `/compact`, если предупреждение его называет, или `/clear`, чтобы начать заново. Пока вы не выполните одну из них, сообщения будут завершаться ошибкой `Context limit reached` или `Prompt is too long` в выводе `-p`.
+
+Если превышенный лимит — это окно сжатия контекста, например граница 200K на моделях с контекстом 1M, предупреждение звучит иначе. Окно сжатия может быть меньше контекстного окна модели, поэтому запросы сверх него всё ещё могут выполняться успешно.
+
+```text theme={null}
+Context is 94k tokens past the 200k-token compaction window — run /compact to reduce usage.
+```
+
+Обе формы называют `/clear` вместо `/compact`, если вы задали [`DISABLE_COMPACT`](https://code.claude.com/docs/ru/env-vars).
+
+**Что делать:**
+
+* **После предупреждения об окне сжатия контекста**: в многоходовом диалоге выполните `/compact`, чтобы суммировать более ранние ходы и освободить место. Чтобы вместо этого начать заново, выполните `/clear`.
+* Другие способы сократить использование см. в разделе [Prompt is too long](#prompt-is-too-long)
+
+До версии 2.1.216 `/context` показывал использование выше 100% без строки предупреждения, объясняющей, что это значит и как восстановиться.
+
+### Request too large
+
+Необработанное тело запроса превысило лимит API в 32MB ещё до токенизации, обычно из-за большого вставленного содержимого, результатов инструментов или вложений. Этот лимит не связан с [контекстным окном](#prompt-is-too-long).
+
+```text theme={null}
+Request too large (max 32MB). Accumulated images and attachments in the conversation pushed the request over the limit. Run /compact, or double press esc to go back and remove attachments.
+```
+
+Если запрос шёл напрямую в Claude API и его отклонил сам API, Claude Code измеряет диалог и формулирует сообщение в зависимости от того, возможно ли восстановление. При работе через прокси, шлюз или облачного провайдера вы получаете общее сообщение. Формы с результатами измерения:
+
+* `Request too large (max 32MB; 20.1MB of about 33.4MB is images or documents).`: лимит превышен из-за изображений или документов. Claude Code повторяет попытку без них.
+* `Request too large for the API's 32MB request limit`: лимит превышают сами сообщения, поэтому в сообщении сказано `compacting cannot make it fit`, и Claude Code не повторяет попытку. В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) сообщение предлагает вместо этого сократить входные данные или начать новую сессию.
+
+До версии 2.1.212 диалоги с большим количеством накопленных изображений на каждом ходе завершались ошибкой `Request too large (max 32MB). Double press esc to go back and try with a smaller file.` До версии 2.1.229 Claude Code показывал совет о вложениях при каждом отклонении, даже когда сжатие контекста не могло помочь.
+
+**Что делать:**
+
+* Если в сообщении сказано `compacting cannot make it fit`, дважды нажмите Esc, чтобы вернуться до хода, добавившего большое содержимое, или выполните `/clear`, чтобы начать заново
+* В противном случае выполните `/compact`, который удаляет накопленные изображения и вложения
+* Указывайте большие файлы по пути вместо вставки их содержимого, чтобы Claude мог читать их частями
+* Для изображений см. раздел [Image was too large](#image-was-too-large) ниже
+
+### Image was too large
+
+Вставленное или прикреплённое изображение превышает ограничения API по размеру или разрешению.
+
+```text theme={null}
+Image was too large. Double press esc to go back and try again with a smaller image.
+API Error: 400 ... image dimensions exceed max allowed size
+API Error: an image in the conversation could not be processed and was removed.
+An image in the conversation exceeds the dimension limit for many-image requests (3000px). Run /compact to remove old images from context, or start a new session.
+```
+
+Строка `could not be processed and was removed` означает, что API отказался принять изображение в диалоге, например изображение, превышающее ограничения по размеру или разрешению.
+
+Если одна из этих ошибок продолжает возвращаться, обновите Claude Code. В старых версиях ошибка изображения могла повторяться, например, по таким причинам:
+
+* До v2.1.299 в длинном диалоге с большим количеством изображений Claude Code мог удалить последние прикреплённые вами изображения вместо того, которое превышало лимит. Строка `was removed` тогда повторялась на каждом ходе, и Claude не видел ваших новых изображений.
+* До v2.1.299 в VS Code, приложении Desktop и Agent SDK изображения, прикреплённые во время работы Claude, не проходили изменение размера, которое применяется к другим прикреплённым изображениям. Они попадали в API в исходном размере, что приводило к повторяющимся ошибкам изображений в длинных диалогах.
+* До v2.1.166 вставленное изображение могло оставаться в диалоге, и та же ошибка затем повторялась в каждом последующем сообщении
+
+**Что делать:**
+
+* Уменьшите изображение перед вставкой. API принимает изображения размером до 8000 пикселей по длинной стороне для одного изображения или до 3000 пикселей, когда в контексте более 20 изображений.
+* Сделайте снимок только нужной области вместо всего экрана
+* При сообщении `dimension limit for many-image requests` выполните `/compact` в промпте Claude Code, если сообщение его называет, или начните новую сессию с меньшим количеством изображений
+
+Сообщение `dimension limit for many-image requests` показывает лимит в пикселях, указанный в ошибке API.
+
+### Unable to resize image
+
+Claude Code не смог уменьшить прикреплённое изображение перед отправкой в API.
+
+```text theme={null}
+Unable to resize image — image processing is unavailable and dimensions could not be read from the file header. Please convert the image to PNG, JPEG, GIF, or WebP.
+Unable to resize image — dimensions exceed the 2000x2000px limit and image processing failed. Please resize the image to reduce its pixel dimensions.
+Unable to resize image (… raw, … base64). The image exceeds the … API limit and compression failed. Please resize the image manually or use a smaller image.
+Unable to resize image — could not verify image dimensions are within the 2000x2000px API limit.
+Unable to resize image — it is a CMYK JPEG, which Claude Code cannot decode, and at …px it is over the 2000x2000px limit, so it cannot be sent. Re-save it as an RGB PNG or JPEG and try again.
+Unable to resize image — it is an animated WebP whose first frame Claude Code cannot decode, and at …px it is over the 2000x2000px limit, so it cannot be sent. Save its first frame as a PNG or JPEG and try again.
+Unable to resize image — its pixels could not be decoded (the file may be damaged, or use an encoding Claude Code cannot read), and it is over the … API limit (… raw, … base64), so it cannot be sent. Re-save it as a PNG or JPEG and try again.
+```
+
+Обычно Claude Code автоматически уменьшает большие изображения. Эти ошибки означают, что изображение не удалось декодировать или уменьшить до размеров в пределах лимитов API.
+
+Ошибка, которую вы видите, может называть другой пиксельный лимит, например `2576x2576px` там, где в этих примерах указано `2000x2000px`.
+
+**Что делать:**
+
+* Если сообщение просит преобразовать изображение, преобразуйте его в PNG, JPEG, GIF или WebP и прикрепите снова. Для этих форматов Claude Code может проверить размеры по заголовку файла, не декодируя изображение.
+* Если сообщение указывает на лимит разрешения или размера, уменьшите или пересожмите изображение ниже этого лимита перед прикреплением.
+* Если сообщение называет причину, например CMYK JPEG, анимированный WebP или возможно повреждённый файл, пересохраните изображение в формате, предложенном в сообщении, и прикрепите его снова.
+
+### Request rejected as unprocessable by the model
+
+API отклонил запрос как такой, который модель не может обработать. Это собственное сообщение API.
+
+```text theme={null}
+API Error: 400 Request rejected as unprocessable by the model (too many or oversized images, or unsupported parameters)
+```
+
+Claude Code может удалить самые старые изображения и документы из отклонённого запроса и отправить его снова. До v2.1.290 Claude Code не удалял изображения при таком отказе, поэтому длинная сессия, накопившая сотни изображений, могла завершаться этой ошибкой на каждом ходе.
+
+**Что делать:**
+
+* Если сообщение продолжает появляться в диалоге с изображениями или документами, удалите их самостоятельно. Дважды нажмите Esc, чтобы вернуться назад за ходы, которые их добавили, или выполните `/clear`, чтобы начать заново.
+
+### PDF errors
+
+Прикреплённый PDF не удалось обработать. Здесь сообщения показаны в неинтерактивной форме; в интерактивной сессии они вместо этого предлагают дважды нажать esc и попробовать снова.
+
+```text theme={null}
+PDF too large (max 100 pages, 20MB). Try reading the file a different way (e.g., extract text with pdftotext).
+PDF is password protected. Try using a CLI tool to extract or convert the PDF.
+The PDF file was not valid. Try converting it to text first (e.g., pdftotext).
+```
+
+**Что делать:**
+
+* Для слишком больших PDF попросите Claude прочитать диапазон страниц с помощью инструмента Read вместо прикрепления всего файла или извлеките текст с помощью инструмента вроде `pdftotext` и укажите выходной файл по пути
+* Для защищённых или недействительных PDF удалите пароль или повторно экспортируйте файл из исходного приложения, затем попробуйте снова
+
+Когда Claude читает диапазон страниц PDF с помощью инструмента Read, чтение может завершиться с другим сообщением:
+
+```text theme={null}
+pdftoppm is not installed. Install poppler-utils (e.g. `brew install poppler` or `apt-get install poppler-utils`) to enable PDF page rendering.
+```
+
+При чтении диапазона страниц страницы отрисовываются с помощью `pdftoppm`. Установите poppler-utils командой, указанной в сообщении, а на других платформах — сборку poppler, которая добавляет `pdftoppm` в ваш `PATH`. О том, какие PDF читаются по диапазону страниц, см. в разделе [Read tool behavior](https://code.claude.com/docs/ru/tools-reference.md#read-tool-behavior).
+
+### Extra inputs are not permitted
+
+Эндпоинт, получивший запрос, отклонил одно из полей запроса как входные данные, которые он не принимает, и в сообщении эндпоинта названо это поле.
+
+```text theme={null}
+API Error: 400 ... context_management: Extra inputs are not permitted
+```
+
+Claude Code отправляет поля, доступные только в бета-версии, такие как `context_management` и `defer_loading` для поиска инструментов, вместе с заголовком `anthropic-beta`, который их включает. Когда шлюз пересылает тело, но отбрасывает заголовок, API видит поля, которые не распознаёт. Когда шлюз пересылает тело в формате Anthropic вышестоящему сервису с другой схемой, этот сервис отклоняет такие поля. Оба случая описаны в разделе [Пары бета-заголовков и полей тела](https://code.claude.com/docs/ru/llm-gateway-protocol.md#beta-header-and-body-field-pairs).
+
+**Что делать:**
+
+* Если сообщение содержит `context_management: Extra inputs are not permitted`, [обновите Claude Code](https://code.claude.com/docs/ru/setup.md#update-claude-code) до v2.1.304 или новее. После обновления Claude Code отвечает на такой отказ, отправляя запрос ещё раз без этого поля. До v2.1.304 Claude Code не повторял попытку при таком отказе.
+* Если сообщение называет `defer_loading` или `tool_reference`, [обновите Claude Code](https://code.claude.com/docs/ru/setup.md#update-claude-code) до v2.1.305 или новее. Тогда Claude Code отвечает на такое отклонение [повторной отправкой запроса](https://code.claude.com/docs/ru/llm-gateway-protocol.md#retry-without-tool-search) без полей поиска инструментов.
+* Если ваш шлюз отбрасывает заголовок, настройте его на пересылку заголовка `anthropic-beta`. О том, что должны пересылать шлюзы, см. раздел [Сквозная передача функций](https://code.claude.com/docs/ru/llm-gateway-protocol.md#feature-pass-through).
+* В качестве резервного варианта задайте [`CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1`](https://code.claude.com/docs/ru/env-vars) перед запуском. Точный охват описан в разделе [Disable pre-release capabilities](https://code.claude.com/docs/ru/llm-gateway-protocol.md#disable-pre-release-capabilities).
+
+До v2.1.302 эта ошибка также могла называть поле `diagnostics` без участия какого-либо шлюза. Она появлялась, когда сессия, уже использовавшая Anthropic API, переходила на Amazon Bedrock или Agent Platform от Google Cloud без перезапуска. Например, оставленная вами открытой сессия переходит на Bedrock, когда вы выполняете [`/setup-bedrock`](https://code.claude.com/docs/ru/commands) в другом окне Claude Code. В этих версиях выполните `/clear` в такой сессии или перезапустите её.
+
+### Tool input schema is invalid
+
+Инструмент в запросе объявил `input_schema`, которая не проходит проверку JSON Schema в API, поэтому API отклонил весь запрос. Число после `tools.` — это позиция проблемного инструмента в списке инструментов запроса, а не имя, которое можно найти.
+
+```text theme={null}
+API Error: 400 ... tools.N.custom.input_schema: JSON schema is invalid
+API Error: 400 ... tools.N.custom.input_schema.properties: Property keys should match pattern '^[a-zA-Z0-9_.-]{1,64}$'
+```
+
+Первая форма означает, что схема не является допустимой JSON Schema draft 2020-12. Вторая означает, что имя свойства верхнего уровня не соответствует шаблону, приведённому в сообщении.
+
+Claude Code [исключает MCP-инструменты, чья схема входных данных не прошла бы эту проверку](https://code.claude.com/docs/ru/mcp.md#tools-with-invalid-input-schemas), при загрузке инструментов сервера, поэтому обычно такие инструменты в запросы не попадают.
+
+В [развёртывании, где получение флагов отключено](https://code.claude.com/docs/ru/env-vars.md#features-that-need-feature-flag-fetching), или на машине, куда флаги ещё ни разу не поступили, Claude Code записывает в лог сервера, какой инструмент будет отклонён, но всё равно отправляет его, поэтому эта ошибка всё ещё может возникнуть.
+
+Ошибка также может возникнуть для инструмента, чья схема объявляет в `$schema` диалект JSON Schema, отличный от draft 2020-12. Claude Code не проверяет такие схемы на соответствие метасхеме JSON Schema, хотя проверка имён свойств верхнего уровня по-прежнему применяется.
+
+До версии 2.1.216 ни одно развёртывание не выполняло проверки исключения.
+
+**Что делать:**
+
+* Если ваша версия Claude Code старше v2.1.300, выполните [`claude update`](https://code.claude.com/docs/ru/setup#update-claude-code) в оболочке. До v2.1.300 Claude Code не [повторял запрос без параметров отклонённого инструмента](https://code.claude.com/docs/ru/mcp.md#tools-whose-input-schema-the-api-refuses), поэтому эта ошибка повторялась в каждом запросе, включавшем этот инструмент.
+* Удалите или [отключите](https://code.claude.com/docs/ru/mcp.md#disable-a-server-without-removing-it) MCP-сервер, объявляющий недопустимую схему. Ошибка указывает инструмент только по позиции. В v2.1.216 и новее проверьте лог каждого сервера на наличие строки с именем инструмента, чья схема входных данных будет отклонена. Если ни один лог его не называет, отключайте серверы по одному.
+* Если вы поддерживаете сервер, исправьте `input_schema` инструмента. Схема должна быть допустимой JSON Schema, а имена свойств верхнего уровня должны иметь длину от 1 до 64 символов и содержать только буквы и цифры ASCII, `_`, `.` и `-`. См. раздел [Tools with invalid input schemas](https://code.claude.com/docs/ru/mcp.md#tools-with-invalid-input-schemas).
+
+### MCP tool name over 128 characters
+
+MCP-сервер предоставляет инструмент, полное имя которого, например `mcp__<server>__<tool>`, длиннее 128 символов, которые принимает API. Claude Code [не включает этот инструмент в список инструментов, отправляемых Claude](https://code.claude.com/docs/ru/mcp.md#tools-with-names-longer-than-128-characters), а остальные инструменты сервера продолжают работать. В сессии, которую вы запускаете из оболочки с помощью `claude --debug`, Claude Code записывает это сообщение в отладочный лог `~/.claude/debug/<session-id>.txt`:
+
+```text theme={null}
+Tool "mcp__<server>__<tool>" is not sent to Claude: its name has <N> characters and the API accepts at most 128
+```
+
+**Что делать:**
+
+* Если вы поддерживаете сервер, сократите имя инструмента.
+* Если сервер указан в вашей [конфигурации MCP](https://code.claude.com/docs/ru/mcp.md#mcp-installation-scopes), задайте ему там более короткое имя, например `db` вместо `analytics-database`. Затем обновите всё, что ссылается на сервер или его инструменты по старому имени, например [правила разрешений](https://code.claude.com/docs/ru/permissions.md#mcp) и [matcher хуков](https://code.claude.com/docs/ru/hooks.md#match-mcp-tools).
+* Если [сервер входит в состав плагина](https://code.claude.com/docs/ru/mcp.md#plugin-provided-mcp-servers), полное имя инструмента также включает имя плагина. Попросите сопровождающего плагина сократить имя сервера или инструмента.
+
+До версии 2.1.292 Claude Code всё равно отправлял этот инструмент, и API отклонял каждый запрос, который его содержал, с ошибкой `API Error: 400 ... tools.N.custom.name: String should have at most 128 characters`.
+
+### tool\_use.name over 200 characters
+
+Вызов инструмента в истории диалога содержит имя длиннее 200 символов, которые API принимает в запросе:
+
+```text theme={null}
+API Error: 400 ... tool_use.name: String should have at most 200 characters
+```
+
+Claude Code обрезает такое имя до 200 символов при получении ответа и при загрузке сохранённого диалога, поэтому вызов завершается ошибкой инструмента [`No such tool available`](#no-such-tool-available), а диалог продолжается без этой ошибки API.
+
+**Что делать:**
+
+* Выполните `claude update`, затем возобновите диалог. Обновлённая версия исправляет слишком длинное имя при загрузке транскрипта, поэтому застрявший диалог снова работает.
+
+До версии 2.1.281 слишком длинное имя оставалось в истории, и API отклонял каждый запрос с повторной отправкой диалога, включая `/compact` и `--resume`, поэтому ошибка повторялась, и диалог застревал.
+
+### There's an issue with the selected model
+
+Имя настроенной модели не распознано, или у вашей учётной записи нет к ней доступа. Начиная с v2.1.160 завершающая подсказка, показанная здесь в интерактивной форме, зависит от интерфейса.
+
+```text theme={null}
+There's an issue with the selected model (claude-...). It may not exist or you may not have access to it. Run /model to pick a different model.
+```
+
+**Что делать:**
+
+* **Интерактивный CLI**: выполните `/model`, чтобы выбрать одну из моделей, доступных вашей учётной записи.
+* **Неинтерактивный режим (`-p`)**: передайте `--model` с допустимым псевдонимом или ID либо задайте [`ANTHROPIC_MODEL`](https://code.claude.com/docs/ru/env-vars). В этом интерфейсе текст ошибки показывает `Run --model`.
+* **Agent SDK**: текст ошибки не содержит подсказки, потому что модель задаётся программно. Задайте [`model` в `Options`](https://code.claude.com/docs/ru/agent-sdk/typescript#options) в TypeScript или [`ClaudeAgentOptions(model=...)`](https://code.claude.com/docs/ru/agent-sdk/python#claudeagentoptions) в Python и обрабатывайте структурированную ошибку `model_not_found`, чтобы показать собственную повторную попытку или выбор модели.
+* Используйте псевдоним, например `sonnet` или `opus`, вместо полного ID с версией. Псевдонимы указывают на поддерживаемое значение по умолчанию, поэтому не устаревают. См. раздел [Model configuration](https://code.claude.com/docs/ru/model-config.md).
+* Если в CLI постоянно возвращается неправильная модель, где-то задан устаревший ID. Проверьте места, где можно задать модель, в [порядке приоритета](https://code.claude.com/docs/ru/model-config.md#setting-your-model) и удалите устаревшее значение.
+* До v2.1.206 истёкший вход в claude.ai, который больше не мог быть обновлён, приводил к этой ошибке для любой модели. В этих версиях выполните `/login`.
+* Если [`ANTHROPIC_BASE_URL`](https://code.claude.com/docs/ru/env-vars) указывает на [LLM-шлюз](https://code.claude.com/docs/ru/llm-gateway) и все модели завершаются этой ошибкой, проверьте, что ваш шлюз и его вышестоящий сервис принимают поля [поиска инструментов](https://code.claude.com/docs/ru/mcp.md#tool-search-through-a-gateway). По умолчанию Claude Code отправляет поля инструментов `defer_loading` и блоки `tool_reference` с заголовком `anthropic-beta`, который их включает. До v2.1.304 поиск инструментов за шлюзом был отключён, если вы не включали его с помощью `ENABLE_TOOL_SEARCH`.
+* Для развёртываний в Google Cloud's Agent Platform см. раздел [Устранение неполадок в Google Cloud's Agent Platform](https://code.claude.com/docs/ru/google-vertex-ai.md#troubleshooting).
+
+### Model is not a recognized model id
+
+Строка, переданная при переключении модели, не может использоваться Claude Code в качестве модели, поэтому он отклонил переключение, не отправляя запрос, и сессия сохраняет текущую модель. Эта ошибка может возникнуть, когда модель задаётся через метод `setModel()` в [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/typescript.md), приложением, которое запускает для вас Claude Code CLI, например [Desktop app](https://code.claude.com/docs/ru/desktop.md), или когда вы выбираете модель с устройства, подключённого через [Remote Control](https://code.claude.com/docs/ru/remote-control.md). До версии 2.1.200 Claude Code сохранял строку и на следующем запросе завершался ошибкой [There's an issue with the selected model](#theres-an-issue-with-the-selected-model).
+
+```text theme={null}
+Model "Sonnet5" is not a recognized model id. Did you mean 'claude-sonnet-5'?
+```
+
+В этом примере приложение отправило отображаемое имя `Sonnet 5`, которое сообщение повторяет без пробела. Завершающая подсказка называет ближайший подходящий псевдоним или ID модели. Если ничего достаточно близкого нет, вместо этого выводится `Run /model to see available models.` В сессии, которую для вас запускает [Desktop app](https://code.claude.com/docs/ru/desktop.md), подсказка при отсутствии совпадений звучит как `Switch to a different model.`
+
+При переключении через Agent SDK или приложение, работающее с Anthropic API, эту ошибку вызывает только строка, которая не может быть ID модели, например отображаемое имя или пустая строка.
+
+Когда вы выбираете модель с устройства Remote Control, Claude Code проверяет строку локально. Эту ошибку вызывает любая строка, которая не является псевдонимом модели, моделью из списка Claude Code или настроенной вами моделью либо ID, начинающимся с `claude-`, включая ID с опечаткой, например `claud-sonnet-5`. До версии 2.1.260 эта проверка не распространялась на выбор через Remote Control, поэтому нераспознанная строка применялась и приводила к ошибке на следующем запросе.
+
+**Что делать:**
+
+* Выполните `/model` без аргумента, чтобы открыть окно выбора и выбрать одну из моделей, доступных вашей учётной записи, затем передайте показанный там псевдоним или ID
+* Если вы использовали псевдоним, который поддерживается только в более новой версии Claude Code, выполните `claude update` или передайте вместо него полный ID модели. Сервер всё равно может требовать минимальную версию Claude Code для этой модели; см. раздел [Claude Code does not support this model](#claude-code-does-not-support-this-model).
+* Модель, сохранённая до версии 2.1.200, этой проверкой не исправляется. Если устаревшее значение продолжает возвращаться, удалите его из мест, перечисленных в разделе [Setting your model](https://code.claude.com/docs/ru/model-config.md#setting-your-model).
+* У любого провайдера, кроме Anthropic API, или за шлюзом либо пользовательским `ANTHROPIC_BASE_URL` эту ошибку вызывает только пустая строка. Claude Code по-прежнему может записывать [диагностическую строку о нераспознанной модели](#unrecognized-model-id-on-a-request) во время запроса у любого провайдера.
+
+### Model not found
+
+Вы переключились на модель по имени, и Claude Code не смог подтвердить, что модель с таким именем существует. Если имя не является [псевдонимом модели](https://code.claude.com/docs/ru/model-config.md#model-aliases) или другим написанием, которое Claude Code принимает локально, Claude Code проверяет его минимальным запросом к API, и эта ошибка обычно является ответом вашего API-эндпоинта. При использовании `/model <name>` имя, которое вообще не может быть ID модели, например содержащее пробелы, вызывает то же сообщение.
+
+```text theme={null}
+Model 'claude-opus-9' not found
+```
+
+У провайдеров со своими ID моделей сообщение может добавлять предложение `Try '...' instead`, в котором указан ID резервной модели у вашего провайдера.
+
+**Что делать:**
+
+* Выполните `/model` без аргумента и выберите одну из моделей, доступных вашей учётной записи, или используйте [псевдоним модели](https://code.claude.com/docs/ru/model-config.md#model-aliases), например `sonnet`, который указывает на поддерживаемое значение по умолчанию
+* Если вы ввели полный ID, сверьте его с каталогом моделей вашего провайдера. Недавно выпущенная модель может быть доступна в Anthropic API раньше, чем её предложит ваш провайдер или регион.
+* В Agent SDK `setModel()` завершается с этим сообщением, а сессия продолжает работать на предыдущей модели. В TypeScript SDK вызовите [`supportedModels()`](https://code.claude.com/docs/ru/agent-sdk/typescript#query-object), чтобы получить список моделей, на которые можно переключиться.
+* До версии 2.1.265 `/model` также отклонял написание псевдонима `opusplan[1m]` с этой ошибкой. В этих версиях обновите Claude Code или задайте модель в [настройках](https://code.claude.com/docs/ru/model-config.md#setting-your-model) либо через `--model`.
+
+### Couldn't confirm model with the API
+
+Вы переключили модель через метод `setModel()` [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/typescript.md) или приложение, которое запускает для вас Claude Code CLI, например [приложение Desktop](https://code.claude.com/docs/ru/desktop.md), и запрос, подтверждающий идентификатор модели у вашего API-эндпоинта, не получил ответа в течение 15 секунд. Сессия сохраняет текущую модель.
+
+```text theme={null}
+Couldn't confirm model "claude-sonnet-5" with the API. Try again, or run /model to see available models.
+```
+
+В сессии, которую для вас запускает [Desktop app](https://code.claude.com/docs/ru/desktop.md), сообщение заканчивается на `Try again.`
+
+**Что делать:**
+
+* Снова переключитесь на модель
+* Если переключение продолжает завершаться неудачей, проверьте, может ли Claude Code связаться с вашим API-эндпоинтом; см. раздел [Network and connection errors](#network-and-connection-errors)
+
+### API error when checking the picked model
+
+Вы выбрали модель с помощью `/model <name>`, или приложение, подключённое к сессии, запросило переключение. API отклонил минимальный запрос, который Claude Code отправляет для проверки модели, по причине, не имеющей отдельного раздела, например из-за ограничения частоты запросов или ошибки сервера. Сессия сохраняет текущую модель, о чём сообщается в конце сообщения:
+
+```text theme={null}
+API error: 429 <the server's explanation> · model not changed
+```
+
+В середине сообщения указаны HTTP-статус и собственное объяснение сервера.
+
+**Что делать:**
+
+* Действуйте в соответствии с объяснением сервера; при ограничении частоты запросов или статусе 5xx подождите и выберите модель снова
+* Отказы с собственной формулировкой описаны в соседних разделах, например [Model not found](#model-not-found) и [Model is restricted by your organization's settings](#model-is-restricted-by-your-organizations-settings)
+
+### Claude Opus is not available with the Claude Pro plan
+
+Ваш активный тариф подписки не включает выбранную модель.
+
+```text theme={null}
+Claude Opus is not available with the Claude Pro plan. If you have updated your subscription plan recently, run /logout and /login for the plan to take effect.
+```
+
+В сессии, которую запускает приложение Claude Desktop, сообщение предлагает `sign out and sign in again` вместо названий команд.
+
+**Что делать:**
+
+* Выполните `/model` и выберите модель, входящую в ваш тариф
+* Если вы недавно повысили тариф и всё равно видите это сообщение, выполните `/logout`, затем `/login`. Сохранённый токен отражает ваш тариф на момент входа, поэтому повышение тарифа на claude.ai не вступает в силу в существующей сессии до повторной аутентификации.
+* О том, какие модели входят в каждый тариф, см. [claude.com/pricing](https://claude.com/pricing)
+
+### Claude Code does not support this model
+
+API отклонил запрос с кодом 400, потому что ваша версия Claude Code ниже требуемого минимума. Либо выбранная модель требует более новой версии (сервер проверяет это для каждой модели), либо её требует политика вашей организации. Ответ 400 содержит код ошибки `claude_code_version_too_old`, а сообщение указывает, какой минимум применяется.
+
+```text theme={null}
+API Error: 400 Claude Code 2.1.219 does not support this model; version 2.1.255 or newer is required. Run 'claude update', or update the Claude desktop app, then try again.
+```
+
+Формулировка для политики организации:
+
+```text theme={null}
+API Error: 400 Claude Code 2.1.240 is older than the minimum version required by your organization's policy. Run 'claude update', or update the Claude desktop app, to continue.
+```
+
+API проверяет версию, о которой сообщает бинарный файл Claude Code, отправивший запрос.
+
+**Что делать:**
+
+Обновите этот бинарный файл, затем начните новую сессию. Способ обновления зависит от того, откуда взялся бинарный файл, кроме случая [self-hosted environment](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#pin-the-version):
+
+| Бинарный файл, отправивший запрос | Как его обновить |
+| :- | :- |
+| Установленный вами Claude Code | Выполните `claude update` |
+| Приложение Claude desktop | Обновите приложение |
+| Бинарный файл, входящий в [расширение VS Code](https://code.claude.com/docs/ru/vs-code.md) | Обновите расширение |
+| Бинарный файл, входящий в пакет Agent SDK | [Обновите пакет SDK](https://code.claude.com/docs/ru/agent-sdk/hosting.md#runtime-dependencies), затем перезапустите приложение. Для [скомпилированного однофайлового исполняемого файла](https://code.claude.com/docs/ru/agent-sdk/typescript.md#compile-to-a-single-executable) пересоберите его |
+
+* Если вы выполняете `claude update` на [стабильном канале выпусков](https://code.claude.com/docs/ru/setup.md#configure-release-channel), обновление не переведёт вас дальше новейшего стабильного выпуска, который всё ещё может быть ниже требуемого минимума. Перейдите на канал latest, затем снова обновитесь. Если ваша организация закрепляет канал или версию через [управляемые настройки](https://code.claude.com/docs/ru/managed-settings.md), попросите администратора изменить это
+* При формулировке для конкретной модели вы можете продолжить работу в текущей сессии, переключившись на другую модель: выполните `/model` в CLI, вызовите [`setModel()`](https://code.claude.com/docs/ru/agent-sdk/typescript#query-object) у объекта `Query` в TypeScript SDK в режиме потокового ввода или вызовите [`set_model()`](https://code.claude.com/docs/ru/agent-sdk/python#claudesdkclient) у `ClaudeSDKClient` в Python SDK
+* При формулировке для политики организации обновитесь, прежде чем продолжить
+
+### Model is restricted by your organization's settings
+
+Администратор вашей организации отключил эту модель в консоли администратора claude.ai, или управляемые настройки исключают её через список разрешённых моделей [`availableModels`](https://code.claude.com/docs/ru/model-config#restrict-model-selection) или список [`deniedModels`](https://code.claude.com/docs/ru/model-config#block-specific-models-or-versions). Уведомление появляется при запуске, когда `--model`, `ANTHROPIC_MODEL` или настройка `model` указывают ограниченную модель, и называет модель, которую сессия использует вместо неё. Если управляемые настройки не оставляют сессии ни одной разрешённой модели, см. раздел [Managed settings block the default model](#managed-settings-block-the-default-model). Уведомление о замене также может появиться посреди сессии, после того как администратор отключит в консоли администратора claude.ai модель, на которой работает сессия.
+
+```text theme={null}
+Model "claude-opus-4-8" is restricted by your organization's settings. Using claude-sonnet-4-6 instead.
+```
+
+Ввод `/model <name>` для ограниченной модели отклоняется, и сессия сохраняет текущую модель. Для модели, отключённой в консоли администратора, отказ звучит так: `Model '<name>' is restricted by your organization's settings. Run /model to choose a different model.` Для модели, исключённой управляемыми настройками: `Model '<name>' is not available. Your organization restricts model selection.`
+
+Уведомление с префиксом в виде имени агента, скилла или команды означает, что ограничение применено к [модели, запрошенной субагентом](https://code.claude.com/docs/ru/sub-agents.md#choose-a-model): субагент работает на подставленной модели, а модель вашей сессии не меняется. До версии 2.1.223 Claude Code показывал уведомление только для субагентов, запущенных инструментом Agent.
+
+Claude Code рассматривает псевдоним семейства моделей — `opus`, `sonnet`, `haiku` или `fable` — как запрос этого семейства, а не его новейшей версии. В Anthropic API и на [Claude Platform on AWS](https://code.claude.com/docs/ru/claude-platform-on-aws.md) ограниченный псевдоним семейства указывает на новейшую версию семейства, разрешённую настройками вашей организации, и уведомление о замене называет эту версию. Claude Code отклоняет `/model <alias>`, только если ограничены все версии семейства. До версии 2.1.205 псевдоним семейства заменялся или отклонялся исходя только из его новейшей версии, даже если более старая версия того же семейства была разрешена.
+
+**Что делать:**
+
+* Выполните `/model`, чтобы выбрать одну из моделей, разрешённых вашей организацией. Ограниченные модели скрыты в окне выбора.
+* Если ограниченная модель задана в `--model`, `ANTHROPIC_MODEL`, поле `model` файла настроек или во frontmatter `model` [субагента](https://code.claude.com/docs/ru/sub-agents.md#choose-a-model), скилла или команды, удалите или обновите это значение, чтобы уведомление не повторялось
+* Если вам нужен доступ к ограниченной модели, попросите администратора вашей организации включить её. См. раздел [Organization model restrictions](https://code.claude.com/docs/ru/model-config.md#organization-model-restrictions).
+
+### Can't switch to the default model
+
+Вы выбрали модель Default, например выбрав строку Default в окне выбора `/model` или введя `/model default`. Claude Code отклонил переключение, поэтому сессия сохраняет текущую модель.
+
+```text theme={null}
+Can't switch to the default model: your organization's managed settings block it (claude-opus-4-6) in "deniedModels", and none of the models they allow can be used as the default instead. Ask your administrator to update "deniedModels" or "availableModels".
+```
+
+Формулировка после двоеточия указывает, что заблокировало переключение:
+
+* **`your organization's managed settings block it ... in "deniedModels"`**: управляемый список запрещённых моделей блокирует модель, на которую указывает вариант Default
+* **`your organization allows only the models listed in "availableModels"`**: управляемый список разрешённых моделей [`availableModels`](https://code.claude.com/docs/ru/model-config#restrict-model-selection) с [`availableModelsMatch`](https://code.claude.com/docs/ru/settings-reference#availablemodelsmatch), равным `"exact"`, не включает модель, на которую указывает вариант Default
+* **`Claude Code couldn't read your organization's managed settings to check which models they allow`**: не удалось прочитать [управляемые настройки](https://code.claude.com/docs/ru/managed-settings.md), и Claude Code отклоняет переключение, а не применяет его без проверки
+
+**Что делать:**
+
+* При формулировках [`deniedModels`](https://code.claude.com/docs/ru/settings-reference#deniedmodels) и `availableModels` выполните `/model` и выберите по имени модель, разрешённую вашей организацией
+* Попросите администратора обновить управляемую настройку, указанную в сообщении
+* При формулировке `couldn't read` перезапустите Claude Code; если проблема повторяется, попросите администратора проверить управляемые настройки
+
+Если вместо этого сессия не запускается с сообщением `Claude Code can't start` при таких управляемых настройках, см. раздел [Managed settings block the default model](#managed-settings-block-the-default-model).
+
+### Model switch was blocked by a PreModelSwitch hook
+
+[Хук PreModelSwitch](https://code.claude.com/docs/ru/hooks.md#premodelswitch) не подтвердил переключение модели, запрошенное вами или клиентом, поэтому сессия сохраняет текущую модель. Если переключение пришло от хоста [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md) или [Remote Control](https://code.claude.com/docs/ru/remote-control.md), а не от введённой вами команды, сообщение звучит как `Model switch blocked by a PreModelSwitch hook` без названия целевой модели.
+
+```text theme={null}
+Model switch to Opus 4.6 was blocked by a PreModelSwitch hook: Opus 4.6 is retired for this project. Use a newer model.
+```
+
+Причина после двоеточия указывает, что отклонило переключение:
+
+* **Причина, написанная хуком**: хук PreModelSwitch указал эту причину, когда [отклонил переключение или запросил подтверждение](https://code.claude.com/docs/ru/hooks.md#premodelswitch-decision-control). Выполните то, что он требует, или выберите модель, разрешённую вашими хуками.
+* **`PreModelSwitch hook <name> did not respond before its timeout`**: хук, не ответивший до истечения своего [таймаута](https://code.claude.com/docs/ru/hooks.md#timeouts), блокирует переключение. Исправьте зависающую команду или увеличьте `timeout` этого хука, затем переключитесь снова.
+* **`confirmation required, and this session cannot ask`**: хук ответил `ask` без причины, а у управляющего запроса нет способа показать запрос подтверждения. Команда `/model` в [запуске `-p`](https://code.claude.com/docs/ru/headless) сообщает о том же состоянии с `(run /model interactively to confirm)` после причины. Выполните переключение из интерактивной сессии или измените решение хука для этой модели.
+* **`so organization-managed PreModelSwitch hooks could not be checked`**: Claude Code до v2.1.323 отказывает, когда не может определить, какие хуки PreModelSwitch предоставляют ваши [управляемые плагины](https://code.claude.com/docs/ru/settings-reference.md#enabledplugins). Текст перед этой фразой называет то, что завершилось неудачей. Чтобы отказы прекратились, обновите Claude Code. Чтобы хуки неисправного плагина тоже заработали, исправьте плагин или обратитесь к администратору. Для подробностей запустите `claude --debug` в оболочке и переключите модель, затем прочитайте [отладочный лог](https://code.claude.com/docs/ru/hooks.md#debug-hooks).
+* **`a PreModelSwitch hook failed before answering`** или **`PreModelSwitch hooks were cancelled (the control stream closed) before answering`**: выполнение хука завершилось без решения, и Claude Code не считает это подтверждением. Запустите `claude --debug`, чтобы увидеть, что не удалось, затем переключитесь снова.
+
+До версии 2.1.260 отказ из-за управляемого плагина звучал как `plugin hooks could not be loaded, so PreModelSwitch hooks could not be checked; see the debug log`. Claude Code один раз повторял загрузку плагина, а затем отклонял последующие переключения в сессии, даже если ваша организация не управляла никакими плагинами. В этих версиях перезапустите сессию, чтобы снова выполнить загрузку плагинов.
+
+### Couldn't save it as your default
+
+Вы выбрали модель, чтобы сохранить её как модель по умолчанию, например с помощью `/model <name>` или `Enter` в окне выбора `/model`, и Claude Code не смог записать выбор в файл пользовательских настроек `~/.claude/settings.json`. Само переключение применилось, поэтому текущая сессия работает на выбранной модели, но модель по умолчанию не изменилась, и следующая сессия начнётся со старого значения.
+
+```text theme={null}
+Set model to Fable 5.1 for this session only · couldn't save it as your default: ~/.claude/settings.json can't be written (EROFS)
+```
+
+Причина после пути к файлу указывает, что не удалось:
+
+* **`can't be written (<code>)`**: запись не удалась с кодом ошибки операционной системы в скобках, например `EROFS`, когда файл или файл, на который он ссылается, находится в файловой системе, запрещающей запись. Сделайте файл доступным для записи и переключитесь снова. Если файл генерирует другой инструмент, задайте ключ `model` в этом инструменте; см. раздел [Изменение, которое вы сделали в Claude Code, теряется в новых сессиях](https://code.claude.com/docs/ru/settings.md#a-change-you-made-in-claude-code-is-lost-in-new-sessions).
+* **`isn't valid JSON`**: файл на диске не разбирается, и Claude Code оставляет его нетронутым, а не перезаписывает содержимое, которое не может прочитать. Исправьте синтаксическую ошибку, затем переключитесь снова; см. раздел [Исправьте сломанный файл параметров](https://code.claude.com/docs/ru/settings.md#fix-a-broken-settings-file).
+
+Уведомление, заканчивающееся на `couldn't confirm it was saved as your default (~/.claude/settings.json is still being written)`, означает, что запись не завершилась за три секунды. Она продолжается в фоне, поэтому модель по умолчанию всё ещё может сохраниться; проверьте, на какой модели начнётся следующая сессия, или снова выполните `/model <name>`.
+
+До версии 2.1.265 уведомление сообщало, что модель `saved as your default for new sessions`, даже если запись не удалась.
+
+### Advisor is less capable than the current main model
+
+Ваша [модель-советник](https://code.claude.com/docs/ru/advisor.md) стоит в рейтинге ниже основной модели сессии, поэтому Claude Code сохраняет выбор, но не подключает советника к запросам основной модели.
+
+```text theme={null}
+Advisor set to Opus 4.8
+Note: Opus 4.8 is less capable than the current main model (Sonnet 5.5), so the advisor will not activate. Choose a more capable advisor, or switch to a smaller main model.
+```
+
+О том же состоянии сообщают и другие сообщения:
+
+* В интерактивной сессии уведомление звучит так: `Advisor will not activate on the main model (advisor is less capable); subagents may still use it and may use more tokens · /advisor`.
+* Когда вы запускаете с флагом `--advisor` в [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) и запуск не является [фоновой сессией](https://code.claude.com/docs/ru/agent-view.md), в stderr выводится предупреждение, и запуск всё равно начинается. Оно гласит `"<advisor>" cannot advise "<main model>" (the advisor must be at least as capable as the main model). The advisor will not be used for the main model.` Интерактивная сессия записывает это предупреждение только в [отладочный лог](#configuration-warnings).
+
+**Что делать:**
+
+* Выберите советника с более высоким рейтингом или основную модель с более низким рейтингом. В разделе [Choose an advisor model](https://code.claude.com/docs/ru/advisor.md#choose-an-advisor-model) приведён рейтинг и перечислены допустимые советники для каждой основной модели.
+* Оставьте советника заданным, если хотите, чтобы [субагенты](https://code.claude.com/docs/ru/sub-agents.md), чью модель он может консультировать, продолжали его использовать
+
+До версии 2.1.287 Claude Code оценивал некоторые пары иначе. Он показывал это примечание для советника Sonnet 5.5 с основной моделью Opus 4.7 или Opus 4.8 — пары, которую он теперь принимает. Кроме того, он подключал некоторых советников, для которых теперь выводится это примечание, например советника Opus 4.8 с основной моделью Sonnet 5.5.
+
+### thinking.type.enabled is not supported for this model
+
+Ваша версия Claude Code старше минимальной для выбранной модели. CLI отправил конфигурацию мышления, которую модель больше не принимает.
+
+```text theme={null}
+API Error: 400 ... "thinking.type.enabled" is not supported for this model. Use "thinking.type.adaptive" and "output_config.effort" to control thinking behavior.
+```
+
+**Что делать:**
+
+* Выполните `claude update` и перезапустите Claude Code. Для Opus 4.7 требуется v2.1.111 или новее. Для Opus 4.8 требуется v2.1.154 или новее. Для Sonnet 5 требуется v2.1.197 или новее. Для Opus 5 требуется v2.1.219 или новее. Для Opus 5.5 требуется v2.1.280 или новее. Для Sonnet 5.5 требуется v2.1.284 или новее
+* На [стабильном канале выпусков](https://code.claude.com/docs/ru/setup.md#configure-release-channel) обновление не переводит вас дальше новейшего стабильного выпуска, который всё ещё может быть старше этих версий. Перейдите на канал latest, затем обновитесь
+* Если обновиться нельзя, выполните `/model` и выберите Opus 4.6 или Sonnet 4.6
+* Если вы столкнулись с этим в [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md), обновите пакет SDK. Для Opus 4.8 требуется TypeScript SDK v0.3.154 или новее и Python SDK v0.2.88 или новее. Для Sonnet 5 требуется TypeScript SDK v0.3.197 или новее. Для Opus 5 требуется TypeScript SDK v0.3.219 или новее. Для Opus 5.5 требуется TypeScript SDK v0.3.280 или новее. Для Sonnet 5.5 требуется TypeScript SDK v0.3.284 или новее
+
+### Effort isn't available with thinking turned off
+
+Вы отключили [расширенное мышление](https://code.claude.com/docs/ru/model-config.md#extended-thinking) и работали с [уровнем effort](https://code.claude.com/docs/ru/model-config.md#adjust-effort-level) выше `high`. Модель не принимает такое сочетание, поэтому API отклонил запрос.
+
+```text theme={null}
+API Error: Effort 'xhigh' isn't available with thinking turned off on this model · run /effort high to continue, or turn thinking back on (unset MAX_THINKING_TOKENS=0)
+```
+
+Подсказка после `·` зависит от сессии: в неинтерактивной сессии она звучит как `use --effort high (or the effortLevel setting)`, а в сессии, которую запускает приложение Claude Desktop, — как `you can lower effort to High`.
+
+**Что делать:**
+
+* [Понизьте уровень effort](https://code.claude.com/docs/ru/model-config.md#set-the-effort-level) до `high` или ниже.
+* Снова включите мышление, например сбросив [`MAX_THINKING_TOKENS`](https://code.claude.com/docs/ru/env-vars) или удалив [`"alwaysThinkingEnabled": false`](https://code.claude.com/docs/ru/settings-reference#alwaysthinkingenabled) из настроек.
+
+До версии 2.1.242 Claude Code показывал собственное сообщение API: `API Error: 400 output_config.effort 'xhigh' is not supported when thinking is disabled on this model. Use effort 'high' or below, or enable thinking.` До версии 2.1.251 Claude Code отправлял запрос с заданным вами уровнем effort, поэтому Opus 5 отклонял каждый запрос выше `high` при отключённом мышлении. Теперь Claude Code отправляет effort `high` моделям, которые, как ему известно, отклоняют такое сочетание, например Opus 5.
+
+### Thinking budget exceeds output limit
+
+Настроенный бюджет расширенного мышления превышает максимальную длину ответа, поэтому для самого ответа не остаётся места.
+
+```text theme={null}
+API Error: 400 ... max_tokens must be greater than thinking.budget_tokens
+```
+
+**Что делать:**
+
+* Увеличьте [`CLAUDE_CODE_MAX_OUTPUT_TOKENS`](https://code.claude.com/docs/ru/env-vars) выше бюджета мышления
+* О том, как бюджет связан с длиной вывода, см. раздел [Расширенное мышление](https://code.claude.com/docs/ru/model-config.md#extended-thinking)
+
+### Response exceeded the output token maximum
+
+Ответ Claude достиг максимального количества выходных токенов, допустимого запросом, и был на этом обрезан:
+
+```text theme={null}
+API Error: Claude's response exceeded the ... output token maximum. To configure this behavior, set the CLAUDE_CODE_MAX_OUTPUT_TOKENS environment variable.
+API Error: Claude's response exceeded the 64000 output token maximum for a request sent without streaming. The CLAUDE_CODE_MAX_OUTPUT_TOKENS environment variable cannot raise this limit.
+```
+
+Форма, упоминающая `a request sent without streaming`, означает, что потоковый запрос завершился неудачей и Claude Code повторно отправил его без потоковой передачи, что ограничивает ответ 64 000 выходных токенов. До v2.1.299 ответ, обрезанный в таком повторно отправленном запросе, завершал ход без этого сообщения, как если бы ответ был полным.
+
+**Что делать:**
+
+* Если Claude успел написать какой-то текст до обрезки ответа, в интерактивной сессии ответьте `continue`, чтобы запросить продолжение. Этот текст остаётся в диалоге.
+* Если сообщение предлагает задать `CLAUDE_CODE_MAX_OUTPUT_TOKENS`, см. [`CLAUDE_CODE_MAX_OUTPUT_TOKENS`](https://code.claude.com/docs/ru/env-vars) о том, как ограничивается значение, и [Установка переменных окружения](https://code.claude.com/docs/ru/env-vars.md#set-environment-variables) о том, где его задать
+* Чтобы каждый ответ укладывался в лимит, попросите Claude выдавать результат меньшими частями, например по одному файлу или одному разделу за ответ
+
+### Tool use or thinking block mismatch
+
+История диалога поступила в API в несогласованном состоянии.
+
+```text theme={null}
+API Error: 400 due to tool use concurrency issues. Run /rewind to recover the conversation.
+API Error: 400 orphaned tool_result in conversation history. Run /rewind to recover the conversation.
+API Error: 400 duplicate tool_use ID in conversation history. Run /rewind to recover the conversation.
+API Error: 400 ... unexpected `tool_use_id` found in `tool_result` blocks
+API Error: 400 ... thinking blocks ... cannot be modified
+```
+
+Все варианты означают одно и то же: последовательность блоков `tool_use`, `tool_result` и `thinking` в истории больше не соответствует ожиданиям API.
+
+**Что делать:**
+
+* Если вы используете Opus 4.7 или Opus 4.8, сначала выполните `claude update`. Версии до v2.1.156 могут вызывать эту ошибку при обычном использовании инструментов, и `/rewind` её не устраняет.
+* Выполните `/rewind` или дважды нажмите Esc, чтобы вернуться к чекпоинту до повреждённого хода и продолжить оттуда. О том, как создаются и восстанавливаются чекпоинты, см. раздел [Чекпоинты](https://code.claude.com/docs/ru/checkpointing.md).
+
+### Invalid data in redacted\_thinking block
+
+API отклонил запрос с кодом 400, потому что не смог принять блок `redacted_thinking`, содержащийся в одном из более ранних ходов истории диалога.
+
+```text theme={null}
+API Error: 400 ... Invalid `data` in `redacted_thinking` block
+```
+
+Claude Code исключает из запроса прежние размышления диалога и один раз повторяет попытку, поэтому сессия продолжается без показа ошибки. До версии 2.1.282 Claude Code сохранял отклонённый блок, и каждый последующий ход завершался той же ошибкой.
+
+**Что делать:**
+
+* Если у вас v2.1.281 или старше и каждый ход завершается этой ошибкой, выполните `claude update` и возобновите сессию
+* Если ошибка не исчезает, выполните `/clear`, чтобы начать диалог без этого блока
+
+### Unsupported tool content removed
+
+Когда Claude Code подключается напрямую к Anthropic API и загружает или просматривает сохранённую сессию, он удаляет содержимое инструментов, которое Anthropic API не принимает, и оставляет эту строку там, где удалённое содержимое находилось между двумя блоками размышлений:
+
+```text theme={null}
+[Unsupported tool content removed]
+```
+
+Такое содержимое попадает в файл сессии, когда в формате API отвечал не Anthropic API, а что-то другое — обычно сторонний прокси, заданный через [`ANTHROPIC_BASE_URL`](https://code.claude.com/docs/ru/env-vars), который преобразует вызовы инструментов другого провайдера. Claude Code удаляет его, только когда сессия подключается напрямую к Anthropic API, и загружает сохранённую историю как есть, когда сессия работает через прокси или у другого провайдера. До версии 2.1.246 Claude Code отправлял использование инструмента и его результат обратно в API, и каждый ход возобновлённой сессии завершался ошибкой 400, например `messages.1.content.0.server_tool_use.name: Input should be 'web_search', 'web_fetch', ...`.
+
+**Что делать:**
+
+* Если вы видите строку-заполнитель, ничего делать не нужно. Сессия продолжается без удалённого содержимого.
+* Если вместо этого каждый ход возобновлённой сессии завершается ошибкой 400, выполните `claude update` и снова возобновите сессию. Версии до v2.1.246 не удаляют такое содержимое.
+
+### role 'system' must precede an 'assistant' message
+
+API отклонил запрос с кодом 400, потому что системное сообщение находится в недопустимой для него позиции в диалоге:
+
+```text theme={null}
+API Error: 400 messages.6: role 'system' must precede an 'assistant' message or end the array; ...
+```
+
+Claude Code отправляет часть своих напоминаний и текста вложений как системные сообщения внутри диалога. Когда API отклоняет позицию такого сообщения, Claude Code один раз повторяет запрос, отправляя этот текст как обычные пользовательские сообщения. Родственные формулировки API о размещении, например `use the top-level 'system' parameter for the initial system prompt`, обрабатываются так же.
+
+Если ошибка всё же появляется, отклонённое системное сообщение не из тех, которые Claude Code может удалить. Обычно это означает, что прокси или [LLM-шлюз](https://code.claude.com/docs/ru/llm-gateway) между Claude Code и API добавил собственное системное сообщение.
+
+**Что делать:**
+
+* Если ошибка повторяется на каждом ходе при работе через прокси или шлюз, настроенный через [`ANTHROPIC_BASE_URL`](https://code.claude.com/docs/ru/env-vars), подключитесь без прокси, чтобы подтвердить источник, и сообщите об ошибке тому, кто его обслуживает
+* Выполните `/clear`, чтобы начать новый диалог. Если ошибка возникает и там, причина находится на пути запроса, а не в сохранённом диалоге.
+
+До версии 2.1.280 Claude Code не распознавал эту формулировку, поэтому ошибка появлялась и тогда, когда отклонённое системное сообщение было отправлено самим Claude Code, и каждый последующий ход диалога завершался так же.
+
+### Invalid encrypted\_content in search\_result block
+
+API отклонил запрос с кодом 400, потому что история диалога содержит результаты размещённого веб-поиска, которые он не может расшифровать. Формулировка называет поле, которое не удалось прочитать:
+
+```text theme={null}
+API Error: 400 ... Invalid `encrypted_content` in `search_result` block
+API Error: 400 ... Invalid `encrypted_index` in `text` block
+API Error: 400 ... Failed to decrypt web search result content
+API Error: 400 ... Invalid `encrypted_stdout` in `encrypted_code_execution_result` block
+```
+
+Результаты размещённого [инструмента веб-поиска](https://platform.claude.com/docs/en/agents-and-tools/tool-use/web-search-tool) API содержат зашифрованные поля, которые может прочитать только API. Формулировка `encrypted_stdout` относится к выводу размещённой программы выполнения кода, прочитавшей такие результаты; этот вывод API тоже шифрует. API отклоняет запрос, повторно отправляющий содержимое, которое он не может расшифровать, например содержимое, созданное для другой организации.
+
+Собственный [инструмент WebSearch](https://code.claude.com/docs/ru/tools-reference.md#websearch-tool-behavior) Claude Code записывает результаты поиска как обычный текст, поэтому такие блоки обычно попадают в диалог через прокси или [LLM-шлюз](https://code.claude.com/docs/ru/llm-gateway), который сам выполнял размещённый веб-поиск.
+
+Для трёх формулировок, связанных с веб-поиском, Claude Code исключает вызовы поиска, результаты и цитаты из отправляемых данных и один раз повторяет запрос, поэтому сессия продолжается без показа ошибки. Для формулировки `encrypted_stdout` такого восстановления нет, поэтому это сообщение по-прежнему выводится. До версии 2.1.282 Claude Code сохранял и отклонённые блоки веб-поиска, и каждый последующий ход и `/compact` завершались так же.
+
+**Что делать:**
+
+* Если у вас v2.1.281 или старше и каждый ход завершается одной из формулировок веб-поиска, выполните `claude update` и возобновите сессию
+* Если ошибка не исчезает или сообщение называет `encrypted_stdout`, выполните `/rewind`, чтобы вернуться к чекпоинту до хода, добавившего это содержимое, или выполните `/clear`, чтобы начать диалог без него
+* Если вы запускаете Claude Code через прокси или шлюз, сообщите об ошибке тому, кто его обслуживает
+
+### Usage Policy refusal
+
+API отказался отвечать, потому что содержимое диалога вызвало срабатывание проверки [Usage Policy](https://www.anthropic.com/legal/aup).
+
+Если сообщение содержит строку `` Details: `[reasoning_extraction]` ``, см. раздел [Safeguards flagged a request for Claude's reasoning](#safeguards-flagged-a-request-for-claudes-reasoning).
+
+Сообщение содержит Request ID и Message ID, которые можно указать в обращении в поддержку, если вы считаете отказ ошибочным.
+
+```text theme={null}
+API Error: Opus 4.6 can't help with this. Start a new session to continue.
+
+Send feedback with /feedback or learn more: https://www.anthropic.com/legal/aup
+```
+
+Сообщение называет отказавшую модель или `Claude`, если модель не записана.
+
+Проверка оценивает весь диалог, а не только ваш последний промпт, поэтому отправка нового сообщения в той же сессии обычно снова вызывает тот же отказ. То же самое происходит после выхода и повторного открытия сессии с `--continue` или `--resume`, так как транскрипт на диске по-прежнему содержит вызвавшее отказ содержимое. В [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md), [Google Cloud's Agent Platform](https://code.claude.com/docs/ru/google-vertex-ai.md) и [Microsoft Foundry](https://code.claude.com/docs/ru/microsoft-foundry.md) это сообщение также охватывает запросы, которые меры безопасности модели пометили как относящиеся к теме кибербезопасности. См. раздел [Safety measures flagged a cybersecurity topic](#safety-measures-flagged-a-cybersecurity-topic).
+
+До версии 2.1.219 сообщение звучало так: `Claude Code is unable to respond to this request, which appears to violate our Usage Policy (https://www.anthropic.com/legal/aup). Please double press esc to edit your last message or start a new session for Claude Code to assist with a different task.`
+
+**Что делать:**
+
+* Дважды нажмите Esc или выполните `/rewind`, чтобы вернуться к чекпоинту до хода, вызвавшего отказ, затем переформулируйте запрос или выберите другой подход. См. раздел [Чекпоинты](https://code.claude.com/docs/ru/checkpointing.md).
+* Если вы не можете определить, какой ход вызвал отказ, выполните `/clear`, чтобы начать новый диалог в том же проекте. Предыдущий диалог сохраняется на диске и остаётся доступным в `/resume`.
+* В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) (`-p`), где возврат недоступен, повторите попытку с переформулированным промптом в новой сессии без `--continue`. Проверки политики различаются в зависимости от модели, поэтому в некоторых случаях отказ также может устранить переключение на другую модель с помощью `--model`.
+
+### Safety measures flagged a cybersecurity topic
+
+Меры безопасности модели пометили содержимое диалога как относящееся к теме кибербезопасности. Сообщение называет модель, пометившую запрос:
+
+```text theme={null}
+API Error: Opus 4.8's safeguards flagged this message. Our intentionally broad safeguards allow us to deliver more capabilities faster, but can sometimes flag legitimate cybersecurity work. Send feedback with /feedback or learn more: https://support.claude.com/en/articles/14604842-real-time-cyber-safeguards-on-claude
+```
+
+Если сообщение содержит строку `` Details: `[reasoning_extraction]` ``, см. раздел [Safeguards flagged a request for Claude's reasoning](#safeguards-flagged-a-request-for-claudes-reasoning).
+
+Это сообщение содержит ссылку на [Cyber Verification Program](https://support.claude.com/en/articles/14604842-real-time-cyber-safeguards-on-claude), которая предоставляет доступ для легитимной работы в области кибербезопасности. Модели с [автоматическим переключением на резервную модель](https://code.claude.com/docs/ru/model-config.md#automatic-model-fallback) выводят другое сообщение, без этой ссылки; на Opus 5.5 и Sonnet 5.5 оно начинается с `<model>'s safeguards flagged this session`. В том разделе также описано, когда Claude Code вместо этого переключает модель.
+
+В [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md), [Google Cloud's Agent Platform](https://code.claude.com/docs/ru/google-vertex-ai.md) и [Microsoft Foundry](https://code.claude.com/docs/ru/microsoft-foundry.md) пометка кибербезопасности вместо этого приводит к сообщению [Usage Policy refusal](#usage-policy-refusal).
+
+**Что делать:**
+
+* Если ваша работа требует такого содержимого, подайте заявку на доступ через [Cyber Verification Program](https://support.claude.com/en/articles/14604842-real-time-cyber-safeguards-on-claude)
+* Если ваш запрос не касался кибербезопасности, выполните `/feedback`, чтобы сообщить о ложном срабатывании
+* Чтобы продолжить работу в той же сессии, дважды нажмите Esc или выполните `/rewind`, чтобы вернуться к чекпоинту до хода, вызвавшего пометку, затем выберите другой подход. См. раздел [Чекпоинты](https://code.claude.com/docs/ru/checkpointing.md).
+
+Если видимое вами сообщение сформулировано как одно из приведённых ниже, это тот же флаг в более ранней версии Claude Code:
+
+* В версиях с v2.1.219 по v2.1.296 сообщение также могло содержать `Apply to the Cyber Verification Program to reduce these interruptions.` перед заключительным предложением
+* В версиях с v2.1.203 по v2.1.218 сообщение гласило `<model> has safety measures that flagged this message for a cybersecurity topic. To learn about the Cyber Verification Program and apply for access, visit our help center:`, после чего следовала та же ссылка на справочный центр. В интерактивных сессиях далее шло `If you were not engaging in a cybersecurity topic, please send feedback via /feedback.`
+* До v2.1.203 оно гласило `<model>'s safeguards flagged this message for a cybersecurity topic. If your work requires this access, you can apply for an exemption:`, после чего следовала ссылка на форму запроса исключения
+
+### Safeguards flagged a request for Claude's reasoning
+
+API отклонил запрос, потому что средства защиты пометили его как просьбу к модели воспроизвести в ответе свои внутренние рассуждения. API называет эту [категорию отказа](https://platform.claude.com/docs/en/build-with-claude/refusals-and-fallback#refusal-response) `reasoning_extraction`, и сообщение об отказе содержит такую строку:
+
+```text theme={null}
+Details: `[reasoning_extraction]`
+```
+
+До версии 2.1.234 сообщения об отказе не содержали строку `Details`.
+
+**Что делать:**
+
+* Удалите или переформулируйте любую инструкцию, которая просит Claude выписать свои размышления или рассуждения дословно или в фиксированном формате, например в разделе `<thinking>`, в разделе-черновике или в поле `reasoning` в выводе JSON. Такая инструкция может находиться в вашем промпте или в настройке, которую Claude Code загружает вместе с ним, например в CLAUDE.md, скилле, промпте субагента, стиле вывода или описании MCP-инструмента.
+* Чтобы проверить, не вызывает ли отказ одна из таких настроек, выполните [`claude --safe-mode`](https://code.claude.com/docs/ru/cli-reference#cli-flags) в терминале, чтобы запустить сессию с отключёнными настройками, затем отправьте тот же промпт
+* После изменения настройки начните новую сессию
+* Чтобы переформулировать уже отправленный промпт, см. раздел [Rewind and summarize](https://code.claude.com/docs/ru/checkpointing.md#rewind-and-summarize)
+* Вы по-прежнему можете попросить Claude объяснить свой ответ. Попросите краткое объяснение, доказательства, лежащие в основе результата, или сводку выполненных действий. Чтобы читать сводки размышлений Claude, см. [`showThinkingSummaries`](https://code.claude.com/docs/ru/settings-reference#showthinkingsummaries).
+* Другие примеры, а также что делать, если переформулированный запрос всё равно отклоняется, см. в разделе [Keep reasoning in thinking blocks](https://platform.claude.com/docs/en/build-with-claude/refusals-and-fallback#keep-reasoning-in-thinking-blocks)
+
+### Output blocked by content filtering policy
+
+Фильтр содержимого вывода API остановил ответ, который генерировал Claude. Текст сообщения приходит от API:
+
+```text theme={null}
+API Error: Output blocked by content filtering policy
+```
+
+**Что делать:**
+
+* Переформулируйте последнее сообщение или выберите другой подход
+* Чтобы вернуться к чекпоинту до хода, вызвавшего блокировку, дважды нажмите Esc или выполните `/rewind`. См. раздел [Чекпоинты](https://code.claude.com/docs/ru/checkpointing.md)
+
+## Ошибки командной строки
+
+Эти ошибки выдаёт командная строка `claude` и её подкоманды, имя команды, которое вы отправляете в строке ввода, а также такие команды, как `/security-review`, которые собирают контекст, выполняя shell-команды до запуска своего промпта. Их также выдаёт `/tui`, который перезапускает CLI.
+
+### Конфликт между `--bg` и `--print`
+
+Это сообщение требует Claude Code v2.1.198 или новее. Вы указали `--bg` вместе с `-p` или `--print` в одном вызове `claude`. `--bg` запускает [фоновую сессию](https://code.claude.com/docs/ru/agent-view.md#from-your-shell), к которой вы позже подключаетесь с помощью `claude agents`, а `--print` работает [в неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) и никогда не запускает интерактивную сессию, к которой подключается `claude agents`. До v2.1.198 такое сочетание молча создавало фоновую задачу, к которой невозможно было подключиться.
+
+```text theme={null}
+--bg and --print conflict: --print never starts the interactive session that `claude agents` attaches to, so the job would be unattachable. The prompt is the positional — drop --print: `claude --bg '<task>'`.
+```
+
+**Что делать:**
+
+* Уберите `-p` или `--print`. `--bg` принимает промпт как позиционный аргумент, поэтому `claude --bg "<task>"` — это полная команда. См. [Запуск новых агентов из оболочки](https://code.claude.com/docs/ru/agent-view.md#from-your-shell).
+* Чтобы выполнить промпт в неинтерактивном режиме и вывести результат вместо создания фоновой сессии, уберите `--bg` и выполните `claude -p "<task>"`
+
+### Couldn't tell whether `--bg` is a flag or text
+
+Вы запустили `claude` с `--bg` или `--background` в такой позиции, где Claude Code не смог определить, имели ли вы в виду флаг фонового режима или текст. Команда ничего не запустила, вывела эту строку и завершилась с кодом выхода 1:
+
+```text theme={null}
+Couldn't tell whether --bg is a flag or text here, so nothing was started. To start a background session put it first: claude --bg <prompt>
+```
+
+Если вы ввели `--background`, в строке вместо этого указан `--background`.
+
+**Что делать:**
+
+* Чтобы запустить [фоновую сессию](https://code.claude.com/docs/ru/agent-view.md#from-your-shell), снова выполните команду в оболочке, поставив флаг первым: `claude --bg --name nightly-audit "<task>"`
+
+### Конфликт между флагом системного промпта и его файловой формой
+
+Вы передали [`--append-subagent-system-prompt`](https://code.claude.com/docs/ru/cli-reference#cli-flags) вместе с `--append-subagent-system-prompt-file` в одном вызове `claude`, поэтому `claude` завершается с кодом выхода 1 вместо запуска сессии:
+
+```text theme={null}
+Error: Cannot use both --append-subagent-system-prompt and --append-subagent-system-prompt-file. Please use only one.
+```
+
+До v2.1.283 `claude` завершался так же, когда вы передавали `--system-prompt` с `--system-prompt-file` или `--append-system-prompt` с `--append-system-prompt-file`, потому что эти пары конфликтовали, а не [объединялись](https://code.claude.com/docs/ru/cli-reference.md#system-prompt-flags). В этих версиях сообщение называет пару, которую вы указали вместе.
+
+**Что делать:**
+
+* Оставьте одну форму флага и уберите другую. Чтобы объединить фиксированный файл промпта с текстом для конкретного запуска, перед запуском добавьте этот текст в файл, а не передавайте оба флага
+
+### Invalid `--agents` configuration
+
+Значение, переданное в `--agents`, недопустимо, поэтому `claude` завершается с кодом выхода 1 вместо запуска сессии. Если вы передаёте `--safe-mode` или задаёте [`CLAUDE_CODE_SAFE_MODE`](https://code.claude.com/docs/ru/env-vars#variables), Claude Code полностью игнорирует `--agents`. С `--resume` или `--continue` встроенное JSON-значение не проверяется, и сессия запускается; значение, прочитанное из файла, проверяется при каждом запуске. До v2.1.242 Claude Code всё равно запускал сессию.
+
+```text theme={null}
+Error: Invalid --agents configuration:
+<what failed>
+```
+
+То, что следует за первой строкой, зависит от того, какую проверку не прошло значение. Claude Code выполняет эти проверки по порядку и останавливается на первой непройденной. Если в вашем значении есть проблемы двух видов, вторую вы увидите только после исправления первой:
+
+1. Если значение начинается с `{`, но не разбирается как JSON, или содержимое файла `--agents` не разбирается, Claude Code выводит одну строку `invalid JSON:` с сообщением самого JSON-парсера
+2. Если значение разбирается, но определение агента не соответствует схеме для [субагентов, определённых через CLI](https://code.claude.com/docs/ru/sub-agents.md#choose-the-subagent-scope), Claude Code выводит по одной строке на каждую проблему
+3. Если имя агента начинается с `-`, Claude Code выводит `<name>: agent names must not start with '-'`
+
+Если строк с проблемами больше 20, Claude Code выводит первые 20, а остальные заменяет на `…and N more`.
+
+С `--print` флаг `--agents` также принимает [путь к JSON-файлу](https://code.claude.com/docs/ru/sub-agents.md#choose-the-subagent-scope) вместо встроенного объекта. До v2.1.281 `--agents` принимал только встроенный JSON и считал путь к файлу недопустимым JSON. У файловой формы есть собственные отказы, которые выводятся вместо этого сообщения, в том числе следующие:
+
+* **`Error: --agents takes a JSON object, or a file path only with --print (-p)`**: Claude Code прочитал значение как путь к файлу в интерактивной сессии. Передайте определения как встроенный JSON или добавьте `-p`, чтобы читать их из файла.
+* **`Error: --agents file not found: <path>`**: по этому пути файл не существует. Значение, которое не начинается с `{` и не является допустимым JSON, читается как путь, поэтому встроенный JSON, искажённый вашей оболочкой, тоже может завершиться такой ошибкой. Проверьте путь или кавычки и снова выполните команду.
+
+**Что делать:**
+
+* Исправьте каждую проблему, перечисленную в сообщении, затем снова выполните команду. См. [поля, которые принимает субагент, определённый через CLI](https://code.claude.com/docs/ru/sub-agents.md#choose-the-subagent-scope).
+
+### Cloud sessions cannot be created from a `--restricted` session
+
+Если вы запустили сессию с [`--restricted`](https://code.claude.com/docs/ru/cli-reference#cli-flags), Claude Code отказывается создавать из неё [облачные сессии](https://code.claude.com/docs/ru/claude-code-on-the-web.md#from-terminal-to-cloud), потому что новая сессия работала бы вне ограниченного процесса и не соблюдала бы ограниченный режим. Claude Code отказывает на стороне клиента, до обращения к серверу, поэтому облачная сессия не создаётся:
+
+```text theme={null}
+Cloud sessions cannot be created from a --restricted session: they would not enforce it.
+```
+
+**Что делать:**
+
+* Выполните задачу локально в ограниченной сессии
+* Если вы управляете тем, как была запущена сессия, запустите новую сессию `claude` без `--restricted` и создайте облачную сессию из неё
+
+До v2.1.248 в Claude Code не было флага `--restricted`; более ранние версии отклоняют сам флаг с ошибкой о неизвестном параметре.
+
+### Cloud sessions are disabled by your organization's policy
+
+Политика `allow_remote_sessions` вашей организации отключена, поэтому [облачные сессии](https://code.claude.com/docs/ru/claude-code-on-the-web.md) и команды, которые их используют, недоступны:
+
+```text theme={null}
+Cloud sessions are disabled by your organization's policy. Contact your organization admin to enable them.
+```
+
+Сообщение появляется, когда вы [создаёте облачную сессию из терминала](https://code.claude.com/docs/ru/claude-code-on-the-web.md#from-terminal-to-cloud), и когда вы отправляете команду, которой нужны облачные сессии, например `/teleport`, `/remote-env` или `/web-setup`. До v2.1.268 отправка одной из этих команд вместо этого возвращала [`Unknown command`](#unknown-command).
+
+Если сообщение вместо этого называет учётные данные, которые использует эта сессия, и заканчивается на `Cloud sessions use your claude.ai login.`, см. [Cloud sessions use your claude.ai login](#cloud-sessions-use-your-claude-ai-login). Если Claude Code вообще не смог загрузить политику вашей организации, вместо этого вы увидите [другое сообщение](#couldnt-verify-your-organizations-policy-for-cloud-sessions).
+
+**Что делать:**
+
+* Попросите [Owner](https://code.claude.com/docs/ru/server-managed-settings.md#access-control) вашей организации включить облачные сессии в настройках администратора Claude Code по адресу [claude.ai/admin-settings/claude-code](https://claude.ai/admin-settings/claude-code)
+
+### Cloud sessions use your claude.ai login
+
+Если [отказ по политике](#cloud-sessions-are-disabled-by-your-organizations-policy) называет учётные данные, которые использует эта сессия, и заканчивается этим предложением, значит, Claude Code проверил политику облачных сессий той организации, которая выдала эти учётные данные. Эта организация может отличаться от той, к которой относится ваш вход в claude.ai:
+
+```text theme={null}
+Cloud sessions are disabled by your organization's policy. This session is using ANTHROPIC_API_KEY, so Claude Code checked the policy for the organization that key belongs to. Cloud sessions use your claude.ai login.
+```
+
+Последнее предложение означает, что облачные сессии работают через ваш вход в claude.ai, а не через эти учётные данные. Эта форма появляется, когда вы запускаете, возобновляете облачную сессию или отправляете ей сообщение из оболочки, например с `--cloud` или `--teleport`. До v2.1.296 Claude Code и в этом случае выводил форму, которая предлагает обратиться к администратору вашей организации.
+
+### Couldn't verify your organization's policy for cloud sessions
+
+Эти сообщения означают, что Claude Code не смог загрузить политику вашей организации, которую он проверяет перед тем, как создать, возобновить [облачную сессию](https://code.claude.com/docs/ru/claude-code-on-the-web.md) или отправить ей сообщение. Пока запрос политики не завершился, сообщение выглядит так:
+
+```text theme={null}
+Couldn't verify your organization's policy for cloud sessions. Check your network connection and try again.
+```
+
+Внутри сессии команда, которой нужны облачные сессии, например `/teleport` или `/web-setup`, тоже выдаёт это сообщение. Она делает это даже там, где ваша оболочка вывела бы форму `Cloud sessions aren't available:`, а её второе предложение звучит как `Check your network connection, then restart Claude Code and try again.`
+
+Когда запрос политики завершился неудачей, сообщение говорит, что именно не удалось. Это относится к случаям, когда вы запускаете, возобновляете облачную сессию или отправляете ей сообщение из оболочки с флагом, например `--cloud` или `--teleport`. Если нет маршрута до API, оно выглядит так:
+
+```text theme={null}
+Cloud sessions aren't available: couldn't reach api.anthropic.com to load your organization's policy. Check your network or proxy.
+```
+
+Другие сбои начинаются так же, но указывают собственную причину, например прокси, отклонивший запрос с HTTP 403, ошибку сервера или учётные данные, которые API не принял. Если API не принял учётные данные, которые эта сессия использует вместо вашего входа в claude.ai, например переменную окружения `ANTHROPIC_API_KEY`, сообщение также может назвать их и предложить удалить:
+
+```text theme={null}
+Cloud sessions aren't available: api.anthropic.com didn't accept this session's credentials when Claude Code asked for your organization's policy. Cloud sessions use your claude.ai login. ANTHROPIC_API_KEY is set, so this session is using API-key auth — unset it (or run in a shell without it) to use cloud sessions.
+```
+
+До v2.1.296 при этих сбоях тоже выводилось сообщение `Couldn't verify`.
+
+**Что делать:**
+
+* При сообщении `Couldn't verify` проверьте сетевое подключение и повторите попытку. Внутри сессии сначала перезапустите Claude Code
+* При сообщении `Cloud sessions aren't available:` сделайте то, что требует его причина, например проверьте прокси или удалите названные в нём учётные данные, затем снова выполните команду
+
+### Ничего не было помещено в stash, потому что папка заменила отслеживаемый файл
+
+Это сообщение означает, что в вашей рабочей копии теперь находится папка там, где раньше был отслеживаемый git файл или ссылка. Оно появляется после того, как вы выбираете вариант со stash при переносе [облачной сессии](https://code.claude.com/docs/ru/claude-code-on-the-web.md#from-cloud-to-terminal) в терминал, например с помощью `claude --teleport` или `/teleport`. Помещение такого состояния в stash могло бы удалить файлы внутри папки, поэтому Claude Code отказывается выполнять stash и оставляет рабочую копию и индекс без изменений:
+
+```text wrap theme={null}
+Error: Nothing was stashed: "f" is now a folder in place of a tracked file or link, and stashing could delete what's in it for good. Commit the change or move the folder somewhere else, then try again.
+```
+
+**Что делать:**
+
+* Сделайте коммит изменения или переместите папку в другое место, как сказано в сообщении, затем снова выполните teleport
+
+### The `--json-schema` value is not a valid JSON Schema
+
+Схема, переданная в [`--json-schema`](https://code.claude.com/docs/ru/cli-reference#cli-flags) в [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md#get-structured-output), не прошла компиляцию JSON Schema, поэтому `claude` завершается с кодом выхода 1 вместо выполнения промпта. До v2.1.205 недопустимая схема приводила к неструктурированному выводу без ошибки, а любая схема, использующая ключевое слово `format`, считалась недопустимой.
+
+```text theme={null}
+Error: --json-schema is not a valid JSON Schema: data/type must be equal to one of the allowed values
+```
+
+Текст после второго двоеточия — это диагностика валидатора, которая называет ключевое слово или место, не прошедшее проверку. Схемы, использующие ключевое слово `format`, например `"format": "email"`, допустимы: Claude Code принимает `format` как аннотацию и не применяет его.
+
+Перед компиляцией схемы Claude Code выполняет две проверки: значение, которое не разбирается как JSON, он отклоняет с `Error: --json-schema is not valid JSON`, а допустимый JSON, который не является объектом, — с `Error: --json-schema must be a JSON object`.
+
+**Что делать:**
+
+* Исправьте часть схемы, названную в диагностике, затем снова выполните команду
+* См. [Получение структурированного вывода](https://code.claude.com/docs/ru/headless.md#get-structured-output), где приведены рабочая схема и команда
+
+### Settings file exceeds the 2MiB limit
+
+Файл, переданный в [`--settings`](https://code.claude.com/docs/ru/cli-reference#cli-flags), больше 2 MiB, поэтому `claude` при запуске завершается с кодом выхода 1 вместо его загрузки. До v2.1.214 Claude Code читал файл без проверки размера, и файл размером в несколько гигабайт или файл устройства, например `/dev/zero`, неограниченно увеличивал потребление памяти.
+
+```text theme={null}
+Error: Settings file exceeds the 2MiB limit: /path/to/settings.json
+```
+
+Так же Claude Code отклоняет путь `--settings`, который не является обычным файлом: для устройства, FIFO или сокета выводится `Error: Cannot use settings file (Not a regular file (device, FIFO, or socket))`, а затем путь, а для каталога указывается причина `EISDIR`.
+
+**Что делать:**
+
+* Укажите в `--settings` обычный JSON-файл настроек размером меньше 2 MiB. Формат описан в разделе [Настройки](https://code.claude.com/docs/ru/settings.md).
+
+### Configuration error in \~/.claude.json
+
+Claude Code не смог разобрать `~/.claude.json` — файл, в котором хранятся данные вашей учётной записи, MCP-серверы и состояние отдельных проектов. [Неинтерактивный](https://code.claude.com/docs/ru/headless.md) запуск, например `claude -p`, завершается с кодом выхода 1.
+
+Если Claude Code находит [резервную копию](https://code.claude.com/docs/ru/claude-directory.md#cleaned-up-automatically), вывод называет её и содержит строку `cp`, которая копирует её обратно:
+
+```text wrap theme={null}
+Claude configuration file at /home/user/.claude.json is corrupted: <JSON parser's message>
+The corrupted file has been backed up to: /home/user/.claude/backups/.claude.json.corrupted.1793664000000
+A backup file exists at: /home/user/.claude/backups/.claude.json.backup.1793660400000
+You can manually restore it by running: cp -f "/home/user/.claude/backups/.claude.json.backup.1793660400000" "/home/user/.claude.json"
+
+Configuration error in /home/user/.claude.json: <JSON parser's message>
+```
+
+**Что делать:**
+
+* **В выводе есть строка `cp`**: выполните эту строку в терминале. В Windows выполните её в PowerShell.
+* **В выводе нет строки `cp`, или ошибка возвращается после её выполнения**: если в `~/.claude.json` всё ещё есть ваша конфигурация, исправьте её JSON. Если это не удаётся, скопируйте поверх него другой файл `.claude.json.backup.<timestamp>` из [`~/.claude/backups/`](https://code.claude.com/docs/ru/claude-directory#cleaned-up-automatically), если такой есть, или переименуйте его. Если файла `~/.claude.json` нет, Claude Code запускается с настройками по умолчанию и без всего, что содержал файл.
+* **В `~/.claude.json` больше нет вашей конфигурации**: найдите файл `.claude.json.corrupted.<timestamp>`, в котором она ещё есть, в [`~/.claude/backups/`](https://code.claude.com/docs/ru/claude-directory#cleaned-up-automatically) или в домашнем каталоге. Исправьте его JSON, затем скопируйте его поверх `~/.claude.json`. Если не удаётся найти или исправить такой файл, выполните те же шаги с файлом `.claude.json.backup.<timestamp>`, содержащим вашу конфигурацию. Если такого нет, переименуйте `~/.claude.json` и снова добавьте MCP-серверы с помощью [`claude mcp add`](https://code.claude.com/docs/ru/mcp#installing-mcp-servers).
+
+### Claude configuration file was empty and no backup holds anything
+
+Это сообщение при запуске означает, что названный в нём файл был пустым и ни одна из [копий `.backup`](https://code.claude.com/docs/ru/claude-directory#cleaned-up-automatically) этого файла ничего не содержит. Claude Code запустился со значениями по умолчанию для того, что хранится в этом файле. Ваши файлы `settings.json` и `.mcp.json` — это отдельные файлы.
+
+```text wrap theme={null}
+Claude configuration file at /home/user/.claude.json was empty and no backup holds anything: starting with defaults.
+```
+
+**Что делать:**
+
+* Заново настройте то, что было сконфигурировано в этом файле. Например, добавьте [MCP-серверы](https://code.claude.com/docs/ru/mcp.md#mcp-installation-scopes) с областью действия `user` и `local` с помощью `claude mcp add` из терминала.
+* Войдите снова, если Claude Code попросит об этом
+
+До v2.1.318 Claude Code сообщал о пустом файле без резервной копии как о [повреждённом](#configuration-error-in-claude-json).
+
+### The current directory no longer exists
+
+Вы запустили `claude` из каталога, который был удалён или перемещён после того, как ваша оболочка в него перешла, например из worktree или временного каталога, удалённого другой оболочкой. Claude Code не может прочитать свой рабочий каталог, поэтому завершается с кодом выхода 1 до запуска сессии — как в интерактивном, так и в [неинтерактивном](https://code.claude.com/docs/ru/headless.md) режиме. До v2.1.239 Claude Code вместо этого сообщения аварийно завершался, выводя в stderr минифицированный исходный код сборки и необработанный стек `ENOENT ... uv_cwd`.
+
+```text theme={null}
+The current directory no longer exists (it was deleted or moved). Start Claude Code from an existing directory.
+error: The current working directory was deleted, so that command didn't work. Please cd into a different directory and try again.
+```
+
+Причина и способ исправления одинаковы для обеих форм.
+
+Если Claude Code не может прочитать рабочий каталог по другой причине, например из-за изменения прав доступа, сообщение вместо этого называет код ошибки: `Can't read the current directory (EACCES). Start Claude Code from a different directory.`
+
+В macOS `EPERM` для каталога в `~/Desktop`, `~/Documents`, `~/Downloads` или iCloud Drive обычно означает, что macOS блокирует доступ вашего терминального приложения к этой папке. Другие команды, читающие эту папку, завершаются так же: `ls` в ней сообщает `Operation not permitted` даже с `sudo`.
+
+**Что делать:**
+
+* Перейдите в существующий каталог, например в домашний каталог или каталог проекта, затем снова запустите `claude`
+* Если каталог был создан заново по тому же пути, ваша оболочка всё ещё удерживает удалённый. Выполните `cd "$PWD"` или выйдите из каталога и снова войдите в него, затем снова запустите `claude`
+* При `EPERM` в macOS закройте терминальное приложение с помощью Cmd+Q, откройте его снова, вернитесь в эту папку и запустите `claude`. Если `ls` в этой папке по-прежнему завершается ошибкой, откройте **System Settings > Privacy & Security > Files and Folders**, включите эту папку для вашего терминального приложения, затем снова откройте терминал
+
+### Временный каталог отклонён или не может быть создан
+
+В macOS и Linux Claude Code при запуске создаёт приватный временный каталог `claude-<uid>` внутри системного временного каталога или каталога, заданного переопределением [`CLAUDE_CODE_TMPDIR`](https://code.claude.com/docs/ru/env-vars). Если каталог не удаётся создать или уже существующий по этому пути элемент не проходит проверки безопасности, Claude Code выводит сообщение о сбое в stderr и завершается с кодом выхода 1, не запуская сессию:
+
+```text wrap theme={null}
+Claude Code's temporary directory /tmp/claude-501 could not be created: the volume holding /tmp is full (ENOSPC). Free space on that volume, or set CLAUDE_CODE_TMPDIR to a directory on another one, then try again.
+
+Temp directory /tmp/claude-501 is not a directory (may be an attacker-planted symlink). Refusing to use it. Set CLAUDE_CODE_TMPDIR to a directory you control, or ask an administrator to remove it.
+
+Temp directory /tmp/claude-501 is owned by uid 502, expected 501. Refusing to use it — another user may have pre-created it. Set CLAUDE_CODE_TMPDIR to a directory you control, or ask an administrator to remove it.
+
+Temp directory /tmp/claude-501 is not readable (its mode may have been altered, or a path component denies search). Refusing to use it — restore its permissions (chmod 0700) or remove it. Set CLAUDE_CODE_TMPDIR to a directory you control, or ask an administrator to remove it.
+```
+
+**Что делать:**
+
+* При `could not be created`, за которым следует `is full (ENOSPC)`, освободите место на томе, названном в сообщении. Если вместо этого указано `your disk quota on the volume holding /tmp is used up (EDQUOT)`, удалите на этом томе свои файлы, которые вам больше не нужны
+* При формах с `Refusing to use it` удалите сам названный элемент, а не то, на что указывает ссылка, и снова запустите Claude Code; при форме `owned by uid` удалить его может только администратор или этот пользователь
+* При `is not readable` выполните `chmod 0700` для названного каталога или удалите его и запустите снова
+* В любом из этих случаев задайте в [`CLAUDE_CODE_TMPDIR`](https://code.claude.com/docs/ru/env-vars) каталог, которым вы управляете, и снова запустите Claude Code, не трогая отклонённый путь
+
+До v2.1.309 Claude Code выводил только текст ошибки операционной системы, когда том был заполнен или ваша квота исчерпана. Пример: `ENOSPC: no space left on device, mkdir '/tmp/claude-501'`; применяются те же шаги.
+
+### Claude Code не смог сохранить данные, потому что диск заполнен
+
+Эта строка в stderr после запуска [`claude -p`](https://code.claude.com/docs/ru/headless) означает, что диск заполнен или ваша дисковая квота исчерпана, поэтому Claude Code не смог сохранить всё из этого запуска:
+
+```text wrap theme={null}
+Error: Claude Code could not save all of this session's transcript under /Users/you/.claude because the disk is full (ENOSPC). If you resume this session, part of the conversation may be missing. Free up space on that disk before the next run.
+```
+
+При текстовом выводе или выводе `json` запуск завершается с кодом выхода 1, а ответ уже выведен. При выводе `stream-json` запуск сохраняет свой обычный код выхода, и ответ всё равно приходит.
+
+**Что делать:**
+
+* **`the disk is full (ENOSPC)`**: перед следующим запуском освободите место на диске, где находится путь из сообщения
+* **`your disk quota is used up (EDQUOT)`**: перед следующим запуском освободите место или запросите увеличение квоты
+
+### Directory couldn't be resolved to a real location
+
+Вы выполнили `/add-dir` для подкаталога рабочего каталога, и Claude Code не смог определить реальное расположение этого каталога.
+
+У вас уже есть доступ к файлам подкаталога рабочего каталога, поэтому `/add-dir` только загружает его скиллы, команды и агентов. Перед их загрузкой Claude Code проверяет, что реальное расположение каталога, с разрешением всех символических ссылок, находится внутри рабочего каталога. Если Claude Code не может определить это расположение, он ничего не загружает и показывает это сообщение:
+
+```text theme={null}
+packages/app couldn't be resolved to a real location, so its skills, commands, and agents weren't loaded. Check that it is a directory inside the working directory and try again.
+```
+
+**Что делать:**
+
+* Убедитесь, что путь указывает на реальный каталог внутри рабочего каталога, затем снова выполните `/add-dir`
+* Сообщение не меняет ваш доступ к файлам; оно лишь сообщает, что содержимое `.claude/` этого каталога не было загружено
+
+До v2.1.261 это сообщение также появлялось для каждого `/add-dir <subdirectory>`, когда рабочий каталог находился на автомонтировании `/net/<host>`, где Claude Code намеренно не разрешает пути; с каталогом всё было в порядке, и повторная попытка не могла помочь.
+
+### Workspace not trusted when starting Remote Control
+
+> [!NOTE]
+>
+> Если `claude ultrareview` вывел `Error: Workspace not trusted`, вместо этого см. [Workspace not trusted when running claude ultrareview](#workspace-not-trusted-when-running-claude-ultrareview).
+
+Вы запустили серверный режим [Remote Control](https://code.claude.com/docs/ru/remote-control.md) с помощью `claude remote-control` или его псевдонима `claude rc` в каталоге, которому вы не доверяли, и команда не смогла спросить вас, доверяете ли вы ему. Например, стандартный ввод или стандартный вывод команды не является терминалом, потому что один из них перенаправлен или передан через конвейер. Команда завершается с кодом выхода 1:
+
+```text theme={null}
+Error: Workspace not trusted. Please run `claude` in /Users/you/project first to review and accept the workspace trust dialog.
+```
+
+Два варианта, которые тоже начинаются с `Error: Workspace not trusted.`, появляются в терминале, слишком маленьком, чтобы показать, что включает доверие к каталогу, или в терминале, который не сообщил свой размер. Увеличьте окно или переключитесь на обычное окно терминала, затем снова выполните `claude rc`.
+
+В домашнем каталоге сообщение другое, потому что диалоговое окно доверия к рабочему пространству никогда не сохраняет доверие для домашнего каталога, поэтому его подтверждение там не может удовлетворить эту проверку. До v2.1.214 в домашнем каталоге показывалось сообщение выше, совет из которого там не может сработать.
+
+```text theme={null}
+Error: Workspace not trusted. /Users/you is your home directory, and for security home-directory trust is never saved, so running `claude` here first won't help. Run `claude rc` from a project directory instead (run `claude` there once to accept the trust dialog).
+```
+
+Если на [вопрос `Trust <directory>?`](https://code.claude.com/docs/ru/remote-control#requirements) вы отвечаете `n` или нажимаете Enter, команда выводит сообщение `Remote Control did not start` с названием каталога и завершается с кодом выхода 1. Снова выполните `claude rc`, чтобы ответить `y`.
+
+**Что делать:**
+
+* Сначала подтвердите доверие к каталогу из терминала: выполните там `claude rc` и ответьте `y` или выполните там `claude` и примите [диалоговое окно доверия к рабочему пространству](https://code.claude.com/docs/ru/permissions.md#project-allow-rules-and-workspace-trust), затем снова выполните исходную команду
+* Если вы в домашнем каталоге, перейдите в каталог проекта и запустите Remote Control там
+
+До v2.1.284 команда никогда не задавала этот вопрос, даже в терминале.
+
+### Workspace not trusted when running claude ultrareview
+
+Если в папке, которой вы не доверяли, [`claude ultrareview`](https://code.claude.com/docs/ru/ultrareview#trust-the-folder-before-the-review-runs) не может спросить, доверяете ли вы ей, запуск завершается с кодом выхода 1 до начала ревью:
+
+```text theme={null}
+Error: Workspace not trusted. Please run `claude` in /Users/you/project first to review and accept the workspace trust dialog. Or, in a script or CI job, pass `--trust-workspace` to trust the folder for this run only.
+```
+
+Например, подкоманда не может спросить, если её стандартный ввод или стандартный вывод не является терминалом. Перенаправление вывода в файл, как в `claude ultrareview --json > findings.json`, означает, что стандартный вывод не является терминалом.
+
+**Что делать:**
+
+* В скрипте или задаче CI добавьте `--trust-workspace`, чтобы доверять папке на время этого запуска: `claude ultrareview --trust-workspace`. Добавляйте его только для кода, которому вы доверяете, потому что тогда git и Claude Code могут запускать программы, указанные в конфигурации git этой папки и в настройках проекта. Для pull request, коду которого вы не доверяете, [запустите ревью из ветки, которой вы доверяете](https://code.claude.com/docs/ru/ultrareview.md#trust-the-folder-before-the-review-runs).
+* На своём компьютере выполните `claude` в этой папке и примите [диалоговое окно доверия к рабочему пространству](https://code.claude.com/docs/ru/permissions.md#project-allow-rules-and-workspace-trust), затем снова выполните исходную команду
+
+Каждое из этих сообщений от `claude ultrareview` означает, что ревью не началось и код выхода равен 1:
+
+* **`Error: Workspace not trusted. This terminal ...`**: терминал не сообщил количество строк и столбцов или в него не помещаются вопрос о доверии и его предупреждения. Увеличьте его или используйте терминал, который сообщает свой размер, затем снова выполните `claude ultrareview`. Вне домашнего каталога вы также можете один раз выполнить `claude` в этой папке и принять диалоговое окно доверия, чтобы последующие запуски там не задавали вопрос.
+* **`Error: Workspace not trusted. <folder> is your home directory`**: поскольку доверие к домашнему каталогу никогда не сохраняется, предварительный запуск `claude` там не поможет. Вместо этого выполните `claude ultrareview` из каталога проекта, предварительно один раз выполнив там `claude`, чтобы принять диалоговое окно доверия, или добавьте `--trust-workspace`.
+* **`No answer in time.`, за которым следует `Error: Workspace not trusted`**: на вопрос `Trust <folder>? [y/N]` не было ответа в течение 5 минут. Снова выполните `claude ultrareview` и ответьте на него.
+* **`Ultrareview did not start: <folder> is not trusted`**: вы отказались на вопрос `Trust <folder>? [y/N]`, например ответив `n` или нажав Enter. Чтобы начать ревью, снова выполните `claude ultrareview` и ответьте `y`.
+* **``Ultrareview did not start: `--trust-workspace` takes no value``**: после `--trust-workspace` следует что-то, что не является флагом, например номер PR или `false`. Если вы не доверяете папке, не указывайте флаг. Чтобы доверять ей в этом запуске, поставьте номер PR или базовую ветку перед флагом: `claude ultrareview 1234 --trust-workspace`.
+
+До v2.1.309 `claude ultrareview` не принимал `--trust-workspace`.
+
+### Remote Control did not start because a question got no answer
+
+Это сообщение означает, что [`claude remote-control`](https://code.claude.com/docs/ru/remote-control) задал вопрос первого запуска, процитированный в сообщении, и не получил ответа:
+
+```text theme={null}
+Remote Control did not start: "Enable Remote Control?" got no answer. Run `claude remote-control` at a terminal and answer y once; it won't ask again.
+Remote Control did not start: "Choose [1/2] (default: 1):" got no answer. You can run `claude remote-control` and choose, or pass --spawn=same-dir or --spawn=worktree.
+```
+
+**Что делать:**
+
+* **`Enable Remote Control?`**: в скрипте или сервисе стандартный ввод заканчивается до того, как кто-либо успевает ответить. Один раз выполните `claude remote-control` в терминале от имени пользователя, под которым работает ваш скрипт или сервис, и ответьте `y`.
+* **`Choose [1/2] (default: 1):`**: снова выполните `claude remote-control` и [выберите режим запуска](https://code.claude.com/docs/ru/remote-control.md#set-the-default-spawn-mode-for-a-project) или передайте [`--spawn=same-dir` или `--spawn=worktree`](https://code.claude.com/docs/ru/remote-control#start-a-remote-control-session), чтобы пропустить вопрос
+
+### Not carried over to the sessions Remote Control starts
+
+Вы запустили [Remote Control](https://code.claude.com/docs/ru/remote-control.md) с глобальным флагом `claude` перед глаголом `remote-control`, причём с таким, который ограничивал бы или настраивал сессии, запускаемые Remote Control, например `--settings`, `--setting-sources`, `--permission-mode`, `--disallowed-tools` или `--mcp-config`. Флаг, стоящий перед глаголом, никогда не доходит до этих сессий. Вместо этого Claude Code отказывается запускаться и называет флаг:
+
+```text theme={null}
+Error: `--settings` before `remote-control` is not carried over to the sessions Remote Control starts, so Remote Control refuses to start rather than drop it — remove it, and give Remote Control's own options after the verb (see `claude remote-control --help`). Pass settings with `claude remote-control --settings <file>`.
+```
+
+Claude Code не отказывается запускаться из-за глобальных флагов, отбрасывание которых безвредно, например `--verbose`, `--model` или добавленных обёрткой `--session-id` или `--plugin-dir`: он их игнорирует, и Remote Control запускается.
+
+Claude Code также отказывается запускаться из-за глобального флага, который он пока не распознаёт как безвредный, поэтому флаг, добавленный в более новом выпуске, может появляться в этом сообщении, пока последующий выпуск не пометит его как безвредный.
+
+**Что делать:**
+
+* Уберите флаг перед глаголом и передайте [собственные параметры Remote Control](https://code.claude.com/docs/ru/remote-control.md#start-a-remote-control-session) после него; `claude remote-control --help` перечисляет их
+* Если отклонённый флаг — `--permission-mode`, выполните `claude remote-control --permission-mode <mode>`, чтобы задать режим разрешений для сессий, запускаемых Remote Control
+
+До v2.1.248 `claude remote-control` не принимал собственные флаги, если первым шёл глобальный флаг, и команда завершалась ошибкой `unknown option`.
+
+### Remote Control did not start because of the `--settings` file
+
+С файлом, переданным в [`claude remote-control --settings`](https://code.claude.com/docs/ru/remote-control#start-a-remote-control-session), есть проблема:
+
+```text theme={null}
+Error: Remote Control did not start, because sessions would skip part or all of the --settings file ./rc-settings.json: Invalid or malformed JSON
+```
+
+**Что делать:**
+
+* Исправьте проблему, названную в сообщении, затем снова выполните команду `claude remote-control`
+
+### The settings file has changed since Remote Control started
+
+Это сообщение в терминале, где запущен `claude remote-control`, означает, что сессии не будут запускаться из файла, переданного в [`--settings`](https://code.claude.com/docs/ru/remote-control#start-a-remote-control-session), в его текущем виде:
+
+```text theme={null}
+Session failed: Error: The settings file /path/to/settings.json has changed since Remote Control started, so this session did not start. Restart `claude remote-control` to use it as it is now.
+```
+
+**Что делать:**
+
+* Чтобы использовать файл в его текущем виде, остановите `claude remote-control` и снова выполните ту же команду. Чтобы вернуть сессии, которые он обслуживал, см. [Возобновление сессий после остановки сервера](https://code.claude.com/docs/ru/remote-control.md#resume-sessions-after-stopping-the-server).
+* Чтобы сохранить настройки, с которыми был запущен Remote Control, верните содержимое файла в прежнее состояние, затем снова выполните команду, если `claude remote-control` завершился
+
+### `--sandbox` or `--no-sandbox` is not supported by claude remote-control
+
+Эта ошибка означает, что команда, запускающая ваш сервер [Remote Control](https://code.claude.com/docs/ru/remote-control.md), передаёт `--sandbox` или `--no-sandbox` после `remote-control`, а `claude remote-control` не принимает ни один из этих флагов. Сервер завершается с кодом выхода 1 вместо запуска:
+
+```text theme={null}
+Error: --sandbox is not supported by claude remote-control. The flag had no effect and was removed. To sandbox sessions, set sandbox.enabled to true in settings.
+Error: --no-sandbox is not supported by claude remote-control. The flag had no effect and was removed. Remove it from the command.
+```
+
+**Что делать:**
+
+* Уберите флаг из команды, в том числе в скрипте или определении сервиса, которые запускают сервер за вас, затем выполните её снова
+* Чтобы изолировать в песочнице сессии, которые запускает сервер, включите [изоляцию в песочнице](https://code.claude.com/docs/ru/sandboxing.md), задав [`sandbox.enabled`](https://code.claude.com/docs/ru/settings-reference#sandbox-enabled) значение `true` в [файле настроек](https://code.claude.com/docs/ru/settings.md#where-settings-live)
+
+Оба флага были удалены из `claude remote-control` в v2.1.300, поэтому команда, написанная для более ранней версии, может всё ещё содержать один из них.
+
+### claude import is not yet available in this build
+
+Вы выполнили [`claude import`](https://code.claude.com/docs/ru/cli-reference#cli-commands), и Claude Code обнаружил, что процесс импорта отключён, поэтому команда завершается с кодом выхода 1 вместо запуска импорта. До v2.1.222 сборка с отключённым процессом импорта воспринимала `import` как промпт и запускала интерактивную сессию вместо вывода этого сообщения.
+
+```text theme={null}
+`claude import` is not yet available in this build. Run `claude` and use /mcp or edit ~/.claude/settings.json directly.
+```
+
+Claude Code включает `claude import` с помощью флага функции, который он получает от Anthropic и кэширует на диске. Это сообщение означает, что кэшированное значение отключено. Обычно причина в одном из следующего:
+
+* Вы ещё не запускали сессию после установки, поэтому Claude Code ещё не получил флаг. Первый `claude import` может вывести это сообщение, даже если функция вам доступна.
+* Вы используете Claude Code через Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry или Claude Platform on AWS либо через [шлюз Claude apps](https://code.claude.com/docs/ru/claude-apps-gateway#availability-and-limitations). В таких сессиях Claude Code не получает флаги функций, поэтому `claude import` остаётся недоступным.
+* Вы задали `DISABLE_TELEMETRY`, `DO_NOT_TRACK`, [`CLAUDE_CODE_DISABLE_FEATURE_FLAGS`](https://code.claude.com/docs/ru/env-vars#variables), `DISABLE_GROWTHBOOK` или [`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`](https://code.claude.com/docs/ru/env-vars), которые отключают получение флагов функций, поэтому `claude import` остаётся недоступным.
+
+**Что делать:**
+
+* На новой установке запустите `claude`, дождитесь загрузки сессии, выйдите и снова выполните `claude import`
+* Если получение флагов функций остаётся отключённым, настройте конфигурацию самостоятельно: добавьте MCP-серверы с помощью [`claude mcp add`](https://code.claude.com/docs/ru/mcp#installing-mcp-servers) и создайте [файлы `CLAUDE.md`](https://code.claude.com/docs/ru/memory#how-claude-md-files-load), [скиллы и команды](https://code.claude.com/docs/ru/skills.md#where-skills-live), а также [субагентов](https://code.claude.com/docs/ru/sub-agents.md#choose-the-subagent-scope), которых хотите перенести. Сообщение также упоминает `~/.claude/settings.json`. Из конфигурации, которую переносит `claude import`, этот файл содержит только [режим разрешений](https://code.claude.com/docs/ru/settings-reference.md#permission-settings); MCP-серверы Claude Code из него не читает.
+
+### Could not read Claude Code config
+
+Вы выполнили [`claude import`](https://code.claude.com/docs/ru/cli-reference#cli-commands), когда Claude Code не смог разобрать `~/.claude.json` — файл, в котором он хранит данные вашей учётной записи и состояние отдельных проектов. Подкоманда читает этот файл, чтобы проверить доступность, но не показывает диалоговое окно восстановления, которое показывает интерактивная сессия, поэтому завершается с кодом выхода 1. До v2.1.222 `claude import` с нечитаемым файлом конфигурации запускал интерактивную сессию, диалоговое окно восстановления которой обрабатывало файл.
+
+```text theme={null}
+Could not read Claude Code config — run `claude` with no arguments to recover it.
+```
+
+**Что делать:**
+
+* Выполните `claude` без аргументов. Claude Code обнаружит недопустимый файл и предложит сбросить его. Затем снова выполните `claude import`.
+* Чтобы сохранить сделанные вами правки вручную, вместо этого исправьте синтаксис JSON в `~/.claude.json` в редакторе, затем снова выполните `claude import`
+
+### Could not import a server from Claude Desktop
+
+Claude Code не смог добавить один из серверов, выбранных в `claude mcp add-from-claude-desktop`. Команда всё равно импортирует остальные выбранные серверы и выводит по одной строке для каждого сервера, который не удалось добавить. До v2.1.205 первый сервер, который не удалось добавить, останавливал импорт.
+
+```text theme={null}
+Could not import my server: Invalid name my server. Names can only contain letters, numbers, hyphens, and underscores.
+```
+
+Текст после имени сервера — это причина. Наиболее частая — проверка имени: Claude Desktop допускает в именах серверов символы, например пробелы и точки, а `claude mcp` ограничивает их буквами, цифрами, дефисами и подчёркиваниями. Другие причины — конфигурация сервера, не прошедшая проверку, и сервер, заблокированный [политикой MCP](https://code.claude.com/docs/ru/managed-mcp.md) вашей организации.
+
+**Что делать:**
+
+* Переименуйте сервер в `claude_desktop_config.json`, используя только буквы, цифры, дефисы и подчёркивания, затем снова выполните `claude mcp add-from-claude-desktop`
+* Добавьте этот сервер напрямую с помощью `claude mcp add` или `claude mcp add-json` под допустимым именем. См. [Импорт MCP-серверов из Claude Desktop](https://code.claude.com/docs/ru/mcp.md#import-mcp-servers-from-claude-desktop).
+
+### Cannot add MCP server to the managed scope
+
+Вы выполнили `claude mcp add` или `claude mcp add-json` с `--scope managed`. Эта область действия содержит серверы, которые ваша организация предоставляет через управляемую настройку [`managedMcpServers`](https://code.claude.com/docs/ru/settings-reference#managedmcpservers). Claude Code читает их только из управляемых настроек, поэтому команда не может записать сервер в эту область действия.
+
+```text theme={null}
+Cannot add MCP server to scope: managed
+```
+
+**Что делать:**
+
+* Добавьте сервер в область действия, доступную для записи: `local`, `user` или `project`. Без `--scope` команда использует `local`. См. [Области действия установки MCP](https://code.claude.com/docs/ru/mcp.md#mcp-installation-scopes)
+* Чтобы предоставить сервер каждому пользователю вашей организации, добавьте его в [`managedMcpServers`](https://code.claude.com/docs/ru/settings-reference#managedmcpservers) в развёртываемых вами управляемых настройках
+
+### Cannot add MCP server when managed settings allow only plugin servers
+
+Вы выполнили `claude mcp add` или `claude mcp add-json`, когда управляемые настройки вашей организации задают для [`strictPluginOnlyCustomization`](https://code.claude.com/docs/ru/settings-reference#strictpluginonlycustomization) значение `true` или список, включающий `mcp`. С этой настройкой Claude Code не загружает MCP-серверы из `~/.claude.json` или `.mcp.json`, поэтому команда завершается с кодом выхода 1 вместо сохранения сервера, который никогда бы не загрузился:
+
+```text theme={null}
+Cannot add MCP server: your organization's managed settings allow only MCP servers that plugins provide. Install a plugin that provides this server, or ask your administrator to make it available.
+```
+
+`claude mcp add-from-claude-desktop` сообщает о каждом выбранном сервере как о неимпортированном, указывая это сообщение в качестве причины. [`/import`](https://code.claude.com/docs/ru/commands#all-commands) выводит это сообщение для каждого MCP-сервера, который пытается добавить, и всё равно импортирует остальные найденные элементы.
+
+До v2.1.284 эти команды сохраняли сервер и сообщали об успехе, а сервер так и не загружался.
+
+**Что делать:**
+
+* Установите [плагин](https://code.claude.com/docs/ru/plugins/install.md), который предоставляет этот сервер
+* Попросите администратора распространить сервер в [плагине](https://code.claude.com/docs/ru/plugins/org.md) или предоставить его через [`managedMcpServers`](https://code.claude.com/docs/ru/settings-reference#managedmcpservers), если это удалённый сервер HTTP или SSE
+
+### Can't read .mcp.json
+
+Команда, которая читает [`.mcp.json`](https://code.claude.com/docs/ru/mcp#project-scope) проекта, например `claude mcp add` или `claude mcp add-json` с `--scope project` либо `claude mcp remove`, обнаружила, что этот файл в текущем каталоге не является обычным файлом или больше 2 MiB, поэтому завершается с этой ошибкой вместо чтения файла.
+
+```text theme={null}
+Can't read .mcp.json: it isn't a regular file or is larger than 2097152 bytes. Fix or remove it, then run the command again.
+```
+
+До v2.1.257 FIFO по пути `.mcp.json` заставлял команду бесконечно ждать без вывода, а символическая ссылка на файл устройства, например `/dev/zero`, увеличивала потребление памяти, пока процесс не завершался принудительно.
+
+**Что делать:**
+
+* Проверьте, что находится по пути `.mcp.json` в текущем каталоге. Замените это обычным JSON-файлом в [формате области действия проекта](https://code.claude.com/docs/ru/mcp.md#project-scope) или удалите, затем снова выполните команду.
+
+### MCP server was not saved or removed
+
+Эта ошибка означает, что команда, например `claude mcp add` или `claude mcp remove`, не смогла внести ваше изменение в `~/.claude.json`. Возможно, другие процессы Claude Code удерживали блокировку файла или файл доступен только для чтения либо защищён песочницей.
+
+```text theme={null}
+MCP server "example" was not saved to /home/user/.claude.json. If other Claude Code processes use that file, they may have kept it locked: add the server again, with CLAUDE_CODE_CONFIG_LOCK_WAIT_MS=60000 set to wait up to a minute. If that file is read-only or protected by a sandbox, make it writable or run the command outside the sandbox first.
+```
+
+После удаления сообщение содержит `was not removed from` вместо `was not saved to` и `remove the server again` вместо `add the server again`. Для сервера с областью действия `local` после пути указывается каталог проекта, к которому относится запись, в виде `(local scope for /path/to/project)`.
+
+**Что делать:**
+
+* **Запущены другие процессы Claude Code**: команда ждёт блокировку файла примерно 10–20 секунд, а затем прекращает попытки, ничего не записав. Снова выполните ту же команду, задав в [`CLAUDE_CODE_CONFIG_LOCK_WAIT_MS`](https://code.claude.com/docs/ru/env-vars#variables) более долгое ожидание в миллисекундах, например `60000`.
+* **Файл доступен только для чтения или защищён песочницей**: сделайте названный в сообщении файл доступным для записи и снова выполните ту же команду добавления или удаления либо выполните эту команду вне песочницы.
+
+До v2.1.283 `claude mcp add`, `claude mcp add-json` и `claude mcp remove` сообщали об успехе, даже если изменение не попадало в файл. До v2.1.318 сообщение не упоминало блокировку, а Claude Code не читал [`CLAUDE_CODE_CONFIG_LOCK_WAIT_MS`](https://code.claude.com/docs/ru/env-vars#variables).
+
+### MCP server may not have been saved or removed
+
+Вы выполнили `claude mcp add`, `claude mcp add-json` или `claude mcp remove` для сервера в [области действия](https://code.claude.com/docs/ru/mcp.md#mcp-installation-scopes) `user` или `local`, и Claude Code не смог снова прочитать `~/.claude.json`, чтобы подтвердить изменение. Изменение может быть как записано на диск, так и нет. Причина указана в скобках после `to confirm the change`.
+
+```text theme={null}
+MCP server "example" may not have been saved: /home/user/.claude.json could not be read to confirm the change (EACCES: permission denied, open '/home/user/.claude.json'). Run `claude mcp get example` to check, then add the server again if it is missing.
+```
+
+После удаления сообщение содержит `may not have been removed` и заканчивается на `then remove the server again if it is still listed`. Если причина — `the file was not found`, сервер может по-прежнему быть сконфигурирован.
+
+До v2.1.283 команды сообщали об успехе, даже если изменение не удавалось подтвердить.
+
+**Что делать:**
+
+* Выполните `claude mcp get <name>`, чтобы проверить, записано ли изменение на диск. Для сервера с областью действия `local` выполняйте эту команду из каталога проекта, к которому относится сервер, поскольку локальная область действия задаётся для каждого проекта отдельно.
+* Если сервер отсутствует после добавления или всё ещё присутствует в списке после удаления, снова выполните ту же команду добавления или удаления.
+
+### Server is Anthropic-hosted and doesn't support local OAuth
+
+Вы начали вход для MCP-сервера, URL которого указывает на размещённый Anthropic хост коннектора, выполняющий аутентификацию через сторонний поставщик удостоверений. К таким хостам относятся `microsoft365.mcp.claude.com`, `gmail.mcp.claude.com` и `gcal.mcp.claude.com`. Claude Code отказывается запускать свой локальный процесс OAuth для этих хостов как из панели `/mcp`, так и из `claude mcp login`, потому что [вход для них работает только через claude.ai](https://code.claude.com/docs/ru/mcp.md#use-mcp-servers-from-claude-ai).
+
+```text theme={null}
+"gmail" is Anthropic-hosted and doesn't support local OAuth. Connect it via Settings → Connectors on claude.ai (requires `claude login`), then it'll be available here automatically.
+```
+
+**Что делать:**
+
+* Удалите свою запись с помощью `claude mcp remove <name>`, чтобы она не скрывала коннектор claude.ai с тем же URL
+* После удаления подключите сервис на [claude.ai/customize/connectors](https://claude.ai/customize/connectors), войдя в ту учётную запись, которую используете в Claude Code. После подключения [коннектор автоматически появится в Claude Code](https://code.claude.com/docs/ru/mcp.md#use-mcp-servers-from-claude-ai), если ваш активный способ аутентификации — вход по подписке claude.ai
+
+### Server rejected the Authorization header minted by the configured headersHelper
+
+MCP-сервер, для которого [`headersHelper`](https://code.claude.com/docs/ru/mcp#use-dynamic-headers-for-custom-authentication) предоставляет заголовок `Authorization`, ответил на подключение HTTP 401 или 403, поэтому Claude Code сообщает, что подключение не удалось. Поскольку helper предоставляет заголовок `Authorization`, Claude Code [не переключается на OAuth](https://code.claude.com/docs/ru/mcp.md#authenticate-with-remote-mcp-servers) для этого сервера:
+
+```text theme={null}
+Server rejected the Authorization header minted by the configured headersHelper (HTTP 401). Check that the helper command returns a valid credential for this MCP endpoint — OAuth fallback is disabled when the helper supplies Authorization.
+```
+
+Claude Code повторно запускает helper при каждой попытке подключения, поэтому повторная попытка после временного отказа, например из-за гонки при ротации токена, может завершиться успешно со свежими учётными данными.
+
+**Что делать:**
+
+* Запустите команду `headersHelper` самостоятельно так же, как её запускает Claude Code: из [каталога, в котором её запускает Claude Code](https://code.claude.com/docs/ru/mcp.md#where-the-helper-runs), с [переменными окружения, которые Claude Code задаёт для неё](https://code.claude.com/docs/ru/mcp.md#use-dynamic-headers-for-custom-authentication), и без [переменных с учётными данными, которые Claude Code удаляет](https://code.claude.com/docs/ru/mcp.md#which-variables-a-helper-can-read) для сервера из `.mcp.json` проекта, плагина или файла агента проекта. Проверьте, что она выводит значение `Authorization`, которое принимает эндпоинт сервера
+* После исправления helper или источника его учётных данных выберите сервер в `/mcp` и выберите **Reconnect**
+
+До v2.1.248 Claude Code выполнял обнаружение OAuth для сервера, helper которого предоставлял заголовок `Authorization`. Это обнаружение могло завершаться ошибкой `Incompatible auth server: does not support dynamic client registration` вместо сообщения об отклонённых учётных данных.
+
+### MCP server rejected the elicitation capability
+
+MCP-сервер, построенный на Java MCP SDK версий с 0.11.0 по 0.17.0, отклонил подключение. Эти версии SDK не могут разобрать [режимы elicitation](https://code.claude.com/docs/ru/mcp.md#elicitation-modes-claude-code-declares) `form` и `url`, которые Claude Code объявляет при установлении соединения. Сообщение выглядит так:
+
+```text theme={null}
+This server (Java MCP SDK 0.17.0 or older) rejected Claude Code's elicitation capability. Set "bareElicitationCapability": true for it, or upgrade to Java MCP SDK 0.17.1+ (Spring AI 1.0.7+ or 1.1.6+).
+```
+
+**Что делать:**
+
+* Обновите сервер до Java MCP SDK 0.17.1 или новее либо до одного из выпусков Spring AI, названных в сообщении
+* Или добавьте `"bareElicitationCapability": true` в запись этого сервера в вашей конфигурации MCP, затем перезапустите Claude Code. Поле принимается в записях stdio, `sse`, `http` и `ws` и требует Claude Code v2.1.281 или новее
+
+Эта запись `.mcp.json` задаёт поле для одного HTTP-сервера:
+
+```json theme={null}
+{
+  "mcpServers": {
+    "inventory": {
+      "type": "http",
+      "url": "https://mcp.example.com/mcp",
+      "bareElicitationCapability": true
+    }
+  }
+}
+```
+
+После перезапуска `/mcp` показывает сервер как подключённый. Claude Code объявляет режим form только этому серверу, поэтому удалите поле после его обновления.
+
+Сервер также может завершаться ошибкой с собственным текстом, например содержащим `Unrecognized field "form"`. Применяются те же способы исправления.
+
+### MCP permission prompt tool not found
+
+Инструмента, переданного в [`--permission-prompt-tool`](https://code.claude.com/docs/ru/cli-reference#cli-flags), не оказалось среди подключённых MCP-инструментов, когда запуску впервые понадобилось решение о разрешении: либо его сервер так и не подключился, либо ни один подключённый сервер не предоставляет инструмент с таким именем. Claude Code всё равно отправляет ваш промпт: [неинтерактивный](https://code.claude.com/docs/ru/headless.md) запуск завершается с этой ошибкой и кодом выхода 1 при первом вызове инструмента, поэтому не выдаёт ответа, хотя запрос был сделан. Перед первым промптом Claude Code ждёт подключения этого сервера в пределах таймаута подключения для каждого сервера в 30 секунд, заданного [`MCP_TIMEOUT`](https://code.claude.com/docs/ru/env-vars). До v2.1.206 при запуске Claude Code не ждал завершения подключения сервера, поэтому медленно запускающийся, но исправный сервер тоже вызывал эту ошибку.
+
+```text theme={null}
+Error: MCP tool mcp__permissions__approve (passed via --permission-prompt-tool) not found. Available MCP tools: none
+```
+
+Список после `Available MCP tools:` называет MCP-инструменты, которые были подключены.
+
+**Что делать:**
+
+* Проверьте, что сервер запускается и остаётся подключённым: выполните `claude mcp list` в том же каталоге и убедитесь, что сервер указан как подключённый
+* Убедитесь, что имя инструмента совпадает с именем `mcp__<server>__<tool>`, которое предоставляет сервер
+* Если серверу нужно больше 30 секунд для запуска, увеличьте [`MCP_TIMEOUT`](https://code.claude.com/docs/ru/env-vars)
+
+### OAuth callback port is already in use
+
+Когда вы входите на удалённый MCP-сервер через OAuth, Claude Code запускает локальный обработчик для получения обратного вызова входа. Если порт, нужный этому обработчику, занят другим процессом, вход завершается ошибкой с этим сообщением. Чаще всего это происходит с [фиксированным портом обратного вызова](https://code.claude.com/docs/ru/mcp.md#use-a-fixed-oauth-callback-port), заданным через переменную [`MCP_OAUTH_CALLBACK_PORT`](https://code.claude.com/docs/ru/env-vars) или `--callback-port`, поскольку без него Claude Code выбирает свободный порт.
+
+```text theme={null}
+OAuth callback port <port> is already in use — another process may be holding it. Run `lsof -ti:<port> -sTCP:LISTEN` to find it.
+```
+
+В Windows вместо этого предлагается команда `netstat -ano | findstr :<port>`.
+
+**Что делать:**
+
+* Выполните команду из сообщения, чтобы найти процесс, занимающий порт, и остановите его или дождитесь его завершения
+* Если другой программе этот порт нужен постоянно, зарегистрируйте на сервере другой URI перенаправления и задайте его порт с помощью `MCP_OAUTH_CALLBACK_PORT` или `--callback-port` — в зависимости от того, что вы используете
+* Затем снова начните вход, например выбрав сервер в `/mcp`
+
+### No available ports for OAuth redirect
+
+Когда вы входите на удалённый MCP-сервер через [OAuth](https://code.claude.com/docs/ru/mcp.md#authenticate-with-remote-mcp-servers), Claude Code запускает локальный обработчик для получения обратного вызова входа. Вход завершается ошибкой с этим сообщением, если Claude Code не может занять для него локальный порт. Что-то на компьютере мешает ему прослушивать `127.0.0.1`, например защитное ПО или политика песочницы, запрещающая локальные обработчики.
+
+```text theme={null}
+No available ports for OAuth redirect
+```
+
+До v2.1.268 Claude Code не переключался на порт, назначенный операционной системой, поэтому сообщение также появлялось, когда не удавалось занять только самостоятельно выбранные им порты. Так могло происходить на хостах Windows, где Hyper-V резервирует диапазоны портов, покрывающие порты, из которых выбирает Claude Code.
+
+**Что делать:**
+
+* Проверьте, не блокирует ли защитное ПО или политика песочницы прослушивание `127.0.0.1` процессами, и разрешите Claude Code занимать локальный порт
+* Затем снова начните вход, например выбрав сервер в `/mcp`
+
+### /security-review завершается ошибкой без origin/HEAD
+
+[`/security-review`](https://code.claude.com/docs/ru/commands#all-commands) формирует контекст ревью, вычисляя diff вашей ветки относительно `origin/HEAD` — локальной ссылки, которая фиксирует, какая ветка является веткой по умолчанию на вашем удалённом репозитории `origin`. Если этой ссылки нет, команды git, собирающие diff, завершаются ошибкой, и ревью останавливается, не начавшись.
+
+```text theme={null}
+Error: Shell command failed for pattern "!`git diff --name-only origin/HEAD...`": [stderr]
+fatal: ambiguous argument 'origin/HEAD...': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+```
+
+Вместо этого сообщение может цитировать `git log` или другой `git diff`. Git создаёт `origin/HEAD` только тогда, когда удалённый репозиторий объявляет ветку по умолчанию и ваш refspec для fetch её охватывает, что происходит при полном `git clone` удалённого репозитория с коммитами. Ссылка отсутствует в следующих конфигурациях:
+
+* Однобранчевая или CI-копия, которая получает слишком узкий refspec
+* Удалённый репозиторий, HEAD которого на стороне сервера указывает на ветку, которую никто не отправлял
+* Репозиторий без удалённого репозитория `origin` или такой, для которого вы никогда не выполняли fetch
+
+Claude Code показывает ту же ошибку для любого скилла, который [внедряет динамический контекст](https://code.claude.com/docs/ru/skills.md#when-an-injected-command-fails), и неудачная внедрённая команда прерывает вызов этого скилла.
+
+Родственные сообщения появляются ещё до запуска команды:
+
+* `Shell command permission check failed for pattern "..."`: проверка разрешений не разрешила команду. См. [Проверки разрешений для внедрённых команд](https://code.claude.com/docs/ru/skills.md#permission-checks-on-injected-commands), чтобы узнать, какие результаты приводят к прерыванию в каждом режиме разрешений и когда `allowed-tools` заранее одобряет команду
+* ``Skill <name> requires bash (`shell: bash` in frontmatter) but Git Bash was not found``: frontmatter скилла требует bash на компьютере, где его нет. Установите Git for Windows или измените frontmatter на `shell: powershell`. См. [Как выполняются внедрённые команды](https://code.claude.com/docs/ru/skills.md#how-injected-commands-run)
+
+**Что делать:**
+
+* Создайте ссылку, указав ветку по умолчанию вашего удалённого репозитория: `git remote set-head origin <default-branch>`. Это работает, если существует локальная отслеживающая ссылка `origin/<default-branch>`. Если её нет, как в однобранчевых клонах, сначала получите ветку: выполните `git remote set-branches --add origin <branch>`, затем `git fetch origin`, затем повторите команду set-head. Снова выполните `/security-review`.
+* Если вы не хотите указывать ветку, выполните `git fetch origin`, а затем `git remote set-head origin --auto`, которая спрашивает у удалённого репозитория, какая ветка у него по умолчанию. Она завершается ошибкой `error: Cannot determine remote HEAD`, если удалённый репозиторий не объявляет ветку по умолчанию, потому что он пуст или его HEAD указывает на ветку, которую никто не отправлял; в этом случае укажите ветку явно. Она завершается ошибкой `error: Not a valid ref`, если ваш клон не получает эту ветку; сначала расширьте refspec, как описано выше.
+* Если у репозитория нет удалённого репозитория, добавьте его с помощью `git remote add origin <url>` и выполните fetch перед созданием ссылки. Если удалённый репозиторий пуст, сначала отправьте свою ветку с помощью `git push -u origin HEAD` и укажите эту ветку в команде set-head; тогда `origin/HEAD` будет указывать на только что отправленную ветку, поэтому `/security-review` будет видеть пустой diff, пока ваша ветка не разойдётся с ней.
+
+### No shell command in a skill or command was run
+
+`No shell command in <name> was run` означает, что [команда динамического контекста](https://code.claude.com/docs/ru/skills.md#inject-dynamic-context) `` !`<command>` `` в этом файле скилла или команды содержит символ, который отклоняет инструмент Bash или PowerShell:
+
+* **Любой из инструментов**: необработанный управляющий символ, отличный от табуляции или перевода строки
+* **Инструмент PowerShell**: также U+FEFF или U+180E
+
+Сообщение заканчивается отклонённой командой, в которой каждый отклонённый символ показан как `�`, как в этом примере для инструмента Bash:
+
+```text theme={null}
+No shell command in /my-skill was run, because the Bash tool does not accept one of them: command contains control characters that would be hidden in the approval dialog. Unprintable characters are shown as � below: remove them from the skill or command file, or from the arguments or options substituted into it.
+build.sh --target�dist
+```
+
+**Что делать:**
+
+* Найдите каждый `�` в команде, процитированной в конце сообщения. Удалите символ, который он обозначает, из [файла скилла или команды](https://code.claude.com/docs/ru/skills.md#where-skills-live) либо из аргументов или [параметров](https://code.claude.com/docs/ru/plugins/manifest-reference.md#user-configuration), подставляемых в этот файл.
+
+### Скилл, команда или хук превышает лимит в 4 000 000 символов
+
+Сообщение с `more than 4,000,000 characters` означает, что скилл, команда или [хук типа prompt или agent](https://code.claude.com/docs/ru/hooks.md#prompt-and-agent-hook-fields) не был выполнен. Если вы вставили длинный текст в качестве аргументов, сохраните его в файл, выполните `/clear`, поскольку текст остаётся в диалоге, затем передайте путь к файлу. Вне [Code Mode](https://code.claude.com/docs/ru/code-mode.md#tool-call-refused-by-a-hook) хук `PreToolUse` типа prompt или agent, превышающий лимит, не блокирует вызов. Используйте [command-хук](https://code.claude.com/docs/ru/hooks.md#command-hook-fields), у которого такого лимита нет.
+
+### Input must be provided when using `--print`
+
+Чтобы запустить интерактивный интерфейс, простому `claude` нужно, чтобы stdout был терминалом. Если stdout перенаправлен или консоль не является настоящим терминалом, как в PowerShell ISE и некоторых панелях вывода IDE, `claude` вместо этого работает [в неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md). Это тот же режим, что и `claude -p`, которому требуется промпт, поэтому сообщение упоминает `--print`, даже если вы не передавали этот флаг. Передача `-p`/`--print` без промпта и без данных, переданных через stdin, вызывает ту же ошибку в любой среде.
+
+```text theme={null}
+Error: Input must be provided either through stdin or as a prompt argument when using --print
+```
+
+**Что делать:**
+
+* Для интерактивной работы запускайте `claude` в настоящем терминале: в Windows Terminal или консоли PowerShell, а не в ISE, и во встроенном терминале вашей IDE, а не в панели вывода
+* Для однократного использования передайте промпт: `claude -p "your question"` или передайте его через конвейер с помощью `echo "your question" | claude -p`
+
+### Claude Code can't read the keyboard here
+
+Вы запустили `claude` без [`-p`](https://code.claude.com/docs/ru/headless), что запускает [интерактивную сессию](https://code.claude.com/docs/ru/interactive-mode.md), но его стандартный ввод не является терминалом. Что-то перенаправило его через конвейер или иным способом, либо программа, запустившая `claude`, предоставила собственный поток ввода.
+
+Интерактивной сессии нужен терминал, из которого она считывает нажатия клавиш, и то, что делает Claude Code без него, зависит от вашей платформы:
+
+* **Windows**: Claude Code выводит сообщение в stderr и завершает работу с кодом 1 вместо запуска интерфейса
+* **macOS и Linux**: Claude Code считывает нажатия клавиш из `/dev/tty` и запускает сессию, используя переданный через конвейер текст в качестве вашего первого промпта. Вы видите сообщение, когда `/dev/tty` не удаётся открыть, и в его первой строке вместо формулировки для Windows упоминается `/dev/tty`.
+
+В Windows сообщение выглядит так:
+
+```text theme={null}
+Claude Code can't read the keyboard here: stdin is not a terminal (it is piped, redirected, or supplied by the program that launched claude), and on Windows it can't fall back to the console for input yet.
+Run claude directly in Windows Terminal, PowerShell, or Command Prompt, without piping or redirecting its input.
+To send text as a prompt and print the reply instead, add -p; it also works with --continue and --resume <session-id> (for example: type notes.md | claude -p --continue).
+```
+
+**Что делать:**
+
+* Чтобы работать интерактивно, запустите `claude` непосредственно в терминале, без конвейера и перенаправления ввода
+* Чтобы получить ответ без интерактивного интерфейса, например из скрипта, добавьте `-p` и передайте промпт как аргумент или через stdin, например `claude -p "your question"` или `echo "your question" | claude -p`. То же самое работает с `--continue` и `--resume <session-id>`.
+
+До версии v2.1.287 Claude Code вместо вывода этого сообщения запускал интерфейс, а затем либо ничего не показывал на экране, либо завершался с ошибкой, содержащей `Raw mode is not supported`.
+
+Если же вы видите `Raw mode is not supported` во время `claude install`, см. раздел [`Raw mode is not supported` во время установки](https://code.claude.com/docs/ru/troubleshoot-install#raw-mode-is-not-supported-during-install).
+
+### Input contained only whitespace
+
+В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) Claude Code отклоняет промпт, состоящий целиком из пробелов, табуляций или переводов строки, вместо того чтобы отправить его, поскольку API отклоняет сообщения без видимого текста. Какое сообщение вы увидите, зависит от того, откуда пришёл пустой промпт:
+
+* **Аргумент промпта или stdin через конвейер для `claude -p`**: `claude` завершает работу с сообщением `Error: Input contained only whitespace. Provide a prompt with text through stdin or as a prompt argument when using --print`
+* **Сообщение, отправленное в работающую сессию `--input-format stream-json` или [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md)**: Claude Code завершает ход без вызова модели, и сессия остаётся пригодной для работы. Отказ приходит как информационное сообщение и как текст результата хода: `Blank prompt — the message was only whitespace, so nothing was sent to the model.`
+
+До версии v2.1.229 Claude Code отправлял сообщение, состоящее только из пробельных символов, в API, который отклонял запрос с ошибкой 400.
+
+**Что делать:**
+
+* Включите в промпт видимый текст. Если скрипт формирует промпт из переменной или файла, перед вызовом Claude Code проверьте, что источник не пуст.
+
+### stream-json input carried over 256M characters with no newline
+
+Ваша программа отправила через stdin более 268 435 456 символов без перевода строки в запуск `claude -p --input-format stream-json`, поэтому Claude Code выводит эту ошибку в stderr и завершает работу с кодом 1 вместо того, чтобы буферизовать ввод дальше. В сообщении этот лимит указан как `256M`. До версии v2.1.257 Claude Code буферизовал такой ввод без ограничений, и потребление памяти росло, пока процесс не падал или не завершался принудительно.
+
+```text theme={null}
+Error: stream-json input carried over 256M characters with no newline. Each stream-json message must be a single newline-terminated JSON line: either the producer is not newline-terminating its messages, or one message exceeded this budget.
+```
+
+Такой длинный ввод без перевода строки обычно означает, что источник вообще не является источником stream-json, например это бинарный файл или обычный вывод лога, случайно переданный через конвейер. Одно сообщение, превышающее лимит, не проходит ту же проверку.
+
+**Что делать:**
+
+* Проверьте, что передаётся в stdin. С [`--input-format stream-json`](https://code.claude.com/docs/ru/cli-reference#cli-flags) каждое сообщение должно быть одной строкой JSON, завершающейся переводом строки
+* Чтобы вместо этого отправить обычный текст, уберите `--input-format stream-json`; по умолчанию `claude -p` считывает промпт в виде обычного текста из stdin
+
+### Unknown command
+
+В интерактивной сессии терминала вы отправили имя с `/`, которое не соответствует ни одной команде в этой сессии, поэтому Claude Code сообщает об этом имени вместо того, чтобы что-либо выполнить:
+
+```text theme={null}
+Unknown command: /hepl. Did you mean /help?
+```
+
+Claude Code предлагает ближайшее имя команды или псевдоним из тех, что меню показывает в этой сессии. Если ничего похожего нет, сообщение заканчивается после имени. Причина обычно одна из следующих:
+
+* Опечатка, например `/hepl` вместо `/help`. В разделе [Как меню команд сопоставляет введённый текст](https://code.claude.com/docs/ru/commands.md#how-the-command-menu-matches-what-you-type) описано, как выбрать близкое совпадение перед отправкой
+* Команда существует, но недоступна в этой сессии, потому что не выполнено какое-либо требование, например к платформе, тарифному плану или способу аутентификации. См. раздел для [`/web-setup`](https://code.claude.com/docs/ru/web-quickstart#web-setup-shows-no-commands-match-or-unknown-command), [`/schedule`](https://code.claude.com/docs/ru/routines#schedule-returns-unknown-command) или [`/auto-mode-setup`](https://code.claude.com/docs/ru/auto-mode-config#auto-mode-setup-returns-unknown-command). Некоторые команды отвечают собственным сообщением, когда политика вашей организации их отключает, например [`Cloud sessions are disabled by your organization's policy`](#cloud-sessions-are-disabled-by-your-organizations-policy)
+* Команда из [плагина](https://code.claude.com/docs/ru/plugins/overview.md) или [MCP-сервера](https://code.claude.com/docs/ru/mcp.md#use-mcp-prompts-as-commands), который не установлен или не подключён в этой сессии
+
+Claude Code отвечает так на несовпавшее имя с `/` только в интерактивной сессии терминала. Во всех остальных сессиях он вместо этого отправляет промпт Claude как обычное сообщение с пометкой о том, что команда не была выполнена, и списком команд, которые Claude может выполнить в сессии. К таким сессиям относятся:
+
+* запуски с `-p`
+* приложения на [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md)
+* вкладка Code в [приложении Desktop](https://code.claude.com/docs/ru/desktop.md)
+* панель чата в [расширении VS Code](https://code.claude.com/docs/ru/vs-code.md)
+* [облачные сессии](https://code.claude.com/docs/ru/claude-code-on-the-web.md) и [облачные запланированные задачи](https://code.claude.com/docs/ru/routines.md)
+
+Для встроенной команды, которую нельзя выполнить в одной из этих сессий, Claude Code по-прежнему отвечает, что команда недоступна, вместо того чтобы отправить её Claude. До версии v2.1.274 несовпавшее имя отправляли Claude только облачные сессии и облачные запланированные задачи. До версии v2.1.273 они тоже отвечали `Unknown command`.
+
+Claude Code не считает командой каждый промпт, начинающийся с `/`. Он отправляет промпт Claude как обычное сообщение, когда первое слово после `/` начинается со знака препинания, как `/--`, открывающий doc-комментарий в Lean, или является путём, например `/var/log/syslog`.
+
+До версии v2.1.236, если вы нажимали `Enter`, пока меню команд показывало близкое совпадение для введённого имени, Claude Code выполнял это совпадение, поэтому опечатка вроде `/hepl` запускала `/help` вместо вывода этого сообщения.
+
+**Что делать:**
+
+* Выполните предложенное имя или введите `/` и часть имени, чтобы увидеть, что доступно в этой сессии
+* Если Claude Code сообщает, что документированная команда неизвестна, проверьте её строку в [справочнике команд](https://code.claude.com/docs/ru/commands.md) на предмет указанного там требования
+
+### Diff is too large for ultrareview
+
+Diff между вашей веткой и базовой веткой, включая незакоммиченные и подготовленные (staged) изменения, превышает ограничения по размеру для [ultrareview](https://code.claude.com/docs/ru/ultrareview.md), поэтому `/code-review ultra` и подкоманда `claude ultrareview` отклоняют код-ревью до запуска облачной сессии. Отклонённое код-ревью не расходует бесплатный запуск и не списывает кредиты использования. В сообщении указываются действующие ограничения, размер вашего diff и файлы, в которых больше всего изменённых строк. До версии v2.1.216 сообщение показывало только необработанную статистику diff.
+
+```text theme={null}
+Diff is too large for ultrareview: 812 files, 96,410 lines changed (limits: 500 files, 8,000 lines). Largest files: package-lock.json (41,904 lines), dist/bundle.js (18,210 lines), src/generated/api.ts (9,876 lines). Pass a closer base branch (`/code-review ultra <branch>`) to narrow the scope, or split the change.
+```
+
+При код-ревью pull request действуют те же ограничения; в этом случае сообщение начинается с `PR #<N> is too large for ultrareview` и указывает количество файлов и строк PR.
+
+**Что делать:**
+
+* Передайте базовую ветку, более близкую к вашей работе, например `/code-review ultra develop`, чтобы код-ревью охватывало только diff относительно этой ветки
+* Разделите изменение на меньшие ветки и проведите код-ревью каждой. Файлы, названные в сообщении, дают больше всего изменённых строк, поэтому начните с переноса их в отдельную ветку.
+
+### Could not find merge-base with the base branch
+
+`/code-review ultra` и подкоманда `claude ultrareview` проверяют diff между вашей веткой и базовой веткой, для чего нужен общий для них коммит. Когда `git merge-base` его не находит, Claude Code отклоняет код-ревью до запуска облачной сессии. В клоне, полноту которого Claude Code может проверить и в котором есть хотя бы одна ветка, он вместо отказа переходит к [код-ревью всех отслеживаемых файлов](https://code.claude.com/docs/ru/ultrareview.md#diff-limits-and-fallbacks). Вы видите этот отказ, когда базовая ветка вообще не найдена, когда Claude Code не может проверить полноту вашего клона, или в редком репозитории, где diff всего дерева невозможен, например при формате объектов SHA-256.
+
+```text theme={null}
+Could not find merge-base with main. Pass the base branch explicitly (e.g. `/code-review ultra develop`) or make sure you're in a git repo with a main branch.
+```
+
+Подсказка после первого предложения зависит от того, что обнаружил Claude Code:
+
+* **Вы не передали базовую ветку**: Claude Code выполнил сравнение с веткой репозитория по умолчанию и предлагает явно передать вашу базовую ветку, как в примере выше
+* **Вы передали базовую ветку, которая уже была в вашем клоне**: подсказка гласит ``Make sure <branch> exists locally or on origin (try `git fetch origin <branch>`)``
+* **Вы передали базовую ветку, которой не было в вашем клоне**: Claude Code получил её из origin перед сравнением. Подсказка гласит ``<branch> was fetched from origin but shares no history with HEAD. If another branch is your real base, pass it explicitly (`/code-review ultra <branch>`)``; если Claude Code не может определить, является ли ваш клон поверхностным, он вместо этого предлагает `git fetch --unshallow origin`. До v2.1.221 подсказка предлагала `git fetch --unshallow origin` для каждой полученной базовой ветки, а в полном клоне эта команда завершается ошибкой `fatal: --unshallow on a complete repository does not make sense`.
+
+**Что делать:**
+
+* Если ваша настоящая базовая ветка другая, передайте её явно: `/code-review ultra <branch>`
+* Если в вашем клоне может не быть полной истории, выполните `git fetch --unshallow origin` и запустите код-ревью повторно
+
+### Your checkout has no branches
+
+В рабочей копии могут быть коммиты, но не быть веток: если выполнить `git init`, затем `git fetch <url>` и `git checkout FETCH_HEAD`, вы получите detached HEAD без ссылок (refs). Claude Code упаковывает ваш репозиторий в git bundle, чтобы загрузить его для [ultrareview](https://code.claude.com/docs/ru/ultrareview.md), и не может упаковать репозиторий без веток или других ссылок, поэтому `/code-review ultra` и подкоманда `claude ultrareview` отклоняют код-ревью до запуска облачной сессии.
+
+```text theme={null}
+Your checkout has no branches (detached HEAD only), which cloud review can't bundle. Create one first — `git checkout -b <name>` — then rerun /code-review ultra.
+```
+
+До версии v2.1.221 Claude Code пытался проверить все отслеживаемые файлы в такой рабочей копии, и загрузка завершалась ошибкой.
+
+**Что делать:**
+
+* Создайте ветку на текущем коммите с помощью `git checkout -b <name>`, затем запустите код-ревью повторно
+
+### No GitHub account is connected to your Claude account
+
+Вы выполнили `/code-review ultra <PR#>` или `claude ultrareview <PR#>`, и перед созданием облачной сессии Claude Code спрашивает у сервера, может ли [аккаунт GitHub, подключённый к вашему аккаунту Claude](https://code.claude.com/docs/ru/ultrareview.md#review-a-pull-request), получить доступ к репозиторию PR. Аккаунт не подключён или срок подключения истёк, поэтому клонирование в облаке завершилось бы ошибкой, и Claude Code отклоняет запуск. За отклонённый запуск Claude Code не расходует бесплатный запуск и не списывает кредиты использования.
+
+```text theme={null}
+Ultrareview clones <owner>/<repo> in the cloud with the GitHub account connected to your Claude account, and none is connected (or the connection expired). To fix: run /web-setup to reuse your GitHub CLI login, or connect an account at https://claude.ai/connect-github — then re-run /code-review ultra 1234 (allow a minute after connecting).
+```
+
+Когда [`/web-setup`](https://code.claude.com/docs/ru/web-quickstart#connect-from-your-terminal) недоступна в вашей сессии, сообщение указывает только ссылку на claude.ai.
+
+**Что делать:**
+
+* Выполните `/web-setup`, чтобы подключить вход в GitHub CLI к вашему аккаунту Claude, или подключите аккаунт на [claude.ai/connect-github](https://claude.ai/connect-github)
+* Запустите код-ревью повторно через минуту после подключения
+
+До версии v2.1.248 Claude Code не проверял это перед запуском.
+
+### Your connected GitHub account can't see the repository
+
+Вы выполнили `/code-review ultra <PR#>` или `claude ultrareview <PR#>`, и [аккаунт GitHub, подключённый к вашему аккаунту Claude](https://code.claude.com/docs/ru/ultrareview.md#review-a-pull-request), не может прочитать репозиторий PR, поэтому клонирование в облаке завершилось бы ошибкой, и Claude Code отклоняет запуск. За отклонённый запуск Claude Code не расходует бесплатный запуск и не списывает кредиты использования.
+
+```text theme={null}
+Your connected GitHub account can't see <owner>/<repo> — usually the Claude GitHub app isn't installed on <owner> or wasn't granted this repo (web-connected accounts need it for private repos), or a different GitHub account is connected. To fix: run /web-setup to reuse your GitHub CLI login, or install the app at https://github.com/apps/claude/installations/new — then re-run /code-review ultra 1234.
+```
+
+Когда [`/web-setup`](https://code.claude.com/docs/ru/web-quickstart#connect-from-your-terminal) недоступна в вашей сессии, сообщение указывает только установку приложения.
+
+**Что делать:**
+
+* Если ваш локальный `gh` CLI может прочитать репозиторий, выполните `/web-setup`, чтобы подключить этот вход к вашему аккаунту Claude
+* После изменения запустите код-ревью повторно
+
+До версии v2.1.248 Claude Code не проверял это перед запуском.
+
+### The GitHub App preflight failed transiently
+
+Вы запустили [облачную сессию](https://code.claude.com/docs/ru/claude-code-on-the-web.md) из локального репозитория, и одновременно не удались два шага. Claude Code не смог собрать или загрузить bundle вашего репозитория. Перед загрузкой он проверял, может ли облачный сервис клонировать репозиторий из GitHub, и вместо однозначного ответа эта проверка завершилась ошибкой, которую может устранить повторная попытка, например сетевой ошибкой, таймаутом или временной ошибкой сервера. Полное сообщение начинается с того, что помешало созданию bundle, например `Could not upload repo bundle (<error>)`, и заканчивается предложением о предварительной проверке:
+
+```text theme={null}
+Could not upload repo bundle (<error>). The GitHub App preflight failed transiently (network or service hiccup) — retry in a moment to start from GitHub instead
+```
+
+**Что делать:**
+
+* Через некоторое время выполните команду снова. Когда проверка GitHub пройдёт, Claude Code сможет запустить сессию из клона GitHub, и неудавшаяся загрузка больше не будет блокировать запуск
+* Если повторные попытки по-прежнему не удаются, начало сообщения указывает, что помешало загрузке. Если эту причину можно устранить, устраните её, чтобы сессия могла запуститься из вашего локального репозитория
+
+До версии v2.1.251 Claude Code заканчивал сообщение фразой `Please set up GitHub on https://claude.ai/code`, даже когда проверка GitHub не удалась лишь временно, а советы по настройке не могут устранить временный сбой.
+
+### Загрузка репозитория не может учесть настройку git
+
+Вы запустили [облачную сессию, которая загружает ваш локальный репозиторий](https://code.claude.com/docs/ru/claude-code-on-the-web.md#send-local-repositories-without-github), или [ultrareview](https://code.claude.com/docs/ru/ultrareview.md) ветки, и загрузка не может учесть одну из настроек git, определяющих, какие правила атрибутов применяются к вашим файлам. Если бы загрузка продолжилась и пропустила правило, файл, который git преобразует перед сохранением, например зашифрованный clean-фильтром, мог бы попасть в облако в том виде, в каком он хранится на диске. Вместо этого Claude Code отклоняет загрузку, и ничего не загружается:
+
+```text theme={null}
+Not uploading this working tree: core.ignoreCase (which decides whether .gitattributes patterns match file names regardless of letter case) is set in <file>, and the upload cannot follow that setting, so a file git would change before storing it (to encrypt it, for example) could be uploaded as it is on disk. Move the core.ignoreCase line into this repository’s .git/config or directly into your ~/.gitconfig, then retry.
+```
+
+Сообщение называет настройку и место, где она задана, и заканчивается способом исправления для вашего случая. Тот же отказ появляется для `core.attributesFile` и `attr.tree`, каждый со своим способом исправления.
+
+Сообщение может указывать файл конфигурации, который ваша конфигурация git подключает через директиву `include` или `includeIf`, даже если условие этой директивы не относится к данному репозиторию.
+
+**Что делать:**
+
+* Примените исправление из последнего предложения сообщения
+
+### GitHub isn't connected to your Claude account
+
+Вы запустили [облачную сессию](https://code.claude.com/docs/ru/claude-code-on-the-web.md) из вашего локального репозитория, например с помощью `/autofix-pr`. К вашему аккаунту Claude не подключён аккаунт GitHub или срок подключения истёк, поэтому Claude Code отклоняет запуск:
+
+```text theme={null}
+GitHub isn't connected to your Claude account, so this repository can't be cloned in the cloud. Run /web-setup to connect with your GitHub CLI login, or connect on the web at https://claude.ai/connect-github
+```
+
+Когда вы создаёте облачную запланированную задачу с помощью [`/schedule`](https://code.claude.com/docs/ru/routines), то же сообщение появляется как примечание о настройке с названием репозитория; это примечание не блокирует создание задачи.
+
+**Что делать:**
+
+* Выполните `/web-setup`, чтобы подключить вход в GitHub CLI к вашему аккаунту Claude, или подключите аккаунт на [claude.ai/connect-github](https://claude.ai/connect-github). О различиях этих двух способов см. [Варианты аутентификации GitHub](https://code.claude.com/docs/ru/claude-code-on-the-web.md#github-authentication-options).
+* Выполните команду повторно через минуту после подключения
+
+До версии v2.1.268 Claude Code сообщал об этом как о временном сбое проверки Claude GitHub App и предлагал повторить попытку или установить приложение; ни то, ни другое не подключает аккаунт GitHub.
+
+### Политика организации GitHub блокирует Claude
+
+Вы выполнили в промпте Claude Code команду, которая запускает облачную сессию, например [`/autofix-pr`](https://code.claude.com/docs/ru/claude-code-on-the-web#auto-fix-pull-requests). Перед созданием сессии Claude Code проверяет доступ Claude к репозиторию на GitHub, и GitHub отказал, потому что в вашей организации GitHub действует политика, блокирующая Claude. Claude Code останавливается на этом и показывает сообщение с названием политики.
+
+Когда доступ блокирует список разрешённых IP-адресов, сообщение выглядит так:
+
+```text theme={null}
+Your GitHub organization has an IP allowlist that is blocking Claude. Add Claude's IP ranges to your GitHub allowlist.
+```
+
+Когда его блокирует единый вход (single sign-on), сообщение выглядит так:
+
+```text theme={null}
+Your GitHub organization requires single sign-on. Disconnect and reconnect GitHub on the Connectors page in Claude on the web, click Authorize next to your organization when GitHub asks, then try again.
+```
+
+Когда его блокирует политика условного доступа Microsoft Entra ID, сообщение выглядит так:
+
+```text theme={null}
+Your GitHub organization's identity provider (Microsoft Entra ID) has a Conditional Access policy that is blocking Claude. Ask your GitHub Enterprise or Entra ID admin to allow Claude in that policy.
+```
+
+**Что делать:**
+
+* **Список разрешённых IP-адресов**: попросите владельца вашей организации или корпоративного аккаунта GitHub разрешить исходящие IP-адреса Anthropic. Адреса и настройки GitHub, которые нужно изменить, см. в разделе [Списки разрешённых адресов и брандмауэры GitHub](https://code.claude.com/docs/ru/network-config.md#github-allow-lists-and-firewalls).
+* **Единый вход**: отключите GitHub на [claude.ai/customize/connectors](https://claude.ai/customize/connectors), затем подключите его снова. Когда GitHub запросит, нажмите **Authorize** рядом с вашей организацией, чтобы новое подключение было авторизовано для её единого входа.
+* **Политика условного доступа**: попросите администратора GitHub Enterprise или Microsoft Entra ID разрешить Claude в этой политике
+* После изменения выполните команду снова
+
+### Single sign-on authorization needed
+
+Вы выполнили [`/install-github-app`](https://code.claude.com/docs/ru/github-actions#quick-setup) и выбрали репозиторий, организация которого требует единого входа SAML. Перед настройкой Claude Code проверяет ваш доступ к репозиторию с помощью GitHub CLI, и GitHub отклонил эту проверку, потому что ваш токен `gh` ещё не авторизован для организации. Мастер настройки показывает предупреждение с шагами для авторизации:
+
+```text theme={null}
+Single sign-on authorization needed
+<owner>/<repo> belongs to an organization that enforces SAML single sign-on, and your GitHub CLI token isn't authorized for it yet.
+```
+
+**Что делать:**
+
+* Повторно авторизуйте вход в GitHub CLI со scope `repo` и `workflow`, выполнив `gh auth refresh -h github.com -s repo,workflow`, и авторизуйте организацию, когда GitHub запросит единый вход
+* Если вы проходите аутентификацию с помощью персонального токена доступа в `GH_TOKEN`, откройте [github.com/settings/tokens](https://github.com/settings/tokens), выберите **Configure SSO** для токена и авторизуйте организацию
+* Выполните `/install-github-app` снова
+
+До версии v2.1.273 Claude Code в этой ситуации вместо этого показывал предупреждение `Admin permissions required`.
+
+### Failed to resume the conversation
+
+Claude Code не смог прочитать или обработать сохранённый транскрипт сессии, выбранной в [средстве выбора `claude --resume`](https://code.claude.com/docs/ru/sessions#use-the-session-picker), поэтому он завершает процесс, а не продолжает работу в частично загруженном состоянии. Сообщение содержит команду для повторной попытки:
+
+```text theme={null}
+Failed to resume the conversation.
+Run claude --resume <session-id> to retry, or claude to start a new session.
+```
+
+После вывода сообщения Claude Code завершает работу с кодом 1. Средство выбора `/resume` внутри работающей сессии вместо этого сообщает `Failed to resume conversation` в диалоге, и ваша текущая сессия продолжает работать. До версии v2.1.216 неудачное возобновление из средства выбора `claude --resume` бесконечно оставалось на индикаторе `Resuming conversation…` вместо вывода этого сообщения.
+
+**Что делать:**
+
+* Выполните `claude --resume <session-id>` с ID сессии из сообщения, чтобы повторить попытку
+* В версии до v2.1.285, если повторная попытка завершается так же, выполните `claude update` и возобновите сессию снова. Эти версии не могут возобновить сессию, если сохранённый транскрипт содержит запись, которую они не умеют читать.
+* Если повторная попытка снова не удалась, выполните `claude`, чтобы начать новую сессию
+
+### No conversation found with the session ID
+
+Вы передали ID сессии в `claude --resume <session-id>`, и ни один сохранённый транскрипт ему не соответствует:
+
+```text theme={null}
+No conversation found with session ID: <session-id>
+```
+
+После вывода сообщения Claude Code завершает работу с кодом 1. Claude Code [ищет ID сначала в текущем проекте, затем во всех остальных проектах на этой машине](https://code.claude.com/docs/ru/sessions.md#where-the-session-picker-looks). До версии v2.1.223 поиск ограничивался текущим каталогом проекта и его git worktree, поэтому возобновлять сессию нужно было из каталога, в котором она работала последней.
+
+Распространённые причины:
+
+* **Опечатка в ID**: для неинтерактивного запуска ID — это поле `session_id` в [выводе `--output-format json`](https://code.claude.com/docs/ru/headless#get-structured-output)
+* **Удалённый транскрипт**: Claude Code удаляет транскрипты по истечении [срока хранения](https://code.claude.com/docs/ru/sessions.md#where-transcripts-are-stored), по умолчанию 30 дней, согласно [правилам очистки при хранении](https://code.claude.com/docs/ru/claude-directory.md#cleaned-up-automatically)
+* **Другая машина**: Claude Code хранит транскрипты локально, поэтому возобновляйте сессию на той машине, где она выполнялась
+* **Дублирующиеся копии**: если вы скопировали каталог проекта в `~/.claude/projects` и два транскрипта имеют один и тот же ID, Claude Code выводит это сообщение, а не возобновляет произвольную копию
+
+**Что делать:**
+
+* Для интерактивной сессии откройте [средство выбора сессий](https://code.claude.com/docs/ru/sessions.md#use-the-session-picker) с помощью `claude --resume` и нажмите `Ctrl+A`, чтобы расширить его на все проекты на этой машине, затем выберите сессию
+* Сессии, созданные с помощью `claude -p` или [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md), не отображаются в средстве выбора, поэтому ещё раз сверьте ID с `session_id`, который вывел ваш исходный запуск
+
+### Windows reported an error (EBADF) when Claude Code read this session's transcript file
+
+Вы возобновили сессию в Windows, её сохранённый [файл транскрипта](https://code.claude.com/docs/ru/sessions.md#where-transcripts-are-stored) открылся нормально, а затем его чтение завершилось системной ошибкой EBADF. Системная ошибка не объясняет, почему чтение не удалось, поэтому сообщение предлагает вероятные причины и то, что можно попробовать:
+
+```text theme={null}
+Windows reported an error (EBADF) when Claude Code read this session's transcript file, although the file had opened normally. This can happen when other software intercepts file reads — security, encryption or endpoint-management tools, for example. If it keeps happening for this conversation, try excluding the folder that holds Claude Code's session transcripts from such software (the .claude folder in your user profile, unless the app or CLAUDE_CONFIG_DIR points Claude Code elsewhere), or adding Claude Code to its allowed applications, then resume again.
+```
+
+Сообщение следует за собственной строкой ошибки команды, например `Failed to resume session <session-id>`. Команда `claude --resume` или [`claude -p`](https://code.claude.com/docs/ru/headless) после его вывода завершает работу с кодом 1. После `/resume` внутри сессии ваша текущая сессия продолжает работать.
+
+**Что делать:**
+
+* Исключите папку с транскриптами сессий из программ, которые сканируют или перехватывают чтение файлов, например средств безопасности, шифрования или управления конечными устройствами. По умолчанию транскрипты хранятся в `%USERPROFILE%\.claude\projects` или в каталоге, указанном в [`CLAUDE_CONFIG_DIR`](https://code.claude.com/docs/ru/env-vars)
+* Если добавить исключение невозможно, добавьте вместо этого Claude Code в список разрешённых приложений этой программы
+* Снова возобновите сессию
+
+До версии v2.1.282 сбой не сопровождался объяснением: `claude --resume <session-id>` заканчивался на `Failed to resume session <session-id>`, а запуск с `-p` выводил только текст системной ошибки, например `Failed to resume session: EBADF: bad file descriptor, read`.
+
+### Cannot switch renderers in this session
+
+Когда вы переключаете рендерер, Claude Code перезапускает свой процесс. Вы выполнили [`/tui`](https://code.claude.com/docs/ru/fullscreen#enable-fullscreen-rendering) в сессии, которую Claude Code отказывается перезапускать, поэтому он не переключается и ничего не сохраняет. Причину можно определить по тому, какое сообщение вы видите:
+
+* `Cannot switch renderers while work is running in the background`: у вас выполняется фоновая работа, которую перезапуск прервал бы, например фоновая оболочка или субагент. Дождитесь завершения работы или остановите её с помощью [`/tasks`](https://code.claude.com/docs/ru/commands), затем снова выполните `/tui fullscreen` или `/tui default`
+* `Cannot switch renderers in this session`: у сессии есть ограничения, которые Claude Code не может передать перезапущенному процессу. До версии v2.1.234 Claude Code всё равно выполнял перезапуск, и перезапущенная сессия работала без них
+
+В сообщении об ограничениях часть в скобках называет ограничения, обнаруженные Claude Code:
+
+```text theme={null}
+Cannot switch renderers in this session — it has restrictions a restart can't carry over (permission rules set for this session only). Nothing was changed. Running /tui fullscreen in a session started without them switches every later session too.
+```
+
+Каждая причина, которую сообщение может показать в скобках:
+
+* `launch flags: a custom system prompt, a tool allowlist, or restricted settings`: вы запустили сессию с флагом, который Claude Code не передаёт обратно перезапущенному процессу. К таким флагам относятся [`--system-prompt`](https://code.claude.com/docs/ru/cli-reference#cli-flags), `--system-prompt-file`, `--append-system-prompt-file`, список разрешённых инструментов [`--tools`](https://code.claude.com/docs/ru/cli-reference#cli-flags), [`--setting-sources`](https://code.claude.com/docs/ru/cli-reference#cli-flags) и [`--permission-prompt-tool`](https://code.claude.com/docs/ru/cli-reference#cli-flags)
+* `permission rules set for this session only`: [обновление разрешений](https://code.claude.com/docs/ru/hooks.md#permission-update-entries) от хука или вызывающей стороны SDK добавило правила запрета (deny) или запроса (ask) с назначением `session`. Правила разрешения (allow) уровня сессии не вызывают отказа. Перезапуск их отбрасывает, и Claude Code вместо этого снова запрашивает подтверждение
+* `ask-before-running rules with no command-line form`: обновление разрешений от хука или вызывающей стороны SDK добавило правила запроса (ask) наряду с правилами, которые Claude Code передаёт обратно как `--allowed-tools` и `--disallowed-tools`. Для правил запроса флага не существует
+* `permission rules a command line cannot carry intact` и `added directories a command line cannot carry intact`: обновление разрешений добавило правило или путь к каталогу в середине сессии. Командная строка перезапущенного процесса не может передать этот текст в виде того же значения
+
+**Что делать:**
+
+* В сессии, запущенной без этих ограничений, выполните `/tui fullscreen` или `/tui default`, чтобы переключиться обратно. Claude Code сохраняет там [настройку `tui`](https://code.claude.com/docs/ru/settings-reference#tui)
+
+### Can't restart while work is running or Remote Control is connected
+
+Claude Code не перезапустился, и ваша сессия продолжает работать как прежде. Следуйте указаниям по исправлению из сообщения.
+
+### Claude Code couldn't restart
+
+Когда в этом сообщении сказано, что ваш диалог сохранён, диалог находится на диске, и вы можете продолжить его с того места, где он остановился. Claude Code перезапускал себя, например чтобы переключиться на полноэкранный рендеринг или обратно после выполнения [`/tui`](https://code.claude.com/docs/ru/fullscreen#enable-fullscreen-rendering), и не смог запустить новый процесс, поэтому завершил работу со статусом 1:
+
+```text theme={null}
+Claude Code couldn't restart. Your conversation is saved. Start Claude Code again and run /resume to pick it up.
+```
+
+Когда при перезапуске не было диалога для повторного открытия, например потому что `/tui` был вашим первым вводом в новой сессии, сообщение выглядит так: `Claude Code couldn't restart. Start Claude Code again.`
+
+**Что делать:**
+
+* Снова выполните `claude` в оболочке. Если в сообщении сказано, что ваш диалог сохранён, выполните [`/resume`](https://code.claude.com/docs/ru/sessions#resume-a-session) в новой сессии и выберите диалог. Если его нет в списке, [расширьте средство выбора сессий](https://code.claude.com/docs/ru/sessions.md#where-the-session-picker-looks)
+* Если перезапуски продолжают завершаться неудачей, запустите Claude Code из оболочки с помощью [`claude --debug-file claude-debug.log`](https://code.claude.com/docs/ru/cli-reference#cli-flags). Если перезапуск из этой сессии не удастся, в `claude-debug.log` в каталоге, из которого вы запускали, будет записана строка `Failed to relaunch:` с ошибкой операционной системы. Включите эту строку, когда будете [сообщать о проблеме](#report-an-error)
+
+### Couldn't open Claude Desktop
+
+Вы выполнили [`/desktop`](https://code.claude.com/docs/ru/desktop#coming-from-the-cli) или её псевдоним `/app` в сессии либо [`claude --desktop`](https://code.claude.com/docs/ru/cli-reference#cli-flags) в оболочке, и системная команда, которую Claude Code использует для открытия Claude Desktop, завершилась ошибкой. После `/desktop` сессия остаётся в терминале; `claude --desktop` выводит сообщение без префикса `Error:` и завершает работу со статусом 1.
+
+Текст в скобках называет команду, завершившуюся ошибкой, с её кодом выхода и первой строкой вывода ошибок, если она их выдала. В macOS это команда `open`, как в этом примере; в Windows — `rundll32`:
+
+```text theme={null}
+Error: Couldn't open Claude Desktop (`open` exited 1: LSOpenURLsWithRole() failed for the URL claude://resume?session=<session-id> with error -10814). Open Claude Desktop and try again.
+```
+
+**Что делать:**
+
+* Откройте Claude Desktop самостоятельно, затем снова выполните `/desktop` или `claude --desktop`
+* Чтобы прочитать полный вывод ошибок неудавшейся команды, включите отладочное логирование с помощью `/debug` и снова выполните `/desktop` либо выполните `claude --desktop --debug-file <path>`, затем проверьте отладочный лог
+
+До версии v2.1.285 сообщение заканчивалось фразой `Open Claude Desktop and run /desktop again.` До версии v2.1.275 оно выглядело как `Failed to open Claude Desktop. Please try opening it manually.` и не сообщало, что именно не удалось.
+
+### /terminal-setup оставила ваш keymap Zed без изменений
+
+Вы выполнили [`/terminal-setup`](https://code.claude.com/docs/ru/terminal-config#enter-multiline-prompts) в Zed, и Claude Code не смог завершить обновление вашего `keymap.json` для Zed, поэтому оставил файл как есть.
+
+Каждое сообщение указывает путь к вашему keymap и заканчивается блоком сочетаний клавиш, который нужно добавить самостоятельно:
+
+```text theme={null}
+Couldn't update your Zed keymap, so it was left unchanged.
+To add the binding yourself, add this block to the keymap array in <path to keymap.json>:
+{ "context": "Terminal", "bindings": { "shift-enter": ["terminal::SendText", "\u001b\r"] } }
+```
+
+Первая строка сообщения называет причину:
+
+* `Couldn't read your Zed keymap, so it was left unchanged.`: Claude Code не смог прочитать файл, например из-за прав доступа к файлу
+* `Your Zed keymap isn't a readable list of keybindings, so it was left unchanged.`: файл прочитан, но не разбирается как массив блоков сочетаний клавиш, даже с учётом допустимых комментариев `//` и завершающих запятых
+* `Couldn't back up your Zed keymap; not modifying it.`: Claude Code не смог скопировать файл в резервную копию `.bak` рядом с ним, поэтому ничего не изменил
+* `Couldn't update your Zed keymap, so it was left unchanged.`: объединённый результат не прошёл проверку как корректный keymap, содержащий сочетание клавиш, поэтому Claude Code отбросил его вместо записи. Причиной может быть блок сочетаний клавиш с повторяющимся ключом
+
+**Что делать:**
+
+* Скопируйте блок из сообщения в массив верхнего уровня в вашем `keymap.json` по пути, указанному в сообщении
+* В случае `isn't a readable list of keybindings` исправьте синтаксическую ошибку или сделайте значение верхнего уровня файла массивом, затем снова выполните `/terminal-setup`
+
+До версии v2.1.247 `/terminal-setup` не могла разобрать keymap Zed, в котором использовались комментарии `//` или завершающие запятые, и заменяла весь файл только своим сочетанием клавиш, сообщая при этом, что сочетание установлено. Чтобы восстановить keymap, заменённый более ранней версией, используйте резервную копию `.bak`, описанную в разделе [Ввод многострочных промптов](https://code.claude.com/docs/ru/terminal-config.md#enter-multiline-prompts).
+
+### Skill usage reports are not available on this connection
+
+Вы выполнили [`/skill-doctor`](https://code.claude.com/docs/ru/skills#find-unused-skills) через [Remote Control](https://code.claude.com/docs/ru/remote-control.md) с телефона или из браузера. Claude Code не отправляет отчёт об использовании скиллов через Remote Control и вместо этого отвечает таким сообщением:
+
+```text theme={null}
+Skill usage reports are not available on this connection.
+```
+
+**Что делать:**
+
+* Выполните `/skill-doctor` в терминале на машине, где работает сессия, или выполните там `claude -p "/skill-doctor"`
+
+### Custom output styles can't be selected over Remote Control
+
+Вы выполнили [`/output-style`](https://code.claude.com/docs/ru/output-styles#change-your-output-style) из мобильного приложения или веба через [Remote Control](https://code.claude.com/docs/ru/remote-control.md), или команда пришла в сообщении, переданном в сессию. Поскольку такой ход может исходить не от владельца аккаунта, Claude Code показывает и позволяет выбрать в нём только [встроенные стили](https://code.claude.com/docs/ru/output-styles.md#built-in-output-styles) и добавляет это уведомление всякий раз, когда команда выводит список стилей или не распознаёт указанное вами имя. Имя [пользовательского стиля](https://code.claude.com/docs/ru/output-styles.md#create-a-custom-output-style) получает тот же ответ, что и несуществующее имя:
+
+```text theme={null}
+Custom output styles can't be selected over Remote Control or from a relayed message. Select one in the session itself, or pick a built-in style here.
+```
+
+**Что делать:**
+
+* Выберите встроенный стиль, например `/output-style concise`
+* Чтобы использовать пользовательский стиль, задайте [`outputStyle`](https://code.claude.com/docs/ru/settings-reference#outputstyle) в файле `.claude/settings.local.json` проекта или выполните `/output-style <style>` в собственном терминале сессии, если он у неё есть
+
+### Output styles are saved to local settings which this session doesn't load
+
+Вы попытались переключить [стиль вывода](https://code.claude.com/docs/ru/output-styles.md) с помощью `/output-style <style>` или `/config outputStyle=<style>` в сессии, источники настроек которой не включают `local`. Примеры: сессия [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/typescript.md), в [`settingSources`](https://code.claude.com/docs/ru/agent-sdk/typescript#options) которой отсутствует `"local"`, и сессия CLI, запущенная со значением [`--setting-sources`](https://code.claude.com/docs/ru/cli-reference#cli-flags), не включающим `local`. Обе команды сохраняют стиль в `.claude/settings.local.json` — файл, который такая сессия никогда не читает, поэтому Claude Code отказывается, а не записывает настройку, которая не возымела бы действия:
+
+```text theme={null}
+Output styles are saved to local settings (.claude/settings.local.json), which this session doesn't load, so the style can't be changed here.
+```
+
+**Что делать:**
+
+* Добавьте `local` в источники настроек сессии и переключите стиль снова
+* Задайте ключ [`outputStyle`](https://code.claude.com/docs/ru/settings-reference#outputstyle) в файле настроек, который сессия загружает, например в `.claude/settings.json` проекта или в `~/.claude/settings.json`. В TypeScript SDK вместо этого задайте `outputStyle` внутри встроенного объекта `settings`; см. [Активация стиля вывода](https://code.claude.com/docs/ru/agent-sdk/modifying-system-prompts.md#activate-an-output-style)
+
+### /recap only runs when you ask for it yourself
+
+Запрос [`/recap`](https://code.claude.com/docs/ru/interactive-mode#session-recap) поступил не из вашего собственного ввода. Он пришёл в сообщении, переданном в сессию из треда Slack, Teams или [проекта](https://code.claude.com/docs/ru/claude-projects.md), либо в промпте, который отправила [облачная запланированная задача](https://code.claude.com/docs/ru/routines.md) или другая программа.
+
+Переданное сообщение получает это уведомление, даже если его написали вы сами. Claude Code не может определить, что переданное или автоматическое сообщение исходит от человека, чей аккаунт запускает сессию, поэтому вместо сводки отвечает этим уведомлением:
+
+```text theme={null}
+/recap only runs when you ask for it yourself in this session: from the terminal, the Claude app or claude.ai/code, or over Remote Control. A message relayed from Slack, Teams or a project thread, or sent by a routine or another program, can't request it.
+```
+
+`/recap`, который вы передаёте в `claude -p` или который ваше собственное приложение на [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md) отправляет в запущенную им сессию, считается вашим собственным вводом.
+
+**Что делать:**
+
+* Откройте сессию сами и выполните там `/recap`: в её терминале, в [приложении Desktop](https://code.claude.com/docs/ru/desktop.md) или [мобильном приложении](https://code.claude.com/docs/ru/mobile.md), на [claude.ai/code](https://claude.ai/code) или через [Remote Control](https://code.claude.com/docs/ru/remote-control.md)
+* Если её отправила облачная запланированная задача или другая программа, удалите `/recap` из этого промпта
+
+### /feedback is disabled by your organization's policy
+
+Это сообщение означает, что отправка отзывов о продукте отключена, поэтому введённая вами команда не открывает диалоговое окно отзыва. Сообщение возникает как из-за политики организации, так и из-за ранее полученного отказа:
+
+* **Политика организации**: политика вашей организации не разрешает отправку отзывов о продукте из Claude Code. `/feedback`, `/bug` и `/share` отвечают этим сообщением.
+* **Ранее полученный отказ**: сервис отзывов отклонил отправленный вами отчёт, например с сообщением [`Couldn't send feedback: Feedback has not been enabled for your organization.`](#couldnt-send-feedback) После этого `/feedback` и `/bug` могут отвечать этим сообщением. Это действует семь дней с момента отказа на этой машине. Это касается любого тарифного плана, включая Pro и Max.
+
+Сообщение называет команду, которую вы ввели в промпте Claude Code:
+
+```text wrap theme={null}
+/feedback is disabled by your organization's policy. To report a bug, open an issue at https://github.com/anthropics/claude-code/issues. Issues are public, so leave out anything confidential.
+```
+
+Сообщение также может состоять только из первого предложения.
+
+**Что делать:**
+
+* Чтобы сообщить об ошибке, создайте issue на [github.com/anthropics/claude-code/issues](https://github.com/anthropics/claude-code/issues). Issues там может прочитать кто угодно, поэтому не включайте код, транскрипты и любую другую конфиденциальную информацию.
+* После ранее полученного отказа подождите, пока пройдут семь дней, затем снова отправьте отчёт, чтобы проверить, отклоняет ли его сервис по-прежнему
+
+До версии v2.1.319 ранее полученный отказ не приводил к этому сообщению.
+
+До версии v2.1.302 полное сообщение выглядело так: `/feedback is disabled by your organization's policy. Contact your organization admin to enable it.`
+
+## Ошибки плагинов
+
+Эти ошибки связаны с конфигурацией [плагинов](https://code.claude.com/docs/ru/plugins/overview.md) и [маркетплейсов](https://code.claude.com/docs/ru/plugins/overview.md). Проблемы с плагинами, которые не приводят ни к одному из сообщений на этой странице, например URL маркетплейса, который не загружается, или плагин, который устанавливается, но не появляется, описаны в разделе [Устранение неполадок плагинов](https://code.claude.com/docs/ru/plugins/troubleshooting.md).
+
+### plugin eval is currently in early access
+
+Вы запустили [`claude plugin eval`](https://code.claude.com/docs/ru/plugin-evals) или `claude plugin eval init`, и команда завершилась с кодом 1 с одним из этих сообщений, ничего не выполнив:
+
+```text theme={null}
+`plugin eval` is currently in early access
+```
+
+```text theme={null}
+`plugin eval` is currently unavailable
+```
+
+Первое сообщение означает, что ваша сборка старше v2.1.269 — первой версии, в которой команда общедоступна. Второе означает, что Anthropic отключила команду на стороне сервера; ничто на вашем компьютере не включит её обратно.
+
+**Что делать:**
+
+* Выполните `claude --version`, затем `claude update` и снова запустите команду в новой сессии. См. [требования к оценкам плагинов](https://code.claude.com/docs/ru/plugin-evals.md#requirements)
+* Если вы видите второе сообщение в актуальной сборке, повторите попытку позже после очередного `claude update`
+
+### Маркетплейс зарегистрирован из недоверенного источника
+
+Маркетплейс зарегистрирован под именем, которое [зарезервировано для официальных маркетплейсов Anthropic](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#marketplace-file), но его зарегистрированный источник не является репозиторием GitHub организации `anthropics`. Claude Code заново проверяет зарезервированные имена каждый раз при загрузке или обновлении маркетплейса, поэтому маркетплейс и установленные из него плагины перестают загружаться. До v2.1.205 запись, зарегистрированная до того, как её имя стало зарезервированным, продолжала загружаться.
+
+```text theme={null}
+Marketplace "claude-community" is registered from an untrusted source: The name 'claude-community' is reserved for official Anthropic marketplaces. Only repositories from 'github.com/anthropics/' can use this name. To fix it, remove the marketplace and re-add it from the official source.
+```
+
+Для маркетплейса, источник которого не является репозиторием GitHub или Git URL, например для локального каталога, среднее предложение вместо этого звучит как `can only be used with GitHub sources from the 'anthropics' organization`. `claude plugin marketplace add` выполняет ту же проверку и отклоняет зарезервированное имя с сообщением `Failed to add marketplace:`, за которым следует то же предложение о зарезервированном имени.
+
+**Что делать:**
+
+* Если маркетплейс уже зарегистрирован, выполните `claude plugin marketplace remove <name>`, затем добавьте его снова из официального репозитория `github.com/anthropics`
+* Если вы публикуете сторонний маркетплейс, который использовал это имя до того, как оно стало зарезервированным, переименуйте его и попросите пользователей добавить его заново из вашего источника
+* Список зарезервированных имён см. в разделе [Схема маркетплейса](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#marketplace-file)
+
+### Имя маркетплейса — другое написание зарезервированного имени
+
+Имя маркетплейса само по себе не является зарезервированным, но Claude Code считает его другим написанием зарезервированного имени. В разделе [Зарезервированные имена](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#reserved-name-spellings) перечислено, какие написания считаются зарезервированным именем. Claude Code отклоняет такое имя при добавлении маркетплейса:
+
+```text theme={null}
+Failed to add marketplace: "claude.code.plugins" is another spelling of "claude-code-plugins", a reserved marketplace name.
+```
+
+Если маркетплейс уже зарегистрирован под таким именем, его запись перестаёт загружаться, а `/plugin`, `claude plugin install` и `claude plugin update` выводят предупреждение:
+
+```text wrap theme={null}
+known_marketplaces.json has an entry named "claude.code.plugins", another spelling of the reserved marketplace name "claude-code-plugins", so it is ignored. Remove it with: claude plugin marketplace remove claude.code.plugins
+```
+
+Если имя потребовало бы экранирования в оболочке, отказ при добавлении звучит как `This marketplace's name is another spelling of "<reserved>", a reserved marketplace name. It is not exactly the reserved name it appears to be.`
+
+**Что делать:**
+
+* Переименуйте маркетплейс так, чтобы имя не было написанием зарезервированного имени, и добавьте его снова
+* В случае предупреждения об игнорируемой записи выполните указанную в нём команду `claude plugin marketplace remove` или удалите запись из `~/.claude/plugins/known_marketplaces.json`
+
+### Claude Code отклоняет имя маркетплейса
+
+Имя зарегистрированного маркетплейса [выдаёт себя за официальный маркетплейс Anthropic](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#reserved-names) по правилам, перечисленным в том разделе.
+
+Если маркетплейс был зарегистрирован под таким именем до того, как проверка стала его блокировать, маркетплейс и установленные из него плагины перестают загружаться, потому что Claude Code проверяет имя каждый раз при чтении каталога маркетплейса. Если имя имитирует официальное, `claude plugin list` и вкладка **Errors** в `/plugin` сообщают о каждом затронутом плагине сообщением, которое начинается так:
+
+```text theme={null}
+Claude Code refuses the marketplace name "anthropic-plugins-v2"
+```
+
+Для имитирующего имени собственная ошибка маркетплейса вместо этого звучит как `Claude Code refuses this marketplace's name: it looks like one of Anthropic's own`. `claude plugin marketplace add` отклоняет любое имя, выдающее себя за официальное, с сообщением `Marketplace name impersonates an official Anthropic/Claude marketplace`.
+
+До v2.1.282 `claude plugin list` и `/plugin` также сообщали, что плагины маркетплейса с имитирующим именем не удалось загрузить, но не указывали имя маркетплейса как причину.
+
+**Что делать:**
+
+* Чтобы сохранить маркетплейс, который файл настроек объявляет встроенно с `"source": "settings"`, переименуйте его до удаления старого имени, потому что удаление маркетплейса также удаляет его запись из ваших файлов настроек. Claude Code v2.1.292 или новее перечисляет эти шаги в сообщении:
+  1. В каждом файле настроек, где маркетплейс указан в `extraKnownMarketplaces`, задайте ключу записи и её `source.name` одно новое имя из простых ASCII-символов, которое не похоже на официальное. Если администратор добавляет маркетплейс через управляемые настройки вашей организации, этот шаг выполняет администратор
+  2. Выполните `claude plugin marketplace remove <old-name>` или удалите старое имя на вкладке **Marketplaces** в `/plugin`. Это также удаляет его плагины и их данные, параметры и секреты
+  3. Снова запустите Claude Code — в папке проекта, если файл является файлом настроек проекта. Затем установите плагины из переименованного маркетплейса
+* Чтобы сохранить любой другой маркетплейс, дождитесь, пока его сопровождающий переименует его, затем выполните `claude plugin marketplace update <name>`
+* Чтобы удалить маркетплейс, выполните `claude plugin marketplace remove <name>`. Это также удаляет установленные из маркетплейса плагины и их данные, параметры и секреты
+* Если вы публикуете маркетплейс, переименуйте его в своём `marketplace.json`; тогда пользователи обновят маркетплейс, а не удалят его
+
+### Маркетплейс уже добавлен из другого источника
+
+Вы указали новый источник маркетплейса с помощью [`--marketplace <source>` в команде установки](https://code.claude.com/docs/ru/plugins/install#add-a-marketplace-and-install-in-one-command) — в сессии или из оболочки. Каталог, который Claude Code получил из этого источника, имеет то же имя, что и маркетплейс, уже добавленный вами из другого источника. Claude Code сохраняет существующий маркетплейс вместо его замены, и плагин не устанавливается.
+
+```text theme={null}
+Marketplace "acme-tools" is already added from a different source (github:acme/plugins). To use this source instead, remove that marketplace first with /plugin marketplace remove acme-tools.
+```
+
+**Что делать:**
+
+* Если нужен уже добавленный маркетплейс, установите из него плагин по имени: `/plugin install <plugin>@<name>`
+* Чтобы переключиться на новый источник, выполните `/plugin marketplace remove <name>`, затем повторите попытку установки
+
+### Команда плагина ссылается на user\_config в shell-команде
+
+Команда хука плагина, [монитора](https://code.claude.com/docs/ru/plugins/components.md#monitors) или MCP [`headersHelper`](https://code.claude.com/docs/ru/mcp#use-dynamic-headers-for-custom-authentication) ссылается на [параметр плагина](https://code.claude.com/docs/ru/plugins/manifest-reference.md#user-configuration) `${user_config.KEY}`, и строка после подстановки была бы передана оболочке. Настроенное значение, содержащее `$(...)`, обратные кавычки или `;`, выполнилось бы там как код, поэтому Claude Code отказывается запускать компонент вместо подстановки значения. Проверка выполняется по шаблону команды, поэтому ошибка появляется, даже когда значение ещё не настроено. До v2.1.207 значение подставлялось в shell-команду.
+
+Формулировка зависит от того, в каком месте используется ссылка на параметр. Хук в shell-форме сообщает:
+
+```text theme={null}
+Hook from plugin formatter@acme-tools references ${user_config.*} in a shell-form command. The substituted value would be re-parsed by the shell. Use exec form instead — {"command": "<executable>", "args": ["${user_config.KEY}", ...]} — or read $CLAUDE_PLUGIN_OPTION_<KEY> from the hook's environment. Command: ./scripts/notify.sh ${user_config.webhook_url}
+```
+
+Монитор сообщает:
+
+```text theme={null}
+Monitor "deploy-status" from plugin deploy-tools references ${user_config.*} in its command. The substituted value would be passed to a shell. Monitor commands cannot safely reference ${user_config.*}; have the monitor script read the value from a config file or prompt instead.
+```
+
+MCP `headersHelper` сообщает:
+
+```text theme={null}
+headersHelper for MCP server 'internal-api' references ${user_config.*}. The substituted value would be passed to a shell; read the value inside the helper script instead (e.g. from an env var set in the server's "env" block).
+```
+
+**Что делать:**
+
+* Для хука добавьте массив `args`, чтобы он выполнялся в [exec-форме](https://code.claude.com/docs/ru/hooks.md#exec-form-and-shell-form), где каждый `${user_config.KEY}` становится одним аргументом без участия оболочки. Или уберите ссылку и читайте переменную окружения `$CLAUDE_PLUGIN_OPTION_<KEY>` внутри скрипта
+* Для монитора уберите ссылку, и пусть скрипт монитора читает значение из файла конфигурации
+* Для `headersHelper` перенесите `${user_config.KEY}` в поле `headers` сервера, которое не разбирается оболочкой, или читайте значение внутри вспомогательного скрипта
+
+### Проверка целостности архива плагина не пройдена
+
+Запись плагина в маркетплейсе использует [источник `archive`](https://code.claude.com/docs/ru/plugins/marketplace-reference#archive-plugin-source) с закреплённым `sha256`, и хеш загруженного файла не совпадает с закреплённым значением. Claude Code отказывается от установки, поэтому в кэше плагинов ничего не меняется. У несовпадения три возможные причины:
+
+* Файл по URL изменился после того, как автор вычислил закреплённое значение
+* Автор указал неверный хеш в записи маркетплейса
+* URL отдаёт не тот файл, который закрепил автор
+
+```text theme={null}
+Plugin archive integrity check failed for https://artifacts.example.com/claude-plugins/my-plugin.zip: expected sha256 6bfa50e3d2e00c052b46abe51fff89346ac803e45771f76dcf6df1ab74cca5e1, got ac52220c0914ef8ca6a602e4a7362f88d30fb021110f72a6d15b68c3fe7df2b7. The archive was not installed. Verify the sha256 in the marketplace entry, or that the URL serves the intended file.
+```
+
+**Что делать:**
+
+* Если вы публикуете плагин, заново вычислите хеш именно того файла, который отдаёт URL, например с помощью `shasum -a 256 my-plugin.zip` или `Get-FileHash -Algorithm SHA256 my-plugin.zip` в PowerShell, и обновите `sha256` в записи маркетплейса
+* Если вы устанавливаете плагин, выполните `/plugin marketplace update <name>`, чтобы обновить каталог на случай, если запись исправили, затем повторите попытку установки
+* Если хеши по-прежнему не совпадают после обновления, перед установкой спросите владельца маркетплейса, какой файл он закрепил
+
+### Путь выходит за пределы каталога плагина
+
+Один из путей компонентов плагина ведёт за пределы каталога плагина или не удалось подтвердить, что он находится внутри него, поэтому Claude Code отбрасывает этот путь и загружает остальную часть плагина. Для пути, который плагин объявляет в `plugin.json` или в своей [записи маркетплейса](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#plugin-entries), имя компонента в сообщении, например `commands` или `hooks`, указывает поле, в котором объявлен путь.
+
+```text theme={null}
+commands path escapes plugin directory: ./../shared.md
+```
+
+В выводе команд `claude plugin` та же ошибка звучит как `Path escapes plugin directory: ./../shared.md (commands)`.
+
+Claude Code отклоняет как путь, который в записанном виде указывает за пределы плагина, например `../shared-utils`, так и символическую ссылку, которая ведёт за пределы плагина и не разрешена [правилами символических ссылок маркетплейса](https://code.claude.com/docs/ru/plugins/host-marketplace.md#share-files-within-a-marketplace-with-symlinks). Для символической ссылки сообщение также указывает, куда разрешается путь:
+
+```text theme={null}
+commands path escapes plugin directory: ./commands/deploy.md — it resolves to /home/user/shared/deploy.md, outside the plugin directory
+```
+
+Сообщение, в котором указан полный путь к одному из собственных файлов плагина из маркетплейса, например `hooks/hooks.json`, означает, что Claude Code пропустил этот файл. Когда Claude Code не может подтвердить, что файл находится внутри плагина или, для плагина в [локальном маркетплейсе](https://code.claude.com/docs/ru/plugins/loading.md#in-place-and-copied-plugins), внутри его маркетплейса, он пропускает этот файл. Сообщение указывает эти файлы под показанным именем компонента:
+
+* `hooks/hooks.json`: `hooks`
+* `monitors/monitors.json`: `monitors`
+* `SKILL.md` в корне плагина: `skills`
+
+Например, это сообщение относится к `hooks/hooks.json`, который разрешается за пределы как плагина, так и его локального маркетплейса:
+
+```text theme={null}
+hooks path escapes plugin directory: /home/user/my-marketplace/my-plugin/hooks/hooks.json — it resolves to /home/user/dotfiles/hooks.json, outside the plugin directory and its marketplace directory
+```
+
+В macOS и Linux Claude Code также отклоняет путь компонента, содержащий обратную косую черту в любом месте, даже если путь остаётся внутри плагина. Плагин, пути компонентов которого используют разделители в стиле Windows, загружается в Windows и вызывает этот отказ на других платформах:
+
+```text theme={null}
+commands path escapes plugin directory: ./commands\deploy.md — its path contains a backslash, which is not resolved reliably on this platform
+```
+
+До v2.1.251 Claude Code загружал путь `commands`, объявленный в записи маркетплейса, даже если он указывал за пределы каталога плагина.
+
+До v2.1.257 проверка путей, которые объявляет плагин, учитывала только написание пути, а не то, куда ведёт символическая ссылка.
+
+**Что делать:**
+
+* Если вы установили плагин и не сопровождаете его, передайте сообщение его автору
+* Для пути, который объявляет плагин, переместите указанный файл внутрь каталога плагина и укажите на него относительным путём с `./`
+* Если путь или папка выше него внутри плагина является символической ссылкой, ведущей за пределы плагина, замените символическую ссылку копией того, на что она указывает
+* Если в сообщении сказано, что путь, объявленный плагином, содержит обратную косую черту, запишите путь с прямыми косыми чертами, например `./commands/deploy.md`
+* Если сообщение заканчивается на `EACCES`, восстановите право на выполнение для каждого каталога на пути к файлу или папке, которые указывает путь. Проверьте каталоги выше пути, затем переходите по каждой встреченной символической ссылке и проверьте каталоги, ведущие к месту, куда она указывает. Любой другой код ошибки найдите в разделе [причины и шаги для пути, который не удалось проверить](#path-could-not-be-checked).
+* Чтобы совместно использовать файлы с другими плагинами того же маркетплейса, свяжите их символической ссылкой внутри каталога плагина, следуя [правилам символических ссылок](https://code.claude.com/docs/ru/plugins/host-marketplace.md#share-files-within-a-marketplace-with-symlinks)
+
+### Путь к файлу сервера не прочитан
+
+Сообщение `path not read` означает, что Claude Code не прочитал файл MCP- или LSP-сервера, который указывает плагин, из-за пути к этому файлу. Остальная часть плагина загружается, но без серверов, которые определяет этот файл.
+
+Часть `..` учитывается, даже если путь остаётся внутри плагина, как в этом примере:
+
+```text theme={null}
+mcp-servers path not read: ./sub/../x.json is absolute or has a ".." part
+```
+
+**Что делать:**
+
+* Если вы установили плагин и не сопровождаете его, передайте сообщение его автору
+* Если вы сопровождаете плагин, держите файл сервера внутри каталога плагина. Укажите его в манифесте или записи маркетплейса путём, который начинается с `./` и не содержит `..`, например `./servers/x.json`
+* Чтобы совместно использовать один файл сервера в нескольких плагинах одного маркетплейса, свяжите этот файл с каждым плагином символической ссылкой, следуя [правилам символических ссылок](https://code.claude.com/docs/ru/plugins/host-marketplace.md#share-files-within-a-marketplace-with-symlinks)
+
+### Плагин не загружен: его манифест не был прочитан
+
+Claude Code не смог подтвердить, что [манифест](https://code.claude.com/docs/ru/plugins/manifest-reference.md) плагина из маркетплейса в `.claude-plugin/plugin.json` находится внутри плагина, поэтому ничего из этого плагина не загружает. Для плагина в [локальном маркетплейсе](https://code.claude.com/docs/ru/plugins/loading.md#in-place-and-copied-plugins) Claude Code также не смог подтвердить, что манифест находится внутри этого маркетплейса. Сообщение отображается на вкладке **Errors** в `/plugin`, а причина в его конце указывает, что обнаружил Claude Code.
+
+Например, это сообщение относится к плагину в локальном маркетплейсе, папка `.claude-plugin` которого является символической ссылкой, ведущей за пределы маркетплейса:
+
+```text theme={null}
+Plugin not loaded: its manifest /home/user/my-marketplace/my-plugin/.claude-plugin/plugin.json was not read, because it resolves to /home/user/dotfiles/my-plugin/.claude-plugin/plugin.json, outside the plugin directory and its marketplace directory
+```
+
+**Что делать:**
+
+* Если причина заканчивается на `EACCES`, восстановите право на выполнение для каждого каталога на пути к манифесту. Проверьте каталоги выше манифеста, затем переходите по каждой встреченной символической ссылке и проверьте каталоги, ведущие к месту, куда она указывает. Любой другой код ошибки найдите в разделе [причины и шаги для пути, который не удалось проверить](#path-could-not-be-checked).
+* Если вы сопровождаете плагин и причина указывает, куда разрешается манифест, значит, папка `.claude-plugin` или сам `plugin.json` является символической ссылкой, которая ведёт туда. Замените эту ссылку копией того, на что она указывает.
+* Если вы установили плагин и не сопровождаете его, передайте сообщение его автору
+
+### Путь не удалось проверить
+
+Claude Code запросил у операционной системы, существует ли путь плагина, и получил ошибку, отличную от «не найдено», поэтому не загружает то, на что указывает путь. Какая часть плагина загрузится, зависит от того, какой путь не прошёл проверку:
+
+* Одно из [расположений компонентов плагина по умолчанию](https://code.claude.com/docs/ru/plugins/manifest-reference.md#standard-layout), например папка `skills/`, файл `monitors/monitors.json` или [`SKILL.md` в корне плагина](https://code.claude.com/docs/ru/plugins/components#skills): остальные компоненты плагина по-прежнему загружаются
+* Собственный каталог плагина: ничего из этого плагина не загружается
+
+Для пути, который вообще не существует, эта ошибка не появляется. В `/plugin` ошибка отображается под плагином и указывает путь и код, который вернула операционная система:
+
+```text theme={null}
+skills path could not be checked: /home/user/my-plugin/skills (ELOOP)
+```
+
+В `claude plugin list` та же ошибка звучит как `Path not found: /home/user/my-plugin/skills (skills, ELOOP)`.
+
+К причинам этой ошибки относятся:
+
+* `ELOOP`: символическая ссылка в пути указывает сама на себя или образует цикл
+* `EIO` или `ESTALE`: путь находится на сетевом подключении, которое повреждено или устарело
+* `EACCES`: один из каталогов выше пути не даёт вам прав доступа для его прохождения
+
+**Что делать:**
+
+* Замените символическую ссылку, указывающую сама на себя, настоящей папкой или удалите её
+* Если путь находится на сетевом подключении, переподключите общий ресурс
+* Если код — `EACCES`, восстановите право на выполнение для каталогов выше пути
+* После исправления пути выполните `/reload-plugins` или перезапустите Claude Code, чтобы загрузить плагин или компонент
+
+До v2.1.265 Claude Code считал папку компонента по умолчанию, которую не удалось проверить, отсутствующей и загружал плагин без этого компонента, не выводя ошибку.
+
+### Путь записи маркетплейса не остаётся внутри каталога маркетплейса
+
+[Запись маркетплейса](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#plugin-entries) плагина объявляет путь источника, который Claude Code не может разрешить в расположение внутри собственного каталога маркетплейса, поэтому плагин не устанавливается и не загружается. Отказ распространяется на:
+
+* Путь записи, который является абсолютным, выходит за пределы маркетплейса с помощью `..` или записан как сетевой путь
+* В macOS и Linux — путь записи, содержащий обратную косую черту в любом месте после начального `./`
+* Запись в маркетплейсе, полученном из удалённого источника, например git или URL, которая достигает цели через символическую ссылку, разрешающуюся за пределы каталога маркетплейса
+* Относительную запись в маркетплейсе, добавленном по прямому URL на его `marketplace.json`: Claude Code загружает только этот файл, поэтому локальных файлов плагина, на которые мог бы указывать путь, нет. См. [Плагины с относительными путями не работают в маркетплейсах на основе URL](https://code.claude.com/docs/ru/plugins/troubleshooting.md#plugins-with-relative-paths-fail-in-url-based-marketplaces)
+
+`claude plugin install` сообщает об отказе так:
+
+```text theme={null}
+Cannot install my-plugin@my-marketplace: its marketplace entry path does not stay inside the marketplace directory (an absolute, climbing, network-shaped, backslash-containing or link-traversing entry, an entry of a fetched marketplace that resolves or opens outside its tree — or a relative entry in a url-catalog marketplace, which has no local directory)
+```
+
+Если запись уже установленного плагина не проходит ту же проверку, `claude plugin list` показывает плагин как `failed to load` с сообщением:
+
+```text theme={null}
+Plugin source path refused: ./my-plugin does not stay inside its marketplace directory. Check that the marketplace entry has a plain relative path.
+```
+
+**Что делать:**
+
+* Если вы сопровождаете маркетплейс, запишите `source` записи как простой относительный путь с прямыми косыми чертами, например `./plugins/my-plugin`, и следите, чтобы любая символическая ссылка на этом пути указывала внутрь каталога маркетплейса
+* Если вы добавили маркетплейс по прямому URL, относительные записи не могут быть разрешены. Попросите автора маркетплейса использовать [другой источник плагина](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#plugin-sources) или вместо этого добавьте маркетплейс из его git-репозитория
+
+### Failed to load marketplace configuration
+
+Claude Code хранит добавленные вами маркетплейсы плагинов в файле реестра `~/.claude/plugins/known_marketplaces.json`. Команда плагина, которой нужен реестр, например `claude plugin install`, завершается одним из двух сообщений, если Claude Code не может использовать этот файл:
+
+* `Failed to load marketplace configuration`: файл существует, но не является допустимым JSON или не может быть прочитан. Пустой файл также приводит к этой ошибке.
+* `Marketplace configuration file is corrupted`: файл является допустимым JSON, но его содержимое не соответствует схеме реестра.
+
+С пустым файлом `claude plugin install` сообщает:
+
+```text theme={null}
+✘ Failed to install plugin "my-plugin": Failed to load marketplace configuration: JSON Parse error: Unexpected EOF
+```
+
+До v2.1.246 `claude plugin install` не сообщал об этой ошибке.
+
+**Что делать:**
+
+* Откройте `~/.claude/plugins/known_marketplaces.json` и исправьте JSON или исправьте записи, которые в сообщении указаны как не соответствующие схеме реестра
+* Если исправить файл не удаётся, удалите его или замените его содержимое на `{}`, затем заново добавьте каждый маркетплейс с помощью `claude plugin marketplace add <source>`. Claude Code повторно регистрирует маркетплейсы, объявленные в ваших пользовательских или управляемых настройках в [`extraKnownMarketplaces`](https://code.claude.com/docs/ru/settings-reference#extraknownmarketplaces), при следующем запуске в папке, которой вы доверяете.
+
+### Плагин обязателен в вашей организации
+
+Вы выполнили `claude plugin disable` или использовали вкладку **Installed** в `/plugin`, чтобы отключить [плагин, синхронизированный из claude.ai](https://code.claude.com/docs/ru/plugins/loading.md#synced-plugins), который ваша организация отметила как обязательный:
+
+```text theme={null}
+Plugin "<name>@synced" is required by your organization and can't be disabled here. Contact your admin to change it.
+```
+
+Claude Code ничего не сохраняет, и плагин остаётся включённым.
+
+При попытке отключить плагин, от которого зависит обязательный плагин, Claude Code отказывает так же, с сообщением, в котором указан обязательный плагин, которому он нужен.
+
+**Что делать:**
+
+* Попросите администратора вашей организации claude.ai изменить статус обязательности плагина на claude.ai
+
+### Плагин не был удалён
+
+Вы выполнили [`claude plugin uninstall`](https://code.claude.com/docs/ru/plugins/cli-reference#plugin-uninstall) или выбрали **Uninstall** на вкладке **Installed** в `/plugin`, и удаление остановилось с сообщением, начинающимся с `"<plugin>" was not uninstalled:`. Если текст после двоеточия начинается с `installed_plugins.json`, а не с имени файла настроек, причина — содержимое `installed_plugins.json`, которое эта версия Claude Code не может прочитать. Для этого варианта см. [`installed_plugins.json` содержит запись, которую эта версия не может прочитать](https://code.claude.com/docs/ru/plugins/troubleshooting#installed-plugins-json-holds-a-record-this-version-cannot-read).
+
+Когда Claude Code удалил запись плагина из `enabledPlugins` и заново прочитал файлы настроек этой области действия, либо плагин всё ещё оказался включён там, либо файл, который мог бы его включить, не удалось прочитать или проверить. Удаление сохранённых параметров, секретов и данных плагина, пока запись в настройках может снова его включить, привело бы к их потере, поэтому удаление останавливается: плагин остаётся установленным, и ничего из сохранённого им не удаляется.
+
+```text theme={null}
+✘ Failed to uninstall plugin "formatter": "formatter" was not uninstalled: it is still switched on in /home/user/project/.claude/settings.local.json, although the settings change reported no error. It is still installed. Take it out of "enabledPlugins" in that file yourself, then uninstall it again.
+```
+
+Средняя часть сообщения указывает файл и причину:
+
+* `it is still switched on in <file>, although the settings change reported no error`: запись настроек сообщила об успехе, но при повторном чтении файла запись всё ещё там
+* `it is still switched on in <file>, and the settings change failed (<error>)`: файл не удалось сохранить по причине, указанной в скобках
+* `<file> is there and could not be read`: файл существует, но его не удалось прочитать как настройки, например потому что он не является допустимым JSON, поэтому он всё ещё может включать плагин
+* `<file> (not read: it is on a network path or is a link to one, or could not be checked)`: Claude Code не прочитал файл настроек проекта или локальных настроек, потому что этот файл или содержащая его папка `.claude` является ссылкой, ведущей в сетевое расположение, или потому что не удалось проверить этот путь
+
+`claude plugin uninstall` завершается с кодом 1, а с `--json` результат содержит `failureCode: "settings_still_on"`. `/plugin` показывает то же сообщение.
+
+**Что делать:**
+
+* Следуйте последнему предложению сообщения: исправьте или замените указанный файл настроек либо самостоятельно удалите запись плагина из `enabledPlugins` в этом файле, затем снова выполните удаление
+
+### Skipping connection (recent failure cached; retries automatically in 15 min, or edit the plugin config to retry now)
+
+Это сообщение означает, что Claude Code не запустил stdio-[MCP-сервер, предоставляемый плагином](https://code.claude.com/docs/ru/mcp.md#plugin-provided-mcp-servers), потому что подключение к этому серверу завершилось неудачей менее 15 минут назад:
+
+```text theme={null}
+Skipping connection (recent failure cached; retries automatically in 15 min, or edit the plugin config to retry now)
+```
+
+Сессия продолжается без инструментов сервера, и по истечении 15 минут Claude Code не пытается снова подключиться к серверу в этой сессии. Когда вы запускаете новую сессию или выполнение [`claude -p`](https://code.claude.com/docs/ru/headless) не ранее чем через 15 минут после последнего неудачного подключения, Claude Code снова пытается подключиться к серверу.
+
+**Что делать:**
+
+Чтобы Claude Code снова попытался подключиться к серверу без ожидания:
+
+* **В интерактивной сессии**: выполните `/mcp`, выберите сервер и выберите **Reconnect**
+* **В приложении на [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md)**: вызовите [`reconnectMcpServer()`](https://code.claude.com/docs/ru/agent-sdk/typescript#methods) в TypeScript или [`ClaudeSDKClient.reconnect_mcp_server()`](https://code.claude.com/docs/ru/agent-sdk/python#methods) в Python с именем сервера
+* **В `claude -p`**: запустите интерактивную сессию, которая загружает тот же плагин, на том же компьютере, под той же учётной записью операционной системы и с тем же значением [`CLAUDE_CONFIG_DIR`](https://code.claude.com/docs/ru/env-vars), что и при ваших запусках. Переподключите там сервер из `/mcp`. После успешного подключения Claude Code попытается подключиться при вашем следующем запуске.
+* **Если вы разрабатываете плагин**: измените `command`, `args` или `env` сервера в `.mcp.json` или `plugin.json` плагина. Claude Code попытается подключиться в следующей сессии или при следующем запуске `claude -p`, которые загрузят изменённую запись.
+
+Это сообщение заменяет ошибку неудачного подключения. Если новая попытка тоже завершится неудачей, Claude Code вместо этого сообщения выведет ошибку этой попытки.
+
+## Ошибки инструментов
+
+Эти ошибки возникают при вызовах инструментов Claude. Claude самостоятельно исправляет большинство ошибок инструментов. Когда требуется изменение с вашей стороны, список **Что делать** для этой ошибки указывает, что нужно изменить.
+
+### No such tool available
+
+Claude вызвал инструмент по имени, которого нет в списке инструментов сессии. Claude Code возвращает ошибку Claude как результат вызова инструмента, и ход продолжается. Когда Claude Code может определить, почему инструмент отсутствует, он добавляет после имени инструмента предложение, которое указывает причину или называет инструмент, который следует вызвать вместо этого, как во второй строке:
+
+```text theme={null}
+Error: No such tool available: <tool name>
+Error: No such tool available: read. Tool names are case-sensitive: call Read instead.
+```
+
+Сразу после возобновления сессии MCP-сервер может всё ещё выполнять первую попытку подключения, когда Claude вызывает один из его инструментов. В этом случае Claude Code [ожидает сервер](https://code.claude.com/docs/ru/mcp.md#tool-availability) и возвращает эту ошибку, если по окончании ожидания инструмент всё ещё недоступен. До версии 2.1.284 такой вызов сразу завершался ошибкой вместо ожидания.
+
+Вызов, имя инструмента в котором Claude Code [обрезал до 200 символов](#tool-use-name-over-200-characters), также завершается этой ошибкой.
+
+**Что делать:**
+
+* Если это произошло один раз, ничего делать не нужно. Claude читает ошибку, и ход продолжается.
+* Если вызовы инструментов MCP-сервера продолжают завершаться этой ошибкой, выполните `/mcp` в сессии или `claude mcp list` в оболочке, чтобы проверить [статус](https://code.claude.com/docs/ru/mcp.md#server-status) сервера, и переподключите сбойный сервер из `/mcp`. Для Agent SDK см. [Обработка ошибок](https://code.claude.com/docs/ru/agent-sdk/mcp.md#error-handling).
+
+### MCP server connection closed before the tool call was answered
+
+Вызов инструмента HTTP [MCP-сервера](https://code.claude.com/docs/ru/mcp.md) или [коннектора claude.ai](https://code.claude.com/docs/ru/mcp.md#use-mcp-servers-from-claude-ai) потерял соединение до того, как сервер ответил, поэтому Claude Code не может определить, был ли выполнен инструмент:
+
+```text theme={null}
+MCP server "<name>" connection closed before the tool call was answered. The tool may have run: check whether it did before running it again.
+```
+
+Повторение вызова может повторить действие инструмента, например создать вторую задачу. Поэтому Claude Code повторяет вызов самостоятельно, один раз, когда сервер помечает инструмент как безопасный для повторения.
+
+**Что делать:**
+
+* Проверьте в сервисе, с которым работает инструмент, произошло ли действие, например есть ли там задача или запись, которую он должен был создать
+* Если действие произошло, не запускайте инструмент снова. Claude получил это сообщение вместо результата инструмента, поэтому сообщите Claude, чем всё закончилось.
+* Если действие не произошло, попросите Claude снова запустить инструмент. Переподключать сервер заранее не нужно, потому что Claude Code снова подключается к нему при следующем вызове одного из его инструментов. Если и это подключение не удастся, см. [Обрывы соединения с удалённым сервером посреди сессии](https://code.claude.com/docs/ru/mcp.md#mid-session-drops-of-a-remote-server).
+* Если вы разрабатываете сервер и инструмент безопасно вызывать дважды, [пометьте его как безопасный для повторения](https://code.claude.com/docs/ru/mcp.md#tool-calls-pending-when-a-connection-closes), чтобы Claude Code мог повторить потерянный вызов
+
+### MCP server is disabled
+
+Это сообщение в результате инструмента означает, что Claude вызвал инструмент [MCP-сервера](https://code.claude.com/docs/ru/mcp.md), который [отключён](https://code.claude.com/docs/ru/mcp.md#disable-a-server-without-removing-it). Claude Code не подключался к серверу, поэтому инструмент не был выполнен, и Claude получил этот текст вместо результата:
+
+```text wrap theme={null}
+MCP server "<name>" is disabled — re-enable it via /mcp to use its tools
+```
+
+**Что делать:**
+
+* Если вы намеренно отключили сервер, ничего делать не нужно
+* Если Claude нужны инструменты сервера, снова включите его из `/mcp` в промпте Claude Code
+* В приложении на [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md) снова включите сервер, вызвав [`toggleMcpServer()`](https://code.claude.com/docs/ru/agent-sdk/typescript#togglemcpserver) в TypeScript с `enabled`, равным `true`, или [`toggle_mcp_server()`](https://code.claude.com/docs/ru/agent-sdk/python#claudesdkclient) в Python с `enabled`, равным `True`
+
+### MCP tool call timed out with the server's question unanswered
+
+В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) [MCP-сервер](https://code.claude.com/docs/ru/mcp.md) запросил ввод через [elicitation](https://code.claude.com/docs/ru/mcp.md#respond-to-mcp-elicitation-requests) во время вызова инструмента, и лимит времени вызова истёк до того, как пришёл ответ:
+
+```text theme={null}
+MCP server "<name>" tool "<tool>" timed out after <N>s. The server asked the user a question, and no answer came before the time limit. Do not call this tool again in this turn. Tell the user that the server's question got no answer, and wait for their reply.
+```
+
+До версии 2.1.310 результат заканчивался на `timed out after <N>s` и ничего не сообщал о вопросе.
+
+**Что делать:**
+
+* Настройте [хук `Elicitation`](https://code.claude.com/docs/ru/hooks#elicitation), который отвечает на запросы сервера
+* В приложении на TypeScript Agent SDK сделайте так, чтобы ваш обратный вызов [`onElicitation`](https://code.claude.com/docs/ru/agent-sdk/typescript#options) возвращал ответ до истечения лимита
+* Чтобы дать больше времени на ответ, задайте более длинный [`timeout`](https://code.claude.com/docs/ru/mcp#time-limits-on-mcp-tool-calls) в миллисекундах в записи конфигурации сервера, например `"timeout": 600000` для 10 минут
+* Или выполните задачу в интерактивной сессии и сами ответьте в [диалоге](https://code.claude.com/docs/ru/mcp.md#respond-to-mcp-elicitation-requests) сервера
+
+### Permission prompt tool returned an invalid result
+
+Инструмент, который вы передали в [`--permission-prompt-tool`](https://code.claude.com/docs/ru/cli-reference#cli-flags), вернул ответ, который Claude Code не смог прочитать, поэтому ожидавший этого ответа вызов инструмента не был выполнен, даже если ответ разрешал вызов:
+
+```text wrap theme={null}
+Permission prompt tool returned an invalid result. Expected a single text block param with type="text" and a string text value.
+```
+
+**Что делать:**
+
+* Возвращайте один текстовый блок, текст которого — `{"behavior": "allow"}` или `{"behavior": "deny", "message": "<reason>"}`. Чтобы изменить входные данные, добавьте `updatedInput` в объект `allow`. С версии 2.1.86 по 2.1.206 для `allow` требовалось `"updatedInput": {}`, чтобы сохранить входные данные.
+* Не возвращайте [`structuredContent`](https://code.claude.com/docs/ru/agent-sdk/custom-tools#return-structured-data), который ваш MCP SDK может добавлять самостоятельно. Например, регистрируйте инструмент:
+  * **`FastMCP` или `MCPServer` из `mcp.server`**: с `structured_output=False`
+  * **`FastMCP` из `fastmcp`**: с `output_schema=None` и возвращайте строку
+  * **MCP TypeScript SDK**: без `outputSchema`
+* Если ошибка возникает только при входных данных размером около 40 КБ или больше, не копируйте входные данные в `updatedInput` или в `message` отказа. Чтобы изменять такие большие входные данные, [увеличьте лимит вывода вашего инструмента запроса разрешений](https://code.claude.com/docs/ru/mcp.md#raise-the-limit-for-a-specific-tool).
+
+### Agent would be spawned with zero tools
+
+Каждая запись в [списке `tools`](https://code.claude.com/docs/ru/sub-agents#supported-frontmatter-fields) субагента не соответствовала ни одному используемому инструменту, поэтому Claude Code отказался запускать субагента: без инструментов он не мог действовать. Сообщение группирует ваши записи по причине ошибки:
+
+* **Unrecognized**: запись не соответствует ни одному имени инструмента, обычно это опечатка, например `Grpe` вместо `Grep`.
+* **Not available to subagents**: запись называет реальный инструмент, который [субагенты не могут использовать](https://code.claude.com/docs/ru/sub-agents.md#available-tools). Фоновые субагенты имеют меньший встроенный набор инструментов, поэтому запись, которую может использовать только субагент переднего плана, попадает сюда, когда субагент будет работать в фоне, что является значением по умолчанию. Если вы указываете `Agent`, сообщение относит его к следующей группе.
+* **Matched no tools in this session**: запись действительна, но ни один инструмент в текущей сессии не соответствует ей прямо сейчас, например `mcp__github__*` без подключённого MCP-сервера GitHub или `Agent` для субагента на [пределе глубины](https://code.claude.com/docs/ru/sub-agents.md#let-subagents-spawn-their-own-subagents).
+
+Пропуск поля `tools` никогда не вызывает этот отказ. Если вы оставляете список `tools` пустым или `disallowedTools` удаляет каждую запись в нём, Claude Code также пропускает отказ и запускает субагента без инструментов.
+
+До версии 2.1.208 субагент запускался без инструментов и мог вернуть пустой или запутанный результат.
+
+```text theme={null}
+Agent 'code-reviewer' would be spawned with zero tools — refusing. Its tools list resolved to nothing: unrecognized [Grpe]. Fix the agent's tools frontmatter or pass a different subagent_type.
+```
+
+**Что делать:**
+
+* Исправьте каждую запись, которую называет ошибка, в соответствии с [инструментами, доступными субагентам](https://code.claude.com/docs/ru/sub-agents.md#available-tools)
+* Удалите записи для инструментов, которых нет в сессии, например инструменты MCP с MCP-сервера, который не подключён
+* Если запись называет подключённый MCP-сервер, сравните запись с именем этого сервера в том виде, в каком оно записано в [именах инструментов](https://code.claude.com/docs/ru/permissions.md#mcp) сервера, например `reports__v2` в `mcp__reports__v2__get_totals`. Для этого сервера укажите `mcp__reports__v2__*`, то есть `mcp__`, за которым следуют полное имя и `__*`. С более коротким `mcp__reports`, которое называет сервер с именем `reports`, субагент не получит ни одного из инструментов `reports__v2`
+* Для инструмента, который [фоновые субагенты отбрасывают](https://code.claude.com/docs/ru/sub-agents.md#available-tools), например `CronCreate`, удалите запись
+* Чтобы вместо этого сохранить такой инструмент, как `CronCreate`, [позвольте Claude дождаться субагента](https://code.claude.com/docs/ru/sub-agents.md#let-claude-wait-for-a-subagent): субагент, которого ждёт Claude, работает на переднем плане и сохраняет инструмент. Если в определении задано `background: true`, сначала удалите это поле, потому что оно оставляет субагента в фоне
+* Удалите поле `tools` вместо перечисления инструментов, чтобы дать субагенту каждый [инструмент, доступный субагентам](https://code.claude.com/docs/ru/sub-agents.md#available-tools)
+* Для списка `tools`, содержащего только `Agent`, повысьте [предел глубины](https://code.claude.com/docs/ru/sub-agents.md#let-subagents-spawn-their-own-subagents) или дайте агенту хотя бы один другой инструмент: Claude Code скрывает `Agent` на этом пределе, поэтому список, в котором больше ничего нет, разрешается в отсутствие инструментов
+
+### File is covered by a Read deny rule
+
+Инструмент Edit или Write был вызван для пути, соответствующего [запрещающему правилу `Read`](https://code.claude.com/docs/ru/permissions#read-and-edit), включая создание нового файла по этому пути. Оба инструмента изменяют содержимое, которое Claude должен иметь возможность прочитать обратно, поэтому Claude Code отклоняет вызов до любого доступа к файлу. NotebookEdit не охватывается запрещающими правилами `Read`. До версии 2.1.228 правило блокировало только инструмент Edit, а до версии 2.1.208 редактирование блокировало только запрещающее правило `Edit`.
+
+```text theme={null}
+File is covered by a Read deny rule in your permission settings and cannot be edited.
+```
+
+Когда Claude Code отклоняет вызов инструмента Write, сообщение вместо этого заканчивается на `and cannot be written`.
+
+**Что делать:**
+
+* Если Claude должен иметь возможность изменять файл, удалите или сузьте запрещающее правило `Read` в `/permissions` или в [настройках](https://code.claude.com/docs/ru/settings-reference.md#permission-settings)
+* Если файл должен остаться нетронутым, сохраните правило и добавьте запрещающее правило `Edit` для того же пути, чтобы также заблокировать инструмент NotebookEdit
+
+### Setting blocks writes outside the working directories
+
+Когда Claude пытается записать файл и вызов инструмента завершается ошибкой с этим сообщением, путь находится вне [рабочих каталогов](https://code.claude.com/docs/ru/permissions.md#working-directories) сессии, и настройка [`permissions.blockWritesOutsideWorkingDirectories`](https://code.claude.com/docs/ru/settings-reference#permissions-blockwritesoutsideworkingdirectories) включена:
+
+```text wrap theme={null}
+<path> is outside <dirs>; the permissions.blockWritesOutsideWorkingDirectories setting blocks writes outside the working directories. Ask the user to add the directory with /add-dir, or to remove that setting.
+```
+
+Claude Code отклоняет такую запись в любом режиме разрешений. Отказ также может выглядеть так:
+
+```text wrap theme={null}
+<path>: Writes outside the working directories are blocked (permissions.blockWritesOutsideWorkingDirectories). Add the directory with /add-dir, or remove that setting.
+```
+
+**Что делать:**
+
+* Если Claude не должен записывать туда, ничего не делайте
+* Чтобы позволить Claude записывать в существующий каталог, содержащий этот путь, выполните `/add-dir <directory>` в промпте Claude Code или передайте `--add-dir <directory>` при запуске Claude Code
+* Если путь указывает на файл настроек Claude Code, например `~/.claude/settings.json`, отредактируйте его самостоятельно. Добавление его каталога с помощью `/add-dir` не поможет, потому что тогда Claude Code отклонит запись [как запись в файл настроек](#writes-to-claude-code-settings-files-are-blocked).
+* Чтобы каталог оставался доступным для записи в каждой сессии, укажите его в [`permissions.additionalDirectories`](https://code.claude.com/docs/ru/settings-reference#permissions-additionaldirectories) в пользовательских или управляемых настройках
+* Чтобы отключить `permissions.blockWritesOutsideWorkingDirectories`, удалите эту настройку из каждого файла настроек, в котором она задана, затем перезапустите Claude Code
+* Если ни в одном из ваших файлов настроек нет `permissions.blockWritesOutsideWorkingDirectories`, эта настройка может поступать из `--settings` или из хост-приложения. Claude Code также отклоняет такие записи, пока не может прочитать `permissions` в ваших [управляемых настройках](https://code.claude.com/docs/ru/managed-settings.md#keys-that-fail-closed). Обратитесь к тому, кто запускает сессию или управляет ею.
+
+### Writes to Claude Code settings files are blocked
+
+Когда Claude пытается записать файл и вызов инструмента завершается ошибкой с этим сообщением, Claude Code считает этот файл одним из своих файлов настроек, и настройка [`permissions.blockWritesOutsideWorkingDirectories`](https://code.claude.com/docs/ru/settings-reference#permissions-blockwritesoutsideworkingdirectories) включена:
+
+```text wrap theme={null}
+<path>: Writes to Claude Code settings files are blocked while permissions.blockWritesOutsideWorkingDirectories is on, because a settings file can lift that block. While a managed settings folder cannot be resolved, any .json file counts as one.
+```
+
+**Что делать:**
+
+* Чтобы изменить настройку, отредактируйте файл настроек самостоятельно
+* Чтобы снова позволить Claude редактировать файлы настроек, удалите `permissions.blockWritesOutsideWorkingDirectories` из каждого файла настроек, в котором она задана, затем перезапустите Claude Code
+* Если файл не является одним из ваших файлов настроек, найдите его среди других файлов, которые Claude Code считает файлами настроек:
+  * **Файл, переданный в `--agents` или `--mcp-config`**: отредактируйте его самостоятельно
+  * **Сохранённая копия [настроек, управляемых сервером](https://code.claude.com/docs/ru/server-managed-settings.md#security-considerations), и файлы, хранящиеся вместе с ней**: попросите [Owner](https://code.claude.com/docs/ru/server-managed-settings.md#access-control) изменить настройку в настройках, управляемых сервером.
+  * **Любой файл `.json`, пока Claude Code не может определить, куда ведёт папка [`managed-settings.d/`](https://code.claude.com/docs/ru/managed-settings#split-a-file-based-policy-across-teams)**: попросите администратора проверить эту папку
+
+### Path cannot contain null bytes
+
+Аргумент пути или шаблона в вызове файлового инструмента содержал нулевой байт, который файловые системы и инструменты поиска не могут принять. Read, Write, Edit, NotebookEdit, Glob и Grep проверяют это, и сообщение называет инструмент и аргумент:
+
+```text theme={null}
+Read file_path cannot contain null bytes (\0). Remove the null byte and try again.
+```
+
+Вызов инструмента завершается ошибкой, Claude видит её, и ход продолжается.
+
+**Что делать:**
+
+* Ничего с вашей стороны: ошибка возвращается Claude как результат инструмента, и само сообщение говорит Claude удалить нулевой байт и повторить попытку
+
+До версии 2.1.281 нулевой байт в пути Read, Write, Edit или NotebookEdit завершал весь ход с ошибкой `Path contains null bytes`, и инструмент так и не запускался.
+
+### Command contains an invisible character
+
+[Инструмент PowerShell](https://code.claude.com/docs/ru/tools-reference.md#powershell-tool) отказался выполнять команду, содержащую U+FEFF или U+180E:
+
+```text theme={null}
+Error: command contains the invisible character U+FEFF (byte order mark) or U+180E (Mongolian vowel separator), and was not run. Remove the character, keep the text that needs it in a file that the command reads, or write it as $([char]0xFEFF) or $([char]0x180E) inside a double-quoted string
+```
+
+**Что делать:**
+
+* **Для команды, написанной Claude**: исправлять ничего не нужно. Сообщение объясняет Claude, как переписать команду.
+* **Для файла скилла или команды**: сообщение следует за `No shell command in <name> was run`. См. [где найти символ и как его удалить](#no-shell-command-was-run).
+
+### Approved command was not run after Claude Code restarted
+
+Shell-команда, которую вы подтвердили, не была выполнена, и Claude получает это сообщение как результат команды:
+
+```text wrap theme={null}
+This call was not run. Claude Code could not confirm that the shell is back in the directory where it was approved. That directory may be gone or replaced, lie outside the directory where the session started, or be one that Claude Code needs approval to enter or is not allowed to examine. The shell's directory is <directory>. If the command still makes sense, cd to the directory it was meant for and make the call again; it may need approval again.
+```
+
+Третье предложение сообщения может вместо этого выглядеть так: `It does not keep track of that directory across a restart in a session that has been in a worktree.`
+
+**Что делать:**
+
+* Позвольте Claude продолжить и ответьте на запрос, если вас попросят снова подтвердить команду.
+
+### File is too large to read as an image
+
+Claude попытался прочитать файл как изображение с помощью [инструмента Read](https://code.claude.com/docs/ru/tools-reference.md#read-tool-behavior), а размер файла превышает 128 МБ — максимум, который Read загружает из файла изображения. Ничего не было прочитано, и Claude получает эту ошибку как результат инструмента:
+
+```text wrap theme={null}
+File is too large to read as an image (the limit is 128MB): <path>. If it is an image, resize it or export a smaller copy, then read that.
+```
+
+Когда путь указывает на канал или устройство, а не на обычный файл, Read останавливается, как только поступит более 128 МБ, и вместо этого возвращает такую ошибку:
+
+```text wrap theme={null}
+Cannot read this as an image: <path> is a pipe or a device, not a regular file, and it sent more than 128MB without ending.
+```
+
+**Что делать:**
+
+* Если Claude последовал сообщению `File is too large` и затем уменьшил изображение или прочитал меньшую копию, ничего делать не нужно
+* Если Claude остановился на ошибке, сами экспортируйте копию размером меньше 128 МБ, например с более низким разрешением, и укажите Claude на этот файл
+* Если путь указывал на канал или устройство, укажите Claude вместо этого на обычный файл изображения
+
+### subagent\_type is required
+
+```text theme={null}
+subagent_type is required: the general-purpose agent is not available in this session. Available agents: ...
+```
+
+Claude вызвал [инструмент Agent](https://code.claude.com/docs/ru/tools-reference.md#agent-tool-behavior) без `subagent_type`, и в этой сессии нет [универсального субагента](https://code.claude.com/docs/ru/sub-agents.md#built-in-subagents), который можно было бы использовать по умолчанию. Это происходит в двух конфигурациях:
+
+* В неинтерактивном режиме установлена [`CLAUDE_AGENT_SDK_DISABLE_BUILTIN_AGENTS=1`](https://code.claude.com/docs/ru/env-vars), что удаляет всех встроенных субагентов
+* Агент основного потока сессии имеет [список разрешённых субагентов `tools: Agent(...)`](https://code.claude.com/docs/ru/sub-agents#restrict-which-subagents-can-be-spawned), в который не входит `general-purpose`
+
+**Что делать:**
+
+* Обычно ничего: сообщение перечисляет субагентов, которые есть в сессии, поэтому Claude может повторить попытку с одним из них
+* Если Claude продолжает терпеть неудачу, добавьте `general-purpose` в список разрешённых `tools: Agent(...)` или удалите переменную `CLAUDE_AGENT_SDK_DISABLE_BUILTIN_AGENTS`
+
+До версии 2.1.235 тот же вызов завершался ошибкой `Agent type 'general-purpose' not found`.
+
+### Memory index is over its read limit
+
+Claude записал в индекс [автоматической памяти](https://code.claude.com/docs/ru/memory.md#auto-memory) `MEMORY.md` и оставил его сверх одного из пределов чтения: 200 строк или 25 КБ. Запись прошла успешно, но в начале сессии загружаются только первые 200 строк или 25 КБ, в зависимости от того, что наступит раньше, поэтому всё, что находится за пределом, отбрасывается при каждом чтении индекса. До версии 2.1.210 индекс, превышающий лимит, молча усекался при следующей загрузке без какого-либо сигнала во время записи.
+
+```text theme={null}
+Error: this write left the memory index at MEMORY.md at 214 lines, over its 200-line read limit. The write succeeded, but everything past the limit is silently dropped each time the index is loaded — entries at the end are already invisible to readers. Rewrite it to under 140 lines now: keep one line per entry, move detail into topic files, and merge or drop stale entries.
+```
+
+В пределах учитывается только загружаемое содержимое. Frontmatter YAML и блочные комментарии HTML удаляются перед загрузкой индекса, поэтому они исключаются из измерения. До версии 2.1.211 Claude Code измерял исходный файл, и frontmatter или комментарии могли вызвать эту ошибку, даже когда загружаемое содержимое укладывалось в лимит.
+
+Claude Code передаёт ошибку Claude после записи, а не выводит её как баннер в вашем терминале, поэтому вы можете заметить её только в транскрипте.
+
+Когда запись Claude приближает файл к пределу, не превышая его, Claude Code вместо этой ошибки возвращает более мягкое напоминание о сжатии индекса.
+
+**Что делать:**
+
+* Позвольте Claude переписать `MEMORY.md` или попросите его об этом: одна строка на запись, детали — в тематические файлы, устаревшие записи объединить или удалить
+* Чтобы сократить индекс самостоятельно, см. [Аудит и редактирование памяти](https://code.claude.com/docs/ru/memory.md#audit-and-edit-your-memory)
+
+### pkill pattern matches the Claude Code process
+
+Команда `pkill` в вызове инструмента Bash использовала шаблон, обычно с `-f`, который соответствует самому процессу Claude Code, поэтому Claude Code отклоняет команду, вместо того чтобы позволить ей завершить сессию. Claude Code проверяет шаблон с помощью `pgrep` перед запуском `pkill` и отклоняет команду, когда в результате есть его собственный ID процесса. Проверка выполняется только в Linux; в macOS `pkill` выполняется без изменений. До версии 2.1.214 команда выполнялась, и совпадающий шаблон завершал сессию Claude Code посреди хода.
+
+```text theme={null}
+pkill: refusing to run — this pattern matches the Claude CLI process (PID 12345). Narrow the pattern, or target your own children with `pkill -P $$ ...`.
+```
+
+Отказ появляется в результате инструмента Bash, а не как баннер в вашем терминале, и Claude обычно самостоятельно корректирует команду.
+
+**Что делать:**
+
+* Сузьте шаблон так, чтобы он соответствовал только нужному процессу, например полному пути целевого двоичного файла, а не короткой подстроке
+* Чтобы остановить процессы, запущенные текущей оболочкой, используйте `pkill -P $$` с шаблоном, что ограничивает совпадение дочерними процессами оболочки
+
+### Failed to write to a teammate's inbox
+
+Claude Code не смог записать сообщение в файл почтового ящика участника команды в `~/.claude/teams/{team-name}/inboxes/`, поэтому получатель ничего не получил. Запись завершается ошибкой, когда Claude Code не может создать или обновить файл, например потому что диск заполнен, каталог недоступен для записи или другой агент слишком долго удерживает блокировку почтового ящика. До версии 2.1.224 Claude Code сообщал, что сообщение отправлено, даже когда запись завершалась ошибкой.
+
+Ошибка появляется в результате инструмента отправляющего агента, а не как баннер в вашем терминале, и её текст говорит Claude повторить попытку:
+
+```text theme={null}
+Failed to write to researcher's inbox — nothing was sent. Try again, or message the lead.
+```
+
+Структурированные сообщения протокола [команды агентов](https://code.claude.com/docs/ru/agent-teams.md) завершаются ошибкой так же, и ошибка называет недоставленное сообщение: когда Claude Code не может записать утверждение плана, отклонение плана, запрос на завершение или отклонение завершения, ошибка выглядит как `Failed to write the <message> to <name>'s inbox — nothing was sent`. `plan approval` в этом списке — это решение лидера, утверждающее план участника команды; отправка плана участником команды — это отдельное сообщение `plan approval request`. Это сообщение и два других сообщения протокола имеют собственный текст и последствия:
+
+* `Failed to write the plan approval request to the lead's inbox — plan not submitted; try again`: план участника команды не дошёл до лидера, и участник команды остаётся в режиме планирования до успешной повторной отправки
+* `The permission request could not be delivered to the team lead (mailbox write failed)`: запрос разрешения участника команды не дошёл до лидера, поэтому никто не подтвердил вызов инструмента
+* `The confirmation could not be written to team-lead's inbox.`: само подтверждение завершения вступило в силу, и участник команды завершает работу; отсутствует только подтверждение для лидера
+
+Когда вы сами отправляете сообщение участнику команды, вводя `@name` и затем сообщение в сессии лидера, та же ошибка появляется как уведомление `Couldn't write to @name's inbox — message not sent. Try again.`, и Claude Code сохраняет ваш текст в поле ввода промпта, чтобы вы могли отправить его снова.
+
+**Что делать:**
+
+* Попросите отправителя повторно отправить сообщение; конкуренция за блокировку почтового ящика временна и устраняется при повторной попытке
+* Проверьте свободное место на диске и убедитесь, что `~/.claude/teams` и файлы в нём доступны для записи вашему пользователю
+
+### Teammate's agent definition was not restored
+
+Claude отправил сообщение остановленному участнику [команды агентов](https://code.claude.com/docs/ru/agent-teams.md), и Claude Code вернул его без повторного применения [определения субагента](https://code.claude.com/docs/ru/agent-teams.md#use-subagent-definitions-for-teammates), из которого он был порождён. Уведомление следует за отчётом о возобновлении в результате инструмента отправляющего агента и называет причину. Когда файл определения получен из папки без сохранённого доверия, оно выглядит так:
+
+```text wrap theme={null}
+Its agent definition was not restored: the folder its definition file came from is not trusted (source: projectSettings), so the teammate is running with the team-essential tools and no custom instructions. To restore it, the user needs to run Claude Code in that folder once and accept the trust dialog (the --debug log names the folder); do not change trust settings on the user's behalf.
+```
+
+Проверка применяется к определению в каталоге `.claude/agents/` проекта или каталога `--add-dir`, и принятие диалога доверия для родительской папки её не удовлетворяет.
+
+**Что делать:**
+
+* Запустите `claude` в папке, которую называет [лог отладки](https://code.claude.com/docs/ru/debug-your-config.md), и примите диалог доверия. Определение повторно применяется в следующий раз, когда Claude Code вернёт участника команды; перезапускать сессию лидера не нужно
+* Или установите запись `hasTrustDialogAccepted` в `true` в `~/.claude.json`, используя точный ключ `projects["<path>"]`, который выводит лог отладки
+
+### Only a teammate can approve a shutdown request
+
+Claude Code отклонил подтверждение завершения в [команде агентов](https://code.claude.com/docs/ru/agent-teams.md), потому что отправившая его сессия не работает как участник команды. Ничего не было отправлено, и ничего не завершилось. Отказ появляется в результате инструмента отправляющей сессии:
+
+```text wrap theme={null}
+Only a teammate can approve a shutdown request, and this session is not running as one. Nothing was sent. To shut down a teammate, send that teammate a shutdown_request message. The teammate is the one that approves it.
+```
+
+**Что делать:**
+
+* Если отказ появился в вашей сессии лидера, сначала проверьте, не завершил ли участник команды работу с тех пор. Отказ возвращается Claude с указанием вместо этого отправить `shutdown_request`, и ход продолжается. В интерактивной сессии лидера, когда участник команды подтверждает запрос на завершение, появляется `<name> has shut down.`.
+* Если участник команды всё ещё работает, попросите лидера в его промпте завершить работу участника команды, например `Ask the researcher teammate to shut down`. См. [Завершение работы участников команды](https://code.claude.com/docs/ru/agent-teams.md#shut-down-teammates).
+* Если этот отказ получил бывший участник команды, которого вы сами возобновили с помощью `claude --resume`, ничего не было отправлено. Чтобы завершить эту сессию, выполните `/exit` в её промпте.
+
+### A command-line deny rule cannot be handed to a teammate intact
+
+Это сообщение означает, что Claude Code не запустил участника вашей [команды агентов](https://code.claude.com/docs/ru/agent-teams.md) в [режиме разделённых панелей](https://code.claude.com/docs/ru/agent-teams.md#choose-a-display-mode). Claude Code передаёт запрещающие правила командной строки лидера участнику команды в разделённой панели через собственную командную строку участника и останавливается, когда участник прочитал бы одно из них иначе:
+
+```text wrap theme={null}
+A command-line deny rule cannot be handed to a teammate intact, so the teammate would not enforce it — spawn aborted
+```
+
+**Что делать:**
+
+* Выполните `/config` в сессии лидера и установите для **Teammate mode** значение `in-process`, затем попросите Claude снова запустить участника команды. Искать правило или перезапускать лидера не нужно. Участник команды в режиме in-process [работает с актуальными запрещающими правилами лидера](https://code.claude.com/docs/ru/agent-teams.md#permissions).
+* Последующие сессии, которые берут [`teammateMode`](https://code.claude.com/docs/ru/settings-reference#teammatemode) из ваших пользовательских настроек, тоже запускают участников команды в режиме in-process, потому что `/config` сохраняет выбор именно туда. Чтобы вернуться к разделённым панелям в последующей сессии, установите для **Teammate mode** значение `auto`, `tmux` или `iterm2` — то, которое вы использовали раньше.
+
+### Message too large for cross-session delivery
+
+[Межсессионное сообщение](https://code.claude.com/docs/ru/cross-session-messaging.md) Claude другой вашей сессии на этой машине было слишком длинным для отправки. Claude Code отклонил его, и получающая сессия ничего не получила. Отказ появляется в результате инструмента отправляющей сессии, а не как баннер в вашем терминале. Он называет оба размера и способ уместить сообщение:
+
+```text wrap theme={null}
+Failed to send to api-worker: Message too large for cross-session delivery: the serialized message is 1,203,844 characters and the limit is 1,048,576. Shorten the message text — put bulk content in a file the recipient can read rather than in the message — or split it into smaller messages.
+```
+
+Повторная отправка того же текста завершается такой же ошибкой.
+
+**Что делать:**
+
+* Попросите Claude кратко изложить сообщение или поместить объёмное содержимое в файл и отправить путь к файлу
+* Попросите Claude разделить содержимое на несколько более коротких сообщений
+
+До версии 2.1.235 Claude Code сообщал, что слишком большое сообщение отправлено. Получающая сессия отбрасывала его непрочитанным.
+
+### Too many messages to this session just now
+
+Claude отправил быструю серию [межсессионных сообщений](https://code.claude.com/docs/ru/cross-session-messaging.md) одной из ваших сессий на этой машине, и серия достигла предела того, что принимают входящие этой сессии. Claude Code отклонил следующую отправку, и получающая сессия ничего из неё не получила. Отказ появляется в результате инструмента отправляющей сессии, а не как баннер в вашем терминале:
+
+```text wrap theme={null}
+Failed to send to api-worker: Too many messages to this session just now: 30 were sent recently and more would be dropped by its rate limit, so this one was not sent. Batch what remains into one message, or wait a little before sending more.
+```
+
+**Что делать:**
+
+* Обычно ничего: Claude объединяет оставшееся содержимое в одно сообщение или ждёт, прежде чем отправлять ещё
+* Если вы сами вызвали эту серию, попросите Claude объединить оставшееся в одно сообщение
+
+До версии 2.1.236 Claude Code сообщал, что эти сообщения отправлены. Получающая сессия отбрасывала их непрочитанными.
+
+### Cross-session message was dropped at the recipient session's inbox
+
+Claude отправил [межсессионное сообщение](https://code.claude.com/docs/ru/cross-session-messaging.md) другой вашей сессии на этой машине, и входящие этой сессии отбросили его до того, как Claude в этой сессии его прочитал. Строка называет адрес получателя и, если получатель указал причину, добавляет её после тире:
+
+```text wrap theme={null}
+Cross-session message was dropped at the recipient session's inbox (recipient: uds:/tmp/cc-socks/13605.sock) and not delivered — its queue of undelivered peer messages was full. Claude was told not to resend right away.
+```
+
+Одна строка может охватывать несколько отброшенных сообщений. Тогда она начинается во множественном числе, например `Cross-session messages (12) were dropped`. Чтобы определить, какой сессии принадлежит адрес, сравните его со [строкой `Peer address`](https://code.claude.com/docs/ru/cross-session-messaging#the-sessions-inbox-socket), которую `/status` показывает в каждой сессии.
+
+После тире строка указывает одну или несколько из этих причин:
+
+* `its queue of undelivered peer messages was full`: получатель уже содержал столько недоставленных сообщений от других сессий, сколько позволяет его очередь
+* `you sent faster than that session accepts`: сообщения отправляющей сессии поступали быстрее, чем получатель принимает от одного отправителя
+* `it repeated your previous message`: сообщение было идентично тому, которое отправляющая сессия незадолго до этого отправила этому получателю
+* `a relay loop between sessions was cut`: сообщение продолжало цепочку сессий, отправляющих сообщения друг другу, и цепочка прошла через получателя слишком много раз или стала слишком длинной
+
+**Что делать:**
+
+* Считайте, что получатель не видел отброшенные сообщения. Claude Code сообщает Claude то же самое и говорит ему включить всё, что ещё важно, в одно более позднее сообщение, а не отправлять повторно сразу
+* Если ваши сессии часто отправляют друг другу обновления, попросите Claude отправлять меньше сообщений, но более крупных, например один отчёт, когда сессия завершает свою работу
+* Для `a relay loop between sessions was cut` введите следующую инструкцию в одну из сессий самостоятельно. Сообщение, которое Claude отправляет в ответ на ваш собственный промпт, начинает новую цепочку
+
+До версии 2.1.238 отправляющая сессия не получала отчёта, когда входящие получателя отбрасывали сообщение.
+
+### Refusing to send a cross-session message
+
+Прежде чем записать [межсессионное сообщение](https://code.claude.com/docs/ru/cross-session-messaging.md) другой вашей сессии на этой машине, Claude Code проверяет, что сокет входящих целевой сессии является тем эндпоинтом, которому было адресовано сообщение. Когда проверка не проходит, Claude Code отклоняет отправку в отправляющей сессии, и целевая сессия ничего не получает. Для сообщения, которое отправляет Claude, отказ появляется в результате инструмента отправляющей сессии:
+
+```text theme={null}
+Failed to send to api-worker: Refusing to send: reply target is a symlink
+```
+
+Текст после `Refusing to send:` называет непройденную проверку:
+
+* `reply target is a symlink`: по пути сокета целевой сессии находится символическая ссылка. Claude Code не доставляет сообщения через неё, потому что такая ссылка может перенаправить сообщение на эндпоинт, который целевая сессия не создавала.
+* `cannot vet reply target`: Claude Code вообще не смог проверить целевой путь, например потому что его чтение завершилось ошибкой прав доступа.
+
+**Что делать:**
+
+* Обычно ничего: проверки не дают сообщению попасть на эндпоинт, отличный от сессии, которой оно было адресовано, и ничего не было отправлено
+* Если `reply target is a symlink` повторяется для одной сессии, выясните, что создало ссылку по пути сокета этой сессии, который показан в её `/status` в поле `Peer address`
+
+### Refusing to read, write, or search a path
+
+Claude Code проверяет [правила разрешений](https://code.claude.com/docs/ru/permissions.md#read-and-edit) для пути к файлу, а затем повторно подтверждает разрешение пути, когда инструмент открывает файл или начинает поиск. Когда он не может подтвердить, что путь по-прежнему ведёт в место, одобренное проверкой, Claude Code отклоняет операцию, вместо того чтобы следовать по пути. Отказ появляется в результате инструмента:
+
+```text wrap theme={null}
+Refusing to read /path/to/file: its symlink resolution changed after permission was checked (a link on the way now leads somewhere the check did not see). If a link in the working directory is being rewritten concurrently, stop that and retry.
+```
+
+Каждый отказ называет свою причину:
+
+* `its symlink resolution changed after permission was checked`: символическая ссылка на пути или в корне поиска Grep или Glob была заменена между проверкой разрешения и операцией. В отказе чтения фраза в скобках указывает, какое сравнение не прошло.
+* `its parent-directory symlink resolution changed after permission was checked`: каталог, через который проходит путь записи, больше не разрешается в одобренное место
+* `where it leads on disk could not be determined (a link on the way could not be examined, or the links do not resolve)`: Claude Code не смог проследить путь до конечного места на диске, например потому что символические ссылки на нём образуют цикл
+* `it is a symbolic link. Write to the link's target path instead`: символическая ссылка находится непосредственно в запрошенном месте записи, например `CLAUDE.md`, являющийся символической ссылкой на `AGENTS.md`; сообщение направляет Claude к цели ссылки
+* `Refusing to write through symlink: <path>. Resolve the symlink and pass the real target path explicitly.`: то же условие, обнаруженное, когда файл открывает другой механизм записи, например при записи в `.mcp.json`, являющийся символической ссылкой
+* `Refusing to write into symlinked directory: <path>`: каталог, содержащий файл, сам является символической ссылкой, например каталог `.claude/` проекта, ссылающийся на другое место
+* `a path one of its Read deny rules is written through changed while the search was being prepared. Retry.`: запрещающее правило `Read` для поиска называет путь, проходящий через символическую ссылку, и эта ссылка изменилась, пока Claude Code готовил поиск
+* `it could not be opened (EACCES) — it is unreadable, or is being replaced concurrently.`: корень поиска существует, но его не удалось открыть; код в скобках — это ошибка операционной системы
+* `its permission check expired before it ran (too many concurrent file operations). Retry.`: Claude Code вытеснил запись о подтверждении при большом количестве одновременных файловых операций до того, как инструмент её использовал; повторная попытка выполняет новую проверку разрешения
+* `ripgrep was found only by name on PATH, and a search outside the working directory cannot apply your Read deny rules in that configuration`: Claude Code не смог разрешить двоичный файл `rg` в абсолютный путь, поэтому он отклоняет поиск вне рабочего каталога, а не выполняет поиск, на который не распространяются ваши запрещающие правила
+
+**Что делать:**
+
+* Обычно ничего: отказ доходит до Claude как результат инструмента, и отклонённая операция не выполняется
+* Если отказ из-за символической ссылки повторяется для одного пути, найдите, что постоянно перезаписывает там ссылку, например инструмент сборки или наблюдатель за файлами, или попросите Claude использовать разрешённый путь к файлу вместо пути через ссылку
+* Если этот отказ появляется для каждого файла, когда Claude Code работает в Windows внутри AppContainer или песочницы с ограниченным токеном, обновитесь до версии 2.1.265 или новее
+* Если в macOS отказ чтения появляется для файла, который ничто не перезаписывает, например для скриншота, перетащенного в промпт, обновитесь до версии 2.1.273 или новее
+* Для отказа ripgrep установите ripgrep с помощью менеджера пакетов, чтобы `rg` разрешался в абсолютный путь в `PATH`, или выполняйте поиск в пределах рабочего каталога
+
+До версии 2.1.251 Claude Code повторно проверял разрешение пути только при записи файлов, поэтому ссылка, заменённая после проверки разрешения, могла без какого-либо сообщения перенаправить чтение или поиск в другое место. Из этих отказов в более ранних версиях появляются только отказы записи для родительского каталога, через символическую ссылку и в каталог-ссылку.
+
+До версии 2.1.280 отказ `where it leads on disk could not be determined` не появлялся.
+
+### The search failed, so this is not a "no matches" result
+
+Поиск [Grep](https://code.claude.com/docs/ru/tools-reference.md#grep-tool-behavior) или [Glob](https://code.claude.com/docs/ru/tools-reference.md#glob-tool-behavior), запущенный Claude, завершился ошибкой до возврата каких-либо результатов, поэтому неизвестно, существуют ли совпадения. Сообщение, которое Claude получает вместо результатов, начинается так:
+
+```text wrap theme={null}
+The search failed, so this is not a "no matches" result: matches may exist. What happened to the search program (ripgrep) is not known, and no results were read. Run the search once more. If it fails again, tell the user that searches are failing.
+```
+
+**Что делать:**
+
+* **При первом появлении**: ничего. Сообщение просит Claude сначала повторить поиск.
+* **Если Claude сообщает, что поиск не работает**: сохраните ошибку ripgrep для отчёта об ошибке:
+  1. В оболочке запустите сессию с теми же флагами, что и сессия, в которой поиск завершался ошибкой, добавив [`--debug-file claude-debug.log`](https://code.claude.com/docs/ru/cli-reference#cli-flags)
+  2. Отправьте Claude промпт, который привёл к неудачному поиску
+  3. Если поиск снова завершится ошибкой, найдите в `claude-debug.log` строку, содержащую `rg error (signal=`
+  4. Приложите эту строку, когда будете [сообщать о проблеме](#report-an-error)
+
+### Task output swap refused
+
+Claude Code сохраняет вывод каждой команды Bash в файл в своём временном каталоге. Каждый раз, открывая один из этих файлов, он проверяет, что путь по-прежнему ведёт к созданному им файлу и его не перенаправляет символическая ссылка, дополнительная жёсткая ссылка или перемещённый каталог. Это сообщение означает, что проверка не прошла, поэтому Claude Code отклонил операцию, вместо того чтобы записывать или читать вывод по этому пути. Сообщение появляется в результате инструмента Bash:
+
+```text wrap theme={null}
+task output swap refused (tasks dir moved or linked): /private/tmp/claude-501/-Users-you-my-project/1f0e62dc-4b0a-4f5e-9c2d-8a7b6c5d4e3f/tasks/b7k2f9m3q.output. To recover: restart Claude Code with CLAUDE_CODE_TMPDIR set to a fresh directory; or, if /private/tmp/claude-501/-Users-you-my-project is a stray directory or a symbolic link that should not be there, remove that entry itself (not what it points to) and restart.
+```
+
+Текст в скобках называет непройденную проверку. Причины, такие как `output symlink was re-pointed`, `output file identity changed` и `not a regular file`, сообщают об одном и том же: что-то по пути вывода или на нём больше не является файлом, созданным Claude Code. Предложение `To recover:` содержат только некоторые причины.
+
+Если проверка не проходит, пока команда ещё выполняется, Claude Code останавливает команду, и её результат сообщает:
+
+```text theme={null}
+Command killed: its output file was replaced or could no longer be verified
+```
+
+**Что делать:**
+
+* Обновитесь до версии 2.1.260 или новее. Более ранние версии иногда показывали это сообщение при отсутствии ссылки или перемещённого каталога
+* Перезапустите Claude Code, установив [`CLAUDE_CODE_TMPDIR`](https://code.claude.com/docs/ru/env-vars) в новый каталог
+* Или проверьте каталог вашего проекта во временном каталоге Claude Code — в примере сообщения это `/private/tmp/claude-501/-Users-you-my-project`. Если этот путь является символической ссылкой или каталогом, которого там быть не должно, удалите саму ссылку или каталог, а не цель ссылки, и перезапустите Claude Code
+* Если отказ повторяется, какой-то процесс заменяет, связывает ссылками или удаляет записи во временном каталоге Claude Code, пока работает сессия. Установите [`CLAUDE_CODE_TMPDIR`](https://code.claude.com/docs/ru/env-vars) в каталог, которым больше ничто не управляет, и перезапустите
+
+### Disk full or disk quota used up
+
+Освободите место, индексные дескрипторы или дисковую квоту на томе, содержащем временный каталог Claude Code. Строка в результате команды, начинающаяся с `Disk full:`, `Disk quota used up:` или `Nearly out of inodes:`, называет этот каталог.
+
+Claude Code сохраняет вывод каждой команды Bash и PowerShell в файл в этом каталоге. Если он не может создать этот файл, потому что том или ваша квота на нём заполнены, команда не запускается, и Claude получает такой результат:
+
+```text wrap theme={null}
+The command was not started: this computer's disk is full (ENOSPC) on the volume holding /tmp/claude-501 (Claude Code's temporary directory), so the file that captures command output could not be created there and nothing ran. Free space on that volume, or restart Claude Code with CLAUDE_CODE_TMPDIR set to a directory on another one, then retry. If this is the user's own computer, tell them before deleting anything to make room.
+```
+
+Сообщения `Disk full:`, `Disk quota used up:` и `Nearly out of inodes:` появляются после команды, которая выполнилась и завершилась с ненулевым кодом. Например:
+
+```text wrap theme={null}
+Disk full: this computer's volume holding /tmp/claude-501 (Claude Code's temporary directory) has 3 MB free, so whatever this command printed was lost and its own writes may have failed with "No space left on device". Free space on that volume, or restart Claude Code with CLAUDE_CODE_TMPDIR set to a directory on another one, then retry. If this is the user's own computer, tell them before deleting anything to make room.
+```
+
+**Что делать:**
+
+* В macOS и Linux выполните `df -h <dir>` в оболочке, чтобы узнать, на каком томе находится каталог и насколько он заполнен. `df -i <dir>` показывает, сколько индексных дескрипторов свободно. `<dir>` — это каталог, который называет ваше сообщение, например `df -i /tmp/claude-501`
+* **`Disk full: this computer's volume` или `disk is full (ENOSPC)`**: удалите ненужные файлы в любом месте этого тома
+* **`Disk quota used up:`, `disk quota is used up (EDQUOT)` или `Disk full: a test write`**: удалите свои собственные файлы на этом томе, даже если на нём ещё отображается свободное место
+* **`Nearly out of inodes:`**: удалите много файлов на этом томе. Каждый файл занимает один индексный дескриптор независимо от размера, поэтому важно их количество, а не размер
+* Или перезапустите Claude Code, установив [`CLAUDE_CODE_TMPDIR`](https://code.claude.com/docs/ru/env-vars) в каталог на томе со свободным местом
+* Затем попросите Claude снова выполнить команду
+
+До версии 2.1.309 сообщения выглядели следующим образом, и к ним применяются те же шаги:
+
+* `Your disk quota is full on the filesystem with Claude Code's temp directory <dir> (EDQUOT)`
+* `The filesystem with Claude Code's temp directory <dir>, or your disk quota on it, is full (ENOSPC)`
+* `Command output was lost: the temp filesystem at <dir> is full` или `... is out of inodes`
+* `The command was not started: this computer's disk is full (ENOSPC), so the file that captures command output could not be created. Nothing ran.` или то же самое с `(EDQUOT)`. Эта форма не называет каталог: ищите на томе, содержащем системный временный каталог, например `/tmp`, или каталог, заданный в `CLAUDE_CODE_TMPDIR`
+
+До версии 2.1.305 команда, которую Claude Code не смог запустить из-за заполненного диска, возвращала только текст ошибки операционной системы. Этот текст выглядел, например, как `ENOSPC: no space left on device, open <path>.output`.
+
+### git is not installed on this Mac
+
+Это сообщение означает, что одному из шагов в Claude Code потребовался git, а найденный git — это заглушка Apple в `/usr/bin/git`. Инструменты разработчика, которые предоставляют git, не установлены.
+
+Claude Code не запускает заглушку и вместо этого показывает этот текст, например внутри более длинного сообщения:
+
+```text wrap theme={null}
+git is not installed on this Mac. To install it, run xcode-select --install, then try again.
+```
+
+**Что делать:**
+
+* В Terminal выполните `xcode-select --install`, завершите запущенную этой командой установку, а затем повторите то, что вы делали в Claude Code
+
+### File is not valid UTF-8
+
+Claude использовал инструмент Edit или NotebookEdit для файла, байты которого не декодируются как UTF-8, и Claude Code отклонил изменение. Ничего не было записано, поэтому файл остался прежним. Эти инструменты сохраняют весь файл обратно в UTF-8, из-за чего каждый байт, который им не удалось декодировать, превратился бы в символ замены `U+FFFD`. Сообщение появляется в результате инструмента:
+
+```text wrap theme={null}
+File is not valid UTF-8. It may use a legacy encoding such as Windows-1252, Shift-JIS or GBK, or be binary. This tool saves the whole file as UTF-8, which would replace every byte it cannot decode with U+FFFD. Nothing was written. Make the change with a shell command that reads and writes the file in its own encoding, or ask the user whether to convert the file to UTF-8 first.
+```
+
+Файл, который должен быть в UTF-8, тоже получает это сообщение, если содержит хотя бы одну недопустимую последовательность байтов, потому что проверка охватывает байты файла целиком.
+
+**Что делать:**
+
+* Чтобы сохранить файл в текущей кодировке, позвольте Claude внести изменение с помощью shell-команды, которая читает и записывает файл в этой кодировке, как предписывает ему сообщение
+* Чтобы продолжать редактировать файл инструментом Edit, преобразуйте его в UTF-8 или исправьте недопустимые байты в файле, который должен быть в UTF-8, а затем попросите Claude внести правку снова
+
+До версии 2.1.296 Edit и NotebookEdit применяли такую правку и сохраняли каждый байт, который им не удалось декодировать, как `U+FFFD`. В этих версиях обновите Claude Code.
+
+### Refusing to apply edits: a hook is configured for file edits in this session
+
+Claude попытался опубликовать [артефакт](https://code.claude.com/docs/ru/artifacts.md) с [одношаговым обновлением](https://code.claude.com/docs/ru/artifacts.md#turn-off-one-step-artifact-updates) — небольшим изменением файла артефакта, включённым в публикацию, — и Claude Code отказал. Ничего не было опубликовано, и файл не изменился. Сообщение появляется в результате инструмента Artifact:
+
+```text wrap theme={null}
+Refusing to apply edits to <path>: a hook is configured for file edits in this session, so a publish can't apply edits here. Edit the file, then publish it without edits. Nothing was published.
+```
+
+Claude Code не разрешает одношаговые обновления, пока в вашей сессии есть [хук `PreToolUse`](https://code.claude.com/docs/ru/hooks#pretooluse) или [мод](https://code.claude.com/docs/ru/plugins/mods/overview.md) для `Edit` или `Write`.
+
+**Что делать:**
+
+* Ничего, если Claude затем отредактировал файл и опубликовал его
+* Если Claude остановился на этом сообщении, попросите Claude отредактировать файл и опубликовать его
+* Если сообщение продолжает появляться, закройте и снова запустите Claude Code
+* Если сообщение появляется даже после повторного запуска, [отключите одношаговые обновления](https://code.claude.com/docs/ru/artifacts.md#turn-off-one-step-artifact-updates)
+
+### The source file is not valid UTF-8 text
+
+Claude попытался опубликовать [артефакт](https://code.claude.com/docs/ru/artifacts.md) из файла, байты которого не декодируются как текст или текст которого уже содержит символ замены `U+FFFD`, поэтому Claude Code отклонил публикацию до загрузки чего-либо. Сообщение появляется в результате инструмента Artifact и называет первую позицию, которую нужно исправить:
+
+```text wrap theme={null}
+file_path: the source file is not valid UTF-8 text (first invalid byte at line 12, column 40). It may be saved in another encoding or contain binary data. Rewrite it as UTF-8, then publish again. Nothing was published.
+
+file_path: the source file has the replacement character U+FFFD at line 12, column 40, usually left where an earlier edit or paste lost a character. Replace it with the intended text (in HTML, write an intended U+FFFD as &#xFFFD;), then publish again. Nothing was published.
+```
+
+Claude Code декодирует файл как UTF-8 или как UTF-16, если файл начинается с метки порядка байтов UTF-16 little-endian. Когда такой файл UTF-16 не декодируется, первое сообщение называет `UTF-16` и всё равно предлагает переписать файл в UTF-8. Если после названной позиции есть и другие, сообщение добавляет после позиции счётчик, например `(+2 more)`.
+
+**Что делать:**
+
+* Обычно ничего: Claude переписывает файл и публикует снова
+* Если вы сами написали или экспортировали файл, пересохраните его в UTF-8 и замените каждый `U+FFFD` символом, потерянным при предыдущем редактировании, вставке или преобразовании
+* Чтобы намеренно показать `U+FFFD` на странице, запишите его в HTML как `&#xFFFD;` вместо самого символа
+
+До версии 2.1.267 Claude Code загружал такой файл без проверки, и публикацию вместо этого отклонял сервер.
+
+### Not published: that file is on a network share
+
+Claude попытался опубликовать [артефакт](https://code.claude.com/docs/ru/artifacts.md) из файла по пути, указывающему на сетевой хост:
+
+* В Windows — путь `\\server\share`, не находящийся на подключённом сетевом диске, который вы передали при запуске с помощью [`--add-dir`](https://code.claude.com/docs/ru/cli-reference#cli-flags)
+* В macOS или Linux — путь автомонтирования, например `/net/<host>/page.html`
+
+При разрешении такого пути происходит обращение к указанному в нём хосту, и в Windows это обращение может передать хосту ваши учётные данные. Claude Code отказывается публиковать файл и не читает его. Отказ появляется в результате инструмента Artifact:
+
+```text theme={null}
+Not published: that file is on a network share. Publish a file from this session's folders instead.
+```
+
+**Что делать:**
+
+* Ничего, если вам не нужен именно этот файл: сообщение говорит Claude вместо этого опубликовать файл из собственных папок сессии
+* Чтобы опубликовать именно этот файл, скопируйте его в папку на локальном диске и попросите снова
+* В Windows, чтобы Claude мог публиковать файлы прямо с общего ресурса, подключите его как диск с буквой и передайте этот диск при запуске Claude Code. Например, в PowerShell выполните `net use Z: \\server\share`, а затем `claude --add-dir Z:\`. После этого Claude сможет публиковать файлы с этого диска. Добавления диска посреди сессии с помощью `/add-dir` недостаточно.
+* В macOS или Linux смонтируйте общий ресурс в каталог, например в каталог внутри `/mnt` или `/Volumes`, и публикуйте из этого пути вместо пути автомонтирования
+
+### Not published: Claude sent the same content again after a newer version of the artifact turned it away
+
+Эта красная строка под вызовом Artifact означает, что Claude Code остановил повторную публикацию: [артефакт](https://code.claude.com/docs/ru/artifacts.md) не был обновлён, и в файл, из которого Claude публикует, ничего не было записано. Делать ничего не нужно, если только Claude не остановится без публикации.
+
+Ранее в этой сессии Claude Code отклонил публикацию, потому что у артефакта была более новая версия, например опубликованная [редактором](https://code.claude.com/docs/ru/artifacts.md#let-someone-edit-with-you) или другой вашей сессией. Окончание строки указывает, что Claude должен сделать дальше:
+
+```text wrap theme={null}
+Not published: Claude sent the same content again after a newer version of the artifact turned it away. Claude needs to work from that newer version first.
+Not published: Claude sent the same content again after a newer version of the artifact turned it away. The artifact hasn't changed since, so publishing it once more should go through.
+Not published: Claude sent its changes again over the same file after a newer version of the artifact turned them away. Claude needs to work from that newer version first.
+Not published: Claude sent its changes again over the same file after a newer version of the artifact turned them away. The artifact hasn't changed since, so publishing once more should go through.
+```
+
+**Что делать:**
+
+* **Заканчивается на `Claude needs to work from that newer version first`**: если Claude остановился на этом, попросите его получить текущую версию артефакта, объединить с ней свои изменения и опубликовать снова
+* **Заканчивается на `should go through`**: если Claude остановился на этом, попросите его опубликовать снова
+
+### Reading a local file from outside the connected folders in a Cowork session
+
+В сессии [Cowork](https://claude.com/docs/cowork/overview), работающей на вашей машине в приложении Claude Desktop, Claude указал локальный файл для [артефакта](https://code.claude.com/docs/ru/artifacts.md). Claude Code не смог подтвердить, что файл является обычным файлом внутри подключённых папок сессии: путь находится вне этих папок, проходит через символическую ссылку или записан так, что может указывать на другой файл, чем кажется. Чтение такого файла требует вашего подтверждения, и в сессии, которая не может показать вам карточку подтверждения, например в сессии, настроенной на пропуск всех подтверждений, Claude Code отклоняет чтение.
+
+Отказ появляется в результате инструмента Artifact; если файл вообще не удалось проверить, вместо этого он называет эту ошибку:
+
+```text wrap theme={null}
+Reading a local file from outside this session's connected folders, or through a link, needs the approval card, and no one can answer it in this Cowork session. Use a plain file inside the connected folders; do not retry this file in this session.
+
+cannot read file_path (ENOENT) — the file could not be examined, and no one can answer the approval card in this Cowork session. Check that the file exists as a plain file inside the connected folders, then retry with that path.
+```
+
+**Что делать:**
+
+* Обычно ничего: сообщение говорит Claude вместо этого использовать обычный файл внутри подключённых папок
+* Чтобы поместить именно этот файл в артефакт, скопируйте его в одну из подключённых папок сессии как обычный файл, а не символическую ссылку, и попросите снова
+
+### WebFetch cannot fetch localhost
+
+Claude вызвал [WebFetch](https://code.claude.com/docs/ru/tools-reference.md#webfetch-tool-behavior) с URL-адресом, имя хоста которого не содержит точки, например `http://localhost:3000` или простое имя в интранете вроде `http://wiki/`. WebFetch отклоняет такие URL-адреса до выполнения какого-либо запроса:
+
+```text wrap theme={null}
+WebFetch cannot fetch localhost or other hostnames without a dot. To reach a local server, use Bash with curl instead.
+```
+
+**Что делать:**
+
+* Обычно ничего: сообщение направляет Claude к `curl` через инструмент Bash, который может обращаться к локальным серверам и серверам интранета
+
+До версии 2.1.268 WebFetch сообщал об этих URL-адресах общей ошибкой `Invalid URL`.
+
+### Claude Code is unable to fetch from a host
+
+Перед запросом страницы WebFetch отправляет имя хоста URL-адреса на `api.anthropic.com`, чтобы сверить его со списком блокировки по безопасности доменов Anthropic. Это сообщение означает, что проверка ответила, что загрузка с этого имени хоста невозможна:
+
+```text wrap theme={null}
+Claude Code is unable to fetch from example.com
+```
+
+Claude Code не обращался к хосту, потому что проверка выполняется до запроса.
+
+О том, что отправляет проверка, см. [Проверка безопасности доменов WebFetch](https://code.claude.com/docs/ru/data-usage.md#webfetch-domain-safety-check).
+
+### WebFetch domain safety check failed
+
+Перед загрузкой URL-адреса WebFetch отправляет имя хоста на `api.anthropic.com`, чтобы сверить его со [списком блокировки по безопасности доменов](https://code.claude.com/docs/ru/data-usage.md#webfetch-domain-safety-check) Anthropic. Если проверку не удаётся завершить, WebFetch не может подтвердить безопасность домена, поэтому не загружает страницу, и результат инструмента вместо этого содержит одно из следующих сообщений:
+
+```text wrap theme={null}
+The safety check for domain example.com is rate-limited (too many domain checks from this network; the limit is shared and can stay exhausted for minutes). Do not retry WebFetch in a loop or sleep to wait it out; continue without this page and report that its safety check was rate-limited. A single later attempt is fine; if that is rate-limited too, stop.
+
+Unable to verify if domain example.com is safe to fetch. This may be due to network restrictions or enterprise security policies blocking claude.ai.
+```
+
+* `rate-limited`: эндпоинт проверки ответил HTTP `429`. Сообщение говорит Claude продолжить без страницы и повторить попытку не более одного раза позже. Claude Code не кэширует неудачную проверку, поэтому последующая загрузка этого домена снова выполняет проверку. Если сессии в вашей сети часто сталкиваются с этим, вы можете пропустить проверку с помощью [`skipWebFetchPreflight: true`](https://code.claude.com/docs/ru/settings-reference#skipwebfetchpreflight) в настройках.
+* `Unable to verify`: запрос проверки завершился ошибкой, превысил время ожидания или получил другой статус ошибки. Если ваша сеть блокирует `api.anthropic.com`, добавьте этот домен в список разрешённых доменов или пропустите проверку с помощью [`skipWebFetchPreflight: true`](https://code.claude.com/docs/ru/settings-reference#skipwebfetchpreflight) в настройках.
+
+До версии 2.1.286 сообщение об ограничении частоты запросов выглядело как `The safety check for domain example.com is temporarily rate-limited (too many domain checks from this network). Retry after about a minute; retrying sooner will fail the same way.`.
+До версии 2.1.285 о проверке, упёршейся в ограничение частоты запросов, вместо этого сообщалось сообщением `Unable to verify`.
+
+## Ошибки фоновых сессий
+
+[Фоновые сессии](https://code.claude.com/docs/ru/agent-view.md) работают без собственного интерактивного терминала, поэтому команды, которым он требуется, ведут себя в них иначе. Эти сообщения появляются в транскрипте фоновой сессии, в терминале, подключённом к ней, в сессии или оболочке, из которой вы её запустили, или, для [записей о защите worktree](#write-or-command-blocked-because-the-path-cannot-be-safely-resolved) ниже, в любой сессии, изолированной в worktree, или при работе субагента, изолированного в worktree; если сообщение относится только к одному интерфейсу, это указано в соответствующей записи.
+
+### Команды, отклонённые в фоновой сессии
+
+Команды, которые открывают интерактивное диалоговое окно, не могут этого сделать, пока к фоновой сессии не подключён терминал. `/install-github-app`, список настроек `/mcp` и действия аутентификации в меню MCP-сервера отвечают сообщением. Для `/install-github-app` и списка настроек `/mcp` сессия также появляется в разделе **Needs input** в [представлении агента](https://code.claude.com/docs/ru/agent-view.md), чтобы вы могли найти её, подключиться и запустить команду снова. Пока терминал подключён, эти команды работают как обычно.
+
+До версии 2.1.216 сессия не появлялась в разделе **Needs input** после отклонения `/install-github-app` или списка настроек `/mcp`. В версиях с 2.1.213 по 2.1.215 команды по-прежнему работали при подключённом терминале, а сообщение об отказе предлагало подключиться и запустить команду снова. В версиях с 2.1.208 по 2.1.212 Claude Code отклонял их даже при подключённом терминале с сообщением вроде `Can't open MCP settings in a background session`; в этих версиях запустите команду из обычной сессии `claude` или обновитесь. До версии 2.1.208 они открывали своё диалоговое окно внутри фоновой сессии. Только в версии 2.1.208 Claude Code также отклонял средство выбора `/model` в фоновой сессии, а `/upgrade` выводил URL обновления вместо открытия браузера.
+
+В формулировке указывается команда. Список настроек `/mcp` сообщает:
+
+```text theme={null}
+Can't open MCP settings while no terminal is attached to this background session. This session now shows "needs input" in agent view — open it and run /mcp to manage servers, or use `/mcp enable|disable|reconnect <server>` to steer without the panel.
+```
+
+**Что делать:**
+
+* Подключитесь к сессии из представления агента и запустите команду снова
+* Или используйте форму, указанную в сообщении, например `/mcp reconnect <server>`, `/mcp enable` или `/mcp disable`, которые работают без подключения
+
+### Запись или команда заблокирована, потому что путь невозможно безопасно разрешить
+
+Claude обратился к файлу или рабочему каталогу через написание пути, которое [защита изоляции в worktree](https://code.claude.com/docs/ru/agent-view.md#how-file-edits-are-isolated) не может разрешить в одно проверяемое расположение. Защита проверяет операции записи и рабочие каталоги команд в [любой сессии, изолированной в worktree](https://code.claude.com/docs/ru/worktrees.md#how-claude-code-enforces-isolation), интерактивной или фоновой, а также в [субагентах, изолированных в worktree](https://code.claude.com/docs/ru/worktrees.md#isolate-subagents-with-worktrees). Она разрешает символические ссылки, прежде чем проверить, что операция не затрагивает общую рабочую копию, а если разрешение не удаётся, блокирует операцию, а не позволяет ей туда попасть. Сообщение называет отклоняемые формы пути и способ повторить попытку:
+
+```text theme={null}
+This write was blocked because the path is spelled in a form that cannot be safely resolved (for example through a symlink storing a raw dot segment, a network-share or device-namespace shape, or an unreadable ancestor directory). If the file is inside the worktree /path/to/worktree, address it by its direct symlink-free path instead.
+```
+
+Заблокированная команда сообщает ту же причину для своего рабочего каталога, и сообщение заканчивается на `re-run the command from its direct symlink-free path`. До версии 2.1.217 защита сравнивала написания путей без разрешения символических ссылок, поэтому такие написания не блокировались, и запись через символическую ссылку могла попасть в общую рабочую копию.
+
+**Что делать:**
+
+* Обычно ничего: полное сообщение передаётся Claude как ошибка инструмента, и Claude повторяет попытку с указанным в нём прямым путём. Для заблокированного редактирования файла в представлении диалога показывается только короткая строка `Error editing file`; полное сообщение появляется в представлении транскрипта, которое открывается сочетанием `Ctrl+O`. Заблокированная команда выводит его в своём выводе.
+* Если блокировка повторяется для одного и того же файла, путь, вероятно, проходит через закоммиченную символическую ссылку, цель которой содержит `..`, например `docs/current -> ../README.md`; попросите Claude отредактировать целевой файл по его реальному пути, а не через ссылку
+
+### Запись или команда заблокирована, потому что путь указывает на сетевое расположение
+
+Claude обратился к файлу или рабочему каталогу через путь, указывающий на диск, которого нет на вашем компьютере, на общий ресурс UNC, например `\\server\share\file`, или на путь автомонтирования `/net`, тогда как рабочая копия сессии находится на локальном диске. Та же [защита изоляции в worktree](#write-or-command-blocked-because-the-path-cannot-be-safely-resolved) не может проверить, что такой путь не затрагивает общую рабочую копию, поэтому блокирует операцию. Изоляция сессии в worktree не снимает блокировку. Сообщение называет форму пути, которую следует использовать вместо этого:
+
+```text theme={null}
+This write was blocked because the path is network-shaped (a UNC share or /net automount spelling) while this session's checkout is local. Isolating cannot unblock it. If the file is genuinely inside the worktree /path/to/worktree, address it by its local, plainly-spelled path instead.
+```
+
+Заблокированная команда сообщает ту же причину для своего рабочего каталога, и сообщение заканчивается на `re-run the command from its local, plainly-spelled path`. До версии 2.1.217 защита сравнивала только текст пути, поэтому обращение к файлу внутри рабочей копии через путь UNC или `/net` не блокировалось.
+
+**Что делать:**
+
+* Обычно ничего: Claude повторяет попытку с локальным написанием пути, которое запрашивает сообщение
+
+### Команда заблокирована проверками изоляции в worktree
+
+Claude запустил команду Bash, [PowerShell](https://code.claude.com/docs/ru/tools-reference.md#powershell-tool) или [Monitor](https://code.claude.com/docs/ru/tools-reference.md#monitor-tool) в [сессии, изолированной в worktree](https://code.claude.com/docs/ru/worktrees.md#how-claude-code-enforces-isolation), и Claude Code отклонил её по одной из следующих причин:
+
+* Команда выполнялась бы в основной рабочей копии или в другом worktree. В сообщении сказано, что её рабочий каталог `resolved to the shared checkout` или `is in a different worktree`.
+* Команда Bash или Monitor направляет git на основную рабочую копию.
+* Claude Code не может проверить по тексту команды Bash или Monitor, что любой запускаемый ею git остаётся внутри worktree. Команда, в которой git вообще не упоминается, тоже может быть отклонена по этой причине, потому что раскрытие косвенной ссылки на переменную, например `${!name}`, или выполнение подстановки функции Bash, например `${ command; }`, порождает во время выполнения значение, которое само может быть командой.
+
+Сообщение содержит `is isolated in the worktree <path>, but this command`, за которым следует причина, например для команды, текст которой Claude Code не смог проверить:
+
+```text wrap theme={null}
+This session is isolated in the worktree /path/to/worktree, but this command evaluates ${!x@P} arithmetically inside a construct too complex to verify, which can run a command hidden in a variable's value. Refusing to run it — a worktree-isolated session's git operations must target its own worktree. Split it into plain, separate commands and run them from /path/to/worktree.
+```
+
+**Что делать:**
+
+* **Git направлен на основную рабочую копию, или текст команды невозможно проверить**: ничего делать не нужно. Claude читает сообщение и переписывает команду так, как просит последнее предложение. Если запрошенная вами команда продолжает отклоняться из-за раскрытия в её тексте, запишите отмеченное значение буквально и запустите git отдельной простой командой изнутри worktree
+* Чтобы намеренно выполнить действие в основной рабочей копии, запустите команду самостоятельно в терминале вне сессии
+
+### У этой сессии нет сохранённого транскрипта
+
+Вы подключились к сессии, которую [перевели в фон](https://code.claude.com/docs/ru/agent-view.md#from-inside-a-session) с помощью `←` или `/background` и которая остановилась до того, как выполнила собственный ход. Claude Code не смог найти диалог, из которого вы её перевели, поэтому сессии нечего возобновлять. Сообщение заканчивается командой `claude respawn` для этой сессии:
+
+```text theme={null}
+This session has no saved transcript — it was stopped before its first response finished. If it was backgrounded from another conversation, that one is still intact; `claude respawn <id>` starts this one fresh.
+```
+
+При открытии строки той же сессии в [представлении агента](https://code.claude.com/docs/ru/agent-view.md) вместо этого под списком показывается `Press enter again to restart this session fresh`, и повторное нажатие `Enter` на строке перезапускает сессию с пустым диалогом.
+
+**Что делать:**
+
+* Чтобы запустить остановленную сессию заново, выполните `claude respawn <id>` с ID из сообщения или дважды нажмите `Enter` на её строке в представлении агента
+* Если сессия завершила ответ, а вы всё равно видите этот отказ в версии до 2.1.214, нечитаемая папка в `~/.claude/projects` могла привести к тому, что при сканировании транскриптов сохранённый диалог был пропущен; обновитесь до версии 2.1.214 или новее, которая допускает нечитаемые папки при сканировании
+
+### Эта сессия запущена в другом терминале
+
+Вы открыли строку остановленной сессии в [представлении агента](https://code.claude.com/docs/ru/agent-view.md), а её сохранённый диалог уже открыт в другом работающем процессе Claude Code на этом компьютере, поэтому Claude Code отказывается запускать второй процесс, который записывал бы в тот же транскрипт. Какое сообщение вы увидите, зависит от того, [что удерживает диалог](https://code.claude.com/docs/ru/agent-view.md#opening-a-session-says-the-conversation-is-already-open):
+
+```text theme={null}
+Can't open — this session is running in another terminal
+This conversation is already open in another running Claude session — use that one, or close it and try again
+```
+
+* **`running in another terminal`**: диалог удерживает процесс, не являющийся фоновой сессией, например запуск `claude -p` или терминал, в котором вы возобновили его с помощью `claude --resume` или `/resume`. В строке также показывается `Open in a terminal`.
+* **`already open in another running Claude session`**: его удерживает другая [фоновая сессия](https://code.claude.com/docs/ru/agent-view.md#the-supervisor-process).
+
+**Что делать:**
+
+* Для `running in another terminal`: продолжите работу в том терминале или завершите тот процесс либо дождитесь его завершения, затем повторите попытку
+* Для `already open in another running Claude session`: используйте ту сессию или остановите её, затем повторите попытку
+
+До версии 2.1.248 существовал только отказ `already open in another running Claude session`: диалог, возобновлённый в терминале, не считался открытым, и при открытии строки запускался второй процесс Claude Code, записывающий в тот же диалог.
+
+### Сохранённый диалог этой сессии больше не находится на диске
+
+Вы открыли [фоновую сессию](https://code.claude.com/docs/ru/agent-view.md), которая завершилась, пока фоновая служба была выключена, и с тех пор [очистка транскриптов](https://code.claude.com/docs/ru/settings-reference.md#cleanupperioddays) удалила её сохранённый диалог, например после того, как компьютер был выключен несколько недель. Открытие такой строки обычно [возобновляет её сохранённый диалог](https://code.claude.com/docs/ru/agent-view.md#sessions-show-as-failed-after-shutdown). Когда возобновлять нечего, Claude Code отказывает, а не выполняет исходный промпт сессии повторно без вашего ведома:
+
+```text theme={null}
+This session's saved conversation is no longer on disk (it ended while the background service was off, and old transcripts are cleaned up), so there is nothing to resume. `claude rm 7c5dcf5d` removes the row; `claude respawn 7c5dcf5d` runs its original prompt again instead.
+```
+
+`claude attach <id>` выводит этот текст. В представлении агента нижняя строка короче и заканчивается на `ctrl+x removes the row`.
+
+**Что делать:**
+
+* Выполните `claude rm <id>`, чтобы удалить строку. Если применим один из [случаев сохранения](https://code.claude.com/docs/ru/agent-view.md#what-deleting-a-session-removes), `claude rm` вместо этого сохраняет строку и worktree и называет причину
+* Чтобы снова выполнить исходный промпт сессии в новом диалоге, выполните `claude respawn <id>`
+
+До версии 2.1.248 открытие такой строки вместо отказа повторно выполняло исходный промпт сессии, возвращая на передний план задачу многонедельной давности.
+
+### В worktree есть коммиты, которые никуда не отправлены
+
+Вы попытались удалить [фоновую сессию](https://code.claude.com/docs/ru/agent-view.md#what-deleting-a-session-removes), worktree которой содержит коммиты, сохранность которых где-либо ещё Claude Code не может подтвердить. `claude rm` сообщает, как действовать дальше:
+
+```text theme={null}
+kept 7c5dcf5d — its worktree is still at “/home/you/project/.claude/worktrees/fix-login”
+  2 unpushed commits on “claude/fix-login”: a1b2c3d “Fix login flow” and 1 more. They exist on no remote, so deleting the worktree would lose them.
+  push them and run 'claude rm 7c5dcf5d' again, or discard the worktree and its commits: claude rm 7c5dcf5d --discard-unpushed a1b2c3d000000000000000000000000000000000@0123456789abcdef0123456789abcdef
+```
+
+Если Claude Code не может составить сводку коммитов, строка с подробностями вместо этого гласит `The worktree has unpushed commits`. В [представлении агента](https://code.claude.com/docs/ru/agent-view.md) строка сессии показывает `not removed` с той же причиной.
+
+**Что делать:**
+
+* Чтобы сохранить коммиты, отправьте их. Когда после отправки они окажутся в ветке отслеживания удалённого репозитория, например `origin/claude/fix-login`, снова попробуйте удалить сессию.
+* Если сообщение предлагает отбросить коммиты, сначала убедитесь, что вам не нужны ни worktree, ни коммиты, ни какие-либо незакоммиченные изменения. Затем выполните действие, указанное в сообщении: дважды нажмите `Ctrl+X` на строке сессии в представлении агента или выполните команду `claude rm <id> --discard-unpushed <commit>@<worktree-id>`, которую вывел `claude rm`. Если Claude Code снова откажет, следуйте новому сообщению.
+* Если в сообщении говорится, что worktree также записан другой завершённой сессией, повторное удаление не отбрасывает его: отправьте коммиты (push), а затем попробуйте удалить сессию снова
+
+До версии 2.1.268 `claude rm` помещал сводку коммитов прямо в строку `kept`. Если `claude rm` не мог составить сводку коммитов, строка `kept` вместо сводки гласила `worktree has commits that are not pushed anywhere`.
+
+До версии 2.1.260 сообщение не называло ветку и коммиты, и способа отбросить их не было. Вы по-прежнему можете удалить сессию, потеряв незакоммиченные изменения, но сохранив ветку и коммиты. Выполните `git worktree remove --force --force <path>` с путём, выведенным в сообщении об отказе, затем `claude rm <id>`. Для заблокированного worktree Git требует указать `--force` дважды.
+
+### Процесс хоста терминала завершился аварийно
+
+Терминал каждой [фоновой сессии](https://code.claude.com/docs/ru/agent-view.md) работает в процессе хоста под управлением фоновой службы, и этот процесс завершился аварийно, пока служба ещё удерживала соединение с ним, поэтому сессия стала недоступна.
+
+В Linux и WSL фоновая служба проверяет каждый процесс хоста раз в несколько секунд, помечает сессию как сбойную, если процесс завершился, а его соединение со службой так и не закрылось, и показывает причину в строке сессии в [представлении агента](https://code.claude.com/docs/ru/agent-view.md#read-session-state):
+
+```text theme={null}
+terminal host process died — press Enter to restart
+```
+
+Из оболочки `claude attach <id>` перезапускает сессию, уже помеченную как сбойную из-за завершившегося хоста, а в противном случае выводит причину и завершается:
+
+```text theme={null}
+Couldn't attach to <id> — This session's terminal host process died (the conversation is saved) — run `claude attach <id>` again to restart it on a fresh host.
+```
+
+Диалог в любом случае сохраняется.
+
+Строка, в которой вместо этого выполняется [shell-команда](https://code.claude.com/docs/ru/agent-view.md#run-a-shell-command), показывает `terminal host process died — its output is gone; the command was not run again`, а `claude attach` выводит `This command's terminal host process died — its output is gone and the command was not run again`. Claude Code никогда не перезапускает команду за вас.
+
+**Что делать:**
+
+* В представлении агента нажмите `Enter` на сбойной строке; сессия перезапустится в новом процессе хоста, и диалог возобновится
+* Из оболочки снова выполните `claude attach <id>`. Claude Code выведет `Session <id>'s terminal host died — restarting it on a fresh one…` и заново откроет сессию
+* Строку с shell-командой так перезапустить нельзя; чтобы выполнить команду повторно, запустите её снова
+
+До версии 2.1.247 завершившийся процесс хоста мог проходить все проверки работоспособности, выполняемые фоновой службой, поэтому при открытии сессии бесконечно показывалось `opening… · esc to cancel`, а `claude attach <id>` ожидал, не сообщая об ошибке.
+
+### Сессия не отвечает
+
+Вы открыли [фоновую сессию](https://code.claude.com/docs/ru/agent-view.md), и фоновая служба приняла запрос на открытие, но вывод не поступал около десяти секунд, поэтому Claude Code заключает, что процесс, передающий терминал сессии, не может доставить вывод, и прекращает попытку вместо ожидания.
+
+В представлении агента Claude Code предлагает перезапуск в нижней строке:
+
+```text theme={null}
+Press enter again to restart this session — it isn't responding (its conversation is saved and resumes).
+```
+
+Из оболочки `claude attach <id>` выводит причину и завершается:
+
+```text theme={null}
+Couldn't attach to <id> — Session isn't responding — `claude stop <id>`, then `claude attach <id>` restarts it (the conversation is saved).
+```
+
+Claude Code никогда не перезапускает за вас строку, в которой выполняется [shell-команда](https://code.claude.com/docs/ru/agent-view.md#run-a-shell-command), потому что перезапуск выполнил бы команду повторно.
+
+**Что делать:**
+
+* В представлении агента снова нажмите `Enter` на той же строке. Claude Code остановит не отвечающий процесс и перезапустит сессию, и диалог возобновится. Без этого второго нажатия ничего не останавливается
+* Из оболочки выполните `claude stop <id>`, затем `claude attach <id>`
+* Для строки с shell-командой нажмите `Ctrl+X` в представлении агента или выполните `claude stop <id>`, чтобы остановить её; чтобы выполнить команду повторно, запустите её снова
+
+### Сессия была остановлена во время перезапуска
+
+Вы открыли [фоновую сессию](https://code.claude.com/docs/ru/agent-view.md), процесс которой не работал, и пока Claude Code её перезапускал, другой процесс Claude Code остановил её, например `claude stop` в другом терминале. Claude Code оставляет сессию остановленной:
+
+```text theme={null}
+Session <id> was stopped while the respawn was in flight
+```
+
+При открытии только что запущенной сессии, процесс которой ещё стартует, Claude Code вместо этого ожидает процесс. До версии 2.1.246 открытие сессии в этот момент могло остановить её и вывести это сообщение.
+
+**Что делать:**
+
+* Если вы не останавливали сессию, снова откройте её строку в представлении агента или выполните `claude respawn <id>`, чтобы перезапустить её
+* Если вы остановили её сами, ничего делать не нужно: сессия остаётся остановленной
+
+### Агент сессии больше недоступен
+
+Вы возобновили сессию, в которой работал [пользовательский агент](https://code.claude.com/docs/ru/sub-agents.md#invoke-subagents-explicitly), запущенный с `--agent` или настройкой `agent`, и Claude Code не нашёл агента с таким именем. Сначала он ищет в исходном каталоге сессии, если вы [доверяете этому рабочему пространству](https://code.claude.com/docs/ru/permissions.md#project-allow-rules-and-workspace-trust), затем в каталоге, из которого вы возобновляете сессию. Сессия всё равно возобновляется, но с инструментами по умолчанию, поэтому ограничения инструментов агента больше не действуют:
+
+```text theme={null}
+This session was running agent 'code-reviewer', which is no longer available (no agent by that name in /home/you/project). Continuing with the default tools and system prompt — the agent's tool restrictions no longer apply. To restore it, re-create the agent, or resume with an explicit --agent <name>.
+```
+
+Предупреждение называет только те каталоги, в которых искал Claude Code, и появляется в возобновлённом диалоге независимо от того, пробуждаете ли вы [фоновую сессию](https://code.claude.com/docs/ru/agent-view.md), выполняете `/resume` или `claude --resume` или возобновляете сессию в [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md), где оно также выводится в stderr. Сессии, использующие `--input-format stream-json`, его не показывают, потому что Agent SDK передаёт агентов после запуска.
+
+Claude Code не сохраняет резервный вариант в сессии, поэтому предупреждение повторяется при каждом возобновлении, пока вы не примете меры. Встроенный агент `claude` не вызывает предупреждения, поскольку переключение на набор инструментов по умолчанию для него ничего не меняет. До версии 2.1.216 Claude Code молча продолжал работу с агентом по умолчанию, а поиск охватывал только каталог, из которого вы возобновляли сессию, поэтому агент уровня проекта терялся при любом возобновлении из другого каталога.
+
+**Что делать:**
+
+* Создайте заново файл агента в `.claude/agents/<name>.md` в проекте сессии или в `~/.claude/agents/<name>.md` для личного агента, затем снова возобновите сессию
+* Или возобновите сессию с `--agent <name>`, указав существующего агента, чтобы запустить сессию с этим агентом
+* Если агент относится к уровню проекта и вы не доверяете исходному каталогу сессии, один раз запустите там Claude Code, примите диалоговое окно доверия, затем снова возобновите сессию
+
+### Эта сессия перезапустилась после наступления времени следующего пробуждения /loop
+
+[`/loop` с самостоятельно выбираемым интервалом](https://code.claude.com/docs/ru/scheduled-tasks#let-claude-choose-the-interval) в [фоновой сессии](https://code.claude.com/docs/ru/agent-view.md) остановился. Процесс сессии завершился, пока цикл ожидал следующего пробуждения, и время этого пробуждения наступило до запуска [следующего процесса](https://code.claude.com/docs/ru/agent-view.md#the-supervisor-process) сессии. Пропущенное пробуждение не срабатывает с опозданием. Уведомление сообщает, насколько было просрочено пробуждение на момент перезапуска сессии:
+
+```text theme={null}
+This session restarted 12m after its next /loop wakeup was due, so that wakeup will not fire. The loop stays stopped until Claude schedules it again: reply to continue it.
+```
+
+До версии 2.1.295 в такой ситуации цикл останавливался без уведомления.
+
+**Что делать:**
+
+* Чтобы продолжить цикл, [ответьте в сессии](https://code.claude.com/docs/ru/agent-view.md#peek-and-reply) и скажите об этом, например `keep the loop running`. Claude прочитает уведомление вместе с вашим ответом и сможет запланировать следующее пробуждение
+* Если цикл вам больше не нужен, ничего не делайте. Он уже остановлен
+
+### No LLM gateway: a gateway set in your shell isn't passed to a session opened from another folder
+
+[Фоновая сессия](https://code.claude.com/docs/ru/agent-view.md), в которой показывается это сообщение, не использует ваш [LLM-шлюз](https://code.claude.com/docs/ru/llm-gateway): она не получила адрес шлюза, поэтому её запросы завершаются ошибкой. Сообщение появляется в диалоге вместо ответа Claude, с подставленными ID и папкой вашей сессии:
+
+```text wrap theme={null}
+No LLM gateway: a gateway set in your shell isn't passed to a session opened from another folder. To fix, run `claude respawn abc12345` from ~/project in another terminal where your gateway is set, or set ANTHROPIC_BASE_URL and its API key or token in a settings file's env block.
+```
+
+Пока вы подключены к сессии, уведомление под её промптом показывает краткую форму `No LLM gateway: opened from another folder · respawn from ~/project`.
+
+Вы запустили, пробудили или перезапустили сессию из папки, отличной от указанной в сообщении, когда `ANTHROPIC_BASE_URL` был задан для вашего шлюза. Случаи, когда шлюз, экспортированный в оболочке, всё же доходит до фоновой сессии, описаны в разделе [LLM-шлюз](https://code.claude.com/docs/ru/agent-view.md#llm-gateway).
+
+**Что делать:**
+
+* **Вы использовали представление агента в проекте, настройки которого задают шлюз**: поместите `ANTHROPIC_BASE_URL` и его API-ключ или токен в [блок `env` файла настроек](https://code.claude.com/docs/ru/llm-gateway-connect#set-in-a-settings-file). Используйте `~/.claude/settings.json` или `.claude/settings.local.json` в собственном проекте сессии — оба этих файла читает перезапущенная сессия. Затем выполните `claude respawn <id>` в оболочке из любой папки.
+* **Вы экспортировали шлюз в терминале**: в терминале, где экспортированы переменные шлюза, перейдите с помощью `cd` в папку, указанную в сообщении, и выполните команду `claude respawn <id>` из сообщения. Сессия перезапустится из сохранённого диалога.
+  * Шлюз доходит до сессии, только если [супервизор](https://code.claude.com/docs/ru/agent-view.md#the-supervisor-process) сам был запущен из оболочки, в которой экспортирован тот же шлюз. Если это не так, перезапустите его из этого терминала, как описано в разделе [Dispatch fails with `Could not resolve authentication method`](https://code.claude.com/docs/ru/agent-view#dispatch-fails-with-could-not-resolve-authentication-method), затем снова выполните команду перезапуска.
+
+До версии 2.1.302 фоновая сессия в такой ситуации вместо этого показывала ошибку входа, например [`Not logged in · Please run /login`](#not-logged-in), не называя папку.
+
+### Ошибки средства запуска CLAUDE\_CODE\_PROCESS\_WRAPPER
+
+Переменная [`CLAUDE_CODE_PROCESS_WRAPPER`](https://code.claude.com/docs/ru/corporate-launcher) задана, но её значение нельзя использовать, поэтому Claude Code отказывается запускать затронутый процесс, а не запускает его без средства запуска. О проблемах конфигурации сообщается сообщением, которое начинается с имени переменной и указывает причину, например:
+
+```text theme={null}
+CLAUDE_CODE_PROCESS_WRAPPER: launcher `/opt/corp/launcher` is not an executable regular file
+```
+
+Если средство запуска стартует, но завершается, не заменив себя на Claude Code, запускаемая им сессия завершается сбоем, и строка сессии в представлении агента сообщает, что средство запуска `must exec, not daemonize`, а затем всё, что оно вывело. Сессия, которая не может запуститься или связаться с фоновой службой из-за средства запуска, сообщает о проблеме со средством запуска как о причине внутри `Couldn't reach the background service (...)`.
+
+**Что делать:**
+
+* Задайте в переменной абсолютный путь к исполняемому файлу, который завершается вызовом `exec "$@"`. Полное описание см. в разделе [контракт средства запуска](https://code.claude.com/docs/ru/corporate-launcher.md#the-launcher-contract)
+* Проверьте `/status`, который показывает разрешённую команду запуска в записи Self-exec и предупреждает, если работающая фоновая служба ей не соответствует, или выполните `claude daemon status` из оболочки
+* После исправления значения в блоке `env` [настроек](https://code.claude.com/docs/ru/corporate-launcher.md#set-up-the-launcher) перезапустите фоновую службу командой `claude daemon stop --any`, чтобы при следующем запуске стартовала служба с обёрткой
+
+### EUNKNOWN при запуске фоновой сессии
+
+Windows отказалась запускать программу с кодом ошибки, не имеющим стандартного имени, поэтому сбой отображается как `EUNKNOWN`. Обычно причина в политике ограничения программ, например Group Policy или AppLocker, которая блокирует запускаемую программу. Ошибка появляется при запуске [фоновой сессии](https://code.claude.com/docs/ru/agent-view.md) с помощью `/background` или `claude --bg`:
+
+```text theme={null}
+Couldn't reach the background service (spawn background service: EUNKNOWN: unknown error, uv_spawn) — run 'claude daemon status'
+```
+
+В некоторых учётных записях в сообщении вместо `background service` указано `daemon`.
+
+При установке через npm ошибка `EUNKNOWN`, возникающая, пока `npm install -g @anthropic-ai/claude-code` заменяет двоичный файл, имеет ту же причину, что и [`EACCES` при переустановке](#eacces-when-starting-a-background-session), и исчезает, если повторить попытку после завершения установки.
+
+Claude Code запускает фоновую службу через PowerShell, чтобы служба продолжала работать после закрытия терминала, используя PowerShell 7, если он установлен, и Windows PowerShell 5.1 в противном случае. Если ни одна версия PowerShell не может запуститься, Claude Code запускает службу напрямую, поэтому политика, блокирующая только PowerShell, не вызывает эту ошибку.
+
+До версии 2.1.212 Claude Code использовал для запуска службы только Windows PowerShell 5.1, поэтому на любом компьютере, где Group Policy блокировала PowerShell 5.1, возникала ошибка `Couldn't start the session — EUNKNOWN: unknown error, uv_spawn`, даже при установленном PowerShell 7.
+
+**Что делать:**
+
+* Если в сообщении указано `Couldn't start the session`, обновитесь до версии 2.1.212 или новее. В более ранних версиях можно также сначала выполнить `claude daemon run` в отдельном терминале, а затем снова запустить фоновую сессию. Эта команда запускает фоновую службу на переднем плане терминала, поэтому служба работает только до тех пор, пока этот терминал открыт.
+* Если установка через npm заменяла двоичный файл, дождитесь её завершения, затем снова запустите фоновую сессию
+* Если ошибка появляется в версии 2.1.212 или новее, когда установка через npm не выполняется, уточните у администратора Windows, не блокирует ли политика ограничения исполняемый файл Claude Code
+* Если фоновая служба останавливается при закрытии терминала, значит Claude Code запустил её без PowerShell. Установите PowerShell 7 или попросите администратора разблокировать PowerShell, чтобы служба могла работать после закрытия терминала.
+
+### EACCES при запуске фоновой сессии
+
+Claude Code не смог запустить собственный двоичный файл, чтобы запустить [фоновую службу](https://code.claude.com/docs/ru/agent-view.md#the-supervisor-process), в которой работают фоновые сессии. При установке через npm это обычно означает, что в этот момент `npm install -g @anthropic-ai/claude-code` заменял двоичный файл, независимо от того, запустили ли его вы или [автообновление](https://code.claude.com/docs/ru/setup.md#auto-updates). Ошибка появляется, когда вы открываете сессию из [представления агента](https://code.claude.com/docs/ru/agent-view.md):
+
+```text theme={null}
+Couldn't start the background service — spawn background service: EACCES: permission denied, posix_spawn '/usr/local/lib/node_modules/@anthropic-ai/claude-code/bin/claude'
+```
+
+Когда вы запускаете сессию с помощью `/background` или `claude --bg`, та же причина появляется внутри `Couldn't reach the background service (...)`. В тот же период переустановки ошибка может называть другой код, например `ENOENT` или `ENOEXEC`, либо `EUNKNOWN` или `EPERM` в Windows; у ошибки `EUNKNOWN`, которая сохраняется при повторных попытках, [другая причина](#eunknown-when-starting-a-background-session).
+
+При установке через npm Claude Code ожидает завершения переустановки и сам повторяет попытку: до десяти секунд, а пока на компьютере заметно продолжается установка Claude Code через npm — до двух минут, что покрывает случай, когда другой процесс Claude Code загружает обновление. Если установка длится дольше этого ожидания, сообщение о сбое называет обновление вместо голого кода ошибки:
+
+```text theme={null}
+Claude Code is being updated by npm on this machine (still not runnable after 2 min, EACCES) — try again when the update finishes
+```
+
+До версии 2.1.257 ожидание во всех случаях прекращалось через десять секунд, поэтому эта ошибка появлялась, пока другой процесс Claude Code ещё загружал обновление. До версии 2.1.246 Claude Code сразу завершался сбоем без ожидания.
+
+**Что делать:**
+
+* Подождите несколько секунд, затем снова откройте сессию или запустите её. Если в сообщении сказано, что Claude Code обновляется, повторите попытку после завершения обновления.
+* Если ошибка сохраняется, когда установка через npm не выполняется, ваш пользователь не может запустить установленный двоичный файл. Проверьте права доступа к нему и к его каталогу или переустановите Claude Code.
+
+### Фоновая служба завершилась, прежде чем стала доступна
+
+Процесс, который Claude Code запустил в качестве [фоновой службы](https://code.claude.com/docs/ru/agent-view.md#the-supervisor-process), завершился, прежде чем начал принимать соединения, поэтому Claude Code не смог открыть вашу сессию. Если служба перед завершением вывела ошибку, причина в скобках содержит код выхода или сигнал и первую выведенную службой строку, которая называет, что её остановило:
+
+```text theme={null}
+Couldn't reach the background service (background service exited before it became reachable (exit code N): <the service's first error line>) — run 'claude daemon status'
+```
+
+Когда вы открываете сессию из [представления агента](https://code.claude.com/docs/ru/agent-view.md), та же причина следует за `Couldn't start the background service —`. Если служба перед завершением ничего не вывела, в сообщении вместо этого указано `nothing on stderr`.
+
+Claude Code сообщает о сбое вместе со строкой ошибки службы. До версии 2.1.246 сбой проявлялся только после 45-секундного ожидания в виде `background service did not become reachable within 45s`, без строки ошибки службы.
+
+У двух приводимых причин есть известные источники:
+
+* `Error: claude native binary not installed.`: в этот момент установка через npm заменяла двоичный файл Claude Code, поэтому служба запустила заглушку npm. Повторите попытку после завершения установки; если строка сохраняется, когда установка не выполняется, [завершите установку через npm](https://code.claude.com/docs/ru/troubleshoot-install.md#native-binary-not-found-after-npm-install). До версии 2.1.257 самообновление через npm в macOS вызывало этот сбой при каждом запуске во время установки.
+* `nothing on stderr` с кодом выхода 1 при каждом запуске в Windows: `daemon.lock` указывает на процесс, которому Claude Code не может отправить сигнал и завершение которого не может подтвердить, поэтому каждая новая служба решает, что блокировку удерживает другая служба, и завершается. Блокировка, записавший которую процесс Claude Code может признать завершённым, заменяется автоматически и не вызывает этого сбоя. Если сбой повторяется при каждом запуске, удалите `~/.claude/daemon.lock`, затем снова откройте сессию или запустите её. До версии 2.1.257 такая блокировка препятствовала каждому запуску, пока вы не удаляли файл.
+
+**Что делать:**
+
+* Если в сообщении приведена строка, устраните указанную в ней проблему, затем снова откройте сессию или запустите её. Следующая попытка снова запустит службу
+* Выполните `claude daemon status`, чтобы проверить, работает ли служба сейчас
+
+### Рабочий каталог больше не существует при запуске фоновой сессии
+
+Каталог, в котором вы запустили [фоновую сессию](https://code.claude.com/docs/ru/agent-view.md), был удалён во время запуска сессии. Claude Code не запускает сессию, а сообщение называет отсутствующий каталог:
+
+```text theme={null}
+Couldn't start a background session (working directory no longer exists or is not accessible: /tmp/demo)
+```
+
+До версии 2.1.257 сессия как будто запускалась, а затем отображалась в представлении агента как сбойная строка с той же причиной.
+
+До версии 2.1.281 это сообщение появлялось и в том случае, когда каталог был удалён ещё до запуска сессии. В этом случае выводится [`could not be resolved on disk`](#workspace-not-trusted-when-dispatching-a-background-session).
+
+**Что делать:**
+
+* Создайте заново каталог, указанный в сообщении, или запустите сессию из существующего каталога, затем повторите попытку
+
+### This forked session could not be started
+
+Вы [создали ответвление сессии Remote Control](https://code.claude.com/docs/ru/remote-control.md#fork-a-session-from-your-browser) из claude.ai, и Claude Code не смог завершить запуск [фоновой сессии](https://code.claude.com/docs/ru/agent-view.md), в которой это ответвление работает на вашем компьютере. Это уведомление появляется в транскрипте ответвлённой сессии:
+
+```text theme={null}
+This forked session could not be started. Fork the conversation again to retry.
+```
+
+Сессия, от которой вы создали ответвление, продолжает работать.
+
+**Что делать:**
+
+* Вернитесь к сессии, от которой вы создали ответвление, и снова создайте ответвление, когда сессия будет простаивать
+
+### Рабочее пространство не является доверенным при запуске фоновой сессии
+
+Вы запустили или перезапустили [фоновую сессию](https://code.claude.com/docs/ru/agent-view.md) в каталоге, которому вы не [доверяете](https://code.claude.com/docs/ru/permissions.md#project-allow-rules-and-workspace-trust), и диалоговое окно доверия рабочему пространству не смогло появиться, чтобы спросить вас. Claude Code не запускает сессию:
+
+```text theme={null}
+Workspace not trusted. Run `claude` in /path/to/project once and accept the trust prompt, then retry.
+```
+
+Если выполнить ту же команду из терминала в собственном каталоге сессии, вместо этого появится диалоговое окно доверия, и сессия запустится после того, как вы его примете. Это сообщение появляется там, где диалоговое окно показать нельзя, например в скрипте или при перезапуске сессии из каталога, отличного от её собственного.
+
+Два варианта указывают на другую причину:
+
+* **`The home directory is trusted one session at a time`**: каталог сессии — ваш домашний каталог. Claude Code никогда не сохраняет доверие для домашнего каталога, поэтому принятие диалогового окна там в одной из прошлых сессий не учитывается.
+* **`<path> could not be resolved on disk`**: Claude Code не смог найти каталог сессии на диске.
+
+До версии 2.1.286 в Windows это сообщение также могло появляться в каталоге, которому вы уже доверяли, если запись о доверии была сохранена с путём в другом регистре букв. Обновитесь до версии 2.1.286 или новее.
+
+**Что делать:**
+
+* Выполните `claude` в каталоге, указанном в сообщении, и примите диалоговое окно доверия, затем снова выполните команду
+* Для сообщения о домашнем каталоге выполните команду из терминала в домашнем каталоге, чтобы диалоговое окно могло появиться, или запустите сессию из каталога проекта
+* Для сообщения `could not be resolved on disk` создайте каталог заново или запустите новую сессию из существующего каталога
+
+## Ошибки обёртки и IDE
+
+Эти ошибки исходят от программы, которая запустила Claude Code для вас, такой как расширение IDE или приложение [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md), а не от самого Claude Code.
+
+### Subprocess initialization did not complete within 60000ms
+
+Эта ошибка означает, что процесс Claude Code, запущенный [расширением VS Code](https://code.claude.com/docs/ru/vs-code.md) или приложением Agent SDK, не сообщил вовремя о своей готовности. После этого расширение или приложение остановило его. В диалоге VS Code ошибка начинается с `Claude Code did not finish starting`, например:
+
+```text theme={null}
+Claude Code did not finish starting: it did not answer in time. The output logs ("View output logs") show how far it got. Slow plugins, MCP servers, hooks, disks or network can each cause this.
+```
+
+В выходных логах расширения, на его экране входа и в приложении Agent SDK ошибка выглядит иначе. Она начинается с `Subprocess initialization did not complete within` и ограничения по времени, а затем приводит то, что сообщил Claude Code, например:
+
+```text theme={null}
+Subprocess initialization did not complete within 60000ms. Claude Code did not answer the initialize request and reported no SessionStart or Setup hook running. Slow plugins, MCP servers, hooks that Claude Code does not report, disks or network can each cause this.
+```
+
+**Что делать:**
+
+* Чтобы повторить попытку в VS Code, отправьте сообщение. Если ошибка появилась во время входа, вместо этого снова выберите способ входа.
+* Чтобы увидеть, насколько далеко продвинулся Claude Code, нажмите **View output logs** под ошибкой в диалоге или выполните **Claude Code: Show Logs** из палитры команд. Приложите записи вокруг строки `Subprocess initialization`, когда будете [сообщать о проблеме](https://github.com/anthropics/claude-code/issues).
+* Чтобы проверить сеть, см. [Конфигурация сети](https://code.claude.com/docs/ru/network-config.md). Если сообщение предлагает проверить вход или аутентификацию, см. [Вход и аутентификация](https://code.claude.com/docs/ru/troubleshoot-install.md#login-and-authentication).
+* Если в сообщении сказано, что хуки [SessionStart](https://code.claude.com/docs/ru/hooks.md#sessionstart) или [Setup](https://code.claude.com/docs/ru/hooks.md#setup) не завершились, [проверьте, как долго выполняются ваши хуки](https://code.claude.com/docs/ru/hooks.md#debug-hooks). В VS Code первые 10 минут, в течение которых Claude Code сообщает о выполнении этих хуков, не учитываются в 60-секундном ограничении. Ускорьте завершение медленного хука, уменьшите [`timeout`](https://code.claude.com/docs/ru/hooks#common-fields) неасинхронного хука или [удалите хук](https://code.claude.com/docs/ru/hooks.md#disable-or-remove-hooks).
+* Если ваше приложение Agent SDK вызывает [`startup()`](https://code.claude.com/docs/ru/agent-sdk/typescript#startup), задайте `initializeTimeoutMs` достаточно большим для всего запуска или оставьте его незаданным, чтобы до 10 минут сообщённого времени работы хуков не учитывались.
+
+До версии расширения VS Code 2.1.304 и версии TypeScript Agent SDK 0.3.304 всё время работы хуков учитывалось в ограничении. При ограничении по умолчанию сообщение содержало `Subprocess initialization did not complete within 60000ms — check authentication and network connectivity`. Если вы видите такую формулировку, обновите расширение или SDK.
+
+### Claude Code process exited with code N
+
+Базовый процесс `claude` завершился с ненулевым кодом. Сам код выхода не говорит, что не удалось: реальная ошибка находится в собственном выводе процесса, который обёртка добавляет, если она что-то захватила, в противном случае она хранит это в своих логах.
+
+```text theme={null}
+Error: Claude Code process exited with code 1
+```
+
+На Windows встроенная сборка может завершиться с кодом `4294967295` сразу после завершения хода. Когда этот выход происходит на границе хода, без ожидающего сообщения и без выполняющейся фоновой задачи, [расширение VS Code](https://code.claude.com/docs/ru/vs-code.md) закрывает сеанс без уведомления вместо отображения этой ошибки. Ваше следующее сообщение возобновляет разговор.
+
+До версии 2.1.273 расширение показывало ошибку для этого выхода на каждой границе хода, хотя ничего не было потеряно.
+
+**Что делать:**
+
+* В VS Code перейдите по ссылке **View output logs**, показанной с ошибкой, чтобы увидеть основную ошибку
+* В приложении Agent SDK перехватите ошибку вокруг вашего цикла сообщений. Записи в разделе [Выход процесса CLI](https://code.claude.com/docs/ru/agent-sdk/troubleshooting.md#cli-process-exit) охватывают то, что ваш код получает в каждом языке SDK.
+* Запустите `claude` в терминале в том же проекте. Ошибка обычно воспроизводится там с её реальным сообщением об ошибке, которое вы затем можете найти на этой странице.
+* Запустите `claude doctor` в терминале, чтобы проверить установку и конфигурацию
+
+### Could not locate the Claude CLI on PATH
+
+[Расширение VS Code](https://code.claude.com/docs/ru/vs-code.md) показывает эту ошибку в Windows, когда вы открываете Claude Code в интегрированном терминале, оболочка терминала — это PowerShell, и расширение не может найти установленный исполняемый файл `claude` в PATH. Расширение отказывается запускать Claude Code, пока не найдёт установленный `claude` в PATH.
+
+```text theme={null}
+Failed to run Claude Code: Error: Could not locate the Claude CLI on PATH. Launching by name in a PowerShell terminal would run a 'claude' from the open folder instead of the installed CLI, so the launch was blocked. Make sure the Claude CLI's install directory is on your system PATH (not only your PowerShell profile), then restart VS Code and try again. VS Code reads PATH when it starts, so PATH changes take effect only after a restart.
+```
+
+**Что делать:**
+
+* Откройте новое окно PowerShell вне VS Code и запустите `where.exe claude`. Если оно не выводит путь, CLI не находится в вашем PATH: добавьте его каталог установки, следуя разделу [Проверьте ваш PATH](https://code.claude.com/docs/ru/troubleshoot-install.md#verify-your-path). Если оно выводит путь, запись поступает из вашего профиля PowerShell или из изменения PATH, которое VS Code ещё не подхватил; следующие два шага охватывают эти случаи.
+* Установите запись PATH как переменную окружения пользователя или системы, а не в вашем профиле PowerShell. Расширение не запускает ваш профиль, поэтому редактирование PATH, которое существует только там, никогда до него не доходит.
+* Перезагрузите VS Code после изменения PATH. Расширение проверяет PATH, который VS Code захватил при запуске, поэтому изменение PATH вступает в силу только после перезагрузки.
+
+### The Claude Code program for this computer could not be found
+
+[Расширение VS Code](https://code.claude.com/docs/ru/vs-code.md) искало встроенную в него копию Claude Code и не нашло ни одной, собранной для вашего компьютера. В сообщении указана сборка, которая нужна вашему компьютеру:
+
+```text theme={null}
+The Claude Code program for this computer, the Linux (linux-x64) build, could not be found.
+```
+
+**Что делать:**
+
+* Если в сообщении указано, какую сборку содержит расширение, у вас установлен пакет расширения для другой платформы: установите пакет, созданный для сборки, указанной в сообщении
+* Если в сообщении не указано, какую сборку содержит расширение, переустановите расширение Claude Code из представления Extensions вашего редактора
+* Или, в любом случае, задайте в [`claudeCode.claudeProcessWrapper`](https://code.claude.com/docs/ru/vs-code#extension-settings) отдельно установленный исполняемый файл `claude`
+
+До версии 2.1.290 эта ошибка отображалась как `Unsupported platform: <platform>-<arch>. No compatible Claude Code binary found.`
+
+### The connection to Claude Code ended before this message completed
+
+[Расширение VS Code](https://code.claude.com/docs/ru/vs-code.md) отправило ваше сообщение процессу `claude`, и соединение завершилось без ошибки до того, как процесс подтвердил или завершил его. Расширение не может определить, было ли сообщение обработано, поэтому оно просит вас отправить его снова:
+
+```text theme={null}
+The connection to Claude Code ended before this message completed — it may not have been processed, so please send it again.
+```
+
+**Что делать:**
+
+* Отправьте сообщение снова. Следующее сообщение запускает свежий процесс `claude`, который возобновляет разговор.
+* Если это повторяется, запустите `claude` в терминале в том же проекте. Ошибка, которая продолжает завершать процесс, обычно воспроизводится там с её реальным сообщением об ошибке.
+
+## Предупреждения и ошибки Rewind
+
+Эти сообщения поступают из восстановления кода [`/rewind`](https://code.claude.com/docs/ru/checkpointing). `Restored the code, but skipped N files` — это предупреждение о том, что Claude Code пропустил некоторые пути. `No files were restored` — это ошибка, которая означает, что ничего не было восстановлено.
+
+### Restored the code, but skipped files
+
+Восстановление кода `/rewind` пропустило один или несколько отслеживаемых путей вместо того, чтобы записать или удалить их. Claude Code пропускает путь, когда:
+
+* это символическая ссылка, жёсткая ссылка или другой нерегулярный файл, или он стал таким
+* его директория изменилась с момента создания контрольной точки
+* его резервную копию невозможно безопасно прочитать
+
+Пропущенные пути сохраняют своё текущее содержимое. До версии 2.1.216 `/rewind` записывал и удалял данные через ссылки на отслеживаемых путях и не сообщал о частичном восстановлении.
+
+```text theme={null}
+Restored the code, but skipped 2 files: the tracked path is (or became) a link or other non-regular file, its directory changed since the checkpoint, or its backup could not be safely read. Skipped files were left untouched — run with --debug for the paths.
+```
+
+**Что делать:**
+
+* Определите, какие файлы были пропущены, чтобы вы могли обработать каждый из них, следуя приведённым ниже шагам. Сообщение содержит только количество; журнал отладки в `~/.claude/debug/<session-id>.txt` указывает каждый пропущенный путь по мере выполнения восстановления, поэтому включите логирование отладки с помощью `/debug` перед следующим восстановлением. На macOS или Linux вы можете вместо этого найти ссылки напрямую: `find . -type l` для символических ссылок и `find . -type f -links +1` для жёстко связанных файлов.
+* Если пропущенный файл — это ссылка, которую вы создали намеренно, например файл конфигурации, управляемый менеджером dotfile, или файл, жёстко связанный инструментами вроде pnpm, то rewind оставил его содержимое без изменений. Чтобы отменить изменения сеанса в этом файле, попросите Claude отменить редактирование или отредактируйте файл самостоятельно
+* Если вы не создавали ссылку, проверьте путь перед тем, как доверять его содержимому
+
+### No files were restored
+
+Claude Code показывает это сообщение, когда вы восстанавливаете код с помощью [`/rewind`](https://code.claude.com/docs/ru/checkpointing) и Claude Code не может восстановить ни один из файлов в этой контрольной точке. Для каждого файла либо резервная копия, которую Claude Code сохранил перед редактированием, отсутствует, либо Claude Code не смог записать или удалить файл.
+
+```text theme={null}
+Failed to restore the code:
+No files were restored: 1 file failed (backup missing, or the file could not be updated)
+```
+
+Claude Code удаляет резервные копии сеанса при [очистке хранения](https://code.claude.com/docs/ru/claude-directory.md#cleaned-up-automatically), по умолчанию примерно через 30 дней после того, как сеанс последний раз их сохранил. Если вы возобновите сеанс после этого, `/rewind` по-прежнему будет отображать его контрольные точки, но восстановление одной из них может завершиться ошибкой. Если сообщение также говорит `N paths were skipped for link safety`, см. раздел [Restored the code, but skipped files](#restored-the-code-but-skipped-files) для этих путей.
+
+Когда вы создаёте ветвь сеанса, например с помощью [`--fork-session`](https://code.claude.com/docs/ru/cli-reference#cli-flags) или [`/branch`](https://code.claude.com/docs/ru/sessions#branch-a-session), Claude Code копирует резервные копии исходного сеанса в ветвь. Когда Claude Code не может скопировать резервную копию, например потому что диск заполнен, эта резервная копия отсутствует в ветви. Восстановление контрольной точки, которая её требует, может завершиться этой ошибкой.
+
+**Что делать:**
+
+* Отмените изменения другим способом: попросите Claude отменить его редактирование или восстановите файлы из системы контроля версий. Когда резервные копии удалены, повторный запуск `/rewind` завершится с той же ошибкой.
+* Если Claude Code не смог записать или удалить файл, исправьте то, что блокирует запись, например разрешения на файл, а затем снова запустите `/rewind`.
+* Чтобы сохранять резервные копии дольше в будущих сеансах, увеличьте значение [`cleanupPeriodDays`](https://code.claude.com/docs/ru/settings-reference#cleanupperioddays).
+
+До версии 2.1.260 Claude Code молча пропускал файлы, резервные копии которых отсутствовали, и восстановление казалось успешным.
+
+## Предупреждения о сохранении сеанса
+
+Claude Code показывает эти предупреждения на постоянной строке ниже поля ввода, когда он не сохраняет транскрипт вашего сеанса. Сеанс продолжает работать в любом случае; предупреждения говорят вам, что сеанс может отсутствовать при [`--resume`](https://code.claude.com/docs/ru/sessions) позже.
+
+### Запись транскрипта не удаётся
+
+Claude Code сохраняет транскрипт на диск по мере работы, и его записи в [файл транскрипта](https://code.claude.com/docs/ru/sessions.md#where-transcripts-are-stored) не удаются. Сообщение указывает причину с кодом базовой ошибки, например полный диск:
+
+```text theme={null}
+Transcript writes are failing (disk full — ENOSPC) · recent messages may not be saved for resume
+```
+
+Предупреждение появляется в разных точках в зависимости от ошибки:
+
+* При первом сбое для условий, которые не исчезают сами по себе: полный диск, превышена квота диска, файловая система только для чтения, путь превышает лимит длины файловой системы, или на macOS и Linux — ошибка разрешения
+* После повторных сбоев, длящихся не менее минуты, для всего остального, включая ошибки разрешения на Windows, где сканирование антивируса может привести к сбою одной записи, которая затем успешно выполняется при повторной попытке
+
+До версии 2.1.217 Claude Code отбрасывал неудачные записи без предупреждения, и позже отсутствие недавних сообщений при `--resume` было первым признаком.
+
+**Что делать:**
+
+* Исправьте условие, которое указывает код ошибки: освободите место на диске для `ENOSPC`; повысьте или очистите квоту для `EDQUOT`; восстановите доступ на запись в расположение транскрипта для `EACCES`, `EPERM` или `EROFS`
+* Предупреждение исчезает само по себе при следующей успешной записи; перезагрузка не требуется
+* Сообщения, отправленные во время отображения предупреждения, могут по-прежнему отсутствовать при возобновлении сеанса позже
+
+### Сохранение транскрипта отключено, потому что установлена переменная CLAUDE\_CODE\_SKIP\_PROMPT\_HISTORY
+
+Этот сеанс начался с установленной переменной [`CLAUDE_CODE_SKIP_PROMPT_HISTORY`](https://code.claude.com/docs/ru/env-vars), поэтому Claude Code не записывает для него транскрипт или историю подсказок:
+
+```text theme={null}
+Transcript saving is off — CLAUDE_CODE_SKIP_PROMPT_HISTORY is set · --resume will not find this session; if unintended, unset it and restart
+```
+
+Переменная является преднамеренным отказом для эфемерных скриптовых сеансов, но она также может достичь сеанса через профиль оболочки, скрипт-обёртку или родительский процесс, который её экспортировал.
+
+**Что делать:**
+
+* Если вы установили переменную намеренно, никаких действий не требуется; уведомление подтверждает, что сеанс не будет отображаться в `--resume`, `--continue` или истории стрелки вверх
+* Если нет, удалите переменную из оболочки или скрипта, который запускает `claude`, затем начните новый сеанс. Сообщения из текущего сеанса не сохраняются задним числом.
+
+### Сохранение транскрипта отключено из-за унаследованного маркера CLAUDE\_CODE\_CHILD\_SESSION
+
+Claude Code устанавливает [`CLAUDE_CODE_CHILD_SESSION`](https://code.claude.com/docs/ru/env-vars) в подпроцессах, которые он порождает, и рассматривает интерактивный сеанс, который его наследует, как вложенный: Claude Code не сохраняет для него транскрипт, поэтому сеансы, которые сам Claude запускает, не заполняют ваш список `--resume`. Это уведомление означает, что ваш текущий сеанс унаследовал маркер:
+
+```text theme={null}
+Transcript saving is off — inherited CLAUDE_CODE_CHILD_SESSION marker · restart with CLAUDE_CODE_FORCE_SESSION_PERSISTENCE=1 to keep future transcripts
+```
+
+Уведомление ожидается, когда вы запустили `claude` изнутри другого сеанса Claude Code; оно сигнализирует о неправильной классификации, когда маркер просочился через долгоживущий посредник, например терминал, сеанс `screen` или средство запуска, которое первоначально запустил сеанс Claude Code.
+
+Внутри tmux Claude Code обнаруживает маркер, который прибыл через глобальную среду сервера tmux, и продолжает сохранять, поэтому это уведомление не появляется для этого случая.
+
+**Что делать:**
+
+* Если вы запустили этот сеанс изнутри другого сеанса Claude Code намеренно, никаких действий не требуется
+* Если это сеанс верхнего уровня, выйдите и перезагрузитесь с установленной переменной [`CLAUDE_CODE_FORCE_SESSION_PERSISTENCE=1`](https://code.claude.com/docs/ru/env-vars). Сохранение применяется с момента перезагрузки, поэтому сообщения, отправленные до неё, не сохраняются.
+* Чтобы исправить будущие запуски из того же терминала или средства запуска, удалите `CLAUDE_CODE_CHILD_SESSION` из его среды
+
+## Предупреждения о конфигурации
+
+Чтобы найти предупреждение, которое Claude Code выдал при запуске интерактивной сессии, сначала посмотрите под баннером запуска, а затем в логе отладки:
+
+* **Строка под баннером запуска**: некоторые предупреждения о [правилах разрешений](https://code.claude.com/docs/ru/permissions.md), например [`⚠ Deny rule Bsh matches no tool · check for typos`](#matches-no-tool)
+* **Лог отладки**: Claude Code ведёт этот лог только в режиме отладки. Чтобы прочитать предупреждения в нём, запустите Claude Code из оболочки командой `claude --debug-file <path>`, затем откройте файл по этому пути.
+
+В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) с текстовым выводом, вне [фоновой сессии](https://code.claude.com/docs/ru/agent-view.md), ищите предупреждения при запуске в stderr.
+
+До версии 2.1.305 в интерактивной сессии тоже нужно смотреть в stderr, в том числе для предупреждений о правилах разрешений, которые теперь отображаются как строки под баннером.
+
+### Claude Code exited after an unrecoverable interface error
+
+Claude Code выводит это сообщение при выходе, потому что его интерфейс терминала столкнулся с ошибкой, от которой он не может восстановиться, в любом из renderer. Второе предложение появляется только когда ошибка произошла во время запуска [fullscreen](https://code.claude.com/docs/ru/fullscreen.md) renderer:
+
+```text theme={null}
+Claude Code exited after an unrecoverable interface error (<error>). It happened while the fullscreen renderer was starting, so the next launch will use the classic renderer (CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1 forces that any time).
+```
+
+**Что делать:**
+
+* Запустите Claude Code снова. Чтобы продолжить беседу, выполните `claude --resume` в том же каталоге.
+* Если сообщение называет fullscreen renderer, [Fullscreen rendering](https://code.claude.com/docs/ru/fullscreen.md#fullscreen-renderer-didnt-finish-starting) говорит, что делает следующий запуск, что зависит от того, как вы включили fullscreen, и как снова попробовать fullscreen или оставить классический renderer.
+
+До версии 2.1.236 Claude Code выходил без вывода сообщения после этого вида ошибки.
+
+### Agent descriptions are over the 15.0k-token limit
+
+Claude Code показывает это предупреждение как уведомление при запуске в представлении беседы, а не на stderr. Объединённые описания ваших [subagents](https://code.claude.com/docs/ru/sub-agents.md), кроме встроенных, превышают 15 000 токенов в соответствии с оценкой Claude Code. Каждый агент считает своё имя плюс его frontmatter `description`. Claude Code загружает каждого агента независимо от того, превышен ли лимит, поэтому предупреждение не меняет то, что загружается.
+
+```text theme={null}
+Agent descriptions are over the 15.0k-token limit (~16.2k tokens) · ask Claude to trim agent descriptions in .claude/agents/
+```
+
+**Что делать:**
+
+* Сократите frontmatter `description` ваших файлов агентов или попросите Claude сократить их для вас.
+* Удалите файлы агентов, которые вы больше не используете.
+
+### Hook needs quotes around a path with a space
+
+Это уведомление в представлении диалога означает, что скрипт хука не запустился, потому что его путь содержит пробел и не заключён в кавычки. Речь идёт о хуке [`asyncRewake`](https://code.claude.com/docs/ru/hooks#run-hooks-in-the-background) в форме shell-команды. В его `command` за интерпретатором, например `python3`, следует заполнитель пути без кавычек, а итоговый путь содержит пробел.
+
+Уведомление начинается с имени события хука и называет скрипт:
+
+```text theme={null}
+Stop hook needs quotes around a path with a space (check.py)
+```
+
+**Что делать:**
+
+* В `command` хука, который запускает указанный в уведомлении скрипт, заключите путь в двойные кавычки. В JSON-файле это записывается как `"command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/check.py\""`.
+
+### Instruction file not loaded
+
+Это уведомление в представлении диалога интерактивной сессии означает, что существующий [файл памяти](https://code.claude.com/docs/ru/memory.md#how-claude-md-files-load) не был загружен. Действует ограничение на чтение.
+
+```text theme={null}
+Instruction file not loaded (a Read deny rule covers it):
+path: .claude/rules/shared.md
+```
+
+Текст в скобках называет причину, например:
+
+* **`a Read deny rule covers it`**: [правило deny](https://code.claude.com/docs/ru/permissions.md#read-and-edit) для `Read` совпадает с путём файла в том виде, в каком он записан, или с тем, куда ведёт ссылка на него
+* **`it's read from outside your working directories, where reads are blocked`**: файл разрешается в путь за пределами [рабочих каталогов](https://code.claude.com/docs/ru/settings-reference.md#permissions-blockreadsoutsideworkingdirectories), при этом включена настройка [`permissions.blockReadsOutsideWorkingDirectories`](https://code.claude.com/docs/ru/settings-reference#permissions-blockreadsoutsideworkingdirectories)
+* **`where it leads couldn't be worked out`**: например, файл является ссылкой, которая ведёт обратно на саму себя, напрямую или через другие ссылки
+
+Когда собственный файл памяти подкаталога не удаётся загрузить в момент, когда Claude работает с файлами в нём, те же строки появляются в диалоге во время хода. Если не загружено больше файлов, чем перечислено в строках, последняя строка сообщает количество остальных, например `and 3 more instruction files not loaded`.
+
+**Что делать:**
+
+* Ничего, если ограничение задумано: сессия работает без инструкций из этого файла.
+* Чтобы загрузить файл, не загруженный по причине `a Read deny rule covers it`, [удалите или сузьте это правило](https://code.claude.com/docs/ru/permissions.md#manage-permissions). Затем начните новую сессию.
+* Чтобы загрузить файл, не загруженный по причине `it's read from outside your working directories, where reads are blocked`, переместите его или цель его ссылки внутрь рабочих каталогов. Затем начните новую сессию.
+* Чтобы загрузить файл, не загруженный по причине `where it leads couldn't be worked out`, проверьте, не является ли файл ссылкой, которая ведёт на саму себя. Если это так, направьте ссылку на существующий файл или замените её обычным файлом. Затем начните новую сессию.
+
+До версии 2.1.292 уведомление называло файл в конце той же строки, после причины.
+
+### A skill, command, or workflow wasn't loaded because its name is reserved
+
+Папка skill, frontmatter `name`, файл или подпапка в `.claude/commands/` или [saved workflow](https://code.claude.com/docs/ru/workflows.md#save-the-workflow-for-reuse) использует имя `anthropic-skills` или имя, которое начинается с `anthropic-skills:`. Claude Code [зарезервировал это имя для skills, синхронизированных из claude.ai](https://code.claude.com/docs/ru/skills.md#names-reserved-for-synced-skills) и не загружает этот элемент.
+
+Claude Code показывает это предупреждение как уведомление при запуске в представлении беседы, а не на stderr:
+
+```text theme={null}
+Not loaded: rename .claude/skills/anthropic-skills, then restart — its name uses "anthropic-skills", a name reserved for the skills synced from your claude.ai account
+```
+
+Уведомление называет то, что нужно изменить для первого отклонённого элемента: папку или файл для переименования, строку `name:` для редактирования или workflow для переименования. Когда было отклонено более одного элемента, уведомление заканчивается счётом, например `· 2 more`, и [debug log](https://code.claude.com/docs/ru/debug-your-config.md) называет каждый.
+
+**Что делать:**
+
+* Переименуйте элемент, который называет уведомление, или отредактируйте строку `name:`, на которую оно указывает, затем перезагрузите сеанс.
+
+До версии 2.1.282 Claude Code загружал skills и commands с этими именами.
+
+### Skill or command name refused
+
+Это уведомление при запуске означает, что Claude Code отклонил имя как минимум одного [скилла или пользовательской команды](https://code.claude.com/docs/ru/skills.md), поэтому элемент не загрузился или загрузился без поля `name`:
+
+```text theme={null}
+1 skill or command name refused: run with --debug to see which ([names]), rename, then restart — a name may not hold hidden, direction-changing or blank-like characters, < or >, or be over 256 characters
+```
+
+* **Не загружен**: Claude Code отклонил имя, под которым известен скилл или команда, например имя каталога, имя файла команды или её подпапки. Элемент отсутствует в меню `/`, и Claude не может его вызвать. Соответствующая строка в логе отладки выглядит как `<name> is not offered`.
+* **Поле `name` проигнорировано**: Claude Code отклонил поле frontmatter `name` скилла. Скилл всё равно загружается, но меню `/` не показывает значение `name`, и ввод этого значения не вызывает скилл. Соответствующая строка в логе отладки выглядит как `<name value> is not shown for <skill>`.
+
+**Что делать:**
+
+* Запустите Claude Code из оболочки командой `claude --debug` и найдите в [логе отладки](https://code.claude.com/docs/ru/debug-your-config.md) `[names]`. Для каждого имени, учтённого в уведомлении, там есть одна строка. В этой строке некоторые скрытые символы записаны в виде кодов, например `\u{200B}` для пробела нулевой ширины, чтобы вы видели, где они находятся.
+* Удалите [символы, которые не может содержать имя скилла](https://code.claude.com/docs/ru/skills.md#characters-a-skill-name-cant-hold), переименовав папку или файл либо отредактировав строку `name:`, или сократите имя длиннее 256 символов. Затем перезапустите сессию, если только файл не находится в каталоге, который Claude Code [отслеживает на изменения](https://code.claude.com/docs/ru/skills.md#live-change-detection). Если скилл взят из плагина, который написали не вы, попросите автора плагина переименовать его.
+
+### Workspace has not been trusted
+
+Claude Code обнаружил правила `permissions.allow` или записи `permissions.additionalDirectories` в файле `.claude/settings.json` или `.claude/settings.local.json` проекта и не применил их, потому что [правила allow из параметров проекта требуют доверия рабочей области](https://code.claude.com/docs/ru/permissions.md#project-allow-rules-and-workspace-trust). Количество, имя параметра и имя файла в сообщении варьируются в зависимости от вашей конфигурации. На правила `deny` и `ask` это не влияет.
+
+```text theme={null}
+Ignoring 2 permissions.allow entries from .claude/settings.local.json: this workspace has not been trusted. Run Claude Code interactively here once and accept the trust dialog, or set projects["/Users/you/project"].hasTrustDialogAccepted: true in /Users/you/.claude.json.
+```
+
+**Что делать:**
+
+* Выполните `claude` в каталоге и примите диалог доверия. [Project allow rules and workspace trust](https://code.claude.com/docs/ru/permissions.md#project-allow-rules-and-workspace-trust) говорит, какую папку охватывает это принятие.
+* В [non-interactive mode](https://code.claude.com/docs/ru/headless.md) с `-p` диалог не показывается. Установите запись `hasTrustDialogAccepted` в `~/.claude.json`, используя точный ключ `projects`, который выводит сообщение.
+* Если сообщение называет `.claude/settings.local.json` и вы запустили Claude Code вне репозитория git или в вашем домашнем каталоге, обновитесь до версии 2.1.200 или позже. Версии 2.1.196 по 2.1.199 рассматривали ваш собственный `.claude/settings.local.json` как предоставленный репозиторием в этих рабочих областях. На версии 2.1.207 и позже обновления недостаточно вне репозитория git, если вы не доверили папке: определение того, что папка не находится внутри репозитория, запускает git, и Claude Code запускает эту проверку только после того, как вы примете диалог доверия, поэтому используйте первый шаг. Ваш домашний каталог и любой другой [configuration home](https://code.claude.com/docs/ru/permissions.md#project-allow-rules-and-workspace-trust) освобождены и не ждут диалога. См. [Project allow rules and workspace trust](https://code.claude.com/docs/ru/permissions.md#project-allow-rules-and-workspace-trust).
+
+### Working directory is a network path
+
+Claude Code не добавляет сетевые пути в качестве рабочих каталогов. Обращение к сетевому пути может привести к соединению с указанным в нём хостом, а в Windows при таком соединении хосту могут быть отправлены ваши учётные данные. Поэтому Claude Code отклоняет путь, не обращаясь к нему.
+
+Вы видите это сообщение, когда выполняете `/add-dir` с сетевым путём:
+
+```text theme={null}
+\\server\share is a network path, which cannot be added as a working directory. On Windows, map the share to a drive letter and pass it at launch with --add-dir (a drive letter added mid-session does not yet carry remote-read trust).
+```
+
+Если вместо этого вы передаёте такой путь при запуске, через `--add-dir` или в `permissions.additionalDirectories`, Claude Code запускается без этого каталога. В интерактивной сессии вы не увидите сообщение при запуске, потому что оно записывается в лог отладки вместе с другими [предупреждениями при запуске](#configuration-warnings).
+
+Пути, которые Claude Code отказывает таким образом, включают:
+
+* UNC shares такие как `\\server\share`
+* Пути automount, например `/net/<host>`, если только вы не запустили Claude Code из каталога внутри automount этого хоста. Чтение внутри этого automount всё равно проходит [проверку сетевых путей](https://code.claude.com/docs/ru/permissions.md#network-paths).
+* Локальные пути, которые достигают сетевого расположения через символическую ссылку или junction
+
+Сопоставленные буквы дисков и пути `\\wsl$` не считаются сетевыми путями.
+
+**Что делать:**
+
+* В Windows подключите общий ресурс к букве диска и передайте этот диск при запуске. Например, в PowerShell выполните `net use Z: \\server\share`, а затем `claude --add-dir Z:\`.
+* На macOS или Linux смонтируйте share в локальный путь и добавьте этот путь вместо этого.
+* Если путь находится в `permissions.additionalDirectories`, удалите его из файла параметров, который его перечисляет.
+
+До версии 2.1.257 Claude Code принимал достижимый сетевой путь как рабочий каталог.
+
+### Remote managed settings failed to load
+
+Ваша сессия подпадает под действие [управляемых сервером настроек](https://code.claude.com/docs/ru/server-managed-settings.md), но Claude Code не смог их получить или не смог применить то, что вернул сервер, поэтому он показывает это предупреждение в интерактивных сессиях и на вкладке Code в Claude Desktop.
+
+Причина в скобках называет то, что не удалось, например `network error`, `request timed out` или `authentication rejected (401)`. Причина `no setting in the server response could be applied as written` означает, что сервер ответил, но ни один из параметров, которые он вернул, не прошёл [validation](https://code.claude.com/docs/ru/server-managed-settings.md#invalid-entries-in-delivered-settings). До версии 2.1.282 эта причина читалась как `server returned invalid settings`.
+
+Остальная часть строки говорит, какую политику запускает сеанс:
+
+* **Settings cached from an earlier successful fetch**: Claude Code запускает сеанс на этой кэшированной политике, кроме [withheld environment variables](https://code.claude.com/docs/ru/server-managed-settings.md#fetch-and-caching-behavior), и строка читается `using cached policy`.
+* **Нет кэшированных настроек для применения**: Claude Code запускает сессию без управляемых сервером настроек, и строка выглядит как `no remote policy applied`. Например, машина ещё не получала настройки или последний раз получала их более [24 часов](https://code.claude.com/docs/ru/server-managed-settings.md#fetch-and-caching-behavior) назад.
+
+На вкладке Code предупреждение появляется строкой в диалоге, когда вы отправляете сообщение, а при изменении состояния получения настроек появляется новая строка. Так же появляются три связанных сообщения:
+
+* `Remote managed settings are still loading`: получение настроек ещё выполнялось, когда сессия продолжила работу
+* `Remote managed settings did not load`: получение настроек завершилось без ответа
+* `Remote managed settings have now loaded`: настройки загрузились после одного из этих предупреждений, и остальная часть строки сообщает, применяется ли удалённая политика
+
+**Что делать:**
+
+* Действуйте в соответствии с причиной, которую называет сообщение: для сетевой причины проверьте, что эта машина может достичь `api.anthropic.com`; для причины аутентификации проверьте вашу регистрацию с помощью `/status`
+* Для `no setting in the server response could be applied as written` попросите вашего администратора исправить параметры на сервере
+* Выполните `/status` или `claude doctor` для полной диагностики
+
+До версии 2.1.248 Claude Code сообщал о неудачной выборке параметров только в журнале отладки.
+
+### Claude Code couldn't load your organization's settings
+
+Ваша сессия не запустилась, потому что настройки вашей организации, включая её [управляемые сервером настройки](https://code.claude.com/docs/ru/server-managed-settings.md), должны загрузиться заранее, а Claude Code не смог их загрузить. Например:
+
+```text theme={null}
+Claude Code couldn't reach Anthropic to load your organization's settings (could not connect). <Organization name> requires them before a session can start.
+```
+
+Если сообщение отображается в диалоговом окне с заголовком `Claude Code can't start this session yet`, окно закроется и сессия запустится, как только настройки загрузятся.
+
+В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) и в [фоновых сессиях](https://code.claude.com/docs/ru/agent-view.md) Claude Code вместо этого выводит сообщение и завершается с кодом выхода 1.
+
+**Что делать:**
+
+* **`could not connect` или `the reply came from a network proxy, not Anthropic`**: проверьте сетевое подключение, а в корпоративной сети попросите IT-отдел разрешить HTTPS-доступ к `api.anthropic.com/api/claude_code/policy_limits` и `api.anthropic.com/api/claude_code/settings`. Затем выберите **Retry now** или снова выполните команду.
+* **`timed out`, `Anthropic returned an error` или `Anthropic asked it to retry shortly`**: дождитесь повторной попытки в диалоговом окне или снова выполните команду позже. Если ситуация повторяется, проверьте [status.anthropic.com](https://status.anthropic.com).
+* **`still loading` или `couldn't verify your sign-in with Anthropic yet`**: дождитесь повторной попытки в диалоговом окне или снова выполните команду. Если сообщение о входе продолжает появляться, войдите заново, выполнив `claude auth login` в оболочке.
+* **`Your Claude session has expired`**: вход, сохранённый на этой машине, больше не действителен, поэтому повторные попытки не помогут. В диалоговом окне выберите **Sign in again**, чтобы закрыть Claude Code; затем в оболочке выполните `claude auth login` — эта команда работает, даже когда сессии не могут запуститься.
+* **`none of the settings the server returned could be applied as written`**: попросите администратора исправить [управляемые сервером настройки](https://code.claude.com/docs/ru/server-managed-settings.md#invalid-entries-in-delivered-settings) организации, затем повторите попытку.
+
+### Managed settings were not approved
+
+[server-managed settings](https://code.claude.com/docs/ru/server-managed-settings.md) вашей организации включают параметры, которые требуют вашего одобрения, и вы отклонили [security approval dialog](https://code.claude.com/docs/ru/server-managed-settings.md#security-approval-dialogs), поэтому Claude Code выходит без их применения:
+
+```text theme={null}
+Managed settings were not approved; exiting without applying them.
+```
+
+**Что делать:**
+
+* Запустите Claude Code снова и одобрите диалог, чтобы продолжить в соответствии с параметрами вашей организации. Отклонённый диалог не запоминается, поэтому он появляется снова при следующем запуске.
+* Если вы не уверены в параметре, который перечисляет диалог, спросите того, кто поддерживает управляемые параметры вашей организации, перед одобрением
+
+### Managed settings need your approval
+
+[Управляемые сервером настройки](https://code.claude.com/docs/ru/server-managed-settings.md) вашей организации включают настройки, требующие вашего подтверждения в [диалоговом окне подтверждения безопасности](https://code.claude.com/docs/ru/server-managed-settings.md#security-approval-dialogs). Выполненная вами команда `claude plugin` не смогла читать ввод с клавиатуры, поэтому не смогла показать это диалоговое окно. Так происходит, когда вы передаёте её ввод через конвейер или перенаправление и, в macOS и Linux, она также не может открыть `/dev/tty`. Команда остановилась, не внеся никаких изменений:
+
+```text theme={null}
+Your organization's managed settings need your approval, which couldn't be asked for here. Run `claude` in a terminal and approve them, then run this command again.
+```
+
+**Что делать:**
+
+* Выполните `claude` в терминале и подтвердите настройки, когда появится диалоговое окно, затем снова выполните ту же команду `claude plugin`. Claude Code сохраняет подтверждение и подтверждённые настройки в вашем [каталоге конфигурации](https://code.claude.com/docs/ru/server-managed-settings.md#approval-memory). Если остановившаяся команда выполнялась от имени другого пользователя или с заданной `CLAUDE_CONFIG_DIR`, запустите `claude` так же, чтобы обе команды использовали один и тот же каталог.
+
+### Managed settings block the default model
+
+[managed settings](https://code.claude.com/docs/ru/managed-settings.md) вашей организации блокируют модель, на которую разрешается Default option, и каждую модель, на которую она может перейти. Сеанс, который должен был бы запуститься на Default option, выходит при запуске вместо запуска заблокированной модели. Какое сообщение вы видите, зависит от параметра, который её блокирует. Когда список [`deniedModels`](https://code.claude.com/docs/ru/model-config#block-specific-models-or-versions) блокирует её, сообщение читается:
+
+```text theme={null}
+Claude Code can't start: your organization's managed settings block the default model (claude-opus-5-5) in "deniedModels", and none of the models they allow can be used as the default instead. Ask your administrator to update "deniedModels" or "availableModels".
+```
+
+Когда список `availableModels` с [`availableModelsMatch`](https://code.claude.com/docs/ru/settings-reference#availablemodelsmatch) установленным на `"exact"` его опускает, сообщение читается:
+
+```text theme={null}
+Claude Code can't start: your organization allows only the models listed in "availableModels", and none of them can be used as the default model (claude-opus-5-5 isn't listed). Ask your administrator to update "availableModels".
+```
+
+**Что делать:**
+
+* Если вы администрируете параметры, добавьте модель, которую ваши пользователи могут запустить, в `availableModels` или сузьте записи `deniedModels`, которые блокируют каждый fallback. [Block specific models or versions](https://code.claude.com/docs/ru/model-config.md#block-specific-models-or-versions) описывает, как Default option переходит
+* Если вы их не администрируете, отправьте сообщение вашему администратору. Ваши собственные файлы параметров не могут расширить управляемый `availableModels` или `deniedModels` список
+
+### Managed settings don't allow this API provider
+
+[managed settings](https://code.claude.com/docs/ru/managed-settings.md) вашей организации устанавливают список [`allowedProviders`](https://code.claude.com/docs/ru/settings-reference#allowedproviders), и поставщик API сеанса не находится в нём или сеанс использует конечную точку, которая не закреплена так, как требует эта запись. Claude Code отказывает при запуске, перед входом или когда сеанс в следующий раз свяжется с API. Сообщение начинается с разрешённых поставщиков:
+
+```text theme={null}
+Your organization's managed settings allow Claude Code to use: Anthropic API, Amazon Bedrock.
+```
+
+Когда список пуст, сообщение читается вместо этого:
+
+```text theme={null}
+Your organization's managed settings allow Claude Code to use no API provider at all (allowedProviders is an empty list), so it cannot start on this machine.
+```
+
+Когда каждая запись не распознана, скобка читается `(allowedProviders lists only unrecognized entries)` вместо этого.
+
+**Что делать:**
+
+* Следуйте шагам `To continue:` сообщения
+* Если вы администрируете параметры, строки сообщения, начинающиеся с `Admins:`, называют запись для добавления или значение для закрепления, и запись [`allowedProviders`](https://code.claude.com/docs/ru/settings-reference#allowedproviders) говорит, какой блок `env` источника может закрепить его
+
+### MCP server is blocked by enterprise managed policy
+
+Вы выбрали **Reconnect** на сервере в `/mcp` или снова включили отключённый сервер там, и параметр, который [restricts MCP servers](https://code.claude.com/docs/ru/managed-mcp.md) блокирует этот сервер. Claude Code отказывает в подключении и показывает:
+
+```text theme={null}
+MCP server <name> is blocked by enterprise managed policy
+```
+
+Любой из этих параметров может создать сообщение:
+
+* Запись [`deniedMcpServers`](https://code.claude.com/docs/ru/managed-mcp#policy-based-control-with-allowlists-and-denylists), которая соответствует серверу, включая одну в вашем собственном `~/.claude/settings.json` или в `.claude/settings.json` проекта
+* Список [`allowedMcpServers`](https://code.claude.com/docs/ru/managed-mcp#policy-based-control-with-allowlists-and-denylists), которому сервер не соответствует
+* [`strictPluginOnlyCustomization`](https://code.claude.com/docs/ru/settings-reference#strictpluginonlycustomization) с заблокированным `mcp`, который блокирует серверы, настроенные в `~/.claude.json` и `.mcp.json`
+* [`disableClaudeAiConnectors`](https://code.claude.com/docs/ru/mcp#disable-claude-ai-connectors), когда сервер является claude.ai connector
+
+**Что делать:**
+
+* Проверьте ваши собственные файлы параметров пользователя и проекта на наличие одного из этих параметров и измените или удалите его
+* Если ни один из ваших собственных параметров не объясняет блокировку, спросите вашего администратора, какой управляемый параметр блокирует сервер
+
+До версии 2.1.257 **Reconnect** и повторное включение в `/mcp` могли подключить сервер, который обновление политики в середине сеанса заблокировало.
+
+### MCP server name is reserved
+
+Это сообщение называет один из ваших MCP-серверов, имя которого входит в число зарезервированных Claude Code, например имён встроенных серверов:
+
+```text theme={null}
+"workspace" is a reserved MCP server name and was not loaded
+```
+
+**Что делать:**
+
+* Переименуйте сервер там, где вы его определяете, например с `workspace` на `my-workspace`
+* Другие зарезервированные имена, которых следует избегать, см. в разделе [Предупреждения о конфигурации MCP](https://code.claude.com/docs/ru/mcp.md#configuration-warnings)
+
+### Managed settings document could not be parsed
+
+Ваша организация развёртывает [managed settings](https://code.claude.com/docs/ru/managed-settings.md), и один из развёрнутых документов присутствует, но не может быть проанализирован как объект JSON, поэтому Claude Code выходит с кодом 1 при запуске вместо запуска без политики, которую несёт документ. Строка называет неудачный источник перед сообщением:
+
+```text theme={null}
+/Library/Application Support/ClaudeCode/managed-settings.json: Managed settings document could not be parsed as a JSON object; none of its settings are in effect. Fix or remove it.
+```
+
+Источник является одним из:
+
+* Путь файла `managed-settings.json` или drop-in файла под `managed-settings.d`
+* Профиль управляемых параметров macOS, `per-user managed preferences` или `device-level managed preferences`
+* Значение реестра Windows, `Registry: HKLM\SOFTWARE\Policies\ClaudeCode\Settings`
+
+[Find entries Claude Code dropped](https://code.claude.com/docs/ru/managed-settings.md#find-entries-claude-code-dropped) перечисляет то, что делает каждый источник непарсируемым.
+
+Claude Code отказывает в запуске даже когда другой источник администратора доставляет действительную политику. Вы видите эту ошибку в интерактивных сеансах, `claude -p`, сеансах Agent SDK, [background sessions](https://code.claude.com/docs/ru/agent-view.md) и большинстве подкоманд, включая `claude doctor`. Отказ закрывается намеренно: параметры в документе, который Claude Code не может проанализировать, не могут быть применены, и запуск в любом случае запустил бы сеансы без элементов управления организации.
+
+Проблема схемы в парсируемом документе не создаёт эту ошибку. [Find entries Claude Code dropped](https://code.claude.com/docs/ru/managed-settings.md#find-entries-claude-code-dropped) охватывает то, что Claude Code делает с одной.
+
+Когда каталог `managed-settings.d/` существует, но не может быть перечислен, Claude Code сообщает `Managed settings drop-in directory could not be read:` с последующей базовой ошибкой вместо этого. [Find entries Claude Code dropped](https://code.claude.com/docs/ru/managed-settings.md#find-entries-claude-code-dropped) охватывает, когда отказ при чтении выходит при запуске.
+
+**Что делать:**
+
+* Если вы администрируете машину, исправьте названный документ так, чтобы он анализировался как объект JSON, или удалите файл, профиль или значение реестра. Пустой `managed-settings.json` считается `{}` и не блокирует запуск.
+* Если нет, попросите вашего администратора исправить развёрнутый документ. Ничто в ваших собственных файлах параметров не вызывает и не очищает эту ошибку.
+
+### Unable to read managed policy settings
+
+Ваша организация развёртывает [managed settings](https://code.claude.com/docs/ru/managed-settings.md), и один из развёрнутых источников существует, но не мог быть прочитан по причине, такой как ошибка ввода-вывода, а не отказ операционной системы в чтении. Без другого источника администратора, поставляющего политику, Claude Code выходит при запуске, а не запускается без политики, которую может нести источник:
+
+```text theme={null}
+Unable to read managed policy settings.
+This machine may require organization login enforcement, but the policy file failed to load.
+Contact your administrator.
+
+Detail: <source>: <reason>
+```
+
+В том же состоянии потоки входа, запросы API из уже работающего сеанса и сервер [`claude gateway`](https://code.claude.com/docs/ru/claude-apps-gateway) отказываются с вариантом первой строки, которая называет [`allowedProviders`](https://code.claude.com/docs/ru/settings-reference#allowedproviders).
+
+Чтение, которое операционная система отклонила, например на файле только для root, не создаёт этот выход: [сеанс запускается без политик этого источника](https://code.claude.com/docs/ru/managed-settings.md#find-entries-claude-code-dropped). Для источника, который не может быть проанализирован, Claude Code выходит с [другим сообщением, называющим источник](#managed-settings-document-could-not-be-parsed).
+
+**Что делать:**
+
+* Если вы администрируете машину, исправьте проблему, которую называет строка `Detail:`, чтобы развёрнутый источник мог быть прочитан, или удалите источник
+* Если нет, отправьте сообщение вашему администратору. Ничто в ваших собственных файлах параметров не вызывает и не очищает эту ошибку
+
+До версии 2.1.285 только сеансы, вошедшие с учётными данными claude.ai или Claude Console, выходили с этим сообщением, и чтение, которое операционная система отклонила, также создавало его.
+
+### Managed settings contain invalid entries, including PreToolUse/PermissionRequest hooks that are NOT loaded
+
+Этот блок в stderr при запуске с `-p` означает, что источник [управляемых настроек](https://code.claude.com/docs/ru/managed-settings.md) содержит запись хука, которую Claude Code не может загрузить. Этот хук не выполняется, а если в строке поле `hooks` источника указано как проигнорированное, не выполняется ни один хук этого источника.
+
+Каждая строка называет источник, поле (если оно есть) и проблему, например неизвестный `type` хука или хук, объявленный вне ключа `hooks`:
+
+```text theme={null}
+Managed settings contain invalid entries, including PreToolUse/PermissionRequest hooks that are NOT loaded; fix or remove each entry:
+  <source> (<field>): <message>
+```
+
+**Что делать:**
+
+* Если вы администрируете источник, исправьте или удалите каждую запись из блока. В разделе [Конфигурация хуков](https://code.claude.com/docs/ru/hooks.md#configuration) показана структура, которую Claude Code ожидает в `hooks`.
+* Если источник в строке — `parent managed settings`, эту запись передало в качестве [родительских настроек](https://code.claude.com/docs/ru/managed-settings.md#parent-settings-from-embedding-hosts) приложение, запустившее Claude Code, поэтому сообщите о ней разработчику этого приложения
+* В остальных случаях отправьте блок администратору
+
+До версии 2.1.300 при запуске с `-p` этот случай выводился под заголовком `Managed settings failed to load; policies from the failed source are NOT in effect:`.
+
+### otelHeadersHelper failed
+
+Claude Code показывает это предупреждение как уведомление в интерфейсе терминала, один раз за интерактивный сеанс, когда скрипт [`otelHeadersHelper`](https://code.claude.com/docs/ru/settings-reference#otelheadershelper) не удаётся или выводит результат, который не соответствует [требованиям скрипта](https://code.claude.com/docs/ru/monitoring-usage.md#script-requirements).
+
+Пока скрипт продолжает не удаваться, экспорты не удаются и ваш backend телеметрии не получает ничего из сеанса.
+
+Текст после `See /status:` говорит, что не удалось, например код выхода скрипта, за которым следует его вывод ошибки:
+
+```text theme={null}
+otelHeadersHelper failed; telemetry is not being exported. See /status: exited 1: token service unreachable
+```
+
+**Что делать:**
+
+* Выполните `/status` для чтения деталей отказа.
+* Исправьте скрипт так, чтобы он выходил 0 в течение 30 секунд и выводил объект JSON значений заголовков строк на stdout. См. [требования скрипта](https://code.claude.com/docs/ru/monitoring-usage.md#script-requirements).
+* Если ваша организация развёртывает скрипт через [managed settings](https://code.claude.com/docs/ru/managed-settings.md), попросите того, кто их поддерживает, исправить это.
+
+В [non-interactive mode](https://code.claude.com/docs/ru/headless.md) с `-p`, тот же отказ появляется на stderr как `otelHeadersHelper failed (OpenTelemetry export headers unavailable): <error>` вместо этого.
+
+### headersHelper not run
+
+Claude Code подключил MCP сервер с его статическими `headers` только и пропустил [`headersHelper`](https://code.claude.com/docs/ru/mcp#use-dynamic-headers-for-custom-authentication) сервера, потому что помощник является shell командой и папка не имеет сохранённого доверия. Папка получает сохранённое доверие, когда вы устанавливаете её запись в `~/.claude.json` вручную или, вне вашего домашнего каталога, когда вы принимаете диалог доверия для неё в интерактивном сеансе. См. [Trust a folder before its headersHelper runs](https://code.claude.com/docs/ru/mcp.md#trust-a-folder-before-its-headershelper-runs) для того, какие серверы применяется эта проверка.
+
+Claude Code записывает эту строку в [non-interactive mode](https://code.claude.com/docs/ru/headless.md) только, один раз на сервер. В интерактивном сеансе он записывает тот же отказ в журнал отладки вместо этого.
+
+```text theme={null}
+MCP server 'internal-api': headersHelper not run — this workspace has no persisted trust; accept the trust dialog here once interactively, or set projects["/Users/you/project"].hasTrustDialogAccepted in /Users/you/.claude.json.
+```
+
+Ключ `projects`, который выводит сообщение, является папкой, на которой [Project allow rules and workspace trust](https://code.claude.com/docs/ru/permissions.md#project-allow-rules-and-workspace-trust) говорит Claude Code ключи доверия. Принятие диалога доверия для родительской папки не удовлетворяет проверку, и сеанс `-p` или SDK не удовлетворяет её либо.
+
+**Что делать:**
+
+* Выполните `claude` в папке, которую называет сообщение, примите диалог доверия, затем выполните вашу команду `-p` или SDK снова
+* Установите запись `hasTrustDialogAccepted` в `~/.claude.json` самостоятельно, используя точный ключ `projects`, который выводит сообщение
+* Если вы запустили сеанс в вашем домашнем каталоге, работайте из каталога проекта, которому вы доверяете. Когда вы принимаете диалог доверия в вашем домашнем каталоге, Claude Code держит это доверие только для текущего сеанса.
+
+### Malformed Tool(content) rule
+
+[permission rule](https://code.claude.com/docs/ru/permissions.md#permission-rule-syntax) в одном из ваших файлов параметров не имеет формы `Tool` или `Tool(content)`, например потому что текст следует за закрывающей скобкой или одна из скобок отсутствует. Claude Code пропускает правило и перечисляет его в диалоге недействительных параметров при запуске интерактивного сеанса и в выводе [`claude doctor`](https://code.claude.com/docs/ru/debug-your-config#check-resolved-settings):
+
+```text theme={null}
+Invalid permission rule "Bash(ls) x" was skipped: Malformed Tool(content) rule. Rules take the form Tool or Tool(content) and must end at the closing ")"; parentheses inside the content are literal
+```
+
+**Что делать:**
+
+* В файле параметров, указанном в сообщении, переписать правило так, чтобы оно заканчивалось на закрывающей скобке, например `Bash(ls *)` вместо `Bash(ls) x`
+* Оставьте скобки внутри содержимого как они есть. Они буквальные, поэтому правило такое как `Edit(./Finance (2024)/**)` действительно без экранирования
+
+До версии 2.1.260 Claude Code сообщал о правиле с несовпадающими скобками как `Mismatched parentheses`.
+
+### Matches no tool · check for typos
+
+Эта строка под баннером запуска называет [правило разрешений](https://code.claude.com/docs/ru/permissions.md) deny или ask, имя инструмента в котором Claude Code не распознаёт, поэтому правило не применяется к задуманному инструменту. Правило deny, записанное как `Bsh`, не применяется к Bash, как и правило, в котором вместо канонического имени инструмента используется подпись, отображаемая в транскрипте. Строка повторяет правило в том виде, в каком вы его записали:
+
+```text theme={null}
+⚠ Deny rule Bsh matches no tool · check for typos
+```
+
+В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) с текстовым выводом Claude Code выводит предупреждение в stderr в более длинной форме:
+
+```text theme={null}
+Permission deny rule "Bsh" matches no known tool — check for typos.
+```
+
+**Что делать:**
+
+* Исправьте имя инструмента в правиле, например `Bash` вместо `Bsh`. Канонические имена можно найти в [справочнике по инструментам](https://code.claude.com/docs/ru/tools-reference.md).
+* Чтобы узнать, где определено правило, выполните `/permissions` в сессии и выберите правило. В его подробностях указан источник, например `From project local settings` или `From CLI argument` для значения `--disallowedTools`.
+* Если в подробностях указано `From enterprise managed settings`, перешлите эту строку тому, кто поддерживает ваши [управляемые настройки](https://code.claude.com/docs/ru/managed-settings.md), поскольку самостоятельно изменить это правило вы не можете.
+
+В [фоновой сессии](https://code.claude.com/docs/ru/agent-view.md) или с `--output-format json` либо `stream-json` Claude Code записывает предупреждение в лог отладки, а не в stderr. Запустите с `--debug`, чтобы сохранить его в `~/.claude/debug/<session-id>.txt`.
+
+До версии 2.1.305 интерактивная сессия при запуске выводила длинную форму в stderr вместо показа строки.
+
+### Is not matched by file permission checks
+
+Claude Code обнаружил [правило разрешений](https://code.claude.com/docs/ru/permissions.md#read-and-edit) `Write`, `NotebookEdit`, `MultiEdit` или `Glob` с путём в одном из ваших [файлов настроек](https://code.claude.com/docs/ru/settings.md#where-settings-live), в [управляемых настройках](https://code.claude.com/docs/ru/managed-settings.md) или в значении флага `--allowedTools`, `--disallowedTools` или `--settings`. Разрешения для файлов проверяются только по правилам `Edit` и `Read`, поэтому правило с путём, называющее один из других файловых инструментов, никогда не учитывается. Claude Code сохраняет правило и больше ничего не меняет.
+
+* **Интерактивная сессия**: полное предупреждение записывается в [лог отладки](#configuration-warnings), а правило deny или ask такого вида также отображается этой строкой под баннером запуска:
+
+  ```text theme={null}
+  ⚠ Deny rule Write(docs/**) never matches · use Edit(docs/**)
+  ```
+
+  Для правила allow такого вида строка не показывается. Чтобы узнать, где определено правило, выполните `/permissions` в сессии и выберите правило.
+* **[Неинтерактивный режим](https://code.claude.com/docs/ru/headless.md) с текстовым выводом**: полное предупреждение в stderr называет правило, его источник в скобках и замену, которую следует записать:
+
+  ```text theme={null}
+  Permission deny rule (.claude/settings.json): Write(docs/**) is not matched by file permission checks — only Edit(path) rules are. Use Edit(docs/**) instead (Edit rules cover all file-editing tools).
+  ```
+* **[Фоновая сессия](https://code.claude.com/docs/ru/agent-view.md) или `--output-format json` либо `stream-json`**: полное предупреждение записывается в лог отладки, а не в stderr, чтобы машиночитаемый вывод оставался чистым. Запустите с `--debug`, чтобы сохранить его в `~/.claude/debug/<session-id>.txt`.
+
+**Что делать:**
+
+* Замените `Write(path)`, `NotebookEdit(path)` и устаревшие `MultiEdit(path)` правила на `Edit(path)`. Правила `Edit` охватывают все инструменты редактирования файлов.
+* Кроме как в `--allowedTools`, где Claude Code принимает правило `Glob` без предупреждения, замените правила `Glob(path)` на `Read(path)`.
+* Исправьте правило в источнике, указанном в скобках в полном предупреждении: это путь к файлу настроек или сам флаг для `--allowed-tools` и `--disallowed-tools`. Путь `claude-settings-<hash>.json`, который не существует на диске, обозначает встроенное значение `--settings`. Исправьте JSON, который вы передаёте этому флагу.
+* Оставьте простые правила имён инструментов такие как `Write` или `Glob` в покое. Claude Code соответствует им на [tool level](https://code.claude.com/docs/ru/permissions.md#match-all-uses-of-a-tool) и не предупреждает о них.
+* Для правила из управляемых настроек в скобках полного предупреждения указано `managed policy settings`, а в подробностях правила в `/permissions` — `From enterprise managed settings`. Перешлите это предупреждение тому, кто поддерживает ваши управляемые настройки, поскольку самостоятельно устранить его вы не можете.
+
+До версии 2.1.210 Claude Code принимал такие правила без предупреждения. До версии 2.1.305 интерактивная сессия выводила полное предупреждение в stderr.
+
+### Has a wildcard before the rest of the command
+
+Claude Code обнаружил правило allow `Bash`, чей `*` приходит перед более поздним словом, которое определяет, какая это команда, например `Bash(git * main)` или `Bash(git -C * status *)`, в одном из ваших [settings files](https://code.claude.com/docs/ru/settings.md#where-settings-live), в [managed settings](https://code.claude.com/docs/ru/managed-settings.md) или в значении флага `--allowedTools` или `--settings`. `*` соответствует любому тексту, включая опции, вставленные в этой позиции: `Bash(git * main)` также одобряет `git -c core.fsmonitor=<script> diff main`, где `-c` заставляет git запустить программу, которую называет команда. [Wildcard patterns](https://code.claude.com/docs/ru/permissions.md#wildcard-patterns) показывает правила соответствия.
+
+Предупреждение существует, чтобы вы могли сузить правило, подстановочный знак в котором шире, чем вы рассчитывали. Claude Code сохраняет правило и никак не меняет его сопоставление. В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) с текстовым выводом предупреждение в stderr называет правило и его источник в скобках:
+
+```text theme={null}
+Permission allow rule (.claude/settings.json): Bash(git -C * status *) has a wildcard before the rest of the command, so it also matches any options inserted at that position and approves them without a prompt. For git, options such as -c and --exec-path can run arbitrary commands. Replace that * with the exact value you mean, or only use * after the subcommand (for example Bash(git status *)).
+```
+
+В интерактивной сессии полное предупреждение записывается в [лог отладки](#configuration-warnings), а правило отображается этой строкой под баннером запуска:
+
+```text theme={null}
+⚠ Allow rule Bash(git -C * status *) allows any option at its * · use an exact value
+```
+
+Чтобы узнать, где определено правило, выполните `/permissions` в сессии и выберите правило.
+
+**Что делать:**
+
+* Замените `*` перед подкомандой на точное значение, которое вы имеете в виду: `Bash(git checkout main)` вместо `Bash(git * main)`.
+* Переместите каждый `*` после подкоманды: `Bash(git status *)` вместо `Bash(git -C * status *)`. Напишите одно правило на подкоманду, которую вы хотите разрешить.
+* Исправьте правило в источнике, указанном в скобках в полном предупреждении: это путь к файлу настроек или сам флаг `--allowed-tools`. Путь `claude-settings-<hash>.json`, который не существует на диске, обозначает встроенное значение `--settings`. Исправьте JSON, который вы передаёте этому флагу.
+* Для правила из управляемых настроек в скобках полного предупреждения указано `managed policy settings`, а в подробностях правила в `/permissions` — `From enterprise managed settings`. Перешлите это предупреждение тому, кто поддерживает ваши управляемые настройки, поскольку самостоятельно устранить его вы не можете.
+
+В [background session](https://code.claude.com/docs/ru/agent-view.md) или с `--output-format json` или `stream-json`, Claude Code записывает предупреждение в журнал отладки вместо stderr, поэтому вывод, читаемый машиной, остаётся чистым. Выполните с `--debug` для захвата его в `~/.claude/debug/<session-id>.txt`. До версии 2.1.246 Claude Code принимал эти правила без предупреждения.
+
+До версии 2.1.305 интерактивная сессия выводила полное предупреждение в stderr вместо показа строки.
+
+### Denying Bash also turns off the PowerShell tool
+
+Вы полностью отключили инструмент Bash, например с помощью `--disallowedTools Bash` или [правила deny](https://code.claude.com/docs/ru/permissions.md#match-all-uses-of-a-tool) в виде просто `Bash` или `Bash(*)` в одном из ваших файлов настроек. В Windows с установленным Git Bash [запрет Bash также отключает инструмент PowerShell](https://code.claude.com/docs/ru/tools-reference.md#bash-deny-rules-also-turn-off-the-powershell-tool), поэтому сессия запускается без инструмента оболочки.
+
+В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) с текстовым выводом Claude Code выводит это предупреждение в stderr при запуске, а интерактивная сессия записывает его только в [лог отладки](#configuration-warnings):
+
+```text theme={null}
+Denying Bash also turns off the PowerShell tool, so Claude has neither. To use PowerShell, set CLAUDE_CODE_USE_POWERSHELL_TOOL=1.
+```
+
+**Что делать:**
+
+* Чтобы Claude использовал PowerShell, установите [`CLAUDE_CODE_USE_POWERSHELL_TOOL`](https://code.claude.com/docs/ru/env-vars) в `1` в своём окружении или в блоке `env` файла настроек, как показано в разделе [Включение инструмента PowerShell](https://code.claude.com/docs/ru/tools-reference.md#enable-the-powershell-tool). После этого инструмент PowerShell остаётся включённым наряду с вашим правилом deny для Bash.
+* Чтобы блокировать отдельные команды, а не весь инструмент, замените запись `Bash` на правила с ограниченной областью действия, например `Bash(git push *)`, в том же файле настроек или флаге. У Claude остаётся инструмент Bash, а инструмент PowerShell остаётся отключённым, пока вы также не установите переменную или не добавите [правило разрешений `PowerShell`](https://code.claude.com/docs/ru/permissions#powershell) с ограниченной областью действия.
+
+В [фоновой сессии](https://code.claude.com/docs/ru/agent-view.md) или с `--output-format json` либо `stream-json` Claude Code записывает предупреждение в лог отладки, а не в stderr. Запустите с `--debug`, чтобы сохранить его в `~/.claude/debug/<session-id>.txt`. До версии 2.1.287 Claude Code отключал инструмент PowerShell так же, но без вывода предупреждения.
+
+До версии 2.1.305 интерактивная сессия тоже выводила предупреждение в stderr при запуске.
+
+### crossSessionInbound must be one of accept, hold, refuse
+
+Файл параметров устанавливает [`crossSessionInbound`](https://code.claude.com/docs/ru/settings-reference#crosssessioninbound) на значение, которое Claude Code не распознаёт, например опечатка `"reject"`. Второе предложение предупреждения зависит от того, какой файл содержит значение; в пользовательском, проектном, локальном или файле `--settings` оно читается:
+
+```text theme={null}
+"crossSessionInbound" must be one of "accept", "hold", "refuse"; received "reject". This value was ignored; while it is present, cross-session messages are held for your approval instead of being delivered. Set it to one of the values above.
+```
+
+В [managed settings](https://code.claude.com/docs/ru/managed-settings.md) Claude Code рассматривает нераспознанное значение как `refuse`, наиболее ограничивающее значение, и предупреждение говорит, что сообщения между сеансами отклоняются до тех пор, пока администратор не исправит это. Для того, как hold объединяется со значениями в ваших других файлах параметров, см. [`crossSessionInbound`](https://code.claude.com/docs/ru/settings-reference#crosssessioninbound).
+
+**Что делать:**
+
+* Установите ключ на `"accept"`, `"hold"` или `"refuse"` или удалите его
+* Когда предупреждение называет управляемые параметры, попросите администратора исправить значение
+
+До версии 2.1.248 Claude Code игнорировал нераспознанное значение без предупреждения.
+
+### ANTHROPIC\_FOUNDRY\_RESOURCE must be a Foundry resource name
+
+Вы задали для [`ANTHROPIC_FOUNDRY_RESOURCE`](https://code.claude.com/docs/ru/env-vars) значение, отличное от простого имени ресурса [Microsoft Foundry](https://code.claude.com/docs/ru/microsoft-foundry.md), например URL эндпоинта или его имя хоста. Claude Code отклонил значение до отправки запроса. Сообщение появляется вместо ответа Claude, а не как предупреждение при запуске:
+
+```text theme={null}
+API Error: ANTHROPIC_FOUNDRY_RESOURCE must be a Foundry resource name (2-64 letters, digits and hyphens, not starting or ending with a hyphen, such as my-resource), not a URL or host name. To use a full URL, set ANTHROPIC_FOUNDRY_BASE_URL instead.
+```
+
+**Что делать:**
+
+* Задайте в `ANTHROPIC_FOUNDRY_RESOURCE` только имя ресурса и перезапустите Claude Code. Для эндпоинта `https://my-resource.services.ai.azure.com/anthropic` имя — `my-resource`.
+* Чтобы вместо этого указать полный URL эндпоинта, задайте URL в [`ANTHROPIC_FOUNDRY_BASE_URL`](https://code.claude.com/docs/ru/env-vars) и удалите `ANTHROPIC_FOUNDRY_RESOURCE`, затем перезапустите Claude Code. Claude Code принимает только одну из этих двух переменных.
+
+### The 200K limit isn't enforced
+
+Вы установили [`CLAUDE_CODE_DISABLE_1M_CONTEXT=1`](https://code.claude.com/docs/ru/env-vars), что обычно заставляет [auto-compaction](https://code.claude.com/docs/ru/model-config.md#default-auto-compact-thresholds) держать сеансы на 1M-context моделях в окне 200K, но нет порога compaction, который ограничивает этот сеанс на или ниже 200K, поэтому беседа может расти за его пределы.
+
+```text theme={null}
+CLAUDE_CODE_DISABLE_1M_CONTEXT is set, but the 200K limit isn't enforced for <model>, so this session can grow past it. To enforce it, set CLAUDE_CODE_AUTO_COMPACT_WINDOW=200000 (or the autoCompactWindow setting).
+```
+
+Claude Code применяет лимит 200K самостоятельно для каждой модели, которую он распознаёт как имеющую собственное окно 1M, и для ID моделей, которые он не распознаёт, он compacts в окне, которое он предполагает. Предупреждение появляется, когда другая конфигурация побеждает это применение:
+
+* ID модели не является одним, который Claude Code распознаёт, например [LLM gateway](https://code.claude.com/docs/ru/llm-gateway) alias, и вы установили [`CLAUDE_CODE_DISABLE_UNKNOWN_MODEL_WINDOW_ENFORCEMENT=1`](https://code.claude.com/docs/ru/env-vars) или повысили предполагаемое окно выше 200K с [`CLAUDE_CODE_MAX_CONTEXT_TOKENS`](https://code.claude.com/docs/ru/env-vars). В этом случае сообщение также предлагает `or update to a Claude Code version that recognizes <model>` как средство.
+* Beta `context-1m` запрошенный через [`ANTHROPIC_BETAS`](https://code.claude.com/docs/ru/env-vars) или флаг [`--betas`](https://code.claude.com/docs/ru/cli-reference#cli-flags) всё ещё запрашивает API для окна 1M на модели, которая принимает эту бету, в то время как ничего не compacts сеанс на 200K
+
+**Что делать:**
+
+* Установите [`CLAUDE_CODE_AUTO_COMPACT_WINDOW=200000`](https://code.claude.com/docs/ru/env-vars) или параметр [`autoCompactWindow`](https://code.claude.com/docs/ru/settings-reference#autocompactwindow) на `200000`, чтобы auto-compaction compacts на границе 200K
+* Если сообщение называет ID модели, который эта версия не распознаёт, выполните `claude update`. Версия, которая распознаёт ID как 1M-context модель, применяет лимит без дополнительной конфигурации.
+* Если вы хотите, чтобы сеанс использовал полное окно модели вместо этого, отмените `CLAUDE_CODE_DISABLE_1M_CONTEXT`; предупреждение сообщает только, что лимит 200K не применяется
+
+В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) с текстовым выводом это предупреждение появляется в stderr. В интерактивной сессии, в [фоновой сессии](https://code.claude.com/docs/ru/agent-view.md) или с `--output-format json` либо `stream-json` оно записывается в лог отладки. Запустите с `--debug`, чтобы сохранить его в `~/.claude/debug/<session-id>.txt`.
+
+До версии 2.1.305 интерактивная сессия выводила предупреждение в stderr при запуске.
+
+### Unrecognized model ID on a request
+
+Claude Code отправил запрос для ID модели, который ваша версия Claude Code не распознаёт, и не нашёл запись [`modelOverrides`](https://code.claude.com/docs/ru/model-config#override-model-ids-per-version), которая отображает этот ID на модель, которую он распознаёт. Claude Code всё ещё отправляет запрос с ID, как вы его настроили, и не выходит и не переключает модели.
+
+```text theme={null}
+[claude-code:unrecognized_model] {"model":"my-proxy-model","query_source":"sdk"}
+```
+
+В скрипте или harness, который читает stderr, совпадайте с префиксом `[claude-code:unrecognized_model]`. После префикса и одного пробела Claude Code записывает однострочный объект JSON. Claude Code может добавлять поля к нему в более поздней версии, поэтому игнорируйте любое поле, которое вы не ожидаете. Он записывает по крайней мере эти два:
+
+* `model`: строка модели, как вы её настроили
+* `query_source`: путь запроса, использовавший модель. Например, для основного диалога запуска `-p` значение равно `sdk`, а для субагента начинается с `agent:`.
+
+Claude Code записывает строку в одно из двух мест, в зависимости от того, как вы его запускаете:
+
+* В [non-interactive mode](https://code.claude.com/docs/ru/headless.md) с `-p`, Claude Code записывает её в stderr под каждым `--output-format`, поэтому вы можете анализировать stdout без фильтрации строки
+* В интерактивном сеансе или [background session](https://code.claude.com/docs/ru/agent-view.md), Claude Code записывает её в журнал отладки вместо этого; выполните с `--debug` для захвата её в `~/.claude/debug/<session-id>.txt`
+
+Claude Code записывает строку один раз для каждого ID модели в рамках процесса. Для каждого следующего нераспознанного ID записывается отдельная строка, например для ID, который использует [субагент](https://code.claude.com/docs/ru/sub-agents.md#choose-a-model) или [фоновая функциональность](https://code.claude.com/docs/ru/model-config.md#environment-variables).
+
+Claude Code не записывает строку для ID поставщиков, которые он разрешает на модель, которую он распознаёт, например Amazon Bedrock `us.anthropic.claude-...` ID, ID Google Cloud's Agent Platform с суффиксом версии `@` и имена развёртывания Microsoft Foundry, которые содержат ID модели Claude. Claude Code проверяет модель позади Amazon Bedrock [application inference profile ARN](https://code.claude.com/docs/ru/amazon-bedrock.md#map-each-model-version-to-an-inference-profile) а не сам ARN. Он не записывает строку для ARN, который он не может разрешить, например неправильно введённый.
+
+**Что делать:**
+
+* Если вы установили ID намеренно, например [LLM gateway](https://code.claude.com/docs/ru/llm-gateway) alias, добавьте запись [`modelOverrides`](https://code.claude.com/docs/ru/model-config#override-model-ids-per-version) в ваш [settings file](https://code.claude.com/docs/ru/settings.md#where-settings-live) с ID как его значение. Используйте ID модели Anthropic как ключ, а не семейный alias такой как `opus`. Для `my-proxy-model` из примера строки добавьте эту запись:
+
+  ```json theme={null}
+  {
+    "modelOverrides": {
+      "claude-opus-4-6": "my-proxy-model"
+    }
+  }
+  ```
+
+  Claude Code затем рассматривает `my-proxy-model` как `claude-opus-4-6` и прекращает записывать строку.
+
+* Если ID называет модель новее, чем ваша версия Claude Code, выполните `claude update`
+
+* Если ID является опечаткой, исправьте его в любом из [places you can set a model](https://code.claude.com/docs/ru/model-config.md#setting-your-model) или [alias variables](https://code.claude.com/docs/ru/model-config.md#environment-variables), который его содержит. Если `query_source` начинается с `agent:`, исправьте его там, где вы устанавливаете [subagent's model](https://code.claude.com/docs/ru/sub-agents.md#choose-a-model) вместо этого.
+
+До версии 2.1.233 Claude Code не записывал строку, когда отправлял запрос для ID модели, который он не распознавал.
+
+### Sandbox allow entries are ignored under a managed lock
+
+Это предупреждение в `/status` и `claude doctor` означает, что управляемые настройки задают [`allowManagedReadPathsOnly`](https://code.claude.com/docs/ru/settings-reference#sandbox-filesystem-allowmanagedreadpathsonly) или [`allowManagedDomainsOnly`](https://code.claude.com/docs/ru/settings-reference#sandbox-network-allowmanageddomainsonly), поэтому записи [`allowRead`](https://code.claude.com/docs/ru/settings-reference#sandbox-filesystem-allowread) или [`allowedDomains`](https://code.claude.com/docs/ru/settings-reference#sandbox-network-alloweddomains) в указанном файле не применяются:
+
+```text wrap theme={null}
+sandbox.filesystem.allowRead is ignored — managed settings set allowManagedReadPathsOnly, so only allowRead paths from managed settings are honored. The 3 entries in /home/you/.claude/settings.json will NOT apply (see https://code.claude.com/docs/en/settings#sandbox-settings).
+```
+
+Для сетевой блокировки предупреждение называет `sandbox.network.allowedDomains` и `allowManagedDomainsOnly` и сообщает `only allowed domains (and WebFetch domain rules) from managed settings are honored`.
+
+**Что делать:**
+
+* Реагировать на предупреждение не обязательно
+* Если вам нужны эти пути или домены, а блокировку задают управляемые настройки вашей организации, попросите администратора добавить их в эти настройки. Предупреждение останется, пока вы также не удалите записи из указанного файла.
+* Чтобы убрать предупреждение, удалите записи из указанного файла. В общем файле, например в `.claude/settings.json` проекта, можно оставить записи для коллег без блокировки и оставить предупреждение.
+
+### Sandbox mask files left behind at write-deny paths
+
+Это предупреждение в `claude doctor` и `/status` перечисляет файлы-маски: пустые (0 байт) файлы-заполнители только для чтения по путям, запись в которые запрещена [песочницей](https://code.claude.com/docs/ru/sandboxing.md). Оно появляется в Linux и WSL2, когда включена изоляция в песочнице с изоляцией файловой системы. Удалите их из оболочки, когда в проекте, где они находятся, не будет открыто ни одной сессии Claude Code.
+
+Песочница создаёт заполнитель на время выполнения команды в песочнице и удаляет его по завершении команды. Заполнитель остаётся, например, в таких случаях:
+
+* Сессия принудительно завершена до окончания команды, например через SIGKILL
+* Вы вышли из сессии, пока команда в песочнице ещё выполнялась, например фоновая команда
+
+В `claude doctor` предупреждение выглядит так:
+
+```text theme={null}
+- Sandbox mask files left behind at write-deny paths: /home/you/project/.claude/settings.local.json
+  Fix: A session leaves one where it was killed, or where it exited while a sandboxed command was still running. Remove each with `rm <path>` while no other Claude Code session is running in that project — a 0-byte read-only file where a settings file belongs makes "Yes, and don't ask again" fail to save, and the sandbox binds it read-only again on every start
+```
+
+**Что делать:**
+
+* Закройте все сессии Claude Code, открытые в проекте, где находятся перечисленные файлы, включая сессию, в которой `/status` показал предупреждение, затем работайте из оболочки. Заполнитель, который ещё использует песочница другой сессии, является действующей частью защиты от записи этой сессии
+* В оболочке удалите каждый перечисленный файл с помощью `rm` и подтвердите, если `rm` спросит о защищённом от записи файле. Предупреждение называет до трёх файлов и сообщает количество остальных, поэтому после удаления снова запускайте `claude doctor`, пока предупреждение не перестанет появляться
+* Если выбор разрешения, который вы сохранили с "Yes, and don't ask again" не прижился, сохраните его снова после удаления заполнителя
+
+До версии 2.1.309 предупреждение выглядело как `Stale sandbox mask files left by a killed session`.
+
+До версии 2.1.257 `claude doctor` не отмечал эти файлы; более ранние версии оставляют те же заполнители позади, когда сеанс убивается.
+
+### Two Claude Code config files exist
+
+Claude Code использует первый файл, указанный в этом сообщении, поэтому содержимое второго файла не действует. Первый файл — `.config.json`, прежнее имя [`.claude.json`](https://code.claude.com/docs/ru/claude-directory#ce-claude-json). Сообщение включает проверку, позволяющую определить, в каком файле хранится ваша конфигурация:
+
+```text wrap theme={null}
+Two Claude Code config files exist: this run uses /home/you/.claude/.config.json, not /home/you/.claude.json. The file with the higher count here is usually yours, and this prints nothing else from them: grep -c -E '"(hasCompletedOnboarding|mcpServers)"' "/home/you/.claude/.config.json" "/home/you/.claude.json". To end this: if several hosts share this home, first get every host to version 2.1.319 or later, since an older one can write a moved .config.json back. Then stop your Claude processes on every host, move aside the one you do not want, and start none until no host lists it.
+```
+
+В Windows вместо предложения с командой `grep` выводится `The one with hasCompletedOnboarding or mcpServers in it is usually yours.`
+
+**Что делать:**
+
+**1. Найдите файл с вашей конфигурацией**
+
+* **В Windows**: откройте оба файла и посмотрите, в каком из них есть `hasCompletedOnboarding` или `mcpServers`
+* **На других платформах**: выполните в оболочке команду `grep` из сообщения и посмотрите, у какого файла счётчик выше
+
+**2. Обновите все хосты, использующие общий домашний каталог**
+
+Если этот домашний каталог используют несколько хостов, сначала обновите Claude Code на каждом хосте до версии, указанной в сообщении, или более поздней.
+
+**3. Остановите Claude Code**
+
+Остановите процессы Claude Code на всех хостах.
+
+**4. Переместите ненужный файл**
+
+Переместите ненужный файл из его папки. Именно переместите, а не удаляйте, чтобы его можно было вернуть.
+
+**5. Подождите, прежде чем снова запускать Claude Code**
+
+Не запускайте Claude Code ни на одном хосте, пока ни один хост больше не видит перемещённый файл по его старому пути.
+
+Сообщение перестаёт появляться, как только одного из двух файлов больше нет.
+
+### Make this change again later: \~/.claude.json could not be updated
+
+Это уведомление в stderr означает, что изменение в [`~/.claude.json`](https://code.claude.com/docs/ru/claude-directory#ce-claude-json), например вход или ответ на запрос доверия, не было сохранено в файл:
+
+```text theme={null}
+Make this change again later: /home/user/.claude.json could not be updated, so it applies to this session only.
+```
+
+**Что делать:**
+
+* Внесите изменение снова в одной из последующих сессий. Например, снова выполните `/login` или снова ответьте на запрос доверия.
+
+## Ответы кажутся ниже обычного качества
+
+Если ответы Claude кажутся менее способными, чем вы ожидаете, но ошибка не отображается, причина обычно в состоянии разговора, а не в самой модели. Claude Code не молча меняет версии модели. Он может переключиться на резервную модель в этих случаях:
+
+* Настроенный [`--fallback-model`](https://code.claude.com/docs/ru/cli-reference#cli-flags) берёт на себя управление после ошибки доступности только для этого хода с уведомлением в расшифровке
+* Проверка запуска Amazon Bedrock или Google Cloud's Agent Platform обнаруживает, что ваша модель по умолчанию недоступна, или ваша учётная запись [теряет доступ к ней во время сеанса](https://code.claude.com/docs/ru/amazon-bedrock.md#when-a-model-is-disabled-mid-session)
+* [Автоматический переход на резервную модель](https://code.claude.com/docs/ru/model-config.md#automatic-model-fallback) на моделях Fable, Opus 5.5, Sonnet 5.5 и Opus 5 переводит сессию на резервную модель помеченной категории, если у этой категории она есть. В транскрипте появляется уведомление
+
+Проверка выбора модели ниже ловит второй и третий случаи; первый появляется как уведомление в расшифровке, а не как изменение `/model`. [Конфигурация модели](https://code.claude.com/docs/ru/model-config.md) объясняет, когда применяется каждый переход на резервную модель.
+
+Сначала проверьте следующее:
+
+* **Выбор модели**: запустите `/model`, чтобы подтвердить, что вы используете ожидаемую модель. Предыдущий выбор `/model` или переменная окружения `ANTHROPIC_MODEL` могут привести вас к меньшей модели, чем вы предполагали.
+* **Уровень усилий**: запустите `/effort`, чтобы проверить текущий уровень рассуждений и повысить его для сложной отладки или проектной работы. Значения по умолчанию варьируются в зависимости от модели, поэтому проверьте перед тем, как предполагать, что вы ниже максимума. См. [Отрегулируйте уровень усилий](https://code.claude.com/docs/ru/model-config.md#adjust-effort-level) для значений по умолчанию для каждой модели и сокращение `ultrathink`.
+* **Давление контекста**: запустите `/context`, чтобы увидеть, насколько заполнено окно. Если оно близко к ёмкости, запустите `/compact` в естественной точке разрыва или `/clear`, чтобы начать заново. См. [Изучите окно контекста](https://code.claude.com/docs/ru/context-window.md), чтобы узнать, как auto-compact влияет на предыдущие ходы.
+* **Устаревшие инструкции**: большие или устаревшие файлы `CLAUDE.md` и определения инструментов MCP потребляют контекст и могут направлять ответы. Проверка `/doctor` отмечает файлы памяти большого размера и неиспользуемые расширения, а `/context` показывает использование токенов инструментов MCP. До версии 2.1.205 `/doctor` открывал экран диагностики, который отмечал файлы памяти большого размера и определения подагентов.
+
+Когда ответ идёт неправильно, откат обычно работает лучше, чем ответ с исправлениями. Нажмите Esc дважды или запустите `/rewind`, чтобы вернуться к моменту перед неправильным ходом, затем переформулируйте подсказку с большей конкретикой. Исправление в потоке сохраняет неправильную попытку в контексте, что может привязать более поздние ответы к ней. См. [Контрольные точки](https://code.claude.com/docs/ru/checkpointing.md).
+
+Если качество всё ещё кажется неправильным после проверки вышеуказанного, запустите `/feedback` и опишите, что вы ожидали в сравнении с тем, что вы получили. Обратная связь, отправленная таким образом, включает расшифровку разговора, что является самым быстрым способом для Anthropic диагностировать реальную регрессию. См. [Сообщить об ошибке](#report-an-error), если `/feedback` недоступен в вашей среде.
+
+Если Claude предупреждает о подозреваемой инъекции подсказки, или отказывает в запросе из-за подозреваемой инъекции, и текст, который называет предупреждение, — это контекст, который Claude Code добавляет к разговору автоматически, а не содержимое файла или веб-сайта, запустите `claude update` и повторите попытку. Если предупреждение повторяется после обновления, [сообщите об этом](#report-an-error) вместо того, чтобы вставлять отмеченное содержимое обратно в подсказку. До версии 2.1.201 Sonnet 5 отказывал в некоторых запросах таким же образом.
+
+## Сообщить об ошибке
+
+Для ошибок компонентов, которые не рассматриваются на этой странице, см. соответствующее руководство:
+
+* Серверу MCP не удалось подключиться или пройти аутентификацию: [MCP](https://code.claude.com/docs/ru/mcp.md)
+* Скрипт hook не выполнился или заблокировал инструмент: [Debug hooks](https://code.claude.com/docs/ru/hooks.md#debug-hooks)
+* Отказано в доступе или ошибки файловой системы при установке: [Troubleshoot installation and login](https://code.claude.com/docs/ru/troubleshoot-install.md)
+
+Если ошибка не указана здесь или предложенное исправление не помогает:
+
+* Запустите `/feedback` внутри Claude Code, чтобы отправить стенограмму и описание в Anthropic. Команда также предлагает открыть предварительно заполненную проблему GitHub. Отправка в Anthropic требует [аутентификации](https://code.claude.com/docs/ru/authentication.md). На Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry и других сторонних поставщиков, или когда учетные данные Anthropic не настроены, `/feedback` сохраняет локальный архив, который вы можете отправить представителю вашей учетной записи Anthropic.
+* Если `/feedback` отвечает, что команда отключена политикой вашей организации, см. [описание этого сообщения](#feedback-is-disabled-by-your-organizations-policy)
+* Запустите `claude doctor` из вашей оболочки для диагностики только для чтения вашей установки или запустите проверку `/doctor` внутри Claude Code, чтобы найти и исправить проблемы настройки
+* Проверьте [status.claude.com](https://status.claude.com) на наличие активных инцидентов
+* Поищите [существующие проблемы](https://github.com/anthropics/claude-code/issues) на GitHub

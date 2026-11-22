@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Как работает цикл агента</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/agent-sdk/index.html">agent-sdk</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Как работает цикл агента <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Поймите жизненный цикл сообщений, выполнение инструментов, контекстное окно и архитектуру, которые питают ваших агентов SDK.</p>
+</blockquote>
+<p>Agent SDK позволяет встроить автономный цикл агента Claude Code в ваши собственные приложения. SDK — это отдельный пакет, который дает вам программный контроль над инструментами, разрешениями, ограничениями затрат и выводом.</p>
+<p>Оба SDK (TypeScript и Python) включают собственный бинарный файл Claude Code, поэтому большинству установок не требуется отдельная установка Claude Code. Примечание об установке см. в <a href="https://code.claude.com/docs/ru/agent-sdk/quickstart.md">quickstart</a>.</p>
+<p>Когда вы запускаете агента, SDK запускает тот же <a href="https://code.claude.com/docs/ru/how-claude-code-works.md#the-agentic-loop">цикл выполнения, который питает Claude Code</a>: Claude оценивает ваш запрос, вызывает инструменты для выполнения действий, получает результаты и повторяет до завершения задачи. На этой странице объясняется, что происходит внутри этого цикла, чтобы вы могли эффективно создавать, отлаживать и оптимизировать своих агентов.</p>
+<h3 id="h-2">Цикл с первого взгляда <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Каждая сессия агента следует одному и тому же циклу:</p>
+<p><img src="https://mintcdn.com/claude-code/ikqp3_70mqIahteV/images/agent-loop-diagram.svg?fit=max\&amp;auto=format\&amp;n=ikqp3_70mqIahteV\&amp;q=85\&amp;s=1c6e8f28d80dba14a7287419656f1237" alt="Диаграмма цикла агента: ваш запрос входит в цикл агента, где Claude оценивает и либо запрашивает вызовы инструментов, результаты которых возвращаются в следующую оценку, либо возвращает финальный ответ" loading="lazy"></p>
+<ol>
+<li><strong>Получить запрос.</strong> Claude получает ваш запрос вместе с системным запросом, определениями инструментов и историей разговора. SDK выдает <a href="#message-types"><code>SystemMessage</code></a> с подтипом <code>&quot;init&quot;</code>, содержащий метаданные сессии.</li>
+<li><strong>Оценить и ответить.</strong> Claude оценивает текущее состояние и определяет, как действовать дальше. Он может ответить текстом, запросить один или несколько вызовов инструментов или оба варианта. SDK выдает один или несколько объектов <a href="#message-types"><code>AssistantMessage</code></a>, по одному для каждого блока содержимого, такого как текстовый блок или запрос вызова инструмента.</li>
+<li><strong>Выполнить инструменты.</strong> SDK запускает каждый запрошенный инструмент и собирает результаты. Каждый набор результатов инструментов возвращается Claude для следующего решения. Вы можете использовать <a href="https://code.claude.com/docs/ru/agent-sdk/hooks.md">hooks</a> для перехвата, изменения или блокировки вызовов инструментов перед их выполнением.</li>
+<li><strong>Повторить.</strong> Шаги 2 и 3 повторяются как цикл. Claude продолжает вызывать инструменты и обрабатывать результаты до тех пор, пока не выдаст ответ без вызовов инструментов.</li>
+<li><strong>Вернуть результат.</strong> SDK выдает финальное <a href="#message-types"><code>AssistantMessage</code></a> с текстовым ответом (без вызовов инструментов), за которым следует <a href="#message-types"><code>ResultMessage</code></a> с финальным текстом, использованием токенов, стоимостью и ID сессии.</li>
+</ol>
+<p>Быстрый вопрос, например «какие файлы здесь?», может занять два или три <a href="#turns-and-messages">хода</a>: один или два с вызовом <code>Glob</code>, затем один с ответом, содержащим результаты. Сложная задача, например «выполни рефакторинг модуля аутентификации и обнови тесты», может связать десятки вызовов инструментов на протяжении многих ходов, поскольку Claude корректирует свои действия после каждого результата.</p>
+<h3 id="h-3">Ходы и сообщения <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Ход — это один проход цикла: Claude выдает выход, и если он включает вызовы инструментов, SDK выполняет их, а результаты автоматически возвращаются Claude. Это происходит без возврата управления вашему коду. Ходы продолжаются до тех пор, пока Claude не выдаст выход без вызовов инструментов, после чего цикл заканчивается и доставляется финальный результат.</p>
+<p>Рассмотрим, как может выглядеть полная сессия для запроса «Исправить неудачные тесты в auth.ts».</p>
+<p>Сначала SDK отправляет ваш запрос Claude и выдает <a href="#message-types"><code>SystemMessage</code></a> с метаданными сессии. Затем начинается цикл:</p>
+<ol>
+<li><strong>Ход 1:</strong> Claude вызывает <code>Bash</code> для запуска <code>npm test</code>. SDK выдает <a href="#message-types"><code>AssistantMessage</code></a> с вызовом инструмента, выполняет команду, затем выдает <a href="#message-types"><code>UserMessage</code></a> с выводом (три ошибки).</li>
+<li><strong>Ход 2:</strong> Claude вызывает <code>Read</code> на <code>auth.ts</code> и <code>auth.test.ts</code>. SDK выдает <code>AssistantMessage</code> для каждого вызова и возвращает содержимое файлов.</li>
+<li><strong>Ход 3:</strong> Claude вызывает <code>Edit</code> для исправления <code>auth.ts</code>, затем вызывает <code>Bash</code> для повторного запуска <code>npm test</code>. Все три теста проходят. SDK выдает <code>AssistantMessage</code> для каждого вызова.</li>
+<li><strong>Финальный ход:</strong> Claude выдает текстовый ответ без вызовов инструментов: «Исправлена ошибка аутентификации, все три теста теперь проходят.» SDK выдает финальное <code>AssistantMessage</code> с этим текстом, затем <a href="#message-types"><code>ResultMessage</code></a> с тем же текстом плюс стоимость и использование.</li>
+</ol>
+<p>Это было четыре хода: три с вызовами инструментов, один финальный текстовый ответ.</p>
+<p>Вы можете ограничить цикл с помощью <code>max_turns</code> / <code>maxTurns</code>. Считайте каждый ход с вызовами инструментов плюс один для финального текстового ответа. Без этого дополнительного хода выполнение завершится сообщением <code>ResultMessage</code> с подтипом <code>error_max_turns</code> и без финального ответа. Например, <code>max_turns=2</code> в цикле выше остановился бы перед шагом редактирования. Вы также можете использовать <code>max_budget_usd</code> / <code>maxBudgetUsd</code> для ограничения ходов на основе порога расходов.</p>
+<p>Без ограничений цикл работает до тех пор, пока Claude не закончит самостоятельно, что хорошо для хорошо определенных задач, но может работать долго на открытых запросах («улучшить этот кодовую базу»). Установка бюджета — хороший стандарт для производственных агентов. См. <a href="#turns-and-budget">Ходы и бюджет</a> ниже для справки по опциям.</p>
+<h3 id="h-4">Типы сообщений <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>По мере выполнения цикла SDK выдает поток сообщений. Каждое сообщение имеет тип, который говорит вам, на каком этапе цикла оно пришло. Пять основных типов:</p>
+<ul>
+<li><strong><code>SystemMessage</code>:</strong> события жизненного цикла сессии. Поле <code>subtype</code> их различает:</li>
+</ul>
+<ul>
+<li><code>&quot;init&quot;</code>: метаданные сессии для запуска. Когда hook <code>SessionStart</code> или <code>Setup</code> запускается при инициализации сессии, его <a href="https://code.claude.com/docs/ru/agent-sdk/typescript.md#sdkhookstartedmessage">сообщения жизненного цикла hook</a> прибывают перед сообщением <code>init</code></li>
+<li><code>&quot;compact_boundary&quot;</code>: срабатывает после <a href="#automatic-compaction">компактирования</a></li>
+<li><code>&quot;informational&quot;</code>: простые текстовые баннеры статуса из цикла</li>
+<li><code>&quot;worker_shutting_down&quot;</code>: хост выходит или Remote Control отключился</li>
+</ul>
+<p>В TypeScript каждый подтип, кроме <code>&quot;init&quot;</code>, является собственным типом в объединении <a href="https://code.claude.com/docs/ru/agent-sdk/typescript#sdkmessage"><code>SDKMessage</code></a>, а не подтипом <code>SDKSystemMessage</code>.</p>
+<ul>
+<li><strong><code>AssistantMessage</code>:</strong> выдается для каждого блока содержимого в ответах Claude, включая финальный текстовый. Каждое содержит один блок содержимого, такой как текст или вызов инструмента, и сообщения из одного ответа имеют общий ID сообщения.</li>
+<li><strong><code>UserMessage</code>:</strong> выдается после каждого выполнения инструмента с результатом инструмента, отправленным обратно Claude. Также выдается для любых пользовательских входов, которые вы транслируете в середине цикла.</li>
+<li><strong><code>StreamEvent</code>:</strong> выдается только при включении частичных сообщений. Содержит необработанные события потоковой передачи API (дельты текста, фрагменты входных данных инструмента). См. <a href="https://code.claude.com/docs/ru/agent-sdk/streaming-output.md">Потоковые ответы</a>.</li>
+<li><strong><code>ResultMessage</code>:</strong> отмечает конец цикла агента. Содержит финальный текстовый результат, использование токенов, стоимость и ID сессии. Проверьте поле <code>subtype</code>, чтобы определить, успешна ли задача или достигнут ли лимит. Небольшое количество завершающих системных событий, таких как <code>prompt_suggestion</code>, может прибыть после него, поэтому итерируйте поток до завершения, а не прерывайте на результате. См. <a href="#handle-the-result">Обработать результат</a>.</li>
+</ul>
+<p>Эти пять типов охватывают полный жизненный цикл цикла агента. Оба SDK также выдают события наблюдаемости, такие как статус ограничения скорости и уведомления задач, которые не требуются для управления циклом. См. <a href="https://code.claude.com/docs/ru/agent-sdk/python.md#message-types">справку по типам сообщений Python</a> и <a href="https://code.claude.com/docs/ru/agent-sdk/typescript.md#message-types">справку по типам сообщений TypeScript</a> для полных списков.</p>
+<h4 id="h-5">Обработать сообщения <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<p>Какие сообщения вы обрабатываете, зависит от того, что вы создаете:</p>
+<ul>
+<li><strong>Только финальные результаты:</strong> обработайте <code>ResultMessage</code>, чтобы получить выход, стоимость и то, успешна ли задача или достигнут ли лимит.</li>
+<li><strong>Обновления прогресса:</strong> обработайте <code>AssistantMessage</code>, чтобы увидеть, что делает Claude на каждом ходу, включая какие инструменты он вызвал.</li>
+<li><strong>Прямая потоковая передача:</strong> включите частичные сообщения (<code>include_partial_messages</code> в Python, <code>includePartialMessages</code> в TypeScript), чтобы получить сообщения <code>StreamEvent</code> в реальном времени. См. <a href="https://code.claude.com/docs/ru/agent-sdk/streaming-output.md">Потоковые ответы в реальном времени</a>.</li>
+</ul>
+<p>Как вы проверяете типы сообщений, зависит от SDK:</p>
+<ul>
+<li><strong>Python:</strong> проверьте типы сообщений с помощью <code>isinstance()</code> для классов, импортированных из <code>claude_agent_sdk</code> (например, <code>isinstance(message, ResultMessage)</code>).</li>
+<li><strong>TypeScript:</strong> проверьте строковое поле <code>type</code> (например, <code>message.type === &quot;result&quot;</code>). <code>AssistantMessage</code> и <code>UserMessage</code> оборачивают необработанное сообщение API в поле <code>.message</code>, поэтому блоки содержимого находятся в <code>message.message.content</code>, а не в <code>message.content</code>.</li>
+</ul>
+<blockquote>
+<p>[accordion] Пример: Проверить типы сообщений и обработать результаты</p>
+<p>```python Python theme={null}
+import asyncio
+from claude_agent_sdk import query, AssistantMessage, ResultMessage, TextBlock, ToolUseBlock</p>
+<p>async def main():
+    try:
+        async for message in query(prompt=&quot;Summarize this project&quot;):
+            if isinstance(message, AssistantMessage):
+                # Each AssistantMessage carries one content block
+                for block in message.content:
+                    if isinstance(block, TextBlock):
+                        print(f&quot;Claude: {block.text}&quot;)
+                    elif isinstance(block, ToolUseBlock):
+                        print(f&quot;Tool call: {block.name}&quot;)
+            if isinstance(message, ResultMessage):
+                if message.subtype == &quot;success&quot;:
+                    print(message.result)
+                else:
+                    print(f&quot;Stopped: {message.subtype}&quot;)
+    except Exception as error:
+        # A single-shot query() raises after yielding an error result. If the
+        # failure was an error result, the error subtype branches above have
+        # already run; connection or process failures yield no result message.
+        print(f&quot;Session ended with an error: {error}&quot;)</p>
+<p>asyncio.run(main())</p>
+<pre><code></code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>try {
+  for await (const message of query({ prompt: &quot;Summarize this project&quot; })) {
+    if (message.type === &quot;assistant&quot;) {
+      // Each assistant message carries one content block
+      for (const block of message.message.content) {
+        if (block.type === &quot;text&quot;) {
+          console.log(<code>Claude: ${block.text}</code>);
+        } else if (block.type === &quot;tool_use&quot;) {
+          console.log(<code>Tool call: ${block.name}</code>);
+        }
+      }
+    }
+    if (message.type === &quot;result&quot;) {
+      if (message.subtype === &quot;success&quot;) {
+        console.log(message.result);
+      } else {
+        console.log(<code>Stopped: ${message.subtype}</code>);
+      }
+    }
+  }
+} catch (error) {
+  // A single-shot query() throws after yielding an error result. If the
+  // failure was an error result, the error subtype branches above have
+  // already run; connection or process failures yield no result message.
+  console.log(<code>Session ended with an error: ${error}</code>);
+}</p>
+<pre><code></code></pre>
+</blockquote>
+<h3 id="h-6">Выполнение инструментов <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<p>Инструменты дают вашему агенту возможность действовать. Без инструментов Claude может только отвечать текстом. С инструментами Claude может читать файлы, запускать команды, искать код и взаимодействовать с внешними сервисами.</p>
+<h4 id="h-7">Встроенные инструменты <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<p>SDK включает те же инструменты, которые питают Claude Code:</p>
+<p>| Категория | Инструменты | Что они делают |
+| :- | :- | :- |
+| <strong>Операции с файлами</strong> | <code>Read</code>, <code>Edit</code>, <code>Write</code> | Читать, изменять и создавать файлы |
+| <strong>Поиск</strong> | <code>Glob</code>, <code>Grep</code> | Найти файлы по шаблону, искать содержимое с помощью regex |
+| <strong>Выполнение</strong> | <code>Bash</code> | Запускать команды оболочки, скрипты, операции git |
+| <strong>Веб</strong> | <code>WebSearch</code>, <code>WebFetch</code> | Искать в веб, получать и анализировать страницы |
+| <strong>Обнаружение</strong> | <code>ToolSearch</code> | Динамически находить и загружать инструменты по требованию вместо предварительной загрузки всех |
+| <strong>Оркестрация</strong> | <code>Agent</code>, <code>Skill</code>, <code>AskUserQuestion</code>, <code>TaskCreate</code>, <code>TaskUpdate</code> | Порождать подагентов, вызывать skills, спрашивать пользователя, отслеживать задачи |</p>
+<p>На <a href="https://code.claude.com/docs/ru/agent-sdk/todo-tracking.md#model-availability">моделях, которые не получают инструменты отслеживания задач</a>, Claude Code предоставляет <code>TaskCreate</code> и <code>TaskUpdate</code> только когда вы согласитесь.</p>
+<p>Помимо встроенных инструментов, вы можете:</p>
+<ul>
+<li><strong>Подключить внешние сервисы</strong> с помощью <a href="https://code.claude.com/docs/ru/agent-sdk/mcp.md">MCP servers</a> (базы данных, браузеры, API)</li>
+<li><strong>Определить пользовательские инструменты</strong> с помощью <a href="https://code.claude.com/docs/ru/agent-sdk/custom-tools.md">пользовательских обработчиков инструментов</a></li>
+<li><strong>Загрузить skills проекта</strong> через <a href="https://code.claude.com/docs/ru/agent-sdk/claude-code-features.md">источники настроек</a> для повторно используемых рабочих процессов</li>
+</ul>
+<h4 id="h-8">Разрешения инструментов <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude определяет, какие инструменты вызывать на основе задачи, но вы контролируете, разрешено ли выполнение этих вызовов. Используйте следующие параметры, чтобы автоматически подтверждать инструменты, блокировать инструменты и задавать режим разрешений:</p>
+<ul>
+<li><strong><code>allowed_tools</code> / <code>allowedTools</code></strong> автоматически подтверждает перечисленные инструменты. Агент только для чтения с <code>[&quot;Read&quot;, &quot;Glob&quot;, &quot;Grep&quot;]</code> в списке разрешенных инструментов запускает эти инструменты без запросов, за исключением чтения из <a href="https://code.claude.com/docs/ru/permissions.md#network-paths">сетевых путей</a>. Инструменты, не указанные в списке, все еще доступны, и вызовы к ним, которые требуют подтверждения, переходят к режиму разрешений и <code>canUseTool</code>.</li>
+<li><strong><code>disallowed_tools</code> / <code>disallowedTools</code></strong> блокирует перечисленные инструменты, независимо от других настроек. См. <a href="https://code.claude.com/docs/ru/agent-sdk/permissions.md">Разрешения</a> для порядка, в котором правила проверяются перед запуском инструмента.</li>
+<li><strong><code>permission_mode</code> / <code>permissionMode</code></strong> контролирует, сколько человеческого надзора вы хотите. SDK оценивает активный режим вместе с вашими правилами разрешения и запрета в фиксированном порядке, описанном в <a href="https://code.claude.com/docs/ru/agent-sdk/permissions.md#how-permissions-are-evaluated">Как оцениваются разрешения</a>. См. <a href="#permission-mode">Режим разрешения</a> для доступных режимов.</li>
+</ul>
+<p>Вы также можете ограничить отдельные инструменты правилами, такими как <code>&quot;Bash(npm *)&quot;</code>, чтобы разрешить только определенные команды. См. <a href="https://code.claude.com/docs/ru/agent-sdk/permissions.md">Разрешения</a> для полного синтаксиса правил.</p>
+<p>Когда инструмент отклоняется, Claude получает сообщение об отклонении как результат инструмента и обычно пытается использовать другой подход или сообщает, что не может продолжить.</p>
+<h4 id="h-9">Параллельное выполнение инструментов <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<p>Когда Claude запрашивает несколько вызовов инструментов в одном ходе, оба SDK могут запускать их одновременно или последовательно в зависимости от инструмента. Инструменты только для чтения (такие как <code>Read</code>, <code>Glob</code>, <code>Grep</code> и MCP инструменты, отмеченные как только для чтения) могут работать одновременно. Инструменты, которые изменяют состояние (такие как <code>Edit</code>, <code>Write</code> и <code>Bash</code>), работают последовательно, чтобы избежать конфликтов.</p>
+<p>Пользовательские инструменты по умолчанию работают последовательно. Чтобы включить параллельное выполнение для пользовательского инструмента, установите <code>readOnlyHint</code> в его аннотациях. Оба SDK <a href="https://code.claude.com/docs/ru/agent-sdk/typescript.md#tool">TypeScript</a> и <a href="https://code.claude.com/docs/ru/agent-sdk/python.md#tool">Python</a> используют это имя поля из MCP SDK.</p>
+<h3 id="h-10">Управление выполнением цикла <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h3>
+<p>Вы можете ограничить количество ходов цикла, его стоимость, глубину рассуждений Claude, а также указать, требуют ли инструменты подтверждения перед запуском. Все это — поля <a href="https://code.claude.com/docs/ru/agent-sdk/python#claudeagentoptions"><code>ClaudeAgentOptions</code></a> (Python) / <a href="https://code.claude.com/docs/ru/agent-sdk/typescript#options"><code>Options</code></a> (TypeScript).</p>
+<h4 id="h-11">Ходы и бюджет <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h4>
+<p>| Параметр | Что он контролирует | По умолчанию |
+| :- | :- | :- |
+| Максимум ходов (<code>max_turns</code> / <code>maxTurns</code>) | Максимальное количество <a href="#turns-and-messages">ходов</a> | Без ограничений |
+| Максимальный бюджет (<code>max_budget_usd</code> / <code>maxBudgetUsd</code>) | Оценочные расходы, при достижении которых цикл останавливается | Без ограничений |</p>
+<p>При достижении любого из ограничений SDK возвращает <code>ResultMessage</code> с соответствующим подтипом ошибки (<code>error_max_turns</code> или <code>error_max_budget_usd</code>). О том, как проверять эти подтипы, см. <a href="#handle-the-result">Обработка результата</a>, а синтаксис — в <a href="https://code.claude.com/docs/ru/agent-sdk/python#claudeagentoptions"><code>ClaudeAgentOptions</code></a> / <a href="https://code.claude.com/docs/ru/agent-sdk/typescript#options"><code>Options</code></a>.</p>
+<p>Ограничение бюджета распространяется на <a href="https://code.claude.com/docs/ru/agent-sdk/subagents.md">субагентов</a>: их расходы учитываются в общей сумме. Как только расходы достигают лимита, запуск очередного субагента завершается ошибкой <code>Budget limit reached</code>, а Claude Code останавливает все еще работающих фоновых субагентов. Для такого соблюдения лимита требуется Claude Code v2.1.217 или новее.</p>
+<p>При <a href="https://code.claude.com/docs/ru/agent-sdk/streaming-vs-single-mode.md">потоковом вводе</a> сообщение, которое все еще находится в очереди, когда ход завершается по лимиту максимального количества ходов, остается в очереди. Claude Code не добавляет его в последний вызов модели этого хода. Он начинает для сообщения новый ход, и счетчик максимального количества ходов для этого хода начинается заново. Общая сумма бюджета продолжает накапливаться между сообщениями, и как только расходы достигают <code>maxBudgetUsd</code>, последующие сообщения в том же диалоге завершаются результатом <code>error_max_budget_usd</code>. Команда <a href="https://code.claude.com/docs/ru/agent-sdk/cost-tracking"><code>/clear</code></a> сбрасывает бюджет.</p>
+<h5 id="h-12">Запас бюджета <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h5>
+<p>Claude Code сравнивает расходы с лимитом <code>max_budget_usd</code> / <code>maxBudgetUsd</code> после получения ответов модели, поскольку стоимость каждого ответа вычисляется по данным об использовании токенов, которые API возвращает вместе с ним. Ответ, при котором достигается лимит, все равно завершается и учитывается в <a href="https://code.claude.com/docs/ru/agent-sdk/cost-tracking#get-the-total-cost-of-a-query"><code>total_cost_usd</code></a>. Поэтому расходы могут превысить лимит не более чем на стоимость этого одного ответа плюс все, что потратят субагенты, еще работающие в этот момент, до своей остановки. Учитывайте этот запас при установке лимита.</p>
+<h4 id="уровень-effort">Уровень effort <a class="h-anchor" href="#уровень-effort" aria-label="Ссылка на раздел">#</a></h4>
+<p>Параметр <code>effort</code> определяет, насколько глубоко рассуждает Claude. Более низкие уровни effort расходуют меньше токенов за ход и снижают стоимость. Не все модели поддерживают параметр effort. Список поддерживающих его моделей см. в разделе <a href="https://platform.claude.com/docs/en/build-with-claude/effort">Effort</a>.</p>
+<p>| Уровень | Поведение | Подходит для |
+| :- | :- | :- |
+| <code>&quot;low&quot;</code> | Минимальные рассуждения, быстрые ответы | Поиск файлов, вывод содержимого каталогов |
+| <code>&quot;medium&quot;</code> | Сбалансированные рассуждения | Рутинные правки, стандартные задачи |
+| <code>&quot;high&quot;</code> | Тщательный анализ | Рефакторинг, отладка |
+| <code>&quot;xhigh&quot;</code> | Расширенная глубина рассуждений | Задачи программирования и агентные задачи на <a href="https://code.claude.com/docs/ru/model-config.md#adjust-effort-level">моделях, которые это поддерживают</a> |
+| <code>&quot;max&quot;</code> | Максимальная глубина рассуждений | Многошаговые задачи, требующие глубокого анализа |</p>
+<p>Если вы не задаете <code>effort</code>, Claude Code определяет уровень effort самостоятельно в порядке, описанном в разделе <a href="https://code.claude.com/docs/ru/model-config.md#adjust-effort-level">Настройка уровня effort</a>.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p><code>effort</code> позволяет обменять задержку и стоимость токенов на глубину рассуждений в рамках каждого ответа. <a href="https://platform.claude.com/docs/en/build-with-claude/extended-thinking">Расширенное мышление</a> создает блоки <code>thinking</code> в выводе, а поле <code>display</code> в <code>ThinkingConfig</code> для <a href="https://code.claude.com/docs/ru/agent-sdk/python.md#thinkingconfig">Python</a> или <a href="https://code.claude.com/docs/ru/agent-sdk/typescript.md#thinkingconfig">TypeScript</a> определяет, получаете ли вы их текст.</p>
+</blockquote>
+<p>Используйте более низкий уровень effort для агентов, выполняющих простые, четко очерченные задачи (например, вывод списка файлов или запуск одного grep), чтобы снизить стоимость и задержку. Задайте <code>effort</code> в параметрах <code>query()</code> верхнего уровня для всей <a href="https://code.claude.com/docs/ru/sub-agents.md#choose-an-effort-level">сессии</a> или для отдельного субагента с помощью поля <code>effort</code> в <a href="https://code.claude.com/docs/ru/agent-sdk/subagents#agentdefinition-configuration"><code>AgentDefinition</code></a>, чтобы переопределить уровень сессии.</p>
+<h4 id="h-13">Режим разрешений <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h4>
+<p>Параметр режима разрешений (<code>permission_mode</code> в Python, <code>permissionMode</code> в TypeScript) определяет, запрашивает ли агент подтверждение перед использованием инструментов:</p>
+<p>| Режим | Поведение | Сценарий использования |
+| :- | :- | :- |
+| <code>&quot;default&quot;</code> | Вызовы инструментов, которым требуется подтверждение и которые не покрываются разрешающими правилами, вызывают ваш callback <code>canUseTool</code>; при отсутствии callback вызов отклоняется | Интерактивные приложения с собственным callback для подтверждения |
+| <code>&quot;acceptEdits&quot;</code> | Автоматически подтверждает правки файлов и распространенные команды файловой системы (<code>mkdir</code>, <code>touch</code>, <code>mv</code>, <code>cp</code> и т. д.) внутри ваших <a href="https://code.claude.com/docs/ru/permissions.md#working-directories">рабочих каталогов</a>; остальные команды Bash следуют правилам по умолчанию | Вы доверяете правкам Claude и хотите ускорить итерации, например при прототипировании или работе в изолированном каталоге |
+| <code>&quot;plan&quot;</code> | Claude исследует и планирует. Правки, вносимые файловыми инструментами Claude, передаются в ваш callback <code>canUseTool</code>, даже если им соответствует разрешающее правило | Вы хотите, чтобы Claude сначала составил план, например во время код-ревью или перед крупным изменением |
+| <code>&quot;dontAsk&quot;</code> | Никогда не запрашивает подтверждение. Выполняются инструменты, заранее разрешенные <a href="https://code.claude.com/docs/ru/settings-reference.md#permission-settings">правилами разрешений</a>, а также вызовы, которым в режиме <code>default</code> подтверждение не требуется, например чтение файлов внутри ваших рабочих каталогов. Все вызовы, которые в ином случае потребовали бы подтверждения, отклоняются, хотя установленный вами <a href="https://code.claude.com/docs/ru/plugins/mods/overview.md">мод</a> все же может подтвердить <a href="https://code.claude.com/docs/ru/permissions.md#precedence-among-rules-hooks-and-mods">некоторые из этих вызовов</a>. Некоторые вызовы, например <a href="https://code.claude.com/docs/ru/permissions.md#network-paths">чтение по сетевым путям</a>, отклоняются, даже если вы их разрешили. Список см. в разделе <a href="https://code.claude.com/docs/ru/agent-sdk/permissions.md#don’t-ask-mode-dontask">Режим Don&#x27;t ask</a> | Агенты без интерфейса, когда некому подтверждать вызовы |
+| <code>&quot;auto&quot;</code> | Использует классификатор на основе модели для проверки действий, таких как shell-команды и сетевые запросы, разрешая или блокируя каждое проверяемое действие. Доступность и порядок принятия решений см. в разделе <a href="https://code.claude.com/docs/ru/permission-modes.md#eliminate-prompts-with-auto-mode">Авторежим</a> | Автономные агенты, которым все же нужны защитные ограничения при использовании инструментов |
+| <code>&quot;bypassPermissions&quot;</code> | Выполняет вызовы инструментов без запроса подтверждения, включая вызовы инструментов, которые вы не указали в <code>allowedTools</code>. Некоторые вызовы все равно передаются в ваш callback <code>canUseTool</code> — они перечислены в разделе <a href="https://code.claude.com/docs/ru/agent-sdk/permissions.md#bypass-permissions-mode-bypasspermissions">Режим Bypass permissions</a>. В TypeScript SDK также требуется <code>allowDangerouslySkipPermissions: true</code> в <code>options</code>. Нельзя использовать при запуске от имени root в Unix. Используйте только в изолированных средах, где действия агента не могут повлиять на важные для вас системы | CI, контейнеры или другие изолированные среды |</p>
+<p>Для интерактивных приложений используйте <code>&quot;default&quot;</code> с callback подтверждения инструментов, чтобы показывать запросы подтверждения. Для агентов, которые редактируют файлы на машине разработчика, используйте <code>&quot;acceptEdits&quot;</code>. Оставьте <code>&quot;bypassPermissions&quot;</code> для CI, контейнеров или других изолированных сред. Подробнее см. в разделе <a href="https://code.claude.com/docs/ru/agent-sdk/permissions.md">Разрешения</a>.</p>
+<h4 id="h-14">Модель <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h4>
+<p>Задайте параметр <code>model</code>, чтобы выбрать модель, которая будет выполнять сессию. Подробнее см. в разделе <a href="https://code.claude.com/docs/ru/agent-sdk/configuration.md#choose-a-model">Выбор модели</a>.</p>
+<h3 id="h-15">Контекстное окно <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h3>
+<p>Контекстное окно — это общее количество информации, доступной Claude во время сессии. Оно не сбрасывается между ходами в пределах сессии. Все накапливается: системный промпт, определения инструментов, история диалога, входные данные инструментов и выходные данные инструментов. Содержимое, которое остается неизменным на протяжении ходов (системный промпт, определения инструментов, CLAUDE.md), автоматически <a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching">кэшируется с помощью кэширования промптов</a>, что снижает стоимость и задержку для повторяющихся префиксов. Информацию о том, как пользовательский системный промпт или текст <code>append</code> влияет на повторное использование кэша между сессиями, см. в разделе <a href="https://code.claude.com/docs/ru/agent-sdk/modifying-system-prompts.md#improve-prompt-caching-across-users-and-machines">Изменение системных промптов</a>.</p>
+<h4 id="h-16">Что потребляет контекст <a class="h-anchor" href="#h-16" aria-label="Ссылка на раздел">#</a></h4>
+<p>Вот как каждый компонент влияет на контекст в SDK:</p>
+<p>| Источник | Когда он загружается | Влияние |
+| :- | :- | :- |
+| <strong>Системный промпт</strong> | Каждый запрос | Небольшая фиксированная стоимость, всегда присутствует |
+| <strong>Файлы CLAUDE.md</strong> | Начало сессии, через <a href="https://code.claude.com/docs/ru/agent-sdk/claude-code-features"><code>settingSources</code></a> | Полное содержимое в каждом запросе (но с кэшированием промптов) |
+| <strong>Определения инструментов</strong> | Каждый запрос для основных встроенных инструментов, таких как Bash, Read и Edit; по требованию для инструментов MCP и других встроенных инструментов, загрузку которых <a href="https://code.claude.com/docs/ru/agent-sdk/mcp.md#mcp-tool-search">поиск инструментов</a> по умолчанию откладывает | Все схемы загружаются заранее в случаях, описанных в разделе <a href="https://code.claude.com/docs/ru/agent-sdk/tool-search.md#configure-tool-search">Настройка поиска инструментов</a> |
+| <strong>История диалога</strong> | Накапливается на протяжении ходов | Растет с каждым ходом: промпты, ответы, входные данные инструментов, выходные данные инструментов |
+| <strong>Описания скиллов</strong> | Начало сессии, через источники настроек | Краткие описания; полное содержимое загружается только при вызове |</p>
+<p>Большие выходные данные инструментов потребляют значительный объем контекста. Чтение большого файла или запуск команды с подробным выводом может использовать тысячи токенов за один ход. Контекст накапливается на протяжении ходов, поэтому более длительные сессии с множеством вызовов инструментов накапливают значительно больше контекста, чем короткие.</p>
+<h4 id="h-17">Автоматическое сжатие контекста <a class="h-anchor" href="#h-17" aria-label="Ссылка на раздел">#</a></h4>
+<p>Когда контекстное окно приближается к своему лимиту, SDK автоматически сжимает диалог: он кратко резюмирует более старую историю, чтобы освободить место, сохраняя нетронутыми ваши самые последние обмены сообщениями и ключевые решения. Когда это происходит, SDK выдает в поток сообщение с <code>type: &quot;system&quot;</code> и <code>subtype: &quot;compact_boundary&quot;</code> (в Python это <code>SystemMessage</code>; в TypeScript это отдельный тип <code>SDKCompactBoundaryMessage</code>).</p>
+<p>Сжатие контекста заменяет более старые сообщения резюме, поэтому конкретные инструкции из начала диалога могут не сохраниться. Постоянные правила следует размещать в CLAUDE.md (загружаемом через <a href="https://code.claude.com/docs/ru/agent-sdk/claude-code-features"><code>settingSources</code></a>), а не в начальном промпте, потому что содержимое CLAUDE.md повторно добавляется в каждый запрос.</p>
+<p>Вы можете настроить поведение сжатия контекста несколькими способами:</p>
+<ul>
+<li><strong>Инструкции по резюмированию в CLAUDE.md:</strong> механизм сжатия читает ваш CLAUDE.md как любой другой контекст, поэтому вы можете добавить раздел, указывающий, что сохранять при резюмировании. Механизм сжатия ориентируется на смысл, поэтому заголовок раздела может быть произвольным.</li>
+<li><strong>Хук <code>PreCompact</code>:</strong> запускайте пользовательскую логику перед сжатием контекста, например для архивирования полного транскрипта. Хук получает поле <code>trigger</code> (<code>manual</code> или <code>auto</code>). См. <a href="https://code.claude.com/docs/ru/agent-sdk/hooks.md">хуки</a>.</li>
+<li><strong>Ручное сжатие контекста:</strong> отправьте <code>/compact</code> в качестве строки промпта, чтобы запустить сжатие по требованию. Команды, отправленные таким образом, — это обычные входные данные SDK. См. <a href="https://code.claude.com/docs/ru/agent-sdk/skills.md#dispatch-commands-by-name">отправка команд по имени</a>.</li>
+</ul>
+<blockquote>
+<p>[accordion] Пример: инструкции по резюмированию в CLAUDE.md</p>
+<p>Добавьте в CLAUDE.md вашего проекта раздел, указывающий механизму сжатия, что сохранять. Название заголовка не имеет особого значения; используйте любую понятную метку.</p>
+<p>```markdown CLAUDE.md theme={null}</p>
+<h1 id="summary-instructions">Summary instructions <a class="h-anchor" href="#summary-instructions" aria-label="Ссылка на раздел">#</a></h1>
+<p>When summarizing this conversation, always preserve:</p>
+<ul>
+<li>The current task objective and acceptance criteria</li>
+<li>File paths that have been read or modified</li>
+<li>Test results and error messages</li>
+<li>Decisions made and the reasoning behind them</li>
+</ul>
+<pre><code></code></pre>
+</blockquote>
+<h4 id="h-18">Эффективное использование контекста <a class="h-anchor" href="#h-18" aria-label="Ссылка на раздел">#</a></h4>
+<p>Несколько стратегий для долго работающих агентов:</p>
+<ul>
+<li><strong>Используйте субагентов для подзадач.</strong> Субагент возвращает только свой финальный ответ, поэтому контекст основного агента увеличивается на резюме, а не на транскрипт подзадачи.</li>
+<li><strong>Тщательно выбирайте инструменты.</strong> Каждое определение инструмента занимает место в контексте. Используйте поле <code>tools</code> в <a href="https://code.claude.com/docs/ru/agent-sdk/subagents#agentdefinition-configuration"><code>AgentDefinition</code></a>, чтобы ограничить субагентов минимальным необходимым набором инструментов.</li>
+<li><strong>Следите за затратами на MCP-серверы.</strong> <a href="https://code.claude.com/docs/ru/agent-sdk/mcp.md#mcp-tool-search">MCP Tool Search</a> по умолчанию откладывает загрузку схем инструментов MCP и загружает их по требованию. Когда поиск инструментов отключен или переключился на предварительную загрузку, каждый MCP-сервер добавляет все свои схемы инструментов в каждый запрос, поэтому несколько серверов с множеством инструментов могут потребить значительный объем контекста еще до того, как агент выполнит какую-либо работу. Конфигурации, в которых применяется этот резервный вариант, см. в разделе <a href="https://code.claude.com/docs/ru/agent-sdk/tool-search.md#configure-tool-search">Настройка поиска инструментов</a>.</li>
+<li><strong>Используйте более низкий уровень effort для рутинных задач.</strong> Установите <a href="#effort-level">effort</a> в значение <code>&quot;low&quot;</code> для агентов, которым нужно только читать файлы или выводить списки каталогов. Это снижает расход токенов и стоимость.</li>
+</ul>
+<p>Подробную разбивку затрат контекста по функциям см. в разделе <a href="https://code.claude.com/docs/ru/features-overview.md#understand-context-costs">Понимание затрат контекста</a>.</p>
+<h3 id="h-19">Сессии и непрерывность <a class="h-anchor" href="#h-19" aria-label="Ссылка на раздел">#</a></h3>
+<p>Каждое взаимодействие с SDK создает или продолжает сессию. Захватите ID сессии из <code>ResultMessage.session_id</code> (доступно в обоих SDK) для возобновления позже. TypeScript SDK также выставляет его как прямое поле на инициализирующем <code>SystemMessage</code>; в Python он вложен в <code>SystemMessage.data</code>.</p>
+<p>Когда вы возобновляете, полный контекст из предыдущих ходов восстанавливается: файлы, которые были прочитаны, анализ, который был выполнен, и действия, которые были предприняты. Вы также можете разветвить сессию, чтобы ветвиться в другой подход без изменения оригинала.</p>
+<p>См. <a href="https://code.claude.com/docs/ru/agent-sdk/sessions.md">Управление сессией</a> для полного руководства по возобновлению, продолжению и разветвлению паттернов. Для возобновления сессий в контейнерах без состояния или бессерверных хостах передайте адаптер <a href="https://code.claude.com/docs/ru/agent-sdk/session-storage"><code>session_store</code> / <code>sessionStore</code></a>, чтобы SDK зеркалировал стенограммы на ваш собственный бэкенд и другой хост мог их возобновить. Подпроцесс Claude Code по-прежнему сначала записывает на локальный диск. См. <a href="https://code.claude.com/docs/ru/agent-sdk/session-storage.md#dual-write-architecture">Архитектура двойной записи</a> для того, какая копия пережидает свежую сессию в сравнении с запуском, возобновленным из хранилища, и как сохранить локальную копию эфемерной.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>В Python <code>ClaudeSDKClient</code> автоматически обрабатывает ID сессий на протяжении нескольких вызовов. См. <a href="https://code.claude.com/docs/ru/agent-sdk/python.md#choosing-between-query-and-claudesdkclient">справку Python SDK</a> для деталей.</p>
+</blockquote>
+<h3 id="h-20">Обработать результат <a class="h-anchor" href="#h-20" aria-label="Ссылка на раздел">#</a></h3>
+<p>Когда цикл заканчивается, <code>ResultMessage</code> говорит вам, что произошло, и дает вам выход. Поле <code>subtype</code> (доступно в обоих SDK) — это основной способ проверить состояние завершения.</p>
+<p>| Подтип результата | Что произошло | Поле <code>result</code> доступно? |
+| :- | :- | :-: |
+| <code>success</code> | Claude нормально завершил задачу | Да |
+| <code>error_max_turns</code> | Достигнут лимит <code>maxTurns</code> перед завершением | Нет |
+| <code>error_max_budget_usd</code> | Достигнут лимит <code>maxBudgetUsd</code> перед завершением | Нет |
+| <code>error_during_execution</code> | Ошибка прервала цикл (например, отмененный запрос) | Нет |
+| <code>error_max_structured_output_retries</code> | Валидация структурированного выхода не прошла после настроенного лимита повторов | Нет |</p>
+<p>Поле <code>result</code> содержит финальный текстовый выход и присутствует только в варианте <code>success</code>, поэтому всегда проверяйте подтип перед его чтением.</p>
+<p>Все подтипы результатов содержат <code>total_cost_usd</code>, <code>usage</code>, <code>num_turns</code> и <code>session_id</code>, поэтому вы можете отслеживать стоимость и возобновлять даже после ошибок. Обратите внимание на эти случаи:</p>
+<ul>
+<li>После сбоя сеанса финальный результат — это <code>error_during_execution</code>, чьи поля стоимости могут быть обнулены и чей <code>stop_reason</code> равен <code>null</code>, и процесс завершается после его выдачи. См. <a href="https://code.claude.com/docs/ru/agent-sdk/cost-tracking.md#recover-totals-after-a-session-crash">Восстановление итогов после сбоя сеанса</a>.</li>
+<li>В Python <code>total_cost_usd</code>, <code>usage</code> и <code>model_usage</code> типизированы как опциональные, поэтому проверьте, что они не равны <code>None</code> перед их чтением.</li>
+</ul>
+<p>Поле <code>usage</code> охватывает только основной цикл агента. Используйте <code>modelUsage</code> или <code>model_usage</code> в Python для полного учета токенов и стоимости дерева. См. <a href="https://code.claude.com/docs/ru/agent-sdk/cost-tracking.md">Отслеживание затрат и использования</a> для деталей по интерпретации полей <code>usage</code>.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Когда запрос заканчивается на результате ошибки:</p>
+<ul>
+<li>Одиночный вызов <code>query()</code> выдает финальное сообщение результата, затем вызывает ошибку, которая включает текст отказа, такой как <code>Reached maximum number of turns</code>. Вызов ошибки намеренный. Оберните цикл в блок try, если вашему коду нужно продолжить работу после него. Базовый процесс Claude Code также завершается с ненулевым кодом.</li>
+<li>Сессия потоковой передачи входных данных остается активной, и вы можете продолжать отправлять сообщения, кроме случаев после сбоя сессии, который выдает финальный результат <code>error_during_execution</code> и завершает процесс.</li>
+<li>В TypeScript цикл по <code>query()</code> в сессии потоковой передачи входных данных выбрасывает исключение, когда последний ответ заканчивается результатом ошибки. Оберните цикл в блок try, если вашему коду нужно продолжить работу после него.</li>
+</ul>
+</blockquote>
+<p>Результат также включает поле <code>stop_reason</code> (<code>string | null</code> в TypeScript, <code>str | None</code> в Python), указывающее, почему модель остановила генерацию на своем финальном ходе. Общие значения — <code>end_turn</code> (модель закончила нормально), <code>max_tokens</code> (достигнут лимит выходных токенов) и <code>refusal</code> (модель отклонила запрос). На результатах ошибок, которые произвел цикл, <code>stop_reason</code> содержит значение из последнего ответа помощника перед завершением цикла; результат, который Claude Code синтезирует после сбоя сеанса, содержит <code>null</code>.</p>
+<p>Для обнаружения отклонений проверьте <code>stop_reason === &quot;refusal&quot;</code> (TypeScript) или <code>stop_reason == &quot;refusal&quot;</code> (Python). См. <a href="https://code.claude.com/docs/ru/agent-sdk/typescript#sdkresultmessage"><code>SDKResultMessage</code></a> (TypeScript) или <a href="https://code.claude.com/docs/ru/agent-sdk/python#resultmessage"><code>ResultMessage</code></a> (Python) для полного типа.</p>
+<h3 id="hooks">Hooks <a class="h-anchor" href="#hooks" aria-label="Ссылка на раздел">#</a></h3>
+<p><a href="https://code.claude.com/docs/ru/agent-sdk/hooks.md">Hooks</a> — это обратные вызовы, которые срабатывают в определенных точках цикла: перед запуском инструмента, после его возврата, когда агент заканчивает, и так далее. Некоторые часто используемые hooks:</p>
+<p>| Hook | Когда он срабатывает | Общие использования |
+| :- | :- | :- |
+| <code>PreToolUse</code> | Перед выполнением инструмента | Валидировать входные данные, блокировать опасные команды |
+| <code>PostToolUse</code> | После возврата инструмента | Аудировать выходные данные, запускать побочные эффекты |
+| <code>UserPromptSubmit</code> | Когда запрос отправляется | Вводить дополнительный контекст в запросы |
+| <code>Stop</code> | Когда агент заканчивает | Валидировать результат, сохранять состояние сессии |
+| <code>SubagentStart</code> / <code>SubagentStop</code> | Когда подагент порождается или завершается | Отслеживать и агрегировать результаты параллельных задач |
+| <code>PreCompact</code> | Перед компактированием контекста | Архивировать полную транскрипцию перед суммированием |</p>
+<p>Hooks работают в процессе вашего приложения, а не внутри контекстного окна агента, поэтому они не потребляют контекст. Hooks также могут короткозамкнуть цикл: hook <code>PreToolUse</code>, который отклоняет вызов инструмента, предотвращает его выполнение, и Claude получает сообщение об отклонении вместо этого.</p>
+<p>Оба SDK поддерживают все события выше. TypeScript SDK включает дополнительные события, которые Python еще не поддерживает. См. <a href="https://code.claude.com/docs/ru/agent-sdk/hooks.md">Контролировать выполнение с помощью hooks</a> для полного списка событий, доступности для каждого SDK и полного API обратного вызова.</p>
+<h3 id="h-21">Собрать все вместе <a class="h-anchor" href="#h-21" aria-label="Ссылка на раздел">#</a></h3>
+<p>Этот пример объединяет ключевые концепции с этой страницы в одного агента, который исправляет неудачные тесты. Он конфигурирует агента с разрешенными инструментами (автоматически одобренными, поэтому агент работает автономно), настройками проекта и ограничениями безопасности на ходы и усилия рассуждения. По мере выполнения цикла он захватывает ID сессии для потенциального возобновления, обрабатывает финальный результат и выводит общую стоимость.</p>
+<p>Поскольку один вызов <code>query()</code> вызывает исключение после выдачи результата ошибки, цикл обернут в блок try, чтобы скрипт корректно завершился при достижении лимита.</p>
+<p>```python Python theme={null}
+import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage</p>
+<p>async def run_agent():
+    session_id = None</p>
+<p>try:
+        async for message in query(
+            prompt=&quot;Find and fix the bug causing test failures in the auth module&quot;,
+            options=ClaudeAgentOptions(
+                allowed_tools=[
+                    &quot;Read&quot;,
+                    &quot;Edit&quot;,
+                    &quot;Bash&quot;,
+                    &quot;Glob&quot;,
+                    &quot;Grep&quot;,
+                ],  # Listing tools here auto-approves them (no prompting)
+                setting_sources=[
+                    &quot;project&quot;
+                ],  # Load CLAUDE.md, skills, hooks from current directory
+                max_turns=30,  # Prevent runaway sessions
+                effort=&quot;high&quot;,  # Thorough reasoning for complex debugging
+            ),
+        ):
+            # Handle the final result
+            if isinstance(message, ResultMessage):
+                session_id = message.session_id  # Save for potential resumption</p>
+<p>if message.subtype == &quot;success&quot;:
+                    print(f&quot;Done: {message.result}&quot;)
+                elif message.subtype == &quot;error_max_turns&quot;:
+                    # Agent ran out of turns. Resume with a higher limit.
+                    print(f&quot;Hit turn limit. Resume session {session_id} to continue.&quot;)
+                elif message.subtype == &quot;error_max_budget_usd&quot;:
+                    print(&quot;Hit budget limit.&quot;)
+                else:
+                    print(f&quot;Stopped: {message.subtype}&quot;)
+                if message.total_cost_usd is not None:
+                    print(f&quot;Cost: ${message.total_cost_usd:.4f}&quot;)
+    except Exception as error:
+        # A single-shot query() raises after yielding an error result. If the
+        # failure was an error result, the error subtype branches above have
+        # already run; connection or process failures yield no result message.
+        print(f&quot;Session ended with an error: {error}&quot;)</p>
+<p>asyncio.run(run_agent())</p>
+<pre><code></code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>let sessionId: string | undefined;</p>
+<p>try {
+  for await (const message of query({
+    prompt: &quot;Find and fix the bug causing test failures in the auth module&quot;,
+    options: {
+      allowedTools: [&quot;Read&quot;, &quot;Edit&quot;, &quot;Bash&quot;, &quot;Glob&quot;, &quot;Grep&quot;], // Listing tools here auto-approves them (no prompting)
+      settingSources: [&quot;project&quot;], // Load CLAUDE.md, skills, hooks from current directory
+      maxTurns: 30, // Prevent runaway sessions
+      effort: &quot;high&quot; // Thorough reasoning for complex debugging
+    }
+  })) {
+    // Save the session ID to resume later if needed
+    if (message.type === &quot;system&quot; &amp;&amp; message.subtype === &quot;init&quot;) {
+      sessionId = message.session_id;
+    }</p>
+<p>// Handle the final result
+    if (message.type === &quot;result&quot;) {
+      if (message.subtype === &quot;success&quot;) {
+        console.log(<code>Done: ${message.result}</code>);
+      } else if (message.subtype === &quot;error_max_turns&quot;) {
+        // Agent ran out of turns. Resume with a higher limit.
+        console.log(<code>Hit turn limit. Resume session ${sessionId} to continue.</code>);
+      } else if (message.subtype === &quot;error_max_budget_usd&quot;) {
+        console.log(&quot;Hit budget limit.&quot;);
+      } else {
+        console.log(<code>Stopped: ${message.subtype}</code>);
+      }
+      console.log(<code>Cost: $${message.total_cost_usd.toFixed(4)}</code>);
+    }
+  }
+} catch (error) {
+  // A single-shot query() throws after yielding an error result. If the
+  // failure was an error result, the error subtype branches above have
+  // already run; connection or process failures yield no result message.
+  console.log(<code>Session ended with an error: ${error}</code>);
+}</p>
+<pre><code>
+Когда агент успешно завершает работу, пример выводит строку `Done:` с резюме исправления агента, а затем строку вроде `Cost: $0.0312`.
+
+## Следующие шаги
+
+Теперь, когда вы понимаете цикл, вот куда идти в зависимости от того, что вы создаете:
+
+* **Еще не запустили агента?** Начните с [quickstart](https://code.claude.com/docs/ru/agent-sdk/quickstart.md), чтобы установить SDK и увидеть полный пример, работающий от начала до конца.
+* **Готовы подключиться к вашему проекту?** [Загрузите CLAUDE.md, skills и hooks файловой системы](https://code.claude.com/docs/ru/agent-sdk/claude-code-features.md), чтобы агент автоматически следовал соглашениям вашего проекта.
+* **Создаете интерактивный UI?** Включите [потоковую передачу](https://code.claude.com/docs/ru/agent-sdk/streaming-output.md), чтобы показать живой текст и вызовы инструментов по мере выполнения цикла.
+* **Нужен более плотный контроль над тем, что может делать агент?** Заблокируйте доступ к инструментам с помощью [разрешений](https://code.claude.com/docs/ru/agent-sdk/permissions.md) и используйте [hooks](https://code.claude.com/docs/ru/agent-sdk/hooks.md) для аудита, блокировки или преобразования вызовов инструментов перед их выполнением.
+* **Запускаете долгие или дорогие задачи?** Перенесите изолированную работу на [подагентов](https://code.claude.com/docs/ru/agent-sdk/subagents.md), чтобы держать ваш основной контекст стройным.
+* **Развертываете как сервис?** См. [Размещение Agent SDK](https://code.claude.com/docs/ru/agent-sdk/hosting.md) для руководства по контейнерам и бессерверным решениям, и [Хранилище сессий](https://code.claude.com/docs/ru/agent-sdk/session-storage.md) для сохранения сессий в вашем собственном бэкенде.
+
+Для более широкой концептуальной картины цикла агента (не специфичной для SDK) см. [Как работает Claude Code](https://code.claude.com/docs/ru/how-claude-code-works.md). Для практического руководства по проектированию циклов в Claude Code, от циклов на основе ходов к циклам на основе целей и проактивным циклам, см. [Loop engineering: getting started with loops](https://claude.com/blog/getting-started-with-loops) в блоге.
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

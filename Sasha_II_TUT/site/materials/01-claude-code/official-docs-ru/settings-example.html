@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Примеры файлов settings</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="примеры-файлов-settings">Примеры файлов settings <a class="h-anchor" href="#примеры-файлов-settings" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Реалистичные файлы settings.json для разработчика, команды и организации: скопируйте один, оставьте нужные вам ключи и измените значения.</p>
+</blockquote>
+<p>На этой странице находятся три примера файлов <code>settings.json</code>, по одному для каждого места, где вы сохраняете параметр:</p>
+<ul>
+<li><code>~/.claude/settings.json</code> разработчика</li>
+<li><code>.claude/settings.json</code> команды, зафиксированный в репозитории</li>
+<li><code>managed-settings.json</code> организации</li>
+</ul>
+<p>Каждый файл является правдоподобным для этого читателя, поэтому вы можете увидеть структуру и скопировать нужные вам части. Ни один из них не является рекомендуемой базовой конфигурацией. Каждое значение взято из записи ключа в <a href="https://code.claude.com/docs/ru/settings-reference.md">справочнике параметров</a>, который содержит его тип, значение по умолчанию и место, где его можно установить.</p>
+<p>Каждый пример имеет две вкладки. <strong>Copyable settings file</strong> — это файл в том виде, в котором вы его сохраняете. <strong>What each key does</strong> — это тот же файл с комментарием над каждым ключом; Claude Code не принимает комментарии в файле параметров, поэтому копируйте с первой вкладки.</p>
+<h3 id="h">Ваши собственные параметры <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Личные параметры одного разработчика. Он выбирает модель и уровень усилий, настраивает терминал и предварительно одобряет команду только для чтения и одно чтение файла. Все остальное сохраняет значения по умолчанию. Файл, подобный этому, находится в <code>~/.claude/settings.json</code>, где он применяется к каждому проекту, который вы открываете.</p>
+<blockquote>
+<p>[tab] Copyable settings file</p>
+<p>Сохраните это как <code>~/.claude/settings.json</code>. Это корректный JSON без комментариев, поэтому вы можете вставить его как есть и удалить ненужные ключи.</p>
+<p>```json ~/.claude/settings.json theme={null}
+{
+  &quot;model&quot;: &quot;claude-sonnet-5&quot;,
+  &quot;modelSettings&quot;: {
+    &quot;claude-sonnet-5&quot;: { &quot;effortLevel&quot;: &quot;xhigh&quot; }
+  },
+  &quot;editorMode&quot;: &quot;vim&quot;,
+  &quot;theme&quot;: &quot;light-daltonized&quot;,
+  &quot;statusLine&quot;: {
+    &quot;type&quot;: &quot;command&quot;,
+    &quot;command&quot;: &quot;jq -r &#x27;\&quot;[\\(.model.display_name)] \\(.context_window.used_percentage // 0)% context\&quot;&#x27;&quot;,
+    &quot;padding&quot;: 2
+  },
+  &quot;spinnerTipsEnabled&quot;: false,
+  &quot;preferredNotifChannel&quot;: &quot;terminal_bell&quot;,
+  &quot;permissions&quot;: {
+    &quot;allow&quot;: [
+      &quot;Bash(git diff *)&quot;,
+      &quot;Read(~/.zshrc)&quot;
+    ]
+  },
+  &quot;autoUpdatesChannel&quot;: &quot;stable&quot;,
+  &quot;cleanupPeriodDays&quot;: 20
+}</p>
+<pre><code></code></pre>
+</blockquote>
+<blockquote>
+<p>[tab] What each key does</p>
+<p>Тот же файл с комментарием над каждым ключом. Прочитайте его здесь; копируйте с другой вкладки, потому что Claude Code не принимает комментарии в файле параметров.</p>
+<p>```jsonc ~/.claude/settings.json theme={null}
+{
+  // Начинайте каждый сеанс на Sonnet 5
+  &quot;model&quot;: &quot;claude-sonnet-5&quot;,
+  // Запускайте Sonnet 5 выше его уровня по умолчанию; /effort сохраняет уровень для каждой модели, а --effort устанавливает уровень для одного сеанса
+  &quot;modelSettings&quot;: {
+    &quot;claude-sonnet-5&quot;: { &quot;effortLevel&quot;: &quot;xhigh&quot; }
+  },
+  // Сочетания клавиш Vim в приглашении
+  &quot;editorMode&quot;: &quot;vim&quot;,
+  // Светлая тема, удобная для дальтоников
+  &quot;theme&quot;: &quot;light-daltonized&quot;,
+  // Строка состояния под приглашением: имя модели и использованный контекст
+  &quot;statusLine&quot;: {
+    &quot;type&quot;: &quot;command&quot;,
+    &quot;command&quot;: &quot;jq -r &#x27;\&quot;[\\(.model.display_name)] \\(.context_window.used_percentage // 0)% context\&quot;&#x27;&quot;,
+    &quot;padding&quot;: 2
+  },
+  // Скройте советы, которые вращаются под спиннером
+  &quot;spinnerTipsEnabled&quot;: false,
+  // Звоните в колокольчик терминала для уведомлений, таких как завершенная задача или ожидающее приглашение разрешения
+  &quot;preferredNotifChannel&quot;: &quot;terminal_bell&quot;,
+  // Позвольте Claude Code запускать git diff и читать ваш .zshrc без запроса
+  &quot;permissions&quot;: {
+    &quot;allow&quot;: [
+      &quot;Bash(git diff *)&quot;,
+      &quot;Read(~/.zshrc)&quot;
+    ]
+  },
+  // Получайте обновления из стабильного канала
+  &quot;autoUpdatesChannel&quot;: &quot;stable&quot;,
+  // Удалите стенограммы сеансов и другие локальные данные сеансов старше 20 дней
+  &quot;cleanupPeriodDays&quot;: 20
+}</p>
+<pre><code></code></pre>
+</blockquote>
+<h3 id="h-2">Общие параметры команды <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Общие параметры одной команды, зафиксированные в репозитории, чтобы каждый, кто его клонирует, получал одинаковые разрешения, hooks и marketplace плагинов. Сохраните файл, подобный этому, в <code>.claude/settings.json</code> в верхней части репозитория. Что нужно знать перед его фиксацией:</p>
+<ul>
+<li><strong>Облачные сессии вне потоков <a href="https://code.claude.com/docs/ru/claude-projects.md#what-threads-pick-up-from-your-repositories">проекта</a> также его читают.</strong> <a href="https://code.claude.com/docs/ru/settings.md#settings-in-cloud-sessions">Облачная сессия</a> с одним репозиторием начинается внутри клона, поэтому закоммиченный файл применяется и там.</li>
+<li><strong>Телеметрия входит в управляемые или личные параметры.</strong> Claude Code игнорирует <a href="https://code.claude.com/docs/ru/settings-reference.md#variables-claude-code-ignores-in-env">переменные экспортера OpenTelemetry</a> в файлах параметров репозитория, за исключением некоторых значений, которые отключают телеметрию. Установите их в <a href="https://code.claude.com/docs/ru/monitoring-usage.md#administrator-configuration">управляемых параметрах</a> для вашей организации или в файле <code>~/.claude/settings.json</code> каждого человека.</li>
+<li><strong>Правила Allow ждут доверия.</strong> Правила Allow и записи <code>extraKnownMarketplaces</code> вступают в силу после того, как каждый человек <a href="https://code.claude.com/docs/ru/permissions.md#project-allow-rules-and-workspace-trust">доверит этой папке</a>, а не только родительской папке; правила deny и ask применяются в каждом сеансе, доверенном или нет.</li>
+<li><strong>Hook — это скрипт в репозитории.</strong> Hook этого файла запускает <code>.claude/hooks/block-rm.sh</code>; <a href="https://code.claude.com/docs/ru/hooks.md#how-a-hook-resolves">How a hook resolves</a> описывает, как его написать.</li>
+<li><strong>Правила соответствуют команде и пути в том виде, в котором они написаны.</strong> <code>Bash(git push *)</code> не соответствует <a href="https://code.claude.com/docs/ru/permissions#bash-rule-limits"><code>git -C . push</code></a>. <code>Read(./.env)</code> само по себе останавливает инструменты файлов и команды, которые называют файл, такие как <code>cat .env</code>, но не <a href="https://code.claude.com/docs/ru/permissions#read-and-edit"><code>grep -r</code>, запущенный по каталогу</a>; блок <code>sandbox</code> в этом файле закрывает этот пробел, потому что sandbox <a href="https://code.claude.com/docs/ru/settings-reference#sandbox-filesystem-denyread">добавляет ваши пути <code>Read</code> deny</a> к тому, что не может читать каждая команда в sandbox.</li>
+</ul>
+<blockquote>
+<p>[tab] Copyable settings file</p>
+<p>Сохраните это как <code>.claude/settings.json</code> в верхней части репозитория и зафиксируйте. Это корректный JSON без комментариев, поэтому вы можете вставить его как есть и удалить ненужные ключи.</p>
+<p>```json .claude/settings.json theme={null}
+{
+  &quot;permissions&quot;: {
+    &quot;allow&quot;: [
+      &quot;Bash(npm run *)&quot;
+    ],
+    &quot;ask&quot;: [
+      &quot;Bash(git push *)&quot;
+    ],
+    &quot;deny&quot;: [
+      &quot;Read(./.env)&quot;,
+      &quot;Read(./.env.*)&quot;,
+      &quot;Read(./secrets/**)&quot;
+    ]
+  },
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Bash&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;${CLAUDE_PROJECT_DIR}/.claude/hooks/block-rm.sh&quot;
+          }
+        ]
+      }
+    ]
+  },
+  &quot;extraKnownMarketplaces&quot;: {
+    &quot;acme-tools&quot;: {
+      &quot;source&quot;: {
+        &quot;source&quot;: &quot;github&quot;,
+        &quot;repo&quot;: &quot;acme-corp/claude-plugins&quot;
+      }
+    }
+  },
+  &quot;enabledPlugins&quot;: {
+    &quot;code-formatter@acme-tools&quot;: true
+  },
+  &quot;sandbox&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;filesystem&quot;: {
+      &quot;allowWrite&quot;: [
+        &quot;/tmp/build&quot;
+      ]
+    },
+    &quot;network&quot;: {
+      &quot;allowedDomains&quot;: [
+        &quot;registry.npmjs.org&quot;,
+        &quot;*.example.com&quot;
+      ]
+    }
+  },
+  &quot;plansDirectory&quot;: &quot;./plans&quot;
+}</p>
+<pre><code></code></pre>
+</blockquote>
+<blockquote>
+<p>[tab] What each key does</p>
+<p>Тот же файл с комментарием над каждым ключом. Прочитайте его здесь; копируйте с другой вкладки, потому что Claude Code не принимает комментарии в файле параметров.</p>
+<p>```jsonc .claude/settings.json theme={null}
+{
+  &quot;permissions&quot;: {
+    // Запускайте скрипты npm без запроса
+    &quot;allow&quot;: [
+      &quot;Bash(npm run *)&quot;
+    ],
+    // Подтвердите перед командами git push
+    &quot;ask&quot;: [
+      &quot;Bash(git push *)&quot;
+    ],
+    // Запретите чтение файлов env и папки secrets инструментами файлов и командами чтения файлов
+    &quot;deny&quot;: [
+      &quot;Read(./.env)&quot;,
+      &quot;Read(./.env.*)&quot;,
+      &quot;Read(./secrets/**)&quot;
+    ]
+  },
+  // Перед каждой командой Bash запустите скрипт в репозитории, который может ее заблокировать
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Bash&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;${CLAUDE_PROJECT_DIR}/.claude/hooks/block-rm.sh&quot;
+          }
+        ]
+      }
+    ]
+  },
+  // Зарегистрируйте маркетплейс плагинов команды при каждом клонировании
+  &quot;extraKnownMarketplaces&quot;: {
+    &quot;acme-tools&quot;: {
+      &quot;source&quot;: {
+        &quot;source&quot;: &quot;github&quot;,
+        &quot;repo&quot;: &quot;acme-corp/claude-plugins&quot;
+      }
+    }
+  },
+  // Включите один плагин из этого маркетплейса; плагин из внешнего источника, такого как репозиторий GitHub, все еще требует, чтобы каждый человек установил его один раз
+  &quot;enabledPlugins&quot;: {
+    &quot;code-formatter@acme-tools&quot;: true
+  },
+  // Команды в песочнице: папка сборки с правом записи; npm и example.com предварительно разрешены
+  &quot;sandbox&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;filesystem&quot;: {
+      &quot;allowWrite&quot;: [
+        &quot;/tmp/build&quot;
+      ]
+    },
+    &quot;network&quot;: {
+      &quot;allowedDomains&quot;: [
+        &quot;registry.npmjs.org&quot;,
+        &quot;*.example.com&quot;
+      ]
+    }
+  },
+  // Держите файлы плана внутри репозитория
+  &quot;plansDirectory&quot;: &quot;./plans&quot;
+}</p>
+<pre><code></code></pre>
+</blockquote>
+<h3 id="h-3">Управляемые параметры организации <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Файл <code>managed-settings.json</code>, который показывает форму управляемых ключей с одним правдоподобным значением для каждого. Это не рекомендуемая политика: выберите ключи, которые соответствуют вашим требованиям, и установите свои собственные значения. Пример устанавливает эти ключи:</p>
+<ul>
+<li><code>forceLoginMethod</code> и <code>forceLoginOrgUUID</code> закрепляют метод входа и организацию</li>
+<li><code>availableModels</code> и <code>enforceAvailableModels</code> ограничивают, какие модели могут использовать сеансы</li>
+<li><code>permissions.deny</code> запрещает два чтения файлов и команды <code>curl</code> <a href="https://code.claude.com/docs/ru/permissions.md#bash-rule-limits">как их пишет Claude</a>, а <code>disableBypassPermissionsMode</code> удаляет режим обхода разрешений</li>
+<li><a href="https://code.claude.com/docs/ru/settings-reference#allowmanagedpermissionrulesonly"><code>allowManagedPermissionRulesOnly</code></a> и <a href="https://code.claude.com/docs/ru/settings-reference#allowmanagedmcpserversonly"><code>allowManagedMcpServersOnly</code></a> делают управляемые списки разрешений для разрешений и MCP единственными применяемыми</li>
+<li><code>allowedMcpServers</code> закрепляет MCP сервер по URL</li>
+<li><code>strictKnownMarketplaces</code> разрешает один marketplace плагинов</li>
+<li><code>sandbox</code> изолирует команды в песочнице с фиксированным списком разрешённых сетевых доменов и без повторной попытки вне песочницы. Его ключ <code>failIfUnavailable</code> <a href="https://code.claude.com/docs/ru/sandboxing.md#enforce-sandboxing-with-managed-settings">не даёт Claude Code запуститься там, где песочница не может работать</a>, за исключением среды, размещённой Anthropic</li>
+<li><code>requiredMinimumVersion</code> устанавливает минимальную версию Claude Code</li>
+<li><code>cleanupPeriodDays</code> сокращает хранение стенограмм сеансов и других локальных данных до семи дней</li>
+<li><code>companyAnnouncements</code> показывает сообщение при запуске</li>
+</ul>
+<p>Администраторы развертывают файл, подобный этому, как <code>managed-settings.json</code>, или тот же JSON через MDM или <a href="https://code.claude.com/docs/ru/server-managed-settings.md">настройки, управляемые сервером</a>. Один развернутый файл применяется к каждой машине или учетной записи, которую он достигает. Чтобы задать группе другие значения, разверните для этой группы другой файл или профиль. В плане Enterprise вместо этого можно <a href="https://code.claude.com/docs/ru/server-managed-settings.md#give-groups-different-settings">задать группе собственную конфигурацию</a> в настройках, управляемых сервером.</p>
+<blockquote>
+<p>[tab] Copyable settings file</p>
+<p>Разверните это как <code>managed-settings.json</code>, или тот же JSON через MDM или консоль claude.ai. Это корректный JSON без комментариев; замените пример UUID организации, URL сервера и marketplace на свои и удалите ненужные ключи.</p>
+<p>```json managed-settings.json theme={null}
+{
+  &quot;forceLoginMethod&quot;: &quot;claudeai&quot;,
+  &quot;forceLoginOrgUUID&quot;: [
+    &quot;xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx&quot;
+  ],
+  &quot;availableModels&quot;: [
+    &quot;opus&quot;,
+    &quot;sonnet&quot;
+  ],
+  &quot;enforceAvailableModels&quot;: true,
+  &quot;permissions&quot;: {
+    &quot;deny&quot;: [
+      &quot;Bash(curl *)&quot;,
+      &quot;Read(./.env)&quot;,
+      &quot;Read(./secrets/**)&quot;
+    ],
+    &quot;disableBypassPermissionsMode&quot;: &quot;disable&quot;
+  },
+  &quot;allowManagedPermissionRulesOnly&quot;: true,
+  &quot;allowedMcpServers&quot;: [
+    {
+      &quot;serverUrl&quot;: &quot;https://api.githubcopilot.com/*&quot;
+    }
+  ],
+  &quot;allowManagedMcpServersOnly&quot;: true,
+  &quot;strictKnownMarketplaces&quot;: [
+    {
+      &quot;source&quot;: &quot;github&quot;,
+      &quot;repo&quot;: &quot;acme-corp/approved-plugins&quot;
+    }
+  ],
+  &quot;sandbox&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;failIfUnavailable&quot;: true,
+    &quot;allowUnsandboxedCommands&quot;: false,
+    &quot;network&quot;: {
+      &quot;allowedDomains&quot;: [
+        &quot;registry.npmjs.org&quot;,
+        &quot;github.com&quot;
+      ],
+      &quot;allowManagedDomainsOnly&quot;: true
+    }
+  },
+  &quot;requiredMinimumVersion&quot;: &quot;2.1.150&quot;,
+  &quot;cleanupPeriodDays&quot;: 7,
+  &quot;companyAnnouncements&quot;: [
+    &quot;Welcome to Acme Corp! Review our code guidelines at docs.example.com&quot;
+  ]
+}</p>
+<pre><code></code></pre>
+</blockquote>
+<blockquote>
+<p>[tab] What each key does</p>
+<p>Тот же файл с комментарием над каждым ключом. Прочитайте его здесь; копируйте с другой вкладки, потому что Claude Code не принимает комментарии в файле параметров.</p>
+<p>```jsonc managed-settings.json theme={null}
+{
+  // Только входы claude.ai и только в этой организации
+  &quot;forceLoginMethod&quot;: &quot;claudeai&quot;,
+  &quot;forceLoginOrgUUID&quot;: [
+    &quot;xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx&quot;
+  ],
+  // Только модели Opus и Sonnet; с enforceAvailableModels опция Default также соблюдает список
+  &quot;availableModels&quot;: [
+    &quot;opus&quot;,
+    &quot;sonnet&quot;
+  ],
+  &quot;enforceAvailableModels&quot;: true,
+  &quot;permissions&quot;: {
+    // Запретите команды curl и чтение файла .env проекта и папки secrets на каждой машине
+    &quot;deny&quot;: [
+      &quot;Bash(curl *)&quot;,
+      &quot;Read(./.env)&quot;,
+      &quot;Read(./secrets/**)&quot;
+    ],
+    // Удалите режим обхода разрешений из каждого сеанса
+    &quot;disableBypassPermissionsMode&quot;: &quot;disable&quot;
+  },
+  // Игнорируйте правила разрешений из параметров пользователя, проекта и локальных параметров
+  &quot;allowManagedPermissionRulesOnly&quot;: true,
+  // Только MCP сервер GitHub, сопоставленный по URL, а не по имени, так как пользователь может
+  // назвать любой сервер &quot;github&quot;. Добавленные пользователем серверы, которые не совпадают, не загружаются, включая
+  // каждый stdio сервер, когда список содержит только записи URL. Ключ allowManagedMcpServersOnly
+  // ниже делает этот управляемый список единственным применяемым списком разрешений
+  &quot;allowedMcpServers&quot;: [
+    {
+      &quot;serverUrl&quot;: &quot;https://api.githubcopilot.com/*&quot;
+    }
+  ],
+  &quot;allowManagedMcpServersOnly&quot;: true,
+  // Плагины могут поступать только из этого marketplace
+  &quot;strictKnownMarketplaces&quot;: [
+    {
+      &quot;source&quot;: &quot;github&quot;,
+      &quot;repo&quot;: &quot;acme-corp/approved-plugins&quot;
+    }
+  ],
+  // Поместите каждую команду Claude в sandbox, откажитесь запускаться, если sandbox не может быть
+  // установлен, и никогда не позволяйте заблокированной команде повторить попытку вне sandbox; сеть
+  // ограничена npm и GitHub, и пользователи не могут добавлять домены
+  &quot;sandbox&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;failIfUnavailable&quot;: true,
+    &quot;allowUnsandboxedCommands&quot;: false,
+    &quot;network&quot;: {
+      &quot;allowedDomains&quot;: [
+        &quot;registry.npmjs.org&quot;,
+        &quot;github.com&quot;
+      ],
+      &quot;allowManagedDomainsOnly&quot;: true
+    }
+  },
+  // Откажитесь запускаться на версиях старше 2.1.150
+  &quot;requiredMinimumVersion&quot;: &quot;2.1.150&quot;,
+  // Удалите стенограммы сеансов и другие локальные данные сеансов через 7 дней
+  &quot;cleanupPeriodDays&quot;: 7,
+  // Сообщение, которое видит каждый пользователь при запуске
+  &quot;companyAnnouncements&quot;: [
+    &quot;Welcome to Acme Corp! Review our code guidelines at docs.example.com&quot;
+  ]
+}</p>
+<pre><code></code></pre>
+</blockquote>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

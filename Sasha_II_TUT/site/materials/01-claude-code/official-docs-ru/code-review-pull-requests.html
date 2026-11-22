@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Чтение результатов и запрос ревью для pull request</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="чтение-результатов-и-запрос-ревью-для-pull-request">Чтение результатов и запрос ревью для pull request <a class="h-anchor" href="#чтение-результатов-и-запрос-ревью-для-pull-request" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Читайте результаты Code Review в вашем pull request на GitHub, отвечайте на них или отклоняйте их, а также запрашивайте ревью с помощью <code>@claude review</code>.</p>
+</blockquote>
+<p>Code Review — это управляемый сервис, который Owner в вашей организации Claude включает для набора репозиториев GitHub. После включения Claude проводит ревью pull request в этих репозиториях и публикует свои результаты в виде встроенных комментариев, сводки в теле ревью и check run с именем <strong>Claude Code Review</strong>. Ревью никогда не одобряет и не блокирует ваш pull request, а check run никогда не завершается со статусом failure.</p>
+<p>Owner управляет тем, <a href="https://code.claude.com/docs/ru/code-review-setup.md#set-when-reviews-run">когда запускаются ревью</a> и <a href="https://code.claude.com/docs/ru/code-review-setup.md#set-the-default-review-level">насколько они тщательны</a>, для каждого репозитория.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Если ваш план не включает Code Review, вы всё равно можете поручить Claude провести ревью вашей ветки из сессии Claude Code: см. <a href="https://code.claude.com/docs/ru/code-review-local">Локальное ревью с помощью <code>/code-review</code></a>.</p>
+</blockquote>
+<h3 id="h">Уровни серьёзности <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude публикует каждый результат в виде встроенного комментария к соответствующим строкам и помечает его одним из трёх уровней серьёзности:</p>
+<p>| Маркер | Серьёзность | Значение |
+| :- | :- | :- |
+| 🔴 | Important | Ошибка, которую следует исправить перед слиянием |
+| 🟡 | Nit | Незначительная проблема, которую стоит исправить, но она не блокирует |
+| 🟣 | Pre-existing | Ошибка, которая существует в кодовой базе, но не была внесена этим PR |</p>
+<p>Если ревью зафиксировало свои рассуждения, у результата есть свёрнутый раздел <strong>Why this was flagged</strong>. Разверните его, чтобы узнать, почему Claude пометил проблему и как он её проверил.</p>
+<p>Чтобы изменить, что Claude помечает в вашем репозитории или как он оценивает серьёзность, см. <a href="https://code.claude.com/docs/ru/code-review-customize.md">Настройка Code Review</a>.</p>
+<h3 id="h-2">Ответ на результаты <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Вы можете выполнить слияние, не отвечая на результат, если только собственные правила вашего репозитория не требуют этого. Если защита ветки <a href="https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches#require-conversation-resolution-before-merging">требует разрешения обсуждений</a>, разрешите ветку обсуждения каждого результата перед слиянием.</p>
+<p>Чтобы закрыть результат, разрешите его ветку обсуждения или отправьте исправление.</p>
+<ul>
+<li><strong>Отклонить без изменения кода</strong>: разрешите ветку обсуждения самостоятельно на GitHub. Одного ответа недостаточно, чтобы отклонить результат.</li>
+<li><strong>Исправить проблему</strong>: измените код и выполните push. Следующее ревью pull request разрешит прежнюю ветку обсуждения, если сочтёт проблему исправленной, — независимо от того, запускается ли это ревью автоматически при push или вы запрашиваете его сами.</li>
+<li><strong>Объяснить или не согласиться</strong>: ответьте на комментарий. Claude не отвечает сразу, и ответ не запускает ревью. Следующее ревью pull request читает ответы на свои прежние результаты и может разрешить ветку обсуждения или опубликовать один ответный комментарий. Если один и тот же тип результата постоянно возвращается, попросите сопровождающего добавить правило в <a href="https://code.claude.com/docs/ru/code-review-customize#choose-what-to-write-in-review-md"><code>REVIEW.md</code></a>.</li>
+</ul>
+<p>Чтобы получить это следующее ревью без push, оставьте <code>@claude review</code> в виде <a href="#comment-commands">комментария верхнего уровня к pull request</a>.</p>
+<h3 id="вывод-check-run">Вывод check run <a class="h-anchor" href="#вывод-check-run" aria-label="Ссылка на раздел">#</a></h3>
+<p>Ссылка <strong>Details</strong> в check run <strong>Claude Code Review</strong> открывает результаты в одной таблице, отсортированной по серьёзности, включая любые результаты, встроенные комментарии к которым GitHub не принял:</p>
+<p>| Серьёзность | Файл:Строка | Проблема |
+| - | - | - |
+| 🔴 Important | <code>src/auth/session.ts:142</code> | Обновление токена конкурирует с выходом из системы, из-за чего устаревшие сессии остаются активными |
+| 🟡 Nit | <code>src/auth/session.ts:88</code> | <code>parseExpiry</code> молча возвращает 0 при некорректных входных данных |</p>
+<p>Результат, у которого есть строка, но который не был опубликован как встроенный комментарий, отображается как аннотация на вкладке <strong>Files changed</strong> у соответствующих строк. Результаты Important отображаются красным, nit — жёлтым, а pre-existing ошибки — серым.</p>
+<p>Check run завершается со статусом neutral или, после некоторых push, которые не изменяют ни одного файла и <a href="#when-a-push-keeps-the-earlier-result">сохраняют прежний результат</a>, со статусом skipped. Он никогда не завершается со статусом failure, поэтому завершённое ревью не приводит к провалу обязательной проверки. Если вы не видите результатов или ревью не запустилось, см. <a href="https://code.claude.com/docs/ru/code-review-troubleshooting.md">Устранение неполадок Code Review</a>.</p>
+<h4 id="когда-push-сохраняет-прежний-результат">Когда push сохраняет прежний результат <a class="h-anchor" href="#когда-push-сохраняет-прежний-результат" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если после push у check run один из следующих заголовков, Code Review сохранил результат прежнего ревью вместо запуска нового:</p>
+<ul>
+<li><strong>Code review skipped — no new changes</strong>: ни один результат <a href="#severity-levels">Important</a> из прежнего ревью больше не открыт, поэтому новое ревью не требуется</li>
+<li><strong>Code review not repeated — earlier findings still open</strong>: чтобы запустить новое ревью, отправьте push с исправлением открытого результата Important или <a href="#respond-to-findings">закройте его ветку обсуждения</a> и снова выполните push</li>
+</ul>
+<p>На github.com Code Review может сохранить результат, если выполняются оба условия:</p>
+<ul>
+<li>Pull request по-прежнему добавляет и удаляет те же строки, как после пустого коммита, чистого слияния базовой ветки или чистого rebase</li>
+<li>С момента того ревью никто не закрыл ветку обсуждения результата Important</li>
+</ul>
+<p>Чтобы получить ревью без изменения кода, оставьте комментарий <a href="#comment-commands"><code>@claude review</code></a> или нажмите <strong>Re-run</strong> в check run.</p>
+<h4 id="h-3">Чтение результата из скрипта <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Чтобы блокировать слияние или публиковать сводку из собственного CI, разберите последнюю строку текста Details с помощью <code>gh</code> и jq. Эта строка — HTML-комментарий, содержащий количество результатов по уровням серьёзности в формате JSON:</p>
+<p>```text theme={null}
+&lt;!-- bughunter-severity: {&quot;nit&quot;:1,&quot;normal&quot;:2,&quot;pre_existing&quot;:0} --&gt;</p>
+<pre><code>
+Строки над ней могут содержать имена файлов из pull request. Если вы разбираете текст собственным способом, берите количество только из последней строки, как это делает команда в приведённых ниже шагах.
+
+**1. Найдите ID check run**
+
+В оболочке выведите список check run для коммита и возьмите `id` запуска `Claude Code Review`. Замените `OWNER` и `REPO` на владельца и имя вашего репозитория, а `&lt;commit-sha&gt;` — на головной коммит pull request:
+</code></pre>
+<p>gh api repos/OWNER/REPO/commits/&lt;commit-sha&gt;/check-runs --jq &#x27;.check_runs[] | {id, name}&#x27;</p>
+<pre><code>
+Если для коммита было несколько запусков `Claude Code Review`, например после **Re-run**, GitHub выводит только самый новый.
+
+**2. Прочитайте количество по уровням серьёзности**
+
+Прочитайте количество из поля `output.text` этого check run, в котором хранится текст Details. Замените `CHECK_RUN_ID` на ID:
+</code></pre>
+<p>gh api repos/OWNER/REPO/check-runs/CHECK_RUN_ID --jq &#x27;
+  (.output.text | split(&quot;\n&quot;) | last
+    | scan(&quot;^&lt;!-- bughunter-severity: (.*) --&gt;$&quot;)[0] | fromjson)?
+  // error(&quot;no severity line&quot;)&#x27;</p>
+<pre><code>
+Команда выводит JSON-объект с количеством для каждого уровня серьёзности, ключи которого упорядочены по алфавиту, например `{&quot;nit&quot;: 1, &quot;normal&quot;: 2, &quot;pre_existing&quot;: 0}`. За исключением check run, который [сохранил прежний результат](#when-a-push-keeps-the-earlier-result), в количество входят результаты прежних ревью pull request, ветки обсуждения которых всё ещё открыты.
+
+При заголовке `Code review skipped — no new changes` в количество не входят открытые nit и pre-existing результаты из прежних ревью. Ни один результат Important из прежнего ревью в этом случае не открыт.
+
+**3. Обработайте результат**
+
+Предусмотрите в скрипте обработку следующих случаев в указанном порядке:
+
+* **Заголовок начинается с `Code review not repeated`**: Code Review [сохранил прежний результат](#when-a-push-keeps-the-earlier-result), результаты Important которого всё ещё открыты, и в check run нет строки с количеством по уровням серьёзности. Прочитайте заголовок до количества с помощью `gh api repos/OWNER/REPO/check-runs/CHECK_RUN_ID --jq .output.title`. Завершите задание с ошибкой, если хотите блокировать слияние.
+* **Заголовок заканчивается на `no new changes`**: позвольте заданию пройти успешно без чтения количества
+* **`normal` больше нуля**: завершите задание с ошибкой, если хотите блокировать слияние. Ключ `normal` содержит количество результатов Important, то есть Claude нашёл хотя бы одну ошибку, которую стоит исправить перед слиянием. Чтобы вывести только это количество, добавьте `| .normal` перед закрывающей одинарной кавычкой.
+* **Строка отсутствует**: вместо количества команда выводит ошибку, содержащую `no severity line`, и завершается с ненулевым статусом. Считайте это отсутствием вердикта, а не нулём результатов. В check run для ревью, которое завершилось ошибкой, превысило время ожидания, было отменено или заменено более новым, такой строки нет; её также нет в некоторых завершённых ревью.
+
+## Запрос ревью
+
+Если ваш pull request является черновиком или создан из форка, автоматические ревью его пропускают, поэтому [запросите ревью с помощью команды в комментарии](#review-drafts-and-pull-requests-from-forks). Чтобы получить ревью для вашего pull request, выполните одно из следующих действий:
+
+* **Откройте его или пометьте как готовый**: в репозитории с настройкой **Once after PR creation** или **After every push** ревью запускается, когда вы открываете или повторно открываете pull request либо помечаете черновик как готовый к ревью.
+* **Оставьте команду в комментарии**: опубликуйте [`@claude review`](#comment-commands) в pull request.
+* **Выполните push коммита**: push запускает ревью в репозитории с настройкой **After every push** или в pull request, на который вы подписались с помощью `@claude review always`. Если после push ваш pull request по-прежнему добавляет и удаляет те же строки, Code Review может вместо этого [сохранить предыдущий результат](#when-a-push-keeps-the-earlier-result).
+* **Нажмите Re-run**: после того как ревью завершилось ошибкой или превысило время ожидания в pull request, созданном не из форка, [запустите его снова](https://code.claude.com/docs/ru/code-review-troubleshooting.md#retrigger-a-failed-or-timed-out-review) из check run. В pull request, созданном не из форка, вы также можете нажать **Re-run** после push, при котором [был сохранён предыдущий результат](#when-a-push-keeps-the-earlier-result).
+* **Дождитесь автоматической повторной попытки**: ревью, сессия которого была прервана, автоматически повторяется один раз. [Сводка check run](https://code.claude.com/docs/ru/code-review-troubleshooting.md#retrigger-a-failed-or-timed-out-review) сообщает, когда это происходит.
+
+### Команды в комментариях
+
+Опубликуйте одну из этих команд в виде комментария к pull request:
+
+| Команда | Что она делает | Когда её использовать |
+| :- | :- | :- |
+| `@claude review` | Запускает одно ревью без подписки PR на будущие push | Вам нужно одно ревью сейчас, например для pull request в репозитории с настройкой **Manual**, или ещё одно ревью немедленно в других режимах |
+| `@claude review always` | Запускает ревью и подписывает PR на ревью, запускаемые при push, в дальнейшем | Вы хотите, чтобы последующие push запускали ревью, например для высокоприоритетного PR в репозитории с настройкой **Manual** |
+| `@claude review once` | То же, что `@claude review`: запускает одно ревью без подписки | Те же случаи, что и для `@claude review` |
+| `@claude review stop` | Завершает подписку PR на ревью, запускаемые при push, не запуская ревью и не отменяя уже выполняющееся. Claude отвечает комментарием вместо check run. | Вы подписали PR с помощью `@claude review always` в репозитории с настройкой **Manual** или **Once after PR creation** и больше не хотите, чтобы каждый push запускал ревью |
+| `@claude review off` или `@claude review pause` | То же, что `@claude review stop` | Те же случаи, что и для `@claude review stop` |
+
+В репозитории с настройкой **After every push** нельзя остановить ревью с помощью комментария, поскольку push там запускают ревью независимо от наличия подписки. Чтобы push не запускали ревью для одного pull request в таком репозитории, преобразуйте его в [черновик](#review-drafts-and-pull-requests-from-forks). Когда вы снова пометите его как готовый к ревью, запустится ревью.
+
+Чтобы любая команда в комментарии сработала, должны выполняться все следующие условия:
+
+* Опубликуйте её как новый комментарий верхнего уровня к pull request, а не как встроенный комментарий к строке diff и не как тело ревью. Редактирование более раннего комментария не считается.
+* Поместите всю команду на одной строке в начале комментария. После неё может следовать другой текст. Если `always` или `stop` написано с ошибкой или находится на следующей строке, Claude воспринимает комментарий как обычный `@claude review` и запускает одно ревью. Регистр не имеет значения.
+* Вам нужны права write, maintain или admin в репозитории. Claude проверяет это через GitHub для каждого комментирующего, а комментарии от ботов не запускают ревью.
+* Pull request должен быть открыт.
+
+Когда команда, запускающая ревью, принята, в pull request появляется check run **Claude Code Review** с заголовком **Code review queued...**. Заголовок меняется на **Code review in progress...**, когда ревью начинается. Claude также может отреагировать на ваш комментарий с помощью 👀, но эта реакция может появиться и тогда, когда ревью не запускается, поэтому ориентируйтесь на check run.
+
+Если ревью уже выполняется для последнего коммита pull request, новый запрос не запускает второе.
+
+&gt; [!NOTE]
+&gt;
+&gt; До обновления в июле 2026 года `@claude review` подписывал PR на ревью, запускаемые при push. Если вы полагались на это поведение, используйте вместо этого комментарий `@claude review always`.
+
+### Что охватывает последующее ревью
+
+Последующее ревью, которое запускается само, например после push, фокусируется на том, что изменилось с момента последнего ревью, и публикует меньше [результатов nit и pre-existing](#severity-levels). Чтобы узнать, были ли в результате какие-то результаты опущены, найдите в тексте ревью предложение, в котором указано их количество:
+
+* **Результаты по коду, который не изменился с момента последнего ревью**: предложение заканчивается на «outside the scope of this re-review and not posted»
+* **Результаты nit и pre-existing**: предложение заканчивается на «found and not posted»
+
+Чтобы получить ревью, в котором ничего из этого не опущено, оставьте комментарий [`@claude review`](#comment-commands). Такое ревью снова охватывает весь pull request.
+
+### Ревью черновиков и pull request из форков
+
+Автоматические ревью пропускают оба этих случая, поэтому запросите ревью с помощью команды в комментарии:
+
+* **Черновики pull request**: команда в комментарии выполняется для черновика, поэтому вы можете запросить ревью до того, как пометите pull request как готовый. Push в черновик не запускают ревью, даже после `@claude review always`. Подписка вступает в силу, как только вы пометите pull request как готовый.
+* **Pull request из форков**: Claude не проводит ревью pull request из форка автоматически, независимо от настройки **Review runs** репозитория. Чтобы запустить ревью, оставьте комментарий `@claude review` в pull request. [Условия для команд в комментариях](#comment-commands) по-прежнему действуют, причём права на запись нужны в базовом репозитории, а не в форке.
+
+В pull request из форка `@claude review always` тоже работает, но не подписывает pull request на ревью при последующих push. Нажатие **Re-run** в check run там не запускает ревью.
+
+### Использование Code Review вместе с Claude Code GitHub Action
+
+Если в репозитории также работает [Claude Code GitHub Action](https://code.claude.com/docs/ru/github-actions.md) в интерактивном режиме с триггерной фразой по умолчанию `@claude`, комментарий `@claude review` запускает и Action. Чтобы разделить их, задайте для входного параметра `trigger_phrase` в Action другую фразу.
+
+## Связанные ресурсы
+
+* [Устранение неполадок Code Review](https://code.claude.com/docs/ru/code-review-troubleshooting.md): ревью, которое не запустилось, завершилось ошибкой или было пропущено из-за бюджета
+* [Code Review](https://code.claude.com/docs/ru/code-review.md): что представляет собой сервис и как выполняется ревью
+* [Настройка Code Review](https://code.claude.com/docs/ru/code-review-setup.md): для Owner — включение Code Review и выбор того, когда и на каком уровне запускаются ревью
+* [Настройка Code Review под ваши нужды](https://code.claude.com/docs/ru/code-review-customize.md): изменение того, что помечает Claude, с помощью `REVIEW.md` и `CLAUDE.md`
+* [Стоимость и использование Code Review](https://code.claude.com/docs/ru/code-review-costs.md): как тарифицируются ревью и где задаётся лимит расходов
+* [Локальное ревью с помощью `/code-review`](https://code.claude.com/docs/ru/code-review-local): запуск ревью вашей ветки из сессии Claude Code
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

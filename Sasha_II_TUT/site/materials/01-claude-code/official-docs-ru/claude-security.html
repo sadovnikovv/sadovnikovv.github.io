@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Сканируйте вашу кодовую базу на уязвимости</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Сканируйте вашу кодовую базу на уязвимости <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Установите Claude Security plugin для сканирования вашей кодовой базы на уязвимости в сеансе Claude Code и преобразуйте результаты в патчи, которые вы проверяете и применяете.</p>
+</blockquote>
+<p>Плагин Claude Security запускает многоагентное сканирование уязвимостей вашей кодовой базы внутри сессии Claude Code. <a href="#choose-a-scan-effort">По умолчанию</a> при сканировании всего репозитория агенты Claude составляют карту вашей архитектуры, создают модель угроз, ищут уязвимости и независимо проверяют каждый результат перед написанием отчета.</p>
+<p>Используйте плагин для сканирования всего репозитория или <a href="#scan-only-your-changes">только набора изменений</a>, таких как diff ветки, diff pull request или один коммит, затем преобразуйте выбранные вами результаты в патчи, которые вы проверяете и применяете самостоятельно.</p>
+<p>Плагин работает локально в вашей сессии, использует <a href="#models-and-providers">любые модели, к которым у вас есть доступ в Claude Code</a>, и каждое сканирование учитывается в вашем <a href="https://code.claude.com/docs/ru/costs.md">использовании</a>. Если вам нужна управляемая служба, которая отслеживает ваши репозитории, или вы хотите запускать сканирования на <a href="https://platform.claude.com/docs/en/about-claude/models/introducing-claude-fable-5-and-claude-mythos-5">Claude Mythos</a>, см. продукт <a href="https://claude.com/product/claude-security">Claude Security</a>, доступный в плане Enterprise.</p>
+<p>Plugin также отличается от инструментов проверки, уже имеющихся в Claude Code: <a href="https://code.claude.com/docs/ru/security-guidance.md">security guidance plugin</a> проверяет код по мере его написания Claude, <a href="https://code.claude.com/docs/ru/commands#all-commands"><code>/security-review</code></a> запускает один проход по вашей ветке, и <a href="https://code.claude.com/docs/ru/code-review.md">Code Review</a> проверяет pull request. Чтобы узнать, как слои складываются, см. <a href="#how-the-plugin-fits-with-other-security-tools">Как plugin вписывается в другие инструменты безопасности</a>.</p>
+<h3 id="h-2">Предварительные требования <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Для запуска плагина вам необходимо:</p>
+<ul>
+<li>Платный план, доступ к API Anthropic или <a href="#models-and-providers">сторонний поставщик</a> для <a href="https://code.claude.com/docs/ru/workflows.md">динамических рабочих процессов</a>, которые сканирование использует для организации своих агентов. На Pro включите их из строки Dynamic workflows в <code>/config</code>.</li>
+<li>Python 3.9 или более поздняя версия, доступная в вашем <code>PATH</code> как <code>python3</code>. Проверьте с помощью <code>python3 --version</code>. Инструментарий плагина использует только стандартную библиотеку Python, поэтому ничего не устанавливается.</li>
+<li>Linux, macOS или Windows.</li>
+<li>Git для сканирования изменений и преобразования результатов в патчи; эти задачи не поддерживают другие системы контроля версий. Полное сканирование работает в любом каталоге с системой контроля версий или без неё.</li>
+</ul>
+<h3 id="models-and-providers">Models and providers <a class="h-anchor" href="#models-and-providers" aria-label="Ссылка на раздел">#</a></h3>
+<p>A scan runs inside your Claude Code session. The plugin makes no model calls of its own, so there&#x27;s no separate API key or provider setting to configure.</p>
+<ul>
+<li><strong>Model</strong>: the agents that hunt for vulnerabilities, verify findings, and write and review patches run on <a href="https://code.claude.com/docs/ru/sub-agents.md#choose-a-model">вашей модели сеанса</a>. To change it, run <a href="https://code.claude.com/docs/ru/model-config#setting-your-model"><code>/model</code></a> в вашем сеансе перед началом сканирования. A few supporting steps, such as mapping the repository, use the <a href="https://code.claude.com/docs/ru/model-config#model-aliases"><code>sonnet</code> alias</a> вместо этого.</li>
+<li><strong>Provider</strong>: scans run on a paid plan, with Anthropic API access, or on a <a href="https://code.claude.com/docs/ru/third-party-integrations.md">third-party provider</a> such as <a href="https://code.claude.com/docs/ru/amazon-bedrock.md">Amazon Bedrock</a>, <a href="https://code.claude.com/docs/ru/google-vertex-ai.md">Google Cloud&#x27;s Agent Platform</a>, or <a href="https://code.claude.com/docs/ru/microsoft-foundry.md">Microsoft Foundry</a>.</li>
+</ul>
+<p>On a third-party provider, the <code>sonnet</code> alias can resolve to a different version than it does on the Anthropic API. If your account can&#x27;t use that version, <a href="https://code.claude.com/docs/ru/model-config.md#pin-models-for-third-party-deployments">pin your model versions</a>, including <code>ANTHROPIC_DEFAULT_SONNET_MODEL</code>.</p>
+<p><a href="https://code.claude.com/docs/ru/model-config.md#automatic-model-fallback">Automatic model fallback</a> re-runs a request that a model&#x27;s safeguards flag. On Amazon Bedrock, Google Cloud&#x27;s Agent Platform, and Microsoft Foundry, the request can end with a refusal message instead, depending on <a href="https://code.claude.com/docs/ru/model-config.md#enable-fallback-on-bedrock-agent-platform-and-foundry">how your deployment is set up</a>.</p>
+<h3 id="h-3">Установите плагин <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>В расширении VS Code или в настольном приложении установите его, следуя инструкциям в разделе <a href="https://code.claude.com/docs/ru/plugins/install.md#install-a-plugin">Установка плагина</a>. В терминале запустите Claude Code командой <code>claude</code>, затем введите следующее в его промпт, чтобы установить плагин из <a href="https://code.claude.com/docs/ru/plugins/anthropic-marketplaces.md">официального маркетплейса Anthropic</a>:</p>
+<p>```text theme={null}
+/plugin install claude-security@claude-plugins-official</p>
+<pre><code>
+Команда открывает детали плагина, где вы выбираете [область установки](https://code.claude.com/docs/ru/plugins/install.md#install-a-plugin) для начала установки.
+
+Если установка не удается, ориентируйтесь на сообщение, которое выводит Claude Code:
+
+* `Marketplace &quot;claude-plugins-official&quot; not found`: добавьте маркетплейс с помощью `/plugin marketplace add anthropics/claude-plugins-official`, затем повторите попытку установки.
+* `Plugin &quot;claude-security&quot; not found in marketplace &quot;claude-plugins-official&quot;`: возможно, ваша локальная копия каталога маркетплейса устарела. Обновите ее с помощью `/plugin marketplace update claude-plugins-official`, затем повторите попытку установки. Если при повторной попытке выводится то же сообщение, см. раздел [Плагин не найден в маркетплейсе](https://code.claude.com/docs/ru/plugins/troubleshooting.md#plugin-not-found-in-marketplace).
+
+Проверьте сводку установки. Если она сообщает `Run /reload-plugins to apply.`, см. [Применение изменений плагина без перезагрузки](https://code.claude.com/docs/ru/plugins/cli-reference.md#reload-plugins) для активации плагина в вашей текущей сессии.
+
+После активации плагина вы готовы к [сканированию и исправлению вашей кодовой базы](#scan-and-fix-your-codebase).
+
+### Обновите плагин
+
+Чтобы обновить плагин самостоятельно, см. раздел [Немедленное обновление плагинов](https://code.claude.com/docs/ru/plugins/install.md#update-plugins-now). Claude Code также [обновляет плагин автоматически](https://code.claude.com/docs/ru/plugins/install.md#keep-plugins-updated), если автообновление не отключено.
+
+### Удалите плагин
+
+Чтобы удалить плагин, удалите его из меню `/plugin` или запустите `claude plugin uninstall claude-security` в вашем терминале.
+
+## Сканируйте и исправляйте вашу кодовую базу
+
+Плагин добавляет одну команду, `/claude-security`, которая открывает меню его трех задач: сканирование кодовой базы, сканирование набора изменений и предложение патчей. Оптимальный путь запускает полное сканирование, затем преобразует его результаты в патчи:
+
+**1. Откройте меню Claude Security**
+
+Запустите `/claude-security` и выберите **Scan codebase**.
+
+**2. Выберите, что сканировать**
+
+Плагин сначала читает ваш репозиторий, затем предлагает весь репозиторий или сосредоточенную область. Выберите весь репозиторий или ответьте &quot;I don&#x27;t know&quot;, и плагин выберет разумное значение по умолчанию для размера вашего репозитория.
+
+**3. Подтвердите запуск**
+
+Сканирование может занять некоторое время, может использовать значительное количество токенов и требует, чтобы Claude Code оставался открытым во время его завершения. Ничего не запускается, пока вы не подтвердите.
+
+**4. Прочитайте отчет**
+
+Во время выполнения сканирования оно сообщает о каждом этапе при его запуске, с деталями, доступными в [`/workflows`](https://code.claude.com/docs/ru/workflows). Результаты записываются в каталог с временной меткой в вашем репозитории, описанный в [Прочитайте результаты сканирования](#read-the-scan-results).
+
+**5. Преобразуйте результаты в патчи**
+
+Запустите `/claude-security` снова и выберите **Suggest patches**, затем выберите, какие результаты нужно решить. Проверенные патчи записываются в папку `patches/` отчета; [Исправьте результаты](#fix-findings) охватывает, как каждый патч создается и проверяется.
+
+**6. Примените принятые вами патчи**
+
+Примените каждый патч из вашей оболочки с помощью `git apply` в его собственном pull request. Патчи никогда не применяются автоматически.
+
+Вам не нужно начинать с меню: попросите задачу напрямую, как аргументы команды, такие как `/claude-security scan my branch`, или на простом языке, такие как &quot;scan commit abc1234&quot;. Плагин работает лучше всего в [режиме auto](https://code.claude.com/docs/ru/permission-modes.md), который позволяет агентам сканирования продолжать работу без запроса разрешения на каждом шаге.
+
+### Сканируйте только ваши изменения
+
+Когда ваша ветка имеет коммиты, которых нет в базе, меню `/claude-security` предлагает сканировать только этот diff, чтобы вы могли проверить ветку перед слиянием. Вы также можете сканировать один из ваших открытых запросов на слияние или отдельный коммит, попросив его, например &quot;scan commit abc1234&quot;. Сканируются только зафиксированные изменения: сначала зафиксируйте или отложите текущие правки, или запустите полное сканирование, которое читает рабочее дерево.
+
+Сканирование изменений требует репозитория git; полное сканирование неверсионированного каталога все еще работает. Поиск ваших открытых pull request предлагается только тогда, когда ваша сессия уже имеет разрешение на запуск GitHub CLI и в `gh` выполнен вход.
+
+### Ограничьте область больших репозиториев
+
+На большом репозитории сканируйте одну область за раз вместо всего дерева. Выберите одну из сосредоточенных областей, которые предлагает плагин, например ваш уровень API или ваш код аутентификации, и запуск сам подстраивает свой объем под то, что вы выбираете. Раздел охвата отчета указывает, что было и не было проверено. Запустите другое сканирование в другой области в любое время.
+
+### Выберите уровень усилий сканирования
+
+Уровень усилий сканирования определяет, насколько глубоким будет сканирование. Ваши результаты проходят одну и ту же независимую проверку на уровнях `low`, `medium` и `high`.
+
+* **`low`**: быстрый первичный осмотр. При сканировании кодовой базы пропускает карту архитектуры и модель угроз.
+* **`medium`**: значение по умолчанию.
+* **`high`**: то же, что делает `medium`, плюс дополнительный поиск уязвимостей в том же коде.
+
+Укажите уровень усилий сканирования в своем промпте Claude Code, например `/claude-security scan my public API code at high` или `/claude-security scan my branch at high`.
+
+Если сканирование большого репозитория находит меньше, чем вы ожидаете, выберите уровень усилий сканирования `high`, запустите сканирование повторно или сделайте и то, и другое. Каждый из этих вариантов может выявить результаты, которые не находит одно сканирование на уровне `medium`.
+
+### Прочитайте результаты сканирования
+
+Каждое сканирование записывает свои результаты в каталог `CLAUDE-SECURITY-&lt;timestamp&gt;/` с временной меткой в вашем репозитории:
+
+* **`CLAUDE-SECURITY-RESULTS.md`**: отчет с ID каждого результата, например `F1`, плюс его влияние, сценарий эксплуатации, серьезность, уверенность и рекомендация
+* **`CLAUDE-SECURITY-RESULTS.jsonl`**: те же результаты в машиночитаемой форме, один объект JSON на строку
+* **`CLAUDE-SECURITY-RESULTS.sarif`**: те же результаты как журнал [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html) для сканирования кода GitHub и любого другого инструмента, который читает стандарт. Сканирование классифицирует результаты в соответствии с их категориями слабостей [CWE](https://cwe.mitre.org/)
+* **`CLAUDE-SECURITY-REVISION-&lt;commit&gt;.json`**: штамп редакции, записывающий, какой коммит был отсканирован, с каким [уровнем усилий сканирования](#choose-a-scan-effort), были ли незафиксированные изменения частью отсканированного дерева и насколько тщательно был проверен запуск. Сканирование вне контроля версий ставит `UNVERSIONED` вместо коммита
+
+Этот каталог — единственное изменение, которое сканирование вносит в ваш checkout, и он имеет свой собственный `.gitignore`, поэтому случайный `git add` никогда не затянет отчет в коммит. Чтобы сохранить отчет в истории для аудита, удалите этот один файл `.gitignore` и зафиксируйте каталог как любой другой.
+
+Результаты появляются в отчете только после того, как независимые агенты-верификаторы их анализируют, что делает отчеты краткими и стоящими прочтения. Сканирования недетерминированы: два сканирования одного и того же кода могут выявить разные результаты. Запускайте сканирования регулярно.
+
+## Исправьте результаты
+
+Начните поток исправления, выбрав **Suggest patches** из меню `/claude-security`, или попросите на простом языке, например &quot;fix finding F3&quot;, затем выберите, какие результаты из отчета нужно решить. Патчи создаются против зафиксированного кода, и отчет должен по-прежнему описывать код, который у вас есть: результаты, код которых с тех пор изменился, пропускаются с примечанием, и плагин предлагает свежее сканирование вместо исправления из устаревшего отчета. Каждый патч создается в копии вашего репозитория, поэтому ваши исходные файлы остаются нетронутыми, пока вы не примените патч самостоятельно.
+
+Перед доставкой каждый патч проверяется агентом, независимым от того, кто его написал, который запускает тесты вашего проекта против изменения, когда код их имеет, и читает diff на его собственных условиях для всего нового, что он может внести. Патч записывается только когда эта проверка может подтвердить, что изменение решает один результат, не вводит новую уязвимость и оставляет поведение иначе неизменным. Когда он не может подтвердить все три, вы получаете краткое примечание, объясняющее почему, вместо патча.
+
+### Патчи никогда не применяются автоматически
+
+Применение патча — это всегда ваше решение. Патчи попадают в папку `patches/` отчета, один `F&lt;n&gt;.patch` на результат с примечанием рядом с ним, объясняющим изменение. Примените один из вашей оболочки или попросите Claude применить его и открыть запрос на слияние:
+</code></pre>
+<p>git apply CLAUDE-SECURITY-&lt;timestamp&gt;/patches/F1.patch</p>
+<pre><code>
+Когда исправленный код не имеет тестов, примечание патча говорит об этом, поэтому вы знаете, что его проверка выполнялась без прохождения теста. Примените каждый патч в его собственном запросе на слияние, чтобы его можно было проверить и протестировать отдельно.
+
+## Как плагин работает с другими инструментами безопасности
+
+Плагин Claude Security — это слой глубокого сканирования по требованию в стеке защиты в глубину, наряду с плагином [security guidance](https://code.claude.com/docs/ru/security-guidance.md), [`/security-review`](https://code.claude.com/docs/ru/commands#all-commands), [Code Review](https://code.claude.com/docs/ru/code-review.md), управляемым продуктом [Claude Security](https://claude.com/product/claude-security) и вашими существующими сканерами:
+
+| Этап | Инструмент | Что он охватывает |
+| :- | :- | :- |
+| В сеансе | Плагин [Security guidance](https://code.claude.com/docs/ru/security-guidance.md) | Распространенные уязвимости в коде, который пишет Claude, исправленные в том же сеансе |
+| По требованию, один проход | [`/security-review`](https://code.claude.com/docs/ru/commands#all-commands) | Одноразовый проход безопасности на текущей ветке |
+| По требованию, глубокое сканирование | Плагин Claude Security | Многоагентное сканирование репозитория или diff с независимо проверенными результатами и патчами |
+| На запросе на слияние | [Code Review](https://code.claude.com/docs/ru/code-review.md), планы Team и Enterprise | Многоагентная проверка корректности и безопасности с полным контекстом кодовой базы |
+| Управляемый | [Claude Security](https://claude.com/product/claude-security), план Enterprise | Размещенное сканирование, которое отслеживает подключенные репозитории |
+| В CI | Ваши существующие сканеры статического анализа и зависимостей | Правила, специфичные для языка, проверки цепочки поставок и обеспечение политики |
+
+Плагин не заменяет ваши существующие инструменты безопасности исходного кода. Запускайте его наряду со статическим анализом, сканированием зависимостей и проверкой кода: он рассуждает о вашем коде так, как это делал бы человеческий исследователь безопасности, что дополняет детерминированные проверки, которые предоставляют эти инструменты.
+
+## Устранение неполадок
+
+**Меню `/claude-security` открывается с предупреждением Python.** Плагину требуется `python3` 3.9 или более поздняя версия в вашем `PATH`. Когда он вообще не может найти `python3`, меню предупреждает, что Claude Security не будет работать, пока он не будет установлен; когда первый `python3` в вашем `PATH` старше, предупреждение называет найденную версию. Установите Python 3 или поместите более новый `python3` первым в вашем `PATH`, затем начните новый сеанс.
+
+**Вы можете увидеть уведомление &quot;safeguards flagged this message&quot; при сканировании на модели Fable.** Сообщение называет модель, которую вы запускаете. Классификаторы безопасности кибербезопасности Fable помечают определенные запросы, и Claude Code повторно запускает помеченный запрос на модели Opus через [автоматический откат модели](https://code.claude.com/docs/ru/model-config.md#automatic-model-fallback). Это ожидается. Когда запрос повторно запускается, сканирование все равно должно завершиться успешно.
+
+## Связанные ресурсы
+
+Чтобы углубиться в части, которые эта страница затрагивает:
+
+* [Security guidance plugin](https://code.claude.com/docs/ru/security-guidance.md): ловите проблемы в коде по мере его написания Claude в том же сеансе
+* [Code Review](https://code.claude.com/docs/ru/code-review.md): установите многоагентную проверку во время PR
+* [Claude Security](https://claude.com/product/claude-security): управляемая служба, которая отслеживает подключенные репозитории
+* [Claude Code security](https://code.claude.com/docs/ru/security.md): как Claude Code подходит к доверию, разрешениям и защитам
+* [Install and manage plugins](https://code.claude.com/docs/ru/plugins/install.md): найдите и установите другие плагины из официального marketplace
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

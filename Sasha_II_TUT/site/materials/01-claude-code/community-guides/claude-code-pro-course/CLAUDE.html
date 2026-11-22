@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Репозиторий курса Claude Code PRO</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../materials/01-claude-code/community-guides/claude-code-pro-course/index.html">claude-code-pro-course</a></nav>
+<h1 id="репозиторий-курса-claude-code-pro">Репозиторий курса Claude Code PRO <a class="h-anchor" href="#репозиторий-курса-claude-code-pro" aria-label="Ссылка на раздел">#</a></h1>
+<p>Учебный курс на русском + готовые шаблоны. Здесь нет приложения — только Markdown, JSON, YAML и bash.</p>
+<h3 id="h">Структура <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><code>course/</code> — модули 00–11, <code>cheatsheet.md</code>, <code>faq.md</code></li>
+<li><code>labs/</code> — лабораторные работы</li>
+<li><code>recipes/prompts.md</code> — библиотека промптов</li>
+<li><code>starter-kit/</code> — шаблоны для копирования в проекты (<code>.claude/</code>, <code>CLAUDE.md</code>, <code>.mcp.json</code>)</li>
+<li><code>plugin-example/</code> — пример плагина</li>
+<li><code>install.sh</code> — установщик starter-kit; <code>scripts/validate.py</code> — проверки</li>
+</ul>
+<h3 id="h-2">Команды <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><code>python3 scripts/validate.py</code> — обязательно после изменений</li>
+<li><code>shellcheck $(git ls-files &#x27;*.sh&#x27;)</code></li>
+<li><code>bash install.sh &quot;$(mktemp -d)&quot;</code> — проверить установщик</li>
+</ul>
+<h3 id="h-3">Правила <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Факты о Claude Code сверяй с https://code.claude.com/docs; при сомнении — помечай.</li>
+<li>Добавил файл → добавь в оглавление (README.md, labs/README.md, starter-kit/README.md).</li>
+<li>Имя skill = имя папки; имя агента = имя файла.</li>
+<li>Модули заканчиваются разделом «Практика» и ссылкой «➡️ Далее».</li>
+<li>Никаких реальных токенов и ключей в примерах.</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Руководство по Memory</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/02-memory/index.html">02-memory</a></nav>
+<p>&lt;picture&gt;
+  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;../resources/logos/claude-howto-logo-dark.svg&quot;&gt;
+  &lt;img alt=&quot;Claude How To&quot; src=&quot;../resources/logos/claude-howto-logo.svg&quot;&gt;
+&lt;/picture&gt;</p>
+<h1 id="руководство-по-memory">Руководство по Memory <a class="h-anchor" href="#руководство-по-memory" aria-label="Ссылка на раздел">#</a></h1>
+<p>Memory позволяет Claude сохранять контекст между сессиями и разговорами. В Claude Code это реализовано в двух формах: автоматическая синтезация в claude.ai и файловый <code>CLAUDE.md</code> в Claude Code.</p>
+<h3 id="h">Обзор <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Memory в Claude Code даёт постоянный контекст, который переносится между несколькими сессиями и разговорами. В отличие от временного окна контекста, memory-файлы позволяют:</p>
+<ul>
+<li>Делить стандарты проекта внутри команды</li>
+<li>Хранить личные предпочтения разработки</li>
+<li>Поддерживать правила и конфигурации для конкретных каталогов</li>
+<li>Подключать внешнюю документацию</li>
+<li>Хранить memory под версионным контролем как часть проекта</li>
+</ul>
+<p>Система memory работает на нескольких уровнях: от глобальных личных предпочтений до конкретных подкаталогов, что даёт тонкий контроль над тем, что Claude запоминает и как применяет эти знания.</p>
+<h3 id="краткая-справка-по-командам-memory">Краткая справка по командам Memory <a class="h-anchor" href="#краткая-справка-по-командам-memory" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Команда</th><th>Назначение</th><th>Использование</th><th>Когда применять</th></tr></thead><tbody><tr><td><code>/init</code></td><td>Инициализировать project memory</td><td><code>/init</code></td><td>Новый проект, первая настройка <code>CLAUDE.md</code></td></tr><tr><td><code>/memory</code></td><td>Редактировать memory-файлы в редакторе</td><td><code>/memory</code></td><td>Большие изменения, реорганизация, проверка содержимого</td></tr><tr><td>Префикс <code>#</code></td><td>Быстро добавить однострочное правило</td><td><code># Your rule here</code></td><td>Быстрые правила по ходу разговора</td></tr><tr><td><code># new rule into memory</code></td><td>Явное добавление memory</td><td><code># new rule into memory&lt;br/&gt;Your detailed rule</code></td><td>Сложные многострочные правила</td></tr><tr><td><code># remember this</code></td><td>Добавление memory на естественном языке</td><td><code># remember this&lt;br/&gt;Your instruction</code></td><td>Разговорные обновления memory</td></tr><tr><td><code>@path/to/file</code></td><td>Подключить внешний контент</td><td><code>@README.md</code> or <code>@docs/api.md</code></td><td>Ссылка на существующую документацию в <code>CLAUDE.md</code></td></tr></tbody></table></div>
+<h3 id="быстрый-старт-инициализация-memory">Быстрый старт: Инициализация Memory <a class="h-anchor" href="#быстрый-старт-инициализация-memory" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="команда-init">Команда <code>/init</code> <a class="h-anchor" href="#команда-init" aria-label="Ссылка на раздел">#</a></h4>
+<p>Команда <code>/init</code> — самый быстрый способ настроить project memory в Claude Code. Она создаёт файл <code>CLAUDE.md</code> с базовой документацией проекта.</p>
+<p><strong>Использование:</strong></p>
+<pre><code class="language-bash">/init</code></pre>
+<p><strong>Что делает:</strong></p>
+<ul>
+<li>Создаёт новый файл <code>CLAUDE.md</code> в проекте (обычно <code>./CLAUDE.md</code> или <code>./.claude/CLAUDE.md</code>)</li>
+<li>Фиксирует конвенции и рекомендации проекта</li>
+<li>Создаёт основу для постоянства контекста между сессиями</li>
+<li>Даёт шаблон для описания стандартов проекта</li>
+</ul>
+<p><strong>Улучшенный интерактивный режим:</strong> установите <code>CLAUDE_CODE_NEW_INIT=true</code>, чтобы включить многошаговый интерактивный сценарий, который проведёт по настройке проекта шаг за шагом:</p>
+<pre><code class="language-bash">CLAUDE_CODE_NEW_INIT=true claude
+/init</code></pre>
+<p><strong>Когда использовать <code>/init</code>:</strong></p>
+<ul>
+<li>При запуске нового проекта с Claude Code</li>
+<li>При фиксации стандартов и соглашений команды</li>
+<li>При создании документации о структуре codebase</li>
+<li>При настройке иерархии memory для совместной разработки</li>
+</ul>
+<p><strong>Пример сценария:</strong></p>
+<pre><code class="language-markdown"># В каталоге проекта
+/init
+
+# Claude создаёт CLAUDE.md со структурой вроде:
+# Project Configuration
+## Project Overview
+- Name: Your Project
+- Tech Stack: [Your technologies]
+- Team Size: [Number of developers]
+
+## Development Standards
+- Code style preferences
+- Testing requirements
+- Git workflow conventions</code></pre>
+<h4 id="быстрые-обновления-memory-через">Быстрые обновления Memory через <code>#</code> <a class="h-anchor" href="#быстрые-обновления-memory-через" aria-label="Ссылка на раздел">#</a></h4>
+<p>Вы можете быстро добавить информацию в memory во время разговора, начав сообщение с <code>#</code>:</p>
+<p><strong>Синтаксис:</strong></p>
+<pre><code class="language-markdown"># Your memory rule or instruction here</code></pre>
+<p><strong>Примеры:</strong></p>
+<pre><code class="language-markdown"># Always use TypeScript strict mode in this project
+
+# Prefer async/await over promise chains
+
+# Run npm test before every commit
+
+# Use kebab-case for file names</code></pre>
+<p><strong>Как это работает:</strong></p>
+<ol>
+<li>Начните сообщение с <code>#</code> и своего правила</li>
+<li>Claude распознает это как запрос на обновление memory</li>
+<li>Claude спросит, какой memory-файл обновить (project или personal)</li>
+<li>Правило будет добавлено в соответствующий <code>CLAUDE.md</code></li>
+<li>В будущих сессиях этот контекст будет загружаться автоматически</li>
+</ol>
+<p><strong>Альтернативные шаблоны:</strong></p>
+<pre><code class="language-markdown"># new rule into memory
+Always validate user input with Zod schemas
+
+# remember this
+Use semantic versioning for all releases
+
+# add to memory
+Database migrations must be reversible</code></pre>
+<h4 id="команда-memory">Команда <code>/memory</code> <a class="h-anchor" href="#команда-memory" aria-label="Ссылка на раздел">#</a></h4>
+<p>Команда <code>/memory</code> даёт прямой доступ к редактированию файлов <code>CLAUDE.md</code> в сессиях Claude Code. Она открывает memory-файлы в системном редакторе для полноценного редактирования.</p>
+<p><strong>Использование:</strong></p>
+<pre><code class="language-bash">/memory</code></pre>
+<p><strong>Что делает:</strong></p>
+<ul>
+<li>Открывает memory-файлы в стандартном редакторе системы</li>
+<li>Позволяет вносить большие дополнения, изменения и перестройку структуры</li>
+<li>Даёт доступ ко всем memory-файлам в иерархии</li>
+<li>Помогает управлять постоянным контекстом между сессиями</li>
+</ul>
+<p><strong>Когда использовать <code>/memory</code>:</strong></p>
+<ul>
+<li>При проверке существующего memory-контента</li>
+<li>При больших обновлениях стандартов проекта</li>
+<li>При реорганизации структуры memory</li>
+<li>При добавлении подробной документации или рекомендаций</li>
+<li>При сопровождении и обновлении memory по мере развития проекта</li>
+</ul>
+<p><strong>Сравнение: <code>/memory</code> и <code>/init</code></strong></p>
+<div class="table-wrap"><table><thead><tr><th>Аспект</th><th><code>/memory</code></th><th><code>/init</code></th></tr></thead><tbody><tr><td><strong>Назначение</strong></td><td>Редактировать существующие memory-файлы</td><td>Инициализировать новый <code>CLAUDE.md</code></td></tr><tr><td><strong>Когда использовать</strong></td><td>Обновлять/менять контекст проекта</td><td>Начинать новый проект</td></tr><tr><td><strong>Действие</strong></td><td>Открывает редактор для изменений</td><td>Генерирует стартовый шаблон</td></tr><tr><td><strong>Сценарий</strong></td><td>Постоянное сопровождение</td><td>Разовая настройка</td></tr></tbody></table></div>
+<p><strong>Пример сценария:</strong></p>
+<pre><code class="language-markdown"># Открыть memory для редактирования
+/memory
+
+# Claude показывает варианты:
+# 1. Managed Policy Memory
+# 2. Project Memory (./CLAUDE.md)
+# 3. User Memory (~/.claude/CLAUDE.md)
+# 4. Local Project Memory
+
+# Выберите вариант 2 (Project Memory)
+# Ваш редактор откроет ./CLAUDE.md
+
+# Внесите изменения, сохраните и закройте редактор
+# Claude автоматически перечитает обновлённую memory</code></pre>
+<p><strong>Использование Memory Imports:</strong></p>
+<p>Файлы <code>CLAUDE.md</code> поддерживают синтаксис <code>@path/to/file</code>, чтобы подключать внешний контент:</p>
+<pre><code class="language-markdown"># Project Documentation
+See @README.md for project overview
+See @package.json for available npm commands
+See @docs/architecture.md for system design
+
+# Import from home directory using absolute path
+@~/.claude/my-project-instructions.md</code></pre>
+<p><strong>Особенности import:</strong></p>
+<ul>
+<li>Поддерживаются относительные и абсолютные пути (например, <code>@docs/api.md</code> или <code>@~/.claude/my-project-instructions.md</code>)</li>
+<li>Поддерживаются рекурсивные импорты с максимальной глубиной 5</li>
+<li>Первый импорт из внешних мест запускает диалог подтверждения из соображений безопасности</li>
+<li>Директивы импорта не вычисляются внутри markdown code spans или code blocks, поэтому их безопасно документировать в примерах</li>
+<li>Помогает избегать дублирования, ссылаясь на существующую документацию</li>
+<li>Автоматически добавляет подключённый контент в контекст Claude</li>
+</ul>
+<h3 id="архитектура-memory">Архитектура Memory <a class="h-anchor" href="#архитектура-memory" aria-label="Ссылка на раздел">#</a></h3>
+<p>Memory в Claude Code использует иерархическую систему, где разные уровни выполняют разные роли:</p>
+<pre><code class="language-mermaid">graph TB
+    A[&quot;Сессия Claude&quot;]
+    B[&quot;Ввод пользователя&quot;]
+    C[&quot;Система Memory&quot;]
+    D[&quot;Хранилище Memory&quot;]
+
+    B --&gt;|Пользователь добавляет информацию| C
+    C --&gt;|Синтезирует каждые 24 часа| D
+    D --&gt;|Автоматически загружает| A
+    A --&gt;|Использует контекст| C</code></pre>
+<h3 id="иерархия-memory-в-claude-code">Иерархия Memory в Claude Code <a class="h-anchor" href="#иерархия-memory-в-claude-code" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code использует многоуровневую иерархию memory. Memory-файлы загружаются автоматически при старте Claude Code, а файлы более высокого уровня имеют приоритет.</p>
+<p><strong>Полная иерархия Memory (в порядке приоритета):</strong></p>
+<ol>
+<li><strong>Managed Policy</strong> - инструкции на уровне организации</li>
+<li>macOS: <code>/Library/Application Support/ClaudeCode/CLAUDE.md</code></li>
+<li>Linux/WSL: <code>/etc/claude-code/CLAUDE.md</code></li>
+<li>Windows: <code>C:\Program Files\ClaudeCode\CLAUDE.md</code></li>
+</ol>
+<ol>
+<li><strong>Managed Drop-ins</strong> - файлы политик, объединяемые в алфавитном порядке (v2.1.83+)</li>
+<li>каталог <code>managed-settings.d/</code> рядом с managed policy <code>CLAUDE.md</code></li>
+<li>файлы объединяются в алфавитном порядке для модульного управления политиками</li>
+</ol>
+<ol>
+<li><strong>Project Memory</strong> - общий для команды контекст (под version control)</li>
+<li><code>./.claude/CLAUDE.md</code> или <code>./CLAUDE.md</code> (в корне репозитория)</li>
+</ol>
+<ol>
+<li><strong>Project Rules</strong> - модульные, тематические инструкции проекта</li>
+<li><code>./.claude/rules/*.md</code></li>
+</ol>
+<ol>
+<li><strong>User Memory</strong> - личные предпочтения (для всех проектов)</li>
+<li><code>~/.claude/CLAUDE.md</code></li>
+</ol>
+<ol>
+<li><strong>User-Level Rules</strong> - личные правила (для всех проектов)</li>
+<li><code>~/.claude/rules/*.md</code></li>
+</ol>
+<ol>
+<li><strong>Local Project Memory</strong> - личные настройки для конкретного проекта</li>
+<li><code>./CLAUDE.local.md</code></li>
+</ol>
+<blockquote>
+<p><strong>Note</strong>: <code>CLAUDE.local.md</code> не упоминается в <a href="https://code.claude.com/docs/en/memory">official documentation</a> по состоянию на March 2026. Возможно, это всё ещё работает как legacy feature. Для новых проектов лучше использовать <code>~/.claude/CLAUDE.md</code> (user-level) или <code>.claude/rules/</code> (project-level, path-scoped).</p>
+</blockquote>
+<ol>
+<li><strong>Auto Memory</strong> - автоматические заметки и выводы Claude</li>
+<li><code>~/.claude/projects/&lt;project&gt;/memory/</code></li>
+</ol>
+<p><strong>Поведение обнаружения Memory:</strong></p>
+<p>Claude ищет memory-файлы в таком порядке, при этом более ранние пути имеют приоритет:</p>
+<pre><code class="language-mermaid">graph TD
+    A[&quot;Managed Policy&lt;br/&gt;/Library/.../ClaudeCode/CLAUDE.md&quot;] --&gt;|наивысший приоритет| A2[&quot;Managed Drop-ins&lt;br/&gt;managed-settings.d/&quot;]
+    A2 --&gt; B[&quot;Project Memory&lt;br/&gt;./CLAUDE.md&quot;]
+    B --&gt; C[&quot;Project Rules&lt;br/&gt;./.claude/rules/*.md&quot;]
+    C --&gt; D[&quot;User Memory&lt;br/&gt;~/.claude/CLAUDE.md&quot;]
+    D --&gt; E[&quot;User Rules&lt;br/&gt;~/.claude/rules/*.md&quot;]
+    E --&gt; F[&quot;Local Project Memory&lt;br/&gt;./CLAUDE.local.md&quot;]
+    F --&gt; G[&quot;Auto Memory&lt;br/&gt;~/.claude/projects/.../memory/&quot;]
+
+    B --&gt;|импортирует| H[&quot;@docs/architecture.md&quot;]
+    H --&gt;|импортирует| I[&quot;@docs/api-standards.md&quot;]
+
+    style A fill:#fce4ec,stroke:#333,color:#333
+    style A2 fill:#fce4ec,stroke:#333,color:#333
+    style B fill:#e1f5fe,stroke:#333,color:#333
+    style C fill:#e1f5fe,stroke:#333,color:#333
+    style D fill:#f3e5f5,stroke:#333,color:#333
+    style E fill:#f3e5f5,stroke:#333,color:#333
+    style F fill:#e8f5e9,stroke:#333,color:#333
+    style G fill:#fff3e0,stroke:#333,color:#333
+    style H fill:#e1f5fe,stroke:#333,color:#333
+    style I fill:#e1f5fe,stroke:#333,color:#333</code></pre>
+<h3 id="исключение-claude-md-через-claudemdexcludes">Исключение <code>CLAUDE.md</code> через <code>claudeMdExcludes</code> <a class="h-anchor" href="#исключение-claude-md-через-claudemdexcludes" aria-label="Ссылка на раздел">#</a></h3>
+<p>В больших monorepo некоторые <code>CLAUDE.md</code> могут быть не нужны для текущей работы. Настройка <code>claudeMdExcludes</code> позволяет исключить конкретные файлы <code>CLAUDE.md</code>, чтобы они не загружались в контекст:</p>
+<pre><code class="language-jsonc">// В ~/.claude/settings.json или .claude/settings.json
+{
+  &quot;claudeMdExcludes&quot;: [
+    &quot;packages/legacy-app/CLAUDE.md&quot;,
+    &quot;vendors/**/CLAUDE.md&quot;
+  ]
+}</code></pre>
+<p>Шаблоны сопоставляются с путями относительно корня проекта. Это особенно полезно для:</p>
+<ul>
+<li>Monorepo с множеством подпроектов, где актуальны лишь некоторые</li>
+<li>Репозиториев, содержащих vendored или third-party <code>CLAUDE.md</code></li>
+<li>Снижения шума в окне контекста Claude за счёт исключения устаревших или нерелевантных инструкций</li>
+</ul>
+<h3 id="иерархия-settings-файлов">Иерархия settings-файлов <a class="h-anchor" href="#иерархия-settings-файлов" aria-label="Ссылка на раздел">#</a></h3>
+<p>Настройки Claude Code (включая <code>autoMemoryDirectory</code>, <code>claudeMdExcludes</code> и другие параметры) разрешаются из пятиуровневой иерархии, где более высокие уровни имеют приоритет:</p>
+<div class="table-wrap"><table><thead><tr><th>Уровень</th><th>Расположение</th><th>Область</th></tr></thead><tbody><tr><td>1 (наивысший)</td><td>Managed policy (system-level)</td><td>Политики на уровне организации</td></tr><tr><td>2</td><td><code>managed-settings.d/</code> (v2.1.83+)</td><td>Модульные policy drop-ins, объединяемые по алфавиту</td></tr><tr><td>3</td><td><code>~/.claude/settings.json</code></td><td>Пользовательские настройки</td></tr><tr><td>4</td><td><code>.claude/settings.json</code></td><td>Уровень проекта (коммитится в git)</td></tr><tr><td>5 (самый низкий)</td><td><code>.claude/settings.local.json</code></td><td>Локальные переопределения (игнорируются git)</td></tr></tbody></table></div>
+<p><strong>Платформенно-специфичная конфигурация (v2.1.51+):</strong></p>
+<p>Настройки также можно задавать через:</p>
+<ul>
+<li><strong>macOS</strong>: Property list (plist) files</li>
+<li><strong>Windows</strong>: Windows Registry</li>
+</ul>
+<p>Эти механизмы платформы читаются вместе с JSON-настройками и подчиняются тем же правилам приоритета.</p>
+<h3 id="модульная-система-rules">Модульная система Rules <a class="h-anchor" href="#модульная-система-rules" aria-label="Ссылка на раздел">#</a></h3>
+<p>Создавайте организованные правила по путям с помощью структуры каталога <code>.claude/rules/</code>. Правила можно определять как на уровне проекта, так и на уровне пользователя:</p>
+<pre><code>your-project/
+├── .claude/
+│   ├── CLAUDE.md
+│   └── rules/
+│       ├── code-style.md
+│       ├── testing.md
+│       ├── security.md
+│       └── api/                  # Поддерживаются подкаталоги
+│           ├── conventions.md
+│           └── validation.md
+
+~/.claude/
+├── CLAUDE.md
+└── rules/                        # Правила уровня пользователя (все проекты)
+    ├── personal-style.md
+    └── preferred-patterns.md</code></pre>
+<p>Правила ищутся рекурсивно внутри <code>rules/</code>, включая подкаталоги. User-level rules из <code>~/.claude/rules/</code> загружаются раньше project-level rules, что позволяет задавать личные defaults, которые проект может переопределить.</p>
+<h4 id="правила-для-конкретных-путей-через-yaml-frontmatter">Правила для конкретных путей через YAML frontmatter <a class="h-anchor" href="#правила-для-конкретных-путей-через-yaml-frontmatter" aria-label="Ссылка на раздел">#</a></h4>
+<p>Определяйте правила, которые применяются только к конкретным путям файлов:</p>
+<pre><code class="language-markdown">---
+paths: src/api/**/*.ts
+---
+
+# API Development Rules
+
+- All API endpoints must include input validation
+- Use Zod for schema validation
+- Document all parameters and response types
+- Include error handling for all operations</code></pre>
+<p><strong>Примеры glob-шаблонов:</strong></p>
+<ul>
+<li><code>**/*.ts</code> - все TypeScript-файлы</li>
+<li><code>src/**/*</code> - все файлы внутри <code>src/</code></li>
+<li><code>src/**/*.{ts,tsx}</code> - несколько расширений</li>
+<li><code>{src,lib}/**/*.ts, tests/**/*.test.ts</code> - несколько шаблонов</li>
+</ul>
+<h4 id="подкаталоги-и-symlinks">Подкаталоги и Symlinks <a class="h-anchor" href="#подкаталоги-и-symlinks" aria-label="Ссылка на раздел">#</a></h4>
+<p>Правила в <code>.claude/rules/</code> поддерживают две организационные возможности:</p>
+<ul>
+<li><strong>Подкаталоги</strong>: правила ищутся рекурсивно, поэтому можно группировать их по темам (например, <code>rules/api/</code>, <code>rules/testing/</code>, <code>rules/security/</code>)</li>
+<li><strong>Symlinks</strong>: можно шарить правила между несколькими проектами через symlink из центрального места в каталог <code>.claude/rules/</code> каждого проекта</li>
+</ul>
+<h3 id="таблица-расположений-memory">Таблица расположений Memory <a class="h-anchor" href="#таблица-расположений-memory" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Расположение</th><th>Область</th><th>Приоритет</th><th>Общий доступ</th><th>Доступ</th><th>Лучше всего подходит для</th></tr></thead><tbody><tr><td><code>/Library/Application Support/ClaudeCode/CLAUDE.md</code> (macOS)</td><td>Managed Policy</td><td>1 (Highest)</td><td>Organization</td><td>System</td><td>Company-wide policies</td></tr><tr><td><code>/etc/claude-code/CLAUDE.md</code> (Linux/WSL)</td><td>Managed Policy</td><td>1 (Highest)</td><td>Organization</td><td>System</td><td>Organization standards</td></tr><tr><td><code>C:\Program Files\ClaudeCode\CLAUDE.md</code> (Windows)</td><td>Managed Policy</td><td>1 (Highest)</td><td>Organization</td><td>System</td><td>Corporate guidelines</td></tr><tr><td><code>managed-settings.d/*.md</code> (alongside policy)</td><td>Managed Drop-ins</td><td>1.5</td><td>Organization</td><td>System</td><td>Modular policy files (v2.1.83+)</td></tr><tr><td><code>./CLAUDE.md</code> or <code>./.claude/CLAUDE.md</code></td><td>Project Memory</td><td>2</td><td>Team</td><td>Git</td><td>Team standards, shared architecture</td></tr><tr><td><code>./.claude/rules/*.md</code></td><td>Project Rules</td><td>3</td><td>Team</td><td>Git</td><td>Path-specific, modular rules</td></tr><tr><td><code>~/.claude/CLAUDE.md</code></td><td>User Memory</td><td>4</td><td>Individual</td><td>Filesystem</td><td>Personal preferences (all projects)</td></tr><tr><td><code>~/.claude/rules/*.md</code></td><td>User Rules</td><td>5</td><td>Individual</td><td>Filesystem</td><td>Personal rules (all projects)</td></tr><tr><td><code>./CLAUDE.local.md</code></td><td>Project Local</td><td>6</td><td>Individual</td><td>Git (ignored)</td><td>Personal project-specific preferences</td></tr><tr><td><code>~/.claude/projects/&lt;project&gt;/memory/</code></td><td>Auto Memory</td><td>7 (Lowest)</td><td>Individual</td><td>Filesystem</td><td>Claude&#x27;s automatic notes and learnings</td></tr></tbody></table></div>
+<h3 id="жизненный-цикл-обновления-memory">Жизненный цикл обновления Memory <a class="h-anchor" href="#жизненный-цикл-обновления-memory" aria-label="Ссылка на раздел">#</a></h3>
+<p>Вот как обновления memory проходят через ваши сессии Claude Code:</p>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant User
+    participant Claude as Claude Code
+    participant Editor as File System
+    participant Memory as CLAUDE.md
+
+    User-&gt;&gt;Claude: &quot;Remember: use async/await&quot;
+    Claude-&gt;&gt;User: &quot;Which memory file?&quot;
+    User-&gt;&gt;Claude: &quot;Project memory&quot;
+    Claude-&gt;&gt;Editor: Open ~/.claude/settings.json
+    Claude-&gt;&gt;Memory: Write to ./CLAUDE.md
+    Memory--&gt;&gt;Claude: File saved
+    Claude-&gt;&gt;Claude: Load updated memory
+    Claude--&gt;&gt;User: &quot;Memory saved!&quot;</code></pre>
+<h3 id="auto-memory">Auto Memory <a class="h-anchor" href="#auto-memory" aria-label="Ссылка на раздел">#</a></h3>
+<p>Auto memory — это постоянный каталог, куда Claude автоматически записывает выводы, паттерны и инсайты по мере работы с проектом. В отличие от файлов <code>CLAUDE.md</code>, которые вы пишете и поддерживаете вручную, auto memory записывается самим Claude в ходе сессий.</p>
+<h4 id="как-работает-auto-memory">Как работает Auto Memory <a class="h-anchor" href="#как-работает-auto-memory" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Location</strong>: <code>~/.claude/projects/&lt;project&gt;/memory/</code></li>
+<li><strong>Entrypoint</strong>: <code>MEMORY.md</code> — основной файл в каталоге auto memory</li>
+<li><strong>Тематические файлы</strong>: дополнительные необязательные файлы для отдельных тем (например, <code>debugging.md</code>, <code>api-conventions.md</code>)</li>
+<li><strong>Поведение загрузки</strong>: первые 200 строк <code>MEMORY.md</code> загружаются в system prompt при старте сессии. Тематические файлы подгружаются по запросу, а не на старте.</li>
+<li><strong>Read/write</strong>: Claude читает и пишет memory-файлы в ходе сессий, по мере обнаружения паттернов и знаний о проекте</li>
+</ul>
+<h4 id="архитектура-auto-memory">Архитектура Auto Memory <a class="h-anchor" href="#архитектура-auto-memory" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TD
+    A[&quot;Сессия Claude начинается&quot;] --&gt; B[&quot;Загрузить MEMORY.md&lt;br/&gt;(первые 200 строк)&quot;]
+    B --&gt; C[&quot;Сессия активна&quot;]
+    C --&gt; D[&quot;Claude обнаруживает&lt;br/&gt;паттерны и инсайты&quot;]
+    D --&gt; E{&quot;Write to&lt;br/&gt;auto memory&quot;}
+    E --&gt;|General notes| F[&quot;MEMORY.md&quot;]
+    E --&gt;|Topic-specific| G[&quot;debugging.md&quot;]
+    E --&gt;|Topic-specific| H[&quot;api-conventions.md&quot;]
+    C --&gt; I[&quot;On-demand load&lt;br/&gt;topic files&quot;]
+    I --&gt; C
+
+    style A fill:#e1f5fe,stroke:#333,color:#333
+    style B fill:#e1f5fe,stroke:#333,color:#333
+    style C fill:#e8f5e9,stroke:#333,color:#333
+    style D fill:#f3e5f5,stroke:#333,color:#333
+    style E fill:#fff3e0,stroke:#333,color:#333
+    style F fill:#fce4ec,stroke:#333,color:#333
+    style G fill:#fce4ec,stroke:#333,color:#333
+    style H fill:#fce4ec,stroke:#333,color:#333
+    style I fill:#f3e5f5,stroke:#333,color:#333</code></pre>
+<h4 id="структура-каталога-auto-memory">Структура каталога Auto Memory <a class="h-anchor" href="#структура-каталога-auto-memory" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>~/.claude/projects/&lt;project&gt;/memory/
+├── MEMORY.md              # Entrypoint (first 200 lines loaded at startup)
+├── debugging.md           # Topic file (loaded on demand)
+├── api-conventions.md     # Topic file (loaded on demand)
+└── testing-patterns.md    # Topic file (loaded on demand)</code></pre>
+<h4 id="h-2">Требование к версии <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<p>Auto memory требует <strong>Claude Code v2.1.59 или новее</strong>. Если у вас более старая версия, сначала обновитесь:</p>
+<pre><code class="language-bash">npm install -g @anthropic-ai/claude-code@latest</code></pre>
+<h4 id="пользовательский-каталог-auto-memory">Пользовательский каталог Auto Memory <a class="h-anchor" href="#пользовательский-каталог-auto-memory" aria-label="Ссылка на раздел">#</a></h4>
+<p>По умолчанию auto memory хранится в <code>~/.claude/projects/&lt;project&gt;/memory/</code>. Вы можете изменить это расположение с помощью настройки <code>autoMemoryDirectory</code> (доступна с <strong>v2.1.74</strong>):</p>
+<pre><code class="language-jsonc">// In ~/.claude/settings.json or .claude/settings.local.json (user/local settings only)
+{
+  &quot;autoMemoryDirectory&quot;: &quot;/path/to/custom/memory/directory&quot;
+}</code></pre>
+<blockquote>
+<p><strong>Note</strong>: <code>autoMemoryDirectory</code> можно задавать только в user-level (<code>~/.claude/settings.json</code>) или local settings (<code>.claude/settings.local.json</code>), но не в project или managed policy settings.</p>
+</blockquote>
+<p>Это полезно, когда вы хотите:</p>
+<ul>
+<li>Хранить auto memory в общей или синхронизируемой локации</li>
+<li>Отделить auto memory от стандартного каталога конфигурации Claude</li>
+<li>Использовать путь, специфичный для проекта, вне стандартной иерархии</li>
+</ul>
+<h4 id="общий-доступ-для-worktree-и-репозиториев">Общий доступ для worktree и репозиториев <a class="h-anchor" href="#общий-доступ-для-worktree-и-репозиториев" aria-label="Ссылка на раздел">#</a></h4>
+<p>Все worktree и подкаталоги внутри одного git-репозитория используют один и тот же каталог auto memory. Это значит, что при переключении между worktree или работе в разных подкаталогах одного репо будут читаться и записываться одни и те же memory-файлы.</p>
+<h4 id="memory-для-subagents">Memory для subagents <a class="h-anchor" href="#memory-для-subagents" aria-label="Ссылка на раздел">#</a></h4>
+<p>Subagents (запущенные через инструменты вроде Task или parallel execution) могут иметь собственный memory context. Используйте поле <code>memory</code> в frontmatter определения subagent, чтобы указать, какие scopes memory загружать:</p>
+<pre><code class="language-yaml">memory: user      # Load user-level memory only
+memory: project   # Load project-level memory only
+memory: local     # Load local memory only</code></pre>
+<p>Это позволяет subagents работать с более сфокусированным контекстом, а не наследовать всю иерархию memory.</p>
+<h4 id="управление-auto-memory">Управление Auto Memory <a class="h-anchor" href="#управление-auto-memory" aria-label="Ссылка на раздел">#</a></h4>
+<p>Auto memory можно управлять через переменную окружения <code>CLAUDE_CODE_DISABLE_AUTO_MEMORY</code>:</p>
+<div class="table-wrap"><table><thead><tr><th>Value</th><th>Behavior</th></tr></thead><tbody><tr><td><code>0</code></td><td>Force auto memory <strong>on</strong></td></tr><tr><td><code>1</code></td><td>Force auto memory <strong>off</strong></td></tr><tr><td><em>(unset)</em></td><td>Default behavior (auto memory enabled)</td></tr></tbody></table></div>
+<pre><code class="language-bash"># Disable auto memory for a session
+CLAUDE_CODE_DISABLE_AUTO_MEMORY=1 claude
+
+# Force auto memory on explicitly
+CLAUDE_CODE_DISABLE_AUTO_MEMORY=0 claude</code></pre>
+<h3 id="дополнительные-директории-через-add-dir">Дополнительные директории через <code>--add-dir</code> <a class="h-anchor" href="#дополнительные-директории-через-add-dir" aria-label="Ссылка на раздел">#</a></h3>
+<p>Флаг <code>--add-dir</code> позволяет Claude Code загружать <code>CLAUDE.md</code> из дополнительных директорий за пределами текущего рабочего каталога. Это полезно для monorepo или multi-project setup, где важен контекст из других каталогов.</p>
+<p>Чтобы включить эту возможность, задайте переменную окружения:</p>
+<pre><code class="language-bash">CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1</code></pre>
+<p>Затем запустите Claude Code с флагом:</p>
+<pre><code class="language-bash">claude --add-dir /path/to/other/project</code></pre>
+<p>Claude загрузит <code>CLAUDE.md</code> из указанной дополнительной директории вместе с memory-файлами из текущего рабочего каталога.</p>
+<h3 id="h-3">Практические примеры <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="пример-1-структура-project-memory">Пример 1: Структура Project Memory <a class="h-anchor" href="#пример-1-структура-project-memory" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>File:</strong> <code>./CLAUDE.md</code></p>
+<pre><code class="language-markdown"># Project Configuration
+
+## Project Overview
+- **Name**: E-commerce Platform
+- **Tech Stack**: Node.js, PostgreSQL, React 18, Docker
+- **Team Size**: 5 developers
+- **Deadline**: Q4 2025
+
+## Architecture
+@docs/architecture.md
+@docs/api-standards.md
+@docs/database-schema.md
+
+## Development Standards
+
+### Code Style
+- Use Prettier for formatting
+- Use ESLint with airbnb config
+- Maximum line length: 100 characters
+- Use 2-space indentation
+
+### Naming Conventions
+- **Files**: kebab-case (user-controller.js)
+- **Classes**: PascalCase (UserService)
+- **Functions/Variables**: camelCase (getUserById)
+- **Constants**: UPPER_SNAKE_CASE (API_BASE_URL)
+- **Database Tables**: snake_case (user_accounts)
+
+### Git Workflow
+- Branch names: `feature/description` or `fix/description`
+- Commit messages: Follow conventional commits
+- PR required before merge
+- All CI/CD checks must pass
+- Minimum 1 approval required
+
+### Testing Requirements
+- Minimum 80% code coverage
+- All critical paths must have tests
+- Use Jest for unit tests
+- Use Cypress for E2E tests
+- Test filenames: `*.test.ts` or `*.spec.ts`
+
+### API Standards
+- RESTful endpoints only
+- JSON request/response
+- Use HTTP status codes correctly
+- Version API endpoints: `/api/v1/`
+- Document all endpoints with examples
+
+### Database
+- Use migrations for schema changes
+- Never hardcode credentials
+- Use connection pooling
+- Enable query logging in development
+- Regular backups required
+
+### Deployment
+- Docker-based deployment
+- Kubernetes orchestration
+- Blue-green deployment strategy
+- Automatic rollback on failure
+- Database migrations run before deploy
+
+## Common Commands
+
+| Command | Purpose |
+|---------|---------|
+| `npm run dev` | Start development server |
+| `npm test` | Run test suite |
+| `npm run lint` | Check code style |
+| `npm run build` | Build for production |
+| `npm run migrate` | Run database migrations |
+
+## Team Contacts
+- Tech Lead: Sarah Chen (@sarah.chen)
+- Product Manager: Mike Johnson (@mike.j)
+- DevOps: Alex Kim (@alex.k)
+
+## Known Issues &amp; Workarounds
+- PostgreSQL connection pooling limited to 20 during peak hours
+- Workaround: Implement query queuing
+- Safari 14 compatibility issues with async generators
+- Workaround: Use Babel transpiler
+
+## Related Projects
+- Analytics Dashboard: `/projects/analytics`
+- Mobile App: `/projects/mobile`
+- Admin Panel: `/projects/admin`</code></pre>
+<h4 id="пример-2-memory-для-конкретного-каталога">Пример 2: Memory для конкретного каталога <a class="h-anchor" href="#пример-2-memory-для-конкретного-каталога" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>File:</strong> <code>./src/api/CLAUDE.md</code></p>
+<pre><code class="language-markdown"># API Module Standards
+
+This file overrides root CLAUDE.md for everything in /src/api/
+
+## API-Specific Standards
+
+### Request Validation
+- Use Zod for schema validation
+- Always validate input
+- Return 400 with validation errors
+- Include field-level error details
+
+### Authentication
+- All endpoints require JWT token
+- Token in Authorization header
+- Token expires after 24 hours
+- Implement refresh token mechanism
+
+### Response Format
+
+All responses must follow this structure:
+</code></pre>
+<p>{
+  &quot;success&quot;: true,
+  &quot;data&quot;: { /<em> actual data </em>/ },
+  &quot;timestamp&quot;: &quot;2025-11-06T10:30:00Z&quot;,
+  &quot;version&quot;: &quot;1.0&quot;
+}</p>
+<pre><code>
+Error responses:</code></pre>
+<p>{
+  &quot;success&quot;: false,
+  &quot;error&quot;: {
+    &quot;code&quot;: &quot;VALIDATION_ERROR&quot;,
+    &quot;message&quot;: &quot;User message&quot;,
+    &quot;details&quot;: { /<em> field errors </em>/ }
+  },
+  &quot;timestamp&quot;: &quot;2025-11-06T10:30:00Z&quot;
+}</p>
+<pre><code>
+### Pagination
+- Use cursor-based pagination (not offset)
+- Include `hasMore` boolean
+- Limit max page size to 100
+- Default page size: 20
+
+### Rate Limiting
+- 1000 requests per hour for authenticated users
+- 100 requests per hour for public endpoints
+- Return 429 when exceeded
+- Include retry-after header
+
+### Caching
+- Use Redis for session caching
+- Cache duration: 5 minutes default
+- Invalidate on write operations
+- Tag cache keys with resource type</code></pre>
+<h4 id="пример-3-personal-memory">Пример 3: Personal Memory <a class="h-anchor" href="#пример-3-personal-memory" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>File:</strong> <code>~/.claude/CLAUDE.md</code></p>
+<pre><code class="language-markdown"># My Development Preferences
+
+## About Me
+- **Experience Level**: 8 years full-stack development
+- **Preferred Languages**: TypeScript, Python
+- **Communication Style**: Direct, with examples
+- **Learning Style**: Visual diagrams with code
+
+## Code Preferences
+
+### Error Handling
+I prefer explicit error handling with try-catch blocks and meaningful error messages.
+Avoid generic errors. Always log errors for debugging.
+
+### Comments
+Use comments for WHY, not WHAT. Code should be self-documenting.
+Comments should explain business logic or non-obvious decisions.
+
+### Testing
+I prefer TDD (test-driven development).
+Write tests first, then implementation.
+Focus on behavior, not implementation details.
+
+### Architecture
+I prefer modular, loosely-coupled design.
+Use dependency injection for testability.
+Separate concerns (Controllers, Services, Repositories).
+
+## Debugging Preferences
+- Use console.log with prefix: `[DEBUG]`
+- Include context: function name, relevant variables
+- Use stack traces when available
+- Always include timestamps in logs
+
+## Communication
+- Explain complex concepts with diagrams
+- Show concrete examples before explaining theory
+- Include before/after code snippets
+- Summarize key points at the end
+
+## Project Organization
+I organize my projects as:
+
+   project/
+   ├── src/
+   │   ├── api/
+   │   ├── services/
+   │   ├── models/
+   │   └── utils/
+   ├── tests/
+   ├── docs/
+   └── docker/
+
+## Tooling
+- **IDE**: VS Code with vim keybindings
+- **Terminal**: Zsh with Oh-My-Zsh
+- **Format**: Prettier (100 char line length)
+- **Linter**: ESLint with airbnb config
+- **Test Framework**: Jest with React Testing Library</code></pre>
+<p>_My Test_
+Ask Claude to save a new rule</p>
+<p><img src="memory-ask-claude.png" alt="Ask Claude to save a new rule" loading="lazy">
+Claude has not save the rule because I did not have any <code>Claude.md</code> file anywhere. Then asked Claude to confirm the location.</p>
+<p><img src="memory-saved.png" alt="Ask Claude to save a new rule" loading="lazy"></p>
+<h4 id="example-4-memory-update-during-session">Example 4: Memory Update During Session <a class="h-anchor" href="#example-4-memory-update-during-session" aria-label="Ссылка на раздел">#</a></h4>
+<p>You can add new rules to memory during an active Claude Code session. There are two ways to do this:</p>
+<h5 id="method-1-direct-request">Method 1: Direct Request <a class="h-anchor" href="#method-1-direct-request" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-markdown">User: Remember that I prefer using React hooks instead of class components
+     for all new components.
+
+Claude: I&#x27;m adding that to your memory. Which memory file should this go in?
+        1. Project memory (./CLAUDE.md)
+        2. Personal memory (~/.claude/CLAUDE.md)
+
+User: Project memory
+
+Claude: ✅ Memory saved!
+
+Added to ./CLAUDE.md:
+---
+
+### Component Development
+- Use functional components with React Hooks
+- Prefer hooks over class components
+- Custom hooks for reusable logic
+- Use useCallback for event handlers
+- Use useMemo for expensive computations</code></pre>
+<h5 id="method-2-using-new-rule-into-memory-pattern">Method 2: Using &quot;# new rule into memory&quot; Pattern <a class="h-anchor" href="#method-2-using-new-rule-into-memory-pattern" aria-label="Ссылка на раздел">#</a></h5>
+<p>Вы также можете использовать явный шаблон &quot;# new rule into memory&quot;, чтобы запускать обновление memory:</p>
+<pre><code class="language-markdown">User: # new rule into memory
+      Always validate user input with Zod schemas before processing.
+
+Claude: I&#x27;m saving this rule to memory. Which memory file should I use?
+        1. Project memory (./CLAUDE.md)
+        2. Personal memory (~/.claude/CLAUDE.md)
+
+User: Project memory
+
+Claude: ✅ Memory saved!
+
+Added to ./CLAUDE.md:
+---
+
+### Input Validation
+- Always validate user input with Zod schemas before processing
+- Define schemas at the top of each API handler file
+- Return 400 status with validation errors</code></pre>
+<h5 id="советы-по-добавлению-memory">Советы по добавлению Memory <a class="h-anchor" href="#советы-по-добавлению-memory" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li>Формулируйте правила конкретно и действенно</li>
+<li>Группируйте связанные правила под одним заголовком</li>
+<li>Обновляйте существующие разделы, а не дублируйте контент</li>
+<li>Выбирайте подходящий scope memory (project vs. personal)</li>
+</ul>
+<h3 id="сравнение-функций-memory">Сравнение функций Memory <a class="h-anchor" href="#сравнение-функций-memory" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Feature</th><th>Claude Web/Desktop</th><th>Claude Code (CLAUDE.md)</th></tr></thead><tbody><tr><td>Auto-synthesis</td><td>✅ Every 24h</td><td>❌ Manual</td></tr><tr><td>Cross-project</td><td>✅ Shared</td><td>❌ Project-specific</td></tr><tr><td>Team access</td><td>✅ Shared projects</td><td>✅ Git-tracked</td></tr><tr><td>Searchable</td><td>✅ Built-in</td><td>✅ Through <code>/memory</code></td></tr><tr><td>Editable</td><td>✅ In-chat</td><td>✅ Direct file edit</td></tr><tr><td>Import/Export</td><td>✅ Yes</td><td>✅ Copy/paste</td></tr><tr><td>Persistent</td><td>✅ 24h+</td><td>✅ Indefinite</td></tr></tbody></table></div>
+<h4 id="memory-в-claude-web-desktop">Memory в Claude Web/Desktop <a class="h-anchor" href="#memory-в-claude-web-desktop" aria-label="Ссылка на раздел">#</a></h4>
+<h5 id="таймлайн-синтеза-memory">Таймлайн синтеза Memory <a class="h-anchor" href="#таймлайн-синтеза-memory" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-mermaid">graph LR
+    A[&quot;Day 1: User&lt;br/&gt;Conversations&quot;] --&gt;|24 hours| B[&quot;Day 2: Memory&lt;br/&gt;Synthesis&quot;]
+    B --&gt;|Automatic| C[&quot;Memory Updated&lt;br/&gt;Summarized&quot;]
+    C --&gt;|Loaded in| D[&quot;Day 2-N:&lt;br/&gt;New Conversations&quot;]
+    D --&gt;|Add to| E[&quot;Memory&quot;]
+    E --&gt;|24 hours later| F[&quot;Memory Refreshed&quot;]</code></pre>
+<p><strong>Пример summary memory:</strong></p>
+<pre><code class="language-markdown">## Claude&#x27;s Memory of User
+
+### Professional Background
+- Senior full-stack developer with 8 years experience
+- Focus on TypeScript/Node.js backends and React frontends
+- Active open source contributor
+- Interested in AI and machine learning
+
+### Project Context
+- Currently building e-commerce platform
+- Tech stack: Node.js, PostgreSQL, React 18, Docker
+- Working with team of 5 developers
+- Using CI/CD and blue-green deployments
+
+### Communication Preferences
+- Prefers direct, concise explanations
+- Likes visual diagrams and examples
+- Appreciates code snippets
+- Explains business logic in comments
+
+### Current Goals
+- Improve API performance
+- Increase test coverage to 90%
+- Implement caching strategy
+- Document architecture</code></pre>
+<h3 id="best-practices">Best Practices <a class="h-anchor" href="#best-practices" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="do-s-what-to-include">Do&#x27;s - What To Include <a class="h-anchor" href="#do-s-what-to-include" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Be specific and detailed</strong>: Используйте чёткие, подробные инструкции вместо расплывчатых</li>
+<li>✅ Good: &quot;Use 2-space indentation for all JavaScript files&quot;</li>
+<li>❌ Avoid: &quot;Follow best practices&quot;</li>
+</ul>
+<ul>
+<li><strong>Keep organized</strong>: Структурируйте memory-файлы с понятными markdown-разделами и заголовками</li>
+</ul>
+<ul>
+<li><strong>Use appropriate hierarchy levels</strong>:</li>
+<li><strong>Managed policy</strong>: Company-wide policies, security standards, compliance requirements</li>
+<li><strong>Project memory</strong>: Team standards, architecture, coding conventions (commit to git)</li>
+<li><strong>User memory</strong>: Personal preferences, communication style, tooling choices</li>
+<li><strong>Directory memory</strong>: Module-specific rules and overrides</li>
+</ul>
+<ul>
+<li><strong>Leverage imports</strong>: Используйте <code>@path/to/file</code> для ссылки на существующую документацию</li>
+<li>Поддерживается до 5 уровней рекурсивного вложения</li>
+<li>Это уменьшает дублирование между memory-файлами</li>
+<li>Example: <code>See @README.md for project overview</code></li>
+</ul>
+<ul>
+<li><strong>Document frequent commands</strong>: Добавляйте команды, которые вы запускаете часто, чтобы экономить время</li>
+</ul>
+<ul>
+<li><strong>Version control project memory</strong>: Коммитьте project-level <code>CLAUDE.md</code> в git для пользы команды</li>
+</ul>
+<ul>
+<li><strong>Review periodically</strong>: Регулярно обновляйте memory по мере изменения проекта и требований</li>
+</ul>
+<ul>
+<li><strong>Provide concrete examples</strong>: Добавляйте code snippets и конкретные сценарии</li>
+</ul>
+<h4 id="don-ts-what-to-avoid">Don&#x27;ts - What To Avoid <a class="h-anchor" href="#don-ts-what-to-avoid" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Don&#x27;t store secrets</strong>: Никогда не храните API keys, passwords, tokens или credentials</li>
+</ul>
+<ul>
+<li><strong>Don&#x27;t include sensitive data</strong>: Никаких PII, личных данных или proprietary secrets</li>
+</ul>
+<ul>
+<li><strong>Don&#x27;t duplicate content</strong>: Используйте imports (<code>@path</code>) вместо копирования существующей документации</li>
+</ul>
+<ul>
+<li><strong>Don&#x27;t be vague</strong>: Избегайте общих фраз вроде &quot;follow best practices&quot; или &quot;write good code&quot;</li>
+</ul>
+<ul>
+<li><strong>Don&#x27;t make it too long</strong>: Держите отдельные memory-файлы сфокусированными и меньше 500 строк</li>
+</ul>
+<ul>
+<li><strong>Don&#x27;t over-organize</strong>: Используйте иерархию разумно; не создавайте слишком много переопределений по подкаталогам</li>
+</ul>
+<ul>
+<li><strong>Don&#x27;t forget to update</strong>: Устаревшая memory вызывает путаницу и неправильные практики</li>
+</ul>
+<ul>
+<li><strong>Don&#x27;t exceed nesting limits</strong>: Импорт memory поддерживает максимум 5 уровней вложенности</li>
+</ul>
+<h4 id="советы-по-управлению-memory">Советы по управлению Memory <a class="h-anchor" href="#советы-по-управлению-memory" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Выбирайте правильный уровень memory:</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Use Case</th><th>Memory Level</th><th>Rationale</th></tr></thead><tbody><tr><td>Company security policy</td><td>Managed Policy</td><td>Applies to all projects organization-wide</td></tr><tr><td>Team code style guide</td><td>Project</td><td>Shared with team via git</td></tr><tr><td>Your preferred editor shortcuts</td><td>User</td><td>Personal preference, not shared</td></tr><tr><td>API module standards</td><td>Directory</td><td>Specific to that module only</td></tr></tbody></table></div>
+<p><strong>Быстрый workflow обновления:</strong></p>
+<ol>
+<li>Для одиночных правил: используйте префикс <code>#</code> в разговоре</li>
+<li>Для нескольких изменений: используйте <code>/memory</code>, чтобы открыть редактор</li>
+<li>Для начальной настройки: используйте <code>/init</code>, чтобы создать шаблон</li>
+</ol>
+<p><strong>Лучшие практики для import:</strong></p>
+<pre><code class="language-markdown"># Good: Reference existing docs
+@README.md
+@docs/architecture.md
+@package.json
+
+# Avoid: Copying content that exists elsewhere
+# Instead of copying README content into CLAUDE.md, just import it</code></pre>
+<h3 id="h-4">Инструкции по установке <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="настройка-project-memory">Настройка Project Memory <a class="h-anchor" href="#настройка-project-memory" aria-label="Ссылка на раздел">#</a></h4>
+<h5 id="method-1-using-init-command-recommended">Method 1: Using <code>/init</code> Command (Recommended) <a class="h-anchor" href="#method-1-using-init-command-recommended" aria-label="Ссылка на раздел">#</a></h5>
+<p>Самый быстрый способ настроить project memory:</p>
+<ol>
+<li><strong>Перейдите в каталог проекта:</strong></li>
+</ol>
+<pre><code class="language-bash">   cd /path/to/your/project</code></pre>
+<ol>
+<li><strong>Запустите команду init в Claude Code:</strong></li>
+</ol>
+<pre><code class="language-bash">   /init</code></pre>
+<ol>
+<li><strong>Claude создаст и заполнит CLAUDE.md</strong> шаблоном структуры</li>
+</ol>
+<ol>
+<li><strong>Настройте сгенерированный файл</strong> под потребности проекта</li>
+</ol>
+<ol>
+<li><strong>Закоммитьте в git:</strong></li>
+</ol>
+<pre><code class="language-bash">   git add CLAUDE.md
+   git commit -m &quot;Initialize project memory with /init&quot;</code></pre>
+<h5 id="method-2-manual-creation">Method 2: Manual Creation <a class="h-anchor" href="#method-2-manual-creation" aria-label="Ссылка на раздел">#</a></h5>
+<p>Если предпочитаете ручную настройку:</p>
+<ol>
+<li><strong>Создайте CLAUDE.md в корне проекта:</strong></li>
+</ol>
+<pre><code class="language-bash">   cd /path/to/your/project
+   touch CLAUDE.md</code></pre>
+<ol>
+<li><strong>Добавьте стандарты проекта:</strong></li>
+</ol>
+<pre><code class="language-bash">   cat &gt; CLAUDE.md &lt;&lt; &#x27;EOF&#x27;
+   # Project Configuration
+
+   ## Project Overview
+   - **Name**: Your Project Name
+   - **Tech Stack**: List your technologies
+   - **Team Size**: Number of developers
+
+   ## Development Standards
+   - Your coding standards
+   - Naming conventions
+   - Testing requirements
+   EOF</code></pre>
+<ol>
+<li><strong>Commit to git:</strong></li>
+</ol>
+<pre><code class="language-bash">   git add CLAUDE.md
+   git commit -m &quot;Add project memory configuration&quot;</code></pre>
+<h5 id="method-3-quick-updates-with">Method 3: Quick Updates with <code>#</code> <a class="h-anchor" href="#method-3-quick-updates-with" aria-label="Ссылка на раздел">#</a></h5>
+<p>Когда <code>CLAUDE.md</code> уже существует, можно быстро добавлять правила прямо во время разговора:</p>
+<pre><code class="language-markdown"># Use semantic versioning for all releases
+
+# Always run tests before committing
+
+# Prefer composition over inheritance</code></pre>
+<p>Claude предложит выбрать, какой memory-файл обновить.</p>
+<h4 id="настройка-personal-memory">Настройка Personal Memory <a class="h-anchor" href="#настройка-personal-memory" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li><strong>Создайте каталог <code>~/.claude</code>:</strong></li>
+</ol>
+<pre><code class="language-bash">   mkdir -p ~/.claude</code></pre>
+<ol>
+<li><strong>Создайте personal <code>CLAUDE.md</code>:</strong></li>
+</ol>
+<pre><code class="language-bash">   touch ~/.claude/CLAUDE.md</code></pre>
+<ol>
+<li><strong>Добавьте свои предпочтения:</strong></li>
+</ol>
+<pre><code class="language-bash">   cat &gt; ~/.claude/CLAUDE.md &lt;&lt; &#x27;EOF&#x27;
+   # My Development Preferences
+
+   ## About Me
+   - Experience Level: [Your level]
+   - Preferred Languages: [Your languages]
+   - Communication Style: [Your style]
+
+   ## Code Preferences
+   - [Your preferences]
+   EOF</code></pre>
+<h4 id="настройка-directory-specific-memory">Настройка Directory-Specific Memory <a class="h-anchor" href="#настройка-directory-specific-memory" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li><strong>Создайте memory для конкретных каталогов:</strong></li>
+</ol>
+<pre><code class="language-bash">   mkdir -p /path/to/directory/.claude
+   touch /path/to/directory/CLAUDE.md</code></pre>
+<ol>
+<li><strong>Добавьте directory-specific правила:</strong></li>
+</ol>
+<pre><code class="language-bash">   cat &gt; /path/to/directory/CLAUDE.md &lt;&lt; &#x27;EOF&#x27;
+   # [Directory Name] Standards
+
+   This file overrides root CLAUDE.md for this directory.
+
+   ## [Specific Standards]
+   EOF</code></pre>
+<ol>
+<li><strong>Закоммитьте в version control:</strong></li>
+</ol>
+<pre><code class="language-bash">   git add /path/to/directory/CLAUDE.md
+   git commit -m &quot;Add [directory] memory configuration&quot;</code></pre>
+<h4 id="h-5">Проверка настройки <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li><strong>Проверьте расположение memory:</strong></li>
+</ol>
+<pre><code class="language-bash">   # Project root memory
+   ls -la ./CLAUDE.md
+
+   # Personal memory
+   ls -la ~/.claude/CLAUDE.md</code></pre>
+<ol>
+<li><strong>Claude Code автоматически загрузит</strong> эти файлы при запуске сессии</li>
+</ol>
+<ol>
+<li><strong>Проверьте в Claude Code</strong>, запустив новую сессию в проекте</li>
+</ol>
+<h3 id="h-6">Официальная документация <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<p>Для самой актуальной информации смотрите официальную документацию Claude Code:</p>
+<ul>
+<li><strong><a href="https://code.claude.com/docs/en/memory">Memory Documentation</a></strong> - Полная справка по memory-системе</li>
+<li><strong><a href="https://code.claude.com/docs/en/interactive-mode">Slash Commands Reference</a></strong> - Все встроенные команды, включая <code>/init</code> и <code>/memory</code></li>
+<li><strong><a href="https://code.claude.com/docs/en/cli-reference">CLI Reference</a></strong> - Документация по командной строке</li>
+</ul>
+<h4 id="ключевые-технические-детали-из-официальных-docs">Ключевые технические детали из официальных docs <a class="h-anchor" href="#ключевые-технические-детали-из-официальных-docs" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Загрузка Memory:</strong></p>
+<ul>
+<li>Все memory-файлы загружаются автоматически при запуске Claude Code</li>
+<li>Claude идёт вверх по дереву каталогов от текущего рабочего каталога, чтобы найти <code>CLAUDE.md</code></li>
+<li>Файлы поддеревьев обнаруживаются и загружаются по контексту при доступе к этим каталогам</li>
+</ul>
+<p><strong>Синтаксис Import:</strong></p>
+<ul>
+<li>Используйте <code>@path/to/file</code> для подключения внешнего контента (например, <code>@~/.claude/my-project-instructions.md</code>)</li>
+<li>Поддерживаются относительные и абсолютные пути</li>
+<li>Поддерживаются рекурсивные импорты с максимальной глубиной 5</li>
+<li>Первый внешний импорт запускает диалог подтверждения</li>
+<li>Не вычисляется внутри markdown code spans или code blocks</li>
+<li>Автоматически добавляет подключённый контент в контекст Claude</li>
+</ul>
+<p><strong>Приоритет иерархии Memory:</strong></p>
+<ol>
+<li>Managed Policy (highest precedence)</li>
+<li>Managed Drop-ins (<code>managed-settings.d/</code>, v2.1.83+)</li>
+<li>Project Memory</li>
+<li>Project Rules (<code>.claude/rules/</code>)</li>
+<li>User Memory</li>
+<li>User-Level Rules (<code>~/.claude/rules/</code>)</li>
+<li>Local Project Memory</li>
+<li>Auto Memory (lowest precedence)</li>
+</ol>
+<h3 id="h-7">Ссылки на связанные понятия <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-8">Точки интеграции <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><a href="../05-mcp/">MCP Protocol</a> - Live data access alongside memory</li>
+<li><a href="../01-slash-commands/">Slash Commands</a> - Session-specific shortcuts</li>
+<li><a href="../03-skills/">Skills</a> - Automated workflows with memory context</li>
+</ul>
+<h4 id="связанные-возможности-claude">Связанные возможности Claude <a class="h-anchor" href="#связанные-возможности-claude" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><a href="https://claude.ai">Claude Web Memory</a> - Automatic synthesis</li>
+<li><a href="https://code.claude.com/docs/en/memory">Official Memory Docs</a> - Anthropic documentation</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Troubleshooting</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="troubleshooting">Troubleshooting <a class="h-anchor" href="#troubleshooting" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Исправьте высокое использование CPU или памяти, зависания, auto-compact thrashing и проблемы поиска в Claude Code, и найдите нужную страницу для других проблем.</p>
+</blockquote>
+<p>Эта страница охватывает проблемы производительности, стабильности и поиска после того, как Claude Code запущен. Для других проблем начните со страницы, которая соответствует тому, где вы застряли:</p>
+<p>| Симптом | Перейти к |
+| :- | :- |
+| <code>command not found</code>, ошибка установки, проблемы PATH, <code>EACCES</code>, ошибки TLS | <a href="https://code.claude.com/docs/ru/troubleshoot-install.md">Troubleshoot installation and login</a> |
+| Загрузка при обновлении или установке завершается ошибкой <code>The connection dropped while downloading the update</code> или <code>aborted</code> | <a href="https://code.claude.com/docs/ru/troubleshoot-install.md#the-connection-dropped-while-downloading-the-update">Устранение неполадок установки и входа</a> |
+| Обновление или установка завершается ошибкой <code>Release verification failed for Claude Code</code> | <a href="https://code.claude.com/docs/ru/troubleshoot-install.md#release-verification-failed">Устранение неполадок установки и входа</a> |
+| В нижней строке сессии красным отображается <code>Auto-update failed · Run claude doctor</code> | <a href="https://code.claude.com/docs/ru/troubleshoot-install.md#auto-update-failed">Устранение неполадок установки и входа</a> |
+| Циклы входа, ошибки OAuth, <code>403 Forbidden</code>, &quot;organization disabled&quot;, учётные данные Amazon Bedrock, Google Cloud&#x27;s Agent Platform или Microsoft Foundry | <a href="https://code.claude.com/docs/ru/troubleshoot-install.md#login-and-authentication">Troubleshoot installation and login</a> |
+| Параметры не применяются, hooks не срабатывают, MCP servers не загружаются | <a href="https://code.claude.com/docs/ru/debug-your-config.md">Debug your configuration</a> |
+| Сеанс запущен в режиме auto, или Claude редактирует файлы и выполняет команды без запроса | <a href="https://code.claude.com/docs/ru/permission-modes.md#which-mode-a-session-starts-in">Which mode a session starts in</a> |
+| После обновления Claude Code или Agent SDK вызовы инструментов отклоняются в <code>claude -p</code> или в запусках SDK, которые не передают <code>--permission-mode</code>, <code>permissionMode</code> или <code>permission_mode</code> | <a href="https://code.claude.com/docs/ru/permission-modes#which-mode-a-non-interactive-run-starts-in">Вызовы инструментов отклоняются в <code>claude -p</code> и запусках Agent SDK</a> |
+| <code>API Error: 5xx</code>, <code>529 Overloaded</code>, <code>429</code>, ошибки валидации запроса | <a href="https://code.claude.com/docs/ru/errors.md">Error reference</a> |
+| <code>model not found</code> или <code>you may not have access to it</code> | <a href="https://code.claude.com/docs/ru/errors.md#theres-an-issue-with-the-selected-model">Error reference</a> |
+| Команда, которую выполняет Claude, завершается ошибкой <code>Disk full:</code>, <code>Disk quota used up:</code>, <code>Nearly out of inodes:</code>, <code>The command was not started:</code>, <code>Your disk quota is full</code>, <code>is full (ENOSPC)</code> или <code>Command output was lost</code> | <a href="https://code.claude.com/docs/ru/errors.md#disk-quota-or-temp-filesystem-is-full">Справочник по ошибкам</a> |
+| Расширение VS Code не подключается или не обнаруживает Claude | <a href="https://code.claude.com/docs/ru/vs-code.md#fix-common-issues">VS Code integration</a> |
+| <code>Claude Code process exited with code 1</code> в VS Code или приложении SDK | <a href="https://code.claude.com/docs/ru/errors.md#claude-code-process-exited-with-code-n">Error reference</a> |
+| Плагин JetBrains или IDE не обнаружена | <a href="https://code.claude.com/docs/ru/jetbrains.md#troubleshooting">JetBrains integration</a> |
+| Высокое использование CPU или памяти, медленные ответы, зависания, поиск не находит файлы | <a href="#performance-and-stability">Performance and stability</a> ниже |</p>
+<p>Если вы не уверены, какой применяется, запустите <code>/doctor</code> внутри Claude Code для автоматической проверки вашей установки, параметров, расширений и использования контекста; он предлагает исправления, которые может применить после вашего подтверждения. Если <code>claude</code> вообще не запускается, запустите <code>claude doctor</code> из вашей оболочки вместо этого. Запустите <code>/mcp</code> для проверки статуса MCP server.</p>
+<h3 id="h">Производительность и стабильность <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Эти разделы охватывают проблемы, связанные с использованием ресурсов, отзывчивостью и поведением поиска.</p>
+<h4 id="высокое-использование-cpu-или-памяти">Высокое использование CPU или памяти <a class="h-anchor" href="#высокое-использование-cpu-или-памяти" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude Code разработан для работы с большинством сред разработки, но может потреблять значительные ресурсы при обработке больших кодовых баз. Если вы испытываете проблемы с производительностью:</p>
+<ol>
+<li>Используйте <code>/compact</code> регулярно, чтобы уменьшить размер контекста. Если он возвращает <code>Not enough messages to compact.</code>, разговор имеет слишком мало ходов для суммирования; это может произойти даже при полном контексте, когда одна большая вставка его заполнила</li>
+<li>Закройте и перезагрузите Claude Code между основными задачами</li>
+<li>Рассмотрите добавление больших директорий сборки в ваш файл <code>.gitignore</code></li>
+<li>Перезапустите с помощью <a href="https://code.claude.com/docs/ru/cli-reference#cli-flags"><code>claude --safe-mode</code></a>, чтобы проверить, не является ли источником плагин, MCP-сервер или хук. Если использование снизится, см. <a href="https://code.claude.com/docs/ru/debug-your-config.md#test-against-a-clean-configuration">Отладка конфигурации</a>, чтобы найти, какой именно</li>
+</ol>
+<p>Если использование памяти в куче сеанса превышает 2.5GB, появляется критическое предупреждение об использовании памяти. Чтобы освободить память, перезагрузите Claude Code и запустите <a href="https://code.claude.com/docs/ru/cli-reference#cli-flags"><code>claude --continue</code></a>, чтобы возобновить разговор в новом процессе.</p>
+<p>Вне <a href="https://code.claude.com/docs/ru/fullscreen.md">полноэкранного рендеринга</a> запуск <code>/compact</code> также освобождает память. Предупреждение исчезает, как только использование памяти упадёт ниже 2.5GB.</p>
+<p>Если использование памяти остаётся высоким после этих шагов, запустите <code>/heapdump</code>, чтобы записать два файла на <code>~/Desktop</code>: снимок кучи JavaScript с именем <code>&lt;session-id&gt;.heapsnapshot</code> и разбор памяти с именем <code>&lt;session-id&gt;-diagnostics.json</code>. Claude Code <a href="https://code.claude.com/docs/ru/commands.md#how-the-command-menu-matches-what-you-type">скрывает команду из меню команд</a>; введите её полностью. На Linux без папки Desktop файлы записываются в вашу домашнюю директорию.</p>
+<blockquote>
+<p>[!WARNING]</p>
+<p>Файл <code>.heapsnapshot</code> содержит каждую строку в процессе, включая вашу полную беседу и учётные данные. Не прикрепляйте его к публичной проблеме и не делитесь им.</p>
+</blockquote>
+<p>Команда также выводит сводку в разговор, показывая общую память процесса, сколько её находится в куче JS и сколько находится вне кучи. Сводка также перечисляет любые индикаторы утечек, такие как высокий темп роста памяти или необычно высокое количество открытых дескрипторов. Сводка указывает, находится ли большая часть памяти в куче JS, которую захватывает снимок, или в нативной памяти, которую он не захватывает.</p>
+<p>Сделайте одно из двух с выводом:</p>
+<ul>
+<li><strong>Сообщите об этом</strong>: откройте <a href="https://github.com/anthropics/claude-code/issues">GitHub issue</a> и прикрепите только файл <code>-diagnostics.json</code>, который содержит статистику, лежащую в основе выведённой сводки, и не содержит содержимого разговора или учётных данных</li>
+<li><strong>Исследуйте это сами</strong>: если сводка говорит, что большая часть памяти находится в куче JS, откройте файл <code>.heapsnapshot</code> в Chrome DevTools в разделе Memory → Load и отсортируйте по retained size, чтобы увидеть, что удерживает память</li>
+</ul>
+<p>Если сводка говорит, что большая часть памяти находится в нативной памяти, снимок не может её показать; включите индикаторы утечек сводки в ваш отчёт вместо этого.</p>
+<h4 id="h-2">Большие таблицы обрезаются в терминале <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<p>Таблица Markdown с более чем 200 строками отображает первые 200 строк, за которыми следует строка <code>… N more rows not shown</code>. Отображение ограничено только визуально: полная таблица остаётся в разговоре, и <a href="https://code.claude.com/docs/ru/commands"><code>/copy</code></a> копирует каждую строку. Для таблицы, которая слишком велика для чтения в терминале, попросите Claude записать её в файл вместо этого. До версии v2.1.208 Claude Code отображал каждую строку, поэтому возобновление сеанса, содержащего очень большую таблицу, могло зависнуть при её повторном отображении.</p>
+<h4 id="автоматическое-сжатие-останавливается-с-ошибкой-thrashing">Автоматическое сжатие останавливается с ошибкой thrashing <a class="h-anchor" href="#автоматическое-сжатие-останавливается-с-ошибкой-thrashing" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если вы видите <code>Autocompact is thrashing: the context refilled to the limit...</code>, автоматическое сжатие прошло успешно, но файл или вывод инструмента немедленно заполнили окно контекста несколько раз подряд. Claude Code останавливает повторные попытки, чтобы избежать траты вызовов API на цикл, который не делает прогресс.</p>
+<p>Чтобы восстановиться:</p>
+<ol>
+<li>Попросите Claude прочитать большой файл в меньших фрагментах, таких как конкретный диапазон строк или функция, вместо всего файла</li>
+<li>Запустите <code>/compact</code> с фокусом, который удаляет большой вывод, например <code>/compact keep only the plan and the diff</code></li>
+<li>Переместите работу с большим файлом на <a href="https://code.claude.com/docs/ru/sub-agents.md">subagent</a>, чтобы она работала в отдельном окне контекста</li>
+<li>Запустите <code>/clear</code>, если более ранний разговор больше не нужен</li>
+</ol>
+<p>Если ошибка возвращается после <code>/clear</code>, запустите <a href="https://code.claude.com/docs/ru/debug-your-config"><code>/context</code></a> и сравните строку <code>Messages</code> со строками над ней:</p>
+<ul>
+<li><strong><code>Messages</code> — самая большая строка</strong>: файл или вывод инструмента в новом диалоге снова заполняет окно, поэтому ещё раз выполните шаги с 1 по 3</li>
+<li><strong>Остальные строки вместе больше</strong>: то, что загружается при запуске сессии, оставляет слишком мало места для работы, поэтому <a href="https://code.claude.com/docs/ru/errors.md#prompt-is-too-long">сократите то, что загружается при запуске</a></li>
+</ul>
+<h4 id="h-3">Команда зависает или не отвечает <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если Claude Code кажется неотзывчивым:</p>
+<ol>
+<li>Нажмите Ctrl+C, чтобы попытаться отменить текущую операцию</li>
+<li>Если неотзывчив, вам может потребоваться закрыть терминал и перезагрузить</li>
+</ol>
+<p>Перезагрузка не теряет вашу беседу. Запустите <code>claude --resume</code> в той же директории, чтобы продолжить сеанс.</p>
+<h4 id="h-4">Искажённый или повреждённый текст во встроенном терминале редактора <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если символы отображаются как прямоугольники, размазанные линии или неправильные глифы при запуске Claude Code в интегрированном терминале VS Code, Cursor или Devin Desktop, причиной, вероятно, является GPU-рендерер терминала. Запустите <code>/terminal-setup</code> внутри Claude Code, чтобы установить <code>terminal.integrated.gpuAcceleration</code> на <code>&quot;off&quot;</code>, или установите это вручную в настройках вашего редактора и перезагрузите окно. Смотрите <a href="https://code.claude.com/docs/ru/terminal-config.md">Terminal configuration</a> для других настроек, которые записывает <code>/terminal-setup</code>.</p>
+<h4 id="лишние-символы-0q-при-запуске-или-4m-после-выхода">Лишние символы <code>&gt;0q</code> при запуске или <code>&gt;4m</code> после выхода <a class="h-anchor" href="#лишние-символы-0q-при-запуске-или-4m-после-выхода" aria-label="Ссылка на раздел">#</a></h4>
+<p>Эти символы, которые выводят терминалы, построенные на библиотеке VTE старше 0.53, — окончания двух управляющих последовательностей Claude Code. Чтобы избавиться от этого текста, <a href="https://code.claude.com/docs/ru/setup.md#update-claude-code">обновите Claude Code</a> до v2.1.301 или новее: эта версия пропускает обе последовательности, когда распознаёт такой терминал.</p>
+<p>Если текст остаётся, выведите версию VTE из оболочки терминала:</p>
+<p>```bash theme={null}
+echo $VTE_VERSION</p>
+<pre><code>
+В терминале на основе VTE результат ниже `5300` означает библиотеку старше 0.53: обновите или замените терминал, чтобы получить VTE 0.53 или новее. В противном случае см. [Get more help](#get-more-help).
+
+### Колесо мыши прокручивает по одной строке в полноэкранном рендеринге
+
+При [полноэкранном отображении](https://code.claude.com/docs/ru/fullscreen.md) Claude Code прокручивает сам разговор, а не оставляет это вашему терминалу. Если каждый поворот колеса перемещает меньше строк, чем вы хотите, запустите `/scroll-speed`, чтобы увеличить количество строк на один поворот и сохранить это, или установите переменную окружения `CLAUDE_CODE_SCROLL_SPEED`, кроме как в терминале IDE JetBrains, где Claude Code применяет собственную обработку прокрутки и ни один из них не вступает в силу. Смотрите [Mouse wheel scrolling](https://code.claude.com/docs/ru/fullscreen.md#mouse-wheel-scrolling) для значений, которые каждый принимает.
+
+Чтобы двигаться быстрее без изменения скорости, нажмите `PgUp` и `PgDn`, чтобы прокручивать половину экрана за раз. Чтобы вернуть прокрутку вашему собственному буферу обратного хода терминала, запустите `/tui default`, чтобы переключиться на классический рендерер.
+
+### Команды буфера обмена, такие как `pbcopy`, не работают внутри sandbox
+
+Когда [sandboxing](https://code.claude.com/docs/ru/sandboxing.md) включён, утилиты буфера обмена, такие как `pbcopy`, `xclip` и `wl-copy`, могут не достичь системного буфера обмена из внутри изолированной команды Bash, оставляя ваш буфер обмена неизменённым после того, как Claude передаёт текст в них.
+
+Чтобы поместить вывод Claude в ваш буфер обмена, попросите Claude вывести содержимое в его ответе, затем запустите [`/copy`](https://code.claude.com/docs/ru/commands). `/copy` записывает в буфер обмена из самого процесса Claude Code, а не из изолированной команды, поэтому sandboxing не блокирует это. Он может копировать один блок кода вместо всего ответа, и он также записывает то, что он скопировал, в файл и выводит путь, что даёт вам резервный вариант, когда запись в буфер обмена не достигает вашего терминала, например через SSH.
+
+Когда Claude передаёт текст в один из этих инструментов, добавление `pbcopy *`, `wl-copy *` или `xclip *` в [`excludedCommands`](https://code.claude.com/docs/ru/settings-reference#sandbox-excludedcommands) не выводит этот вызов из sandbox самостоятельно.
+
+### Скопированный текст не достигает вашего локального буфера обмена через SSH
+
+Когда Claude Code работает на удалённой машине через SSH, он не может запустить инструмент буфера обмена на вашей локальной машине. Вне tmux, когда вы выделяете текст в [полноэкранном рендеринге](https://code.claude.com/docs/ru/fullscreen.md) или запускаете `/copy`, Claude Code вместо этого отправляет текст в ваш терминал как escape-последовательность OSC 52. Ваш терминал решает, помещать ли его в буфер обмена.
+
+Некоторые терминалы не реагируют на OSC 52. iTerm2 игнорирует её, пока вы не включите **Settings &gt; General &gt; Selection &gt; Applications in terminal may access clipboard**, а macOS Terminal.app её не поддерживает. Ни сообщение `/copy`, ни уведомление `sent N chars via OSC 52` не подтверждают, что текст дошёл.
+
+Чтобы получить текст без OSC 52:
+
+* Удерживайте клавишу собственного выбора вашего терминала, пока вы перетаскиваете, затем копируйте с помощью обычного сочетания клавиш вашего терминала, такого как `Cmd+C`. Клавиша — это `Fn` в Terminal.app и `Option` в iTerm2. [Keep native text selection](https://code.claude.com/docs/ru/fullscreen.md#keep-native-text-selection) перечисляет её для других терминалов.
+* Установите [`CLAUDE_CODE_DISABLE_MOUSE=1`](https://code.claude.com/docs/ru/env-vars) на удалённой машине, чтобы ваш терминал обрабатывал выбор для всего сеанса.
+
+### Проблемы с поиском и обнаружением
+
+Если инструмент Search, упоминания `@file`, пользовательские агенты или пользовательские skills не находят файлы, встроенный двоичный файл `ripgrep` может не работать на вашей системе. Установите пакет `ripgrep` вашей платформы и скажите Claude Code использовать его вместо этого:
+
+&gt; [tab] macOS
+&gt;
+&gt; ```bash theme={null}
+&gt; brew install ripgrep
+&gt; ```
+
+&gt; [tab] Ubuntu/Debian
+&gt;
+&gt; ```bash theme={null}
+&gt; sudo apt install ripgrep
+&gt; ```
+
+&gt; [tab] Alpine
+&gt;
+&gt; ```bash theme={null}
+&gt; apk add ripgrep
+&gt; ```
+&gt;
+&gt; `ripgrep` находится в репозитории community Alpine.
+
+&gt; [tab] Arch
+&gt;
+&gt; ```bash theme={null}
+&gt; pacman -S ripgrep
+&gt; ```
+
+&gt; [tab] Windows
+&gt;
+&gt; ```powershell theme={null}
+&gt; winget install BurntSushi.ripgrep.MSVC
+&gt; ```
+
+Затем установите `USE_BUILTIN_RIPGREP` на `0`, либо в вашем [окружении](https://code.claude.com/docs/ru/env-vars.md), либо в блоке `env` вашего [`settings.json`](https://code.claude.com/docs/ru/settings-reference#all-settings):
+</code></pre>
+<p>{
+  &quot;env&quot;: {
+    &quot;USE_BUILTIN_RIPGREP&quot;: &quot;0&quot;
+  }
+}</p>
+<pre><code>
+Чтобы подтвердить, что переключение вступило в силу, запустите `claude doctor` в вашем терминале и проверьте, что строка Search показывает путь вашего системного ripgrep вместо `OK (bundled)`.
+
+### Медленные или неполные результаты поиска в WSL
+
+Штрафы производительности чтения диска при [работе с файловыми системами на WSL](https://learn.microsoft.com/en-us/windows/wsl/filesystems) могут привести к меньшему количеству совпадений, чем ожидается, при использовании Claude Code на WSL. Поиск всё ещё функционирует, но возвращает меньше результатов, чем на собственной файловой системе.
+
+&gt; [!NOTE]
+&gt;
+&gt; `claude doctor` показывает Search как OK в этом случае.
+
+**Решения:**
+
+1. **Отправляйте более конкретные поиски**: уменьшите количество файлов, которые ищутся, указав директории или типы файлов: &quot;Search for JWT validation logic in the auth-service package&quot; или &quot;Find use of md5 hash in JS files&quot;.
+
+2. **Переместите проект на файловую систему Linux**: если возможно, убедитесь, что ваш проект находится на файловой системе Linux (`/home/`) вместо файловой системы Windows (`/mnt/c/`).
+
+3. **Используйте нативный Windows вместо этого**: рассмотрите запуск Claude Code нативно на Windows вместо WSL для лучшей производительности файловой системы.
+
+## Получить дополнительную помощь
+
+Если вы испытываете проблемы, не охватываемые здесь:
+
+1. Запустите `/doctor` для проверки установки и `/mcp` для проверки статуса MCP сервера
+2. Используйте команду `/feedback` в Claude Code, чтобы сообщить о проблемах непосредственно в Anthropic
+3. Проверьте [репозиторий GitHub](https://github.com/anthropics/claude-code) на известные проблемы
+4. Спросите Claude напрямую о его возможностях и функциях. Claude имеет встроенный доступ к своей документации.
+
+По вопросам учётной записи, выставления счетов или подписки обратитесь в службу поддержки Anthropic: войдите на [claude.ai](https://claude.ai) (пользователи Console: [platform.claude.com](https://platform.claude.com)), нажмите на ваши инициалы в нижнем левом углу и выберите **Получить помощь**. См. [Как получить поддержку](https://support.claude.com/en/articles/9015913-how-to-get-support) для полного процесса, включая информацию о том, кто может связаться с представителем поддержки на каждом плане.
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

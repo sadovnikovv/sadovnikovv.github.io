@@ -1,0 +1,2468 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Полный гайд по концепциям Claude</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a></nav>
+<p>&lt;picture&gt;
+  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;resources/logos/claude-howto-logo-dark.svg&quot;&gt;
+  &lt;img alt=&quot;Claude How To&quot; src=&quot;resources/logos/claude-howto-logo.svg&quot;&gt;
+&lt;/picture&gt;</p>
+<h1 id="полный-гайд-по-концепциям-claude">Полный гайд по концепциям Claude <a class="h-anchor" href="#полный-гайд-по-концепциям-claude" aria-label="Ссылка на раздел">#</a></h1>
+<p>Полный справочный гайд по Slash Commands, Subagents, Memory, протоколу MCP и Agent Skills с таблицами, диаграммами и практическими примерами.</p>
+<hr>
+<h3 id="h">Содержание <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li><a href="#slash-commands">Slash Commands</a></li>
+<li><a href="#subagents">Subagents</a></li>
+<li><a href="#memory">Memory</a></li>
+<li><a href="#mcp-protocol">MCP Protocol</a></li>
+<li><a href="#agent-skills">Agent Skills</a></li>
+<li><a href="#plugins">Plugins</a></li>
+<li><a href="#hooks">Hooks</a></li>
+<li><a href="#checkpoints-and-rewind">Checkpoints and Rewind</a></li>
+<li><a href="#advanced-features">Advanced Features</a></li>
+<li><a href="#comparison--integration">Comparison &amp; Integration</a></li>
+</ol>
+<hr>
+<h3 id="slash-commands">Slash Commands <a class="h-anchor" href="#slash-commands" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-2">Обзор <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<p>Slash commands — это ярлыки, запускаемые пользователем и хранящиеся как Markdown-файлы, которые Claude Code может выполнять. Они позволяют командам стандартизировать часто используемые запросы и workflows.</p>
+<h4 id="h-3">Архитектура <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TD
+    A[&quot;Ввод пользователя: /command-name&quot;] --&gt;|Запускает| B[&quot;Поиск в .claude/commands/&quot;]
+    B --&gt;|Находит| C[&quot;command-name.md&quot;]
+    C --&gt;|Загружает| D[&quot;Содержимое Markdown&quot;]
+    D --&gt;|Выполняет| E[&quot;Claude обрабатывает запрос&quot;]
+    E --&gt;|Возвращает| F[&quot;Результат в контексте&quot;]</code></pre>
+<h4 id="h-4">Структура файлов <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph LR
+    A[&quot;Корень проекта&quot;] --&gt;|содержит| B[&quot;.claude/commands/&quot;]
+    B --&gt;|содержит| C[&quot;optimize.md&quot;]
+    B --&gt;|содержит| D[&quot;test.md&quot;]
+    B --&gt;|содержит| E[&quot;docs/&quot;]
+    E --&gt;|содержит| F[&quot;generate-api-docs.md&quot;]
+    E --&gt;|содержит| G[&quot;generate-readme.md&quot;]</code></pre>
+<h4 id="h-5">Таблица организации команд <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Расположение</th><th>Область</th><th>Доступность</th><th>Сценарий использования</th><th>Отслеживается Git</th></tr></thead><tbody><tr><td><code>.claude/commands/</code></td><td>Для проекта</td><td>Участники команды</td><td>Командные workflows, общие стандарты</td><td>✅ Да</td></tr><tr><td><code>~/.claude/commands/</code></td><td>Личное</td><td>Отдельный пользователь</td><td>Личные ярлыки между проектами</td><td>❌ Нет</td></tr><tr><td>Подкаталоги</td><td>С пространством имён</td><td>Зависит от родителя</td><td>Организация по категориям</td><td>✅ Да</td></tr></tbody></table></div>
+<h4 id="h-6">Возможности <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Возможность</th><th>Пример</th><th>Поддерживается</th></tr></thead><tbody><tr><td>Выполнение shell-скриптов</td><td><code>bash scripts/deploy.sh</code></td><td>✅ Да</td></tr><tr><td>Ссылки на файлы</td><td><code>@path/to/file.js</code></td><td>✅ Да</td></tr><tr><td>Интеграция Bash</td><td><code>$(git log --oneline)</code></td><td>✅ Да</td></tr><tr><td>Аргументы</td><td><code>/pr --verbose</code></td><td>✅ Да</td></tr><tr><td>Команды MCP</td><td><code>/mcp__github__list_prs</code></td><td>✅ Да</td></tr></tbody></table></div>
+<h4 id="h-7">Практические примеры <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<h5 id="пример-1-команда-оптимизации-кода">Пример 1: Команда оптимизации кода <a class="h-anchor" href="#пример-1-команда-оптимизации-кода" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Файл:</strong> <code>.claude/commands/optimize.md</code></p>
+<pre><code class="language-markdown">---
+name: Code Optimization
+description: Анализировать код на проблемы производительности и предлагать оптимизации
+tags: performance, analysis
+---
+
+# Оптимизация кода
+
+Проверьте предоставленный код на следующие проблемы в порядке приоритета:
+
+1. **Узкие места производительности** - найдите операции O(n²), неэффективные циклы
+2. **Утечки памяти** - найдите неосвобождённые ресурсы, циклические ссылки
+3. **Улучшения алгоритмов** - предложите лучшие алгоритмы или структуры данных
+4. **Возможности кеширования** - найдите повторяющиеся вычисления
+5. **Проблемы конкурентности** - найдите race condition или проблемы потоков
+
+Оформите ответ так:
+- Критичность проблемы (Critical/High/Medium/Low)
+- Расположение в коде
+- Объяснение
+- Рекомендуемое исправление с примером кода</code></pre>
+<p><strong>Использование:</strong></p>
+<pre><code class="language-bash"># Пользователь вводит в Claude Code
+/optimize
+
+# Claude загружает запрос и ждёт ввода кода</code></pre>
+<h5 id="пример-2-команда-помощник-для-pull-request">Пример 2: Команда-помощник для Pull Request <a class="h-anchor" href="#пример-2-команда-помощник-для-pull-request" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Файл:</strong> <code>.claude/commands/pr.md</code></p>
+<pre><code class="language-markdown">---
+name: Prepare Pull Request
+description: Очистить код, подготовить изменения и оформить pull request
+tags: git, workflow
+---
+
+# Чеклист подготовки Pull Request
+
+Перед созданием PR выполните следующие шаги:
+
+1. Запустите linting: `prettier --write .`
+2. Запустите тесты: `npm test`
+3. Проверьте git diff: `git diff HEAD`
+4. Проиндексируйте изменения: `git add .`
+5. Создайте сообщение коммита по Conventional Commits:
+   - `fix:` для исправлений ошибок
+   - `feat:` для новых возможностей
+   - `docs:` для документации
+   - `refactor:` для перестройки кода
+   - `test:` для добавления тестов
+   - `chore:` для обслуживания
+
+6. Сгенерируйте сводку PR, включая:
+   - Что изменилось
+   - Почему это изменилось
+   - Какие тесты выполнены
+   - Возможные последствия</code></pre>
+<p><strong>Использование:</strong></p>
+<pre><code class="language-bash">/pr
+
+# Claude проходит по чеклисту и готовит PR</code></pre>
+<h5 id="пример-3-иерархический-генератор-документации">Пример 3: Иерархический генератор документации <a class="h-anchor" href="#пример-3-иерархический-генератор-документации" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Файл:</strong> <code>.claude/commands/docs/generate-api-docs.md</code></p>
+<pre><code class="language-markdown">---
+name: Generate API Documentation
+description: Создать полную API-документацию из исходного кода
+tags: documentation, api
+---
+
+# Генератор API-документации
+
+Сгенерируйте API-документацию так:
+
+1. Просканируйте все файлы в `/src/api/`
+2. Извлеките сигнатуры функций и комментарии JSDoc
+3. Организуйте по endpoint/module
+4. Создайте markdown с примерами
+5. Включите схемы запросов и ответов
+6. Добавьте документацию по ошибкам
+
+Формат вывода:
+- Markdown-файл в `/docs/api.md`
+- Добавьте примеры curl для всех endpoint
+- Добавьте TypeScript-типизацию</code></pre>
+<h4 id="h-8">Диаграмма жизненного цикла команды <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant Пользователь
+    participant Claude as Claude Code
+    participant FS as File System
+    participant CLI as Shell/Bash
+
+    Пользователь-&gt;&gt;Claude: Types /optimize
+    Claude-&gt;&gt;FS: Searches .claude/commands/
+    FS--&gt;&gt;Claude: Returns optimize.md
+    Claude-&gt;&gt;Claude: Loads Markdown content
+    Claude-&gt;&gt;Пользователь: Displays prompt context
+    Пользователь-&gt;&gt;Claude: Provides code to analyze
+    Claude-&gt;&gt;CLI: (May execute scripts)
+    CLI--&gt;&gt;Claude: Results
+    Claude-&gt;&gt;Пользователь: Returns analysis</code></pre>
+<h4 id="h-9">Лучшие практики <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>✅ Делайте</th><th>❌ Не делайте</th></tr></thead><tbody><tr><td>Используйте понятные, ориентированные на действие имена</td><td>Создавайте команды для одноразовых задач</td></tr><tr><td>Указывайте слова-триггеры в описании</td><td>Встраивайте сложную логику в команды</td></tr><tr><td>Делайте команды сфокусированными на одной задаче</td><td>Создавайте дублирующие команды</td></tr><tr><td>Версионируйте проектные команды</td><td>Хардкодьте чувствительную информацию</td></tr><tr><td>Организуйте по подкаталогам</td><td>Создавайте длинные списки команд</td></tr><tr><td>Используйте простые и читаемые запросы</td><td>Используйте сокращённые или криптичные формулировки</td></tr></tbody></table></div>
+<hr>
+<h3 id="subagents">Subagents <a class="h-anchor" href="#subagents" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-10">Обзор <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h4>
+<p>Subagents — это специализированные AI-помощники с изолированными окнами контекста и настраиваемыми системными промптами. Они позволяют делегировать задачи, сохраняя чёткое разделение ответственности.</p>
+<h4 id="h-11">Диаграмма архитектуры <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TB
+    Пользователь[&quot;👤 Пользователь&quot;]
+    Main[&quot;🎯 Main Agent&lt;br/&gt;(Coordinator)&quot;]
+    Reviewer[&quot;🔍 Code Reviewer&lt;br/&gt;Subagent&quot;]
+    Tester[&quot;✅ Test Engineer&lt;br/&gt;Subagent&quot;]
+    Docs[&quot;📝 Documentation&lt;br/&gt;Subagent&quot;]
+
+    Пользователь --&gt;|asks| Main
+    Main --&gt;|delegates| Reviewer
+    Main --&gt;|delegates| Tester
+    Main --&gt;|delegates| Docs
+    Reviewer --&gt;|returns result| Main
+    Tester --&gt;|returns result| Main
+    Docs --&gt;|returns result| Main
+    Main --&gt;|synthesizes| Пользователь</code></pre>
+<h4 id="жизненный-цикл-subagent">Жизненный цикл subagent <a class="h-anchor" href="#жизненный-цикл-subagent" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant Пользователь
+    participant MainAgent as Main Agent
+    participant CodeReviewer as Code Reviewer&lt;br/&gt;Subagent
+    participant Context as Separate&lt;br/&gt;Context Window
+
+    Пользователь-&gt;&gt;MainAgent: &quot;Build new auth feature&quot;
+    MainAgent-&gt;&gt;MainAgent: Analyze task
+    MainAgent-&gt;&gt;CodeReviewer: &quot;Review this code&quot;
+    CodeReviewer-&gt;&gt;Context: Initialize clean context
+    Context-&gt;&gt;CodeReviewer: Load reviewer instructions
+    CodeReviewer-&gt;&gt;CodeReviewer: Perform review
+    CodeReviewer--&gt;&gt;MainAgent: Return findings
+    MainAgent-&gt;&gt;MainAgent: Incorporate results
+    MainAgent--&gt;&gt;Пользователь: Provide synthesis</code></pre>
+<h4 id="таблица-конфигурации-subagent">Таблица конфигурации subagent <a class="h-anchor" href="#таблица-конфигурации-subagent" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>Назначение</th><th>Пример</th></tr></thead><tbody><tr><td><code>name</code></td><td>String</td><td>Идентификатор агента</td><td><code>code-reviewer</code></td></tr><tr><td><code>description</code></td><td>String</td><td>Назначение и триггерные фразы</td><td><code>Comprehensive code quality analysis</code></td></tr><tr><td><code>tools</code></td><td>List/String</td><td>Разрешённые возможности</td><td><code>read, grep, diff, lint_runner</code></td></tr><tr><td><code>system_prompt</code></td><td>Markdown</td><td>Поведенческие инструкции</td><td>Пользовательские правила</td></tr></tbody></table></div>
+<h4 id="h-12">Иерархия доступа к инструментам <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TD
+    A[&quot;Конфигурация subagent&quot;] --&gt;|Вариант 1| B[&quot;Наследовать все инструменты&lt;br/&gt;из основного потока&quot;]
+    A --&gt;|Вариант 2| C[&quot;Указать отдельные инструменты&quot;]
+    B --&gt;|Включает| B1[&quot;Операции с файлами&quot;]
+    B --&gt;|Включает| B2[&quot;Shell-команды&quot;]
+    B --&gt;|Включает| B3[&quot;Инструменты MCP&quot;]
+    C --&gt;|Явный список| C1[&quot;read, grep, diff&quot;]
+    C --&gt;|Явный список| C2[&quot;Bash(npm:*), Bash(test:*)&quot;]</code></pre>
+<h4 id="h-13">Практические примеры <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h4>
+<h5 id="пример-1-полная-настройка-subagent">Пример 1: Полная настройка subagent <a class="h-anchor" href="#пример-1-полная-настройка-subagent" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Файл:</strong> <code>.claude/agents/code-reviewer.md</code></p>
+<pre><code class="language-yaml">---
+name: code-reviewer
+description: Полный анализ качества кода и поддерживаемости
+tools: read, grep, diff, lint_runner
+---
+
+# Агент code reviewer
+
+Вы эксперт по code review, специализирующийся на:
+- Оптимизации производительности
+- Уязвимостях безопасности
+- Поддерживаемости кода
+- Покрытии тестами
+- Паттернах проектирования
+
+## Приоритеты ревью (по порядку)
+
+1. **Проблемы безопасности** - аутентификация, авторизация, утечка данных
+2. **Проблемы производительности** - операции O(n²), утечки памяти, неэффективные запросы
+3. **Качество кода** - читаемость, именование, документация
+4. **Покрытие тестами** - пропущенные тесты, граничные случаи
+5. **Паттерны проектирования** - принципы SOLID, архитектура
+
+## Формат вывода ревью
+
+Для каждой проблемы:
+- **Severity**: Critical / High / Medium / Low
+- **Category**: Security / Performance / Quality / Testing / Design
+- **Location**: путь к файлу и номер строки
+- **Issue Description**: что не так и почему
+- **Suggested Fix**: пример исправления
+- **Impact**: как это влияет на систему
+
+## Пример ревью
+
+### Проблема: N+1 Query Problem
+- **Severity**: High
+- **Category**: Performance
+- **Location**: src/user-service.ts:45
+- **Issue**: цикл выполняет запрос к базе в каждой итерации
+- **Fix**: используйте JOIN или пакетный запрос</code></pre>
+<p><strong>Файл:</strong> <code>.claude/agents/test-engineer.md</code></p>
+<pre><code class="language-yaml">---
+name: test-engineer
+description: Стратегия тестирования, анализ покрытия и автоматизированное тестирование
+tools: read, write, bash, grep
+---
+
+# Агент test engineer
+
+Вы эксперт в:
+- Написании полных тестовых наборов
+- Обеспечении высокого покрытия кода (&gt;80%)
+- Проверке граничных случаев и сценариев ошибок
+- Бенчмаркинге производительности
+- Интеграционном тестировании
+
+## Стратегия тестирования
+
+1. **Модульные тесты** - отдельные функции/методы
+2. **Интеграционные тесты** - взаимодействие компонентов
+3. **End-to-End тесты** - полные workflows
+4. **Граничные случаи** - граничные условия
+5. **Сценарии ошибок** - обработка сбоев
+
+## Требования к результату тестов
+
+- Используйте Jest для JavaScript/TypeScript
+- Добавляйте setup/teardown для каждого теста
+- Мокайте внешние зависимости
+- Документируйте назначение теста
+- Добавляйте проверки производительности, когда это уместно
+
+## Требования к покрытию
+
+- Минимум 80% покрытия кода
+- 100% для критических путей
+- Отчёт о зонах с недостающим покрытием</code></pre>
+<p><strong>Файл:</strong> <code>.claude/agents/documentation-writer.md</code></p>
+<pre><code class="language-yaml">---
+name: documentation-writer
+description: Техническая документация, API docs и руководства пользователя
+tools: read, write, grep
+---
+
+# Агент документации
+
+Вы создаёте:
+- документацию API с примерами
+- руководства пользователя и туториалы
+- архитектурную документацию
+- записи changelog
+- улучшения комментариев в коде
+
+## Стандарты документации
+
+1. **Ясность** - используйте простой и понятный язык
+2. **Примеры** - добавляйте практические примеры кода
+3. **Полнота** - покрывайте все параметры и возвращаемые значения
+4. **Структура** - используйте единообразное форматирование
+5. **Точность** - сверяйтесь с реальным кодом
+
+## Разделы документации
+
+### Для API
+- Описание
+- Параметры (с типами)
+- Возвращаемые значения (с типами)
+- Исключения (возможные ошибки)
+- Примеры (curl, JavaScript, Python)
+- Связанные endpoint
+
+### Для возможностей
+- Обзор
+- Требования
+- Пошаговые инструкции
+- Ожидаемые результаты
+- Устранение неполадок
+- Связанные темы</code></pre>
+<h5 id="пример-2-делегирование-subagent-в-действии">Пример 2: Делегирование subagent в действии <a class="h-anchor" href="#пример-2-делегирование-subagent-в-действии" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-markdown"># Сценарий: Создание платёжной функции
+
+## Запрос пользователя
+&quot;Создай безопасную функцию обработки платежей, интегрированную со Stripe&quot;
+
+## Поток основного агента
+
+1. **Этап планирования**
+   - Понимает требования
+   - Определяет необходимые задачи
+   - Планирует архитектуру
+
+2. **Делегирует subagent code reviewer**
+   - Задача: &quot;Проверь реализацию обработки платежей на безопасность&quot;
+   - Контекст: auth, API-ключи, обработка токенов
+   - Проверяет: SQL-инъекции, утечку ключей, принудительный HTTPS
+
+3. **Делегирует subagent test engineer**
+   - Задача: &quot;Создай полные тесты для платёжных сценариев&quot;
+   - Контекст: успешные сценарии, сбои, граничные случаи
+   - Создаёт тесты для: успешных платежей, отклонённых карт, сетевых сбоев, webhook
+
+4. **Делегирует subagent documentation writer**
+   - Задача: &quot;Документируй endpoint платёжного API&quot;
+   - Контекст: схемы запросов и ответов
+   - Результат: API-документация с примерами curl и кодами ошибок
+
+5. **Синтез**
+   - Основной агент собирает все результаты
+   - Объединяет выводы
+   - Возвращает пользователю готовое решение</code></pre>
+<h5 id="пример-3-область-разрешений-инструментов">Пример 3: Область разрешений инструментов <a class="h-anchor" href="#пример-3-область-разрешений-инструментов" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Ограниченная настройка - только конкретные команды</strong></p>
+<pre><code class="language-yaml">---
+name: secure-reviewer
+description: Ревью кода с упором на безопасность и минимальными разрешениями
+tools: read, grep
+---
+
+# Безопасный ревьюер кода
+
+Проверяет код только на уязвимости безопасности.
+
+Этот агент:
+- ✅ Читает файлы для анализа
+- ✅ Ищет паттерны
+- ❌ Не может выполнять код
+- ❌ Не может изменять файлы
+- ❌ Не может запускать тесты
+
+Это гарантирует, что ревьюер случайно ничего не сломает.</code></pre>
+<p><strong>Расширенная настройка - все инструменты для реализации</strong></p>
+<pre><code class="language-yaml">---
+name: implementation-agent
+description: Полные возможности реализации для разработки функций
+tools: read, write, bash, grep, edit, glob
+---
+
+# Агент реализации
+
+Создаёт функции по спецификациям.
+
+This agent:
+- ✅ Reads specifications
+- ✅ Writes new code files
+- ✅ Runs build commands
+- ✅ Searches codebase
+- ✅ Edits existing files
+- ✅ Finds files matching patterns
+
+Полный набор возможностей для самостоятельной разработки функций.</code></pre>
+<h4 id="управление-контекстом-subagent">Управление контекстом subagent <a class="h-anchor" href="#управление-контекстом-subagent" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TB
+    A[&quot;Контекст основного агента&lt;br/&gt;50,000 токенов&quot;]
+    B[&quot;Контекст subagent 1&lt;br/&gt;20,000 токенов&quot;]
+    C[&quot;Контекст subagent 2&lt;br/&gt;20,000 токенов&quot;]
+    D[&quot;Контекст subagent 3&lt;br/&gt;20,000 токенов&quot;]
+
+    A --&gt;|Чистый лист| B
+    A --&gt;|Чистый лист| C
+    A --&gt;|Чистый лист| D
+
+    B --&gt;|Только результаты| A
+    C --&gt;|Только результаты| A
+    D --&gt;|Только результаты| A
+
+    style A fill:#e1f5ff
+    style B fill:#fff9c4
+    style C fill:#fff9c4
+    style D fill:#fff9c4</code></pre>
+<h4 id="когда-использовать-subagent">Когда использовать subagent <a class="h-anchor" href="#когда-использовать-subagent" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Сценарий</th><th>Использовать subagent</th><th>Почему</th></tr></thead><tbody><tr><td>Сложная функция с множеством шагов</td><td>✅ Да</td><td>Разделение ответственности, защита от загрязнения контекста</td></tr><tr><td>Быстрое code review</td><td>❌ Нет</td><td>Лишние накладные расходы</td></tr><tr><td>Параллельное выполнение задач</td><td>✅ Да</td><td>У каждого subagent свой контекст</td></tr><tr><td>Нужна узкая экспертиза</td><td>✅ Да</td><td>Пользовательские системные промпты</td></tr><tr><td>Долгий анализ</td><td>✅ Да</td><td>Предотвращает переполнение основного контекста</td></tr><tr><td>Одна задача</td><td>❌ Нет</td><td>Лишняя задержка</td></tr></tbody></table></div>
+<h4 id="h-14">Команды агентов <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h4>
+<p>Команды агентов координируют несколько агентов, работающих над связанными задачами. Вместо делегирования по одному subagent за раз, Agent Teams позволяют основному агенту координировать группу агентов, которые сотрудничают, обмениваются промежуточными результатами и движутся к общей цели. Это полезно для больших задач, например полной разработки функции, где frontend-агент, backend-агент и тестовый агент работают параллельно.</p>
+<hr>
+<h3 id="memory">Memory <a class="h-anchor" href="#memory" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-15">Обзор <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h4>
+<p>Memory позволяет Claude сохранять контекст между сессиями и разговорами. Она существует в двух формах: автоматическая синтезация в claude.ai и файловая <code>CLAUDE.md</code> в Claude Code.</p>
+<h4 id="h-16">Архитектура памяти <a class="h-anchor" href="#h-16" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TB
+    A[&quot;Claude Session&quot;]
+    B[&quot;Пользователь Input&quot;]
+    C[&quot;Memory System&quot;]
+    D[&quot;Memory Storage&quot;]
+
+    B --&gt;|Пользователь provides info| C
+    C --&gt;|Synthesizes every 24h| D
+    D --&gt;|Loads automatically| A
+    A --&gt;|Uses context| C</code></pre>
+<h4 id="иерархия-памяти-в-claude-code-7-уровней">Иерархия памяти в Claude Code (7 уровней) <a class="h-anchor" href="#иерархия-памяти-в-claude-code-7-уровней" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude Code загружает память из 7 уровней, перечисленных от высшего к низшему приоритету:</p>
+<pre><code class="language-mermaid">graph TD
+    A[&quot;1. Managed Policy&lt;br/&gt;Enterprise admin policies&quot;] --&gt; B[&quot;2. Project Memory&lt;br/&gt;./CLAUDE.md&quot;]
+    B --&gt; C[&quot;3. Project Rules&lt;br/&gt;.claude/rules/*.md&quot;]
+    C --&gt; D[&quot;4. Пользователь Memory&lt;br/&gt;~/.claude/CLAUDE.md&quot;]
+    D --&gt; E[&quot;5. Пользователь Rules&lt;br/&gt;~/.claude/rules/*.md&quot;]
+    E --&gt; F[&quot;6. Local Memory&lt;br/&gt;.claude/local/CLAUDE.md&quot;]
+    F --&gt; G[&quot;7. Auto Memory&lt;br/&gt;Automatically captured preferences&quot;]
+
+    style A fill:#fce4ec,stroke:#333,color:#333
+    style B fill:#e1f5fe,stroke:#333,color:#333
+    style C fill:#e1f5fe,stroke:#333,color:#333
+    style D fill:#f3e5f5,stroke:#333,color:#333
+    style E fill:#f3e5f5,stroke:#333,color:#333
+    style F fill:#e8f5e9,stroke:#333,color:#333
+    style G fill:#fff3e0,stroke:#333,color:#333</code></pre>
+<h4 id="h-17">Таблица расположения памяти <a class="h-anchor" href="#h-17" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Уровень</th><th>Расположение</th><th>Область</th><th>Приоритет</th><th>Общий доступ</th><th>Лучше всего для</th></tr></thead><tbody><tr><td>1. Managed Policy</td><td>Админская политика предприятия</td><td>Organization</td><td>Highest</td><td>Все пользователи организации</td><td>Соответствие требованиям, политики безопасности</td></tr><tr><td>2. Project</td><td><code>./CLAUDE.md</code></td><td>Project</td><td>High</td><td>Команда (Git)</td><td>Стандарты команды, архитектура</td></tr><tr><td>3. Project Rules</td><td><code>.claude/rules/*.md</code></td><td>Project</td><td>High</td><td>Команда (Git)</td><td>Модульные соглашения проекта</td></tr><tr><td>4. Пользователь</td><td><code>~/.claude/CLAUDE.md</code></td><td>Personal</td><td>Medium</td><td>Индивидуально</td><td>Личные предпочтения</td></tr><tr><td>5. Пользователь Rules</td><td><code>~/.claude/rules/*.md</code></td><td>Personal</td><td>Medium</td><td>Индивидуально</td><td>Модульные личные правила</td></tr><tr><td>6. Local</td><td><code>.claude/local/CLAUDE.md</code></td><td>Local</td><td>Low</td><td>Не делится</td><td>Настройки для конкретной машины</td></tr><tr><td>7. Auto Memory</td><td>Automatic</td><td>Session</td><td>Lowest</td><td>Индивидуально</td><td>Изученные предпочтения, шаблоны</td></tr></tbody></table></div>
+<h4 id="h-18">Автопамять <a class="h-anchor" href="#h-18" aria-label="Ссылка на раздел">#</a></h4>
+<p>Автопамять автоматически фиксирует предпочтения пользователя и шаблоны, замеченные во время сессий. Claude учится на ваших взаимодействиях и запоминает:</p>
+<ul>
+<li>предпочтения по стилю кода</li>
+<li>типичные исправления, которые вы вносите</li>
+<li>выбор фреймворков и инструментов</li>
+<li>предпочтения по стилю общения</li>
+</ul>
+<p>Автопамять работает в фоне и не требует ручной настройки.</p>
+<h4 id="h-19">Жизненный цикл обновления памяти <a class="h-anchor" href="#h-19" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant Пользователь
+    participant Claude as Claude Code
+    participant Editor as File System
+    participant Memory as CLAUDE.md
+
+    Пользователь-&gt;&gt;Claude: &quot;Запомни: используй async/await&quot;
+    Claude-&gt;&gt;Пользователь: &quot;В какой файл памяти?&quot;
+    Пользователь-&gt;&gt;Claude: &quot;Память проекта&quot;
+    Claude-&gt;&gt;Editor: Открыть ~/.claude/settings.json
+    Claude-&gt;&gt;Memory: Записать в ./CLAUDE.md
+    Memory--&gt;&gt;Claude: Файл сохранён
+    Claude-&gt;&gt;Claude: Загрузить обновлённую память
+    Claude--&gt;&gt;Пользователь: &quot;Память сохранена!&quot;</code></pre>
+<h4 id="h-20">Практические примеры <a class="h-anchor" href="#h-20" aria-label="Ссылка на раздел">#</a></h4>
+<h5 id="пример-1-структура-памяти-проекта">Пример 1: Структура памяти проекта <a class="h-anchor" href="#пример-1-структура-памяти-проекта" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>File:</strong> <code>./CLAUDE.md</code></p>
+<pre><code class="language-markdown"># Конфигурация проекта
+
+## Обзор проекта
+- **Имя**: E-commerce Platform
+- **Стек**: Node.js, PostgreSQL, React 18, Docker
+- **Размер команды**: 5 разработчиков
+- **Дедлайн**: Q4 2025
+
+## Архитектура
+@docs/architecture.md
+@docs/api-standards.md
+@docs/database-schema.md
+
+## Стандарты разработки
+
+### Стиль кода
+- Используйте Prettier для форматирования
+- Используйте ESLint с конфигурацией airbnb
+- Максимальная длина строки: 100 символов
+- Используйте отступ в 2 пробела
+
+### Соглашения по именованию
+- **Файлы**: kebab-case (user-controller.js)
+- **Классы**: PascalCase (ПользовательService)
+- **Функции/переменные**: camelCase (getПользовательById)
+- **Константы**: UPPER_SNAKE_CASE (API_BASE_URL)
+- **Таблицы базы данных**: snake_case (user_accounts)
+
+### Git-workflow
+- Имена веток: `feature/description` или `fix/description`
+- Сообщения коммитов: следуйте Conventional Commits
+- Перед merge нужен PR
+- Все проверки CI/CD должны пройти
+- Нужен минимум 1 апрув
+
+### Требования к тестам
+- Минимум 80% покрытия кода
+- У всех критических путей должны быть тесты
+- Используйте Jest для модульных тестов
+- Используйте Cypress для E2E тестов
+- Имена файлов тестов: `*.test.ts` или `*.spec.ts`
+
+### Стандарты API
+- Только RESTful endpoint
+- JSON для запросов и ответов
+- Корректно используйте HTTP-коды статуса
+- Версионируйте endpoint API: `/api/v1/`
+- Документируйте все endpoint с примерами
+
+### База данных
+- Используйте миграции для изменений схемы
+- Никогда не хардкодьте учётные данные
+- Используйте connection pooling
+- Включайте логирование запросов в разработке
+- Нужны регулярные бэкапы
+
+### Развёртывание
+- Развёртывание на основе Docker
+- Оркестрация через Kubernetes
+- Стратегия blue-green deployment
+- Автоматический rollback при сбое
+- Миграции базы запускаются до deploy
+
+## Частые команды
+
+| Команда | Назначение |
+|---------|---------|
+| `npm run dev` | Запустить сервер разработки |
+| `npm test` | Запустить набор тестов |
+| `npm run lint` | Проверить стиль кода |
+| `npm run build` | Собрать для production |
+| `npm run migrate` | Запустить миграции базы данных |
+
+## Контакты команды
+- Tech Lead: Sarah Chen (@sarah.chen)
+- Product Manager: Mike Johnson (@mike.j)
+- DevOps: Alex Kim (@alex.k)
+
+## Известные проблемы и обходные пути
+- Connection pooling PostgreSQL ограничен 20 во время пиковых нагрузок
+- Обход: реализовать очередь запросов
+- Проблемы совместимости Safari 14 с async generators
+- Обход: использовать transpiler Babel
+
+## Связанные проекты
+- Analytics Dashboard: `/projects/analytics`
+- Mobile App: `/projects/mobile`
+- Admin Panel: `/projects/admin`</code></pre>
+<h5 id="пример-2-память-для-конкретного-каталога">Пример 2: Память для конкретного каталога <a class="h-anchor" href="#пример-2-память-для-конкретного-каталога" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>File:</strong> <code>./src/api/CLAUDE.md</code></p>
+<p>~~~~markdown</p>
+<h1 id="стандарты-модуля-api">Стандарты модуля API <a class="h-anchor" href="#стандарты-модуля-api" aria-label="Ссылка на раздел">#</a></h1>
+<p>Этот файл переопределяет корневой <code>CLAUDE.md</code> для всего в <code>/src/api/</code></p>
+<h3 id="специфические-стандарты-api">Специфические стандарты API <a class="h-anchor" href="#специфические-стандарты-api" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-21">Проверка запросов <a class="h-anchor" href="#h-21" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Используйте Zod для валидации схем</li>
+<li>Всегда проверяйте входные данные</li>
+<li>Возвращайте 400 с ошибками валидации</li>
+<li>Добавляйте подробности по полям</li>
+</ul>
+<h4 id="h-22">Аутентификация <a class="h-anchor" href="#h-22" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Все endpoint требуют JWT token</li>
+<li>Token передаётся в заголовке Authorization</li>
+<li>Token истекает через 24 часа</li>
+<li>Реализуйте механизм refresh token</li>
+</ul>
+<h4 id="h-23">Формат ответа <a class="h-anchor" href="#h-23" aria-label="Ссылка на раздел">#</a></h4>
+<p>Все ответы должны соответствовать этой структуре:</p>
+<pre><code class="language-json">{
+  &quot;success&quot;: true,
+  &quot;data&quot;: { /* actual data */ },
+  &quot;timestamp&quot;: &quot;2025-11-06T10:30:00Z&quot;,
+  &quot;version&quot;: &quot;1.0&quot;
+}</code></pre>
+<h4 id="h-24">Ошибки ответа: <a class="h-anchor" href="#h-24" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-json">{
+  &quot;success&quot;: false,
+  &quot;error&quot;: {
+    &quot;code&quot;: &quot;VALIDATION_ERROR&quot;,
+    &quot;message&quot;: &quot;Пользователь message&quot;,
+    &quot;details&quot;: { /* field errors */ }
+  },
+  &quot;timestamp&quot;: &quot;2025-11-06T10:30:00Z&quot;
+}</code></pre>
+<h4 id="h-25">Пагинация <a class="h-anchor" href="#h-25" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Используйте cursor-based pagination, а не offset</li>
+<li>Добавляйте boolean <code>hasMore</code></li>
+<li>Ограничьте максимальный размер страницы до 100</li>
+<li>Размер страницы по умолчанию: 20</li>
+</ul>
+<h4 id="rate-limiting">Rate limiting <a class="h-anchor" href="#rate-limiting" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>1000 запросов в час для аутентифицированных пользователей</li>
+<li>100 запросов в час для публичных endpoint</li>
+<li>Возвращайте 429 при превышении</li>
+<li>Добавляйте заголовок retry-after</li>
+</ul>
+<h4 id="h-26">Кеширование <a class="h-anchor" href="#h-26" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Используйте Redis для кеша сессий</li>
+<li>Длительность кеша по умолчанию: 5 минут</li>
+<li>Инвалидация при операциях записи</li>
+<li>Помечайте ключи кеша типом ресурса</li>
+</ul>
+<p>~~~~</p>
+<h5 id="example-3-personal-memory">Example 3: Personal Memory <a class="h-anchor" href="#example-3-personal-memory" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>File:</strong> <code>~/.claude/CLAUDE.md</code></p>
+<p>~~~~markdown</p>
+<h1 id="h-27">Мои предпочтения в разработке <a class="h-anchor" href="#h-27" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="h-28">Обо мне <a class="h-anchor" href="#h-28" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong>Уровень опыта</strong>: 8 лет full-stack разработки</li>
+<li><strong>Предпочитаемые языки</strong>: TypeScript, Python</li>
+<li><strong>Стиль общения</strong>: Прямой, с примерами</li>
+<li><strong>Стиль обучения</strong>: Визуальные диаграммы с кодом</li>
+</ul>
+<h3 id="h-29">Предпочтения по коду <a class="h-anchor" href="#h-29" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-30">Обработка ошибок <a class="h-anchor" href="#h-30" aria-label="Ссылка на раздел">#</a></h4>
+<p>Я предпочитаю явную обработку ошибок через try-catch и осмысленные сообщения.
+Избегайте общих ошибок. Всегда логируйте ошибки для отладки.</p>
+<h4 id="h-31">Комментарии <a class="h-anchor" href="#h-31" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте комментарии для WHY, а не WHAT. Код должен быть самодокументируемым.
+Комментарии должны объяснять бизнес-логику или неочевидные решения.</p>
+<h4 id="h-32">Тестирование <a class="h-anchor" href="#h-32" aria-label="Ссылка на раздел">#</a></h4>
+<p>Я предпочитаю TDD (test-driven development).
+Сначала пишите тесты, потом реализацию.
+Сосредоточьтесь на поведении, а не на деталях реализации.</p>
+<h4 id="h-33">Архитектура <a class="h-anchor" href="#h-33" aria-label="Ссылка на раздел">#</a></h4>
+<p>Я предпочитаю модульный, слабосвязанный дизайн.
+Используйте dependency injection ради тестируемости.
+Разделяйте ответственность (Controllers, Services, Repositories).</p>
+<h3 id="h-34">Предпочтения по отладке <a class="h-anchor" href="#h-34" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Используйте <code>console.log</code> с префиксом <code>[DEBUG]</code></li>
+<li>Добавляйте контекст: имя функции, релевантные переменные</li>
+<li>Используйте stack trace, когда он доступен</li>
+<li>Всегда добавляйте timestamps в логи</li>
+</ul>
+<h3 id="h-35">Коммуникация <a class="h-anchor" href="#h-35" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Объясняйте сложные концепции с помощью диаграмм</li>
+<li>Показывайте конкретные примеры до теории</li>
+<li>Добавляйте примеры кода до/после</li>
+<li>Суммируйте ключевые моменты в конце</li>
+</ul>
+<h3 id="h-36">Организация проекта <a class="h-anchor" href="#h-36" aria-label="Ссылка на раздел">#</a></h3>
+<p>Я организую проекты так:</p>
+<pre><code>project/
+  ├── src/
+  │   ├── api/
+  │   ├── services/
+  │   ├── models/
+  │   └── utils/
+  ├── tests/
+  ├── docs/
+  └── docker/</code></pre>
+<h3 id="h-37">Инструменты <a class="h-anchor" href="#h-37" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong>IDE</strong>: VS Code с vim keybindings</li>
+<li><strong>Терминал</strong>: Zsh с Oh-My-Zsh</li>
+<li><strong>Форматирование</strong>: Prettier (100 символов в строке)</li>
+<li><strong>Linter</strong>: ESLint с конфигурацией airbnb</li>
+<li><strong>Фреймворк тестов</strong>: Jest с React Testing Library</li>
+</ul>
+<p>~~~~</p>
+<h5 id="example-4-memory-обновить-during-session">Example 4: Memory Обновить During Session <a class="h-anchor" href="#example-4-memory-обновить-during-session" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Session Interaction:</strong></p>
+<pre><code class="language-markdown">Пользователь: Remember that I prefer using React hooks instead of class components
+     for all new components.
+
+Claude: Я добавляю это в память. В какой файл памяти это записать?
+        1. Память проекта (./CLAUDE.md)
+        2. Личная память (~/.claude/CLAUDE.md)
+
+Пользователь: Project memory
+
+Claude: ✅ Память сохранена!
+
+Added to ./CLAUDE.md:
+---
+
+### Разработка компонентов
+- Используйте функциональные компоненты с React Hooks
+- Предпочитайте hooks класс-компонентам
+- Используйте custom hooks для переиспользуемой логики
+- Используйте useCallback для обработчиков событий
+- Используйте useMemo для дорогих вычислений</code></pre>
+<h4 id="memory-в-claude-web-desktop">Memory в Claude Web/Desktop <a class="h-anchor" href="#memory-в-claude-web-desktop" aria-label="Ссылка на раздел">#</a></h4>
+<h5 id="таймлайн-синтеза-memory">Таймлайн синтеза Memory <a class="h-anchor" href="#таймлайн-синтеза-memory" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-mermaid">graph LR
+A[&quot;День 1: разговоры&lt;br/&gt;пользователя&quot;] --&gt;|24 hours| B[&quot;День 2: синтез&lt;br/&gt;Memory&quot;]
+    B --&gt;|Automatic| C[&quot;Memory обновлена&lt;br/&gt;и кратко изложена&quot;]
+    C --&gt;|Loaded in| D[&quot;День 2-N:&lt;br/&gt;новые разговоры&quot;]
+    D --&gt;|Add to| E[&quot;Memory&quot;]
+    E --&gt;|24 hours later| F[&quot;Memory Refreshed&quot;]</code></pre>
+<p><strong>Пример сводки памяти:</strong></p>
+<pre><code class="language-markdown">## Память Claude о пользователе
+
+### Профессиональный фон
+- Senior full-stack developer с 8 годами опыта
+- Фокус на TypeScript/Node.js backend и React frontend
+- Активный contributor open source
+- Интерес к AI и machine learning
+
+### Контекст проекта
+- Сейчас строю e-commerce платформу
+- Стек: Node.js, PostgreSQL, React 18, Docker
+- Работаю с командой из 5 разработчиков
+- Использую CI/CD и blue-green deployments
+
+### Предпочтения по общению
+- Предпочитает прямые и краткие объяснения
+- Любит визуальные диаграммы и примеры
+- Ценит фрагменты кода
+- Объясняет бизнес-логику в комментариях
+
+### Текущие цели
+- Улучшить производительность API
+- Повысить покрытие тестами до 90%
+- Реализовать стратегию кеширования
+- Документировать архитектуру</code></pre>
+<h4 id="сравнение-возможностей-memory">Сравнение возможностей Memory <a class="h-anchor" href="#сравнение-возможностей-memory" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Возможность</th><th>Claude Web/Desktop</th><th>Claude Code (CLAUDE.md)</th></tr></thead><tbody><tr><td>Автосинтез</td><td>✅ Каждые 24 часа</td><td>❌ Вручную</td></tr><tr><td>Межпроектность</td><td>✅ Общая</td><td>❌ Только проект</td></tr><tr><td>Доступ команды</td><td>✅ Общие проекты</td><td>✅ Отслеживается Git</td></tr><tr><td>Поиск</td><td>✅ Встроенный</td><td>✅ Через <code>/memory</code></td></tr><tr><td>Редактирование</td><td>✅ В чате</td><td>✅ Прямое редактирование файла</td></tr><tr><td>Импорт/экспорт</td><td>✅ Да</td><td>✅ Копирование/вставка</td></tr><tr><td>Постоянство</td><td>✅ 24ч+</td><td>✅ Бессрочно</td></tr></tbody></table></div>
+<hr>
+<h3 id="протокол-mcp">Протокол MCP <a class="h-anchor" href="#протокол-mcp" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-38">Обзор <a class="h-anchor" href="#h-38" aria-label="Ссылка на раздел">#</a></h4>
+<p>MCP (Model Context Protocol) — это стандартизированный способ для Claude получать доступ к внешним инструментам, API и источникам данных в реальном времени. В отличие от Memory, MCP даёт живой доступ к изменяющимся данным.</p>
+<h4 id="архитектура-mcp">Архитектура MCP <a class="h-anchor" href="#архитектура-mcp" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TB
+    A[&quot;Claude&quot;]
+    B[&quot;MCP Server&quot;]
+    C[&quot;External Service&quot;]
+
+    A --&gt;|Request: list_issues| B
+    B --&gt;|Query| C
+    C --&gt;|Data| B
+    B --&gt;|Response| A
+
+    A --&gt;|Request: create_issue| B
+    B --&gt;|Action| C
+    C --&gt;|Result| B
+    B --&gt;|Response| A</code></pre>
+<h4 id="экосистема-mcp">Экосистема MCP <a class="h-anchor" href="#экосистема-mcp" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TB
+    A[&quot;Claude&quot;] --&gt;|MCP| B[&quot;Filesystem&lt;br/&gt;MCP Server&quot;]
+    A --&gt;|MCP| C[&quot;GitHub&lt;br/&gt;MCP Server&quot;]
+    A --&gt;|MCP| D[&quot;Database&lt;br/&gt;MCP Server&quot;]
+    A --&gt;|MCP| E[&quot;Slack&lt;br/&gt;MCP Server&quot;]
+    A --&gt;|MCP| F[&quot;Google Docs&lt;br/&gt;MCP Server&quot;]
+
+    B --&gt;|File I/O| G[&quot;Local Files&quot;]
+    C --&gt;|API| H[&quot;GitHub Repos&quot;]
+    D --&gt;|Query| I[&quot;PostgreSQL/MySQL&quot;]
+    E --&gt;|Messages| J[&quot;Slack Workspace&quot;]
+    F --&gt;|Docs| K[&quot;Google Drive&quot;]</code></pre>
+<h4 id="процесс-настройки-mcp">Процесс настройки MCP <a class="h-anchor" href="#процесс-настройки-mcp" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant Пользователь
+    participant Claude as Claude Code
+    participant Config as Config File
+    participant Service as External Service
+
+    Пользователь-&gt;&gt;Claude: Type /mcp
+    Claude-&gt;&gt;Claude: List available MCP servers
+    Claude-&gt;&gt;Пользователь: Show options
+    Пользователь-&gt;&gt;Claude: Выбрать GitHub MCP
+    Claude-&gt;&gt;Config: Обновить configuration
+    Config-&gt;&gt;Claude: Активировать connection
+    Claude-&gt;&gt;Service: Test connection
+    Service--&gt;&gt;Claude: Authentication successful
+    Claude-&gt;&gt;Пользователь: ✅ MCP connected!</code></pre>
+<h4 id="таблица-доступных-mcp-серверов">Таблица доступных MCP-серверов <a class="h-anchor" href="#таблица-доступных-mcp-серверов" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>MCP-сервер</th><th>Назначение</th><th>Распространённые инструменты</th><th>Аутентификация</th><th>Реальное время</th></tr></thead><tbody><tr><td><strong>Filesystem</strong></td><td>Операции с файлами</td><td>read, write, delete</td><td>Разрешения ОС</td><td>✅ Да</td></tr><tr><td><strong>GitHub</strong></td><td>Управление репозиторием</td><td>list_prs, create_issue, push</td><td>OAuth</td><td>✅ Да</td></tr><tr><td><strong>Slack</strong></td><td>Командная коммуникация</td><td>send_message, list_channels</td><td>Token</td><td>✅ Да</td></tr><tr><td><strong>Database</strong></td><td>SQL-запросы</td><td>query, insert, update</td><td>Учётные данные</td><td>✅ Да</td></tr><tr><td><strong>Google Docs</strong></td><td>Доступ к документам</td><td>read, write, share</td><td>OAuth</td><td>✅ Да</td></tr><tr><td><strong>Asana</strong></td><td>Управление проектами</td><td>create_task, update_status</td><td>API Key</td><td>✅ Да</td></tr><tr><td><strong>Stripe</strong></td><td>Платёжные данные</td><td>list_charges, create_invoice</td><td>API Key</td><td>✅ Да</td></tr><tr><td><strong>Memory</strong></td><td>Постоянная память</td><td>store, retrieve, delete</td><td>Local</td><td>❌ Нет</td></tr></tbody></table></div>
+<h4 id="h-39">Практические примеры <a class="h-anchor" href="#h-39" aria-label="Ссылка на раздел">#</a></h4>
+<h5 id="пример-1-конфигурация-github-mcp">Пример 1: Конфигурация GitHub MCP <a class="h-anchor" href="#пример-1-конфигурация-github-mcp" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Файл:</strong> <code>.mcp.json</code> (область проекта) или <code>~/.claude.json</code> (область пользователя)</p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;github&quot;: {
+      &quot;command&quot;: &quot;npx&quot;,
+      &quot;args&quot;: [&quot;@modelcontextprotocol/server-github&quot;],
+      &quot;env&quot;: {
+        &quot;GITHUB_TOKEN&quot;: &quot;${GITHUB_TOKEN}&quot;
+      }
+    }
+  }
+}</code></pre>
+<p><strong>Доступные инструменты GitHub MCP:</strong></p>
+<p>~~~~markdown</p>
+<h1 id="инструменты-github-mcp">Инструменты GitHub MCP <a class="h-anchor" href="#инструменты-github-mcp" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="управление-pull-request">Управление Pull Request <a class="h-anchor" href="#управление-pull-request" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><code>list_prs</code> - Показать все PR в репозитории</li>
+<li><code>get_pr</code> - Получить детали PR, включая diff</li>
+<li><code>create_pr</code> - Создать новый PR</li>
+<li><code>update_pr</code> - Обновить описание/заголовок PR</li>
+<li><code>merge_pr</code> - Слить PR в main branch</li>
+<li><code>review_pr</code> - Добавить комментарии ревью</li>
+</ul>
+<p>Пример запроса:</p>
+<pre><code>/mcp__github__get_pr 456
+
+# Возвращает:
+Title: Add dark mode support
+Author: @alice
+Description: Implements dark theme using CSS variables
+Status: OPEN
+Reviewers: @bob, @charlie</code></pre>
+<h3 id="управление-issues">Управление issues <a class="h-anchor" href="#управление-issues" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><code>list_issues</code> - Показать все issues</li>
+<li><code>get_issue</code> - Получить детали issue</li>
+<li><code>create_issue</code> - Создать новый issue</li>
+<li><code>close_issue</code> - Закрыть issue</li>
+<li><code>add_comment</code> - Добавить комментарий к issue</li>
+</ul>
+<h3 id="h-40">Информация о репозитории <a class="h-anchor" href="#h-40" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><code>get_repo_info</code> - Детали репозитория</li>
+<li><code>list_files</code> - Структура дерева файлов</li>
+<li><code>get_file_content</code> - Читать содержимое файлов</li>
+<li><code>search_code</code> - Поиск по codebase</li>
+</ul>
+<h3 id="h-41">Операции с коммитами <a class="h-anchor" href="#h-41" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><code>list_commits</code> - История коммитов</li>
+<li><code>get_commit</code> - Детали конкретного коммита</li>
+<li><code>create_commit</code> - Создать новый коммит</li>
+</ul>
+<p>~~~~</p>
+<h5 id="пример-2-настройка-database-mcp">Пример 2: Настройка Database MCP <a class="h-anchor" href="#пример-2-настройка-database-mcp" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Конфигурация:</strong></p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;database&quot;: {
+      &quot;command&quot;: &quot;npx&quot;,
+      &quot;args&quot;: [&quot;@modelcontextprotocol/server-database&quot;],
+      &quot;env&quot;: {
+        &quot;DATABASE_URL&quot;: &quot;postgresql://user:pass@localhost/mydb&quot;
+      }
+    }
+  }
+}</code></pre>
+<p><strong>Пример использования:</strong></p>
+<pre><code class="language-markdown">Пользователь: Получи всех пользователей с более чем 10 заказами
+
+Claude: Я выполню запрос к вашей базе данных, чтобы найти эту информацию.
+
+# Использование инструмента MCP для базы данных:
+SELECT u.*, COUNT(o.id) as order_count
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id
+GROUP BY u.id
+HAVING COUNT(o.id) &gt; 10
+ORDER BY order_count DESC;
+
+# Результаты:
+- Alice: 15 заказов
+- Bob: 12 заказов
+- Charlie: 11 заказов</code></pre>
+<h5 id="пример-3-рабочий-процесс-multi-mcp">Пример 3: Рабочий процесс Multi-MCP <a class="h-anchor" href="#пример-3-рабочий-процесс-multi-mcp" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Сценарий: Генерация ежедневного отчёта</strong></p>
+<pre><code class="language-markdown"># Workflow ежедневного отчёта с использованием нескольких MCP
+
+## Настройка
+1. GitHub MCP - собрать метрики PR
+2. Database MCP - запросить данные о продажах
+3. Slack MCP - отправить отчёт
+4. Filesystem MCP - сохранить отчёт
+
+## Workflow
+
+### Шаг 1: Получить данные из GitHub
+/mcp__github__list_prs completed:true last:7days
+
+Вывод:
+- Total PRs: 42
+- Average merge time: 2.3 hours
+- Review turnaround: 1.1 hours
+
+### Шаг 2: Запрос к базе данных
+SELECT COUNT(*) as sales, SUM(amount) as revenue
+FROM orders
+WHERE created_at &gt; NOW() - INTERVAL &#x27;1 day&#x27;
+
+Вывод:
+- Продажи: 247
+- Выручка: $12,450
+
+### Шаг 3: Сгенерировать отчёт
+Объединить данные в HTML-отчёт
+
+### Шаг 4: Сохранить в файловую систему
+Записать `report.html` в `/reports/`
+
+### Шаг 5: Отправить в Slack
+Отправить сводку в канал `#daily-reports`
+
+Итог:
+✅ Отчёт сгенерирован и отправлен
+📊 За эту неделю слито 47 PR
+💰 $12,450 ежедневных продаж</code></pre>
+<h5 id="пример-4-операции-filesystem-mcp">Пример 4: Операции Filesystem MCP <a class="h-anchor" href="#пример-4-операции-filesystem-mcp" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Конфигурация:</strong></p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;filesystem&quot;: {
+      &quot;command&quot;: &quot;npx&quot;,
+      &quot;args&quot;: [&quot;@modelcontextprotocol/server-filesystem&quot;, &quot;/home/user/projects&quot;]
+    }
+  }
+}</code></pre>
+<p><strong>Доступные операции:</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Операция</th><th>Команда</th><th>Назначение</th></tr></thead><tbody><tr><td>Список файлов</td><td><code>ls ~/projects</code></td><td>Показать содержимое каталога</td></tr><tr><td>Читать файл</td><td><code>cat src/main.ts</code></td><td>Читать содержимое файла</td></tr><tr><td>Записать файл</td><td><code>create docs/api.md</code></td><td>Создать новый файл</td></tr><tr><td>Редактировать файл</td><td><code>edit src/app.ts</code></td><td>Изменить файл</td></tr><tr><td>Поиск</td><td><code>grep &quot;async function&quot;</code></td><td>Искать в файлах</td></tr><tr><td>Удалить</td><td><code>rm old-file.js</code></td><td>Удалить файл</td></tr></tbody></table></div>
+<h4 id="mcp-против-memory-матрица-решений">MCP против Memory: матрица решений <a class="h-anchor" href="#mcp-против-memory-матрица-решений" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TD
+    A[&quot;Нужны внешние данные?&quot;]
+    A --&gt;|Нет| B[&quot;Использовать Memory&quot;]
+    A --&gt;|Да| C[&quot;Они часто меняются?&quot;]
+    C --&gt;|Нет/редко| B
+    C --&gt;|Да/часто| D[&quot;Использовать MCP&quot;]
+
+    B --&gt;|Хранит| E[&quot;Предпочтения&lt;br/&gt;Контекст&lt;br/&gt;История&quot;]
+    D --&gt;|Получает доступ к| F[&quot;Живые API&lt;br/&gt;Базы данных&lt;br/&gt;Сервисы&quot;]
+
+    style B fill:#e1f5ff
+    style D fill:#fff9c4</code></pre>
+<h4 id="h-42">Паттерн запрос/ответ <a class="h-anchor" href="#h-42" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant App as Claude
+    participant MCP as MCP Server
+    participant DB as Database
+
+    App-&gt;&gt;MCP: Request: &quot;SELECT * FROM users WHERE id=1&quot;
+    MCP-&gt;&gt;DB: Execute query
+    DB--&gt;&gt;MCP: Result set
+    MCP--&gt;&gt;App: Return parsed data
+    App-&gt;&gt;App: Process result
+    App-&gt;&gt;App: Continue task
+
+    Note over MCP,DB: Доступ в реальном времени&lt;br/&gt;Без кеширования</code></pre>
+<hr>
+<h3 id="agent-skills">Agent Skills <a class="h-anchor" href="#agent-skills" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-43">Обзор <a class="h-anchor" href="#h-43" aria-label="Ссылка на раздел">#</a></h4>
+<p>Agent Skills — это переиспользуемые возможности, вызываемые моделью и упакованные как папки с инструкциями, скриптами и ресурсами. Claude автоматически определяет и использует подходящие навыки.</p>
+<h4 id="архитектура-skill">Архитектура skill <a class="h-anchor" href="#архитектура-skill" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TB
+    A[&quot;Каталог skill&quot;]
+    B[&quot;SKILL.md&quot;]
+    C[&quot;YAML-метаданные&quot;]
+    D[&quot;Инструкции&quot;]
+    E[&quot;Скрипты&quot;]
+    F[&quot;Шаблоны&quot;]
+
+    A --&gt; B
+    B --&gt; C
+    B --&gt; D
+    E --&gt; A
+    F --&gt; A</code></pre>
+<h4 id="процесс-загрузки-skill">Процесс загрузки skill <a class="h-anchor" href="#процесс-загрузки-skill" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant Пользователь
+    participant Claude as Claude
+    participant System as System
+    participant Skill as Skill
+
+    Пользователь-&gt;&gt;Claude: &quot;Создай Excel-отчёт&quot;
+    Claude-&gt;&gt;System: Сканировать доступные skills
+    System-&gt;&gt;System: Загрузить метаданные skill
+    Claude-&gt;&gt;Claude: Сопоставить запрос пользователя со skills
+    Claude-&gt;&gt;Skill: Загрузить SKILL.md для xlsx skill
+    Skill--&gt;&gt;Claude: Вернуть инструкции + инструменты
+    Claude-&gt;&gt;Claude: Выполнить skill
+    Claude-&gt;&gt;Пользователь: Сгенерировать Excel-файл</code></pre>
+<h4 id="таблица-типов-и-расположений-skill">Таблица типов и расположений skill <a class="h-anchor" href="#таблица-типов-и-расположений-skill" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Тип</th><th>Расположение</th><th>Область</th><th>Общий доступ</th><th>Синхронизация</th><th>Лучше всего для</th></tr></thead><tbody><tr><td>Pre-built</td><td>Встроено</td><td>Глобально</td><td>Все пользователи</td><td>Авто</td><td>Создание документов</td></tr><tr><td>Personal</td><td><code>~/.claude/skills/</code></td><td>Индивидуально</td><td>Нет</td><td>Вручную</td><td>Личная автоматизация</td></tr><tr><td>Project</td><td><code>.claude/skills/</code></td><td>Команда</td><td>Да</td><td>Git</td><td>Стандарты команды</td></tr><tr><td>Plugin</td><td>Через установку плагина</td><td>Зависит</td><td>Зависит</td><td>Авто</td><td>Интегрированные возможности</td></tr></tbody></table></div>
+<h4 id="предустановленные-skills">Предустановленные skills <a class="h-anchor" href="#предустановленные-skills" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TB
+    A[&quot;Предустановленные skills&quot;]
+    B[&quot;PowerPoint (pptx)&quot;]
+    C[&quot;Excel (xlsx)&quot;]
+    D[&quot;Word (docx)&quot;]
+    E[&quot;PDF&quot;]
+
+    A --&gt; B
+    A --&gt; C
+    A --&gt; D
+    A --&gt; E
+
+    B --&gt; B1[&quot;Создавать презентации&quot;]
+    B --&gt; B2[&quot;Редактировать слайды&quot;]
+    C --&gt; C1[&quot;Создавать таблицы&quot;]
+    C --&gt; C2[&quot;Анализировать данные&quot;]
+    D --&gt; D1[&quot;Создавать документы&quot;]
+    D --&gt; D2[&quot;Форматировать текст&quot;]
+    E --&gt; E1[&quot;Генерировать PDF&quot;]
+    E --&gt; E2[&quot;Заполнять формы&quot;]</code></pre>
+<h4 id="встроенные-skills">Встроенные skills <a class="h-anchor" href="#встроенные-skills" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude Code теперь включает 5 встроенных skills, доступных сразу:</p>
+<div class="table-wrap"><table><thead><tr><th>Skill</th><th>Команда</th><th>Назначение</th></tr></thead><tbody><tr><td><strong>Simplify</strong></td><td><code>/simplify</code></td><td>Упростить сложный код или объяснения</td></tr><tr><td><strong>Batch</strong></td><td><code>/batch</code></td><td>Выполнять операции по множеству файлов или элементов</td></tr><tr><td><strong>Debug</strong></td><td><code>/debug</code></td><td>Систематическая отладка с поиском первопричины</td></tr><tr><td><strong>Loop</strong></td><td><code>/loop</code></td><td>Планировать повторяющиеся задачи по таймеру</td></tr><tr><td><strong>Claude API</strong></td><td><code>/claude-api</code></td><td>Работать с Anthropic API напрямую</td></tr></tbody></table></div>
+<p>Эти встроенные skills всегда доступны и не требуют установки или настройки.</p>
+<h4 id="h-44">Практические примеры <a class="h-anchor" href="#h-44" aria-label="Ссылка на раздел">#</a></h4>
+<h5 id="пример-1-пользовательский-skill-для-code-review">Пример 1: Пользовательский skill для code review <a class="h-anchor" href="#пример-1-пользовательский-skill-для-code-review" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Структура каталога:</strong></p>
+<pre><code>~/.claude/skills/code-review/
+├── SKILL.md
+├── templates/
+│   ├── review-checklist.md
+│   └── finding-template.md
+└── scripts/
+    ├── analyze-metrics.py
+    └── compare-complexity.py</code></pre>
+<p><strong>Файл:</strong> <code>~/.claude/skills/code-review/SKILL.md</code></p>
+<pre><code class="language-yaml">---
+name: Code Review Specialist
+description: Полный code review с анализом безопасности, производительности и качества
+version: &quot;1.0.0&quot;
+tags:
+  - code-review
+  - quality
+  - security
+when_to_use: When users ask to review code, analyze code quality, or evaluate pull requests
+effort: high
+shell: bash
+---
+
+# Skill code review
+
+Этот skill даёт расширенные возможности code review с фокусом на:
+
+1. **Анализ безопасности**
+   - Проблемы аутентификации/авторизации
+   - Риски утечки данных
+   - Уязвимости инъекций
+   - Слабые места криптографии
+   - Логирование чувствительных данных
+
+2. **Анализ производительности**
+   - Эффективность алгоритмов (Big O)
+   - Оптимизация памяти
+   - Оптимизация запросов к базе
+   - Возможности кеширования
+   - Проблемы конкурентности
+
+3. **Качество кода**
+   - Принципы SOLID
+   - Паттерны проектирования
+   - Соглашения по именованию
+   - Документация
+   - Покрытие тестами
+
+4. **Поддерживаемость**
+   - Читаемость кода
+   - Размер функций (должен быть &lt; 50 строк)
+   - Цикломатическая сложность
+   - Управление зависимостями
+   - Типобезопасность
+
+## Шаблон ревью
+
+Для каждого проверенного фрагмента кода указывайте:
+
+### Сводка
+- Общая оценка качества (1-5)
+- Количество ключевых находок
+- Рекомендуемые приоритетные области
+
+### Критические проблемы (если есть)
+- **Issue**: ясное описание
+- **Location**: файл и номер строки
+- **Impact**: почему это важно
+- **Severity**: Critical/High/Medium
+- **Fix**: пример исправления
+
+### Находки по категориям
+
+#### Безопасность (если есть проблемы)
+Перечислите уязвимости безопасности с примерами
+
+#### Производительность (если есть проблемы)
+Перечислите проблемы производительности с анализом сложности
+
+#### Качество (если есть проблемы)
+Перечислите проблемы качества кода с предложениями по рефакторингу
+
+#### Поддерживаемость (если есть проблемы)
+Перечислите проблемы поддерживаемости с улучшениями</code></pre>
+<h3 id="python-скрипт-analyze-metrics-py">Python-скрипт: analyze-metrics.py <a class="h-anchor" href="#python-скрипт-analyze-metrics-py" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-python">#!/usr/bin/env python3
+import re
+import sys
+
+def analyze_code_metrics(code):
+    &quot;&quot;&quot;Анализ кода по общим метрикам.&quot;&quot;&quot;
+
+    # Подсчёт функций
+    functions = len(re.findall(r&#x27;^def\s+\w+&#x27;, code, re.MULTILINE))
+
+    # Подсчёт классов
+    classes = len(re.findall(r&#x27;^class\s+\w+&#x27;, code, re.MULTILINE))
+
+    # Средняя длина строки
+    lines = code.split(&#x27;\n&#x27;)
+    avg_length = sum(len(l) for l in lines) / len(lines) if lines else 0
+
+    # Оценка сложности
+    complexity = len(re.findall(r&#x27;\b(if|elif|else|for|while|and|or)\b&#x27;, code))
+
+    return {
+        &#x27;functions&#x27;: functions,
+        &#x27;classes&#x27;: classes,
+        &#x27;avg_line_length&#x27;: avg_length,
+        &#x27;complexity_score&#x27;: complexity
+    }
+
+if __name__ == &#x27;__main__&#x27;:
+    with open(sys.argv[1], &#x27;r&#x27;) as f:
+        code = f.read()
+    metrics = analyze_code_metrics(code)
+    for key, value in metrics.items():
+        print(f&quot;{key}: {value:.2f}&quot;)</code></pre>
+<h3 id="python-скрипт-compare-complexity-py">Python-скрипт: compare-complexity.py <a class="h-anchor" href="#python-скрипт-compare-complexity-py" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-python">#!/usr/bin/env python3
+&quot;&quot;&quot;
+Сравнение цикломатической сложности кода до и после изменений.
+Помогает понять, действительно ли рефакторинг упрощает структуру кода.
+&quot;&quot;&quot;
+
+import re
+import sys
+from typing import Dict, Tuple
+
+class ComplexityAnalyzer:
+    &quot;&quot;&quot;Анализ метрик сложности кода.&quot;&quot;&quot;
+
+    def __init__(self, code: str):
+        self.code = code
+        self.lines = code.split(&#x27;\n&#x27;)
+
+    def calculate_cyclomatic_complexity(self) -&gt; int:
+        &quot;&quot;&quot;
+        Рассчитать цикломатическую сложность по методу Маккейба.
+        Учитываются точки ветвления: if, elif, else, for, while, except, and, or
+        &quot;&quot;&quot;
+        complexity = 1  # Базовая сложность
+
+        # Подсчёт точек ветвления
+        decision_patterns = [
+            r&#x27;\bif\b&#x27;,
+            r&#x27;\belif\b&#x27;,
+            r&#x27;\bfor\b&#x27;,
+            r&#x27;\bwhile\b&#x27;,
+            r&#x27;\bexcept\b&#x27;,
+            r&#x27;\band\b(?!$)&#x27;,
+            r&#x27;\bor\b(?!$)&#x27;
+        ]
+
+        for pattern in decision_patterns:
+            matches = re.findall(pattern, self.code)
+            complexity += len(matches)
+
+        return complexity
+
+    def calculate_cognitive_complexity(self) -&gt; int:
+        &quot;&quot;&quot;
+        Рассчитать когнитивную сложность - насколько код трудно понимать?
+        Основано на глубине вложенности и потоке управления.
+        &quot;&quot;&quot;
+        cognitive = 0
+        nesting_depth = 0
+
+        for line in self.lines:
+            # Отслеживание глубины вложенности
+            if re.search(r&#x27;^\s*(if|for|while|def|class|try)\b&#x27;, line):
+                nesting_depth += 1
+                cognitive += nesting_depth
+            elif re.search(r&#x27;^\s*(elif|else|except|finally)\b&#x27;, line):
+                cognitive += nesting_depth
+
+            # Сбрасывать вложенность при выходе из отступа
+            if line and not line[0].isspace():
+                nesting_depth = 0
+
+        return cognitive
+
+    def calculate_maintainability_index(self) -&gt; float:
+        &quot;&quot;&quot;
+        Индекс поддерживаемости находится в диапазоне 0-100.
+        &gt; 85: Отлично
+        &gt; 65: Хорошо
+        &gt; 50: Средне
+        &lt; 50: Плохо
+        &quot;&quot;&quot;
+        lines = len(self.lines)
+        cyclomatic = self.calculate_cyclomatic_complexity()
+        cognitive = self.calculate_cognitive_complexity()
+
+        # Упрощённый расчёт MI
+        mi = 171 - 5.2 * (cyclomatic / lines) - 0.23 * (cognitive) - 16.2 * (lines / 1000)
+
+        return max(0, min(100, mi))
+
+    def get_complexity_report(self) -&gt; Dict:
+    &quot;&quot;&quot;Сформировать полный отчёт по сложности.&quot;&quot;&quot;
+        return {
+            &#x27;cyclomatic_complexity&#x27;: self.calculate_cyclomatic_complexity(),
+            &#x27;cognitive_complexity&#x27;: self.calculate_cognitive_complexity(),
+            &#x27;maintainability_index&#x27;: round(self.calculate_maintainability_index(), 2),
+            &#x27;lines_of_code&#x27;: len(self.lines),
+            &#x27;avg_line_length&#x27;: round(sum(len(l) for l in self.lines) / len(self.lines), 2) if self.lines else 0
+        }
+
+
+def compare_files(before_file: str, after_file: str) -&gt; None:
+    &quot;&quot;&quot;Сравнить метрики сложности между двумя версиями кода.&quot;&quot;&quot;
+
+    with open(before_file, &#x27;r&#x27;) as f:
+        before_code = f.read()
+
+    with open(after_file, &#x27;r&#x27;) as f:
+        after_code = f.read()
+
+    before_analyzer = ComplexityAnalyzer(before_code)
+    after_analyzer = ComplexityAnalyzer(after_code)
+
+    before_metrics = before_analyzer.get_complexity_report()
+    after_metrics = after_analyzer.get_complexity_report()
+
+    print(&quot;=&quot; * 60)
+    print(&quot;СРАВНЕНИЕ СЛОЖНОСТИ КОДА&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nДО:&quot;)
+    print(f&quot;  Цикломатическая сложность: {before_metrics[&#x27;cyclomatic_complexity&#x27;]}&quot;)
+    print(f&quot;  Когнитивная сложность:     {before_metrics[&#x27;cognitive_complexity&#x27;]}&quot;)
+    print(f&quot;  Индекс поддерживаемости:   {before_metrics[&#x27;maintainability_index&#x27;]}&quot;)
+    print(f&quot;  Строк кода:                {before_metrics[&#x27;lines_of_code&#x27;]}&quot;)
+    print(f&quot;  Средняя длина строки:      {before_metrics[&#x27;avg_line_length&#x27;]}&quot;)
+
+    print(&quot;\nПОСЛЕ:&quot;)
+    print(f&quot;  Цикломатическая сложность: {after_metrics[&#x27;cyclomatic_complexity&#x27;]}&quot;)
+    print(f&quot;  Когнитивная сложность:     {after_metrics[&#x27;cognitive_complexity&#x27;]}&quot;)
+    print(f&quot;  Индекс поддерживаемости:   {after_metrics[&#x27;maintainability_index&#x27;]}&quot;)
+    print(f&quot;  Строк кода:                {after_metrics[&#x27;lines_of_code&#x27;]}&quot;)
+    print(f&quot;  Средняя длина строки:      {after_metrics[&#x27;avg_line_length&#x27;]}&quot;)
+
+    print(&quot;\nИЗМЕНЕНИЯ:&quot;)
+    cyclomatic_change = after_metrics[&#x27;cyclomatic_complexity&#x27;] - before_metrics[&#x27;cyclomatic_complexity&#x27;]
+    cognitive_change = after_metrics[&#x27;cognitive_complexity&#x27;] - before_metrics[&#x27;cognitive_complexity&#x27;]
+    mi_change = after_metrics[&#x27;maintainability_index&#x27;] - before_metrics[&#x27;maintainability_index&#x27;]
+    loc_change = after_metrics[&#x27;lines_of_code&#x27;] - before_metrics[&#x27;lines_of_code&#x27;]
+
+    print(f&quot;  Цикломатическая сложность: {cyclomatic_change:+d}&quot;)
+    print(f&quot;  Когнитивная сложность:     {cognitive_change:+d}&quot;)
+    print(f&quot;  Индекс поддерживаемости:   {mi_change:+.2f}&quot;)
+    print(f&quot;  Строк кода:                {loc_change:+d}&quot;)
+
+    print(&quot;\nОЦЕНКА:&quot;)
+    if mi_change &gt; 0:
+        print(&quot;  ✅ Код СТАЛ более поддерживаемым&quot;)
+    elif mi_change &lt; 0:
+        print(&quot;  ⚠️  Код СТАЛ менее поддерживаемым&quot;)
+    else:
+        print(&quot;  ➡️  Поддерживаемость не изменилась&quot;)
+
+    if cyclomatic_change &lt; 0:
+        print(&quot;  ✅ Сложность СНИЗИЛАСЬ&quot;)
+    elif cyclomatic_change &gt; 0:
+        print(&quot;  ⚠️  Сложность ВОЗРОСЛА&quot;)
+    else:
+        print(&quot;  ➡️  Сложность не изменилась&quot;)
+
+    print(&quot;=&quot; * 60)
+
+
+if __name__ == &#x27;__main__&#x27;:
+    if len(sys.argv) != 3:
+        print(&quot;Использование: python compare-complexity.py &lt;before_file&gt; &lt;after_file&gt;&quot;)
+        sys.exit(1)
+
+    compare_files(sys.argv[1], sys.argv[2])</code></pre>
+<h3 id="шаблон-review-checklist-md">Шаблон: review-checklist.md <a class="h-anchor" href="#шаблон-review-checklist-md" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-markdown"># Чеклист code review
+
+## Чеклист безопасности
+- [ ] Нет хардкода учётных данных и секретов
+- [ ] Валидация всех пользовательских входов
+- [ ] Защита от SQL-инъекций (параметризованные запросы)
+- [ ] Защита CSRF на операциях, меняющих состояние
+- [ ] Защита от XSS с корректным экранированием
+- [ ] Проверки аутентификации на защищённых endpoint
+- [ ] Проверки авторизации на ресурсах
+- [ ] Безопасное хеширование паролей (bcrypt, argon2)
+- [ ] Нет чувствительных данных в логах
+- [ ] HTTPS принудительно
+
+## Чеклист производительности
+- [ ] Нет N+1 запросов
+- [ ] Индексы используются уместно
+- [ ] Кеширование реализовано там, где это полезно
+- [ ] Нет блокирующих операций в главном потоке
+- [ ] Async/await используется корректно
+- [ ] Большие наборы данных пагинируются
+- [ ] Соединения с базой объединены в пул
+- [ ] Регулярные выражения оптимизированы
+- [ ] Нет лишнего создания объектов
+- [ ] Утечки памяти предотвращены
+
+## Чеклист качества
+- [ ] Функции &lt; 50 строк
+- [ ] Понятные имена переменных
+- [ ] Нет дублирования кода
+- [ ] Корректная обработка ошибок
+- [ ] Комментарии объясняют WHY, а не WHAT
+- [ ] Нет `console.log` в production
+- [ ] Проверка типов (TypeScript/JSDoc)
+- [ ] Соблюдаются принципы SOLID
+- [ ] Паттерны проектирования применены корректно
+- [ ] Самодокументируемый код
+
+## Чеклист тестирования
+- [ ] Написаны модульные тесты
+- [ ] Покрыты граничные случаи
+- [ ] Проверены сценарии ошибок
+- [ ] Есть интеграционные тесты
+- [ ] Покрытие &gt; 80%
+- [ ] Нет flaky-тестов
+- [ ] Замоканы внешние зависимости
+- [ ] Понятные имена тестов</code></pre>
+<h3 id="шаблон-finding-template-md">Шаблон: finding-template.md <a class="h-anchor" href="#шаблон-finding-template-md" aria-label="Ссылка на раздел">#</a></h3>
+<p>~~~~markdown</p>
+<h1 id="шаблон-находки-code-review">Шаблон находки code review <a class="h-anchor" href="#шаблон-находки-code-review" aria-label="Ссылка на раздел">#</a></h1>
+<p>Используйте этот шаблон для документирования каждой проблемы, найденной во время code review.</p>
+<hr>
+<h3 id="issue-title">Issue: [TITLE] <a class="h-anchor" href="#issue-title" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-45">Критичность <a class="h-anchor" href="#h-45" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>[ ] Critical (блокирует deployment)</li>
+<li>[ ] High (нужно исправить до merge)</li>
+<li>[ ] Medium (желательно исправить скоро)</li>
+<li>[ ] Low (необязательно, но полезно)</li>
+</ul>
+<h4 id="h-46">Категория <a class="h-anchor" href="#h-46" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>[ ] Security</li>
+<li>[ ] Performance</li>
+<li>[ ] Code Quality</li>
+<li>[ ] Maintainability</li>
+<li>[ ] Testing</li>
+<li>[ ] Design Pattern</li>
+<li>[ ] Documentation</li>
+</ul>
+<h4 id="location">Location <a class="h-anchor" href="#location" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Файл:</strong> <code>src/components/ПользовательCard.tsx</code></p>
+<p><strong>Строки:</strong> 45-52</p>
+<p><strong>Функция/метод:</strong> <code>renderПользовательDetails()</code></p>
+<h4 id="h-47">Описание проблемы <a class="h-anchor" href="#h-47" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Что:</strong> Опишите, в чём проблема.</p>
+<p><strong>Почему это важно:</strong> Объясните влияние и почему это нужно исправить.</p>
+<p><strong>Текущее поведение:</strong> Покажите проблемный код или поведение.</p>
+<p><strong>Ожидаемое поведение:</strong> Опишите, что должно происходить вместо этого.</p>
+<h4 id="code-example">Code Example <a class="h-anchor" href="#code-example" aria-label="Ссылка на раздел">#</a></h4>
+<h5 id="h-48">Текущее (проблемное) <a class="h-anchor" href="#h-48" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-typescript">// Показывает проблему N+1 запросов
+const users = fetchПользовательs();
+users.forEach(user =&gt; {
+  const posts = fetchПользовательPosts(user.id); // Запрос на пользователя!
+  renderПользовательPosts(posts);
+});</code></pre>
+<h5 id="h-49">Рекомендуемое исправление <a class="h-anchor" href="#h-49" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-typescript">// Оптимизировано с помощью JOIN-запроса
+const usersWithPosts = fetchПользовательsWithPosts();
+usersWithPosts.forEach(({ user, posts }) =&gt; {
+  renderПользовательPosts(posts);
+});</code></pre>
+<h4 id="h-50">Анализ влияния <a class="h-anchor" href="#h-50" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Aspect</th><th>Impact</th><th>Severity</th></tr></thead><tbody><tr><td>Performance</td><td>100+ queries for 20 users</td><td>High</td></tr><tr><td>Пользователь Experience</td><td>Slow page load</td><td>High</td></tr><tr><td>Масштабируемость</td><td>Breaks at scale</td><td>Critical</td></tr><tr><td>Maintainability</td><td>Hard to debug</td><td>Medium</td></tr></tbody></table></div>
+<h4 id="h-51">Связанные проблемы <a class="h-anchor" href="#h-51" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Similar issue in <code>AdminПользовательList.tsx</code> line 120</li>
+<li>Related PR: #456</li>
+<li>Related issue: #789</li>
+</ul>
+<h4 id="h-52">Дополнительные ресурсы <a class="h-anchor" href="#h-52" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/N%2B1_problem">N+1 Query Problem</a></li>
+<li><a href="https://docs.example.com/joins">Database Join Documentation</a></li>
+<li><a href="./docs/performance.md">Performance Optimization Guide</a></li>
+</ul>
+<h4 id="h-53">Заметки ревьюера <a class="h-anchor" href="#h-53" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>This is a common pattern in this codebase</li>
+<li>Consider adding this to the code style guide</li>
+<li>Might be worth creating a helper function</li>
+</ul>
+<h4 id="h-54">Ответ автора (для обратной связи) <a class="h-anchor" href="#h-54" aria-label="Ссылка на раздел">#</a></h4>
+<p><em>Заполняется автором кода:</em></p>
+<ul>
+<li>[ ] Fix implemented in commit: <code>abc123</code></li>
+<li>[ ] Fix status: Complete / In Progress / Needs Discussion</li>
+<li>[ ] Questions or concerns: (describe)</li>
+</ul>
+<hr>
+<h3 id="h-55">Статистика находок (для ревьюера) <a class="h-anchor" href="#h-55" aria-label="Ссылка на раздел">#</a></h3>
+<p>При ревью нескольких находок отслеживайте:</p>
+<ul>
+<li><strong>Total Issues Found:</strong> X</li>
+<li><strong>Critical:</strong> X</li>
+<li><strong>High:</strong> X</li>
+<li><strong>Medium:</strong> X</li>
+<li><strong>Low:</strong> X</li>
+</ul>
+<p><strong>Рекомендация:</strong> ✅ Approve / ⚠️ Request Changes / 🔄 Needs Discussion</p>
+<p><strong>Общее качество кода:</strong> 1-5 звёзд
+~~~~</p>
+<h3 id="h-56">Пример использования <a class="h-anchor" href="#h-56" aria-label="Ссылка на раздел">#</a></h3>
+<p>~~~~markdown
+Пользователь: Review this React component code</p>
+<p>Claude: Я проведу полное code review с помощью своего skill code review.</p>
+<p>[Загружает SKILL.md]
+[Анализирует код по чеклисту]
+[Запускает Python-скрипт метрик]
+[Применяет шаблоны]</p>
+<h3 id="результаты-code-review">Результаты code review <a class="h-anchor" href="#результаты-code-review" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-57">Сводка <a class="h-anchor" href="#h-57" aria-label="Ссылка на раздел">#</a></h4>
+<p>Оценка качества: 3.5/5
+Ключевые находки: 7 пунктов
+Приоритетные области: оптимизация производительности, обработка ошибок</p>
+<h4 id="критические-проблемы-1">Критические проблемы: 1 <a class="h-anchor" href="#критические-проблемы-1" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Issue</strong>: Проблема N+1 запросов
+<strong>Location</strong>: ПользовательComponent.tsx, строки 45-52
+<strong>Impact</strong>: Выполняет 100+ запросов к базе для списка из 20 пользователей
+<strong>Severity</strong>: High
+<strong>Fix</strong>:</p>
+<pre><code class="language-javascript">// Before: N+1 queries
+const users = fetchПользовательs();
+users.forEach(user =&gt; fetchПользовательPosts(user.id)); // 20+ queries
+
+// After: Single query with JOIN
+const users = fetchПользовательsWithPosts(); // 1 query</code></pre>
+<h4 id="h-58">Находки по производительности <a class="h-anchor" href="#h-58" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Отсутствует пагинация на больших списках</li>
+<li>Рекомендация: использовать React.memo() для элементов</li>
+<li>Запрос к базе: можно оптимизировать индексом</li>
+</ul>
+<h4 id="h-59">Находки по качеству <a class="h-anchor" href="#h-59" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Функция на строке 20 занимает 127 строк (максимум: 50)</li>
+<li>Отсутствует error boundary</li>
+<li>У props должны быть TypeScript-типы</li>
+</ul>
+<p>~~~~</p>
+<h5 id="пример-2-skill-brand-voice">Пример 2: Skill brand voice <a class="h-anchor" href="#пример-2-skill-brand-voice" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Структура каталога:</strong></p>
+<pre><code>.claude/skills/brand-voice/
+├── SKILL.md
+├── brand-guidelines.md
+├── tone-examples.md
+└── templates/
+    ├── email-template.txt
+    ├── social-post-template.txt
+    └── blog-post-template.md</code></pre>
+<p><strong>Файл:</strong> <code>.claude/skills/brand-voice/SKILL.md</code></p>
+<pre><code class="language-yaml">---
+name: Brand Voice Consistency
+description: Обеспечивать соответствие всей коммуникации правилам brand voice и tone
+tags:
+  - brand
+  - writing
+  - consistency
+when_to_use: When creating marketing copy, customer communications, or public-facing content
+---
+
+# Skill brand voice
+
+## Обзор
+Этот skill обеспечивает единообразный brand voice, tone и messaging во всех коммуникациях.
+
+## Идентичность бренда
+
+### Миссия
+Помогать командам автоматизировать рабочие процессы разработки с помощью AI
+
+### Ценности
+- **Простота**: делать сложные вещи простыми
+- **Надёжность**: безотказное выполнение
+- **Расширение возможностей**: усиливать человеческую креативность
+
+### Тон общения
+- **Дружелюбный, но профессиональный** - доступный, но не фамильярный
+- **Ясный и краткий** - без жаргона, технические концепции объяснять просто
+- **Уверенный** - мы понимаем, что делаем
+- **Эмпатичный** - понимаем потребности и боли пользователя
+
+## Правила написания
+
+### Делайте ✅
+- Используйте &quot;you&quot; при обращении к читателю
+- Используйте активный залог: &quot;Claude generates reports&quot;, а не &quot;Reports are generated by Claude&quot;
+- Начинайте с ценности
+- Используйте конкретные примеры
+- Держите предложения короче 20 слов
+- Используйте списки для ясности
+- Добавляйте призывы к действию
+
+### Не делайте ❌
+- Не используйте корпоративный жаргон
+- Не поучайте и не упрощайте до примитивности
+- Не используйте &quot;we believe&quot; или &quot;we think&quot;
+- Не используйте ALL CAPS, кроме как для акцента
+- Не создавайте стены текста
+- Не предполагаете технических знаний
+
+## Словарь
+
+### ✅ Предпочтительные термины
+- Claude (не &quot;the Claude AI&quot;)
+- Генерация кода (не &quot;auto-coding&quot;)
+- Agent (не &quot;bot&quot;)
+- Streamline (не &quot;revolutionize&quot;)
+- Integrate (не &quot;synergize&quot;)
+
+### ❌ Избегайте терминов
+- &quot;Cutting-edge&quot; (заезженное)
+- &quot;Game-changer&quot; (размытое)
+- &quot;Leverage&quot; (корпоративный жаргон)
+- &quot;Utilize&quot; (используйте &quot;use&quot;)
+- &quot;Paradigm shift&quot; (неясное)</code></pre>
+<h3 id="h-60">Примеры <a class="h-anchor" href="#h-60" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-61">✅ Хороший пример <a class="h-anchor" href="#h-61" aria-label="Ссылка на раздел">#</a></h4>
+<p>&quot;Claude automates your code review process. Instead of manually checking each PR, Claude reviews security, performance, and quality—saving your team hours every week.&quot;</p>
+<p>Почему это работает: понятная ценность, конкретные выгоды, ориентация на действие</p>
+<h4 id="h-62">❌ Плохой пример <a class="h-anchor" href="#h-62" aria-label="Ссылка на раздел">#</a></h4>
+<p>&quot;Claude leverages cutting-edge AI to provide comprehensive software development solutions.&quot;</p>
+<p>Почему это не работает: расплывчато, корпоративный жаргон, нет конкретной ценности</p>
+<h3 id="шаблон-email">Шаблон: Email <a class="h-anchor" href="#шаблон-email" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>Subject: [Clear, benefit-driven subject]
+
+Hi [Name],
+
+[Opening: What&#x27;s the value for them]
+
+[Body: How it works / What they&#x27;ll get]
+
+[Specific example or benefit]
+
+[Call to action: Clear next step]
+
+Best regards,
+[Name]</code></pre>
+<h3 id="шаблон-social-media">Шаблон: Social Media <a class="h-anchor" href="#шаблон-social-media" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>[Hook: Grab attention in first line]
+[2-3 lines: Value or interesting fact]
+[Call to action: Link, question, or engagement]
+[Emoji: 1-2 max for visual interest]</code></pre>
+<h3 id="файл-tone-examples-md">Файл: tone-examples.md <a class="h-anchor" href="#файл-tone-examples-md" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>Exciting announcement:
+&quot;Save 8 hours per week on code reviews. Claude reviews your PRs automatically.&quot;
+
+Empathetic support:
+&quot;We know deployments can be stressful. Claude handles testing so you don&#x27;t have to worry.&quot;
+
+Confident product feature:
+&quot;Claude doesn&#x27;t just suggest code. It understands your architecture and maintains consistency.&quot;
+
+Educational blog post:
+&quot;Let&#x27;s explore how agents improve code review workflows. Here&#x27;s what we learned...&quot;</code></pre>
+<h5 id="пример-3-skill-генератора-документации">Пример 3: Skill генератора документации <a class="h-anchor" href="#пример-3-skill-генератора-документации" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Файл:</strong> <code>.claude/skills/doc-generator/SKILL.md</code></p>
+<p>~~~~yaml</p>
+<hr>
+<p>name: API Documentation Generator
+description: Generate comprehensive, accurate API documentation from source code
+version: &quot;1.0.0&quot;
+tags:</p>
+<ul>
+<li>documentation</li>
+<li>api</li>
+<li>automation</li>
+</ul>
+<p>when_to_use: When creating or updating API documentation</p>
+<hr>
+<h1 id="api-documentation-generator-skill">API Documentation Generator Skill <a class="h-anchor" href="#api-documentation-generator-skill" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="h-63">Что генерирует <a class="h-anchor" href="#h-63" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>спецификации OpenAPI/Swagger</li>
+<li>документацию API endpoint</li>
+<li>примеры использования SDK</li>
+<li>гайды по интеграции</li>
+<li>справочник кодов ошибок</li>
+<li>гайды по аутентификации</li>
+</ul>
+<h3 id="h-64">Структура документации <a class="h-anchor" href="#h-64" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="для-каждого-endpoint">Для каждого endpoint <a class="h-anchor" href="#для-каждого-endpoint" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-markdown">## GET /api/v1/users/:id
+
+### Описание
+Краткое объяснение, что делает этот endpoint
+
+### Параметры
+
+| Имя | Тип | Обязателен | Описание |
+|------|------|----------|-------------|
+| id | string | Да | ID пользователя |
+
+### Ответ
+
+**200 Успех**</code></pre>
+<p>{
+  &quot;id&quot;: &quot;usr_123&quot;,
+  &quot;name&quot;: &quot;John Doe&quot;,
+  &quot;email&quot;: &quot;john@example.com&quot;,
+  &quot;created_at&quot;: &quot;2025-01-15T10:30:00Z&quot;
+}</p>
+<pre><code>
+**404 Не найдено**</code></pre>
+<p>{
+  &quot;error&quot;: &quot;USER_NOT_FOUND&quot;,
+  &quot;message&quot;: &quot;Пользователь does not exist&quot;
+}</p>
+<pre><code>
+### Примеры
+
+**cURL**</code></pre>
+<p>curl -X GET &quot;https://api.example.com/api/v1/users/usr_123&quot; \
+  -H &quot;Authorization: Bearer YOUR_TOKEN&quot;</p>
+<pre><code>
+**JavaScript**</code></pre>
+<p>const user = await fetch(&#x27;/api/v1/users/usr_123&#x27;, {
+  headers: { &#x27;Authorization&#x27;: &#x27;Bearer token&#x27; }
+}).then(r =&gt; r.json());</p>
+<pre><code>
+**Python**</code></pre>
+<p>response = requests.get(
+    &#x27;https://api.example.com/api/v1/users/usr_123&#x27;,
+    headers={&#x27;Authorization&#x27;: &#x27;Bearer token&#x27;}
+)
+user = response.json()</p>
+<pre><code>
+## Python-скрипт: generate-docs.py
+</code></pre>
+<p>#!/usr/bin/env python3
+import ast
+import json
+from typing import Dict, List</p>
+<p>class APIDocExtractor(ast.NodeVisitor):
+    &quot;&quot;&quot;Извлечь API-документацию из Python-исходника.&quot;&quot;&quot;</p>
+<p>def __init__(self):
+        self.endpoints = []</p>
+<p>def visit_FunctionDef(self, node):
+        &quot;&quot;&quot;Извлечь документацию функции.&quot;&quot;&quot;
+        if node.name.startswith(&#x27;get_&#x27;) or node.name.startswith(&#x27;post_&#x27;):
+            doc = ast.get_docstring(node)
+            endpoint = {
+                &#x27;name&#x27;: node.name,
+                &#x27;docstring&#x27;: doc,
+                &#x27;params&#x27;: [arg.arg for arg in node.args.args],
+                &#x27;returns&#x27;: self._extract_return_type(node)
+            }
+            self.endpoints.append(endpoint)
+        self.generic_visit(node)</p>
+<p>def _extract_return_type(self, node):
+        &quot;&quot;&quot;Извлечь тип возвращаемого значения из аннотации функции.&quot;&quot;&quot;
+        if node.returns:
+            return ast.unparse(node.returns)
+        return &quot;Any&quot;</p>
+<p>def generate_markdown_docs(endpoints: List[Dict]) -&gt; str:
+    &quot;&quot;&quot;Сгенерировать markdown-документацию из endpoint.&quot;&quot;&quot;
+    docs = &quot;# API Documentation\n\n&quot;</p>
+<p>for endpoint in endpoints:
+        docs += f&quot;## {endpoint[&#x27;name&#x27;]}\n\n&quot;
+        docs += f&quot;{endpoint[&#x27;docstring&#x27;]}\n\n&quot;
+        docs += f&quot;<strong>Parameters</strong>: {&#x27;, &#x27;.join(endpoint[&#x27;params&#x27;])}\n\n&quot;
+        docs += f&quot;<strong>Returns</strong>: {endpoint[&#x27;returns&#x27;]}\n\n&quot;
+        docs += &quot;---\n\n&quot;</p>
+<p>return docs</p>
+<p>if __name__ == &#x27;__main__&#x27;:
+    import sys
+    with open(sys.argv[1], &#x27;r&#x27;) as f:
+        tree = ast.parse(f.read())</p>
+<p>extractor = APIDocExtractor()
+    extractor.visit(tree)</p>
+<p>markdown = generate_markdown_docs(extractor.endpoints)
+    print(markdown)
+~~~~</p>
+<h4 id="обнаружение-и-вызов-skill">Обнаружение и вызов skill <a class="h-anchor" href="#обнаружение-и-вызов-skill" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TD
+    A[&quot;Пользователь Request&quot;] --&gt; B[&quot;Claude Analyzes&quot;]
+    B --&gt;|Scans| C[&quot;Available Skills&quot;]
+    C --&gt;|Metadata check| D[&quot;Skill Description Match?&quot;]
+    D --&gt;|Yes| E[&quot;Load SKILL.md&quot;]
+    D --&gt;|No| F[&quot;Try next skill&quot;]
+    F --&gt;|More skills?| D
+    F --&gt;|No more| G[&quot;Использовать general knowledge&quot;]
+    E --&gt; H[&quot;Extract Instructions&quot;]
+    H --&gt; I[&quot;Execute Skill&quot;]
+    I --&gt; J[&quot;Return Results&quot;]</code></pre>
+<h4 id="skill-против-других-возможностей">Skill против других возможностей <a class="h-anchor" href="#skill-против-других-возможностей" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TB
+    A[&quot;Extending Claude&quot;]
+    B[&quot;Slash Commands&quot;]
+    C[&quot;Subagents&quot;]
+    D[&quot;Memory&quot;]
+    E[&quot;MCP&quot;]
+    F[&quot;Skills&quot;]
+
+    A --&gt; B
+    A --&gt; C
+    A --&gt; D
+    A --&gt; E
+    A --&gt; F
+
+    B --&gt;|Пользователь-invoked| G[&quot;Quick shortcuts&quot;]
+    C --&gt;|Auto-delegated| H[&quot;Isolated contexts&quot;]
+    D --&gt;|Persistent| I[&quot;Cross-session context&quot;]
+    E --&gt;|Real-time| J[&quot;External data access&quot;]
+    F --&gt;|Auto-invoked| K[&quot;Autonomous execution&quot;]</code></pre>
+<hr>
+<h3 id="плагины-claude-code">Плагины Claude Code <a class="h-anchor" href="#плагины-claude-code" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-65">Обзор <a class="h-anchor" href="#h-65" aria-label="Ссылка на раздел">#</a></h4>
+<p>Плагины Claude Code — это собранные вместе наборы кастомизаций (slash commands, subagents, MCP servers и hooks), которые устанавливаются одной командой. Это самый высокий уровень расширения, объединяющий несколько возможностей в цельные, разделяемые пакеты.</p>
+<h4 id="h-66">Архитектура <a class="h-anchor" href="#h-66" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TB
+    A[&quot;Плагин&quot;]
+    B[&quot;Slash Commands&quot;]
+    C[&quot;Subagents&quot;]
+    D[&quot;MCP Servers&quot;]
+    E[&quot;Hooks&quot;]
+    F[&quot;Конфигурация&quot;]
+
+    A --&gt;|объединяет| B
+    A --&gt;|объединяет| C
+    A --&gt;|объединяет| D
+    A --&gt;|объединяет| E
+    A --&gt;|объединяет| F</code></pre>
+<h4 id="h-67">Процесс загрузки плагина <a class="h-anchor" href="#h-67" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant Пользователь
+    participant Claude as Claude Code
+    participant Plugin as Marketplace плагинов
+    participant Установить as Установка
+    participant SlashCmds as Slash Commands
+    participant Subagents
+    participant MCPServers as MCP Servers
+    participant Hooks
+    participant Tools as Настроитьd Tools
+
+    Пользователь-&gt;&gt;Claude: /plugin install pr-review
+    Claude-&gt;&gt;Plugin: Скачать манифест плагина
+    Plugin--&gt;&gt;Claude: Вернуть определение плагина
+    Claude-&gt;&gt;Установить: Извлечь компоненты
+    Установить-&gt;&gt;SlashCmds: Настроить
+    Установить-&gt;&gt;Subagents: Настроить
+    Установить-&gt;&gt;MCPServers: Настроить
+    Установить-&gt;&gt;Hooks: Настроить
+    SlashCmds--&gt;&gt;Tools: Готово к использованию
+    Subagents--&gt;&gt;Tools: Готово к использованию
+    MCPServers--&gt;&gt;Tools: Готово к использованию
+    Hooks--&gt;&gt;Tools: Готово к использованию
+    Tools--&gt;&gt;Claude: Плагин установлен ✅</code></pre>
+<h4 id="h-68">Типы и распространение плагинов <a class="h-anchor" href="#h-68" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Тип</th><th>Область</th><th>Общий доступ</th><th>Авторитет</th><th>Примеры</th></tr></thead><tbody><tr><td>Official</td><td>Глобально</td><td>Все пользователи</td><td>Anthropic</td><td>PR Review, Security Guidance</td></tr><tr><td>Community</td><td>Публично</td><td>Все пользователи</td><td>Сообщество</td><td>DevOps, Data Science</td></tr><tr><td>Organization</td><td>Внутренне</td><td>Участники команды</td><td>Компания</td><td>Внутренние стандарты, инструменты</td></tr><tr><td>Personal</td><td>Индивидуально</td><td>Один пользователь</td><td>Разработчик</td><td>Пользовательские workflows</td></tr></tbody></table></div>
+<h4 id="h-69">Структура определения плагина <a class="h-anchor" href="#h-69" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-yaml">---
+name: plugin-name
+version: &quot;1.0.0&quot;
+description: &quot;Что делает этот плагин&quot;
+author: &quot;Ваше имя&quot;
+license: MIT
+
+# Метаданные плагина
+tags:
+  - category
+  - use-case
+
+# Требования
+requires:
+  - claude-code: &quot;&gt;=1.0.0&quot;
+
+# Собранные компоненты
+components:
+  - type: commands
+    path: commands/
+  - type: agents
+    path: agents/
+  - type: mcp
+    path: mcp/
+  - type: hooks
+    path: hooks/
+
+# Конфигурация
+config:
+  auto_load: true
+  enabled_by_default: true
+---</code></pre>
+<h4 id="h-70">Структура плагина <a class="h-anchor" href="#h-70" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>my-plugin/
+├── .claude-plugin/
+│   └── plugin.json
+├── commands/
+│   ├── task-1.md
+│   ├── task-2.md
+│   └── workflows/
+├── agents/
+│   ├── specialist-1.md
+│   ├── specialist-2.md
+│   └── configs/
+├── skills/
+│   ├── skill-1.md
+│   └── skill-2.md
+├── hooks/
+│   └── hooks.json
+├── .mcp.json
+├── .lsp.json
+├── settings.json
+├── templates/
+│   └── issue-template.md
+├── scripts/
+│   ├── helper-1.sh
+│   └── helper-2.py
+├── docs/
+│   ├── README.md
+│   └── USAGE.md
+└── tests/
+    └── plugin.test.js</code></pre>
+<h4 id="h-71">Практические примеры <a class="h-anchor" href="#h-71" aria-label="Ссылка на раздел">#</a></h4>
+<h5 id="пример-1-плагин-pr-review">Пример 1: Плагин PR review <a class="h-anchor" href="#пример-1-плагин-pr-review" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Файл:</strong> <code>.claude-plugin/plugin.json</code></p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;pr-review&quot;,
+  &quot;version&quot;: &quot;1.0.0&quot;,
+  &quot;description&quot;: &quot;Complete PR review workflow with security, testing, and docs&quot;,
+  &quot;author&quot;: {
+    &quot;name&quot;: &quot;Anthropic&quot;
+  },
+  &quot;license&quot;: &quot;MIT&quot;
+}</code></pre>
+<p><strong>Файл:</strong> <code>commands/review-pr.md</code></p>
+<pre><code class="language-markdown">---
+name: Review PR
+description: Начать полное ревью PR с проверками безопасности и тестов
+---
+
+# Ревью PR
+
+Эта команда запускает полное ревью pull request, включая:
+
+1. Анализ безопасности
+2. Проверку покрытия тестами
+3. Обновление документации
+4. Проверки качества кода
+5. Оценку влияния на производительность</code></pre>
+<p><strong>Файл:</strong> <code>agents/security-reviewer.md</code></p>
+<pre><code class="language-yaml">---
+name: security-reviewer
+description: Ревью кода с фокусом на безопасность
+tools: read, grep, diff
+---
+
+# Ревьюер безопасности
+
+Специализируется на поиске уязвимостей безопасности:
+- Проблемы аутентификации/авторизации
+- Утечка данных
+- Инъекционные атаки
+- Безопасная конфигурация</code></pre>
+<p><strong>Установка:</strong></p>
+<pre><code class="language-bash">/plugin install pr-review
+
+# Результат:
+# ✅ 3 slash-команды установлены
+# ✅ 3 subagents настроены
+# ✅ 2 MCP-сервера подключены
+# ✅ 4 hooks зарегистрированы
+# ✅ Готово к использованию!</code></pre>
+<h5 id="пример-2-плагин-devops">Пример 2: Плагин DevOps <a class="h-anchor" href="#пример-2-плагин-devops" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Компоненты:</strong></p>
+<pre><code>devops-automation/
+├── commands/
+│   ├── deploy.md
+│   ├── rollback.md
+│   ├── status.md
+│   └── incident.md
+├── agents/
+│   ├── deployment-specialist.md
+│   ├── incident-commander.md
+│   └── alert-analyzer.md
+├── mcp/
+│   ├── github-config.json
+│   ├── kubernetes-config.json
+│   └── prometheus-config.json
+├── hooks/
+│   ├── pre-deploy.js
+│   ├── post-deploy.js
+│   └── on-error.js
+└── scripts/
+    ├── deploy.sh
+    ├── rollback.sh
+    └── health-check.sh</code></pre>
+<h5 id="пример-3-плагин-документации">Пример 3: Плагин документации <a class="h-anchor" href="#пример-3-плагин-документации" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Собранные компоненты:</strong></p>
+<pre><code>documentation/
+├── commands/
+│   ├── generate-api-docs.md
+│   ├── generate-readme.md
+│   ├── sync-docs.md
+│   └── validate-docs.md
+├── agents/
+│   ├── api-documenter.md
+│   ├── code-commentator.md
+│   └── example-generator.md
+├── mcp/
+│   ├── github-docs-config.json
+│   └── slack-announce-config.json
+└── templates/
+    ├── api-endpoint.md
+    ├── function-docs.md
+    └── adr-template.md</code></pre>
+<h4 id="h-72">Маркетплейс плагинов <a class="h-anchor" href="#h-72" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TB
+    A[&quot;Маркетплейс плагинов&quot;]
+    B[&quot;Официальный&lt;br/&gt;Anthropic&quot;]
+    C[&quot;Сообщество&lt;br/&gt;Marketplace&quot;]
+    D[&quot;Корпоративный&lt;br/&gt;Registry&quot;]
+
+    A --&gt; B
+    A --&gt; C
+    A --&gt; D
+
+    B --&gt;|Категории| B1[&quot;Разработка&quot;]
+    B --&gt;|Категории| B2[&quot;DevOps&quot;]
+    B --&gt;|Категории| B3[&quot;Документация&quot;]
+
+    C --&gt;|Поиск| C1[&quot;Автоматизация DevOps&quot;]
+    C --&gt;|Поиск| C2[&quot;Мобильная разработка&quot;]
+    C --&gt;|Поиск| C3[&quot;Data Science&quot;]
+
+    D --&gt;|Внутренние| D1[&quot;Стандарты компании&quot;]
+    D --&gt;|Внутренние| D2[&quot;Наследованные системы&quot;]
+    D --&gt;|Внутренние| D3[&quot;Соответствие требованиям&quot;]</code></pre>
+<h4 id="h-73">Установка и жизненный цикл плагина <a class="h-anchor" href="#h-73" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph LR
+    A[&quot;Найти&quot;] --&gt;|Просмотр| B[&quot;Marketplace&quot;]
+    B --&gt;|Выбрать| C[&quot;Страница плагина&quot;]
+    C --&gt;|Посмотреть| D[&quot;Компоненты&quot;]
+    D --&gt;|Установить| E[&quot;/plugin install&quot;]
+    E --&gt;|Извлечь| F[&quot;Настроить&quot;]
+    F --&gt;|Активировать| G[&quot;Использовать&quot;]
+    G --&gt;|Проверить| H[&quot;Обновить&quot;]
+    H --&gt;|Available| G
+    G --&gt;|Done| I[&quot;Disable&quot;]
+    I --&gt;|Later| J[&quot;Enable&quot;]
+    J --&gt;|Back| G</code></pre>
+<h4 id="h-74">Сравнение возможностей плагинов <a class="h-anchor" href="#h-74" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Возможность</th><th>Slash Command</th><th>Skill</th><th>Subagent</th><th>Plugin</th></tr></thead><tbody><tr><td><strong>Установка</strong></td><td>Ручное копирование</td><td>Ручное копирование</td><td>Ручная настройка</td><td>Одна команда</td></tr><tr><td><strong>Время настройки</strong></td><td>5 минут</td><td>10 минут</td><td>15 минут</td><td>2 минуты</td></tr><tr><td><strong>Упаковка</strong></td><td>Один файл</td><td>Один файл</td><td>Один файл</td><td>Несколько</td></tr><tr><td><strong>Версионирование</strong></td><td>Вручную</td><td>Вручную</td><td>Вручную</td><td>Автоматически</td></tr><tr><td><strong>Деление в команде</strong></td><td>Копирование файла</td><td>Копирование файла</td><td>Копирование файла</td><td>ID установки</td></tr><tr><td><strong>Обновления</strong></td><td>Вручную</td><td>Вручную</td><td>Вручную</td><td>Доступны автоматически</td></tr><tr><td><strong>Зависимости</strong></td><td>Нет</td><td>Нет</td><td>Нет</td><td>Могут быть</td></tr><tr><td><strong>Marketplace</strong></td><td>Нет</td><td>Нет</td><td>Нет</td><td>Да</td></tr><tr><td><strong>Распространение</strong></td><td>Репозиторий</td><td>Репозиторий</td><td>Репозиторий</td><td>Marketplace</td></tr></tbody></table></div>
+<h4 id="h-75">Сценарии использования плагинов <a class="h-anchor" href="#h-75" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Сценарий</th><th>Рекомендация</th><th>Почему</th></tr></thead><tbody><tr><td><strong>Онбординг команды</strong></td><td>✅ Используйте плагин</td><td>Мгновенная настройка, все конфигурации</td></tr><tr><td><strong>Настройка фреймворка</strong></td><td>✅ Используйте плагин</td><td>Упаковывает команды для конкретного фреймворка</td></tr><tr><td><strong>Корпоративные стандарты</strong></td><td>✅ Используйте плагин</td><td>Централизованное распространение, версионирование</td></tr><tr><td><strong>Быстрая автоматизация задач</strong></td><td>❌ Используйте команду</td><td>Слишком сложно для этого</td></tr><tr><td><strong>Экспертиза в одной области</strong></td><td>❌ Используйте skill</td><td>Слишком тяжело, лучше skill</td></tr><tr><td><strong>Специализированный анализ</strong></td><td>❌ Используйте subagent</td><td>Создавайте вручную или используйте skill</td></tr><tr><td><strong>Доступ к живым данным</strong></td><td>❌ Используйте MCP</td><td>Отдельно, не нужно упаковывать</td></tr></tbody></table></div>
+<h4 id="h-76">Когда создавать плагин <a class="h-anchor" href="#h-76" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TD
+    A[&quot;Нужно ли создавать плагин?&quot;]
+    A --&gt;|Нужно несколько компонентов| B{&quot;Несколько команд&lt;br/&gt;или subagents&lt;br/&gt;или MCP?&quot;}
+    B --&gt;|Да| C[&quot;✅ Создать плагин&quot;]
+    B --&gt;|Нет| D[&quot;Использовать отдельную возможность&quot;]
+    A --&gt;|Командный workflow| E{&quot;Делиться с&lt;br/&gt;командой?&quot;}
+    E --&gt;|Да| C
+    E --&gt;|Нет| F[&quot;Оставить как локальную настройку&quot;]
+    A --&gt;|Сложная настройка| G{&quot;Нужна авто&lt;br/&gt;конфигурация?&quot;}
+    G --&gt;|Да| C
+    G --&gt;|Нет| D</code></pre>
+<h4 id="h-77">Публикация плагина <a class="h-anchor" href="#h-77" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Шаги публикации:</strong></p>
+<ol>
+<li>Создайте структуру плагина со всеми компонентами</li>
+<li>Напишите манифест <code>.claude-plugin/plugin.json</code></li>
+<li>Создайте <code>README.md</code> с документацией</li>
+<li>Протестируйте локально через <code>/plugin install ./my-plugin</code></li>
+<li>Отправьте в marketplace плагинов</li>
+<li>Пройдите ревью и одобрение</li>
+<li>Опубликуйте в marketplace</li>
+<li>Пользователи смогут установить одной командой</li>
+</ol>
+<p><strong>Пример заявки:</strong></p>
+<p>~~~~markdown</p>
+<h1 id="pr-review-plugin">PR Review Plugin <a class="h-anchor" href="#pr-review-plugin" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="h-78">Описание <a class="h-anchor" href="#h-78" aria-label="Ссылка на раздел">#</a></h3>
+<p>Полный workflow PR review с проверками безопасности, тестов и документации.</p>
+<h3 id="h-79">Что включено <a class="h-anchor" href="#h-79" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>3 slash-команды для разных типов review</li>
+<li>3 специализированных subagents</li>
+<li>Интеграция GitHub и CodeQL MCP</li>
+<li>Автоматические hooks для проверки безопасности</li>
+</ul>
+<h3 id="h-80">Установка <a class="h-anchor" href="#h-80" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-bash">/plugin install pr-review</code></pre>
+<h3 id="h-81">Возможности <a class="h-anchor" href="#h-81" aria-label="Ссылка на раздел">#</a></h3>
+<p>✅ Анализ безопасности
+✅ Проверка покрытия тестами
+✅ Проверка документации
+✅ Code quality assessment
+✅ Performance impact analysis</p>
+<h3 id="h-82">Использование <a class="h-anchor" href="#h-82" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-bash">/review-pr
+/check-security
+/check-tests</code></pre>
+<h3 id="h-83">Требования <a class="h-anchor" href="#h-83" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Claude Code 1.0+</li>
+<li>Доступ к GitHub</li>
+<li>CodeQL (опционально)</li>
+</ul>
+<p>~~~~</p>
+<h4 id="h-84">Плагин против ручной конфигурации <a class="h-anchor" href="#h-84" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Ручная настройка (2+ часа):</strong></p>
+<ul>
+<li>Устанавливать slash commands по одному</li>
+<li>Создавать subagents по отдельности</li>
+<li>Настраивать MCP отдельно</li>
+<li>Настраивать hooks вручную</li>
+<li>Документировать всё</li>
+<li>Делиться с командой (и надеяться, что они всё настроят правильно)</li>
+</ul>
+<p><strong>С плагином (2 минуты):</strong></p>
+<pre><code class="language-bash">/plugin install pr-review
+# ✅ Всё установлено и настроено
+# ✅ Готово к немедленному использованию
+# ✅ Команда может воспроизвести точную настройку</code></pre>
+<hr>
+<h3 id="h-85">Сравнение и интеграция <a class="h-anchor" href="#h-85" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-86">Матрица сравнения возможностей <a class="h-anchor" href="#h-86" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Возможность</th><th>Вызов</th><th>Постоянство</th><th>Область</th><th>Сценарий использования</th></tr></thead><tbody><tr><td><strong>Slash Commands</strong></td><td>Вручную (<code>/cmd</code>)</td><td>Только сессия</td><td>Одна команда</td><td>Быстрые ярлыки</td></tr><tr><td><strong>Subagents</strong></td><td>Авто-делегирование</td><td>Изолированный контекст</td><td>Специализированная задача</td><td>Распределение задач</td></tr><tr><td><strong>Memory</strong></td><td>Загружается автоматически</td><td>Межсессионно</td><td>Контекст пользователя/команды</td><td>Долгосрочное обучение</td></tr><tr><td><strong>MCP Protocol</strong></td><td>Запрашивается автоматически</td><td>Внешние данные в реальном времени</td><td>Доступ к живым данным</td><td>Динамическая информация</td></tr><tr><td><strong>Skills</strong></td><td>Вызываются автоматически</td><td>На основе файловой системы</td><td>Переиспользуемая экспертиза</td><td>Автоматизированные workflows</td></tr></tbody></table></div>
+<h4 id="h-87">Таймлайн взаимодействия <a class="h-anchor" href="#h-87" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph LR
+    A[&quot;Старт сессии&quot;] --&gt;|Загрузка| B[&quot;Memory (CLAUDE.md)&quot;]
+    B --&gt;|Обнаружить| C[&quot;Доступные skills&quot;]
+    C --&gt;|Зарегистрировать| D[&quot;Slash Commands&quot;]
+    D --&gt;|Подключить| E[&quot;MCP Servers&quot;]
+    E --&gt;|Готово| F[&quot;Взаимодействие с пользователем&quot;]
+
+    F --&gt;|Ввести /cmd| G[&quot;Slash Command&quot;]
+    F --&gt;|Запрос| H[&quot;Автовызов skill&quot;]
+    F --&gt;|Запросить| I[&quot;Данные MCP&quot;]
+    F --&gt;|Сложная задача| J[&quot;Делегировать subagent&quot;]
+
+    G --&gt;|Uses| B
+    H --&gt;|Uses| B
+    I --&gt;|Uses| B
+    J --&gt;|Uses| B</code></pre>
+<h4 id="h-88">Практический пример интеграции: автоматизация поддержки клиентов <a class="h-anchor" href="#h-88" aria-label="Ссылка на раздел">#</a></h4>
+<h5 id="h-89">Архитектура <a class="h-anchor" href="#h-89" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-mermaid">graph TB
+    Пользователь[&quot;Customer Email&quot;] --&gt;|Receives| Router[&quot;Support Router&quot;]
+
+    Router --&gt;|Analyze| Memory[&quot;Memory&lt;br/&gt;Customer history&quot;]
+    Router --&gt;|Lookup| MCP1[&quot;MCP: Customer DB&lt;br/&gt;Previous tickets&quot;]
+    Router --&gt;|Проверить| MCP2[&quot;MCP: Slack&lt;br/&gt;Team status&quot;]
+
+    Router --&gt;|Сложное| Sub1[&quot;Subagent: Tech Support&lt;br/&gt;Контекст: технические проблемы&quot;]
+    Router --&gt;|Простое| Sub2[&quot;Subagent: Billing&lt;br/&gt;Контекст: платежные вопросы&quot;]
+    Router --&gt;|Срочное| Sub3[&quot;Subagent: Escalation&lt;br/&gt;Контекст: обработка приоритета&quot;]
+
+    Sub1 --&gt;|Форматировать| Skill1[&quot;Skill: Response Generator&lt;br/&gt;Сохранён брендовый стиль&quot;]
+    Sub2 --&gt;|Форматировать| Skill2[&quot;Skill: Response Generator&quot;]
+    Sub3 --&gt;|Форматировать| Skill3[&quot;Skill: Response Generator&quot;]
+
+    Skill1 --&gt;|Сгенерировать| Output[&quot;Отформатированный ответ&quot;]
+    Skill2 --&gt;|Generate| Output
+    Skill3 --&gt;|Generate| Output
+
+    Output --&gt;|Опубликовать| MCP3[&quot;MCP: Slack&lt;br/&gt;Уведомить команду&quot;]
+    Output --&gt;|Отправить| Reply[&quot;Ответ клиенту&quot;]</code></pre>
+<h5 id="h-90">Поток запроса <a class="h-anchor" href="#h-90" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-markdown">## Поток запроса поддержки клиентов
+
+### 1. Входящее письмо
+&quot;При попытке загрузить файлы получаю ошибку 500. Это блокирует мой workflow!&quot;
+
+### 2. Поиск в Memory
+- Загружает CLAUDE.md со стандартами поддержки
+- Проверяет историю клиента: VIP-клиент, 3-й инцидент за этот месяц
+
+### 3. Запросы MCP
+- GitHub MCP: Список открытых issues (находит связанный bug report)
+- Database MCP: Проверка статуса системы (сбоев не обнаружено)
+- Slack MCP: Проверяет, в курсе ли engineering
+
+### 4. Обнаружение и загрузка skill
+- Запрос соответствует skill &quot;Technical Support&quot;
+- Загружает шаблон ответа поддержки из Skill
+
+### 5. Делегирование subagent
+- Направляет в Tech Support Subagent
+- Передаёт контекст: история клиента, детали ошибки, известные проблемы
+- Subagent имеет полный доступ к инструментам read, bash, grep
+
+### 6. Обработка subagent
+Tech Support Subagent:
+- Ищет в codebase причину ошибки 500 при загрузке файлов
+- Находит недавнее изменение в commit 8f4a2c
+- Создаёт документацию с обходным решением
+
+### 7. Выполнение skill
+Response Generator Skill:
+- Использует guidelines Brand Voice
+- Форматирует ответ с эмпатией
+- Включает шаги обходного решения
+- Ссылается на связанную документацию
+
+### 8. Вывод MCP
+- Публикует обновление в канал Slack #support
+- Отмечает engineering team
+- Обновляет ticket в Jira MCP
+
+### 9. Ответ
+Клиент получает:
+- Сочувственное подтверждение
+- Объяснение причины
+- Немедленное обходное решение
+- Сроки постоянного исправления
+- Ссылку на связанные issues</code></pre>
+<h4 id="h-91">Полная оркестровка возможностей <a class="h-anchor" href="#h-91" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant Пользователь
+    participant Claude as Claude Code
+    participant Memory as Memory&lt;br/&gt;CLAUDE.md
+    participant MCP as MCP Servers
+    participant Skills as Skills
+    participant SubAgent as Subagents
+
+    Пользователь-&gt;&gt;Claude: Request: &quot;Build auth system&quot;
+    Claude-&gt;&gt;Memory: Load project standards
+    Memory--&gt;&gt;Claude: Auth standards, team practices
+    Claude-&gt;&gt;MCP: Query GitHub for similar implementations
+    MCP--&gt;&gt;Claude: Code examples, best practices
+    Claude-&gt;&gt;Skills: Detect matching Skills
+    Skills--&gt;&gt;Claude: Security Review Skill + Testing Skill
+    Claude-&gt;&gt;SubAgent: Delegate implementation
+    SubAgent-&gt;&gt;SubAgent: Build feature
+    Claude-&gt;&gt;Skills: Apply Security Review Skill
+    Skills--&gt;&gt;Claude: Security checklist results
+    Claude-&gt;&gt;SubAgent: Delegate testing
+    SubAgent--&gt;&gt;Claude: Test results
+    Claude-&gt;&gt;Пользователь: Complete system delivered</code></pre>
+<h4 id="h-92">Когда использовать каждую возможность <a class="h-anchor" href="#h-92" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TD
+    A[&quot;Новая задача&quot;] --&gt; B{Тип задачи?}
+
+    B --&gt;|Повторяющийся workflow| C[&quot;Slash Command&quot;]
+    B --&gt;|Нужны данные в реальном времени| D[&quot;MCP Protocol&quot;]
+    B --&gt;|Запомнить на будущее| E[&quot;Memory&quot;]
+    B --&gt;|Специализированная подзадача| F[&quot;Subagent&quot;]
+    B --&gt;|Предметная работа| G[&quot;Skill&quot;]
+
+    C --&gt; C1[&quot;✅ Командный ярлык&quot;]
+    D --&gt; D1[&quot;✅ Доступ к живому API&quot;]
+    E --&gt; E1[&quot;✅ Постоянный контекст&quot;]
+    F --&gt; F1[&quot;✅ Параллельное выполнение&quot;]
+    G --&gt; G1[&quot;✅ Автовызванная экспертиза&quot;]</code></pre>
+<h4 id="h-93">Дерево выбора <a class="h-anchor" href="#h-93" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-mermaid">graph TD
+    Start[&quot;Нужно расширить Claude?&quot;]
+
+    Start --&gt;|Быстрая повторяющаяся задача| A{&quot;Вручную или автоматически?&quot;}
+    A --&gt;|Вручную| B[&quot;Slash Command&quot;]
+    A --&gt;|Автоматически| C[&quot;Skill&quot;]
+
+    Start --&gt;|Нужны внешние данные| D{&quot;В реальном времени?&quot;}
+    D --&gt;|Да| E[&quot;MCP Protocol&quot;]
+    D --&gt;|Нет/межсессионно| F[&quot;Memory&quot;]
+
+    Start --&gt;|Сложный проект| G{&quot;Несколько ролей?&quot;}
+    G --&gt;|Да| H[&quot;Subagents&quot;]
+    G --&gt;|Нет| I[&quot;Skills + Memory&quot;]
+
+    Start --&gt;|Долгосрочный контекст| J[&quot;Memory&quot;]
+    Start --&gt;|Командный workflow| K[&quot;Slash Command +&lt;br/&gt;Memory&quot;]
+    Start --&gt;|Полная автоматизация| L[&quot;Skills +&lt;br/&gt;Subagents +&lt;br/&gt;MCP&quot;]</code></pre>
+<hr>
+<h3 id="h-94">Сводная таблица <a class="h-anchor" href="#h-94" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Аспект</th><th>Slash Commands</th><th>Subagents</th><th>Memory</th><th>MCP</th><th>Skills</th><th>Plugins</th></tr></thead><tbody><tr><td><strong>Сложность настройки</strong></td><td>Easy</td><td>Medium</td><td>Easy</td><td>Medium</td><td>Medium</td><td>Easy</td></tr><tr><td><strong>Кривая обучения</strong></td><td>Low</td><td>Medium</td><td>Low</td><td>Medium</td><td>Medium</td><td>Low</td></tr><tr><td><strong>Польза для команды</strong></td><td>High</td><td>High</td><td>Medium</td><td>High</td><td>High</td><td>Very High</td></tr><tr><td><strong>Уровень автоматизации</strong></td><td>Low</td><td>High</td><td>Medium</td><td>High</td><td>High</td><td>Very High</td></tr><tr><td><strong>Управление контекстом</strong></td><td>Single-session</td><td>Isolated</td><td>Persistent</td><td>Real-time</td><td>Persistent</td><td>All features</td></tr><tr><td><strong>Нагрузка на поддержку</strong></td><td>Low</td><td>Medium</td><td>Low</td><td>Medium</td><td>Medium</td><td>Low</td></tr><tr><td><strong>Масштабируемость</strong></td><td>Good</td><td>Excellent</td><td>Good</td><td>Excellent</td><td>Excellent</td><td>Excellent</td></tr><tr><td><strong>Совместимость для обмена</strong></td><td>Fair</td><td>Fair</td><td>Good</td><td>Good</td><td>Good</td><td>Excellent</td></tr><tr><td><strong>Версионирование</strong></td><td>Manual</td><td>Manual</td><td>Manual</td><td>Manual</td><td>Manual</td><td>Automatic</td></tr><tr><td><strong>Установка</strong></td><td>Manual copy</td><td>Manual config</td><td>N/A</td><td>Manual config</td><td>Manual copy</td><td>One command</td></tr></tbody></table></div>
+<hr>
+<h3 id="h-95">Руководство по быстрому старту <a class="h-anchor" href="#h-95" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="неделя-1-начните-просто">Неделя 1: Начните просто <a class="h-anchor" href="#неделя-1-начните-просто" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Создайте 2-3 slash command для типовых задач</li>
+<li>Включите Memory в настройках</li>
+<li>Опишите стандарты команды в <code>CLAUDE.md</code></li>
+</ul>
+<h4 id="неделя-2-добавьте-доступ-к-данным-в-реальном-времени">Неделя 2: Добавьте доступ к данным в реальном времени <a class="h-anchor" href="#неделя-2-добавьте-доступ-к-данным-в-реальном-времени" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Настройте 1 MCP (GitHub или Database)</li>
+<li>Используйте <code>/mcp</code> для настройки</li>
+<li>Запрашивайте живые данные в своих workflows</li>
+</ul>
+<h4 id="неделя-3-распределяйте-работу">Неделя 3: Распределяйте работу <a class="h-anchor" href="#неделя-3-распределяйте-работу" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Создайте первый Subagent для конкретной роли</li>
+<li>Используйте команду <code>/agents</code></li>
+<li>Проверьте делегирование на простой задаче</li>
+</ul>
+<h4 id="неделя-4-автоматизируйте-все">Неделя 4: Автоматизируйте всё <a class="h-anchor" href="#неделя-4-автоматизируйте-все" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Создайте первый Skill для повторяющейся автоматизации</li>
+<li>Используйте marketplace навыков или создайте свой</li>
+<li>Объедините все возможности в единый workflow</li>
+</ul>
+<h4 id="h-96">Постоянно <a class="h-anchor" href="#h-96" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Ежемесячно пересматривайте и обновляйте Memory</li>
+<li>Добавляйте новые Skills по мере появления шаблонов</li>
+<li>Оптимизируйте MCP-запросы</li>
+<li>Улучшайте промпты Subagent</li>
+</ul>
+<hr>
+<h3 id="hooks">Hooks <a class="h-anchor" href="#hooks" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-97">Обзор <a class="h-anchor" href="#h-97" aria-label="Ссылка на раздел">#</a></h4>
+<p>Hooks — это shell-команды, запускаемые по событиям и автоматически выполняющиеся в ответ на события Claude Code. Они дают автоматизацию, валидацию и собственные workflows без ручного вмешательства.</p>
+<h4 id="события-hooks">События hooks <a class="h-anchor" href="#события-hooks" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude Code поддерживает <strong>25 событий hooks</strong> в четырёх типах hooks (command, http, prompt, agent):</p>
+<div class="table-wrap"><table><thead><tr><th>Событие hook</th><th>Триггер</th><th>Сценарии использования</th></tr></thead><tbody><tr><td><strong>SessionStart</strong></td><td>Сессия начинается/возобновляется/очищается/compact</td><td>Настройка окружения, инициализация</td></tr><tr><td><strong>InstructionsLoaded</strong></td><td>Загружен <code>CLAUDE.md</code> или файл правил</td><td>Валидация, преобразование, дополнение</td></tr><tr><td><strong>ПользовательPromptSubmit</strong></td><td>Пользователь отправляет запрос</td><td>Проверка ввода, фильтрация запроса</td></tr><tr><td><strong>PreToolUse</strong></td><td>Перед запуском любого инструмента</td><td>Валидация, контроль одобрения, логирование</td></tr><tr><td><strong>PermissionRequest</strong></td><td>Показан диалог разрешения</td><td>Сценарии авто-одобрения/отклонения</td></tr><tr><td><strong>PostToolUse</strong></td><td>Инструмент успешно завершён</td><td>Автоформатирование, уведомления, очистка</td></tr><tr><td><strong>PostToolUseFailure</strong></td><td>Сбой выполнения инструмента</td><td>Обработка ошибок, логирование</td></tr><tr><td><strong>Notification</strong></td><td>Отправлено уведомление</td><td>Оповещения, внешние интеграции</td></tr><tr><td><strong>SubagentStart</strong></td><td>Subagent запущен</td><td>Внедрение контекста, инициализация</td></tr><tr><td><strong>SubagentStop</strong></td><td>Subagent завершён</td><td>Валидация результата, логирование</td></tr><tr><td><strong>Stop</strong></td><td>Claude завершает ответ</td><td>Генерация сводки, задачи очистки</td></tr><tr><td><strong>StopFailure</strong></td><td>Ошибка API завершает ход</td><td>Восстановление после ошибки, логирование</td></tr><tr><td><strong>TeammateIdle</strong></td><td>Напарник в команде агентов простаивает</td><td>Распределение работы, координация</td></tr><tr><td><strong>TaskCompleted</strong></td><td>Задача отмечена как завершённая</td><td>Постобработка задачи</td></tr><tr><td><strong>TaskCreated</strong></td><td>Задача создана через TaskCreate</td><td>Отслеживание, логирование</td></tr><tr><td><strong>ConfigChange</strong></td><td>Изменён конфиг-файл</td><td>Валидация, распространение</td></tr><tr><td><strong>CwdChanged</strong></td><td>Изменился рабочий каталог</td><td>Настройка под каталог</td></tr><tr><td><strong>FileChanged</strong></td><td>Изменился отслеживаемый файл</td><td>Мониторинг файлов, триггер перестройки</td></tr><tr><td><strong>PreCompact</strong></td><td>Перед сжатием контекста</td><td>Сохранение состояния</td></tr><tr><td><strong>PostCompact</strong></td><td>После завершения compact</td><td>Действия после compact</td></tr><tr><td><strong>WorktreeCreate</strong></td><td>Создаётся worktree</td><td>Настройка окружения, установка зависимостей</td></tr><tr><td><strong>WorktreeRemove</strong></td><td>Worktree удаляется</td><td>Очистка, освобождение ресурсов</td></tr><tr><td><strong>Elicitation</strong></td><td>MCP-сервер запрашивает ввод пользователя</td><td>Проверка ввода</td></tr><tr><td><strong>ElicitationResult</strong></td><td>Пользователь отвечает на elicitation</td><td>Обработка ответа</td></tr><tr><td><strong>SessionEnd</strong></td><td>Сессия завершается</td><td>Очистка, финальное логирование</td></tr></tbody></table></div>
+<h4 id="распространенные-hooks">Распространённые hooks <a class="h-anchor" href="#распространенные-hooks" aria-label="Ссылка на раздел">#</a></h4>
+<p>Hooks настраиваются в <code>~/.claude/settings.json</code> (уровень пользователя) или <code>.claude/settings.json</code> (уровень проекта):</p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;PostToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Write&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;prettier --write $CLAUDE_FILE_PATH&quot;
+          }
+        ]
+      }
+    ],
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Edit&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;eslint $CLAUDE_FILE_PATH&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<h4 id="переменные-окружения-hooks">Переменные окружения hooks <a class="h-anchor" href="#переменные-окружения-hooks" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><code>$CLAUDE_FILE_PATH</code> - Путь к редактируемому/записываемому файлу</li>
+<li><code>$CLAUDE_TOOL_NAME</code> - Имя используемого инструмента</li>
+<li><code>$CLAUDE_SESSION_ID</code> - Идентификатор текущей сессии</li>
+<li><code>$CLAUDE_PROJECT_DIR</code> - Путь к каталогу проекта</li>
+</ul>
+<h4 id="h-98">Лучшие практики <a class="h-anchor" href="#h-98" aria-label="Ссылка на раздел">#</a></h4>
+<p>✅ <strong>Делайте:</strong></p>
+<ul>
+<li>Держите hooks быстрыми (&lt; 1 секунды)</li>
+<li>Используйте hooks для валидации и автоматизации</li>
+<li>Обрабатывайте ошибки корректно</li>
+<li>Используйте абсолютные пути</li>
+</ul>
+<p>❌ <strong>Не делайте:</strong></p>
+<ul>
+<li>Не делайте hooks интерактивными</li>
+<li>Не используйте hooks для долгих задач</li>
+<li>Не хардкодьте учётные данные</li>
+</ul>
+<p><strong>Смотрите</strong>: <a href="06-hooks/">06-hooks/</a> для подробных примеров</p>
+<hr>
+<h3 id="checkpoints-и-откат">Checkpoints и откат <a class="h-anchor" href="#checkpoints-и-откат" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-99">Обзор <a class="h-anchor" href="#h-99" aria-label="Ссылка на раздел">#</a></h4>
+<p>Checkpoints позволяют сохранять состояние беседы и откатываться к предыдущим точкам, что даёт безопасные эксперименты и исследование нескольких подходов.</p>
+<h4 id="h-100">Основные понятия <a class="h-anchor" href="#h-100" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Понятие</th><th>Описание</th></tr></thead><tbody><tr><td><strong>Checkpoint</strong></td><td>Снимок состояния беседы, включая сообщения, файлы и контекст</td></tr><tr><td><strong>Rewind</strong></td><td>Возврат к предыдущему checkpoint с откатом последующих изменений</td></tr><tr><td><strong>Branch Point</strong></td><td>Checkpoint, от которого исследуются разные подходы</td></tr></tbody></table></div>
+<h4 id="доступ-к-checkpoints">Доступ к checkpoints <a class="h-anchor" href="#доступ-к-checkpoints" aria-label="Ссылка на раздел">#</a></h4>
+<p>Checkpoints создаются автоматически при каждом запросе пользователя. Чтобы откатиться:</p>
+<pre><code class="language-bash"># Нажмите Esc дважды, чтобы открыть браузер checkpoints
+Esc + Esc
+
+# Или используйте команду /rewind
+/rewind</code></pre>
+<p>Когда вы выбираете checkpoint, доступны пять вариантов:</p>
+<ol>
+<li><strong>Restore code and conversation</strong> -- Откатить и код, и разговор к этой точке</li>
+<li><strong>Restore conversation</strong> -- Откатить сообщения, оставить текущий код</li>
+<li><strong>Restore code</strong> -- Откатить файлы, оставить разговор</li>
+<li><strong>Summarize from here</strong> -- Сжать разговор в сводку</li>
+<li><strong>Never mind</strong> -- Отмена</li>
+</ol>
+<h4 id="h-101">Сценарии использования <a class="h-anchor" href="#h-101" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Сценарий</th><th>Workflow</th></tr></thead><tbody><tr><td><strong>Исследование подходов</strong></td><td>Сохранить → Попробовать A → Сохранить → Откат → Попробовать B → Сравнить</td></tr><tr><td><strong>Безопасный рефакторинг</strong></td><td>Сохранить → Рефакторинг → Тест → Если ошибка: Откат</td></tr><tr><td><strong>A/B-тестирование</strong></td><td>Сохранить → Дизайн A → Сохранить → Откат → Дизайн B → Сравнить</td></tr><tr><td><strong>Восстановление после ошибки</strong></td><td>Замечена проблема → Откат к последнему рабочему состоянию</td></tr></tbody></table></div>
+<h4 id="h-102">Конфигурация <a class="h-anchor" href="#h-102" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-json">{
+  &quot;autoCheckpoint&quot;: true
+}</code></pre>
+<p><strong>Смотрите</strong>: <a href="08-checkpoints/">08-checkpoints/</a> для подробных примеров</p>
+<hr>
+<h3 id="h-103">Продвинутые возможности <a class="h-anchor" href="#h-103" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-104">Режим планирования <a class="h-anchor" href="#h-104" aria-label="Ссылка на раздел">#</a></h4>
+<p>Создавайте детальные планы реализации до написания кода.</p>
+<p><strong>Активация:</strong></p>
+<pre><code class="language-bash">/plan Implement user authentication system</code></pre>
+<p><strong>Преимущества:</strong></p>
+<ul>
+<li>Понятный план с оценкой времени</li>
+<li>Оценка рисков</li>
+<li>Систематическое разбиение задач</li>
+<li>Возможность ревью и изменения плана</li>
+</ul>
+<h4 id="h-105">Расширенное мышление <a class="h-anchor" href="#h-105" aria-label="Ссылка на раздел">#</a></h4>
+<p>Глубокое рассуждение для сложных задач.</p>
+<p><strong>Активация:</strong></p>
+<ul>
+<li>Переключение <code>Alt+T</code> (или <code>Option+T</code> на macOS) во время сессии</li>
+<li>Установите переменную <code>MAX_THINKING_TOKENS</code> для программного управления</li>
+</ul>
+<pre><code class="language-bash"># Включить расширенное мышление через переменную окружения
+export MAX_THINKING_TOKENS=50000
+claude -p &quot;Should we use microservices or monolith?&quot;</code></pre>
+<p><strong>Преимущества:</strong></p>
+<ul>
+<li>Тщательный анализ компромиссов</li>
+<li>Лучшие архитектурные решения</li>
+<li>Учет граничных случаев</li>
+<li>Систематическая оценка</li>
+</ul>
+<h4 id="h-106">Фоновые задачи <a class="h-anchor" href="#h-106" aria-label="Ссылка на раздел">#</a></h4>
+<p>Запускайте долгие операции, не блокируя беседу.</p>
+<p><strong>Использование:</strong></p>
+<pre><code class="language-bash">Пользователь: Run tests in background
+
+Claude: Started task bg-1234
+
+/task list           # Show all tasks
+/task status bg-1234 # Проверить progress
+/task show bg-1234   # View output
+/task cancel bg-1234 # Cancel task</code></pre>
+<h4 id="h-107">Режимы разрешений <a class="h-anchor" href="#h-107" aria-label="Ссылка на раздел">#</a></h4>
+<p>Управляйте тем, что может делать Claude.</p>
+<div class="table-wrap"><table><thead><tr><th>Режим</th><th>Описание</th><th>Сценарий использования</th></tr></thead><tbody><tr><td><strong>default</strong></td><td>Стандартные разрешения с запросами для чувствительных действий</td><td>Общая разработка</td></tr><tr><td><strong>acceptEdits</strong></td><td>Автоматически принимать правки файлов без подтверждения</td><td>Доверенные workflows редактирования</td></tr><tr><td><strong>plan</strong></td><td>Только анализ и планирование, без изменения файлов</td><td>Code review, планирование архитектуры</td></tr><tr><td><strong>auto</strong></td><td>Автоматически одобрять безопасные действия, спрашивать только для рискованных</td><td>Баланс автономности и безопасности</td></tr><tr><td><strong>dontAsk</strong></td><td>Выполнять все действия без запросов подтверждения</td><td>Опытные пользователи, автоматизация</td></tr><tr><td><strong>bypassPermissions</strong></td><td>Полный неограниченный доступ, без проверок безопасности</td><td>CI/CD pipeline, доверенные скрипты</td></tr></tbody></table></div>
+<p><strong>Использование:</strong></p>
+<pre><code class="language-bash">claude --permission-mode plan          # Read-only analysis
+claude --permission-mode acceptEdits   # Auto-accept edits
+claude --permission-mode auto          # Auto-approve safe actions
+claude --permission-mode dontAsk       # No confirmation prompts</code></pre>
+<h4 id="headless-mode-режим-вывода">Headless Mode (режим вывода) <a class="h-anchor" href="#headless-mode-режим-вывода" aria-label="Ссылка на раздел">#</a></h4>
+<p>Запускайте Claude Code без интерактивного ввода для автоматизации и CI/CD, используя флаг <code>-p</code> (print).</p>
+<p><strong>Использование:</strong></p>
+<pre><code class="language-bash"># Запустить конкретную задачу
+claude -p &quot;Run all tests&quot;
+
+# Передать ввод через pipe для анализа
+cat error.log | claude -p &quot;explain this error&quot;
+
+# Интеграция CI/CD (GitHub Actions)
+- name: AI Code Review
+  run: claude -p &quot;Review PR changes and report issues&quot;
+
+# JSON-вывод для скриптов
+claude -p --output-format json &quot;list all functions in src/&quot;</code></pre>
+<h4 id="h-108">Запланированные задачи <a class="h-anchor" href="#h-108" aria-label="Ссылка на раздел">#</a></h4>
+<p>Запускайте задачи по повторяющемуся расписанию с помощью команды <code>/loop</code>.</p>
+<p><strong>Использование:</strong></p>
+<pre><code class="language-bash">/loop every 30m &quot;Запускать тесты и сообщать о сбоях&quot;
+/loop every 2h &quot;Проверять обновления зависимостей&quot;
+/loop every 1d &quot;Генерировать ежедневную сводку изменений кода&quot;</code></pre>
+<p>Запланированные задачи выполняются в фоне и сообщают результат после завершения. Они полезны для непрерывного мониторинга, периодических проверок и автоматизированного обслуживания.</p>
+<h4 id="интеграция-с-chrome">Интеграция с Chrome <a class="h-anchor" href="#интеграция-с-chrome" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude Code может интегрироваться с браузером Chrome для задач web-автоматизации. Это даёт такие возможности, как навигация по страницам, заполнение форм, создание скриншотов и извлечение данных с сайтов прямо в рабочем процессе разработки.</p>
+<h4 id="h-109">Управление сессиями <a class="h-anchor" href="#h-109" aria-label="Ссылка на раздел">#</a></h4>
+<p>Управляйте несколькими рабочими сессиями.</p>
+<p><strong>Команды:</strong></p>
+<pre><code class="language-bash">/resume                # Возобновить предыдущий разговор
+/rename &quot;Feature&quot;      # Назвать текущую сессию
+/fork                  # Разветвить в новую сессию
+claude -c              # Продолжить последнюю беседу
+claude -r &quot;Feature&quot;    # Возобновить сессию по имени/ID</code></pre>
+<h4 id="h-110">Интерактивные возможности <a class="h-anchor" href="#h-110" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Горячие клавиши:</strong></p>
+<ul>
+<li><code>Ctrl + R</code> - Поиск по истории команд</li>
+<li><code>Tab</code> - Автодополнение</li>
+<li><code>↑ / ↓</code> - История команд</li>
+<li><code>Ctrl + L</code> - Очистить экран</li>
+</ul>
+<p><strong>Многострочный ввод:</strong></p>
+<pre><code class="language-bash">Пользователь: \
+&gt; Длинный сложный запрос
+&gt; на несколько строк
+&gt; \end</code></pre>
+<h4 id="h-111">Конфигурация <a class="h-anchor" href="#h-111" aria-label="Ссылка на раздел">#</a></h4>
+<p>Полный пример конфигурации:</p>
+<pre><code class="language-json">{
+  &quot;planning&quot;: {
+    &quot;autoEnter&quot;: true,
+    &quot;requireApproval&quot;: true
+  },
+  &quot;extendedThinking&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;showThinkingProcess&quot;: true
+  },
+  &quot;backgroundTasks&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;maxConcurrentTasks&quot;: 5
+  },
+  &quot;permissions&quot;: {
+    &quot;mode&quot;: &quot;default&quot;
+  }
+}</code></pre>
+<p><strong>Смотрите</strong>: <a href="09-advanced-features/">09-advanced-features/</a> для полного гайда</p>
+<hr>
+<h3 id="h-112">Ресурсы <a class="h-anchor" href="#h-112" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/en/overview">Документация Claude Code</a></li>
+<li><a href="https://docs.anthropic.com">Документация Anthropic</a></li>
+<li><a href="https://github.com/modelcontextprotocol/servers">MCP GitHub Servers</a></li>
+<li><a href="https://github.com/anthropics/anthropic-cookbook">Anthropic Cookbook</a></li>
+</ul>
+<hr>
+<p><em>Последнее обновление: март 2026</em>
+<em>Для Claude Haiku 4.5, Sonnet 4.6 и Opus 4.6</em>
+<em>Теперь включает: Hooks, Checkpoints, Planning Mode, Extended Thinking, Background Tasks, Permission Modes (6 modes), Headless Mode, Session Management, Auto Memory, Agent Teams, Scheduled Tasks, Chrome Integration, Channels, Voice Dictation и Bundled Skills</em></p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

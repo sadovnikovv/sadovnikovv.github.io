@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Модуль 03. Настройки и разрешения</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/index.html">claude-code-pro-course</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/course/index.html">course</a></nav>
+<h1 id="модуль-03-настройки-и-разрешения">Модуль 03. Настройки и разрешения <a class="h-anchor" href="#модуль-03-настройки-и-разрешения" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="h">Файлы настроек и приоритет <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>От высшего приоритета к низшему:</p>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Файл</th><th>Назначение</th></tr></thead><tbody><tr><td>1</td><td>Managed settings (политика организации)</td><td>Нельзя переопределить</td></tr><tr><td>2</td><td>Флаги CLI (<code>--settings</code>, <code>--model</code>, …)</td><td>Текущая сессия</td></tr><tr><td>3</td><td><code>.claude/settings.local.json</code></td><td>Ваши личные настройки проекта (не в git)</td></tr><tr><td>4</td><td><code>.claude/settings.json</code></td><td>Общие настройки команды (<strong>в git</strong>)</td></tr><tr><td>5</td><td><code>~/.claude/settings.json</code></td><td>Ваши глобальные настройки</td></tr></tbody></table></div>
+<p>Правило: <strong>командные вещи — в <code>.claude/settings.json</code>, личные — в <code>.local.json</code> или <code>~</code>.</strong></p>
+<h3 id="пример-claude-settings-json">Пример <code>.claude/settings.json</code> <a class="h-anchor" href="#пример-claude-settings-json" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-json">{
+  &quot;$schema&quot;: &quot;https://json.schemastore.org/claude-code-settings.json&quot;,
+  &quot;permissions&quot;: {
+    &quot;allow&quot;: [
+      &quot;Bash(npm run test:*)&quot;,
+      &quot;Bash(npm run lint)&quot;,
+      &quot;Bash(git status)&quot;,
+      &quot;Bash(git diff:*)&quot;,
+      &quot;Bash(git log:*)&quot;
+    ],
+    &quot;ask&quot;: [
+      &quot;Bash(git push:*)&quot;
+    ],
+    &quot;deny&quot;: [
+      &quot;Read(./.env)&quot;,
+      &quot;Read(./.env.*)&quot;,
+      &quot;Read(./secrets/**)&quot;,
+      &quot;Bash(rm -rf:*)&quot;,
+      &quot;Bash(curl:*)&quot;
+    ],
+    &quot;defaultMode&quot;: &quot;default&quot;
+  },
+  &quot;env&quot;: {
+    &quot;NODE_ENV&quot;: &quot;development&quot;
+  }
+}</code></pre>
+<p>Полная версия: <a href="../starter-kit/.claude/settings.json"><code>starter-kit/.claude/settings.json</code></a></p>
+<h3 id="h-2">Синтаксис правил <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Правило</th><th>Значение</th></tr></thead><tbody><tr><td><code>Bash(npm run build)</code></td><td>Точная команда</td></tr><tr><td><code>Bash(npm run test:*)</code></td><td>Команды с таким префиксом</td></tr><tr><td><code>Read(./.env)</code></td><td>Конкретный файл</td></tr><tr><td><code>Edit(src/**)</code></td><td>Glob-паттерн</td></tr><tr><td><code>WebFetch(domain:docs.python.org)</code></td><td>Домен</td></tr><tr><td><code>mcp__github</code></td><td>Все инструменты MCP-сервера github</td></tr><tr><td><code>mcp__github__create_issue</code></td><td>Конкретный MCP-инструмент</td></tr></tbody></table></div>
+<p>Порядок проверки: <strong>deny → ask → allow</strong>. Deny всегда побеждает.</p>
+<blockquote>
+<p>⚠️ Правила для Bash работают по префиксу и не являются полноценной песочницей. Для реальной изоляции используйте sandbox/контейнер/devcontainer.</p>
+</blockquote>
+<h3 id="h-3">Режимы разрешений <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Режим</th><th>Поведение</th></tr></thead><tbody><tr><td><code>default</code></td><td>Спрашивает перед правками и командами</td></tr><tr><td><code>acceptEdits</code></td><td>Правки файлов без вопросов, команды — с вопросом</td></tr><tr><td><code>plan</code></td><td>Только чтение и планирование, ничего не меняет</td></tr><tr><td><code>auto</code></td><td>Классификатор сам решает, что безопасно (если доступен)</td></tr><tr><td><code>dontAsk</code></td><td>Отклоняет всё, что не разрешено явно</td></tr><tr><td><code>bypassPermissions</code></td><td>Без вопросов вообще. <strong>Только в изолированных контейнерах</strong></td></tr></tbody></table></div>
+<p>Переключение в сессии — <code>Shift+Tab</code>, при запуске — <code>claude --permission-mode plan</code>.</p>
+<h3 id="h-4">Интерактивное управление <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>/permissions     # посмотреть и добавить правила</code></pre>
+<p>Когда Claude спрашивает разрешение, можно выбрать «разрешить и больше не спрашивать» — правило сохранится в <code>settings.local.json</code>.</p>
+<h3 id="h-5">Выбор модели <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>/model                        # меню выбора
+claude --model opus           # при запуске</code></pre>
+<p>Или в настройках: <code>&quot;model&quot;: &quot;opus&quot;</code>. Рабочая схема:</p>
+<ul>
+<li><strong>Opus</strong> — сложная архитектура, трудные баги, планирование.</li>
+<li><strong>Sonnet</strong> — повседневная разработка, баланс скорости и качества.</li>
+<li><strong>Haiku</strong> — быстрые простые задачи, subagents для поиска.</li>
+</ul>
+<h3 id="h-6">Другие полезные поля <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-json">{
+  &quot;model&quot;: &quot;sonnet&quot;,
+  &quot;env&quot;: { &quot;BASH_DEFAULT_TIMEOUT_MS&quot;: &quot;120000&quot; },
+  &quot;statusLine&quot;: { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;~/.claude/statusline.sh&quot; },
+  &quot;includeCoAuthoredBy&quot;: true,
+  &quot;cleanupPeriodDays&quot;: 30,
+  &quot;enabledPlugins&quot;: {}
+}</code></pre>
+<ul>
+<li><strong><code>statusLine</code></strong> — своя строка статуса (ветка git, модель, расход). Настроить: <code>/statusline</code>.</li>
+<li><strong><code>hooks</code></strong> — см. модуль 07.</li>
+</ul>
+<h3 id="h-7">Переменные окружения <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Переменная</th><th>Для чего</th></tr></thead><tbody><tr><td><code>ANTHROPIC_API_KEY</code></td><td>Ключ API</td></tr><tr><td><code>ANTHROPIC_MODEL</code></td><td>Модель по умолчанию</td></tr><tr><td><code>CLAUDE_CODE_USE_BEDROCK=1</code> / <code>CLAUDE_CODE_USE_VERTEX=1</code></td><td>Облачные провайдеры</td></tr><tr><td><code>BASH_DEFAULT_TIMEOUT_MS</code></td><td>Таймаут команд</td></tr><tr><td><code>DISABLE_TELEMETRY=1</code></td><td>Отключить телеметрию</td></tr></tbody></table></div>
+<h3 id="h-8">Практика <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li>Создайте <code>.claude/settings.json</code> с allow-списком для команд тестов и линта.</li>
+<li>Запретите чтение <code>.env</code>. Попросите Claude прочитать <code>.env</code> — убедитесь, что отказано.</li>
+<li>Добавьте <code>.claude/settings.local.json</code> в <code>.gitignore</code>.</li>
+</ol>
+<p>🧪 Закрепите на практике: <a href="../labs/lab-02-permissions.md">лабораторная работа</a></p>
+<p>➡️ Далее: <a href="04-workflow.md">04. Workflow профи</a></p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

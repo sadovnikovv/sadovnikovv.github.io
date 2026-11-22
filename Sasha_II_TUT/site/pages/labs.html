@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru" data-book-src="../book.html">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Глава 21 — Claude Code для инженера</title>
+<meta name="description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
+<link rel="canonical" href="https://sadovnikovv.github.io/pages/">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:site_name" content="Claude Code для инженера">
+<meta property="og:title" content="Глава 21 — Claude Code для инженера">
+<meta property="og:description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
+<meta property="og:url" content="https://sadovnikovv.github.io/pages/">
+<meta property="og:image" content="https://sadovnikovv.github.io/assets/favicon.svg">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="../assets/fonts/serif-regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/sans-regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="alternate" type="text/html" href="../book.html#labs">
+<meta name="page-index" content="36">
+</head>
+<body>
+<a class="skip-link" href="#book">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../index.html">Claude Code для инженера</a></strong>
+    <a href="../materials/index.html">Материалы</a>
+    <a href="../about.html">О книге</a>
+    <a href="../download/Книга-Claude-Code.epub" download>EPUB</a>
+  </div>
+</header>
+<div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+<main class="wrap" id="book">
+<section class="chapter"><h2 id="labs"><span class="chapter">Глава 21</span>Десять заданий</h2>
+
+<p class="lead-in">Это компактный практикум. Каждая работа рассчитана на 30–90 минут. Выполняйте по порядку: каждая опирается на предыдущую.</p>
+
+<div class="lab">
+  <div class="lab-head"><span class="lab-no">Работа 1</span><h4>Проверка стенда</h4></div>
+  <dl>
+    <dt>Цель</dt><dd>Убедиться, что Claude Code, OmniRoute и DeepSeek работают вместе.</dd>
+    <dt>Шаги</dt><dd>Запустить шлюз, проверить панель, выполнить <code>curl /v1/models</code>, запустить <code>cc.txt</code>, ввести <code>/status</code>, задать простой вопрос.</dd>
+    <dt>Промпт</dt><dd>«Ответь одним словом: работает. Затем объясни, какая модель тебе отвечает».</dd>
+    <dt>Критерий</dt><dd>Есть ответ; <code>/status</code> показывает <code>localhost:20128</code> и <code>combo/DeepSeek</code>.</dd>
+    <dt>Типичная ошибка</dt><dd>Забыли запустить OmniRoute или указали <code>/v1</code> в базовом адресе.</dd>
+  </dl>
+</div>
+
+<div class="lab">
+  <div class="lab-head"><span class="lab-no">Работа 2</span><h4>Даташит в таблицу</h4></div>
+  <dl>
+    <dt>Цель</dt><dd>Научиться извлекать параметры из PDF с проверкой.</dd>
+    <dt>Шаги</dt><dd>Положить даташит в <code>docs/datasheets/</code>; попросить таблицу параметров со страницами; вручную сверить три строки.</dd>
+    <dt>Промпт</dt><dd>«Извлеки абсолютные максимумы, рабочий диапазон, токи и тепловые параметры. Формат: параметр | значение | условия | страница. Сомнения — отдельно».</dd>
+    <dt>Критерий</dt><dd>Три строки совпали с PDF; сомнительные помечены.</dd>
+    <dt>Типичная ошибка</dt><dd>Модель путает absolute maximum ratings и recommended operating conditions.</dd>
+  </dl>
+</div>
+
+<div class="lab">
+  <div class="lab-head"><span class="lab-no">Работа 3</span><h4>Расчёт делителя</h4></div>
+  <dl>
+    <dt>Цель</dt><dd>Проверить, как агент считает и оформляет расчёт.</dd>
+    <dt>Шаги</dt><dd>Задать вход 0–30 В, АЦП 0–3,3 В, ток ≤100 мкА, допуск 1%. Попросить формулу, номиналы E24, худший случай.</dd>
+    <dt>Промпт</dt><dd>«Рассчитай делитель. Выведи формулу, подстановку, единицы, номиналы, ток, мощность и худший случай. Проверь размерности».</dd>
+    <dt>Критерий</dt><dd>Расчёт сходится с вашим независимым пересчётом; единицы указаны.</dd>
+    <dt>Типичная ошибка</dt><dd>Ошибка в 1000 раз из-за мА/А или кОм/Ом.</dd>
+  </dl>
+</div>
+
+<div class="lab">
+  <div class="lab-head"><span class="lab-no">Работа 4</span><h4>RC-фильтр в ngspice</h4></div>
+  <dl>
+    <dt>Цель</dt><dd>Связать расчёт с симуляцией.</dd>
+    <dt>Шаги</dt><dd>Создать netlist, прогнать AC-анализ, найти частоту среза, сравнить с формулой.</dd>
+    <dt>Промпт</dt><dd>«Создай netlist RC-фильтра 1 кОм / 100 нФ, запусти ngspice, извлеки fc и сравни с расчётом».</dd>
+    <dt>Критерий</dt><dd>fc ≈ 1,59 кГц; расхождение объяснено.</dd>
+    <dt>Типичная ошибка</dt><dd>Забыт <code>.ac</code> или неверные единицы в netlist.</dd>
+  </dl>
+</div>
+
+<div class="lab">
+  <div class="lab-head"><span class="lab-no">Работа 5</span><h4>KiCad: ERC, DRC, Gerber</h4></div>
+  <dl>
+    <dt>Цель</dt><dd>Освоить автоматические проверки платы.</dd>
+    <dt>Шаги</dt><dd>Открыть учебный проект; запустить <code>kicad-cli sch erc</code>, <code>pcb drc</code>; экспортировать Gerber и сверловку.</dd>
+    <dt>Промпт</dt><dd>«Разбери отчёты ERC/DRC: что критично, что можно отложить, что требует проверки. Проверь комплектность Gerber».</dd>
+    <dt>Критерий</dt><dd>Отчёты созданы; критические замечания понятны; Gerber открывается.</dd>
+    <dt>Типичная ошибка</dt><dd>Слепо доверять DRC: часть замечаний — ложные, часть критичных скрыта настройками.</dd>
+  </dl>
+</div>
+
+<div class="lab">
+  <div class="lab-head"><span class="lab-no">Работа 6</span><h4>PlatformIO: мигание и UART</h4></div>
+  <dl>
+    <dt>Цель</dt><dd>Пройти цикл сборка → прошивка → монитор.</dd>
+    <dt>Шаги</dt><dd>Создать проект ESP32; собрать; прошить; открыть монитор; добавить кнопку с антидребезгом.</dd>
+    <dt>Промпт</dt><dd>«Создай проект PlatformIO для ESP32: мигание LED и вывод в UART. Объясни настройки <code>platformio.ini</code>».</dd>
+    <dt>Критерий</dt><dd>Прошивка работает; в мониторе видны сообщения; кнопка не дребезжит.</dd>
+    <dt>Типичная ошибка</dt><dd>Неверный COM-порт, скорость монитора или номер вывода.</dd>
+  </dl>
+</div>
+
+<div class="lab">
+  <div class="lab-head"><span class="lab-no">Работа 7</span><h4>Драйвер I2C-датчика</h4></div>
+  <dl>
+    <dt>Цель</dt><dd>Написать драйвер с проверкой по даташиту и тестом.</dd>
+    <dt>Шаги</dt><dd>Положить даташит; попросить драйвер и mock-тест; проверить регистры; измерить на стенде.</dd>
+    <dt>Промпт</dt><dd>«Драйвер BME280 для ESP32: I2C 400 кГц, чтение T/P/H, коды ошибок, без блокирующих задержек, тест с mock-шиной. Регистры — только из PDF».</dd>
+    <dt>Критерий</dt><dd>Компилируется; тест проходит; показания совпадают с эталоном.</dd>
+    <dt>Типичная ошибка</dt><dd>Выдуманные адреса регистров и коэффициенты компенсации.</dd>
+  </dl>
+</div>
+
+<div class="lab">
+  <div class="lab-head"><span class="lab-no">Работа 8</span><h4>Логический анализатор</h4></div>
+  <dl>
+    <dt>Цель</dt><dd>Декодировать обмен и найти ошибку.</dd>
+    <dt>Шаги</dt><dd>Захватить I2C при чтении датчика; декодировать sigrok/PulseView; попросить агента разобрать файл.</dd>
+    <dt>Промпт</dt><dd>«Разбери захват I2C: адрес, регистры, ACK/NACK, ошибки. Сравни с даташитом».</dd>
+    <dt>Критерий</dt><dd>Найдена хотя бы одна реальная особенность обмена.</dd>
+    <dt>Типичная ошибка</dt><dd>Неверный уровень сигнала или частота захвата; анализ мусора.</dd>
+  </dl>
+</div>
+
+<div class="lab">
+  <div class="lab-head"><span class="lab-no">Работа 9</span><h4>FreeCAD: кронштейн</h4></div>
+  <dl>
+    <dt>Цель</dt><dd>Параметрическая деталь и экспорт.</dd>
+    <dt>Шаги</dt><dd>Скрипт строит пластину 80×40×6 с двумя отверстиями M4; экспорт STEP и STL; проверка массы.</dd>
+    <dt>Промпт</dt><dd>«Напиши скрипт FreeCAD, построй деталь по параметрам, экспортируй STEP/STL, посчитай массу для стали 7,85 г/см³».</dd>
+    <dt>Критерий</dt><dd>Файлы открываются; масса сходится с ручным расчётом.</dd>
+    <dt>Типичная ошибка</dt><dd>Единицы (мм/см) и плотность.</dd>
+  </dl>
+</div>
+
+<div class="lab">
+  <div class="lab-head"><span class="lab-no">Работа 10</span><h4>Документация и прослеживаемость</h4></div>
+  <dl>
+    <dt>Цель</dt><dd>Связать требования, реализацию и проверку.</dd>
+    <dt>Шаги</dt><dd>Составить матрицу из пяти требований; найти требование без проверки; добавить проверку; сохранить.</dd>
+    <dt>Промпт</dt><dd>«Составь матрицу: требование | реализация | проверка | статус. Найди требования без проверки».</dd>
+    <dt>Критерий</dt><dd>Все пять требований имеют проверку или помечены как открытые.</dd>
+    <dt>Типичная ошибка</dt><dd>Красивая таблица без связи с файлами и испытаниями.</dd>
+  </dl>
+</div>
+
+<!-- ============================================================ -->
+
+</section>
+</main>
+<footer class="site-footer">
+  <nav class="chapter-nav" aria-label="Навигация по главам">
+    <span><a data-rel="prev" href="../pages/integration-map.html">← Глава 20</a></span>
+    <a data-rel="toc" href="../index.html">Оглавление</a>
+    <span><a data-rel="next" href="../pages/capstone.html">Глава 22 →</a></span>
+  </nav>
+  <p>Источник — <a href="../book.html">книга одним файлом</a>,
+  <a href="../download/Книга-Claude-Code.epub">EPUB</a>.</p>
+</footer>
+<script type="application/json" id="page-list">[{"title":"Глава 0 История этой книги","short":"Глава 0","url":"pages/history.html"},{"title":"Глава 1 Как читать эту книгу","short":"Глава 1","url":"pages/how-to-read.html"},{"title":"Глава 2 Ваш стенд: Claude Code → OmniRoute → DeepSeek","short":"Глава 2","url":"pages/stand.html"},{"title":"Глава 3 Что такое ИИ","short":"Глава 3","url":"pages/what-is-ai.html"},{"title":"Глава 4 Как работает языковая модель","short":"Глава 4","url":"pages/how-llm-works.html"},{"title":"Глава 5 Промпт как техническое задание","short":"Глава 5","url":"pages/prompt.html"},{"title":"Глава 6 Что такое агент","short":"Глава 6","url":"pages/agent.html"},{"title":"Глава 6A История нейронных сетей","short":"Глава 6A","url":"pages/history-nn.html"},{"title":"Глава 6B Анатомия трансформера","short":"Глава 6B","url":"pages/transformer-anatomy.html"},{"title":"Глава 6C Веса, биты и точность","short":"Глава 6C","url":"pages/weights-bits.html"},{"title":"Глава 6D Ландшафт моделей 2026","short":"Глава 6D","url":"pages/model-landscape.html"},{"title":"Глава 6E Локальные модели","short":"Глава 6E","url":"pages/local-models.html"},{"title":"Глава 6F Токены, контекст и сжатие","short":"Глава 6F","url":"pages/tokens-compression.html"},{"title":"Глава 6G Железо и вычислительность","short":"Глава 6G","url":"pages/hardware.html"},{"title":"Глава 6H Агенты и их экосистема","short":"Глава 6H","url":"pages/agents-ecosystem.html"},{"title":"Глава 6I Оптимизация: что пишут на Хабре и Пикабу","short":"Глава 6I","url":"pages/optimization-posts.html"},{"title":"Глава 6J Вопросы и ответы","short":"Глава 6J","url":"pages/faq.html"},{"title":"Глава 6K (не публикуется)","short":"Глава 6K (не публикуется)","url":"pages/deepseek-billing.html"},{"title":"Глава 7 Установка и первый запуск","short":"Глава 7","url":"pages/install.html"},{"title":"Глава 7A (не публикуется)","short":"Глава 7A (не публикуется)","url":"pages/migration.html"},{"title":"Глава 7B (не публикуется)","short":"Глава 7B (не публикуется)","url":"pages/new-pc.html"},{"title":"Глава 8 Интерфейс и команды","short":"Глава 8","url":"pages/interface.html"},{"title":"Глава 9 Память и CLAUDE.md","short":"Глава 9","url":"pages/memory.html"},{"title":"Глава 9A Память, обучение и превращение в скилл","short":"Глава 9A","url":"pages/memory-training.html"},{"title":"Глава 10 Разрешения и безопасность","short":"Глава 10","url":"pages/permissions.html"},{"title":"Глава 11 Контекст, стоимость, сессии","short":"Глава 11","url":"pages/context-cost.html"},{"title":"Глава 12 Расширения: skills, субагенты, hooks, MCP","short":"Глава 12","url":"pages/extensions.html"},{"title":"Глава 13 Принцип интеграции","short":"Глава 13","url":"pages/integration-principle.html"},{"title":"Глава 14 Схемотехника и симуляция","short":"Глава 14","url":"pages/circuit.html"},{"title":"Глава 15 EDA и трассировка плат","short":"Глава 15","url":"pages/pcb.html"},{"title":"Глава 16 Микроконтроллеры","short":"Глава 16","url":"pages/mcu.html"},{"title":"Глава 17 Отладка и измерения","short":"Глава 17","url":"pages/debug.html"},{"title":"Глава 18 Машиностроение и CAD","short":"Глава 18","url":"pages/cad.html"},{"title":"Глава 19 Документация и traceability","short":"Глава 19","url":"pages/docs.html"},{"title":"Глава 20 Карта связок","short":"Глава 20","url":"pages/integration-map.html"},{"title":"Глава 21 Десять заданий","short":"Глава 21","url":"pages/labs.html"},{"title":"Глава 22 Итоговый проект: термостат лабораторной печи","short":"Глава 22","url":"pages/capstone.html"},{"title":"Глава 23 Как проверять ИИ","short":"Глава 23","url":"pages/verify.html"},{"title":"Глава 24 Команды и флаги","short":"Глава 24","url":"pages/commands.html"},{"title":"Глава 25 Переменные, файлы, настройки","short":"Глава 25","url":"pages/files-settings.html"},{"title":"Глава 26 Шаблоны промптов","short":"Глава 26","url":"pages/prompt-templates.html"},{"title":"Глава 27 Диагностика","short":"Глава 27","url":"pages/troubleshooting.html"},{"title":"Глава 28 Файлы и папки","short":"Глава 28","url":"pages/library.html"},{"title":"Глава 29 Литература","short":"Глава 29","url":"pages/literature.html"},{"title":"Глава 29A Открытая хрестоматия","short":"Глава 29A","url":"pages/open-books.html"},{"title":"Глава 30 План на восемь недель","short":"Глава 30","url":"pages/plan.html"},{"title":"Глава 31 Словарь","short":"Глава 31","url":"pages/glossary.html"},{"title":"Глава 32 Источники","short":"Глава 32","url":"pages/sources.html"}]</script>
+<script src="../assets/app.js" defer></script>
+</body>
+</html>

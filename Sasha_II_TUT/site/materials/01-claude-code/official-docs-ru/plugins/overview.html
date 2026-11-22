@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Обзор plugins</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/plugins/index.html">plugins</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="обзор-plugins">Обзор plugins <a class="h-anchor" href="#обзор-plugins" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Узнайте, что такое Claude Code plugin, когда вам нужен plugin вместо отдельного skill или MCP server, и какую страницу прочитать для установки или создания plugin.</p>
+</blockquote>
+<p>Claude Code plugin — это директория skills, agents, hooks, MCP servers или других компонентов, которые Claude Code устанавливает и загружает как одну единицу. Большинство plugins поступают из marketplace, который представляет собой каталог, в котором перечислены plugins и указано, где получить каждый из них. Вы также можете загрузить plugin из папки, которую вам дал кто-то другой, или <a href="https://code.claude.com/docs/ru/plugins/create.md">создать свой собственный</a>.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Эти случаи рассматриваются на других страницах:</p>
+<ul>
+<li><strong>Вы используете чат claude.ai или Cowork, а не Claude Code</strong>: см. <a href="https://claude.com/docs/plugins/overview">Плагины на claude.ai и в Cowork</a></li>
+<li><strong>Вы создали MCP-сервер и хотите добавить его в каталог Anthropic</strong>: см. <a href="https://claude.com/docs/directory/publish">Публикация в каталоге</a></li>
+<li><strong>Вы хотите использовать Claude Code внутри VS Code или JetBrains IDE</strong>: для этого служат расширение VS Code или плагин JetBrains, а не плагин Claude Code. См. <a href="https://code.claude.com/docs/ru/vs-code.md">Использование Claude Code в VS Code</a> или <a href="https://code.claude.com/docs/ru/jetbrains.md">JetBrains IDE</a></li>
+</ul>
+</blockquote>
+<p>Чтобы попробовать plugin прямо сейчас, запустите <code>/plugin</code> в сеансе терминала Claude Code и установите один из вкладки <strong>Discover</strong>, на которой перечислены plugins из ваших marketplaces. Оттуда:</p>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/plugins/install.md">Установка и управление plugins</a>: полные шаги установки, области действия и другие поверхности</li>
+<li><a href="https://code.claude.com/docs/ru/plugins/create.md">Создание plugin</a>: создайте свой собственный</li>
+<li><a href="#decide-whether-you-need-a-plugin">Решите, нужен ли вам plugin</a>: является ли plugin правильным инструментом для того, что вы хотите</li>
+</ul>
+<h3 id="поймите-что-такое-plugin">Поймите, что такое plugin <a class="h-anchor" href="#поймите-что-такое-plugin" aria-label="Ссылка на раздел">#</a></h3>
+<p>Plugin — это директория компонентов, обычно с манифестом. Манифест, JSON-файл в <code>.claude-plugin/plugin.json</code>, дает plugin его имя и может добавить версию, описание и другие <a href="https://code.claude.com/docs/ru/plugins/manifest-reference.md">метаданные</a>. Компоненты — это то, что plugin добавляет в Claude Code, например:</p>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/plugins/components.md#skills"><strong>Skills</strong></a>: инструкции <code>SKILL.md</code>, которые Claude загружает при необходимости, и которые вы также можете запустить как команду</li>
+<li><a href="https://code.claude.com/docs/ru/plugins/components.md#agents"><strong>Agents</strong></a>: определения подагентов, которым Claude может делегировать</li>
+<li><a href="https://code.claude.com/docs/ru/plugins/components.md#hooks"><strong>Hooks</strong></a>: команды, которые Claude Code запускает в точках своего жизненного цикла, например после каждого редактирования</li>
+<li><a href="https://code.claude.com/docs/ru/plugins/mods/overview.md"><strong>Модуль хуков</strong></a>: хуки, написанные как функции JavaScript, которые также могут рисовать панели и добавлять команды. Плагин, в котором он есть, называется модом. Некоторые моды <a href="https://code.claude.com/docs/ru/plugins/mods/overview.md#mods-built-into-claude-code">встроены в Claude Code</a>.</li>
+<li><a href="https://code.claude.com/docs/ru/plugins/components.md#mcp-servers"><strong>MCP servers</strong></a>: серверы инструментов, к которым Claude Code подключается, пока plugin включен</li>
+</ul>
+<p>На этой диаграмме показан plugin с именем <code>my-plugin</code>, который содержит skill, agent, hooks и MCP server, и что вы получаете от каждого файла после загрузки plugin.</p>
+<p><img src="https://mintcdn.com/claude-code/2Q_GtOEovg5qaBem/images/plugin-directory.svg?fit=max\&amp;auto=format\&amp;n=2Q_GtOEovg5qaBem\&amp;q=85\&amp;s=f623b64e82713b830e48174f0a922888" alt="Диаграмма в двух столбцах, соединенных пятью прямыми стрелками. Слева — директория plugin с именем my-plugin, содержащая манифест в .claude-plugin/plugin.json, skills/review/SKILL.md, agents/reviewer.md, hooks/hooks.json, .mcp.json и другие компоненты. Справа — то, что каждый файл дает вам в вашем сеансе: манифест устанавливает имя plugin, my-plugin; skill запускается как /my-plugin:review; файл agent — это подагент, которому Claude может делегировать; файл hooks содержит hooks, которые запускаются на событиях жизненного цикла; и .mcp.json добавляет MCP server, который дает Claude инструменты." loading="lazy"></p>
+<p>Типы компонентов, которые может содержать плагин, с примером каждого см. в разделе <a href="https://code.claude.com/docs/ru/plugins/components.md">Компоненты плагинов</a>. Чтобы увидеть, где находится каждая часть в директории плагина, используйте <a href="https://code.claude.com/docs/ru/plugins/components.md#explore-the-plugin-directory">обозреватель плагина</a> на этой странице.</p>
+<h4 id="решите-нужен-ли-вам-plugin">Решите, нужен ли вам plugin <a class="h-anchor" href="#решите-нужен-ли-вам-plugin" aria-label="Ссылка на раздел">#</a></h4>
+<p>Skills, подагенты, hooks и MCP servers работают самостоятельно, без plugin. Skill, который вы сохраняете в <code>~/.claude/skills/</code>, например, доступен в каждом проекте на вашем компьютере. Чтобы установить один самостоятельно, см. <a href="https://code.claude.com/docs/ru/skills.md">Skills</a>, <a href="https://code.claude.com/docs/ru/sub-agents.md">Subagents</a>, <a href="https://code.claude.com/docs/ru/hooks-guide.md">Hooks</a> или <a href="https://code.claude.com/docs/ru/mcp.md">MCP</a>.</p>
+<p>Используйте plugin, когда вы хотите упаковать несколько skills, подагентов, hooks или MCP servers как одну единицу. Установите один, чтобы получить настройку, которую создал кто-то другой, с одной командой и обновлениями из его marketplace. Создайте один, чтобы дать вашу собственную настройку товарищам по команде, установить его во многих проектах или опубликовать версионные релизы.</p>
+<h4 id="что-включенный-plugin-добавляет-в-ваши-сеансы">Что включенный plugin добавляет в ваши сеансы <a class="h-anchor" href="#что-включенный-plugin-добавляет-в-ваши-сеансы" aria-label="Ссылка на раздел">#</a></h4>
+<p>Включенный plugin является частью каждого сеанса, а не только сеансов, в которых вы его используете. Это имеет несколько последствий, о которых стоит знать перед установкой:</p>
+<ul>
+<li><strong>Контекст и использование</strong>: для каждого skill, agent и команды, которые <a href="https://code.claude.com/docs/ru/skills.md#control-who-invokes-a-skill">Claude может вызвать самостоятельно</a>, имя и описание находятся в контексте Claude на каждом ходу, чтобы Claude знал об их существовании. Эти токены учитываются в вашем использовании и оставляют меньше места в <a href="https://code.claude.com/docs/ru/context-window.md">контекстном окне</a> даже в сеансах, где ничего из plugin не запускается. Полный текст skill или agent загружается только при его использовании. То, что MCP servers plugin добавляют за ход, следует <a href="https://code.claude.com/docs/ru/mcp.md#scale-with-mcp-tool-search">MCP tool search</a>.</li>
+<li><strong>Процессы</strong>: MCP servers, которые определяет plugin, работают параллельно с каждым сеансом, в котором он включен, и его hooks срабатывают при их событиях.</li>
+<li><strong>Разрешения</strong>: то, что запускает plugin, запускается от вас. См. <a href="https://code.claude.com/docs/ru/plugins/security.md">Plugin security and trust</a> для того, что нужно проверить в первую очередь.</li>
+</ul>
+<p>Вы можете проверить отпечаток plugin на каждом этапе:</p>
+<ul>
+<li><strong>Перед установкой</strong>: откройте plugin из вкладки <strong>Marketplaces</strong> в <code>/plugin</code>. Plugins в официальном marketplace Anthropic показывают там оценку <strong>Context cost</strong>.</li>
+<li><strong>После установки</strong>: <a href="https://code.claude.com/docs/ru/plugins/measure.md#measure-what-a-plugin-costs">Measure what a plugin costs</a> показывает, как прочитать отпечаток plugin, и группа <strong>Not used recently</strong> вкладки <strong>Installed</strong> перечисляет plugins, которые вы можете отключить.</li>
+<li><strong>Чтобы остановить его без удаления</strong>: отключите plugin с помощью <code>/plugin</code> или в вашей оболочке <code>claude plugin disable</code>. См. <a href="https://code.claude.com/docs/ru/plugins/install.md#manage-installed-plugins">Manage installed plugins</a>.</li>
+</ul>
+<h3 id="получайте-plugins-из-marketplace">Получайте plugins из marketplace <a class="h-anchor" href="#получайте-plugins-из-marketplace" aria-label="Ссылка на раздел">#</a></h3>
+<p>Marketplace — это репозиторий или директория с файлом <code>.claude-plugin/marketplace.json</code>, который перечисляет plugins и указывает, где получить каждый из них. Это каталог, а не размещенный магазин. Вы добавляете marketplace один раз, затем устанавливаете plugins из него по имени, например <code>commit-commands@claude-plugins-official</code>.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Marketplace plugin — это не <a href="https://claude.com/marketplace">Claude Marketplace</a>. Claude Marketplace — это веб-сайт на claude.com/marketplace, где вы просматриваете plugins, connectors, партнерские продукты и партнеров услуг. Это не marketplace, который вы добавляете с помощью <code>/plugin marketplace add</code>.</p>
+</blockquote>
+<p>Claude Code добавляет официальный маркетплейс Anthropic при первом запуске интерактивной сессии в терминале, если это не блокирует <a href="https://code.claude.com/docs/ru/plugins/org.md#allow-the-official-marketplace-and-your-own">управляемая политика</a>. Claude Code не добавляет маркетплейс сообщества Anthropic самостоятельно. Чтобы различать маркетплейсы Anthropic, прочитайте <a href="https://code.claude.com/docs/ru/plugins/anthropic-marketplaces.md">Маркетплейсы Anthropic</a>. Чтобы увидеть, что перечисляет официальный маркетплейс, откройте вкладку <strong>Discover</strong> в <code>/plugin</code> в сессии или просмотрите <a href="https://claude.com/marketplace/plugins">Claude Marketplace</a>.</p>
+<p>На этой диаграмме показан путь от marketplace к вашему сеансу. Marketplace перечисляет plugin, вы устанавливаете этот plugin, и Claude Code загружает его компоненты.</p>
+<p><img src="https://mintcdn.com/claude-code/2Q_GtOEovg5qaBem/images/plugins-model.svg?fit=max\&amp;auto=format\&amp;n=2Q_GtOEovg5qaBem\&amp;q=85\&amp;s=4196344954b7c2e27fc0bd6a9a1113a1" alt="Диаграмма пути marketplace в трех ящиках, слева направо. Marketplace, каталог plugins, перечисляет plugin. Plugin — это одна директория, установленная как единица, содержащая skills, agents, hooks, MCP servers и другие компоненты. Вы устанавливаете plugin в Claude Code, который загружает его компоненты." loading="lazy"></p>
+<p><a href="https://code.claude.com/docs/ru/plugins/install.md#install-a-plugin">Install and manage plugins</a> содержит шаги установки для каждого места, где вы запускаете Claude Code. Пока вы разрабатываете plugin, вам не нужен marketplace: загружайте его прямо из его папки с помощью <code>--plugin-dir</code>, как показано в <a href="https://code.claude.com/docs/ru/plugins/create.md#develop-without-a-marketplace">Develop without a marketplace</a>.</p>
+<h4 id="сделайте-установленный-plugin-доступным-в-вашем-сеансе">Сделайте установленный plugin доступным в вашем сеансе <a class="h-anchor" href="#сделайте-установленный-plugin-доступным-в-вашем-сеансе" aria-label="Ссылка на раздел">#</a></h4>
+<p>Прежде чем plugin, который вы установили, даст вам skill, который вы можете запустить, он должен присутствовать на каждом из этих уровней:</p>
+<ul>
+<li><strong>Settings</strong>: ваши settings перечисляют marketplaces, которые вы добавили, и plugins, которые включены.</li>
+<li><strong>Disk</strong>: <code>~/.claude/plugins/</code> содержит то, что Claude Code загрузил и установил.</li>
+<li><strong>Session</strong>: plugins загружаются при запуске или когда вы <a href="https://code.claude.com/docs/ru/plugins/loading.md#check-which-stage-a-plugin-reached">reload plugins</a>.</li>
+</ul>
+<p>Прочитайте <a href="https://code.claude.com/docs/ru/plugins/loading.md">Plugin loading reference</a> для правил на каждом уровне, включая то, какой файл settings имеет приоритет и где находятся файлы на диске.</p>
+<h3 id="отличайте-marketplace-anthropic-от-marketplace-третьих-сторон">Отличайте marketplace Anthropic от marketplace третьих сторон <a class="h-anchor" href="#отличайте-marketplace-anthropic-от-marketplace-третьих-сторон" aria-label="Ссылка на раздел">#</a></h3>
+<p>Имя marketplace помещает его в один из трех уровней. Claude Code принимает официальные и community имена только для marketplaces, полученных из репозиториев <code>github.com/anthropics/</code>:</p>
+<ul>
+<li><strong>Официальные</strong>: маркетплейсы с одним из <a href="https://code.claude.com/docs/ru/plugins/security.md#official-marketplace-names">официальных имён маркетплейсов</a> Anthropic, включая <code>claude-plugins-official</code> и <code>claude-code-plugins</code>.</li>
+<li><strong>Community</strong>: marketplaces с одним из community имен Anthropic, например <code>claude-community</code>. <a href="https://code.claude.com/docs/ru/plugins/security.md#marketplace-tiers">Identify Anthropic&#x27;s marketplaces by name</a> их перечисляет.</li>
+<li><strong>Third-party</strong>: все остальные marketplaces. Marketplace, который публикует ваш коллега или ваша организация, является third-party.</li>
+</ul>
+<p>Независимо от уровня, plugin, который вы устанавливаете, может запускать код с вашими привилегиями пользователя. Прочитайте <a href="https://code.claude.com/docs/ru/plugins/security.md">Plugin security and trust</a> для того, как проверить plugin перед его установкой.</p>
+<p>Через <a href="https://code.claude.com/docs/ru/settings.md#settings-files">managed settings</a> организация может добавить в список разрешений или заблокировать marketplaces, принудительно установить plugins и отключить загрузку только для сеанса. Прочитайте <a href="https://code.claude.com/docs/ru/plugins/org.md">Manage plugins for your organization</a> для этих элементов управления.</p>
+<h3 id="h">Поймите области действия установки <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Когда вы устанавливаете plugin, вы выбираете область действия, и область действия определяет, для кого включен plugin:</p>
+<ul>
+<li><strong>User scope</strong>: включен для вас в каждом проекте на этом компьютере</li>
+<li><strong>Project scope</strong>: включен для всех, кто работает в этом репозитории, через committed <code>.claude/settings.json</code>. Каждый сотрудник все еще <a href="https://code.claude.com/docs/ru/plugins/loading.md#enabled-in-project-settings-but-not-installed">устанавливает его на своей машине</a></li>
+<li><strong>Local scope</strong>: включен для вас только в этом репозитории</li>
+</ul>
+<p>Plugin, который вы устанавливаете в области действия пользователя в терминале, локальных сеансах настольного приложения или расширении VS Code, доступен в двух других на этом компьютере, потому что все три читают одни и те же файлы settings. См. <a href="https://code.claude.com/docs/ru/plugins/install.md#choose-an-install-scope">Choose an install scope</a> для того, как выбрать один.</p>
+<p>Облачный сеанс, включая сеанс в браузере на claude.ai/code, не загружает plugins в ваши локальные settings. Для шагов установки в терминале, VS Code и настольном приложении, а также для того, что загружает облачный сеанс, см. <a href="https://code.claude.com/docs/ru/plugins/install.md#install-a-plugin">Install a plugin</a>.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Тот же формат plugin также устанавливается на claude.ai и в Cowork, где загружается другой набор компонентов. Для этих поверхностей см. <a href="https://claude.com/docs/plugins/overview">Plugins на claude.ai и в Cowork</a> на claude.com и его <a href="https://claude.com/docs/plugins/platform-support#compare-component-support-by-app">таблицу поддержки компонентов</a>.</p>
+</blockquote>
+<h3 id="h-2">Следующие шаги <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Большинство людей начинают с установки plugin из официального marketplace Anthropic, который Claude Code добавляет при первом запуске интерактивного сеанса терминала. Запустите <code>/plugin</code> в сеансе терминала для его просмотра или следуйте <a href="https://code.claude.com/docs/ru/plugins/install.md">Install and manage plugins</a>, который также охватывает настольное приложение и VS Code. Чтобы увидеть, что находится в этом marketplace перед открытием Claude Code, просмотрите <a href="https://claude.com/marketplace/plugins">Claude Marketplace</a> в Интернете.</p>
+<p>Чтобы создать свой собственный, <a href="https://code.claude.com/docs/ru/plugins/create.md">Create a plugin</a> начинается с пустой директории и заканчивается рабочим plugin.</p>
+<p>После установки или создания plugin эти страницы охватывают то, что дальше:</p>
+<ul>
+<li><strong>Поделитесь тем, что вы создали</strong>: <a href="https://code.claude.com/docs/ru/plugins/publish.md">Publish and distribute a plugin</a>, через ваш собственный marketplace или <a href="https://code.claude.com/docs/ru/plugins/publish.md#submit-to-anthropics-directory">Anthropic&#x27;s directory</a></li>
+<li><strong>Проверьте, работает ли он и используется ли</strong>: <a href="https://code.claude.com/docs/ru/plugin-evals.md">Test plugins with evals</a> и <a href="https://code.claude.com/docs/ru/plugins/measure.md">Measure plugin cost and usage</a></li>
+<li><strong>Запустите marketplace для вашей команды</strong>: <a href="https://code.claude.com/docs/ru/plugins/create-marketplace.md">Create a marketplace</a>, затем <a href="https://code.claude.com/docs/ru/plugins/host-marketplace.md">Host and maintain a marketplace</a></li>
+<li><strong>Установите политику plugin для организации</strong>: <a href="https://code.claude.com/docs/ru/plugins/org.md">Manage plugins for your organization</a></li>
+<li><strong>Исправьте проблему</strong>: <a href="https://code.claude.com/docs/ru/plugins/troubleshooting.md">Troubleshoot plugins</a></li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

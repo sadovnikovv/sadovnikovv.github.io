@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Slash-команды</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/01-slash-commands/index.html">01-slash-commands</a></nav>
+<p>&lt;picture&gt;
+  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;../resources/logos/claude-howto-logo-dark.svg&quot;&gt;
+  &lt;img alt=&quot;Claude How To&quot; src=&quot;../resources/logos/claude-howto-logo.svg&quot;&gt;
+&lt;/picture&gt;</p>
+<h1 id="slash-команды">Slash-команды <a class="h-anchor" href="#slash-команды" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="h">Обзор <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Slash-команды — это ярлыки, которые управляют поведением Claude во время интерактивной сессии. Они бывают нескольких типов:</p>
+<ul>
+<li><strong>Встроенные команды</strong>: встроенные команды Claude Code (<code>/help</code>, <code>/clear</code>, <code>/model</code>)</li>
+<li><strong>Skills</strong>: пользовательские команды, оформленные как файлы <code>SKILL.md</code> (<code>/optimize</code>, <code>/pr</code>)</li>
+<li><strong>Команды плагинов</strong>: команды из установленных plugins (<code>/frontend-design:frontend-design</code>)</li>
+<li><strong>MCP-prompts</strong>: команды от MCP-серверов (<code>/mcp__github__list_prs</code>)</li>
+</ul>
+<blockquote>
+<p><strong>Примечание</strong>: пользовательские slash-команды были объединены со skills. Файлы в <code>.claude/commands/</code> всё ещё работают, но skills (<code>.claude/skills/</code>) теперь рекомендуемый подход. Оба варианта создают ярлыки <code>/command-name</code>. См. <a href="../03-skills/">руководство по Skills</a> для полной справки.</p>
+</blockquote>
+<h3 id="h-2">Справка по встроенным командам <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Встроенные команды — это ярлыки для частых действий. Доступно <strong>55+ встроенных команд</strong> и <strong>5 встроенных skills</strong>. Введите <code>/</code> в Claude Code, чтобы увидеть полный список, или <code>/</code> и любые буквы, чтобы отфильтровать его.</p>
+<div class="table-wrap"><table><thead><tr><th>Команда</th><th>Назначение</th></tr></thead><tbody><tr><td><code>/add-dir &lt;path&gt;</code></td><td>Добавить рабочий каталог</td></tr><tr><td><code>/agents</code></td><td>Управлять конфигурациями агентов</td></tr><tr><td><code>/branch [name]</code></td><td>Ветвить разговор в новую сессию (<code>alias</code>: <code>/fork</code>). Примечание: <code>/fork</code> был переименован в <code>/branch</code> в v2.1.77</td></tr><tr><td><code>/btw &lt;question&gt;</code></td><td>Задать побочный вопрос без добавления в историю</td></tr><tr><td><code>/chrome</code></td><td>Настроить интеграцию с браузером Chrome</td></tr><tr><td><code>/clear</code></td><td>Очистить разговор (<code>aliases</code>: <code>/reset</code>, <code>/new</code>)</td></tr><tr><td><code>/color [color|default]</code></td><td>Установить цвет prompt bar</td></tr><tr><td><code>/compact [instructions]</code></td><td>Сжать разговор с опциональными инструкциями по фокусу</td></tr><tr><td><code>/config</code></td><td>Открыть настройки (<code>alias</code>: <code>/settings</code>)</td></tr><tr><td><code>/context</code></td><td>Визуализировать использование контекста в виде цветной сетки</td></tr><tr><td><code>/copy [N]</code></td><td>Скопировать ответ ассистента в буфер обмена; <code>w</code> записывает в файл</td></tr><tr><td><code>/cost</code></td><td>Показать статистику использования токенов</td></tr><tr><td><code>/desktop</code></td><td>Продолжить в Desktop app (<code>alias</code>: <code>/app</code>)</td></tr><tr><td><code>/diff</code></td><td>Интерактивный diff viewer для незакоммиченных изменений</td></tr><tr><td><code>/doctor</code></td><td>Диагностировать состояние установки</td></tr><tr><td><code>/effort [low|medium|high|max|auto]</code></td><td>Установить уровень effort. <code>max</code> requires Opus 4.6</td></tr><tr><td><code>/exit</code></td><td>Выйти из REPL (<code>alias</code>: <code>/quit</code>)</td></tr><tr><td><code>/export [filename]</code></td><td>Экспортировать текущий разговор в файл или clipboard</td></tr><tr><td><code>/extra-usage</code></td><td>Настроить дополнительное использование для rate limits</td></tr><tr><td><code>/fast [on|off]</code></td><td>Переключить fast mode</td></tr><tr><td><code>/feedback</code></td><td>Отправить отзыв (alias: <code>/bug</code>)</td></tr><tr><td><code>/help</code></td><td>Показать справку</td></tr><tr><td><code>/hooks</code></td><td>Просмотреть конфигурации hooks</td></tr><tr><td><code>/ide</code></td><td>Управлять интеграциями IDE</td></tr><tr><td><code>/init</code></td><td>Инициализировать <code>CLAUDE.md</code>. Установите <code>CLAUDE_CODE_NEW_INIT=true</code>, чтобы включить интерактивный сценарий</td></tr><tr><td><code>/insights</code></td><td>Сгенерировать session analysis report</td></tr><tr><td><code>/install-github-app</code></td><td>Настроить GitHub Actions app</td></tr><tr><td><code>/install-slack-app</code></td><td>Установить Slack app</td></tr><tr><td><code>/keybindings</code></td><td>Открыть конфигурацию keybindings</td></tr><tr><td><code>/login</code></td><td>Переключить Anthropic аккаунты</td></tr><tr><td><code>/logout</code></td><td>Выйти из Anthropic аккаунта</td></tr><tr><td><code>/mcp</code></td><td>Управлять MCP-серверами и OAuth</td></tr><tr><td><code>/memory</code></td><td>Редактировать <code>CLAUDE.md</code>, переключать auto-memory</td></tr><tr><td><code>/mobile</code></td><td>QR-код для мобильного приложения (<code>aliases</code>: <code>/ios</code>, <code>/android</code>)</td></tr><tr><td><code>/model [model]</code></td><td>Выбрать модель с помощью стрелок влево/вправо для effort</td></tr><tr><td><code>/passes</code></td><td>Поделиться бесплатной неделей Claude Code</td></tr><tr><td><code>/permissions</code></td><td>Просмотреть/обновить permissions (<code>alias</code>: <code>/allowed-tools</code>)</td></tr><tr><td><code>/plan [description]</code></td><td>Войти в plan mode</td></tr><tr><td><code>/plugin</code></td><td>Управлять plugins</td></tr><tr><td><code>/pr-comments [PR]</code></td><td>Получить комментарии GitHub PR</td></tr><tr><td><code>/privacy-settings</code></td><td>Настройки приватности (Pro/Max only)</td></tr><tr><td><code>/release-notes</code></td><td>Посмотреть changelog</td></tr><tr><td><code>/reload-plugins</code></td><td>Перезагрузить активные plugins</td></tr><tr><td><code>/remote-control</code></td><td>Remote control from claude.ai (alias: <code>/rc</code>)</td></tr><tr><td><code>/remote-env</code></td><td>Настроить default remote environment</td></tr><tr><td><code>/rename [name]</code></td><td>Переименовать сессию</td></tr><tr><td><code>/resume [session]</code></td><td>Возобновить разговор (alias: <code>/continue</code>)</td></tr><tr><td><code>/review</code></td><td><strong>Deprecated</strong> — вместо этого установите плагин <code>code-review</code></td></tr><tr><td><code>/rewind</code></td><td>Отмотать разговор и/или код назад (alias: <code>/checkpoint</code>)</td></tr><tr><td><code>/sandbox</code></td><td>Переключить sandbox mode</td></tr><tr><td><code>/schedule [description]</code></td><td>Создать/управлять scheduled tasks</td></tr><tr><td><code>/security-review</code></td><td>Проанализировать branch на уязвимости безопасности</td></tr><tr><td><code>/skills</code></td><td>Показать доступные skills</td></tr><tr><td><code>/stats</code></td><td>Визуализировать daily usage, sessions, streaks</td></tr><tr><td><code>/status</code></td><td>Показать version, model, account</td></tr><tr><td><code>/statusline</code></td><td>Настроить status line</td></tr><tr><td><code>/tasks</code></td><td>Список/управление background tasks</td></tr><tr><td><code>/terminal-setup</code></td><td>Настроить terminal keybindings</td></tr><tr><td><code>/theme</code></td><td>Изменить color theme</td></tr><tr><td><code>/vim</code></td><td>Переключить Vim/Normal modes</td></tr><tr><td><code>/voice</code></td><td>Переключить push-to-talk voice dictation</td></tr></tbody></table></div>
+<h4 id="встроенные-skills">Встроенные Skills <a class="h-anchor" href="#встроенные-skills" aria-label="Ссылка на раздел">#</a></h4>
+<p>Эти skills поставляются вместе с Claude Code и вызываются как slash-команды:</p>
+<div class="table-wrap"><table><thead><tr><th>Skill</th><th>Назначение</th></tr></thead><tbody><tr><td><code>/batch &lt;instruction&gt;</code></td><td>Организовать крупные параллельные изменения с помощью worktrees</td></tr><tr><td><code>/claude-api</code></td><td>Загрузить Claude API reference для языка проекта</td></tr><tr><td><code>/debug [description]</code></td><td>Включить debug logging</td></tr><tr><td><code>/loop [interval] &lt;prompt&gt;</code></td><td>Запускать prompt повторно с указанным интервалом</td></tr><tr><td><code>/simplify [focus]</code></td><td>Проверить изменённые файлы на качество кода</td></tr></tbody></table></div>
+<h4 id="h-3">Устаревшие команды <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Команда</th><th>Статус</th></tr></thead><tbody><tr><td><code>/review</code></td><td>Deprecated — заменена плагином <code>code-review</code></td></tr><tr><td><code>/output-style</code></td><td>Deprecated начиная с v2.1.73</td></tr><tr><td><code>/fork</code></td><td>Переименована в <code>/branch</code> (<code>alias</code> всё ещё работает, v2.1.77)</td></tr></tbody></table></div>
+<h4 id="h-4">Последние изменения <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><code>/fork</code> переименована в <code>/branch</code>, при этом <code>/fork</code> сохранена как alias (v2.1.77)</li>
+<li><code>/output-style</code> помечена как deprecated (v2.1.73)</li>
+<li><code>/review</code> помечена как deprecated в пользу плагина <code>code-review</code></li>
+<li>добавлена команда <code>/effort</code>, где уровень <code>max</code> требует Opus 4.6</li>
+<li>добавлена команда <code>/voice</code> для push-to-talk voice dictation</li>
+<li>добавлена команда <code>/schedule</code> для создания и управления scheduled tasks</li>
+<li>добавлена команда <code>/color</code> для настройки prompt bar</li>
+<li>picker у <code>/model</code> теперь показывает читаемые названия (например, <code>&quot;Sonnet 4.6&quot;</code>), а не сырые ID моделей</li>
+<li><code>/resume</code> поддерживает alias <code>/continue</code></li>
+<li>MCP-prompts доступны как команды <code>/mcp__&lt;server&gt;__&lt;prompt&gt;</code> (см. <a href="#mcp-prompts-как-команды">MCP-prompts как команды</a>)</li>
+</ul>
+<h3 id="пользовательские-команды-теперь-skills">Пользовательские команды (теперь Skills) <a class="h-anchor" href="#пользовательские-команды-теперь-skills" aria-label="Ссылка на раздел">#</a></h3>
+<p>Пользовательские slash-команды были <strong>объединены со skills</strong>. Оба подхода создают команды, которые можно вызвать через <code>/command-name</code>:</p>
+<div class="table-wrap"><table><thead><tr><th>Подход</th><th>Расположение</th><th>Статус</th></tr></thead><tbody><tr><td><strong>Skills (рекомендуется)</strong></td><td><code>.claude/skills/&lt;name&gt;/SKILL.md</code></td><td>Текущий стандарт</td></tr><tr><td><strong>Legacy Commands</strong></td><td><code>.claude/commands/&lt;name&gt;.md</code></td><td>Всё ещё работают</td></tr></tbody></table></div>
+<p>Если skill и command имеют одно имя, <strong>приоритет у skill</strong>. Например, когда существуют и <code>.claude/commands/review.md</code>, и <code>.claude/skills/review/SKILL.md</code>, используется версия skill.</p>
+<h4 id="h-5">Путь миграции <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<p>Ваши существующие файлы <code>.claude/commands/</code> продолжают работать без изменений. Чтобы мигрировать на skills:</p>
+<p><strong>Было (command):</strong></p>
+<pre><code>.claude/commands/optimize.md</code></pre>
+<p><strong>Стало (skill):</strong></p>
+<pre><code>.claude/skills/optimize/SKILL.md</code></pre>
+<h4 id="почему-skills">Почему Skills <a class="h-anchor" href="#почему-skills" aria-label="Ссылка на раздел">#</a></h4>
+<p>Skills дают дополнительные возможности по сравнению с legacy commands:</p>
+<ul>
+<li><strong>Структура каталогов</strong>: объединяйте скрипты, шаблоны и reference files</li>
+<li><strong>Автовызов</strong>: Claude может запускать skills автоматически, когда это уместно</li>
+<li><strong>Управление вызовом</strong>: выбирайте, кто может запускать skill — пользователь, Claude или оба</li>
+<li><strong>Выполнение через subagent</strong>: запускайте skills в изолированных контекстах с <code>context: fork</code></li>
+<li><strong>Постепенное раскрытие</strong>: загружайте дополнительные файлы только по необходимости</li>
+</ul>
+<h4 id="создание-пользовательской-команды-как-skill">Создание пользовательской команды как Skill <a class="h-anchor" href="#создание-пользовательской-команды-как-skill" aria-label="Ссылка на раздел">#</a></h4>
+<p>Создайте каталог с файлом <code>SKILL.md</code>:</p>
+<pre><code class="language-bash">mkdir -p .claude/skills/my-command</code></pre>
+<p><strong>Файл:</strong> <code>.claude/skills/my-command/SKILL.md</code></p>
+<pre><code class="language-yaml">---
+name: my-command
+description: Что делает эта команда и когда её использовать
+---
+
+# My Command
+
+Инструкции для Claude, которым нужно следовать при вызове этой команды.
+
+1. Первый шаг
+2. Второй шаг
+3. Третий шаг</code></pre>
+<h4 id="справка-по-frontmatter">Справка по frontmatter <a class="h-anchor" href="#справка-по-frontmatter" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Назначение</th><th>По умолчанию</th></tr></thead><tbody><tr><td><code>name</code></td><td>Имя команды, которое становится <code>/name</code></td><td>Имя каталога</td></tr><tr><td><code>description</code></td><td>Краткое описание, помогающее Claude понять, когда использовать команду</td><td>Первый абзац</td></tr><tr><td><code>argument-hint</code></td><td>Ожидаемые аргументы для автодополнения</td><td>Нет</td></tr><tr><td><code>allowed-tools</code></td><td>Инструменты, которые команда может использовать без запроса разрешения</td><td>Наследуется</td></tr><tr><td><code>model</code></td><td>Конкретная модель для использования</td><td>Наследуется</td></tr><tr><td><code>disable-model-invocation</code></td><td>Если <code>true</code>, запускать может только пользователь, но не Claude</td><td><code>false</code></td></tr><tr><td><code>user-invocable</code></td><td>Если <code>false</code>, команда скрыта из меню <code>/</code></td><td><code>true</code></td></tr><tr><td><code>context</code></td><td>Значение <code>fork</code> запускает команду в изолированном subagent</td><td>Нет</td></tr><tr><td><code>agent</code></td><td>Тип агента при использовании <code>context: fork</code></td><td><code>general-purpose</code></td></tr><tr><td><code>hooks</code></td><td>Hooks, привязанные к этому skill (<code>PreToolUse</code>, <code>PostToolUse</code>, <code>Stop</code>)</td><td>Нет</td></tr></tbody></table></div>
+<h4 id="h-6">Аргументы <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<p>Команды могут принимать аргументы:</p>
+<p><strong>Все аргументы через <code>$ARGUMENTS</code>:</strong></p>
+<pre><code class="language-yaml">---
+name: fix-issue
+description: Исправить GitHub issue по номеру
+---
+
+Исправь issue #$ARGUMENTS в соответствии с нашими стандартами кодирования</code></pre>
+<p>Использование: <code>/fix-issue 123</code> → <code>$ARGUMENTS</code> станет <code>&quot;123&quot;</code></p>
+<p><strong>Отдельные аргументы через <code>$0</code>, <code>$1</code> и т. д.:</strong></p>
+<pre><code class="language-yaml">---
+name: review-pr
+description: Выполнить review PR с указанием приоритета
+---
+
+Проведи review PR #$0 с приоритетом $1</code></pre>
+<p>Использование: <code>/review-pr 456 high</code> → <code>$0</code>=<code>&quot;456&quot;</code>, <code>$1</code>=<code>&quot;high&quot;</code></p>
+<h4 id="динамический-контекст-через-shell-команды">Динамический контекст через shell-команды <a class="h-anchor" href="#динамический-контекст-через-shell-команды" aria-label="Ссылка на раздел">#</a></h4>
+<p>Выполняйте bash-команды перед prompt с помощью <code>!</code>command``:</p>
+<pre><code class="language-yaml">---
+name: commit
+description: Создать git commit с контекстом
+allowed-tools: Bash(git *)
+---
+
+## Контекст
+
+- Текущий git status: !`git status`
+- Текущий git diff: !`git diff HEAD`
+- Текущая ветка: !`git branch --show-current`
+- Последние коммиты: !`git log --oneline -5`
+
+## Ваша задача
+
+На основе изменений выше создай один git commit.</code></pre>
+<h4 id="h-7">Ссылки на файлы <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<p>Подключайте содержимое файлов с помощью <code>@</code>:</p>
+<pre><code class="language-markdown">Review the implementation in @src/utils/helpers.js
+Compare @src/old-version.js with @src/new-version.js</code></pre>
+<h3 id="h-8">Команды плагинов <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h3>
+<p>Плагины могут предоставлять пользовательские команды:</p>
+<pre><code>/plugin-name:command-name</code></pre>
+<p>Или просто <code>/command-name</code>, если нет конфликта имён.</p>
+<p><strong>Примеры:</strong></p>
+<pre><code class="language-bash">/frontend-design:frontend-design
+/commit-commands:commit</code></pre>
+<h3 id="mcp-prompts-как-команды">MCP-prompts как команды <a class="h-anchor" href="#mcp-prompts-как-команды" aria-label="Ссылка на раздел">#</a></h3>
+<p>MCP-серверы могут публиковать prompts как slash-команды:</p>
+<pre><code>/mcp__&lt;server-name&gt;__&lt;prompt-name&gt; [arguments]</code></pre>
+<p><strong>Примеры:</strong></p>
+<pre><code class="language-bash">/mcp__github__list_prs
+/mcp__github__pr_review 456
+/mcp__jira__create_issue &quot;Bug title&quot; high</code></pre>
+<h4 id="синтаксис-разрешений-mcp">Синтаксис разрешений MCP <a class="h-anchor" href="#синтаксис-разрешений-mcp" aria-label="Ссылка на раздел">#</a></h4>
+<p>Управляйте доступом к MCP-серверам через permissions:</p>
+<ul>
+<li><code>mcp__github</code> - доступ ко всему GitHub MCP server</li>
+<li><code>mcp__github__*</code> - wildcard-доступ ко всем инструментам</li>
+<li><code>mcp__github__get_issue</code> - доступ к конкретному инструменту</li>
+</ul>
+<h3 id="h-9">Архитектура команд <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-mermaid">graph TD
+    A[&quot;Ввод пользователя: /command-name&quot;] --&gt; B{&quot;Тип команды?&quot;}
+    B --&gt;|Built-in| C[&quot;Выполнить встроенную команду&quot;]
+    B --&gt;|Skill| D[&quot;Загрузить SKILL.md&quot;]
+    B --&gt;|Plugin| E[&quot;Загрузить команду плагина&quot;]
+    B --&gt;|MCP| F[&quot;Выполнить MCP-prompt&quot;]
+
+    D --&gt; G[&quot;Разобрать frontmatter&quot;]
+    G --&gt; H[&quot;Подставить переменные&quot;]
+    H --&gt; I[&quot;Выполнить shell-команды&quot;]
+    I --&gt; J[&quot;Передать в Claude&quot;]
+    J --&gt; K[&quot;Вернуть результат&quot;]</code></pre>
+<h3 id="h-10">Жизненный цикл команды <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant User
+    participant Claude as Claude Code
+    participant FS as File System
+    participant CLI as Shell/Bash
+
+    User-&gt;&gt;Claude: Вводит /optimize
+    Claude-&gt;&gt;FS: Ищет в .claude/skills/ и .claude/commands/
+    FS--&gt;&gt;Claude: Возвращает optimize/SKILL.md
+    Claude-&gt;&gt;Claude: Разбирает frontmatter
+    Claude-&gt;&gt;CLI: Выполняет подстановки !`command`
+    CLI--&gt;&gt;Claude: Возвращает вывод команд
+    Claude-&gt;&gt;Claude: Подставляет $ARGUMENTS
+    Claude-&gt;&gt;User: Обрабатывает prompt
+    Claude-&gt;&gt;User: Возвращает результат</code></pre>
+<h3 id="h-11">Доступные команды в этой папке <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h3>
+<p>Эти example-команды можно установить как skills или legacy commands.</p>
+<h4 id="1-optimize-оптимизация-кода">1. <code>/optimize</code> - Оптимизация кода <a class="h-anchor" href="#1-optimize-оптимизация-кода" aria-label="Ссылка на раздел">#</a></h4>
+<p>Анализирует код на проблемы производительности, memory leaks и возможности оптимизации.</p>
+<p><strong>Использование:</strong></p>
+<pre><code>/optimize
+[Вставьте свой код]</code></pre>
+<h4 id="2-pr-подготовка-pull-request">2. <code>/pr</code> - Подготовка pull request <a class="h-anchor" href="#2-pr-подготовка-pull-request" aria-label="Ссылка на раздел">#</a></h4>
+<p>Проводит через checklist подготовки PR, включая linting, testing и форматирование commit.</p>
+<p><strong>Использование:</strong></p>
+<pre><code>/pr</code></pre>
+<p><strong>Скриншот:</strong>
+<img src="pr-slash-command.png" alt="/pr" loading="lazy"></p>
+<h4 id="3-generate-api-docs-генератор-api-документации">3. <code>/generate-api-docs</code> - Генератор API-документации <a class="h-anchor" href="#3-generate-api-docs-генератор-api-документации" aria-label="Ссылка на раздел">#</a></h4>
+<p>Генерирует полную API-документацию из исходного кода.</p>
+<p><strong>Использование:</strong></p>
+<pre><code>/generate-api-docs</code></pre>
+<h4 id="4-commit-git-commit-с-контекстом">4. <code>/commit</code> - Git commit с контекстом <a class="h-anchor" href="#4-commit-git-commit-с-контекстом" aria-label="Ссылка на раздел">#</a></h4>
+<p>Создаёт git commit с динамическим контекстом из репозитория.</p>
+<p><strong>Использование:</strong></p>
+<pre><code>/commit [необязательное сообщение]</code></pre>
+<h4 id="5-push-all-индексировать-закоммитить-и-отправить">5. <code>/push-all</code> - Индексировать, закоммитить и отправить <a class="h-anchor" href="#5-push-all-индексировать-закоммитить-и-отправить" aria-label="Ссылка на раздел">#</a></h4>
+<p>Ставит все изменения, создаёт commit и отправляет в remote с проверками безопасности.</p>
+<p><strong>Использование:</strong></p>
+<pre><code>/push-all</code></pre>
+<p><strong>Проверки безопасности:</strong></p>
+<ul>
+<li>Секреты: <code>.env*</code>, <code>*.key</code>, <code>*.pem</code>, <code>credentials.json</code></li>
+<li>API-ключи: отличает реальные ключи от плейсхолдеров</li>
+<li>Крупные файлы: <code>&gt;10MB</code> без Git LFS</li>
+<li>Артефакты сборки: <code>node_modules/</code>, <code>dist/</code>, <code>__pycache__/</code></li>
+</ul>
+<h4 id="6-doc-refactor-реструктуризация-документации">6. <code>/doc-refactor</code> - Реструктуризация документации <a class="h-anchor" href="#6-doc-refactor-реструктуризация-документации" aria-label="Ссылка на раздел">#</a></h4>
+<p>Перестраивает документацию проекта для большей ясности и доступности.</p>
+<p><strong>Использование:</strong></p>
+<pre><code>/doc-refactor</code></pre>
+<h4 id="7-setup-ci-cd-настройка-ci-cd-пайплайна">7. <code>/setup-ci-cd</code> - Настройка CI/CD-пайплайна <a class="h-anchor" href="#7-setup-ci-cd-настройка-ci-cd-пайплайна" aria-label="Ссылка на раздел">#</a></h4>
+<p>Реализует pre-commit hooks и GitHub Actions для контроля качества.</p>
+<p><strong>Использование:</strong></p>
+<pre><code>/setup-ci-cd</code></pre>
+<h4 id="8-unit-test-expand-расширение-покрытия-тестами">8. <code>/unit-test-expand</code> - Расширение покрытия тестами <a class="h-anchor" href="#8-unit-test-expand-расширение-покрытия-тестами" aria-label="Ссылка на раздел">#</a></h4>
+<p>Увеличивает покрытие тестами, находя непокрытые ветки и edge cases.</p>
+<p><strong>Использование:</strong></p>
+<pre><code>/unit-test-expand</code></pre>
+<h3 id="h-12">Установка <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="как-skills-рекомендуется">Как Skills (рекомендуется) <a class="h-anchor" href="#как-skills-рекомендуется" aria-label="Ссылка на раздел">#</a></h4>
+<p>Скопируйте в каталог skills:</p>
+<pre><code class="language-bash"># Создать каталог skills
+mkdir -p .claude/skills
+
+# Для каждого файла команды создать каталог skill
+for cmd in optimize pr commit; do
+  mkdir -p .claude/skills/$cmd
+  cp 01-slash-commands/$cmd.md .claude/skills/$cmd/SKILL.md
+done</code></pre>
+<h4 id="как-legacy-commands">Как Legacy Commands <a class="h-anchor" href="#как-legacy-commands" aria-label="Ссылка на раздел">#</a></h4>
+<p>Скопируйте в каталог commands:</p>
+<pre><code class="language-bash"># На уровне проекта (для команды)
+mkdir -p .claude/commands
+cp 01-slash-commands/*.md .claude/commands/
+
+# Для личного использования
+mkdir -p ~/.claude/commands
+cp 01-slash-commands/*.md ~/.claude/commands/</code></pre>
+<h3 id="h-13">Создание собственных команд <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="шаблон-skill-рекомендуется">Шаблон Skill (рекомендуется) <a class="h-anchor" href="#шаблон-skill-рекомендуется" aria-label="Ссылка на раздел">#</a></h4>
+<p>Создайте <code>.claude/skills/my-command/SKILL.md</code>:</p>
+<pre><code class="language-yaml">---
+name: my-command
+description: Что делает эта команда. Используйте, когда [условия срабатывания].
+argument-hint: [optional-args]
+allowed-tools: Bash(npm *), Read, Grep
+---
+
+# Название команды
+
+## Контекст
+
+- Текущая ветка: !`git branch --show-current`
+- Связанные файлы: @package.json
+
+## Инструкции
+
+1. Первый шаг
+2. Второй шаг с аргументом: $ARGUMENTS
+3. Третий шаг
+
+## Формат вывода
+
+- Как оформить ответ
+- Что включить</code></pre>
+<h4 id="h-14">Команда только для пользователя (без автовызова) <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h4>
+<p>Для команд с побочными эффектами, которые Claude не должен запускать автоматически:</p>
+<pre><code class="language-yaml">---
+name: deploy
+description: Развернуть в production
+disable-model-invocation: true
+allowed-tools: Bash(npm *), Bash(git *)
+---
+
+Разверните приложение в production:
+
+1. Запустите тесты
+2. Соберите приложение
+3. Отправьте в среду развёртывания
+4. Проверьте результат развёртывания</code></pre>
+<h3 id="h-15">Лучшие практики <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Делайте</th><th>Не делайте</th></tr></thead><tbody><tr><td>Используйте ясные, ориентированные на действие названия</td><td>Создавайте команды для одноразовых задач</td></tr><tr><td>Добавляйте <code>description</code> с условиями срабатывания</td><td>Встраивайте сложную логику в команды</td></tr><tr><td>Держите команды сфокусированными на одной задаче</td><td>Хардкодьте чувствительную информацию</td></tr><tr><td>Используйте <code>disable-model-invocation</code> для side effects</td><td>Пропускайте поле description</td></tr><tr><td>Используйте префикс <code>!</code> для динамического контекста</td><td>Предполагайте, что Claude знает текущее состояние</td></tr><tr><td>Организуйте связанные файлы в каталогах skills</td><td>Складывайте всё в один файл</td></tr></tbody></table></div>
+<h3 id="h-16">Устранение неполадок <a class="h-anchor" href="#h-16" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-17">Команда не найдена <a class="h-anchor" href="#h-17" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Что проверить:</strong></p>
+<ul>
+<li>Проверьте, что файл находится в <code>.claude/skills/&lt;name&gt;/SKILL.md</code> или <code>.claude/commands/&lt;name&gt;.md</code></li>
+<li>Убедитесь, что поле <code>name</code> в frontmatter соответствует ожидаемому имени команды</li>
+<li>Перезапустите сессию Claude Code</li>
+<li>Запустите <code>/help</code>, чтобы увидеть доступные команды</li>
+</ul>
+<h4 id="h-18">Команда работает не так, как ожидалось <a class="h-anchor" href="#h-18" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Что проверить:</strong></p>
+<ul>
+<li>Добавьте более конкретные инструкции</li>
+<li>Включите примеры в skill-файл</li>
+<li>Проверьте <code>allowed-tools</code>, если используете bash-команды</li>
+<li>Сначала протестируйте на простых входных данных</li>
+</ul>
+<h4 id="конфликт-skill-и-command">Конфликт Skill и Command <a class="h-anchor" href="#конфликт-skill-и-command" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если оба варианта имеют одно имя, <strong>приоритет у skill</strong>. Удалите один из них или переименуйте.</p>
+<h3 id="h-19">Связанные руководства <a class="h-anchor" href="#h-19" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong><a href="../03-skills/">Skills</a></strong> - Полная справка по skills с автоактивацией</li>
+<li><strong><a href="../02-memory/">Memory</a></strong> - Постоянный контекст через CLAUDE.md</li>
+<li><strong><a href="../04-subagents/">Subagents</a></strong> - Делегированные AI-агенты</li>
+<li><strong><a href="../07-plugins/">Plugins</a></strong> - Сборники команд</li>
+<li><strong><a href="../06-hooks/">Hooks</a></strong> - Автоматизация по событиям</li>
+</ul>
+<h3 id="h-20">Дополнительные материалы <a class="h-anchor" href="#h-20" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/en/interactive-mode">Official Interactive Mode Documentation</a> - справка по встроенным командам</li>
+<li><a href="https://code.claude.com/docs/en/skills">Official Skills Documentation</a> - полная справка по skills</li>
+<li><a href="https://code.claude.com/docs/en/cli-reference">CLI Reference</a> - опции командной строки</li>
+</ul>
+<hr>
+<p><em>Часть серии руководств <a href="../">Claude How To</a></em></p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

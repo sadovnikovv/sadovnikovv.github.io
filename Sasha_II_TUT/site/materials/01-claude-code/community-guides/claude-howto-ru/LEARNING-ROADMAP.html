@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>📚 Учебная дорожная карта Claude Code</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a></nav>
+<p>&lt;picture&gt;
+  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;resources/logos/claude-howto-logo-dark.svg&quot;&gt;
+  &lt;img alt=&quot;Claude How To&quot; src=&quot;resources/logos/claude-howto-logo.svg&quot;&gt;
+&lt;/picture&gt;</p>
+<h1 id="учебная-дорожная-карта-claude-code">📚 Учебная дорожная карта Claude Code <a class="h-anchor" href="#учебная-дорожная-карта-claude-code" aria-label="Ссылка на раздел">#</a></h1>
+<p><strong>Только начинаете с Claude Code?</strong> Это руководство поможет освоить возможности Claude Code в комфортном темпе. Неважно, новичок вы или опытный разработчик: начните с квиза самооценки ниже, чтобы выбрать подходящий маршрут.</p>
+<hr>
+<h3 id="h">🧭 Определите свой уровень <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Не все начинают с одной точки. Пройдите короткую самооценку, чтобы найти подходящий старт.</p>
+<p><strong>Отвечайте честно:</strong></p>
+<ul>
+<li>[ ] Я умею запускать Claude Code и вести с ним диалог (<code>claude</code>)</li>
+<li>[ ] Я создавал или редактировал файл CLAUDE.md</li>
+<li>[ ] Я использовал минимум 3 встроенные slash-команды (например, /help, /compact, /model)</li>
+<li>[ ] Я создавал собственную slash-команду или skill (SKILL.md)</li>
+<li>[ ] Я настраивал MCP-сервер (например, GitHub, база данных)</li>
+<li>[ ] Я настраивал hooks в ~/.claude/settings.json</li>
+<li>[ ] Я создавал или использовал собственные subagents (.claude/agents/)</li>
+<li>[ ] Я использовал режим печати (<code>claude -p</code>) для скриптов или CI/CD</li>
+</ul>
+<p><strong>Ваш уровень:</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Отметки</th><th>Уровень</th><th>Начать с</th><th>Время на прохождение</th></tr></thead><tbody><tr><td>0-2</td><td><strong>Уровень 1: Beginner</strong> — Начало работы</td><td><a href="#milestone-1a-first-commands--memory">Milestone 1A</a></td><td>~3 часа</td></tr><tr><td>3-5</td><td><strong>Уровень 2: Intermediate</strong> — Построение workflows</td><td><a href="#milestone-2a-automation-skills--hooks">Milestone 2A</a></td><td>~5 часов</td></tr><tr><td>6-8</td><td><strong>Уровень 3: Advanced</strong> — Power User и Team Lead</td><td><a href="#milestone-3a-advanced-features">Milestone 3A</a></td><td>~5 часов</td></tr></tbody></table></div>
+<blockquote>
+<p><strong>Совет</strong>: если сомневаетесь, начните на уровень ниже. Лучше быстро повторить знакомый материал, чем пропустить базовые концепции.</p>
+</blockquote>
+<blockquote>
+<p><strong>Интерактивная версия</strong>: запустите <code>/self-assessment</code> в Claude Code, чтобы пройти управляемый интерактивный квиз, который оценит вашу подготовку по всем 10 областям и соберёт персональный маршрут обучения.</p>
+</blockquote>
+<hr>
+<h3 id="h-2">🎯 Философия обучения <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Папки в этом репозитории пронумерованы в <strong>рекомендуемом порядке обучения</strong> на основе трёх принципов:</p>
+<ol>
+<li><strong>Зависимости</strong> — сначала базовые концепции</li>
+<li><strong>Сложность</strong> — сначала более простые возможности, затем продвинутые</li>
+<li><strong>Частота использования</strong> — самые распространённые возможности изучаются раньше</li>
+</ol>
+<p>Такой подход помогает выстроить прочный фундамент и при этом сразу получать практическую пользу.</p>
+<hr>
+<h3 id="your-learning-path">🗺️ Your Learning Path <a class="h-anchor" href="#your-learning-path" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-mermaid">graph TD
+    Q[&quot;🧭 Self-Assessment Quiz&lt;br/&gt;Find Your Level&quot;] --&gt; L1
+    Q --&gt; L2
+    Q --&gt; L3
+
+    subgraph L1[&quot;🟢 Уровень 1: Beginner — Начало работы&quot;]
+        direction LR
+        A[&quot;1A: First Commands &amp; Memory&lt;br/&gt;Slash Commands + Memory&quot;] --&gt; B[&quot;1B: Safe Exploration&lt;br/&gt;Checkpoints + CLI Basics&quot;]
+    end
+
+    subgraph L2[&quot;🔵 Уровень 2: Intermediate — Построение workflows&quot;]
+        direction LR
+        C[&quot;2A: Automation&lt;br/&gt;Skills + Hooks&quot;] --&gt; D[&quot;2B: Integration&lt;br/&gt;MCP + Subagents&quot;]
+    end
+
+    subgraph L3[&quot;🔴 Уровень 3: Advanced — Power User&quot;]
+        direction LR
+        E[&quot;3A: Advanced Features&lt;br/&gt;Planning + Permissions&quot;] --&gt; F[&quot;3B: Team &amp; Distribution&lt;br/&gt;Plugins + CLI Mastery&quot;]
+    end
+
+    L1 --&gt; L2
+    L2 --&gt; L3
+
+    style Q fill:#6A1B9A,color:#fff,stroke:#9C27B0,stroke-width:2px
+    style A fill:#2E7D32,color:#fff
+    style B fill:#2E7D32,color:#fff
+    style C fill:#1565C0,color:#fff
+    style D fill:#F57C00,color:#fff
+    style E fill:#C62828,color:#fff
+    style F fill:#B71C1C,color:#fff</code></pre>
+<p><strong>Color Legend:</strong></p>
+<ul>
+<li>💜 Purple: Self-Assessment Quiz</li>
+<li>🟢 Green: путь уровня 1 — Beginner</li>
+<li>🔵 Blue / 🟡 Gold: путь уровня 2 — Intermediate</li>
+<li>🔴 Red: путь уровня 3 — Advanced</li>
+</ul>
+<hr>
+<h3 id="complete-roadmap-table">📊 Complete Roadmap Table <a class="h-anchor" href="#complete-roadmap-table" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Шаг</th><th>Возможность</th><th>Сложность</th><th>Время</th><th>Уровень</th><th>Зависимости</th><th>Зачем изучать</th><th>Ключевые преимущества</th></tr></thead><tbody><tr><td><strong>1</strong></td><td><a href="01-slash-commands/">Slash Commands</a></td><td>⭐ Beginner</td><td>30 мин</td><td>Level 1</td><td>Нет</td><td>Быстрый прирост продуктивности (55+ встроенных + 5 bundled skills)</td><td>Мгновенная автоматизация, стандарты команды</td></tr><tr><td><strong>2</strong></td><td><a href="02-memory/">Memory</a></td><td>⭐⭐ Beginner+</td><td>45 мин</td><td>Level 1</td><td>Нет</td><td>Необходима для всех возможностей</td><td>Постоянный контекст, предпочтения</td></tr><tr><td><strong>3</strong></td><td><a href="08-checkpoints/">Checkpoints</a></td><td>⭐⭐ Intermediate</td><td>45 мин</td><td>Level 1</td><td>Управление сессией</td><td>Безопасные эксперименты</td><td>Эксперименты, восстановление</td></tr><tr><td><strong>4</strong></td><td><a href="10-cli/">CLI Basics</a></td><td>⭐⭐ Beginner+</td><td>30 мин</td><td>Level 1</td><td>Нет</td><td>Базовое использование CLI</td><td>Интерактивный и print mode</td></tr><tr><td><strong>5</strong></td><td><a href="03-skills/">Skills</a></td><td>⭐⭐ Intermediate</td><td>1 час</td><td>Level 2</td><td>Slash Commands</td><td>Автоматическая экспертиза</td><td>Переиспользуемые возможности, consistency</td></tr><tr><td><strong>6</strong></td><td><a href="06-hooks/">Hooks</a></td><td>⭐⭐ Intermediate</td><td>1 час</td><td>Level 2</td><td>Tools, Commands</td><td>Автоматизация workflows (25 событий, 4 типа)</td><td>Валидация, quality gates</td></tr><tr><td><strong>7</strong></td><td><a href="05-mcp/">MCP</a></td><td>⭐⭐⭐ Intermediate+</td><td>1 час</td><td>Level 2</td><td>Конфигурация</td><td>Доступ к живым данным</td><td>Интеграция в реальном времени, APIs</td></tr><tr><td><strong>8</strong></td><td><a href="04-subagents/">Subagents</a></td><td>⭐⭐⭐ Intermediate+</td><td>1.5 часа</td><td>Level 2</td><td>Memory, Commands</td><td>Обработка сложных задач (6 встроенных, включая Bash)</td><td>Делегирование, специализированная экспертиза</td></tr><tr><td><strong>9</strong></td><td><a href="09-advanced-features/">Advanced Features</a></td><td>⭐⭐⭐⭐⭐ Advanced</td><td>2-3 часа</td><td>Level 3</td><td>Все предыдущие</td><td>Инструменты power user</td><td>Planning, Auto Mode, Channels, Voice Dictation, permissions</td></tr><tr><td><strong>10</strong></td><td><a href="07-plugins/">Plugins</a></td><td>⭐⭐⭐⭐ Advanced</td><td>2 часа</td><td>Level 3</td><td>Все предыдущие</td><td>Полные решения</td><td>Онбординг команды, распространение</td></tr><tr><td><strong>11</strong></td><td><a href="10-cli/">CLI Mastery</a></td><td>⭐⭐⭐ Advanced</td><td>1 час</td><td>Level 3</td><td>Рекомендуется: все</td><td>Мастерское использование командной строки</td><td>Скриптинг, CI/CD, automation</td></tr></tbody></table></div>
+<p><strong>Total Learning Time</strong>: ~11-13 hours (or jump to your level and save time)</p>
+<hr>
+<h3 id="уровень-1-beginner-начало-работы">🟢 Уровень 1: Beginner — Начало работы <a class="h-anchor" href="#уровень-1-beginner-начало-работы" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Для</strong>: пользователей с 0-2 проверками квиза
+<strong>Время</strong>: ~3 часа
+<strong>Фокус</strong>: немедленная продуктивность, понимание основ
+<strong>Результат</strong>: уверенный ежедневный пользователь, готовый к уровню 2</p>
+<h4 id="milestone-1a-первые-команды-и-memory">Milestone 1A: Первые команды и Memory <a class="h-anchor" href="#milestone-1a-первые-команды-и-memory" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Темы</strong>: Slash Commands + Memory
+<strong>Время</strong>: 1-2 часа
+<strong>Сложность</strong>: ⭐ Beginner
+<strong>Цель</strong>: быстрый рост продуктивности за счёт пользовательских команд и постоянного контекста</p>
+<h5 id="h-3">Что вы получите <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h5>
+<p>✅ Create custom slash commands for repetitive tasks
+✅ Set up project memory for team standards
+✅ Configure personal preferences
+✅ Understand how Claude loads context automatically</p>
+<h5 id="h-4">Практические упражнения <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-bash"># Exercise 1: Install your first slash command
+mkdir -p .claude/commands
+cp 01-slash-commands/optimize.md .claude/commands/
+
+# Exercise 2: Create project memory
+cp 02-memory/project-CLAUDE.md ./CLAUDE.md
+
+# Exercise 3: Try it out
+# In Claude Code, type: /optimize</code></pre>
+<h5 id="h-5">Критерии успеха <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li>[ ] Successfully invoke <code>/optimize</code> command</li>
+<li>[ ] Claude remembers your project standards from CLAUDE.md</li>
+<li>[ ] You understand when to use slash commands vs. memory</li>
+</ul>
+<h5 id="h-6">Следующие шаги <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h5>
+<p>Once comfortable, read:</p>
+<ul>
+<li><a href="01-slash-commands/README.md">01-slash-commands/README.md</a></li>
+<li><a href="02-memory/README.md">02-memory/README.md</a></li>
+</ul>
+<blockquote>
+<p><strong>Check your understanding</strong>: Run <code>/lesson-quiz slash-commands</code> or <code>/lesson-quiz memory</code> in Claude Code to test what you&#x27;ve learned.</p>
+</blockquote>
+<hr>
+<h4 id="milestone-1b-безопасное-исследование">Milestone 1B: Безопасное исследование <a class="h-anchor" href="#milestone-1b-безопасное-исследование" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Темы</strong>: Checkpoints + CLI Basics
+<strong>Время</strong>: 1 час
+<strong>Сложность</strong>: ⭐⭐ Beginner+
+<strong>Цель</strong>: научиться безопасно экспериментировать и использовать базовые CLI-команды</p>
+<h5 id="h-7">Что вы получите <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h5>
+<p>✅ Create and restore checkpoints for safe experimentation
+✅ Understand interactive vs. print mode
+✅ Use basic CLI flags and options
+✅ Process files via piping</p>
+<h5 id="h-8">Практические упражнения <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-bash"># Exercise 1: Try checkpoint workflow
+# In Claude Code:
+# Make some experimental changes, then press Esc+Esc or use /rewind
+# Select the checkpoint before your experiment
+# Choose &quot;Restore code and conversation&quot; to go back
+
+# Exercise 2: Interactive vs Print mode
+claude &quot;explain this project&quot;           # Interactive mode
+claude -p &quot;explain this function&quot;       # Print mode (non-interactive)
+
+# Exercise 3: Process file content via piping
+cat error.log | claude -p &quot;explain this error&quot;</code></pre>
+<h5 id="h-9">Критерии успеха <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li>[ ] Created and reverted to a checkpoint</li>
+<li>[ ] Used both interactive and print mode</li>
+<li>[ ] Piped a file to Claude for analysis</li>
+<li>[ ] Understand when to use checkpoints for safe experimentation</li>
+</ul>
+<h5 id="h-10">Следующие шаги <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li>Read: <a href="08-checkpoints/README.md">08-checkpoints/README.md</a></li>
+<li>Read: <a href="10-cli/README.md">10-cli/README.md</a></li>
+<li><strong>Готовы к уровню 2!</strong> Переходите к <a href="#milestone-2a-automation-skills--hooks">Milestone 2A</a></li>
+</ul>
+<blockquote>
+<p><strong>Check your understanding</strong>: Run <code>/lesson-quiz checkpoints</code> or <code>/lesson-quiz cli</code> to verify you&#x27;re ready for Level 2.</p>
+</blockquote>
+<hr>
+<h3 id="уровень-2-intermediate-построение-workflows">🔵 Уровень 2: Intermediate — Построение workflows <a class="h-anchor" href="#уровень-2-intermediate-построение-workflows" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Для</strong>: пользователей с 3-5 проверками квиза
+<strong>Время</strong>: ~5 часов
+<strong>Фокус</strong>: автоматизация, интеграция, делегирование задач
+<strong>Результат</strong>: автоматизированные workflows, внешние интеграции, готовность к уровню 3</p>
+<h4 id="h-11">Проверка предварительных условий <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h4>
+<p>Перед началом уровня 2 убедитесь, что вы уверенно владеете этими концепциями уровня 1:</p>
+<ul>
+<li>[ ] Умеете создавать и использовать slash-команды (<a href="01-slash-commands/">01-slash-commands/</a>)</li>
+<li>[ ] Настроили project memory через CLAUDE.md (<a href="02-memory/">02-memory/</a>)</li>
+<li>[ ] Умеете создавать и восстанавливать checkpoints (<a href="08-checkpoints/">08-checkpoints/</a>)</li>
+<li>[ ] Умеете использовать <code>claude</code> и <code>claude -p</code> из командной строки (<a href="10-cli/">10-cli/</a>)</li>
+</ul>
+<blockquote>
+<p><strong>Есть пробелы?</strong> Перед продолжением просмотрите связанные туториалы выше.</p>
+</blockquote>
+<hr>
+<h4 id="milestone-2a-автоматизация-skills-hooks">Milestone 2A: Автоматизация (Skills + Hooks) <a class="h-anchor" href="#milestone-2a-автоматизация-skills-hooks" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Темы</strong>: Skills + Hooks
+<strong>Время</strong>: 2-3 часа
+<strong>Сложность</strong>: ⭐⭐ Intermediate
+<strong>Цель</strong>: автоматизировать частые workflows и проверки качества</p>
+<h5 id="h-12">Что вы получите <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h5>
+<p>✅ Auto-invoke specialized capabilities with YAML frontmatter (including <code>effort</code> and <code>shell</code> fields)
+✅ Set up event-driven automation across 25 hook events
+✅ Use all 4 hook types (command, http, prompt, agent)
+✅ Enforce code quality standards
+✅ Create custom hooks for your workflow</p>
+<h5 id="h-13">Практические упражнения <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-bash"># Exercise 1: Install a skill
+cp -r 03-skills/code-review ~/.claude/skills/
+
+# Exercise 2: Set up hooks
+mkdir -p ~/.claude/hooks
+cp 06-hooks/pre-tool-check.sh ~/.claude/hooks/
+chmod +x ~/.claude/hooks/pre-tool-check.sh
+
+# Exercise 3: Configure hooks in settings
+# Add to ~/.claude/settings.json:
+{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Bash&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;~/.claude/hooks/pre-tool-check.sh&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<h5 id="h-14">Критерии успеха <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li>[ ] Code review skill automatically invoked when relevant</li>
+<li>[ ] PreToolUse hook runs before tool execution</li>
+<li>[ ] You understand skill auto-invocation vs. hook event triggers</li>
+</ul>
+<h5 id="h-15">Следующие шаги <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li>Create your own custom skill</li>
+<li>Set up additional hooks for your workflow</li>
+<li>Read: <a href="03-skills/README.md">03-skills/README.md</a></li>
+<li>Read: <a href="06-hooks/README.md">06-hooks/README.md</a></li>
+</ul>
+<blockquote>
+<p><strong>Check your understanding</strong>: Run <code>/lesson-quiz skills</code> or <code>/lesson-quiz hooks</code> to test your knowledge before moving on.</p>
+</blockquote>
+<hr>
+<h4 id="milestone-2b-интеграция-mcp-subagents">Milestone 2B: Интеграция (MCP + Subagents) <a class="h-anchor" href="#milestone-2b-интеграция-mcp-subagents" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Темы</strong>: MCP + Subagents
+<strong>Время</strong>: 2-3 часа
+<strong>Сложность</strong>: ⭐⭐⭐ Intermediate+
+<strong>Цель</strong>: интегрировать внешние сервисы и делегировать сложные задачи</p>
+<h5 id="h-16">Что вы получите <a class="h-anchor" href="#h-16" aria-label="Ссылка на раздел">#</a></h5>
+<p>✅ Access live data from GitHub, databases, etc.
+✅ Delegate work to specialized AI agents
+✅ Understand when to use MCP vs. subagents
+✅ Build integrated workflows</p>
+<h5 id="h-17">Практические упражнения <a class="h-anchor" href="#h-17" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-bash"># Exercise 1: Set up GitHub MCP
+export GITHUB_TOKEN=&quot;your_github_token&quot;
+claude mcp add github -- npx -y @modelcontextprotocol/server-github
+
+# Exercise 2: Test MCP integration
+# In Claude Code: /mcp__github__list_prs
+
+# Exercise 3: Install subagents
+mkdir -p .claude/agents
+cp 04-subagents/*.md .claude/agents/</code></pre>
+<h5 id="integration-exercise">Integration Exercise <a class="h-anchor" href="#integration-exercise" aria-label="Ссылка на раздел">#</a></h5>
+<p>Try this complete workflow:</p>
+<ol>
+<li>Use MCP to fetch a GitHub PR</li>
+<li>Let Claude delegate review to code-reviewer subagent</li>
+<li>Use hooks to run tests automatically</li>
+</ol>
+<h5 id="h-18">Критерии успеха <a class="h-anchor" href="#h-18" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li>[ ] Successfully query GitHub data via MCP</li>
+<li>[ ] Claude delegates complex tasks to subagents</li>
+<li>[ ] You understand the difference between MCP and subagents</li>
+<li>[ ] Combined MCP + subagents + hooks in a workflow</li>
+</ul>
+<h5 id="h-19">Следующие шаги <a class="h-anchor" href="#h-19" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li>Set up additional MCP servers (database, Slack, etc.)</li>
+<li>Create custom subagents for your domain</li>
+<li>Read: <a href="05-mcp/README.md">05-mcp/README.md</a></li>
+<li>Read: <a href="04-subagents/README.md">04-subagents/README.md</a></li>
+<li><strong>Готовы к уровню 3!</strong> Переходите к <a href="#milestone-3a-advanced-features">Milestone 3A</a></li>
+</ul>
+<blockquote>
+<p><strong>Check your understanding</strong>: Run <code>/lesson-quiz mcp</code> or <code>/lesson-quiz subagents</code> to verify you&#x27;re ready for Level 3.</p>
+</blockquote>
+<hr>
+<h3 id="уровень-3-advanced-power-user-и-team-lead">🔴 Уровень 3: Advanced — Power User и Team Lead <a class="h-anchor" href="#уровень-3-advanced-power-user-и-team-lead" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Для</strong>: пользователей с 6-8 проверками квиза
+<strong>Время</strong>: ~5 часов
+<strong>Фокус</strong>: командные инструменты, CI/CD, enterprise-функции, разработка плагинов
+<strong>Результат</strong>: power user, который может настраивать командные workflows и CI/CD</p>
+<h4 id="h-20">Проверка предварительных условий <a class="h-anchor" href="#h-20" aria-label="Ссылка на раздел">#</a></h4>
+<p>Перед началом уровня 3 убедитесь, что вы уверенно владеете этими концепциями уровня 2:</p>
+<ul>
+<li>[ ] Умеете создавать и использовать skills с авто-запуском (<a href="03-skills/">03-skills/</a>)</li>
+<li>[ ] Настроили hooks для автоматизации по событиям (<a href="06-hooks/">06-hooks/</a>)</li>
+<li>[ ] Умеете настраивать серверы MCP для внешних данных (<a href="05-mcp/">05-mcp/</a>)</li>
+<li>[ ] Знаете, как использовать subagents для делегирования задач (<a href="04-subagents/">04-subagents/</a>)</li>
+</ul>
+<blockquote>
+<p><strong>Есть пробелы?</strong> Перед продолжением просмотрите связанные туториалы выше.</p>
+</blockquote>
+<hr>
+<h4 id="milestone-3a-продвинутые-возможности">Milestone 3A: Продвинутые возможности <a class="h-anchor" href="#milestone-3a-продвинутые-возможности" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Темы</strong>: продвинутые возможности (Planning, Permissions, Extended Thinking, Auto Mode, Channels, Voice Dictation, Remote/Desktop/Web)
+<strong>Время</strong>: 2-3 часа
+<strong>Сложность</strong>: ⭐⭐⭐⭐⭐ Advanced
+<strong>Цель</strong>: освоить продвинутые workflows и инструменты power user</p>
+<h5 id="h-21">Что вы получите <a class="h-anchor" href="#h-21" aria-label="Ссылка на раздел">#</a></h5>
+<p>✅ Planning mode for complex features
+✅ Fine-grained permission control with 6 modes (default, acceptEdits, plan, auto, dontAsk, bypassPermissions)
+✅ Extended thinking via Alt+T / Option+T toggle
+✅ Background task management
+✅ Auto Memory for learned preferences
+✅ Auto Mode with background safety classifier
+✅ Channels for structured multi-session workflows
+✅ Voice Dictation for hands-free interaction
+✅ Remote control, desktop app, and web sessions
+✅ Agent Teams for multi-agent collaboration</p>
+<h5 id="h-22">Практические упражнения <a class="h-anchor" href="#h-22" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-bash"># Exercise 1: Use planning mode
+/plan Implement user authentication system
+
+# Exercise 2: Try permission modes (6 available: default, acceptEdits, plan, auto, dontAsk, bypassPermissions)
+claude --permission-mode plan &quot;analyze this codebase&quot;
+claude --permission-mode acceptEdits &quot;refactor the auth module&quot;
+claude --permission-mode auto &quot;implement the feature&quot;
+
+# Exercise 3: Enable extended thinking
+# Press Alt+T (Option+T on macOS) during a session to toggle
+
+# Exercise 4: Advanced checkpoint workflow
+# 1. Create checkpoint &quot;Clean state&quot;
+# 2. Use planning mode to design a feature
+# 3. Implement with subagent delegation
+# 4. Run tests in background
+# 5. If tests fail, rewind to checkpoint
+# 6. Try alternative approach
+
+# Exercise 5: Try auto mode (background safety classifier)
+claude --permission-mode auto &quot;implement user settings page&quot;
+
+# Exercise 6: Enable agent teams
+export CLAUDE_AGENT_TEAMS=1
+# Ask Claude: &quot;Implement feature X using a team approach&quot;
+
+# Exercise 7: Scheduled tasks
+/loop 5m /check-status
+# Or use CronCreate for persistent scheduled tasks
+
+# Exercise 8: Channels for multi-session workflows
+# Use channels to organize work across sessions
+
+# Exercise 9: Voice Dictation
+# Use voice input for hands-free interaction with Claude Code</code></pre>
+<h5 id="h-23">Критерии успеха <a class="h-anchor" href="#h-23" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li>[ ] Used planning mode for a complex feature</li>
+<li>[ ] Configured permission modes (plan, acceptEdits, auto, dontAsk)</li>
+<li>[ ] Toggled extended thinking with Alt+T / Option+T</li>
+<li>[ ] Used auto mode with background safety classifier</li>
+<li>[ ] Used background tasks for long operations</li>
+<li>[ ] Explored Channels for multi-session workflows</li>
+<li>[ ] Tried Voice Dictation for hands-free input</li>
+<li>[ ] Understand Remote Control, Desktop App, and Web sessions</li>
+<li>[ ] Enabled and used Agent Teams for collaborative tasks</li>
+<li>[ ] Used <code>/loop</code> for recurring tasks or scheduled monitoring</li>
+</ul>
+<h5 id="h-24">Следующие шаги <a class="h-anchor" href="#h-24" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li>Read: <a href="09-advanced-features/README.md">09-advanced-features/README.md</a></li>
+</ul>
+<blockquote>
+<p><strong>Check your understanding</strong>: Run <code>/lesson-quiz advanced</code> to test your mastery of power user features.</p>
+</blockquote>
+<hr>
+<h4 id="milestone-3b-команда-и-распространение-plugins-cli-mastery">Milestone 3B: Команда и распространение (Plugins + CLI Mastery) <a class="h-anchor" href="#milestone-3b-команда-и-распространение-plugins-cli-mastery" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Темы</strong>: Plugins + CLI Mastery + CI/CD
+<strong>Время</strong>: 2-3 часа
+<strong>Сложность</strong>: ⭐⭐⭐⭐ Advanced
+<strong>Цель</strong>: создавать командные инструменты, делать плагины и освоить CI/CD-интеграцию</p>
+<h5 id="h-25">Что вы получите <a class="h-anchor" href="#h-25" aria-label="Ссылка на раздел">#</a></h5>
+<p>✅ Install and create complete bundled plugins
+✅ Master CLI for scripting and automation
+✅ Set up CI/CD integration with <code>claude -p</code>
+✅ JSON output for automated pipelines
+✅ Session management and batch processing</p>
+<h5 id="h-26">Практические упражнения <a class="h-anchor" href="#h-26" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-bash"># Exercise 1: Install a complete plugin
+# In Claude Code: /plugin install pr-review
+
+# Exercise 2: Print mode for CI/CD
+claude -p &quot;Run all tests and generate report&quot;
+
+# Exercise 3: JSON output for scripts
+claude -p --output-format json &quot;list all functions&quot;
+
+# Exercise 4: Session management and resumption
+claude -r &quot;feature-auth&quot; &quot;continue implementation&quot;
+
+# Exercise 5: CI/CD integration with constraints
+claude -p --max-turns 3 --output-format json &quot;review code&quot;
+
+# Exercise 6: Batch processing
+for file in *.md; do
+  claude -p --output-format json &quot;summarize this: $(cat $file)&quot; &gt; ${file%.md}.summary.json
+done</code></pre>
+<h5 id="ci-cd-integration-exercise">CI/CD Integration Exercise <a class="h-anchor" href="#ci-cd-integration-exercise" aria-label="Ссылка на раздел">#</a></h5>
+<p>Create a simple CI/CD script:</p>
+<ol>
+<li>Use <code>claude -p</code> to review changed files</li>
+<li>Output results as JSON</li>
+<li>Process with <code>jq</code> for specific issues</li>
+<li>Integrate into GitHub Actions workflow</li>
+</ol>
+<h5 id="h-27">Критерии успеха <a class="h-anchor" href="#h-27" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li>[ ] Installed and used a plugin</li>
+<li>[ ] Built or modified a plugin for your team</li>
+<li>[ ] Used print mode (<code>claude -p</code>) in CI/CD</li>
+<li>[ ] Generated JSON output for scripting</li>
+<li>[ ] Resumed a previous session successfully</li>
+<li>[ ] Created a batch processing script</li>
+<li>[ ] Integrated Claude into a CI/CD workflow</li>
+</ul>
+<h5 id="real-world-use-cases-for-cli">Real-World Use Cases for CLI <a class="h-anchor" href="#real-world-use-cases-for-cli" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li><strong>Code Review Automation</strong>: Run code reviews in CI/CD pipelines</li>
+<li><strong>Log Analysis</strong>: Analyze error logs and system outputs</li>
+<li><strong>Documentation Generation</strong>: Batch generate documentation</li>
+<li><strong>Testing Insights</strong>: Analyze test failures</li>
+<li><strong>Performance Analysis</strong>: Review performance metrics</li>
+<li><strong>Data Processing</strong>: Transform and analyze data files</li>
+</ul>
+<h5 id="h-28">Следующие шаги <a class="h-anchor" href="#h-28" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li>Read: <a href="07-plugins/README.md">07-plugins/README.md</a></li>
+<li>Read: <a href="10-cli/README.md">10-cli/README.md</a></li>
+<li>Create team-wide CLI shortcuts and plugins</li>
+<li>Set up batch processing scripts</li>
+</ul>
+<blockquote>
+<p><strong>Check your understanding</strong>: Run <code>/lesson-quiz plugins</code> or <code>/lesson-quiz cli</code> to confirm your mastery.</p>
+</blockquote>
+<hr>
+<h3 id="h-29">🧪 Проверьте знания <a class="h-anchor" href="#h-29" aria-label="Ссылка на раздел">#</a></h3>
+<p>В этом репозитории есть два интерактивных skill, которые можно использовать в Claude Code в любое время, чтобы оценить своё понимание:</p>
+<div class="table-wrap"><table><thead><tr><th>Skill</th><th>Команда</th><th>Назначение</th></tr></thead><tbody><tr><td><strong>Self-Assessment</strong></td><td><code>/self-assessment</code></td><td>Оценить общую квалификацию по всем 10 возможностям. Выберите режим Quick (2 мин) или Deep (5 мин), чтобы получить персональный профиль и учебный путь.</td></tr><tr><td><strong>Lesson Quiz</strong></td><td><code>/lesson-quiz [lesson]</code></td><td>Проверить понимание конкретного урока с помощью 10 вопросов. Используйте до урока (pre-test), во время (progress check) или после (mastery verification).</td></tr></tbody></table></div>
+<p><strong>Examples:</strong></p>
+<pre><code>/self-assessment                  # Find your overall level
+/lesson-quiz hooks                # Quiz on Lesson 06: Hooks
+/lesson-quiz 03                   # Quiz on Lesson 03: Skills
+/lesson-quiz advanced-features    # Quiz on Lesson 09</code></pre>
+<hr>
+<h3 id="quick-start-paths">⚡ Quick Start Paths <a class="h-anchor" href="#quick-start-paths" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="if-you-only-have-15-minutes">If You Only Have 15 Minutes <a class="h-anchor" href="#if-you-only-have-15-minutes" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Goal</strong>: Get your first win</p>
+<ol>
+<li>Copy one slash command: <code>cp 01-slash-commands/optimize.md .claude/commands/</code></li>
+<li>Try it in Claude Code: <code>/optimize</code></li>
+<li>Read: <a href="01-slash-commands/README.md">01-slash-commands/README.md</a></li>
+</ol>
+<p><strong>Outcome</strong>: You&#x27;ll have a working slash command and understand the basics</p>
+<hr>
+<h4 id="if-you-have-1-hour">If You Have 1 Hour <a class="h-anchor" href="#if-you-have-1-hour" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Goal</strong>: Set up essential productivity tools</p>
+<ol>
+<li><strong>Slash commands</strong> (15 min): Copy and test <code>/optimize</code> and <code>/pr</code></li>
+<li><strong>Project memory</strong> (15 min): Create CLAUDE.md with your project standards</li>
+<li><strong>Install a skill</strong> (15 min): Set up code-review skill</li>
+<li><strong>Try them together</strong> (15 min): See how they work in harmony</li>
+</ol>
+<p><strong>Outcome</strong>: Basic productivity boost with commands, memory, and auto-skills</p>
+<hr>
+<h4 id="if-you-have-a-weekend">If You Have a Weekend <a class="h-anchor" href="#if-you-have-a-weekend" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Goal</strong>: Become proficient with most features</p>
+<p><strong>Saturday Morning</strong> (3 hours):</p>
+<ul>
+<li>Complete Milestone 1A: Slash Commands + Memory</li>
+<li>Complete Milestone 1B: Checkpoints + CLI Basics</li>
+</ul>
+<p><strong>Субботний вечер</strong> (3 часа):</p>
+<ul>
+<li>Завершите Milestone 2A: Skills + Hooks</li>
+<li>Завершите Milestone 2B: MCP + Subagents</li>
+</ul>
+<p><strong>Воскресенье</strong> (4 часа):</p>
+<ul>
+<li>Завершите Milestone 3A: Advanced Features</li>
+<li>Завершите Milestone 3B: Plugins + CLI Mastery + CI/CD</li>
+<li>Соберите собственный плагин для команды</li>
+</ul>
+<p><strong>Результат</strong>: вы станете опытным пользователем Claude Code, готовым обучать других и автоматизировать сложные workflows</p>
+<hr>
+<h3 id="h-30">💡 Советы по обучению <a class="h-anchor" href="#h-30" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-31">✅ Делайте <a class="h-anchor" href="#h-31" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Пройдите квиз сначала</strong>, чтобы найти стартовую точку</li>
+<li><strong>Выполняйте практические упражнения</strong> для каждого milestone</li>
+<li><strong>Начинайте с простого</strong> и постепенно добавляйте сложность</li>
+<li><strong>Проверяйте каждую функцию</strong> перед переходом к следующей</li>
+<li><strong>Делайте заметки</strong> о том, что работает в вашем workflow</li>
+<li><strong>Возвращайтесь к ранним концепциям</strong>, когда изучаете продвинутые темы</li>
+<li><strong>Экспериментируйте безопасно</strong>, используя checkpoints</li>
+<li><strong>Делитесь знаниями</strong> с командой</li>
+</ul>
+<h4 id="h-32">❌ Не делайте <a class="h-anchor" href="#h-32" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Пропускайте проверку prerequisites</strong>, когда переходите на более высокий уровень</li>
+<li><strong>Пытайтесь выучить всё сразу</strong> — это перегружает</li>
+<li><strong>Копируйте конфигурации, не понимая их</strong> — потом будет трудно debug-ить</li>
+<li><strong>Забывайте тестировать</strong> — всегда проверяйте, что функции работают</li>
+<li><strong>Спешите проходить milestone</strong> — лучше потратьте время на понимание</li>
+<li><strong>Игнорируйте документацию</strong> — в каждом README есть полезные детали</li>
+<li><strong>Работайте в изоляции</strong> — обсуждайте с коллегами</li>
+</ul>
+<hr>
+<h3 id="h-33">🎓 Стили обучения <a class="h-anchor" href="#h-33" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-34">Визуалы <a class="h-anchor" href="#h-34" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Изучайте Mermaid-диаграммы в каждом README</li>
+<li>Следите за потоком выполнения команд</li>
+<li>Рисуйте собственные диаграммы workflow</li>
+<li>Пользуйтесь визуальным маршрутом обучения выше</li>
+</ul>
+<h4 id="h-35">Практики <a class="h-anchor" href="#h-35" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Выполняйте каждое практическое упражнение</li>
+<li>Экспериментируйте с вариациями</li>
+<li>Ломайте и чините — используйте checkpoints!</li>
+<li>Создавайте собственные примеры</li>
+</ul>
+<h4 id="h-36">Читатели <a class="h-anchor" href="#h-36" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Внимательно читайте каждый README</li>
+<li>Изучайте примеры кода</li>
+<li>Смотрите сравнительные таблицы</li>
+<li>Читайте статьи, ссылки на которые есть в ресурсах</li>
+</ul>
+<h4 id="h-37">Общительные <a class="h-anchor" href="#h-37" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Проводите сессии парного программирования</li>
+<li>Объясняйте концепции коллегам</li>
+<li>Участвуйте в обсуждениях сообщества Claude Code</li>
+<li>Делитесь собственными конфигурациями</li>
+</ul>
+<hr>
+<h3 id="progress-tracking">📈 Progress Tracking <a class="h-anchor" href="#progress-tracking" aria-label="Ссылка на раздел">#</a></h3>
+<p>Используйте эти чеклисты, чтобы отслеживать прогресс по уровням. Запускайте <code>/self-assessment</code> в любой момент, чтобы получить обновлённый профиль навыков, или <code>/lesson-quiz [lesson]</code> после каждого урока, чтобы проверить понимание.</p>
+<h4 id="level-1-beginner">🟢 Level 1: Beginner <a class="h-anchor" href="#level-1-beginner" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>[ ] Completed <a href="01-slash-commands/">01-slash-commands</a></li>
+<li>[ ] Completed <a href="02-memory/">02-memory</a></li>
+<li>[ ] Created first custom slash command</li>
+<li>[ ] Set up project memory</li>
+<li>[ ] <strong>Milestone 1A achieved</strong></li>
+<li>[ ] Completed <a href="08-checkpoints/">08-checkpoints</a></li>
+<li>[ ] Completed <a href="10-cli/">10-cli</a> basics</li>
+<li>[ ] Created and reverted to a checkpoint</li>
+<li>[ ] Used interactive and print mode</li>
+<li>[ ] <strong>Milestone 1B achieved</strong></li>
+</ul>
+<h4 id="level-2-intermediate">🔵 Level 2: Intermediate <a class="h-anchor" href="#level-2-intermediate" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>[ ] Completed <a href="03-skills/">03-skills</a></li>
+<li>[ ] Completed <a href="06-hooks/">06-hooks</a></li>
+<li>[ ] Installed first skill</li>
+<li>[ ] Set up PreToolUse hook</li>
+<li>[ ] <strong>Milestone 2A achieved</strong></li>
+<li>[ ] Completed <a href="05-mcp/">05-mcp</a></li>
+<li>[ ] Completed <a href="04-subagents/">04-subagents</a></li>
+<li>[ ] Connected GitHub MCP</li>
+<li>[ ] Created custom subagent</li>
+<li>[ ] Combined integrations in a workflow</li>
+<li>[ ] <strong>Milestone 2B achieved</strong></li>
+</ul>
+<h4 id="level-3-advanced">🔴 Level 3: Advanced <a class="h-anchor" href="#level-3-advanced" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>[ ] Completed <a href="09-advanced-features/">09-advanced-features</a></li>
+<li>[ ] Used planning mode successfully</li>
+<li>[ ] Configured permission modes (6 modes including auto)</li>
+<li>[ ] Used auto mode with safety classifier</li>
+<li>[ ] Used extended thinking toggle</li>
+<li>[ ] Explored Channels and Voice Dictation</li>
+<li>[ ] <strong>Milestone 3A achieved</strong></li>
+<li>[ ] Completed <a href="07-plugins/">07-plugins</a></li>
+<li>[ ] Completed <a href="10-cli/">10-cli</a> advanced usage</li>
+<li>[ ] Set up print mode (<code>claude -p</code>) CI/CD</li>
+<li>[ ] Created JSON output for automation</li>
+<li>[ ] Integrated Claude into CI/CD pipeline</li>
+<li>[ ] Created team plugin</li>
+<li>[ ] <strong>Milestone 3B achieved</strong></li>
+</ul>
+<hr>
+<h3 id="h-38">🆘 Частые трудности <a class="h-anchor" href="#h-38" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="проблема-1-слишком-много-концепций-сразу">Проблема 1: &quot;Слишком много концепций сразу&quot; <a class="h-anchor" href="#проблема-1-слишком-много-концепций-сразу" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Решение</strong>: сосредоточьтесь на одном milestone за раз. Выполняйте все упражнения до перехода дальше.</p>
+<h4 id="проблема-2-не-понимаю-какую-функцию-когда-использовать">Проблема 2: &quot;Не понимаю, какую функцию когда использовать&quot; <a class="h-anchor" href="#проблема-2-не-понимаю-какую-функцию-когда-использовать" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Решение</strong>: сверяйтесь с <a href="README.md#use-case-matrix">матрицей сценариев использования</a> в основном README.</p>
+<h4 id="проблема-3-конфигурация-не-работает">Проблема 3: &quot;Конфигурация не работает&quot; <a class="h-anchor" href="#проблема-3-конфигурация-не-работает" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Решение</strong>: проверьте раздел <a href="README.md#troubleshooting">Troubleshooting</a> и расположение файлов.</p>
+<h4 id="проблема-4-концепции-кажутся-похожими">Проблема 4: &quot;Концепции кажутся похожими&quot; <a class="h-anchor" href="#проблема-4-концепции-кажутся-похожими" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Решение</strong>: посмотрите таблицу <a href="README.md#feature-comparison">сравнения возможностей</a>, чтобы понять различия.</p>
+<h4 id="проблема-5-трудно-все-запомнить">Проблема 5: &quot;Трудно всё запомнить&quot; <a class="h-anchor" href="#проблема-5-трудно-все-запомнить" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Решение</strong>: создайте собственную шпаргалку. Используйте checkpoints для безопасных экспериментов.</p>
+<h4 id="проблема-6-я-опытный-но-не-понимаю-с-чего-начать">Проблема 6: &quot;Я опытный, но не понимаю, с чего начать&quot; <a class="h-anchor" href="#проблема-6-я-опытный-но-не-понимаю-с-чего-начать" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Решение</strong>: пройдите <a href="#-find-your-level">квиз самооценки</a> выше. Перейдите сразу на свой уровень и используйте проверку prerequisites, чтобы найти пробелы.</p>
+<hr>
+<h3 id="h-39">🎯 Что дальше после завершения? <a class="h-anchor" href="#h-39" aria-label="Ссылка на раздел">#</a></h3>
+<p>После прохождения всех milestone:</p>
+<ol>
+<li><strong>Создавайте командную документацию</strong> — опишите настройку Claude Code для вашей команды</li>
+<li><strong>Собирайте собственные плагины</strong> — упаковывайте workflows команды</li>
+<li><strong>Изучите Remote Control</strong> — управляйте сессиями Claude Code программно из внешних инструментов</li>
+<li><strong>Попробуйте Web Sessions</strong> — используйте Claude Code через браузерные интерфейсы для удалённой работы</li>
+<li><strong>Используйте Desktop App</strong> — получайте доступ к возможностям Claude Code через нативное настольное приложение</li>
+<li><strong>Используйте Auto Mode</strong> — позвольте Claude работать автономно с фоновым классификатором безопасности</li>
+<li><strong>Используйте Auto Memory</strong> — пусть Claude автоматически учится вашим предпочтениям со временем</li>
+<li><strong>Настройте Agent Teams</strong> — координируйте нескольких агентов на сложных многоаспектных задачах</li>
+<li><strong>Используйте Channels</strong> — организуйте работу через структурированные multi-session workflows</li>
+<li><strong>Попробуйте Voice Dictation</strong> — используйте голосовой ввод без рук для работы с Claude Code</li>
+<li><strong>Используйте Scheduled Tasks</strong> — автоматизируйте повторяющиеся проверки с <code>/loop</code> и cron tools</li>
+<li><strong>Делитесь примерами</strong> — вносите вклад в сообщество</li>
+<li><strong>Наставляйте других</strong> — помогайте коллегам учиться</li>
+<li><strong>Оптимизируйте workflows</strong> — постоянно улучшайте процессы по мере использования</li>
+<li><strong>Оставайтесь в курсе</strong> — следите за релизами и новыми возможностями Claude Code</li>
+</ol>
+<hr>
+<h3 id="additional-resources">📚 Additional Resources <a class="h-anchor" href="#additional-resources" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="official-documentation">Official Documentation <a class="h-anchor" href="#official-documentation" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><a href="https://code.claude.com/docs/en/overview">Claude Code Documentation</a></li>
+<li><a href="https://docs.anthropic.com">Anthropic Documentation</a></li>
+<li><a href="https://modelcontextprotocol.io">MCP Protocol Specification</a></li>
+</ul>
+<h4 id="blog-posts">Blog Posts <a class="h-anchor" href="#blog-posts" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><a href="https://medium.com/@luongnv89/discovering-claude-code-slash-commands-cdc17f0dfb29">Discovering Claude Code Slash Commands</a></li>
+</ul>
+<h4 id="community">Community <a class="h-anchor" href="#community" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><a href="https://github.com/anthropics/anthropic-cookbook">Anthropic Cookbook</a></li>
+<li><a href="https://github.com/modelcontextprotocol/servers">MCP Servers Repository</a></li>
+</ul>
+<hr>
+<h3 id="feedback-support">💬 Feedback &amp; Support <a class="h-anchor" href="#feedback-support" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong>Found an issue?</strong> Create an issue in the repository</li>
+<li><strong>Have a suggestion?</strong> Submit a pull request</li>
+<li><strong>Need help?</strong> Check the documentation or ask the community</li>
+</ul>
+<hr>
+<p><strong>Last Updated</strong>: March 2026
+<strong>Maintained by</strong>: Claude How-To Contributors
+<strong>License</strong>: Educational purposes, free to use and adapt</p>
+<hr>
+<p><a href="README.md">← Back to Main README</a></p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

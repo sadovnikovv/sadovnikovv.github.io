@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Шпаргалка Claude Code</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/index.html">claude-code-pro-course</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/course/index.html">course</a></nav>
+<h1 id="шпаргалка-claude-code">Шпаргалка Claude Code <a class="h-anchor" href="#шпаргалка-claude-code" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="h">Клавиши <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td><code>Esc</code></td><td>прервать</td></tr><tr><td><code>Esc Esc</code></td><td>rewind — откат к прошлому сообщению</td></tr><tr><td><code>Shift+Tab</code></td><td>режим: default → acceptEdits → plan</td></tr><tr><td><code>@file</code></td><td>файл в контекст</td></tr><tr><td><code>!cmd</code></td><td>shell-команда напрямую</td></tr><tr><td><code>#текст</code></td><td>добавить в память</td></tr><tr><td><code>Ctrl+V</code> / drag&amp;drop</td><td>вставить изображение</td></tr><tr><td><code>Ctrl+R</code></td><td>поиск по истории</td></tr></tbody></table></div>
+<h3 id="h-2">Слэш-команды <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>/init /memory /clear /compact [фокус] /context /cost /model /config
+/permissions /hooks /agents /mcp /plugin /resume /rewind /review
+/statusline /output-style /install-github-app /doctor /help</code></pre>
+<h3 id="cli">CLI <a class="h-anchor" href="#cli" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-bash">claude                          # интерактив
+claude &quot;задача&quot;                 # старт с промптом
+claude -c                       # продолжить последнюю
+claude -r                       # выбрать сессию
+claude -p &quot;...&quot;                 # headless
+claude -p &quot;...&quot; --output-format json
+claude --model opus
+claude --permission-mode plan
+claude --allowedTools &quot;Read,Bash(npm test:*)&quot;
+claude --plugin-dir ./my-plugin
+claude mcp add|list|remove
+claude update | claude doctor</code></pre>
+<h3 id="h-3">Файлы <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>~/.claude/CLAUDE.md               личная память
+~/.claude/settings.json           личные настройки
+~/.claude/skills/ agents/         личные skills/агенты
+./CLAUDE.md                       память проекта (git)
+./CLAUDE.local.md                 личная память проекта
+./.claude/settings.json           настройки команды (git)
+./.claude/settings.local.json     личные настройки проекта
+./.claude/skills/&lt;n&gt;/SKILL.md     skills проекта
+./.claude/agents/&lt;n&gt;.md           субагенты проекта
+./.claude/rules/*.md              правила с paths
+./.mcp.json                       MCP-серверы проекта</code></pre>
+<h3 id="h-4">Разрешения <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-json">&quot;permissions&quot;: {
+  &quot;allow&quot;: [&quot;Bash(npm run test:*)&quot;, &quot;Read(src/**)&quot;],
+  &quot;ask&quot;:   [&quot;Bash(git push:*)&quot;],
+  &quot;deny&quot;:  [&quot;Read(./.env)&quot;, &quot;Bash(rm -rf:*)&quot;]
+}</code></pre>
+<h3 id="hook">Hook <a class="h-anchor" href="#hook" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-json">&quot;hooks&quot;: { &quot;PostToolUse&quot;: [ { &quot;matcher&quot;: &quot;Edit|Write&quot;,
+  &quot;hooks&quot;: [ { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;./.claude/hooks/fmt.sh&quot; } ] } ] }</code></pre>
+<p>exit 0 — ок · exit 2 — блок (stderr → Claude)</p>
+<h3 id="skill">Skill <a class="h-anchor" href="#skill" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-markdown">---
+name: my-skill
+description: Что делает. Когда использовать.
+allowed-tools: Read, Grep
+---
+Инструкции... $ARGUMENTS</code></pre>
+<h3 id="subagent">Subagent <a class="h-anchor" href="#subagent" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-markdown">---
+name: reviewer
+description: Используй проактивно после изменений кода
+tools: Read, Grep, Glob, Bash
+model: sonnet
+---
+Системный промпт агента...</code></pre>
+<h3 id="h-5">Цикл <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Explore → Plan (Shift+Tab) → Code + тесты → Review → Commit → /clear</strong></p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Claude Code с GitHub Enterprise Server</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="claude-code-с-github-enterprise-server">Claude Code с GitHub Enterprise Server <a class="h-anchor" href="#claude-code-с-github-enterprise-server" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Подключите Claude Code к вашему самостоятельно размещённому экземпляру GitHub Enterprise Server для облачных сессий, проверки кода и маркетплейсов плагинов.</p>
+</blockquote>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Поддержка GitHub Enterprise Server доступна для планов Team и Enterprise.</p>
+</blockquote>
+<p>Поддержка GitHub Enterprise Server (GHES) позволяет вашей организации использовать Claude Code с репозиториями, размещёнными на вашем самоуправляемом экземпляре GitHub вместо github.com. После того как администратор подключит ваш экземпляр GHES, разработчики смогут запускать облачные сессии и получать автоматизированные проверки кода без какой-либо конфигурации для каждого репозитория. Маркетплейсы плагинов, размещённые на вашем экземпляре, также поддерживаются; требования к учётным данным различаются в зависимости от поверхности, как описано в <a href="#plugin-marketplaces-on-ghes">Plugin marketplaces on GHES</a>.</p>
+<p>Для репозиториев на github.com см. <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">Claude Code в облаке</a> и <a href="https://code.claude.com/docs/ru/code-review.md">Проверка кода</a>. Чтобы запустить Claude в вашей собственной инфраструктуре CI, см. <a href="https://code.claude.com/docs/ru/github-actions.md">GitHub Actions</a>.</p>
+<h3 id="что-работает-с-github-enterprise-server">Что работает с GitHub Enterprise Server <a class="h-anchor" href="#что-работает-с-github-enterprise-server" aria-label="Ссылка на раздел">#</a></h3>
+<p>В таблице ниже показано, какие функции Claude Code поддерживают GHES и какие различия есть по сравнению с поведением github.com.</p>
+<p>| Функция | Поддержка GHES | Примечания |
+| :- | :- | :- |
+| Облачные сессии | ✅ Поддерживается | Владелец подключает экземпляр GHES один раз; разработчики используют <code>claude --cloud</code> или <a href="https://claude.ai/code">claude.ai/code</a> |
+| Проверка кода | ✅ Поддерживается | Те же автоматизированные проверки PR, что и на github.com |
+| Claude Security | ✅ Поддерживается | Доступно в открытой бета-версии для планов Enterprise на <a href="https://claude.ai/security">claude.ai/security</a> |
+| Teleport sessions | ✅ Поддерживается | Перемещайте сессии между облаком и терминалом с помощью <code>--teleport</code> |
+| Маркетплейсы плагинов | ✅ Поддерживается | Требования к учётным данным различаются в зависимости от поверхности. См. <a href="#plugin-marketplaces-on-ghes">Маркетплейсы плагинов на GHES</a> |
+| Метрики вклада | ❌ Не поддерживается | Требуются репозитории, размещённые на github.com. <a href="https://code.claude.com/docs/ru/analytics.md">Панель аналитики</a> по-прежнему показывает метрики использования для работы в репозиториях GHES |
+| GitHub Actions | ✅ Поддерживается | Требует ручной настройки workflow; <code>/install-github-app</code> доступен только для github.com |
+| GitHub MCP server | ❌ Не поддерживается | GitHub MCP server не работает с экземплярами GHES |</p>
+<h3 id="h">Настройка администратором <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Пользователь с ролью Owner подключает ваш экземпляр GHES к Claude Code один раз. Вам нужна роль Owner или Primary Owner в вашей организации Claude и разрешение на создание GitHub Apps на вашем экземпляре GHES.</p>
+<p>Управляемая настройка генерирует манифест GitHub App и перенаправляет вас на ваш экземпляр GHES для создания приложения в один клик. Если ваша среда блокирует поток перенаправления, доступна <a href="#manual-setup">альтернативная ручная настройка</a>.</p>
+<p><strong>1. Откройте настройки Git providers</strong></p>
+<p>Перейдите в <a href="https://claude.ai/admin-settings/source-control#github-enterprise"><strong>Organization settings &gt; Git providers</strong></a> и найдите раздел GitHub Enterprise.</p>
+<p><strong>2. Начните управляемую настройку</strong></p>
+<p>Нажмите <strong>Connect</strong> или <strong>Add instance</strong>, если экземпляр уже подключён, затем выберите <strong>Set up automatically</strong>. Введите отображаемое имя длиной до 20 символов для подключения и имя хоста вашего GHES, например <code>github.example.com</code>. Если ваш экземпляр GHES использует самоподписанный сертификат или частный центр сертификации, вставьте сертификат CA в дополнительное поле.</p>
+<p><strong>3. Создайте GitHub App</strong></p>
+<p>Нажмите <strong>Continue to GitHub Enterprise</strong>. Ваш браузер перенаправляется на ваш экземпляр GHES с предварительно заполненным манифестом приложения. Проверьте конфигурацию и нажмите <strong>Create GitHub App</strong>. GHES перенаправляет вас обратно в Claude с автоматически сохранёнными учётными данными приложения.</p>
+<p><strong>4. Установите приложение на ваши репозитории</strong></p>
+<p>На странице GitHub App на вашем экземпляре GHES установите приложение на репозитории или организации, к которым вы хотите предоставить Claude доступ. Вы можете начать с подмножества и добавить больше позже.</p>
+<p><strong>5. Включите Code Review</strong></p>
+<p>Перейдите на <a href="https://claude.ai/admin-settings/claude-code">claude.ai/admin-settings/claude-code</a> и включите <a href="https://code.claude.com/docs/ru/code-review-setup.md">Code Review</a> для ваших репозиториев GHES, используя ту же конфигурацию, что и для github.com.</p>
+<h4 id="разрешения-github-app">Разрешения GitHub App <a class="h-anchor" href="#разрешения-github-app" aria-label="Ссылка на раздел">#</a></h4>
+<p>Манифест настраивает GitHub App с разрешениями и событиями webhook ниже, которые вместе охватывают облачные сессии, Code Review, Claude Security и маркетплейсы плагинов:</p>
+<p>| Разрешение | Доступ | Используется для |
+| :- | :- | :- |
+| Contents | Чтение и запись | Клонирование репозиториев и отправка веток |
+| Pull requests | Чтение и запись | Создание PR и публикация комментариев ревью |
+| Issues | Чтение и запись | Ответ на упоминания в проблемах |
+| Checks | Чтение и запись | Публикация проверочных запусков Code Review |
+| Actions | Чтение | Чтение статуса CI для автоисправления |
+| Commit statuses | Чтение | Чтение статуса CI от поставщиков, которые сообщают статусы коммитов вместо запусков проверок |
+| Repository hooks | Чтение и запись | Создание webhook на репозитории маркетплейса плагинов, когда <strong>Sync automatically</strong> включена для маркетплейса в <a href="https://claude.ai/admin-settings/skills?tab=marketplaces"><strong>Organization settings &gt; Plugins &amp; skills</strong></a> |
+| Metadata | Чтение | Требуется GitHub для всех приложений |
+| Organization members | Чтение | Соответствие Claude GitHub App на github.com, которое использует это для проверки роли организации подключающегося пользователя при связывании установки |</p>
+<p>Приложение подписывается на события <code>pull_request</code>, <code>issue_comment</code>, <code>pull_request_review_comment</code>, <code>pull_request_review</code>, <code>check_run</code> и <code>status</code>.</p>
+<p>GitHub применяет манифест только при создании приложения, поэтому приложение, созданное из более ранней версии манифеста, сохраняет разрешения и события, с которыми оно было создано. Если вашему приложению не хватает каких-либо разрешений или событий выше, добавьте их в настройки приложения на вашем экземпляре GHES. GitHub затем попросит владельца каждой установки одобрить новые разрешения, и установка сохранит свои старые разрешения до тех пор, пока они это не сделают.</p>
+<h4 id="h-2">Ручная настройка <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если управляемый поток перенаправления заблокирован конфигурацией вашей сети, нажмите <strong>Connect</strong> или <strong>Add instance</strong>, затем выберите <strong>Add manually</strong> вместо <strong>Set up automatically</strong>. Создайте GitHub App на вашем экземпляре GHES с <a href="#github-app-permissions">разрешениями и событиями выше</a>, затем введите сведения о подключении в форму: отображаемое имя, имя хоста вашего GHES и дополнительный порт, а также ID приложения, client ID, client secret, webhook secret и private key приложения. Форма также принимает дополнительный пользовательский сертификат CA и имена хостов реплик для чтения.</p>
+<p>Claude генерирует URL webhook приложения при сохранении подключения. После нажатия <strong>Add configuration</strong> откройте меню <strong>More options</strong> подключения, выберите <strong>Copy webhook URL</strong> и вставьте URL в настройки webhook приложения на вашем экземпляре GHES. Используйте тот же webhook secret, который вы ввели в форму.</p>
+<h4 id="h-3">Требования к сети <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Для сессий, размещённых на Anthropic, ваш экземпляр GHES должен быть доступен из инфраструктуры Anthropic, чтобы Claude мог клонировать репозитории и публиковать комментарии ревью. Если ваш экземпляр GHES находится за брандмауэром, добавьте в список разрешённых <a href="https://platform.claude.com/docs/en/api/ip-addresses#outbound-ip-addresses">IP-адреса исходящего трафика Anthropic</a>. Сессии в <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#configure-git">самостоятельно размещённой среде</a> вместо этого клонируют изнутри вашей сети, если только раннер не использует <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#use-the-anthropic-git-proxy">прокси Git Anthropic</a>, который получает данные со стороны Anthropic и требует той же доступности.</p>
+<p>Размещённые потоки перед сессией, такие как средство выбора репозитория, выполняются на стороне Anthropic перед началом сессии. Им требуется, чтобы ваш экземпляр GHES был доступен из инфраструктуры Anthropic, даже когда сессия выполняется в самостоятельно размещённой среде. <a href="https://code.claude.com/docs/ru/self-hosted-environments-reference.md#scm-connector-flags">Коннектор SCM</a> недоступен, поэтому эти потоки не могут достичь хоста GHES, который маршрутизируется только внутри сети.</p>
+<h3 id="h-4">Рабочий процесс разработчика <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code автоматически обнаруживает имя хоста GHES из git remote в вашем рабочем каталоге.</p>
+<p>Клонируйте репозиторий из вашего экземпляра GHES как обычно, заменив <code>github.example.com</code> и путь репозитория на имя хоста GHES и репозиторий:</p>
+<p>```bash theme={null}
+git clone git@github.example.com:platform/api-service.git
+cd api-service</p>
+<pre><code>
+Затем запустите облачную сессию. Claude обнаруживает хост GHES из вашего git remote и маршрутизирует сессию через настроенный экземпляр вашей организации:
+</code></pre>
+<p>claude --cloud &quot;Add retry logic to the payment webhook handler&quot;</p>
+<pre><code>
+Сессия клонирует ваш репозиторий из GHES и отправляет изменения обратно в ветку. Отслеживайте прогресс на [claude.ai/code](https://claude.ai/code). См. [Use Claude Code in the cloud](https://code.claude.com/docs/ru/claude-code-on-the-web.md) для полного рабочего процесса облачной сессии, включая проверку diff, автоисправление и облачные запланированные задачи.
+
+### Телепортируйте сессии в ваш терминал
+
+Перенесите облачную сессию в ваш локальный терминал с помощью `claude --teleport`. Teleport проверяет, что вы находитесь в checkout того же репозитория GHES, прежде чем получить ветку и загрузить историю сессии. См. [требования teleport](https://code.claude.com/docs/ru/claude-code-on-the-web.md#teleport-requirements) для получения подробной информации.
+
+## Рынки плагинов на GHES
+
+Размещайте рынки плагинов на вашем экземпляре GHES для распределения внутренних инструментов по всей организации. Структура рынка идентична рынкам, размещённым на github.com, но установка работает по-разному в зависимости от того, где вы добавляете рынок, и учётные данные различаются на разных поверхностях:
+
+| Поверхность | Как работает установка | Что нужно каждому пользователю |
+| :- | :- | :- |
+| Claude Code CLI и desktop | Claude Code клонирует репозиторий рынка, используя существующие учётные данные git машины | Доступ Git к вашему хосту GHES с их машины |
+| Управляемые параметры (`extraKnownMarketplaces`) | Claude Code регистрирует запись и клонирует репозиторий, используя существующие учётные данные git машины | Доступ Git к вашему хосту GHES с их машины |
+| Параметры плагина организации claude.ai | Владелец выбирает экземпляр GHES в качестве источника; серверная часть Anthropic получает и синхронизирует репозиторий, используя GitHub App из [настройки администратора](#admin-setup) | Ничего на пользователя после добавления. Владельцу, добавляющему его, нужна собственная учётная запись GitHub Enterprise, подключённая в качестве проверки доступа, и GitHub App должно быть установлено на репозиторий рынка |
+| Параметры пользователя claude.ai | Серверная часть Anthropic получает репозиторий, используя подключение GitHub Enterprise отправляющего пользователя | Собственная учётная запись GitHub Enterprise, подключённая к Claude |
+| Cloud sessions | Cloud sessions клонируют рынки внутри песочницы сеанса. Песочница может достичь вашего экземпляра GHES только когда репозиторий сеанса находится на том же экземпляре, и его учётные данные git ограничены репозиториями сеанса | Ненадёжно для рынков, размещённых на GHES: другой хост, чем репозиторий сеанса, недостижим, и даже установки на одном экземпляре могут не пройти. Используйте вместо этого CLI, управляемые параметры или claude.ai |
+
+&gt; [!WARNING]
+&gt;
+&gt; Подключения GitHub Enterprise на claude.ai являются пользовательскими, когда рынок добавляется из параметров пользователя. [Настройка администратора](#admin-setup) подключает ваш экземпляр GHES к вашей организации, но она не подключает отдельные учётные записи пользователей: каждый пользователь, который добавляет рынок GHES из своих собственных параметров, должен сначала подключить собственную учётную запись GitHub Enterprise, и подключение одного пользователя, включая подключение Владельца, не охватывает никого другого. Рынки, добавленные Владельцем в параметры плагина организации, не налагают это требование на пользователей, потому что текущие получения используют GitHub App организации. Владельцу, добавляющему рынок, всё ещё нужна собственная учётная запись GitHub Enterprise, подключённая во время добавления.
+
+### Добавить рынок GHES
+
+Сокращение `owner/repo` всегда разрешается в github.com. Для рынков, размещённых на GHES, используйте полный URL git, заменив `github.example.com` и путь репозитория на свои. Рекомендуются URL HTTPS:
+</code></pre>
+<p>/plugin marketplace add https://github.example.com/platform/claude-plugins.git</p>
+<pre><code>
+URL SSH работают, если машина уже доверяет вашему хосту GHES:
+</code></pre>
+<p>/plugin marketplace add git@github.example.com:platform/claude-plugins.git</p>
+<pre><code>
+Claude Code запускает git неинтерактивно и отклоняет SSH-подключения к хостам, которые отсутствуют в файле `known_hosts` машины. URL HTTPS с помощником учётных данных git избегает требования `known_hosts`.
+
+Полное руководство по созданию рынков см. в разделе [Создание и распределение рынка плагинов](https://code.claude.com/docs/ru/plugins/create-marketplace.md) для полного руководства по созданию рынков.
+
+### Предварительная регистрация рынков GHES с управляемыми параметрами
+
+Параметр `extraKnownMarketplaces` предварительно регистрирует рынок, чтобы разработчики получили его без ручной настройки. Он работает из [любого файла параметров](https://code.claude.com/docs/ru/settings-reference.md#extraknownmarketplaces), включая `.claude/settings.json` репозитория; управляемые параметры доставляют его по всей организации:
+</code></pre>
+<p>{
+  &quot;extraKnownMarketplaces&quot;: {
+    &quot;internal-tools&quot;: {
+      &quot;source&quot;: {
+        &quot;source&quot;: &quot;git&quot;,
+        &quot;url&quot;: &quot;https://github.example.com/platform/claude-plugins.git&quot;
+      }
+    }
+  }
+}</p>
+<pre><code>
+Claude Code устанавливает эти рынки локально: он регистрирует каждую запись и клонирует репозиторий с существующими учётными данными git машины. Этот путь не проходит через claude.ai, поэтому подключение GitHub Enterprise для каждого пользователя не требуется. Для успешного развёртывания:
+
+* **Используйте полный URL git.** Сокращение `owner/repo` всегда разрешается в github.com и не может ссылаться на хост GHES.
+* **Предпочитайте URL HTTPS.** SSH-клоны не работают на машинах, которые ещё не доверяют ключу хоста GHES. URL HTTPS с помощником учётных данных git вашей организации работает на любой машине с настроенными учётными данными.
+* **Убедитесь, что каждая машина может клонировать с вашего хоста GHES.** Если на машине нет учётных данных, клонирование завершается ошибкой без запроса учётных данных, а вкладка **Errors** в `/plugin` показывает причину.
+* **Подтвердите, что параметр достигает каждой машины.** Файл управляемых параметров вступает в силу только на машинах, на которые он развёрнут, например через вашу систему управления устройствами. Расположение файлов см. в разделе [Развёртывание управляемых параметров](https://code.claude.com/docs/ru/managed-settings.md#delivery-mechanisms).
+
+### Разрешить рынки GHES в управляемых параметрах
+
+Если ваша организация использует [управляемые параметры](https://code.claude.com/docs/ru/settings.md) для ограничения того, какие рынки разработчики могут добавлять, используйте тип источника `hostPattern` для разрешения всех рынков с вашего экземпляра GHES без перечисления каждого репозитория. Расположение файлов на каждой платформе см. в разделе [Механизмы доставки](https://code.claude.com/docs/ru/managed-settings.md#delivery-mechanisms). Добавьте JSON в файл `managed-settings.json` или эквивалентную политику MDM:
+</code></pre>
+<p>{
+  &quot;strictKnownMarketplaces&quot;: [
+    {
+      &quot;source&quot;: &quot;hostPattern&quot;,
+      &quot;hostPattern&quot;: &quot;^github\\.example\\.com$&quot;
+    }
+  ]
+}</p>
+<pre><code>
+Полную схему см. в справочнике параметров [strictKnownMarketplaces](https://code.claude.com/docs/ru/settings-reference.md#strictknownmarketplaces) и [extraKnownMarketplaces](https://code.claude.com/docs/ru/settings-reference.md#extraknownmarketplaces).
+
+## Ограничения
+
+Несколько функций работают по-другому на GHES, чем на github.com. [Таблица функций](#what-works-with-github-enterprise-server) суммирует поддержку; в этом разделе рассматриваются обходные пути.
+
+* **Команда `/install-github-app`**: следуйте потоку [настройки администратором](#admin-setup) на claude.ai вместо этого. Если вы также хотите workflows GitHub Actions на GHES, адаптируйте [пример workflow](https://github.com/anthropics/claude-code-action/blob/main/examples/claude.yml) вручную.
+* **GitHub MCP-сервер**: в сессии на вашем собственном компьютере используйте вместо этого CLI `gh`, настроенный для вашего хоста GHES. Запустите `gh auth login --hostname github.example.com` для аутентификации, после чего Claude сможет использовать там команды `gh`.
+
+## Troubleshooting
+
+### Cloud session fails to clone repository
+
+Если `claude --cloud` завершается с ошибкой клонирования, убедитесь, что владелец завершил настройку для вашего экземпляра GHES и что GitHub App установлено на репозитории, над которым вы работаете. Попросите владельца, который подключил экземпляр, подтвердить, что имя хоста, зарегистрированное в параметрах Claude, совпадает с именем хоста в вашем git remote.
+
+Если сессия останавливается с сообщением &quot;Authentication failed while accessing the repository&quot;, возможно, вы не подключили свою собственную учётную запись GitHub Enterprise. Подключите её через средство выбора репозитория на [claude.ai/code](https://claude.ai/code), затем запустите новую сессию.
+
+### Добавление маркетплейса не удаётся с ошибкой политики
+
+Если `/plugin marketplace add` заблокирован для вашего URL-адреса GHES, ваша организация ограничила источники маркетплейса. Попросите администратора добавить запись `hostPattern` для имени хоста GHES в [управляемые параметры](#allowlist-ghes-marketplaces-in-managed-settings).
+
+### Добавление маркетплейса на claude.ai не удаётся с ошибкой доступа GitHub
+
+Если добавление маркетплейса GHES из параметров пользователя завершается с общей ошибкой типа &quot;Marketplace couldn&#x27;t be added&quot;, сначала проверьте подключение GitHub Enterprise. Это происходит, когда ваша собственная учётная запись GitHub Enterprise не подключена к Claude, даже если экземпляр GHES вашей организации настроен и другие пользователи подключены. Диалог не указывает на процесс подключения GitHub Enterprise, а опция &quot;Connect to GitHub&quot; на вкладке Browse выполняет вход в github.com, что не предоставляет доступ к репозиториям GHES.
+
+Подключите вашу учётную запись GitHub Enterprise в одном из этих мест, затем добавьте маркетплейс снова:
+
+* **Средство выбора репозитория**: на [claude.ai/code](https://claude.ai/code) средство выбора репозитория предлагает опцию подключения для каждого настроенного экземпляра GHES.
+* **Страница Git providers**: если вы Owner, перейдите в раздел GitHub на странице [**Organization settings &gt; Git providers**](https://claude.ai/admin-settings/source-control) и нажмите **Connect** или **Add organization**, если учётная запись уже подключена. Выберите имя хоста GHES в поле **GitHub instance**, затем нажмите **Connect**.
+
+Кроме того, можно попросить Owner добавить маркетплейс в настройках плагинов организации, что устраняет требование подключения для каждого пользователя.
+
+На других поверхностях claude.ai ошибка &quot;Repository not found. If it&#x27;s private, GitHub access is required&quot; на маркетплейсе GHES обычно указывает на то же отсутствующее подключение. Подключите вашу учётную запись GitHub Enterprise через один из указанных выше путей, затем повторите попытку.
+
+### Экземпляр GHES недоступен
+
+Если проверки или облачные сессии истекают по времени, ваш экземпляр GHES может быть недоступен из инфраструктуры Anthropic. Убедитесь, что ваш брандмауэр разрешает входящие соединения с [IP-адресов Anthropic](https://platform.claude.com/docs/en/api/ip-addresses#outbound-ip-addresses). Сессии в [самостоятельно размещённой среде](https://code.claude.com/docs/ru/self-hosted-environments) достигают GHES изнутри вашей сети, поэтому когда одна из них не может клонировать, проверьте собственный сетевой путь runner вместо этого. Для средства выбора репозитория и других размещённых предварительных потоков сессии см. [Требования к сети](#network-requirements).
+
+### Проверка подключения проходит, но вторая проверка не удаётся
+
+Вторая проверка подключается к вашему экземпляру GHES так же, как это делают облачные сессии, размещённые Anthropic. Найдите своё сообщение, чтобы понять, нужно ли проверить брандмауэр или повторить попытку:
+
+* **`Connection test passed, but a second test failed.`**: если ваш экземпляр находится за брандмауэром, разрешите все [исходящие IP-адреса](https://platform.claude.com/docs/en/api/ip-addresses#outbound-ip-addresses) Anthropic, поскольку проверка подключения может пройти, даже если ваш брандмауэр блокирует некоторые из них. Также можно повторить попытку через несколько минут.
+* **`Connection test passed, but a second test could not run.`**: повторите попытку через несколько минут.
+
+Чтобы выполнить проверку снова, откройте меню **More options** подключения на странице [**Organization settings &gt; Git providers**](https://claude.ai/admin-settings/source-control#github-enterprise) и выберите **Test connection**.
+
+### Запуск сессии не удаётся с `Unable to get organization UUID`
+
+Claude Code не смог прочитать организацию claude.ai из ваших учётных данных. Выполните вход с помощью `/login`, используя учётную запись в вашей организации Team или Enterprise, так как поддержка GitHub Enterprise Server ограничена этими планами. См. [Unable to get organization UUID](https://code.claude.com/docs/ru/claude-code-on-the-web.md#unable-to-get-organization-uuid) для причин и других сообщений, которые создаёт это состояние.
+
+## Связанные ресурсы
+
+Эти страницы охватывают функции, упомянутые в этом руководстве, более подробно:
+
+* [Claude Code в веб-интерфейсе](https://code.claude.com/docs/ru/claude-code-on-the-web.md): запуск сессий Claude Code на облачной инфраструктуре
+* [Проверка кода](https://code.claude.com/docs/ru/code-review.md): автоматизированные проверки PR
+* [Plugin marketplaces](https://code.claude.com/docs/ru/plugins/host-marketplace.md): создание и распределение каталогов плагинов
+* [Аналитика](https://code.claude.com/docs/ru/analytics.md): отслеживание использования Claude Code в вашей организации
+* [Управляемые параметры](https://code.claude.com/docs/ru/settings.md): конфигурация политики на уровне организации
+* [Конфигурация сети](https://code.claude.com/docs/ru/network-config.md): требования к брандмауэру и списку разрешений IP
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

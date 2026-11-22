@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Автоматизация действий с помощью hooks</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="автоматизация-действий-с-помощью-hooks">Автоматизация действий с помощью hooks <a class="h-anchor" href="#автоматизация-действий-с-помощью-hooks" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Запускайте команды оболочки автоматически, когда Claude Code редактирует файлы, завершает задачи или требует ввода. Форматируйте код, отправляйте уведомления, проверяйте команды и применяйте правила проекта.</p>
+</blockquote>
+<p>Hooks — это определяемые пользователем команды оболочки. Claude Code запускает их в определённых точках своего жизненного цикла, что даёт вам детерминированное управление: определённые действия всегда происходят, а не полагаются на то, что LLM выберет их запуск. Используйте hooks для применения правил проекта, автоматизации повторяющихся задач и интеграции Claude Code с вашими существующими инструментами.</p>
+<p>Для решений, требующих суждения, а не детерминированных правил, вы также можете использовать <a href="#prompt-based-hooks">hooks на основе подсказок</a> или <a href="#agent-based-hooks">hooks на основе агентов</a>, которые используют модель Claude для оценки условий.</p>
+<p>Для других способов расширения Claude Code см. <a href="https://code.claude.com/docs/ru/skills.md">skills</a> для предоставления Claude дополнительных инструкций и исполняемых команд, <a href="https://code.claude.com/docs/ru/sub-agents.md">subagents</a> для запуска задач в изолированных контекстах и <a href="https://code.claude.com/docs/ru/plugins/overview.md">plugins</a> для упаковки расширений для совместного использования в проектах.</p>
+<blockquote>
+<p>[!TIP]</p>
+<p>Это руководство охватывает распространённые варианты использования и как начать работу. Для полных схем событий, форматов JSON ввода/вывода и расширенных функций, таких как асинхронные hooks и MCP tool hooks, см. <a href="https://code.claude.com/docs/ru/hooks.md">справочник Hooks</a>.</p>
+</blockquote>
+<h3 id="настройка-вашего-первого-hook">Настройка вашего первого hook <a class="h-anchor" href="#настройка-вашего-первого-hook" aria-label="Ссылка на раздел">#</a></h3>
+<p>Чтобы создать hook, добавьте блок <code>hooks</code> в <a href="#configure-hook-location">файл параметров</a>. Это пошаговое руководство создаёт hook для уведомлений на рабочем столе, чтобы вы получали оповещение всякий раз, когда Claude ждёт вашего ввода вместо того, чтобы смотреть на терминал.</p>
+<p><strong>1. Добавьте hook в ваши параметры</strong></p>
+<p>Откройте <code>~/.claude/settings.json</code> и добавьте hook <code>Notification</code>. Если файл не существует, создайте его. Пример ниже использует <code>osascript</code> для macOS; см. <a href="#get-notified-when-claude-needs-input">Получайте уведомления, когда Claude требует ввода</a> для команд Linux и Windows.</p>
+<p>```json theme={null}
+{
+  &quot;hooks&quot;: {
+    &quot;Notification&quot;: [
+      {
+        &quot;matcher&quot;: &quot;&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;osascript -e &#x27;display notification \&quot;Claude Code needs your attention\&quot; with title \&quot;Claude Code\&quot;&#x27;&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</p>
+<pre><code>
+Если ваш файл параметров уже имеет ключ `hooks`, добавьте `Notification` как соседний элемент существующих ключей событий, а не заменяйте весь объект. Каждое имя события — это ключ внутри единственного объекта `hooks`:
+</code></pre>
+<p>{
+  &quot;hooks&quot;: {
+    &quot;PostToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Edit|Write&quot;,
+        &quot;hooks&quot;: [{ &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;f=$(jq -r &#x27;.tool_input.file_path&#x27;) &amp;&amp; npx prettier --write --ignore-unknown \&quot;$f\&quot;&quot; }]
+      }
+    ],
+    &quot;Notification&quot;: [
+      {
+        &quot;matcher&quot;: &quot;&quot;,
+        &quot;hooks&quot;: [{ &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;osascript -e &#x27;display notification \&quot;Claude Code needs your attention\&quot; with title \&quot;Claude Code\&quot;&#x27;&quot; }]
+      }
+    ]
+  }
+}</p>
+<pre><code>
+Вы также можете попросить Claude написать хук за вас, описав то, что вы хотите, в CLI.
+
+**2. Проверьте конфигурацию**
+
+Введите `/hooks` в промпте Claude Code, чтобы открыть браузер хуков. Ваш новый хук появится в списке в разделе `Notification`.
+
+**3. Протестируйте хук**
+
+Нажмите `Esc` для возврата в CLI. Нажимайте `Shift+Tab` до тех пор, пока в строке состояния не появится `⏸ manual mode on`, попросите Claude сделать что-то, требующее разрешения, затем переключитесь с терминала. Вы должны получить уведомление на рабочем столе.
+
+## Что вы можете автоматизировать
+
+Hooks позволяют запускать код в ключевых точках жизненного цикла Claude Code: форматировать файлы после редактирования, блокировать команды перед их выполнением, отправлять уведомления, когда Claude требует ввода, внедрять контекст при запуске сеанса и многое другое. Для полного списка событий hook см. [справочник Hooks](https://code.claude.com/docs/ru/hooks.md#hook-lifecycle).
+
+Каждый пример включает готовый к использованию блок конфигурации, который вы добавляете в [файл параметров](#configure-hook-location).
+
+Для примера использования в production с hooks, которые запускают отдельную проверку модели и передают результаты обратно в сеанс, см. [как плагин `security-guidance` интегрируется с Claude Code](https://code.claude.com/docs/ru/security-guidance#how-the-plugin-integrates-with-claude-code).
+
+### Получайте уведомления, когда Claude требует ввода
+
+Получайте уведомление на рабочем столе всякий раз, когда Claude завершает работу и требует вашего ввода, чтобы вы могли переключиться на другие задачи без проверки терминала.
+
+Этот хук использует событие `Notification`, которое Claude Code вызывает, когда Claude ждёт ввода или разрешения. Точное время см. в разделе [когда срабатывает каждый тип уведомления](https://code.claude.com/docs/ru/hooks.md#notification).
+
+Каждая вкладка ниже использует собственную команду уведомлений платформы. Добавьте это в `~/.claude/settings.json`:
+
+&gt; [tab] macOS
+&gt;
+&gt; ```json theme={null}
+&gt; {
+&gt;   &quot;hooks&quot;: {
+&gt;     &quot;Notification&quot;: [
+&gt;       {
+&gt;         &quot;matcher&quot;: &quot;&quot;,
+&gt;         &quot;hooks&quot;: [
+&gt;           {
+&gt;             &quot;type&quot;: &quot;command&quot;,
+&gt;             &quot;command&quot;: &quot;osascript -e &#x27;display notification \&quot;Claude Code needs your attention\&quot; with title \&quot;Claude Code\&quot;&#x27;&quot;
+&gt;           }
+&gt;         ]
+&gt;       }
+&gt;     ]
+&gt;   }
+&gt; }
+&gt; ```
+&gt;
+&gt; &gt; [accordion] Если уведомление не появляется
+&gt; &gt;
+&gt; &gt; `osascript` направляет уведомления через встроенное приложение Script Editor. Если у Script Editor нет разрешения на уведомления, команда молча завершается неудачей, и macOS не предложит вам предоставить его.
+&gt; &gt;
+&gt; &gt; Запустите это в Terminal один раз, чтобы Script Editor появился в ваших настройках уведомлений:
+&gt; &gt;
+&gt; &gt; ```bash theme={null}
+&gt; &gt; osascript -e &#x27;display notification &quot;test&quot;&#x27;
+&gt; &gt; ```
+&gt; &gt;
+&gt; &gt; Ничего не появится пока. Откройте **System Settings &gt; Notifications**, найдите **Script Editor** в списке и включите **Allow Notifications**. Запустите команду снова, чтобы подтвердить, что тестовое уведомление появляется.
+
+&gt; [tab] Linux
+&gt;
+&gt; ```json theme={null}
+&gt; {
+&gt;   &quot;hooks&quot;: {
+&gt;     &quot;Notification&quot;: [
+&gt;       {
+&gt;         &quot;matcher&quot;: &quot;&quot;,
+&gt;         &quot;hooks&quot;: [
+&gt;           {
+&gt;             &quot;type&quot;: &quot;command&quot;,
+&gt;             &quot;command&quot;: &quot;notify-send &#x27;Claude Code&#x27; &#x27;Claude Code needs your attention&#x27;&quot;
+&gt;           }
+&gt;         ]
+&gt;       }
+&gt;     ]
+&gt;   }
+&gt; }
+&gt; ```
+&gt;
+&gt; &gt; [accordion] Если уведомление не появляется
+&gt; &gt;
+&gt; &gt; `notify-send` требует демона уведомлений рабочего стола, который не имеют безголовые серверы, сеансы SSH и большинство контейнеров. Сначала протестируйте команду напрямую:
+&gt; &gt;
+&gt; &gt; ```bash theme={null}
+&gt; &gt; notify-send &#x27;Claude Code&#x27; &#x27;test&#x27;
+&gt; &gt; ```
+&gt; &gt;
+&gt; &gt; Если команда не найдена, установите пакет `libnotify-bin` на Debian и Ubuntu или эквивалент вашего дистрибутива.
+
+&gt; [tab] Windows (PowerShell)
+&gt;
+&gt; ```json theme={null}
+&gt; {
+&gt;   &quot;hooks&quot;: {
+&gt;     &quot;Notification&quot;: [
+&gt;       {
+&gt;         &quot;matcher&quot;: &quot;&quot;,
+&gt;         &quot;hooks&quot;: [
+&gt;           {
+&gt;             &quot;type&quot;: &quot;command&quot;,
+&gt;             &quot;command&quot;: &quot;powershell.exe -Command \&quot;[System.Reflection.Assembly]::LoadWithPartialName(&#x27;System.Windows.Forms&#x27;); [System.Windows.Forms.MessageBox]::Show(&#x27;Claude Code needs your attention&#x27;, &#x27;Claude Code&#x27;)\&quot;&quot;
+&gt;           }
+&gt;         ]
+&gt;       }
+&gt;     ]
+&gt;   }
+&gt; }
+&gt; ```
+&gt;
+&gt; &gt; [accordion] Если диалоговое окно не появляется
+&gt; &gt;
+&gt; &gt; Эта команда открывает диалоговое окно, а не уведомление в углу экрана, поэтому окно может открыться позади окна терминала. Сначала протестируйте команду напрямую в PowerShell.
+&gt; &gt;
+&gt; &gt; Если вы запускаете Claude Code внутри WSL, `powershell.exe` должен быть доступен в вашем `PATH` через Windows interop.
+
+Пустой `matcher` срабатывает на все типы уведомлений. Чтобы срабатывать только на определённые события, установите его на тип уведомления, например на одно из этих значений:
+
+| Matcher | Срабатывает когда |
+| :- | :- |
+| `permission_prompt` | Claude требует вашего одобрения использования инструмента или [сетевого запроса](https://code.claude.com/docs/ru/sandboxing.md#network-isolation) изолированной команды, и запрос ждал около шести секунд |
+| `idle_prompt` | Claude завершил ответ около 60 секунд назад и вы не печатали с тех пор |
+| `auth_success` | Аутентификация завершена |
+| `auth_storage_failure` | Вход выполнен, но Claude Code не может сохранить новые учётные данные в своё [хранилище учётных данных](https://code.claude.com/docs/ru/authentication.md#credential-management). Срабатывает вместо `auth_success` |
+| `elicitation_dialog` | Сервер MCP открывает форму выяснения и вы не печатали около шести секунд |
+| `elicitation_url_dialog` | Сервер MCP просит вас открыть URL браузера и вы не печатали около шести секунд |
+| `elicitation_complete` | Сервер MCP сообщает, что [выяснение в режиме URL](https://code.claude.com/docs/ru/hooks.md#elicitation-input) завершено |
+| `elicitation_response` | Ответ выяснения MCP отправлен обратно на сервер |
+| `agent_needs_input` | Фоновый сеанс начинает ожидание вашего ввода, пока открыто [представление агента](https://code.claude.com/docs/ru/agent-view.md). Также срабатывает, когда сеанс терминала показывает вам вопрос о настройке терминала [товарища команды агента](https://code.claude.com/docs/ru/agent-teams.md#choose-a-display-mode) или уведомление автоматического режима о [расходах на запросы классификатора](https://code.claude.com/docs/ru/auto-mode-classifier-billing.md) и вы не печатали около шести секунд |
+| `agent_completed` | Фоновый сеанс завершается или завершается с ошибкой. Срабатывает только при открытом [представлении агента](https://code.claude.com/docs/ru/agent-view.md) |
+| `quota_auto_resume_fired` | Claude Code продолжает вашу задачу после того, как лимит использования claude.ai приостановил её: при сбросе или раньше, когда что-то, что вы делаете в Claude Code во время ожидания, например добавление кредитов использования, обновление плана или переключение моделей, делает использование доступным снова, с [исключением параметра модели](https://code.claude.com/docs/ru/interactive-mode.md#wait-for-a-usage-limit-to-reset) |
+| `quota_auto_resume_stale` | Лимит использования claude.ai сбросился, пока ваш компьютер спал более чем около 30 минут. Claude Code ждёт, пока вы нажмёте `Enter` вместо продолжения. После более короткого сна он продолжает и срабатывает `quota_auto_resume_fired` вместо этого |
+| `quota_auto_resume_disabled` | Claude Code заканчивает своё ожидание лимита использования claude.ai без продолжения вашей задачи: [`autoContinueAtUsageLimit`](https://code.claude.com/docs/ru/settings-reference#autocontinueatusagelimit) отключён или сброс переместился более чем на 24 часа во время ожидания, которое Claude Code запустил самостоятельно, продолжаемая задача продолжала достигать лимита, или продолжение было заблокировано до того, как оно достигло модели. Не срабатывает, когда вы нажимаете `Esc` или `Ctrl+C`, или выбираете **Don&#x27;t continue automatically** |
+| `plugin_notification` | [Мод](https://code.claude.com/docs/ru/plugins/mods/api.md#show-something-without-starting-a-turn) выводит уведомление с помощью `$.ui.notify`. `title` хука — это имя мода, если мод не задал его сам |
+
+Claude Code по-разному рассчитывает время `permission_prompt` в терминале и в Claude Desktop, расширении VS Code и других хостах, которые отвечают на запросы разрешений через Agent SDK. См. [когда срабатывает каждый тип уведомления](https://code.claude.com/docs/ru/hooks.md#notification) для обоих времён.
+
+Matchers `quota_auto_resume_fired`, `quota_auto_resume_stale` и `quota_auto_resume_disabled` требуют Claude Code v2.1.234 или позже. Matcher `auth_storage_failure` требует v2.1.288 или позже.
+
+В сеансах терминала `permission_prompt` для сетевого запроса изолированной команды требует Claude Code v2.1.246 или позже.
+
+`agent_needs_input` для вопроса о настройке терминала товарища требует Claude Code v2.1.248 или позже.
+
+Введите `/hooks` в промпте Claude Code и убедитесь, что хук отображается в разделе `Notification`.
+
+### Автоматическое форматирование кода после редактирования
+
+Автоматически запускайте [Prettier](https://prettier.io/) на каждом файле, который редактирует Claude, чтобы форматирование оставалось согласованным без ручного вмешательства.
+
+Этот hook использует событие `PostToolUse` с matcher `Edit|Write`, поэтому он запускается только после инструментов редактирования файлов. Команда извлекает путь отредактированного файла с помощью [`jq`](https://jqlang.org/) и передаёт его в Prettier. Добавьте это в `.claude/settings.json` в корне вашего проекта:
+</code></pre>
+<p>{
+  &quot;hooks&quot;: {
+    &quot;PostToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Edit|Write&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;f=$(jq -r &#x27;.tool_input.file_path&#x27;) &amp;&amp; npx prettier --write --ignore-unknown \&quot;$f\&quot;&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</p>
+<pre><code>
+Чтобы протестировать hook, попросите Claude добавить строку с одинарными кавычками в файл JavaScript, затем откройте файл: с параметрами Prettier по умолчанию hook переписывает их на двойные кавычки.
+
+Когда хук выполняется успешно, Claude Code ничего не показывает в диалоге. Чтобы убедиться, что хук запустился, проверьте, что отредактированный файл переформатирован, или см. раздел [Проверка того, что сделал хук](#check-what-a-hook-did).
+
+Чтобы переформатировать определённый файл при любом его изменении, включая когда команда `Bash` переписывает его, используйте hook [FileChanged](https://code.claude.com/docs/ru/hooks.md#filechanged) вместо этого.
+
+&gt; [!NOTE]
+&gt;
+&gt; Примеры Bash на этой странице используют `jq` для анализа JSON. Установите его с помощью `brew install jq` на macOS, `apt-get install jq` на Debian и Ubuntu или см. [загрузки `jq`](https://jqlang.org/download/).
+
+### Блокировка редактирования защищённых файлов
+
+Запретите инструментам Claude `Edit` и `Write` изменять чувствительные файлы, такие как `.env`, `package-lock.json` или что-либо в `.git/`. Claude получает обратную связь, объясняющую, почему редактирование было заблокировано, чтобы он мог скорректировать свой подход.
+
+Этот пример использует отдельный файл скрипта, который вызывает hook. Скрипт проверяет путь целевого файла против списка защищённых шаблонов и выходит с кодом 2 для блокировки редактирования.
+
+**1. Создайте скрипт hook**
+
+Сохраните это в `.claude/hooks/protect-files.sh`:
+</code></pre>
+<p>#!/bin/bash</p>
+<h1 id="protect-files-sh">protect-files.sh <a class="h-anchor" href="#protect-files-sh" aria-label="Ссылка на раздел">#</a></h1>
+<p>INPUT=$(cat)
+FILE_PATH=$(echo &quot;$INPUT&quot; | jq -r &#x27;.tool_input.file_path // empty&#x27;)</p>
+<h1 id="normalize-windows-backslash-separators-so-the-patterns-below-match">Normalize Windows backslash separators so the patterns below match <a class="h-anchor" href="#normalize-windows-backslash-separators-so-the-patterns-below-match" aria-label="Ссылка на раздел">#</a></h1>
+<p>FILE_PATH=&quot;${FILE_PATH//\\//}&quot;</p>
+<p>PROTECTED_PATTERNS=(&quot;.env&quot; &quot;package-lock.json&quot; &quot;.git/&quot;)</p>
+<p>for pattern in &quot;${PROTECTED_PATTERNS[@]}&quot;; do
+  if [[ &quot;$FILE_PATH&quot; == <em>&quot;$pattern&quot;</em> ]]; then
+    echo &quot;Blocked: $FILE_PATH matches protected pattern &#x27;$pattern&#x27;&quot; &gt;&amp;2
+    exit 2
+  fi
+done</p>
+<p>exit 0</p>
+<pre><code>
+**2. Сделайте скрипт исполняемым на macOS и Linux**
+
+Скрипты hook должны быть исполняемыми для запуска Claude Code:
+</code></pre>
+<p>chmod +x .claude/hooks/protect-files.sh</p>
+<pre><code>
+**3. Зарегистрируйте hook**
+
+Добавьте hook `PreToolUse` в `.claude/settings.json`, который запускает скрипт перед любым вызовом инструмента `Edit` или `Write`:
+</code></pre>
+<p>{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Edit|Write&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;\&quot;$CLAUDE_PROJECT_DIR\&quot;/.claude/hooks/protect-files.sh&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</p>
+<pre><code>
+**4. Протестируйте hook**
+
+Попросите Claude добавить комментарий в ваш файл `.env`. Claude Code блокирует редактирование перед его выполнением и передаёт сообщение `Blocked:` скрипта Claude как обратную связь.
+
+Claude по-прежнему может изменять защищённые файлы с помощью shell-команд. Чтобы заблокировать некоторые из этих команд, добавьте [правило запрета `Edit`](https://code.claude.com/docs/ru/permissions#what-read-and-edit-rules-cover) для каждого пути в `permissions.deny` в `.claude/settings.json`, например `Edit(/.env)` для `.env` в корне проекта.
+
+Даже с этими правилами Claude может изменить `.env` другими способами. Чтобы ограничить, в какие файлы могут записывать команды, см. [Настройка изоляции в песочнице](https://code.claude.com/docs/ru/sandboxing.md#configure-sandboxing).
+
+### Повторное внедрение контекста после компактирования
+
+Когда контекстное окно Claude заполняется, компактирование суммирует разговор для освобождения места. Это может привести к потере важных деталей. Используйте hook `SessionStart` с matcher `compact` для повторного внедрения критического контекста после каждого компактирования.
+
+Claude Code добавляет простой текст, который ваша команда выводит в stdout, в контекст Claude. Этот пример напоминает Claude о соглашениях проекта и недавней работе. Добавьте это в `.claude/settings.json` в корне вашего проекта:
+</code></pre>
+<p>{
+  &quot;hooks&quot;: {
+    &quot;SessionStart&quot;: [
+      {
+        &quot;matcher&quot;: &quot;compact&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;echo &#x27;Reminder: use Bun, not npm. Run bun test before committing. Current sprint: auth refactor.&#x27;&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</p>
+<pre><code>
+Вы можете заменить `echo` любой командой, которая производит динамический вывод, например `git log --oneline -5` для отображения недавних коммитов. Для внедрения контекста при каждом запуске сеанса рассмотрите использование [CLAUDE.md](https://code.claude.com/docs/ru/memory.md) вместо этого. Для переменных окружения см. [`CLAUDE_ENV_FILE`](https://code.claude.com/docs/ru/hooks#persist-environment-variables) в справочнике.
+
+### Аудит изменений конфигурации
+
+Отслеживайте, когда файлы параметров или skills изменяются во время сеанса. Событие `ConfigChange` срабатывает, когда внешний процесс или редактор изменяет файл конфигурации, поэтому вы можете регистрировать изменения для соответствия или блокировать несанкционированные изменения.
+
+Этот пример добавляет каждое событие в журнал аудита. Добавьте это в `~/.claude/settings.json`:
+</code></pre>
+<p>{
+  &quot;hooks&quot;: {
+    &quot;ConfigChange&quot;: [
+      {
+        &quot;matcher&quot;: &quot;&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;jq -c &#x27;{timestamp: now | todate, source: .source, file: .file_path}&#x27; &gt;&gt; ~/claude-config-audit.log&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</p>
+<pre><code>
+Matcher фильтрует по типу конфигурации: `user_settings`, `project_settings`, `local_settings`, `policy_settings` или `skills`. Для блокировки вступления изменения в силу выйдите с кодом 2 или верните `{&quot;decision&quot;: &quot;block&quot;}`. См. [справочник ConfigChange](https://code.claude.com/docs/ru/hooks.md#configchange) для полной схемы ввода.
+
+Чтобы подтвердить, что hook записывает изменения, отредактируйте файл параметров в другом редакторе, пока сеанс запущен, затем откройте `~/claude-config-audit.log`: hook добавляет одну строку JSON на изменение с временной меткой, источником и путём файла.
+
+### Перезагрузка окружения при изменении каталога или файлов
+
+Некоторые проекты устанавливают разные переменные окружения в зависимости от того, в каком каталоге вы находитесь. Инструменты, такие как [direnv](https://direnv.net/), делают это автоматически в вашей оболочке, но инструмент Bash Claude не подхватывает эти изменения самостоятельно.
+
+Сочетание hook `SessionStart` с hook `CwdChanged` исправляет это. `SessionStart` загружает переменные для каталога, в котором вы запускаетесь, а `CwdChanged` перезагружает их каждый раз, когда Claude меняет каталог. Оба записывают в `CLAUDE_ENV_FILE`, который Claude Code запускает как преамбулу скрипта перед каждой командой Bash. Добавьте это в `~/.claude/settings.json`:
+</code></pre>
+<p>{
+  &quot;hooks&quot;: {
+    &quot;SessionStart&quot;: [
+      {
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;direnv export bash &gt; \&quot;$CLAUDE_ENV_FILE\&quot;&quot;
+          }
+        ]
+      }
+    ],
+    &quot;CwdChanged&quot;: [
+      {
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;direnv export bash &gt; \&quot;$CLAUDE_ENV_FILE\&quot;&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</p>
+<pre><code>
+Запустите `direnv allow` один раз в каждом каталоге, который имеет `.envrc`, чтобы direnv был разрешён загружать его. Если вы используете devbox или nix вместо direnv, тот же шаблон работает с `devbox shellenv` или `devbox global shellenv` вместо `direnv export bash`.
+
+Чтобы реагировать на определённые файлы вместо каждого изменения каталога, используйте `FileChanged` с `matcher`, перечисляющим имена файлов для наблюдения через `|`. При построении списка наблюдения Claude Code разбивает это значение на буквальные имена файлов, а не вычисляет его как regex. См. [FileChanged](https://code.claude.com/docs/ru/hooks.md#filechanged), чтобы узнать, как то же значение также фильтрует, какие группы хуков запускаются при изменении файла. Этот пример наблюдает за `.envrc` и `.env` в рабочем каталоге:
+</code></pre>
+<p>{
+  &quot;hooks&quot;: {
+    &quot;FileChanged&quot;: [
+      {
+        &quot;matcher&quot;: &quot;.envrc|.env&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;direnv export bash &gt; \&quot;$CLAUDE_ENV_FILE\&quot;&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</p>
+<pre><code>
+См. справочные записи [CwdChanged](https://code.claude.com/docs/ru/hooks.md#cwdchanged) и [FileChanged](https://code.claude.com/docs/ru/hooks.md#filechanged) для схем ввода, вывода `watchPaths` и деталей `CLAUDE_ENV_FILE`.
+
+### Автоматическое одобрение определённых запросов разрешений
+
+Пропустите диалог одобрения для вызовов инструментов, которые вы всегда разрешаете. Этот пример автоматически одобряет `ExitPlanMode`, инструмент, который Claude вызывает, когда он завершает представление плана и просит продолжить, чтобы вас не спрашивали каждый раз, когда план готов.
+
+В отличие от примеров с кодом выхода выше, автоматическое подтверждение требует, чтобы ваш хук записал решение в формате JSON в stdout. Claude Code запускает хуки `PermissionRequest`, когда собирается запросить у вас разрешение, и если ваш хук возвращает `&quot;behavior&quot;: &quot;allow&quot;`, Claude Code отвечает на запрос от вашего имени. Для инструмента, который [требует взаимодействия с пользователем](https://code.claude.com/docs/ru/hooks.md#allow-with-updatedinput), например `ExitPlanMode`, разрешение также должно содержать `updatedInput`, иначе Claude Code проигнорирует его и всё равно покажет запрос.
+
+Matcher ограничивает hook только `ExitPlanMode`, поэтому никакие другие запросы не затрагиваются. Добавьте это в `~/.claude/settings.json`:
+</code></pre>
+<p>{
+  &quot;hooks&quot;: {
+    &quot;PermissionRequest&quot;: [
+      {
+        &quot;matcher&quot;: &quot;ExitPlanMode&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;jq -c &#x27;{hookSpecificOutput: {hookEventName: \&quot;PermissionRequest\&quot;, decision: {behavior: \&quot;allow\&quot;, updatedInput: .tool_input}}}&#x27;&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</p>
+<pre><code>
+Когда hook одобряет, Claude Code выходит из режима плана и восстанавливает любой режим разрешения, который был активен перед входом в режим плана. Стенограмма показывает &quot;Allowed by PermissionRequest hook&quot; там, где появился бы диалог. Путь hook всегда сохраняет текущий разговор: он не может очистить контекст и начать свежий сеанс реализации так, как может диалог.
+
+Чтобы установить определённый режим разрешения вместо этого, вывод вашего hook может включать массив `updatedPermissions` с записью `setMode`. Значение `mode` — это любой режим разрешения, такой как `default`, `acceptEdits` или `bypassPermissions`, и `destination: &quot;session&quot;` применяет его только для текущего сеанса.
+
+&gt; [!NOTE]
+&gt;
+&gt; `bypassPermissions` применяется только если сеанс был запущен с уже доступным режимом обхода: `--dangerously-skip-permissions`, `--permission-mode bypassPermissions`, `--allow-dangerously-skip-permissions` или `permissions.defaultMode: &quot;bypassPermissions&quot;` в [параметрах пользователя, `--settings` или управляемых параметрах](https://code.claude.com/docs/ru/settings-reference#permissions-defaultmode). Это не применяется, если режим обхода отключён [`permissions.disableBypassPermissionsMode`](https://code.claude.com/docs/ru/permissions#managed-settings), или если вы запустили сеанс в [ограниченном режиме](https://code.claude.com/docs/ru/cli-reference.md#cli-flags).
+&gt;
+&gt; Claude Code никогда не сохраняет его как `defaultMode`.
+
+Чтобы переключить сессию в режим `acceptEdits`, замените строку `command` в этом хуке следующей:
+</code></pre>
+<p>&quot;command&quot;: &quot;jq -c &#x27;{hookSpecificOutput: {hookEventName: \&quot;PermissionRequest\&quot;, decision: {behavior: \&quot;allow\&quot;, updatedInput: .tool_input, updatedPermissions: [{type: \&quot;setMode\&quot;, mode: \&quot;acceptEdits\&quot;, destination: \&quot;session\&quot;}]}}}&#x27;&quot;</p>
+<pre><code>
+Держите matcher как можно более узким. Соответствие `.*` или оставление matcher пустым автоматически одобрит каждый запрос разрешения инструмента, включая записи файлов и команды оболочки. См. [справочник PermissionRequest](https://code.claude.com/docs/ru/hooks.md#permissionrequest-decision-control) для полного набора полей решения.
+
+## Как работают hooks
+
+Claude Code запускает события хуков в определённых точках своего жизненного цикла. Когда событие срабатывает, Claude Code запускает соответствующие хуки параллельно; о том, как обрабатываются дублирующиеся обработчики, см. [Hook handler fields](https://code.claude.com/docs/ru/hooks.md#hook-handler-fields). В таблице ниже показано каждое событие и момент его срабатывания:
+
+| Событие | Когда оно срабатывает |
+| :- | :- |
+| `SessionStart` | Когда сеанс начинается или возобновляется |
+| `Setup` | Когда вы запускаете Claude Code с `--init-only`, или с `--init` или `--maintenance` в режиме `-p`. Для одноразовой подготовки в CI или скриптах |
+| `UserPromptSubmit` | Когда отправляется промпт, прежде чем Claude его обработает. Также срабатывает для [ходов, которые Claude Code начинает самостоятельно](https://code.claude.com/docs/ru/hooks.md#userpromptsubmit) |
+| `UserPromptExpansion` | Когда команда, введённая пользователем, расширяется в запрос, прежде чем она достигнет Claude. Может заблокировать расширение |
+| `PreToolUse` | Перед выполнением вызова инструмента. Может заблокировать его |
+| `PermissionRequest` | Когда вызов инструмента требует решения о разрешении |
+| `PermissionDenied` | Когда автоматический режим отклоняет вызов инструмента, включая отклонения без вердикта классификатора. Используйте JSON `hookSpecificOutput.retry: true`, чтобы сообщить модели, что она может повторить попытку отклонённого вызова инструмента. Claude Code игнорирует `retry`, когда классификатор не выдал вердикт |
+| `PostToolUse` | После успешного выполнения вызова инструмента |
+| `PostToolUseFailure` | После неудачного выполнения вызова инструмента |
+| `PostToolBatch` | После разрешения полного пакета параллельных вызовов инструментов, перед следующим вызовом модели |
+| `Notification` | Когда Claude Code отправляет уведомление |
+| `MessageDisplay` | Во время отображения текста сообщения помощника |
+| `SubagentStart` | Когда порождается подагент |
+| `SubagentStop` | Когда подагент завершает работу |
+| `TaskCreated` | Когда задача создаётся через `TaskCreate` |
+| `TaskCompleted` | Когда задача отмечается как завершённая |
+| `Stop` | Когда Claude завершает ответ |
+| `StopFailure` | Когда ход завершается из-за ошибки API |
+| `TeammateIdle` | Когда товарищ по команде [команды агентов](https://code.claude.com/docs/ru/agent-teams.md) собирается перейти в режим ожидания |
+| `InstructionsLoaded` | Когда файл CLAUDE.md или `.claude/rules/*.md` загружается в контекст. Срабатывает при запуске сеанса и когда файлы ленивой загрузки загружаются во время сеанса |
+| `ConfigChange` | Когда файл конфигурации изменяется во время сеанса |
+| `CwdChanged` | Когда рабочий каталог изменяется, например когда Claude выполняет команду `cd`. Полезно для реактивного управления окружением с помощью инструментов, таких как direnv |
+| `DirectoryAdded` | Когда рабочий каталог добавляется в середине сеанса через `/add-dir` или запрос управления SDK `register_repo_root` |
+| `FileChanged` | Когда наблюдаемый файл изменяется на диске. Поле `matcher` указывает, какие имена файлов отслеживать |
+| `WorktreeCreate` | Когда worktree создаётся через `--worktree`, `isolation: &quot;worktree&quot;`, или для фонового сеанса. Заменяет поведение git по умолчанию |
+| `WorktreeRemove` | Когда удаляется worktree, созданный хуком `WorktreeCreate` |
+| `PreCompact` | Перед компактизацией контекста |
+| `PostCompact` | После завершения компактизации контекста |
+| `PreModelSwitch` | Перед тем как Claude Code применяет переключение модели, которое вы или клиент запросили. Может заблокировать переключение |
+| `PostModelSwitch` | После изменения модели сеанса, включая изменения, которые Claude Code делает самостоятельно, такие как восстановление модели при возобновлении сеанса |
+| `Elicitation` | Когда сервер MCP запрашивает ввод пользователя во время вызова инструмента |
+| `ElicitationResult` | После того как пользователь отвечает на запрос MCP, перед отправкой ответа обратно на сервер |
+| `SessionEnd` | Когда сеанс завершается |
+
+Каждый hook имеет `type`, который определяет, как он запускается. Большинство hooks используют `&quot;type&quot;: &quot;command&quot;`, который запускает команду оболочки. Доступны четыре других типа:
+
+* `&quot;type&quot;: &quot;http&quot;`: POST данные события на URL. См. [HTTP hooks](#http-hooks).
+* `&quot;type&quot;: &quot;mcp_tool&quot;`: вызвать инструмент на уже подключённом MCP сервере. См. [MCP tool hooks](https://code.claude.com/docs/ru/hooks.md#mcp-tool-hook-fields).
+* `&quot;type&quot;: &quot;prompt&quot;`: однооборотная оценка LLM. См. [Prompt-based hooks](#prompt-based-hooks).
+* `&quot;type&quot;: &quot;agent&quot;`: многооборотная проверка с доступом к инструментам. Agent hooks являются экспериментальными и могут измениться. См. [Agent-based hooks](#agent-based-hooks).
+
+### Объединение результатов из нескольких hooks
+
+Когда несколько hooks совпадают с одним и тем же событием, каждая команда hook выполняется до завершения, прежде чем Claude Code объединит результаты. Один hook, возвращающий `deny`, не останавливает выполнение родственных hooks. Не полагайтесь на `deny` одного hook для подавления побочных эффектов в другом hook.
+
+После завершения всех соответствующих hooks Claude Code объединяет их выходные данные. Для решений о разрешениях `PreToolUse` побеждает наиболее ограничивающий ответ в порядке `deny`, `defer`, `ask`, `allow`. Текст из `additionalContext` сохраняется от каждого hook и передаётся Claude вместе.
+
+Пример ниже регистрирует два hook `PreToolUse` на `Bash`. Первый добавляет каждую команду в файл журнала и выходит с 0. Второй запускает скрипт, который выходит с 2, чтобы отклонить, когда команда содержит `rm -rf`:
+</code></pre>
+<p>{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Bash&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;jq -r .tool_input.command &gt;&gt; ~/.claude/bash.log&quot;
+          },
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;\&quot;$CLAUDE_PROJECT_DIR\&quot;/.claude/hooks/block-rm-rf.sh&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</p>
+<pre><code>
+Когда Claude пытается запустить `rm -rf /tmp/build`, оба hook выполняются параллельно. Hook логирования записывает команду в `~/.claude/bash.log` и выходит с 0, что не сообщает никакого решения. Hook защиты выходит с 2, что отклоняет вызов инструмента. Отклонение побеждает, поэтому Claude Code блокирует команду и показывает Claude stderr защиты. Запись в журнал по-прежнему записывается, потому что hook логирования уже выполнился.
+
+### Чтение ввода и возврат вывода
+
+Hooks взаимодействуют с Claude Code через stdin, stdout, stderr и коды выхода. Когда событие срабатывает, Claude Code передаёт данные, специфичные для события, в виде JSON в stdin вашего скрипта. Ваш скрипт читает эти данные, выполняет свою работу и сообщает Claude Code, что делать дальше, через код выхода.
+
+#### Ввод hook
+
+Каждое событие включает общие поля, такие как `session_id`, уникальный ID для сеанса, и `cwd`, рабочий каталог при срабатывании события, но каждый тип события добавляет разные данные. Когда Claude запускает команду Bash, hook `PreToolUse` получает эти поля на stdin:
+
+* `hook_event_name`: событие, которое запустило hook
+* `tool_name`: инструмент, который Claude собирается использовать
+* `tool_input`: аргументы, которые Claude передал инструменту. Для Bash его поле `command` содержит команду оболочки.
+
+Например, ввод hook для команды `npm test` выглядит так:
+</code></pre>
+<p>{
+  &quot;session_id&quot;: &quot;abc123&quot;,
+  &quot;cwd&quot;: &quot;/Users/sarah/myproject&quot;,
+  &quot;hook_event_name&quot;: &quot;PreToolUse&quot;,
+  &quot;tool_name&quot;: &quot;Bash&quot;,
+  &quot;tool_input&quot;: {
+    &quot;command&quot;: &quot;npm test&quot;
+  }
+}</p>
+<pre><code>
+Ваш скрипт может анализировать этот JSON и действовать на основе любого из этих полей. Hooks `UserPromptSubmit` получают текст `prompt` вместо этого, hooks `SessionStart` получают `source` (`startup`, `resume`, `clear`, `compact` или `fork`), и так далее. См. [Common input fields](https://code.claude.com/docs/ru/hooks.md#common-input-fields) в справочнике для общих полей и раздел каждого события для схем, специфичных для события.
+
+#### Вывод hook
+
+Ваш скрипт сообщает Claude Code, что делать дальше, записывая в stdout или stderr и выходя с определённым кодом. Следующий hook `PreToolUse` блокирует команду:
+</code></pre>
+<p>#!/bin/bash
+INPUT=$(cat)
+COMMAND=$(echo &quot;$INPUT&quot; | jq -r &#x27;.tool_input.command&#x27;)</p>
+<p>if echo &quot;$COMMAND&quot; | grep -q &quot;drop table&quot;; then
+  echo &quot;Blocked: dropping tables is not allowed&quot; &gt;&amp;2  # stderr становится обратной связью для Claude
+  exit 2 # exit 2 = заблокировать действие
+fi</p>
+<p>exit 0  # exit 0 = решения нет; применяется обычный поток разрешений</p>
+<pre><code>
+При коде выхода, отличном от 0 и 2, и отсутствии корректного вывода JSON действие для большинства событий продолжается, если только хук не относится к тем, [чей сбой блокирует действие](https://code.claude.com/docs/ru/hooks.md#block-the-action-when-a-hook-fails). Один из примеров — хук с `onFailure`, установленным в `&quot;block&quot;`. Завершитесь с кодом 0, чтобы сообщить об отсутствии возражений, или с кодом 2, чтобы заблокировать действие:
+
+* **Exit 0**: если хук `PreToolUse` завершается с кодом 0, вызов инструмента всё равно проходит обычный [поток разрешений](https://code.claude.com/docs/ru/permissions.md), потому что код 0 его не одобряет. Для хуков `UserPromptSubmit`, `UserPromptExpansion`, `SessionStart` и `PostModelSwitch` Claude Code добавляет в контекст Claude stdout, который он [обрабатывает как простой текст](https://code.claude.com/docs/ru/hooks.md#exit-code-0).
+* **Exit 2**: запишите причину в stderr. В зависимости от события Claude получает её как обратную связь, чтобы скорректировать действия, её видит пользователь или никакое сообщение не выводится, как в случае с `ConfigChange` и `Elicitation`. Некоторые события нельзя заблокировать: для `SessionStart` и других код 2 показывает stderr пользователю, и выполнение продолжается. Полный список см. в [exit code 2 behavior per event](https://code.claude.com/docs/ru/hooks.md#exit-code-2-behavior-per-event).
+
+Чтобы найти результат для сочетания кода выхода и stdout в событии, таком как `PreToolUse`, см. [Exit code output](https://code.claude.com/docs/ru/hooks.md#exit-code-output). В том же разделе смотрите события с собственными правилами кодов выхода, например `WorktreeCreate`.
+
+#### Структурированный вывод JSON
+
+Коды выхода дают вам только возможность заблокировать или остаться молчаливым. Для большего контроля выйдите с 0 и выведите объект JSON в stdout вместо этого.
+
+&gt; [!NOTE]
+&gt;
+&gt; Используйте exit 2 для блокировки с сообщением stderr или exit 0 с JSON для структурированного управления. Выберите один подход для каждого hook. Для того, что происходит, когда вы их смешиваете, см. [Exit code output](https://code.claude.com/docs/ru/hooks.md#exit-code-output).
+
+Например, hook `PreToolUse` может отклонить вызов инструмента и сказать Claude почему, или передать его пользователю на одобрение:
+</code></pre>
+<p>{
+  &quot;hookSpecificOutput&quot;: {
+    &quot;hookEventName&quot;: &quot;PreToolUse&quot;,
+    &quot;permissionDecision&quot;: &quot;deny&quot;,
+    &quot;permissionDecisionReason&quot;: &quot;Use rg instead of grep for better performance&quot;
+  }
+}</p>
+<pre><code>
+С `&quot;deny&quot;` Claude Code отменяет вызов инструмента и передаёт `permissionDecisionReason` обратно Claude.
+
+Для `PreToolUse` также можно вернуть `&quot;ask&quot;`, чтобы показать пользователю обычный запрос разрешения, или `&quot;allow&quot;`, чтобы пропустить интерактивный запрос разрешения. При `&quot;allow&quot;` правила запрета и запроса, включая управляемые списки запретов предприятия, по-прежнему применяются, как и запросы для:
+
+* Чтения из [сетевых путей](https://code.claude.com/docs/ru/permissions.md#network-paths)
+* MCP-инструментов, помеченных [`requiresUserInteraction`](https://code.claude.com/docs/ru/mcp#require-approval-for-a-specific-tool)
+* Вызовов [инструментов, которые приложение Agent SDK помечает `always_ask`](https://code.claude.com/docs/ru/agent-sdk/custom-tools#require-approval-for-specific-tools), если только [режим разрешений не подтверждает вызов](https://code.claude.com/docs/ru/agent-sdk/typescript.md#permission-modes-that-can-approve-an-always_ask-call)
+* Инструментов коннекторов, [для которых ваша организация установила `ask`](https://code.claude.com/docs/ru/mcp#organization-controls-on-connector-tools), в сессиях, где эта настройка доходит до Claude Code
+
+  О том, что делает `&quot;allow&quot;` в режиме планирования, см. [Подтверждения хуков в режиме планирования](https://code.claude.com/docs/ru/permissions.md#hook-approvals-in-plan-mode).
+
+Четвёртое значение, `&quot;defer&quot;`, доступно в [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) с флагом `-p`. Его возврат завершает ход с сохранённым вызовом инструмента, чтобы обёртка Agent SDK могла собрать ввод и возобновить работу. См. [Defer a tool call for later](https://code.claude.com/docs/ru/hooks.md#defer-a-tool-call-for-later) в справочнике.
+
+Hook `PreModelSwitch` возвращает то же поле `permissionDecision`: `&quot;allow&quot;` позволяет переключению модели продолжиться, а `&quot;deny&quot;` отменяет его. `&quot;ask&quot;` заставляет вас подтвердить переключение при запуске `/model` в интерактивном сеансе; везде в другом месте Claude Code обрабатывает `&quot;ask&quot;` как отказ. См. [PreModelSwitch decision control](https://code.claude.com/docs/ru/hooks.md#premodelswitch-decision-control).
+
+Другие события используют разные шаблоны решений. Например, hooks `PostToolUse` и `Stop` используют поле `decision: &quot;block&quot;` верхнего уровня, а `PermissionRequest` использует `hookSpecificOutput.decision.behavior`. См. [summary table](https://code.claude.com/docs/ru/hooks.md#decision-control) в справочнике для полного разбора по событиям.
+
+Для hooks `UserPromptSubmit` используйте `hookSpecificOutput.additionalContext` вместо этого для внедрения текста в контекст Claude. Вложите `additionalContext` внутри `hookSpecificOutput`; если вы поместите его на верхний уровень JSON, Claude Code молча его игнорирует. Например, этот вывод добавляет текущее состояние ветви к каждому запросу:
+</code></pre>
+<p>{
+  &quot;hookSpecificOutput&quot;: {
+    &quot;hookEventName&quot;: &quot;UserPromptSubmit&quot;,
+    &quot;additionalContext&quot;: &quot;Current branch: release-42. Deploy freeze until Friday.&quot;
+  }
+}</p>
+<pre><code>
+См. [UserPromptSubmit decision control](https://code.claude.com/docs/ru/hooks.md#userpromptsubmit-decision-control) для полной формы вывода, включая блокировку запросов и установку заголовка сеанса.
+
+Hooks с `type: &quot;prompt&quot;` обрабатывают вывод иначе: см. [Prompt-based hooks](#prompt-based-hooks).
+
+### Фильтрация hooks с помощью matchers
+
+Без matcher hook срабатывает при каждом возникновении его события. Matchers позволяют вам сузить это. Например, если вы хотите запустить форматер только после редактирования файлов, а не после каждого вызова инструмента, добавьте matcher к вашему hook `PostToolUse`:
+</code></pre>
+<p>{
+  &quot;hooks&quot;: {
+    &quot;PostToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Edit|Write&quot;,
+        &quot;hooks&quot;: [
+          { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;prettier --write ...&quot; }
+        ]
+      }
+    ]
+  }
+}</p>
+<pre><code>
+Matcher `&quot;Edit|Write&quot;` срабатывает только, когда Claude использует инструмент `Edit` или `Write`, а не когда он использует `Bash`, `Read` или любой другой инструмент. Запятая разделяет альтернативы так же, поэтому `&quot;Edit, Write&quot;` эквивалентна. См. [Matcher patterns](https://code.claude.com/docs/ru/hooks.md#matcher-patterns) для того, как простые имена и регулярные выражения оцениваются.
+
+&gt; [!NOTE]
+&gt;
+&gt; Claude может также создавать или изменять файлы, запуская команды оболочки. Если ваш hook должен видеть каждое изменение файла, например для сканирования соответствия или логирования аудита, добавьте hook [`Stop`](https://code.claude.com/docs/ru/hooks#stop), который сканирует рабочее дерево один раз за ход. Для покрытия за вызов вместо этого также соответствуйте `Bash|PowerShell` и пусть ваш скрипт перечисляет изменённые и неотслеживаемые файлы с помощью `git status --porcelain`. Раздел [PowerShell hook input](https://code.claude.com/docs/ru/hooks.md#powershell) объясняет, почему соответствие только `Bash` недостаточно. Чтобы запустить hook при изменении определённого файла на диске, независимо от того, что его записало, используйте hook [FileChanged](https://code.claude.com/docs/ru/hooks.md#filechanged).
+
+Каждый тип события соответствует определённому полю:
+
+| Событие | Что фильтрует matcher | Примеры значений matcher |
+| :- | :- | :- |
+| `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`, `PermissionDenied` | имя инструмента | `Bash`, `Edit\|Write`, `mcp__.*` |
+| `SessionStart` | как начался сеанс | `startup`, `resume`, `clear`, `compact`, `fork` |
+| `Setup` | какой флаг CLI запустил setup | `init`, `maintenance` |
+| `SessionEnd` | почему закончился сеанс | `clear`, `resume`, `logout`, `prompt_input_exit`, `other` |
+| `Notification` | тип уведомления | `permission_prompt`, `idle_prompt`, `auth_success`, `auth_storage_failure`, `elicitation_dialog`, `elicitation_url_dialog`, `elicitation_complete`, `elicitation_response`, `agent_needs_input`, `agent_completed`, `quota_auto_resume_fired`, `quota_auto_resume_stale`, `quota_auto_resume_disabled`, `plugin_notification` |
+| `SubagentStart` | тип агента | `general-purpose`, `Explore`, `Plan` или пользовательские имена агентов |
+| `PreCompact`, `PostCompact` | что запустило компактирование | `manual`, `auto` |
+| `PreModelSwitch`, `PostModelSwitch` | каноническое имя модели, на которую переключается сеанс, как описано в [PreModelSwitch](https://code.claude.com/docs/ru/hooks.md#premodelswitch) | `claude-opus-5`, `claude-opus-4-6\|claude-opus-5`, `.*opus.*` |
+| `SubagentStop` | тип агента | те же значения, что и `SubagentStart` |
+| `ConfigChange` | источник конфигурации | `user_settings`, `project_settings`, `local_settings`, `policy_settings`, `skills` |
+| `DirectoryAdded` | как был добавлен каталог | `slash_command`, `register_repo_root` |
+| `StopFailure` | тип ошибки | `rate_limit`, `authentication_failed`, `oauth_org_not_allowed`, `account_on_hold`, `billing_error`, `invalid_request`, `model_not_found`, `server_error`, `max_output_tokens`, `cloud_credential_error`, `unknown` |
+| `InstructionsLoaded` | причина загрузки | `session_start`, `nested_traversal`, `path_glob_match`, `include`, `compact` |
+| `Elicitation` | имя MCP сервера | ваши настроенные имена MCP серверов |
+| `ElicitationResult` | имя MCP сервера | те же значения, что и `Elicitation` |
+| `FileChanged` | буквальные имена файлов для наблюдения (см. [FileChanged](https://code.claude.com/docs/ru/hooks.md#filechanged)) | `.envrc\|.env` |
+| `UserPromptExpansion` | имя команды | ваши имена skill или команд |
+| `UserPromptSubmit`, `PostToolBatch`, `Stop`, `TeammateIdle`, `TaskCreated`, `TaskCompleted`, `WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `MessageDisplay` | поддержка matcher отсутствует | всегда срабатывает при каждом возникновении |
+
+Вкладки ниже показывают несколько дополнительных matchers на разных типах событий.
+
+&gt; [tab] Логирование успешных команд Bash
+&gt;
+&gt; Сопоставляйте только вызовы инструмента `Bash` и записывайте каждую успешную команду в файл. Событие `PostToolUse` срабатывает после успешного завершения команды, поэтому `tool_input.command` содержит то, что было выполнено. Хук получает данные события в виде JSON в stdin, а `jq -r &#x27;.tool_input.command&#x27;` извлекает только строку команды, которую `&gt;&gt;` добавляет в лог-файл:
+&gt;
+&gt; ```json theme={null}
+&gt; {
+&gt;   &quot;hooks&quot;: {
+&gt;     &quot;PostToolUse&quot;: [
+&gt;       {
+&gt;         &quot;matcher&quot;: &quot;Bash&quot;,
+&gt;         &quot;hooks&quot;: [
+&gt;           {
+&gt;             &quot;type&quot;: &quot;command&quot;,
+&gt;             &quot;command&quot;: &quot;jq -r &#x27;.tool_input.command&#x27; &gt;&gt; ~/.claude/command-log.txt&quot;
+&gt;           }
+&gt;         ]
+&gt;       }
+&gt;     ]
+&gt;   }
+&gt; }
+&gt; ```
+
+&gt; [tab] Соответствие MCP инструментам
+&gt;
+&gt; MCP инструменты используют другое соглашение об именовании, чем встроенные инструменты: `mcp__&lt;server&gt;__&lt;tool&gt;`, где `&lt;server&gt;` — имя MCP сервера, а `&lt;tool&gt;` — инструмент, который он предоставляет. Например, `mcp__github__search_repositories` или `mcp__filesystem__read_file`. Инструменты из [plugin-bundled server](https://code.claude.com/docs/ru/mcp.md#plugin-provided-mcp-servers) используют вместо этого сегмент сервера с областью видимости, такой как `mcp__plugin_my-plugin_db__query`. Используйте matcher regex для нацеливания на все инструменты с определённого сервера, или соответствуйте серверам с шаблоном, таким как `mcp__.*__write.*`. См. [Match MCP tools](https://code.claude.com/docs/ru/hooks.md#match-mcp-tools) в справочнике для полного списка примеров.
+&gt;
+&gt; Команда ниже извлекает имя инструмента из JSON ввода hook с помощью `jq` и записывает его в stderr. Запись в stderr сохраняет stdout чистым для вывода JSON и отправляет сообщение в [debug log](https://code.claude.com/docs/ru/hooks.md#debug-hooks):
+&gt;
+&gt; ```json theme={null}
+&gt; {
+&gt;   &quot;hooks&quot;: {
+&gt;     &quot;PreToolUse&quot;: [
+&gt;       {
+&gt;         &quot;matcher&quot;: &quot;mcp__github__.*&quot;,
+&gt;         &quot;hooks&quot;: [
+&gt;           {
+&gt;             &quot;type&quot;: &quot;command&quot;,
+&gt;             &quot;command&quot;: &quot;echo \&quot;GitHub tool called: $(jq -r &#x27;.tool_name&#x27;)\&quot; &gt;&amp;2&quot;
+&gt;           }
+&gt;         ]
+&gt;       }
+&gt;     ]
+&gt;   }
+&gt; }
+&gt; ```
+
+&gt; [tab] Очистка при завершении сеанса
+&gt;
+&gt; Событие `SessionEnd` поддерживает matchers на причину завершения сеанса. Этот hook срабатывает только на `clear` (когда вы запускаете `/clear`), а не на нормальные выходы:
+&gt;
+&gt; ```json theme={null}
+&gt; {
+&gt;   &quot;hooks&quot;: {
+&gt;     &quot;SessionEnd&quot;: [
+&gt;       {
+&gt;         &quot;matcher&quot;: &quot;clear&quot;,
+&gt;         &quot;hooks&quot;: [
+&gt;           {
+&gt;             &quot;type&quot;: &quot;command&quot;,
+&gt;             &quot;command&quot;: &quot;rm -f /tmp/claude-scratch-*.txt&quot;
+&gt;           }
+&gt;         ]
+&gt;       }
+&gt;     ]
+&gt;   }
+&gt; }
+&gt; ```
+
+#### Фильтрация по имени инструмента и аргументам с помощью поля `if`
+
+Поле `if` использует [permission rule syntax](https://code.claude.com/docs/ru/permissions.md) для фильтрации hooks по имени инструмента и аргументам вместе, поэтому процесс hook порождается только когда вызов инструмента совпадает. Это выходит за рамки `matcher`, который фильтрует на уровне группы только по имени инструмента.
+
+Например, чтобы запустить hook только когда Claude использует команды `git` вместо всех команд Bash:
+</code></pre>
+<p>{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Bash&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;if&quot;: &quot;Bash(git *)&quot;,
+            &quot;command&quot;: &quot;\&quot;$CLAUDE_PROJECT_DIR\&quot;/.claude/hooks/check-git-policy.sh&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</p>
+<pre><code>
+Запускается ли процесс hook команды зависит от формы вашего шаблона `if` и команды Bash, которую Claude вызывает:
+
+| Шаблон `if` | Команда Bash | Hook запускается? | Почему |
+| :- | :- | :- | :- |
+| `Bash(git *)` | `git push` | да | имя команды совпадает |
+| `Bash(git *)` | `npm test &amp;&amp; git push` | да | каждая подкоманда проверяется; `git push` совпадает |
+| `Bash(git *)` | `echo $(git log)` | да | команды внутри `$()` и обратных кавычек проверяются; `git log` совпадает |
+| `Bash(git *)` | `echo $(date)` | нет | ни одна подкоманда не совпадает с `git *` |
+| `Bash(git push *)` | `echo $(date)` | да | шаблоны, которые указывают больше, чем имя команды, запускают hook в любом случае на `$()`, обратных кавычках или `$VAR` |
+
+Когда Claude Code не может разбить ввод Bash на подкоманды, он запускает ваш хук независимо от шаблона. [Таблица сопоставления Bash](https://code.claude.com/docs/ru/hooks.md#bash-if-matching) описывает формы команд, которые Claude Code может и не может сузить по подкоманде. Поскольку фильтр работает по принципу «насколько возможно», для жёсткого разрешения или запрета используйте [систему разрешений](https://code.claude.com/docs/ru/permissions.md), а не хук.
+
+Поле `if` принимает те же шаблоны, что и правила разрешений: `&quot;Bash(git *)&quot;`, `&quot;Edit(*.ts)&quot;` и так далее. Для соответствия нескольким именам инструментов используйте отдельные обработчики каждый со своим значением `if`, или соответствуйте на уровне `matcher`, где поддерживается чередование трубой.
+
+`if` работает только на событиях инструментов: `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest` и `PermissionDenied`. Добавление его к любому другому событию предотвращает запуск hook.
+
+### Настройка местоположения hook
+
+Где вы добавляете hook, определяет его область:
+
+| Местоположение | Область | Общий доступ |
+| :- | :- | :- |
+| `~/.claude/settings.json` | Все ваши проекты | Нет, локально на вашей машине |
+| `.claude/settings.json` | Один проект | Да, можно зафиксировать в репо |
+| `.claude/settings.local.json` | Один проект | Нет, gitignored когда Claude Code сохраняет параметр в него |
+| Managed policy settings | Организация | Да, контролируется администратором |
+| [Plugin](https://code.claude.com/docs/ru/plugins/overview.md) `hooks/hooks.json` | Когда плагин включен | Да, упакован с плагином |
+| [Skill](https://code.claude.com/docs/ru/skills.md) frontmatter | Остаток сеанса после вызова skill. См. [Hooks in skills and agents](https://code.claude.com/docs/ru/hooks.md#hooks-in-skills-and-agents) | Да, определено в файле skill |
+| [Subagent](https://code.claude.com/docs/ru/sub-agents.md) frontmatter | Пока этот subagent запущен | Да, определено в файле subagent |
+
+Запустите [`/hooks`](https://code.claude.com/docs/ru/hooks#the-%2Fhooks-menu) в Claude Code для просмотра всех настроенных hooks, сгруппированных по событиям.
+
+Чтобы отключить hooks, установите `&quot;disableAllHooks&quot;: true` в вашем файле параметров. Claude Code читает значение, оставшееся после применения [settings precedence](https://code.claude.com/docs/ru/hooks.md#disable-or-remove-hooks), поэтому файл параметров проекта может переопределить ваш. Hooks, настроенные в управляемых параметрах, по-прежнему запускаются, если `disableAllHooks` также не установлен там. Для полного охвата каждого уровня см. [`disableAllHooks`](https://code.claude.com/docs/ru/settings-reference#disableallhooks).
+
+Если вы редактируете файлы параметров напрямую во время работы Claude Code, наблюдатель файлов обычно автоматически подхватывает изменения hook.
+
+## Hooks на основе подсказок
+
+Для решений, требующих суждения, а не детерминированных правил, используйте hooks `type: &quot;prompt&quot;`. Вместо запуска команды оболочки Claude Code отправляет вашу подсказку и данные ввода hook модели Claude для принятия решения. Вы можете указать другую модель с полем `model`, если вам нужна большая возможность.
+
+Единственная работа модели — вернуть решение в виде JSON:
+
+* `&quot;ok&quot;: true`: действие продолжается
+* `&quot;ok&quot;: false`: что происходит, зависит от события:
+  * `Stop` и `SubagentStop`: значение `reason` передаётся обратно Claude, чтобы он продолжал работать, если только ответ также не устанавливает `&quot;impossible&quot;: true` для обозначения условия, которое никогда не может быть выполнено, в этом случае Claude Code разрешает остановку и ход завершается
+  * `PreToolUse`: вызов инструмента отклоняется; по умолчанию ход завершается и значение `reason` отказа появляется в чате как строка предупреждения. Установите `continueOnBlock: true` для хука, чтобы вместо этого вернуть значение `reason` Claude как ошибку инструмента, чтобы он мог скорректировать действия и продолжить
+  * `PostToolUse`: по умолчанию ход завершается и значение `reason` появляется в чате как строка предупреждения. Установите `continueOnBlock: true`, чтобы вместо этого передать значение `reason` обратно Claude и продолжить ход
+  * `PostToolBatch`, `UserPromptSubmit` и `UserPromptExpansion`: ход завершается и значение `reason` появляется в чате как строка предупреждения
+
+Этот пример использует hook `Stop` для запроса модели, завершены ли все запрошенные задачи. Если модель возвращает `&quot;ok&quot;: false`, потому что условие ещё не выполнено, Claude продолжает работать и использует значение `reason` как свою следующую инструкцию:
+</code></pre>
+<p>{
+  &quot;hooks&quot;: {
+    &quot;Stop&quot;: [
+      {
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;prompt&quot;,
+            &quot;prompt&quot;: &quot;Check if all tasks are complete. If not, respond with {\&quot;ok\&quot;: false, \&quot;reason\&quot;: \&quot;what remains to be done\&quot;}.&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</p>
+<pre><code>
+Для полных параметров конфигурации см. [Hooks на основе подсказок](https://code.claude.com/docs/ru/hooks.md#prompt-based-hooks) в справочнике.
+
+## Hooks на основе агентов
+
+&gt; [!WARNING]
+&gt;
+&gt; Hooks агентов являются экспериментальными. Поведение и конфигурация могут измениться в будущих выпусках. Для производственных рабочих процессов предпочитайте [command hooks](https://code.claude.com/docs/ru/hooks.md#command-hook-fields).
+
+Когда проверка требует проверки файлов или запуска команд, используйте hooks `type: &quot;agent&quot;`. В отличие от hooks подсказок, которые делают один вызов LLM, hooks агентов порождают subagent, который может читать файлы, искать код и использовать другие инструменты для проверки условий перед возвратом решения.
+
+Hooks агентов используют формат ответа `&quot;ok&quot;` / `&quot;reason&quot;` с более длинным временем ожидания по умолчанию 60 секунд и до 50 оборотов использования инструмента. Они не поддерживают поле `impossible` из prompt hooks. При `ok: false` Claude Code обрабатывает hook агента так же, как он обрабатывает prompt hook с `continueOnBlock: true` на том же событии, поэтому на `PreToolUse` и `PostToolUse` ход продолжается; hooks агентов не имеют поля `continueOnBlock`. См. [конфигурацию hooks агентов](https://code.claude.com/docs/ru/hooks.md#agent-hook-configuration) для полей, включая заполнитель `$ARGUMENTS`, который Claude Code заменяет входными данными JSON hook.
+
+Этот пример проверяет, что тесты проходят перед тем, как позволить Claude остановиться:
+</code></pre>
+<p>{
+  &quot;hooks&quot;: {
+    &quot;Stop&quot;: [
+      {
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;agent&quot;,
+            &quot;prompt&quot;: &quot;Verify that all unit tests pass. Run the test suite and check the results. $ARGUMENTS&quot;,
+            &quot;timeout&quot;: 120
+          }
+        ]
+      }
+    ]
+  }
+}</p>
+<pre><code>
+Используйте hooks подсказок, когда данных ввода hook достаточно для принятия решения. Используйте hooks агентов, когда вам нужно проверить что-то против фактического состояния кодовой базы.
+
+Для полных параметров конфигурации см. [Hooks на основе агентов](https://code.claude.com/docs/ru/hooks.md#agent-based-hooks) в справочнике.
+
+## HTTP hooks
+
+Используйте hooks `type: &quot;http&quot;` для POST данных события на HTTP конечную точку вместо запуска команды оболочки. Конечная точка получает тот же JSON, который hook команды получил бы на stdin, и возвращает результаты через тело ответа HTTP, используя тот же формат JSON.
+
+HTTP-хуки полезны, когда вы хотите, чтобы логику хука обрабатывали веб-сервер, облачная функция или внешний сервис, например общий сервис аудита команды. Приведённая ниже конфигурация отправляет каждый успешный вызов инструмента на локальный сервис логирования:
+</code></pre>
+<p>{
+  &quot;hooks&quot;: {
+    &quot;PostToolUse&quot;: [
+      {
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;http&quot;,
+            &quot;url&quot;: &quot;http://localhost:8080/hooks/tool-use&quot;,
+            &quot;headers&quot;: {
+              &quot;Authorization&quot;: &quot;Bearer $MY_TOKEN&quot;
+            },
+            &quot;allowedEnvVars&quot;: [&quot;MY_TOKEN&quot;]
+          }
+        ]
+      }
+    ]
+  }
+}</p>
+<pre><code>
+Ваш эндпоинт отвечает телом JSON в том же [формате вывода](https://code.claude.com/docs/ru/hooks.md#json-output), что и командные хуки, а Claude Code также проверяет код состояния ответа:
+
+* **Код состояния 2xx**: чтобы заблокировать вызов инструмента, верните в теле ответа соответствующие поля `hookSpecificOutput`.
+* **Любой другой код состояния или сбой запроса**: Claude Code сообщает о [неблокирующей ошибке](https://code.claude.com/docs/ru/hooks.md#exit-code-output) и позволяет действию продолжиться, за исключением случаев, когда это хук, [сбой которого блокирует действие](https://code.claude.com/docs/ru/hooks.md#block-the-action-when-a-hook-fails). Чтобы сбой эндпоинта блокировал действие, задайте для хука [`onFailure: &quot;block&quot;`](https://code.claude.com/docs/ru/hooks#block-the-action-when-a-hook-fails).
+
+Значения заголовков поддерживают интерполяцию переменных окружения, используя синтаксис `$VAR_NAME` или `${VAR_NAME}`. Разрешены только переменные, указанные в массиве `allowedEnvVars`; все остальные ссылки `$VAR` остаются пустыми.
+
+Для полных параметров конфигурации и обработки ответов см. [HTTP hooks](https://code.claude.com/docs/ru/hooks.md#http-hook-fields) в справочнике.
+
+## Ограничения и устранение неполадок
+
+### Ограничения
+
+Помните об этих ограничениях при разработке hooks:
+
+* Command hooks взаимодействуют только через stdout, stderr и коды выхода. Они не могут запускать команды `/` или вызовы инструментов. Текст, возвращённый через `additionalContext`, внедряется как [системное напоминание](https://code.claude.com/docs/ru/glossary.md#system-reminder), которое Claude читает как простой текст. HTTP hooks взаимодействуют через тело ответа вместо этого.
+* Время ожидания hook варьируется в зависимости от типа. Переопределите для каждого hook с помощью поля `timeout` в секундах.
+  * `command`, `http`, `mcp_tool`: 10 минут. Claude Code снижает это значение по умолчанию до 30 секунд для hooks `UserPromptSubmit`, `PreModelSwitch` и `PostModelSwitch`, и до 10 секунд для `MessageDisplay`.
+  * `prompt`: 30 секунд.
+  * `agent`: 60 секунд.
+  * Hooks [`SessionEnd`](https://code.claude.com/docs/ru/hooks#sessionend) любого типа совместно используют бюджет в 1,5 секунды. Если ваши параметры устанавливают более длительный `timeout` для каждого hook, Claude Code увеличивает бюджет в соответствии с этим, до 60 секунд.
+* Hooks `PostToolUse` не могут отменить действия, так как инструмент уже выполнен.
+* Хуки [`PermissionRequest`](https://code.claude.com/docs/ru/hooks#permissionrequest) срабатывают, когда Claude Code собирается запросить у вас разрешение или когда он в противном случае автоматически отклонил бы вызов, для которого невозможно показать запрос. В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) с флагом `-p` они по-прежнему запускаются вне [режима `dontAsk`](https://code.claude.com/docs/ru/permission-modes#allow-only-pre-approved-tools-with-dontask-mode), а вызов, по которому ни один хук не принял решение и на который больше ничто не может ответить, отклоняется.
+* Hooks `Stop` срабатывают всякий раз, когда Claude завершает ответ, а не только при завершении задачи. Они не срабатывают при прерывании пользователем. Ошибки API срабатывают [StopFailure](https://code.claude.com/docs/ru/hooks.md#stopfailure) вместо этого.
+* Когда несколько хуков `PreToolUse` возвращают [`updatedInput`](https://code.claude.com/docs/ru/hooks#pretooluse), чтобы переписать входные данные инструмента, Claude Code не объединяет эти изменения и не гарантирует, с каким из них будет запущен инструмент. Избегайте наличия более одного хука, изменяющего входные данные одного и того же инструмента.
+
+### Hooks и режимы разрешений
+
+С помощью хука в файле настроек или в `hooks/hooks.json` плагина нельзя ослабить ограничения сверх того, что разрешают правила разрешений, а `&quot;deny&quot;` хука действует в каждом режиме разрешений:
+
+* **Что по-прежнему имеет приоритет над `&quot;allow&quot;`**: хук, возвращающий `&quot;allow&quot;`, не обходит правила запрета из настроек и не может подавить запрос для:
+  * Чтения из [сетевых путей](https://code.claude.com/docs/ru/permissions.md#network-paths)
+  * Инструментов MCP, отмеченных [`requiresUserInteraction`](https://code.claude.com/docs/ru/mcp#require-approval-for-a-specific-tool)
+  * Вызовов [инструментов, которые приложение Agent SDK помечает как `always_ask`](https://code.claude.com/docs/ru/agent-sdk/custom-tools#require-approval-for-specific-tools), если только [режим разрешений не одобряет этот вызов](https://code.claude.com/docs/ru/agent-sdk/typescript.md#permission-modes-that-can-approve-an-always_ask-call)
+  * Инструментов коннекторов, [которые ваша организация установила на `ask`](https://code.claude.com/docs/ru/mcp#organization-controls-on-connector-tools), в сессиях, где эта настройка достигает Claude Code
+
+В [режиме планирования](https://code.claude.com/docs/ru/permissions.md#hook-approvals-in-plan-mode), если ваш хук `PreToolUse` возвращает `&quot;allow&quot;` для редактирования файла, вы получаете тот же запрос, блокировку или подтверждение, которые редактирование получило бы без хука. Чтобы снять это ограничение на подтверждения хуками, [утвердите план](https://code.claude.com/docs/ru/permission-modes.md#review-and-approve-a-plan) или переключитесь на другой режим разрешений.
+
+* **`&quot;deny&quot;` в каждом режиме разрешений**: хук, возвращающий `permissionDecision: &quot;deny&quot;`, блокирует инструмент даже в режиме `bypassPermissions` или с `--dangerously-skip-permissions`. Хуки `PreToolUse` срабатывают перед любой проверкой режима разрешений в каждом [режиме разрешений](https://code.claude.com/docs/ru/permission-modes.md), включая `dontAsk`. Это позволяет вам применять политику, которую пользователи не могут обойти, изменив свой режим разрешений.
+
+&gt; [!NOTE]
+&gt;
+&gt; На вашем компьютере может не быть [управляемых настроек](https://code.claude.com/docs/ru/settings.md#check-what-your-organization-enforces) и [файла `managed-mcp.json`](https://code.claude.com/docs/ru/managed-mcp#deploy-managed-mcp-json), а ваша сессия может не использовать [учётные данные `/login`](https://code.claude.com/docs/ru/authentication#authentication-precedence) для плана Team или Enterprise. В такой конфигурации [мод](https://code.claude.com/docs/ru/plugins/mods/overview.md) может одобрить вызов, заблокированный вашим хуком `PreToolUse`. Сессия, которая вместо этого работает с API-ключом или долгоживущим [`CLAUDE_CODE_OAUTH_TOKEN`](https://code.claude.com/docs/ru/authentication#generate-a-long-lived-token), не использует этот вход, даже если данные этого входа сохранены.
+&gt;
+&gt; В режиме планирования мод может одобрить такой заблокированный вызов, только если он только для чтения, то есть не редактирование файла. Случаи, в которых одобрение мода не преодолевает ваши правила и хуки, описаны в разделе [Расширение разрешений с помощью хуков](https://code.claude.com/docs/ru/permissions.md#precedence-among-rules-hooks-and-mods).
+
+### Hook не срабатывает
+
+Hook настроен, но никогда не выполняется.
+
+* Запустите `/hooks` и подтвердите, что hook появляется под правильным событием
+* Для хука во frontmatter скилла вызовите скилл или попросите Claude сделать это, затем снова запустите `/hooks`. `/hooks` не отображает хуки из скилла, который не был вызван в текущей сессии. Если `/hooks` по-прежнему не отображает хук, проверьте другие причины, например [frontmatter, который не удалось разобрать](https://code.claude.com/docs/ru/skills.md#skill-not-triggering), или одно из [ограничений для хуков скиллов](https://code.claude.com/docs/ru/hooks.md#limits-on-skill-hooks)
+* Проверьте, что шаблон matcher точно соответствует имени инструмента. Matchers чувствительны к регистру
+* Убедитесь, что вы запускаете правильный тип события: `PreToolUse` срабатывает перед выполнением инструмента, `PostToolUse` срабатывает после. Hook `PermissionRequest` срабатывает, когда Claude Code собирается попросить у вас разрешение; см. [ограничения](#limitations) для неинтерактивных случаев
+
+### Ошибка hook в выводе
+
+Вы видите сообщение вроде &quot;PreToolUse hook error: ...&quot; в стенограмме.
+
+* Ваш скрипт неожиданно вышел с ненулевым кодом. Протестируйте его вручную, передав образец JSON:</code></pre>
+<p>echo &#x27;{&quot;tool_name&quot;:&quot;Bash&quot;,&quot;tool_input&quot;:{&quot;command&quot;:&quot;ls&quot;}}&#x27; | ./my-hook.sh
+  echo $?  # Check the exit code</p>
+<pre><code>* Если вы видите &quot;command not found&quot;, используйте абсолютные пути или `${CLAUDE_PROJECT_DIR}` для ссылки на скрипты. Чтобы полностью избежать экранирования оболочки, добавьте `&quot;args&quot;: []` для переключения на [exec form](https://code.claude.com/docs/ru/hooks.md#exec-form-and-shell-form), который порождает скрипт напрямую без оболочки
+* Если вы видите &quot;jq: command not found&quot;, установите `jq` или используйте Python/Node.js для анализа JSON
+* Если сообщение содержит `blocking because Git Bash wasn&#x27;t found`, вы работаете в Windows, Claude Code не нашёл Git Bash, а хук, завершившийся ошибкой или по таймауту, заблокировал вызов инструмента. Способы исправления см. в разделе [Сбой хуков в Windows без Git Bash](https://code.claude.com/docs/ru/hooks.md#failed-hooks-on-windows-without-git-bash)
+* Если уведомление показывает сообщение о валидации JSON, stdout вашего hook был проанализирован как JSON, но не прошёл валидацию схемы. Если оно показывает сообщение об анализе JSON, stdout выглядел как объект JSON, но не был действительным JSON. Оба случая происходят даже при выходе 0.
+
+  Чтобы исправить ошибку анализа, создайте полезную нагрузку с помощью кодировщика JSON, такого как `jq`, вместо конкатенации строк, чтобы кавычки и обратные слэши внутри значений были экранированы. Раздел [Exit code output](https://code.claude.com/docs/ru/hooks.md#exit-code-output) справочника охватывает комбинации кодов выхода и JSON
+* Если скрипт вообще не запускается, сделайте его исполняемым: `chmod +x ./my-hook.sh`
+
+### `/hooks` показывает, что hooks не настроены
+
+Вы отредактировали файл параметров, но hooks не появляются в меню.
+
+* Редактирования файлов обычно подхватываются автоматически. Если они не появились через несколько секунд, наблюдатель файлов мог пропустить изменение: перезагрузите сеанс для принудительной перезагрузки.
+* Убедитесь, что ваш JSON действителен: конечные запятые и комментарии не допускаются
+* Подтвердите, что файл параметров находится в правильном месте: `.claude/settings.json` для hooks проекта, `~/.claude/settings.json` для глобальных hooks
+* Если в меню отображается `Only hooks from managed settings run here`, ваша организация установила [`allowManagedHooksOnly`](https://code.claude.com/docs/ru/settings-reference#allowmanagedhooksonly). Хуки в ваших пользовательских, проектных и локальных файлах настроек не запускаются и не отображаются в списке
+
+### Stop hook достигает предела блокировки
+
+Claude продолжает работать вместо остановки, а затем завершает ход с предупреждением о том, что Stop hook заблокировал слишком много раз подряд без прогресса.
+
+Claude Code переопределяет Stop-хук после того, как он блокирует восемь раз подряд без единого вызова инструмента со стороны Claude между блокировками. Ваш скрипт хука должен проверять, не инициировал ли он уже продолжение работы. Разберите поле `stop_hook_active` из входного JSON и завершитесь досрочно, если оно равно `true`:
+</code></pre>
+<p>#!/bin/bash
+INPUT=$(cat)
+if [ &quot;$(echo &quot;$INPUT&quot; | jq -r &#x27;.stop_hook_active&#x27;)&quot; = &quot;true&quot; ]; then
+  exit 0  # Allow Claude to stop
+fi</p>
+<h1 id="rest-of-your-hook-logic">... rest of your hook logic <a class="h-anchor" href="#rest-of-your-hook-logic" aria-label="Ссылка на раздел">#</a></h1>
+<pre><code>
+Если ваш hook законно нуждается в более чем восьми итерациях для сходимости, повысьте предел с помощью [`CLAUDE_CODE_STOP_HOOK_BLOCK_CAP`](https://code.claude.com/docs/ru/env-vars).
+
+### Hook JSON не имеет эффекта
+
+Ваш hook выводит действительный JSON, но решение не вступает в силу и в стенограмме не появляется никакой ошибки. Проверьте, какая причина применима:
+
+* **Дополнительный вывод перед JSON**: что-то ещё записывает в stdout раньше, обычно безусловный `echo` в вашем профиле оболочки, поэтому вывод больше не начинается с `{`. См. [Вывод профиля оболочки перед JSON](#shell-profile-output-before-the-json).
+* **Поле на неправильном уровне**: сравните размещение каждого поля с форматом [JSON output](https://code.claude.com/docs/ru/hooks.md#json-output). Например, `permissionDecision` должен находиться внутри `hookSpecificOutput`, а не на верхнем уровне. См. [Поля на неправильном уровне](#fields-at-the-wrong-level).
+
+#### Вывод профиля оболочки перед JSON
+
+Хуки запускаются в неинтерактивных оболочках, но Git Bash и некоторые конфигурации, например `BASH_ENV`, указывающий на `~/.bashrc`, всё равно загружают ваш профиль, и всё, что профиль выводит, попадает в stdout раньше JSON вашего хука:
+</code></pre>
+<p>Shell ready on arm64
+{&quot;decision&quot;: &quot;block&quot;, &quot;reason&quot;: &quot;Not allowed&quot;}</p>
+<pre><code>
+Если хук не является [асинхронным](https://code.claude.com/docs/ru/hooks.md#how-async-hooks-execute), Claude Code воспринимает вывод, который не начинается с `{`, как простой текст, поэтому ваш JSON игнорируется. Поскольку хук завершился с кодом 0, в транскрипте тоже не отображается никакой ошибки. Чтобы проверить эту причину, запустите Claude Code с `claude --debug`, вызовите срабатывание хука и найдите в [логе отладки](https://code.claude.com/docs/ru/hooks.md#debug-hooks) строку `Hook output does not start with {`. Чтобы исправить это, оберните операторы `echo` в вашем профиле так, чтобы они выполнялись только в интерактивных оболочках:
+</code></pre>
+<h1 id="в-zshrc-или-bashrc">В ~/.zshrc или ~/.bashrc <a class="h-anchor" href="#в-zshrc-или-bashrc" aria-label="Ссылка на раздел">#</a></h1>
+<p>if [[ $- == <em>i</em> ]]; then
+  echo &quot;Shell ready&quot;
+fi</p>
+<pre><code>
+Переменная `$-` содержит флаги оболочки, и `i` означает интерактивный. Hooks запускаются в неинтерактивных оболочках, поэтому echo пропускается.
+
+#### Поля на неправильном уровне
+
+Когда ваш hook возвращает `permissionDecision` или `additionalContext` на верхнем уровне вместо внутри `hookSpecificOutput`, JSON всё ещё анализируется, и Claude Code игнорирует неправильно размещённые поля без сообщения об ошибке. Чтобы увидеть, какие поля он игнорировал, запустите Claude Code с `claude --debug` и найдите в [журнале отладки](https://code.claude.com/docs/ru/hooks.md#debug-hooks) `Hook JSON output had unrecognized keys`.
+
+### Проверка того, что сделал хук
+
+Нажмите `Ctrl+O`, чтобы открыть представление транскрипта, и найдите результат работы хука:
+
+* **Успех**: вы ничего не видите, если только JSON хука не выводит что-либо, например `systemMessage` или обратную связь Stop-хука.
+  * Чтобы убедиться, что хук запустился, проверьте его эффект, например переформатированный файл
+* **Блокирующая ошибка**: для большинства событий вы видите сообщение, сопровождавшее блокировку, например `Blocked: rm commands are not allowed`. Для нескольких событий, таких как `ConfigChange` и `Elicitation`, сообщение не отображается. Откуда берётся сообщение, описано в разделе [Exit code 2](https://code.claude.com/docs/ru/hooks.md#exit-code-2).
+* **Неблокирующая ошибка**: уведомление `&lt;hook name&gt; hook error` с `Failed with non-blocking status code:` означает, что ваш хук не остановил действие. Вы не увидите этого уведомления, если завершается ошибкой command hook для такого события, как `Notification`.
+
+Чтобы узнать результат для сочетания кода выхода и stdout для такого события, как `PreToolUse`, см. раздел [Exit code output](https://code.claude.com/docs/ru/hooks.md#exit-code-output) справочника. В том же разделе описаны события с собственными правилами для кодов выхода, например `WorktreeCreate`.
+
+Для получения сведений о выполнении прочитайте [лог отладки](https://code.claude.com/docs/ru/hooks.md#debug-hooks). Запустите Claude Code с `claude --debug-file /tmp/claude.log`, чтобы записывать лог по известному пути, затем выполните `tail -f /tmp/claude.log` в другом терминале. Если вы запустили Claude Code без этого флага, выполните `/debug` во время сессии, чтобы включить логирование и узнать путь к логу.
+
+## Узнайте больше
+
+* [Справочник Hooks](https://code.claude.com/docs/ru/hooks.md): полные схемы событий, формат вывода JSON, асинхронные hooks и MCP tool hooks
+* [Соображения безопасности](https://code.claude.com/docs/ru/hooks.md#security-considerations): просмотрите перед развёртыванием hooks в общих или производственных средах
+* [Пример валидатора команд Bash](https://github.com/anthropics/claude-code/blob/main/examples/hooks/bash_command_validator_example.py): полная справочная реализация
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Настройка сочетаний клавиш</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Настройка сочетаний клавиш <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Настройте сочетания клавиш в Claude Code с помощью файла конфигурации keybindings.</p>
+</blockquote>
+<p>Claude Code поддерживает настраиваемые сочетания клавиш. Запустите <code>/keybindings</code> для создания или открытия файла конфигурации в <code>~/.claude/keybindings.json</code>.</p>
+<h3 id="h-2">Файл конфигурации <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Файл конфигурации сочетаний клавиш — это объект с массивом <code>bindings</code>. Каждый блок указывает контекст и карту нажатий клавиш на действия.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Изменения в файле сочетаний клавиш автоматически обнаруживаются и применяются без перезагрузки Claude Code.</p>
+</blockquote>
+<p>| Поле | Описание |
+| :- | :- |
+| <code>$schema</code> | Необязательный URL JSON Schema для автодополнения редактора |
+| <code>$docs</code> | Необязательный URL документации |
+| <code>bindings</code> | Массив блоков привязок по контексту |</p>
+<p>Этот пример привязывает <code>Ctrl+E</code> к открытию внешнего редактора в контексте чата и отменяет привязку <code>Ctrl+S</code>:</p>
+<p>```json theme={null}
+{
+  &quot;$schema&quot;: &quot;https://www.schemastore.org/claude-code-keybindings.json&quot;,
+  &quot;$docs&quot;: &quot;https://code.claude.com/docs/en/keybindings&quot;,
+  &quot;bindings&quot;: [
+    {
+      &quot;context&quot;: &quot;Chat&quot;,
+      &quot;bindings&quot;: {
+        &quot;ctrl+e&quot;: &quot;chat:externalEditor&quot;,
+        &quot;ctrl+s&quot;: null
+      }
+    }
+  ]
+}</p>
+<pre><code>
+## Contexts
+
+Each binding block specifies a **context** where the bindings apply:
+
+| Context | Description |
+| :- | :- |
+| `Global` | Применяется везде в приложении |
+| `Chat` | Основная область ввода чата |
+| `Autocomplete` | Меню автодополнения открыто |
+| `Settings` | Меню параметров |
+| `Confirmation` | Диалоги разрешений и подтверждений |
+| `Tabs` | Компоненты навигации по вкладкам |
+| `Help` | Меню справки видимо |
+| `Transcript` | Средство просмотра стенограммы |
+| `HistorySearch` | Режим поиска по истории (Ctrl+R) |
+| `Task` | Задача выполняется на переднем плане |
+| `ThemePicker` | Диалог выбора темы |
+| `Attachments` | Навигация по вложениям изображений в диалогах выбора |
+| `Footer` | Навигация по индикатору нижнего колонтитула (задачи, команды, diff, артефакты) |
+| `MessageSelector` | Выбор сообщения в диалоге перемотки и резюме |
+| `DiffDialog` | Навигация [средства просмотра diff](#diff-actions) |
+| `DiffPanel` | [Панель diff](https://code.claude.com/docs/ru/interactive-mode.md#diff-panel) открыта |
+| `ModelPicker` | Уровень усилий выбора модели |
+| `EffortSlider` | Ползунок усилий, открытый с помощью `/effort` |
+| `Select` | Универсальные компоненты выбора/списка |
+| `Plugin` | Диалог плагина (обзор, обнаружение, управление) |
+| `AbovePrompt` | [Полоса над промптом](#above-prompt-actions) или кнопка в ней находится в фокусе клавиатуры |
+| `AbovePromptInput` | Поле ввода в полосе над промптом или на панели мода находится в фокусе клавиатуры |
+| `AbovePromptSelect` | Список выбора в полосе над промптом или на панели мода находится в фокусе клавиатуры |
+| `Pane` | Панель, отрисованная [модом](https://code.claude.com/docs/ru/plugins/mods/interface.md#know-which-keys-your-mod-can-receive), находится в фокусе клавиатуры |
+| `PaneField` | Поле ввода или список выбора на панели мода находится в фокусе клавиатуры |
+| `Agents` | [Представление агента](https://code.claude.com/docs/ru/agent-view.md) (`claude agents`) |
+| `Scroll` | Прокрутка разговора и выделение текста в полноэкранном режиме |
+
+До версии 2.1.205 контекст `Doctor` и действие `doctor:fix` существовали для экрана диагностики `/doctor`.
+
+## Доступные действия
+
+Действия следуют формату `namespace:action`, например `chat:submit` для отправки сообщения или `app:toggleTodos` для отображения списка задач. Каждый контекст имеет определённые доступные действия.
+
+### Действия приложения
+
+Действия, доступные в контексте `Global`:
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `app:interrupt` | Ctrl+C | Отменить текущую операцию |
+| `app:exit` | Ctrl+D | Выход из Claude Code. Нажмите дважды в течение 800 мс для подтверждения |
+| `app:redraw` | (не привязано) | Принудительно перерисовать терминал |
+| `app:toggleTodos` | Ctrl+T | Переключить видимость списка задач Claude. Это не представление фоновых задач [`/tasks`](https://code.claude.com/docs/ru/commands) |
+| `app:toggleTranscript` | Ctrl+O | Переключить подробную стенограмму |
+
+### Действия истории
+
+Действия для навигации по истории команд:
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `history:search` | Ctrl+R | Открыть поиск истории |
+| `history:previous` | Up | Предыдущий элемент истории |
+| `history:next` | Down | Следующий элемент истории |
+
+### Действия чата
+
+Действия, доступные в контексте `Chat`:
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `chat:cancel` | Escape | Отменить текущий ввод |
+| `chat:clearInput` | Ctrl+L | Принудительно перерисовать весь экран, сохраняя ввод и разговор |
+| `chat:clearScreen` | Cmd+K | То же, что `chat:clearInput`. См. [Очистить диалог](https://code.claude.com/docs/ru/fullscreen.md#clear-the-conversation) для информации о поведении Cmd+K в iTerm2 |
+| `chat:killAgents` | Ctrl+X Ctrl+K | Остановить всех работающих [фоновых субагентов](https://code.claude.com/docs/ru/sub-agents.md#run-subagents-in-foreground-or-background) в этой сессии и отключить [автоматические ответы артефактов](https://code.claude.com/docs/ru/artifacts.md#let-claude-reply-to-comments-on-its-own) на остаток сессии. Нажмите сочетание клавиш дважды в течение 3 секунд для подтверждения. Его можно нажать, пока открыт запрос разрешения фонового субагента |
+| `chat:cycleMode` | Shift+Tab\* | Циклический перебор режимов разрешений |
+| `chat:modelPicker` | Meta+P | Открыть выбор модели |
+| `chat:fastMode` | Meta+O | Переключить быстрый режим |
+| `chat:thinkingToggle` | Meta+T | Переключить расширенное мышление |
+| `chat:submit` | Enter | Отправить сообщение |
+| `chat:queueSubmit` | Ctrl+X Enter | Отправить сообщение, отмеченное для ожидания своей очереди: пока Claude работает, Claude Code [ставит его в очередь](https://code.claude.com/docs/ru/interactive-mode.md#queue-messages-while-claude-works) и никогда не прерывает ход. В отличие от `chat:submit`, он отправляет черновик даже если выделено предложение автодополнения. Требует v2.1.247 или более позднюю версию |
+| `chat:sendNow` | Ctrl+Enter, Ctrl+X Ctrl+S | Отправить ваши [сообщения в очереди](https://code.claude.com/docs/ru/interactive-mode.md#queue-messages-while-claude-works) и ваш черновик с ними прямо сейчас. [Когда Claude Code отправляет то, что вы поставили в очередь](https://code.claude.com/docs/ru/interactive-mode.md#when-claude-code-sends-what-you-queued) описывает, что происходит с ходом, над которым работает Claude. Когда ничего не выполняется, клавиша отправляет черновик, а в [режиме shell](https://code.claude.com/docs/ru/interactive-mode.md#shell-mode-with-prefix) она ставит команду в очередь. Терминалы, которые не сообщают о расширенных клавишах, доставляют `Ctrl+Enter` как простой `Enter`, поэтому `Ctrl+X Ctrl+S` — это привязка, которая работает в любом терминале. Требует v2.1.275 или более позднюю версию |
+| `chat:newline` | Ctrl+J | Вставить новую строку без отправки |
+| `chat:undo` | Ctrl+\_, Ctrl+Shift+- | Отменить последнее действие |
+| `chat:externalEditor` | Ctrl+G, Ctrl+X Ctrl+E | Открыть во внешнем редакторе. [Ввод диспетчера представления агента](https://code.claude.com/docs/ru/agent-view.md#keyboard-shortcuts) также следует сочетаниям клавиш этого действия |
+| `chat:stash` | Ctrl+S | Спрятать текущий запрос |
+| `chat:imagePaste` | Ctrl+V (Alt+V на Windows и WSL) | Вставить изображение из буфера обмена. На WSL оба сочетания клавиш привязаны по умолчанию |
+| `command:&lt;name&gt;` | (не привязано) | Выполнить [команду](https://code.claude.com/docs/ru/commands.md) `/&lt;name&gt;`. Например, `&quot;meta+g&quot;: &quot;command:compact&quot;` в блоке `Chat` заставляет `Meta+G` выполнять `/compact` |
+
+\*На Windows без режима VT (Node \&lt;24.2.0/\&lt;22.17.0, Bun \&lt;1.2.23) по умолчанию используется Meta+M.
+
+### Действия автодополнения
+
+Действия, доступные в контексте `Autocomplete`:
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `autocomplete:accept` | Tab | Принять предложение |
+| `autocomplete:dismiss` | Escape | Закрыть меню |
+| `autocomplete:previous` | Up | Предыдущее предложение |
+| `autocomplete:next` | Down | Следующее предложение |
+
+### Действия подтверждения
+
+Действия, доступные в контексте `Confirmation`:
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `confirm:yes` | Enter | Подтвердить действие |
+| `confirm:no` | Escape | Отклонить действие |
+| `confirm:previous` | Up | Предыдущий вариант |
+| `confirm:next` | Down | Следующий вариант |
+| `confirm:nextField` | Tab | В диалоговом окне `/fast` включить или отключить быстрый режим |
+| `confirm:previousField` | (не привязано) | Claude Code не реагирует на это действие, и `keybindings.json`, в котором оно указано, остаётся действительным |
+| `confirm:toggle` | Space | Переключить выбор |
+| `confirm:cycleMode` | Shift+Tab\* | В запросе разрешения для файла закрывает открытое [поле комментария](https://code.claude.com/docs/ru/permissions.md#add-a-comment-when-you-answer-a-permission-prompt); если поле не открыто, выбирает вариант, который разрешает действие на остаток сессии, когда запрос предлагает этот вариант |
+
+\*На Windows без режима VT (Node \&lt;24.2.0/\&lt;22.17.0, Bun \&lt;1.2.23) по умолчанию используется Meta+M.
+
+До v2.1.257 действие `confirm:toggleExplanation`, привязанное к `Ctrl+E` по умолчанию, показывало сгенерированное моделью объяснение команды в подсказках разрешений Bash и PowerShell.
+
+Диалоги используют `confirm:yes` и `confirm:no` для принятия и отмены даже когда они не задают вопрос да или нет. Если вы привяжете простую букву, такую как `y` или `n`, в этом контексте, буква также действует на диалоги, которые никогда не показывают её как клавишу. Диалог, который показывает `y` и `n` как его клавиши, читает эти буквы сам и не требует привязки.
+
+В большинстве диалогов нажатие `Ctrl+C` или `Ctrl+D` дважды закрывает диалог вместо выхода из Claude Code. Подсказка после первого нажатия говорит, закрывает ли второе нажатие диалог или выходит. Обе клавиши [зарезервированы](#reserved-shortcuts) и не могут быть переназначены.
+
+Этот пример привязывает `y` к `confirm:yes` и `n` к `confirm:no`:
+</code></pre>
+<p>{
+  &quot;bindings&quot;: [
+    {
+      &quot;context&quot;: &quot;Confirmation&quot;,
+      &quot;bindings&quot;: {
+        &quot;y&quot;: &quot;confirm:yes&quot;,
+        &quot;n&quot;: &quot;confirm:no&quot;
+      }
+    }
+  ]
+}</p>
+<pre><code>
+С этими привязками `y` и `n` по-прежнему вводятся как буквы, пока [текстовое поле](#text-fields) имеет фокус.
+
+До v2.1.280 `y` также была привязана к `confirm:yes` и `n` к `confirm:no` по умолчанию. Если вы создали свой `keybindings.json` с помощью `/keybindings` до v2.1.280, файл содержит обе привязки и они остаются в силе, пока вы не удалите эти две строки.
+
+### Действия разрешений
+
+Действия, доступные в контексте `Confirmation` для диалогов разрешений:
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `permission:toggleDebug` | (не привязано) | Claude Code не реагирует на это действие, и `keybindings.json`, в котором оно указано, остаётся действительным |
+
+### Действия стенограммы
+
+Действия, доступные в контексте `Transcript`:
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `transcript:toggleShowAll` | Ctrl+E | Переключить отображение всего содержимого |
+| `transcript:exit` | q, Ctrl+C, Escape | Выход из просмотра стенограммы |
+
+`transcript:toggleShowAll` применяется только в классическом рендерере; в [полноэкранном рендеринге](https://code.claude.com/docs/ru/fullscreen.md) средство просмотра стенограммы не предлагает переключение показа всего.
+
+### Действия поиска истории
+
+Действия, доступные в контексте `HistorySearch`:
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `historySearch:next` | Ctrl+R | Следующее совпадение |
+| `historySearch:accept` | Escape, Tab | Принять выбор |
+| `historySearch:cancel` | Ctrl+C | Отменить поиск |
+| `historySearch:execute` | Enter | Выполнить выбранную команду |
+| `historySearch:cycleScope` | Ctrl+S | Циклический перебор области: сеанс, проект, везде |
+
+Значения по умолчанию `historySearch:next`, `historySearch:accept`, `historySearch:cancel` и `historySearch:execute` применяются к встроенному поиску истории в классическом рендерере, который всегда ищет подсказки из всех проектов. `historySearch:cycleScope` вступает в силу только в [полноэкранном рендеринге](https://code.claude.com/docs/ru/fullscreen.md), где `Ctrl+R` открывает диалог поиска вместо этого и `Ctrl+S` циклирует его область. Другие клавиши диалога фиксированы и не могут быть переназначены: `Enter` или `Tab` помещает выделенное совпадение в ввод подсказки и `Esc` отменяет.
+
+### Действия задачи
+
+Действия, доступные в контексте `Task`:
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `task:background` | Ctrl+B, Ctrl+X Ctrl+B | Переместить текущую задачу в фон |
+
+### Действия темы
+
+Действия, доступные в контексте `ThemePicker`:
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `theme:toggleSyntaxHighlighting` | Ctrl+T | Переключить подсветку синтаксиса |
+
+### Действия справки
+
+Действия, доступные в контексте `Help`:
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `help:dismiss` | Escape | Закрыть меню справки |
+
+### Действия вкладок
+
+Действия, доступные в контексте `Tabs`:
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `tabs:next` | Tab, Right | Следующая вкладка |
+| `tabs:previous` | Shift+Tab, Left | Предыдущая вкладка |
+
+В диалоге с вкладками `tabs:next` и `tabs:previous` переключают вкладки, пока строка вкладок имеет фокус. В некоторых диалогах, таких как `/help` и `/sandbox`, клавиши переключения вкладок также работают изнутри содержимого вкладки.
+
+`Up` и `Down` перемещают фокус между строкой вкладок и содержимым вкладки, а список в содержимом реагирует на клавиши только пока он имеет фокус.
+
+### Действия вложений
+
+Действия, доступные в контексте `Attachments`:
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `attachments:next` | Right | Следующее вложение |
+| `attachments:previous` | Left | Предыдущее вложение |
+| `attachments:remove` | Backspace, Delete | Удалить выбранное вложение |
+| `attachments:exit` | Down, Escape | Выход из навигации по вложениям |
+
+### Действия нижнего колонтитула
+
+Действия, доступные в контексте `Footer`:
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `footer:next` | Right | Следующий элемент нижнего колонтитула |
+| `footer:previous` | Left | Предыдущий элемент нижнего колонтитула |
+| `footer:up` | Up, Ctrl+P | Навигация вверх в нижнем колонтитуле (отмена выбора в верхней части) |
+| `footer:down` | Down, Ctrl+N | Навигация вниз в нижнем колонтитуле |
+| `footer:openSelected` | Enter | Открыть выбранный элемент нижнего колонтитула |
+| `footer:clearSelection` | Escape | Очистить выбор нижнего колонтитула |
+| `footer:close` | x | Остановить выбранного [агента](https://code.claude.com/docs/ru/sub-agents.md#observe-and-steer-running-forks) или выбранный [рабочий процесс](https://code.claude.com/docs/ru/workflows.md#manage-runs) либо скрыть его строку, если он больше не выполняется |
+| `footer:dismiss` | (не привязано) | Привязка клавиши к этому действию не имеет эффекта, и `keybindings.json`, который называет его, остаётся действительным. До v2.1.281 Backspace и Delete были привязаны к нему и удаляли выбранную ссылку артефакта из нижнего колонтитула. |
+
+Пока элемент нижнего колонтитула выбран, например строка в панели агента ниже подсказки, `Enter` открывает его даже если вы переназначили `Enter` в контексте `Chat` на `chat:queueSubmit` или `chat:newline`.
+
+Привязки `Chat` на клавишах, которые контекст `Footer` не привязывает, такие как `Shift+Tab` для `chat:cycleMode`, продолжают работать пока элемент выбран.
+
+### Действия выбора сообщения
+
+В списке сообщений [меню перемотки](https://code.claude.com/docs/ru/checkpointing.md) вы перемещаетесь по сообщениям и выбираете одно с помощью [действий выбора](#select-actions) и их клавиш по умолчанию. Ваши привязки `Select` для этих действий применяются там же. Контекст `MessageSelector` не имеет собственных действий или привязок по умолчанию. Используйте его для изменения клавиши только для этого списка, привязав действие Select, такое как `select:accept`, в блоке `MessageSelector`.
+
+Этот пример привязывает `o` для выбора выделенного сообщения в меню перемотки, без изменения каких-либо других списков:
+</code></pre>
+<p>{
+  &quot;bindings&quot;: [
+    {
+      &quot;context&quot;: &quot;MessageSelector&quot;,
+      &quot;bindings&quot;: {
+        &quot;o&quot;: &quot;select:accept&quot;
+      }
+    }
+  ]
+}</p>
+<pre><code>
+До v2.1.283 этот список игнорировал привязки `Select` и имел собственные действия: `messageSelector:up`, `messageSelector:down`, `messageSelector:top`, `messageSelector:bottom` и `messageSelector:select`. Если ваш `keybindings.json` привязывает одно из этих имён, привязка продолжает работать в этом списке как действие Select, которое делает то же самое. `Home` и `End` прыгают на любой конец списка; до v2.1.283 клавиши, такие как `Shift+K` и `Shift+J`, делали это по умолчанию.
+
+### Действия diff
+
+Эти действия работают только в прежнем средстве просмотра diff в Claude Code, которое `/diff` открывает вне [полноэкранного рендеринга](https://code.claude.com/docs/ru/fullscreen.md) после того, как вы отключите [мод `cc-plugin-diff`](https://code.claude.com/docs/ru/plugins/mods/overview#mods-built-into-claude-code) в `/plugin`. Пока этот мод включён, `/diff` вместо этого открывает [диалоговое окно diff](https://code.claude.com/docs/ru/interactive-mode.md#diff-dialog).
+
+Действия, доступные в контексте `DiffDialog`:
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `diff:dismiss` | Escape | Закрыть средство просмотра diff; из представления деталей возвращает к списку файлов |
+| `diff:previousSource` | Left | Предыдущий источник diff |
+| `diff:nextSource` | Right | Следующий источник diff |
+| `diff:previousFile` | Up, K | Предыдущий файл в списке файлов; прокрутка вверх на одну строку в представлении деталей |
+| `diff:nextFile` | Down, J | Следующий файл в списке файлов; прокрутка вниз на одну строку в представлении деталей |
+| `diff:back` | (не привязано) | Вернуться в средстве просмотра diff. Escape выполняет действие возврата через `diff:dismiss`. Предыдущое значение по умолчанию Left в представлении деталей было удалено в v2.1.203 |
+
+Список файлов также реагирует на [действия выбора](#select-actions), через их клавиши по умолчанию и ваши привязки `Select`. `select:previous` и `select:next` перемещаются к предыдущему и следующему файлу, а `Enter` открывает diff выбранного файла через `select:accept`. Чтобы изменить одну из этих клавиш только для списка файлов, привяжите действие Select в блоке `DiffDialog`.
+
+До v2.1.283 список файлов игнорировал привязки `Select`, и `Enter` открывал diff выбранного файла через отдельное действие `diff:viewDetails`. Если ваш `keybindings.json` привязывает `diff:viewDetails`, привязка продолжает работать в списке файлов как `select:accept`.
+
+Представление деталей diff также привязывает клавиши в стиле пейджера к стандартным [действиям прокрутки](#scroll-actions). Эти привязки являются частью контекста `DiffDialog` и применяются только в представлении деталей; значения по умолчанию контекста `Scroll`, указанные в разделе [Действия прокрутки](#scroll-actions), остаются неизменными.
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `scroll:pageUp` | PageUp | Прокрутить вверх на половину окна просмотра |
+| `scroll:pageDown` | PageDown | Прокрутить вниз на половину окна просмотра |
+| `scroll:fullPageUp` | Shift+Space, B | Прокрутить вверх на полное окно просмотра |
+| `scroll:fullPageDown` | Space | Прокрутить вниз на полное окно просмотра |
+| `scroll:top` | G, Home | Перейти в начало |
+| `scroll:bottom` | Shift+G, End | Перейти в конец |
+
+### Действия панели diff
+
+Действия для [панели diff](https://code.claude.com/docs/ru/interactive-mode.md#diff-panel), которую открывает `/diff` в полноэкранном рендеринге. `app:cycleDiffBase` находится в контексте `DiffPanel`, который активен пока панель открыта; остальные находятся в `Global`.
+
+Встроенный [мод `cc-plugin-diff`](https://code.claude.com/docs/ru/plugins/mods/overview#mods-built-into-claude-code) отрисовывает эту панель и обрабатывает `app:cycleDiffBase`, `app:diffFileListUp` и `app:diffFileListDown`. `app:toggleReplTab`, `app:toggleDiffNoiseFilter` и `app:toggleDiffPreSession` работают только в прежней панели Claude Code, которую `/diff` открывает после того, как вы отключите `cc-plugin-diff` в `/plugin`.
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `app:toggleReplTab` | (не привязано) | Открыть или закрыть панель diff |
+| `app:cycleDiffBase` | Ctrl+X B | Циклировать базу сравнения панели: этот сеанс, незафиксированные изменения, затем ветка |
+| `app:diffFileListUp` | Ctrl+Up, Meta+Up | Прокрутить список файлов панели вверх, когда он переполняется |
+| `app:diffFileListDown` | Ctrl+Down, Meta+Down | Прокрутить список файлов панели вниз, когда он переполняется |
+| `app:toggleDiffNoiseFilter` | (не привязано) | Показать или скрыть тестовые и сгенерированные файлы в панели |
+| `app:toggleDiffPreSession` | (не привязано) | Развернуть или свернуть изменения до этого сеанса |
+
+### Действия выбора модели
+
+Действия, доступные в контексте `ModelPicker`:
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `modelPicker:decreaseEffort` | Left | Уменьшить уровень усилий |
+| `modelPicker:increaseEffort` | Right | Увеличить уровень усилий |
+| `modelPicker:thisSessionOnly` | s | Применить выделенную модель только к этому сеансу |
+
+### Действия ползунка усилий
+
+Действия, доступные в контексте `EffortSlider`, ползунок, который открывается при запуске `/effort` без аргументов. Клавиши Enter и Escape ползунка не могут быть переназначены.
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `effortSlider:decreaseEffort` | Left | Переместить ползунок на следующий более низкий уровень усилий. Требует v2.1.284 или более позднюю версию |
+| `effortSlider:increaseEffort` | Right | Переместить ползунок на следующий более высокий уровень усилий. Требует v2.1.284 или более позднюю версию |
+| `effortSlider:toggleUltracode` | Tab | Включить [ultracode](https://code.claude.com/docs/ru/workflows.md#let-claude-decide-with-ultracode) или выключить для этого сеанса, когда ползунок [предлагает это](https://code.claude.com/docs/ru/model-config.md#when-ultracode-is-available). Требует v2.1.284 или более позднюю версию |
+| `effortSlider:thisSessionOnly` | s | Применить сфокусированный [уровень усилий](https://code.claude.com/docs/ru/model-config.md#adjust-effort-level) только к этому сеансу. Требует v2.1.257 или более позднюю версию |
+
+### Действия выбора
+
+Действия, доступные в контексте `Select`:
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `select:next` | Down, J, Ctrl+N | Следующий вариант |
+| `select:previous` | Up, K, Ctrl+P | Предыдущий вариант |
+| `select:pageUp` | PageUp | Переместиться вверх на одну страницу вариантов |
+| `select:pageDown` | PageDown | Переместиться вниз на одну страницу вариантов |
+| `select:first` | Home | Первый вариант |
+| `select:last` | End | Последний вариант |
+| `select:accept` | Enter | Принять выбор |
+| `select:cancel` | Escape | Отменить выбор |
+
+В панелях списков, таких как `/skills`, `/mcp` и `/tasks`, Claude Code применяет ваши привязки `select:pageUp`, `select:pageDown`, `select:first` и `select:last`. В большинстве других списков, таких как выбор модели `/model`, ваши привязки `select:first` и `select:last` применяются. PageUp и PageDown разбивают на страницы параметры в этих списках независимо от ваших привязок.
+
+До v2.1.280 эти другие списки игнорировали Home, End и ваши привязки `select:first` и `select:last`.
+
+До v2.1.283 список инструментов `/mcp` разбивал на страницы с фиксированными клавишами PageUp и PageDown независимо от ваших привязок.
+
+### Действия plugin
+
+Действия, доступные в контексте `Plugin`:
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `plugin:toggle` | Space | Переключить выбор plugin |
+| `plugin:install` | I | Установить выбранные plugins |
+| `plugin:favorite` | F | Добавить выбранный plugin в избранное, чтобы он сортировался ближе к верхней части вкладки Installed |
+
+### Действия полосы над промптом
+
+Действия для полосы над промптом — общей области, в которой [моды](https://code.claude.com/docs/ru/plugins/mods/interface.md#pick-where-to-draw) отрисовывают кнопки, поля ввода и списки выбора. `abovePrompt:toggle` и `abovePrompt:focus` применяются в контексте `Chat`. Остальные действия применяются в [контексте](#contexts) того элемента, который имеет фокус клавиатуры в полосе или на панели.
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `abovePrompt:toggle` | Ctrl+X Ctrl+A | Свернуть полосу до однострочной подсказки или снова развернуть её |
+| `abovePrompt:focus` | Ctrl+X Tab | Переместить фокус клавиатуры в полосу, затем на каждую открытую [панель](#pane-actions), а с последней панели — обратно в промпт |
+| `abovePrompt:next` | Tab | Перевести фокус на следующий элемент управления |
+| `abovePrompt:previous` | Shift+Tab | Перевести фокус на предыдущий элемент управления |
+| `abovePrompt:press` | Enter | Нажать кнопку в фокусе, отправить поле ввода в фокусе или выбрать выделенный вариант в списке выбора |
+| `abovePrompt:leave` | Escape | Вернуть фокус клавиатуры в промпт |
+| `abovePrompt:highlightNext` | Down | Выделить следующий вариант в списке выбора, находящемся в фокусе |
+| `abovePrompt:highlightPrevious` | Up | Выделить предыдущий вариант в списке выбора, находящемся в фокусе |
+
+В [контексте `AbovePrompt`](#contexts) Right и Left по умолчанию также выполняют `abovePrompt:next` и `abovePrompt:previous`, а Space также выполняет `abovePrompt:press`.
+
+Контекст `AbovePrompt` также привязывает Up, Down, PageUp, PageDown, Home и End к [действиям прокрутки панели](#pane-actions) от `pane:scrollUp` до `pane:bottom`, поэтому, чтобы изменить одну из этих клавиш для полосы, привяжите действие прокрутки в блоке `AbovePrompt`.
+
+### Действия панели
+
+Действия для панели, отрисованной [модом](https://code.claude.com/docs/ru/plugins/mods/interface.md#know-which-keys-your-mod-can-receive). Действия прокрутки, изменения размера и закрытия применяются в [контексте](#contexts) `Pane`. `pane:close` также применяется в контексте `PaneField`, поэтому оно работает, пока одно из полей панели имеет фокус. `pane:next` и `pane:previous` применяются в контексте `Global`, пока открыто более одной панели.
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `pane:scrollUp` | Up | Прокрутить панель вверх, когда в ней больше строк, чем она может показать |
+| `pane:scrollDown` | Down | Прокрутить панель вниз, когда в ней больше строк, чем она может показать |
+| `pane:pageUp` | PageUp | Прокрутить панель вверх на страницу |
+| `pane:pageDown` | PageDown | Прокрутить панель вниз на страницу |
+| `pane:top` | Home | Перейти в начало панели |
+| `pane:bottom` | End | Перейти в конец панели |
+| `pane:grow` | Ctrl+X Left, Ctrl+X Up | Дать панели больше места: по ширине, когда она находится рядом с транскриптом, по высоте, когда она находится над промптом |
+| `pane:shrink` | Ctrl+X Right, Ctrl+X Down | Дать панели меньше места: по ширине, когда она находится рядом с транскриптом, по высоте, когда она находится над промптом |
+| `pane:close` | Ctrl+X X | Закрыть панель |
+| `pane:next` | (не привязано) | Показать следующую открытую панель |
+| `pane:previous` | (не привязано) | Показать предыдущую открытую панель |
+
+Контекст `Pane` также привязывает Tab, Shift+Tab, Enter и Escape к тем же [действиям полосы над промптом](#above-prompt-actions), что и полоса, а поля ввода и списки выбора панели используют контексты `AbovePromptInput` и `AbovePromptSelect`. В разделе [Фокус клавиатуры и горячие клавиши](https://code.claude.com/docs/ru/plugins/mods/interface.md#know-which-keys-your-mod-can-receive) указано, что делает каждая клавиша на панели.
+
+### Действия параметров
+
+Действия, доступные в контексте `Settings`. Действия `select:accept` и `confirm:no` переиспользуются из контекстов [Select](#select-actions) и [Confirmation](#confirmation-actions) с поведением, специфичным для Settings: изменения применяются к каждому параметру сразу же при его изменении, поэтому Escape закрывает панель с сохранёнными изменениями, а не отклоняет их.
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `settings:search` | / | Перейти в режим поиска |
+| `settings:retry` | R | Повторить загрузку данных об использовании (при ошибке) |
+| `settings:fixUsage` | F | Отправить в вашу сессию [рекомендации `/usage`](https://code.claude.com/docs/ru/costs#apply-recommendations-with-the-fix-shortcut), которые Claude Code может применить, когда нижний колонтитул `/usage` предлагает исправление. Требует v2.1.305 или более позднюю версию |
+| `select:accept` | Enter, Space | Изменить выбранный параметр или открыть его подменю |
+| `confirm:no` | Escape | Закрыть панель. Изменения уже сохранены |
+
+### Действия агентов
+
+Действия, доступные в контексте `Agents`, который применяется в [представлении агента](https://code.claude.com/docs/ru/agent-view.md), открытом с помощью `claude agents`. Требует v2.1.257 или более позднюю версию.
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `agents:switchView` | Ctrl+S | Переключить [группировку сеанса](https://code.claude.com/docs/ru/agent-view.md#organize-the-list) между состоянием и директорией |
+| `agents:togglePin` | Ctrl+T | [Закрепить или открепить](https://code.claude.com/docs/ru/agent-view.md#organize-the-list) выбранный сеанс |
+| `agents:find` | Ctrl+F | Найти сессии по имени с помощью [фильтра `n:`](https://code.claude.com/docs/ru/agent-view#filter-sessions). Требует v2.1.288 или более позднюю версию |
+| `agents:rename` | Ctrl+R | [Переименовать](https://code.claude.com/docs/ru/agent-view.md#organize-the-list) выбранную сессию. Требует v2.1.288 или более позднюю версию |
+| `agents:previousGroup` | Ctrl+Up, Meta+Up | Перейти к предыдущему [заголовку группы](https://code.claude.com/docs/ru/agent-view.md#organize-the-list). Требует v2.1.288 или более позднюю версию |
+| `agents:nextGroup` | Ctrl+Down, Meta+Down | Перейти к следующему заголовку группы. Требует v2.1.288 или более позднюю версию |
+
+Пока представление агента открыто, Claude Code использует привязку `Agents` для любой клавиши, которую контекст `Agents` привязывает, и игнорирует привязку `Chat` или `Global` на той же клавише. Например, нажатие Ctrl+S в представлении агента переключает группировку сеанса, а не запускает значение по умолчанию `chat:stash`.
+
+Сочетание клавиш внешнего редактора ввода диспетчера не является действием `Agents`. Представление агента следует привязке `chat:externalEditor` контекста `Chat`, Ctrl+G по умолчанию.
+
+Привязки срабатывают на одиночных нажатиях клавиш в представлении агента, поэтому сочетание Ctrl+X Ctrl+E, привязанное к `chat:externalEditor`, не открывает редактор там.
+
+### Действия голоса
+
+Действия, доступные в контексте `Chat` при включённой [диктовке голосом](https://code.claude.com/docs/ru/voice-dictation.md):
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `voice:pushToTalk` | Space | Диктовать запрос. Удерживайте или нажимайте в зависимости от режима `/voice` |
+
+### Действия прокрутки
+
+Действия, доступные в контексте `Scroll` при включённом [полноэкранном рендеринге](https://code.claude.com/docs/ru/fullscreen.md):
+
+| Действие | По умолчанию | Описание |
+| :- | :- | :- |
+| `scroll:lineUp` | `wheelup` | Прокрутить вверх на одну строку. Прокрутка колесом мыши запускает это действие |
+| `scroll:lineDown` | `wheeldown` | Прокрутить вниз на одну строку. Прокрутка колесом мыши запускает это действие |
+| `scroll:pageUp` | PageUp | Прокрутить вверх на половину высоты окна просмотра |
+| `scroll:pageDown` | PageDown | Прокрутить вниз на половину высоты окна просмотра |
+| `scroll:top` | Ctrl+Home | Перейти в начало разговора |
+| `scroll:bottom` | Ctrl+End | Перейти к последнему сообщению и повторно включить автоследование |
+| `scroll:halfPageUp` | (не привязано) | Прокрутить вверх на половину высоты окна просмотра. То же поведение, что и `scroll:pageUp`, предоставляется для переназначений в стиле vi |
+| `scroll:halfPageDown` | (не привязано) | Прокрутить вниз на половину высоты окна просмотра. То же поведение, что и `scroll:pageDown`, предоставляется для переназначений в стиле vi |
+| `scroll:fullPageUp` | (не привязано) | Прокрутить вверх на полную высоту окна просмотра |
+| `scroll:fullPageDown` | (не привязано) | Прокрутить вниз на полную высоту окна просмотра |
+| `selection:copy` | Ctrl+Shift+C / Cmd+C | Скопировать выделённый текст в буфер обмена |
+| `selection:clear` | (не привязано) | Очистить активное выделение текста. Требует v2.1.234 или более позднюю версию |
+| `selection:extendLeft` | Shift+Left | Расширить активное выделение на один столбец влево |
+| `selection:extendRight` | Shift+Right | Расширить активное выделение на один столбец вправо |
+| `selection:extendUp` | Shift+Up | Расширить активное выделение на одну строку вверх. Прокручивает окно просмотра, когда выделение достигает верхнего края |
+| `selection:extendDown` | Shift+Down | Расширить активное выделение на одну строку вниз. Прокручивает окно просмотра, когда выделение достигает нижнего края |
+| `selection:extendLineStart` | Shift+Home | Расширить активное выделение до начала строки |
+| `selection:extendLineEnd` | Shift+End | Расширить активное выделение до конца строки |
+
+## Синтаксис нажатия клавиш
+
+### Модификаторы
+
+Используйте клавиши-модификаторы с разделителем `+`:
+
+* `ctrl` или `control` - клавиша Control
+* `shift` - клавиша Shift
+* `alt`, `opt`, `option` или `meta` - клавиша Alt в Windows и Linux, клавиша Option в macOS
+* `cmd`, `command`, `super` или `win` - клавиша Command в macOS, клавиша Windows в Windows, клавиша Super в Linux
+
+Группа `cmd` обнаруживается только в терминалах, которые сообщают о модификаторе Super, таких как те, которые поддерживают протокол клавиатуры Kitty или режим `modifyOtherKeys` xterm. Большинство терминалов его не отправляют, поэтому используйте `ctrl` или `meta` для привязок, которые вы хотите использовать везде.
+
+Например:
+</code></pre>
+<p>ctrl+k          Ctrl + K
+shift+tab       Shift + Tab
+meta+p          Option + P в macOS, Alt + P в других местах
+ctrl+shift+c    Несколько модификаторов</p>
+<pre><code>
+### Прописные буквы
+
+Claude Code анализирует названия клавиш без учёта регистра, поэтому `K` — это то же самое привязка, что и `k`, а `ctrl+K` — то же самое, что `ctrl+k`. Чтобы привязать Shift и букву, напишите `shift+k`.
+
+### Раскладки клавиатуры, отличные от US
+
+Пишите названия клавиш сочетаний Ctrl как латинские символы, даже если ваша активная раскладка клавиатуры вводит другие символы.
+
+То, как Claude Code сопоставляет нажатую вами клавишу с привязкой, зависит от типа раскладки:
+
+* При использовании нелатинской раскладки, такой как кириллица, Claude Code сопоставляет сочетания Ctrl по позиции клавиши в раскладке US, когда терминал использует протокол клавиатуры Kitty и сообщает эту позицию. В таком терминале с активной русской раскладкой нажатие Ctrl и физической клавиши W запускает `ctrl+w`. В терминале, который не сообщает позицию, Claude Code сопоставляет то, что отправляет терминал для нажатия клавиши: код управления ASCII запускает латинское сочетание, а нажатие клавиши, которое приходит как кириллический символ, не соответствует никакой привязке
+* При использовании раскладок, которые переставляют латинские буквы, такие как AZERTY, Claude Code сопоставляет букву, которую вводит клавиша, поэтому нажатие Ctrl и клавиши с надписью A запускает `ctrl+a`
+
+### Аккорды
+
+Аккорды — это последовательности нажатий клавиш, разделённые пробелами:
+</code></pre>
+<p>ctrl+k ctrl+s   Нажмите Ctrl+K, отпустите, затем Ctrl+S</p>
+<pre><code>
+Нажимайте каждое сочетание клавиш в течение 3 секунд после предыдущего. Если вы ждёте дольше, Claude Code отменяет аккорд и показывает краткое уведомление об этом.
+
+### Специальные клавиши
+
+* `escape` или `esc` - клавиша Escape
+* `enter` или `return` - клавиша Enter
+* `tab` - клавиша Tab
+* `space` - пробел
+* `up`, `down`, `left`, `right` - клавиши со стрелками
+* `pageup`, `pagedown` - клавиши Page Up и Page Down
+* `home`, `end` - клавиши Home и End
+* `backspace`, `delete` - клавиши удаления
+* `wheelup`, `wheeldown` - события прокрутки колеса мыши
+
+## Отмена привязки сочетаний по умолчанию
+
+Установите действие на `null` для отмены привязки сочетания по умолчанию:
+</code></pre>
+<p>{
+  &quot;bindings&quot;: [
+    {
+      &quot;context&quot;: &quot;Chat&quot;,
+      &quot;bindings&quot;: {
+        &quot;ctrl+s&quot;: null
+      }
+    }
+  ]
+}</p>
+<pre><code>
+Это также работает для привязок аккордов. Отмена привязки каждого аккорда, который использует префикс, освобождает этот префикс для использования в качестве привязки с одной клавишей. Аккорд в любом активном контексте сохраняет свой префикс зарезервированным, поэтому вы должны отменить привязку каждого аккорда в контексте, который его определяет.
+
+Claude Code привязывает следующие аккорды по умолчанию на префиксе `ctrl+x`, по контекстам:
+
+* `Chat`: `ctrl+x ctrl+k`, `ctrl+x ctrl+e`, `ctrl+x enter`, `ctrl+x ctrl+a`, `ctrl+x ctrl+s`, `ctrl+x tab`, `ctrl+x ctrl+=`, `ctrl+x ctrl+-`, `ctrl+x ctrl+_`, `ctrl+x =` и `ctrl+x -`
+* `Task`: `ctrl+x ctrl+b`
+* `DiffPanel`: `ctrl+x b`
+* `Pane`: `ctrl+x left`, `ctrl+x right`, `ctrl+x up`, `ctrl+x down` и `ctrl+x x`
+* `PaneField`: `ctrl+x x`
+
+Аккорд `ctrl+x enter` требует версии v2.1.247 или более поздней, `ctrl+x b`, `ctrl+x ctrl+a` и `ctrl+x tab` требуют версии v2.1.260 или более поздней, и `ctrl+x ctrl+s` требует версии v2.1.275 или более поздней.
+
+Чтобы вернуть `ctrl+x` как привязку с одной клавишей, отмените привязку всех из них:
+</code></pre>
+<p>{
+  &quot;bindings&quot;: [
+    {
+      &quot;context&quot;: &quot;Task&quot;,
+      &quot;bindings&quot;: {
+        &quot;ctrl+x ctrl+b&quot;: null
+      }
+    },
+    {
+      &quot;context&quot;: &quot;DiffPanel&quot;,
+      &quot;bindings&quot;: {
+        &quot;ctrl+x b&quot;: null
+      }
+    },
+    {
+      &quot;context&quot;: &quot;Pane&quot;,
+      &quot;bindings&quot;: {
+        &quot;ctrl+x left&quot;: null,
+        &quot;ctrl+x right&quot;: null,
+        &quot;ctrl+x up&quot;: null,
+        &quot;ctrl+x down&quot;: null,
+        &quot;ctrl+x x&quot;: null
+      }
+    },
+    {
+      &quot;context&quot;: &quot;PaneField&quot;,
+      &quot;bindings&quot;: {
+        &quot;ctrl+x x&quot;: null
+      }
+    },
+    {
+      &quot;context&quot;: &quot;Chat&quot;,
+      &quot;bindings&quot;: {
+        &quot;ctrl+x ctrl+k&quot;: null,
+        &quot;ctrl+x ctrl+e&quot;: null,
+        &quot;ctrl+x enter&quot;: null,
+        &quot;ctrl+x ctrl+a&quot;: null,
+        &quot;ctrl+x ctrl+s&quot;: null,
+        &quot;ctrl+x tab&quot;: null,
+        &quot;ctrl+x ctrl+=&quot;: null,
+        &quot;ctrl+x ctrl+-&quot;: null,
+        &quot;ctrl+x ctrl+_&quot;: null,
+        &quot;ctrl+x =&quot;: null,
+        &quot;ctrl+x -&quot;: null,
+        &quot;ctrl+x&quot;: &quot;chat:newline&quot;
+      }
+    }
+  ]
+}</p>
+<pre><code>
+Если вы отмените привязку некоторых, но не всех аккордов на префиксе, нажатие префикса всё ещё переводит в режим ожидания аккорда для оставшихся привязок.
+
+## Зарезервированные сочетания клавиш
+
+Эти сочетания клавиш не могут быть переназначены:
+
+| Сочетание клавиш | Причина |
+| :- | :- |
+| Ctrl+C | Жёстко закодированное прерывание/отмена |
+| Ctrl+D | Жёстко закодированный выход |
+| Ctrl+M | Claude Code всегда получает его как Enter |
+| Ctrl+\[ | Claude Code всегда получает его как Escape. В терминалах, использующих протокол клавиатуры Kitty, это требует версии 2.1.242 или более поздней |
+| Ctrl+I | Claude Code всегда получает его как Tab |
+| Ctrl+H | Отправляет байт ASCII backspace. [Как Claude Code читает его на Windows](https://code.claude.com/docs/ru/terminal-config.md#fix-backspace-deleting-a-whole-word-on-windows) зависит от вашего терминала и переменной окружения [`CLAUDE_CODE_BS_AS_CTRL_BACKSPACE`](https://code.claude.com/docs/ru/env-vars) |
+| Caps Lock | Не передаётся в приложения терминала |
+
+## Конфликты терминала
+
+Некоторые сочетания клавиш могут конфликтовать с мультиплексорами терминала:
+
+| Сочетание клавиш | Конфликт |
+| :- | :- |
+| Ctrl+B | Префикс tmux (нажмите дважды для отправки) |
+| Ctrl+A | Префикс GNU screen |
+| Ctrl+Z | Приостановка процесса Unix (SIGTSTP) |
+
+## Текстовые поля
+
+Если вы привяжете простую букву, цифру или пробел, вы все равно сможете вводить этот символ в текстовое поле внутри диалога или панели. Одно из таких полей — это ответ `Other` на вопрос, который задает Claude. Пока поле имеет фокус, печатаемая клавиша, которую вы нажимаете без Ctrl, Alt или Cmd, переходит в поле, и Claude Code не сопоставляет ее с вашими сочетаниями клавиш.
+
+Эти клавиши все еще выполняют свои сочетания клавиш, пока поле имеет фокус:
+
+* Клавиши, которые не вводят символ, такие как Enter, Escape, Tab и клавиши со стрелками
+* Любая клавиша, нажатая с Ctrl, Alt или Cmd
+* Второй нажим [chord](#chords), уже выполняемого
+
+В основной подсказке Claude Code сопоставляет каждую клавишу с активными контекстами, такими как `Chat`, и вводит клавишу только когда никакое сочетание клавиш ее не перехватывает.
+
+## Взаимодействие с режимом vim
+
+Когда вы включаете режим vim с помощью настройки Editor mode в `/config`, сочетания клавиш и режим vim работают независимо:
+
+* **Режим vim** обрабатывает ввод на уровне текстового ввода: движение курсора, режимы и движения
+* **Сочетания клавиш** обрабатывают действия на уровне компонента, например переключение задач или отправку сообщения
+* Клавиша Escape в режиме vim переключает режим INSERT в режим NORMAL; она не вызывает `chat:cancel`
+* Большинство сочетаний Ctrl+клавиша проходят через режим vim в систему сочетаний клавиш
+* Клавиши vim не переназначаются через файл сочетаний клавиш. Чтобы сопоставить двухклавишную последовательность в режиме INSERT, такую как `jj`, с клавишей Escape, используйте параметр [`vimInsertModeRemaps`](https://code.claude.com/docs/ru/interactive-mode#remap-insert-mode-key-sequences)
+* В режиме vim NORMAL `?` показывает меню справки (поведение vim)
+* В режиме vim NORMAL `/` открывает поиск по истории, то же самое, что Ctrl+R в стандартном режиме
+
+В строке `Other` вопроса, который задает Claude, клавиша Escape в режиме vim не отменяет вопрос сразу. За исключением [режима программы чтения с экрана](https://code.claude.com/docs/ru/accessibility.md), строка переходит в режим INSERT каждый раз, когда вы переводите на нее фокус. Когда вы нажимаете Escape в строке `Other`, строка переключается в режим NORMAL или сбрасывает частично набранную команду vim, а вопрос остается открытым. Нажмите Escape еще раз в режиме NORMAL, чтобы отменить вопрос.
+
+### Отмена вопроса одним нажатием клавиши
+
+Чтобы отменять вопрос одним нажатием клавиши в режиме vim, назначьте другую клавишу действию `select:cancel` в контексте `Select`. Так можно отменить вопрос из строки `Other` в вопросе, где выбирается один вариант. В [режиме программы чтения с экрана](https://code.claude.com/docs/ru/accessibility.md) или в вопросе, где можно выбрать несколько вариантов, назначенная клавиша не отменяет вопрос, поэтому используйте для отмены Escape.
+
+Выберите клавишу, которую вы нажимаете вместе с Ctrl или Alt. Одиночная буква или цифра [попадает в строку `Other`](#text-fields) и не доходит до ваших сочетаний клавиш. Например, чтобы назначить `Ctrl+Q`, добавьте следующее в `~/.claude/keybindings.json`:
+</code></pre>
+<p>{
+  &quot;bindings&quot;: [
+    {
+      &quot;context&quot;: &quot;Select&quot;,
+      &quot;bindings&quot;: {
+        &quot;ctrl+q&quot;: &quot;select:cancel&quot;
+      }
+    }
+  ]
+}</p>
+<pre><code>
+После сохранения файла нажмите `Ctrl+Q` в строке `Other` вопроса, где выбирается один вариант. Вопрос закроется независимо от того, находится ли строка в режиме INSERT или NORMAL.
+
+## Валидация
+
+Claude Code проверяет ваши сочетания клавиш и записывает предупреждение в журнал отладки для:
+
+* Неверного JSON
+* Неправильно написанных модификаторов, таких как `ctl+k`. Claude Code игнорирует всю привязку. Исправьте модификатор, в этом примере на `ctrl+k`.
+* Пробела рядом с `+` в строке клавиш, например `ctrl+ k`. Claude Code читает такую строку как [аккорд](#chords) из `ctrl+`, за которым следует `k`. Никакое нажатие клавиши не соответствует `ctrl+` само по себе, поэтому привязка никогда не срабатывает. Удалите пробел.
+* Неверных имён контекстов
+* Неизвестных имён действий, таких как опечатка зарегистрированного действия. Claude Code пропускает привязку и сохраняет любую привязку по умолчанию для этого ключа в силе.
+* Конфликтов зарезервированных сочетаний
+* Дублирующихся привязок в одном контексте
+
+Запустите Claude Code с [`--debug`](https://code.claude.com/docs/ru/cli-reference#cli-flags) для просмотра деталей.
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

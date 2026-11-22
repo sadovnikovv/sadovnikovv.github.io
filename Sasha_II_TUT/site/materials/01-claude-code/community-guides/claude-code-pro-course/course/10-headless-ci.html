@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Модуль 10. Headless, CI и GitHub Actions</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/index.html">claude-code-pro-course</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/course/index.html">course</a></nav>
+<h1 id="модуль-10-headless-ci-и-github-actions">Модуль 10. Headless, CI и GitHub Actions <a class="h-anchor" href="#модуль-10-headless-ci-и-github-actions" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="headless-режим-claude-p">Headless-режим: <code>claude -p</code> <a class="h-anchor" href="#headless-режим-claude-p" aria-label="Ссылка на раздел">#</a></h3>
+<p><code>-p</code> (<code>--print</code>) — выполнить задачу без интерактива и выйти. Основа для скриптов, CI, pre-commit и пайплайнов.</p>
+<pre><code class="language-bash">claude -p &quot;объясни, что делает этот проект&quot;
+cat build.log | claude -p &quot;почему упала сборка?&quot;
+git diff --staged | claude -p &quot;напиши сообщение коммита в формате Conventional Commits&quot;</code></pre>
+<h4 id="h">Ключевые флаги <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Флаг</th><th>Зачем</th></tr></thead><tbody><tr><td><code>--output-format text|json|stream-json</code></td><td>Формат вывода</td></tr><tr><td><code>--allowedTools &quot;Read,Edit,Bash(npm test:*)&quot;</code></td><td>Что разрешено без вопросов</td></tr><tr><td><code>--disallowedTools &quot;Bash(git push:*)&quot;</code></td><td>Что запрещено</td></tr><tr><td><code>--permission-mode acceptEdits</code></td><td>Режим разрешений</td></tr><tr><td><code>--max-turns 10</code></td><td>Ограничить число шагов</td></tr><tr><td><code>--model sonnet</code></td><td>Модель</td></tr><tr><td><code>--append-system-prompt &quot;...&quot;</code></td><td>Добавить к системному промпту</td></tr><tr><td><code>--mcp-config ./mcp.json</code></td><td>MCP-серверы</td></tr><tr><td><code>-c</code> / <code>--resume &lt;id&gt;</code></td><td>Продолжить сессию</td></tr><tr><td><code>--verbose</code></td><td>Подробный вывод</td></tr></tbody></table></div>
+<h4 id="json-вывод">JSON-вывод <a class="h-anchor" href="#json-вывод" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">claude -p &quot;сколько TODO в src/?&quot; --output-format json | jq -r &#x27;.result&#x27;</code></pre>
+<p>Ответ содержит <code>result</code>, <code>session_id</code>, стоимость и число токенов — удобно для логирования и продолжения (<code>--resume $session_id</code>).</p>
+<h4 id="паттерн-fan-out-по-файлам">Паттерн: fan-out по файлам <a class="h-anchor" href="#паттерн-fan-out-по-файлам" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">for f in $(git ls-files &#x27;src/**/*.js&#x27;); do
+  claude -p &quot;мигрируй $f с CommonJS на ESM. Верни OK или FAIL: причина&quot; \
+    --allowedTools &quot;Read,Edit&quot; --max-turns 8
+done</code></pre>
+<p>Сначала отладьте промпт на 2–3 файлах, потом запускайте на всех.</p>
+<h4 id="паттерн-claude-как-линтер">Паттерн: Claude как линтер <a class="h-anchor" href="#паттерн-claude-как-линтер" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-json">&quot;scripts&quot;: {
+  &quot;lint:ai&quot;: &quot;git diff main | claude -p &#x27;ты ревьюер. Выведи только проблемы с опечатками и неясными именами: файл:строка — проблема&#x27;&quot;
+}</code></pre>
+<h3 id="github-actions">GitHub Actions <a class="h-anchor" href="#github-actions" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-2">Быстрая установка <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<p>Внутри Claude Code:</p>
+<pre><code>/install-github-app</code></pre>
+<p>Команда установит GitHub App, добавит секрет и создаст workflow.</p>
+<h4 id="h-3">Вручную <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Установите <a href="https://github.com/apps/claude">Claude GitHub App</a> на репозиторий.</li>
+<li>Добавьте секрет <code>ANTHROPIC_API_KEY</code> (или <code>CLAUDE_CODE_OAUTH_TOKEN</code> из <code>claude setup-token</code> для подписки).</li>
+<li>Добавьте workflow: <a href="../.github/workflows/claude.yml"><code>.github/workflows/claude.yml</code></a></li>
+</ol>
+<pre><code class="language-yaml">name: Claude
+on:
+  issue_comment: { types: [created] }
+  pull_request_review_comment: { types: [created] }
+  issues: { types: [opened, assigned] }
+
+jobs:
+  claude:
+    if: contains(github.event.comment.body, &#x27;@claude&#x27;) || contains(github.event.issue.body, &#x27;@claude&#x27;)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}</code></pre>
+<p>Теперь в любом issue/PR: <code>@claude исправь этот баг</code> или <code>@claude сделай ревью</code>.</p>
+<h4 id="автоматическое-ревью-каждого-pr">Автоматическое ревью каждого PR <a class="h-anchor" href="#автоматическое-ревью-каждого-pr" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-yaml">on:
+  pull_request: { types: [opened, synchronize] }
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions: { contents: read, pull-requests: write, id-token: write }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Сделай ревью этого PR: баги, безопасность, тесты.
+            Оставь комментарии к конкретным строкам. Будь краток.
+          claude_args: &quot;--max-turns 10 --model sonnet&quot;</code></pre>
+<p>Claude в CI читает ваш <code>CLAUDE.md</code> — правила проекта работают и там.</p>
+<h4 id="другие-идеи-для-ci">Другие идеи для CI <a class="h-anchor" href="#другие-идеи-для-ci" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Ночной job: «найди и исправь flaky-тесты, открой PR».</li>
+<li>По метке <code>claude-fix</code> на issue — автоматическая попытка исправления.</li>
+<li>Генерация release notes по тегу.</li>
+<li>Перевод документации при изменении <code>docs/</code>.</li>
+</ul>
+<h3 id="claude-agent-sdk">Claude Agent SDK <a class="h-anchor" href="#claude-agent-sdk" aria-label="Ссылка на раздел">#</a></h3>
+<p>Когда нужно встроить агента в свой продукт или сложный пайплайн — Agent SDK даёт тот же движок, что у Claude Code, как библиотеку:</p>
+<pre><code class="language-bash">pip install claude-agent-sdk
+npm install @anthropic-ai/claude-agent-sdk</code></pre>
+<pre><code class="language-python">import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions
+
+async def main():
+    async for msg in query(
+        prompt=&quot;Найди и исправь баг в utils.py&quot;,
+        options=ClaudeAgentOptions(allowed_tools=[&quot;Read&quot;, &quot;Edit&quot;, &quot;Bash&quot;]),
+    ):
+        print(msg)
+
+asyncio.run(main())</code></pre>
+<p>Поддерживаются те же инструменты, hooks, MCP, subagents и настройки.</p>
+<h3 id="h-4">Безопасность в автоматизации <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Минимальные <code>--allowedTools</code>, никаких широких <code>Bash(*)</code>.</li>
+<li><code>bypassPermissions</code> — только в одноразовом контейнере без секретов.</li>
+<li>Ограничивайте <code>--max-turns</code> и бюджет.</li>
+<li>Помните о prompt injection из issues/комментариев внешних пользователей: ограничьте, кто может триггерить workflow.</li>
+</ul>
+<h3 id="h-5">Практика <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li>Сделайте alias: <code>git diff --staged | claude -p &quot;commit message&quot;</code>.</li>
+<li>Подключите workflow из репозитория и напишите <code>@claude</code> в тестовом issue.</li>
+<li>Получите JSON-вывод и достаньте <code>session_id</code>, продолжите сессию через <code>--resume</code>.</li>
+</ol>
+<p>🧪 Закрепите на практике: <a href="../labs/lab-08-automation.md">лабораторная работа</a></p>
+<p>➡️ Далее: <a href="11-pro-tips.md">11. Продвинутые приёмы</a></p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

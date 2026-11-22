@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Тестирование самостоятельно размещённых сред от начала до конца</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Тестирование самостоятельно размещённых сред от начала до конца <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Проверьте образ самостоятельно размещённого runner из CI: отправьте сеанс через CLI, прочитайте ответы Claude через hook Stop и напишите скрипт для полного цикла.</p>
+</blockquote>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Самостоятельно размещённые среды находятся в публичной бета-версии на планах Team и Enterprise; раздел <a href="https://code.claude.com/docs/ru/self-hosted-environments#availability-and-limitations">Доступность и ограничения</a> охватывает путь включения. Эта страница — рецепт для CI-тестирования; см. <a href="https://code.claude.com/docs/ru/self-hosted-environments-quickstart.md">краткое руководство</a> для настройки и <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md">Развёртывание в production</a> для рецептов флота.</p>
+</blockquote>
+<p>В <a href="https://code.claude.com/docs/ru/self-hosted-environments">самостоятельно размещённой среде</a> облачные <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">сеансы</a> Claude Code работают на образе runner, который вы создаёте и поддерживаете. Перед развёртыванием нового образа в вашу production-среду запустите полный сеанс против тестовой среды из скрипта: создайте сеанс, прочитайте ответ Claude, отправьте дополнительный вопрос и прочитайте этот ответ тоже. Это форма CI smoke-теста, который проверяет ваш образ runner, доступ к git и любые пользовательские инструменты перед тем, как вы продвинете изменение.</p>
+<p>Этот рецепт предполагает, что вы уже <a href="https://code.claude.com/docs/ru/self-hosted-environments-quickstart.md#set-up-an-environment-and-runner">настроили среду и runner</a>, и что ваша CI-задача запускает процесс runner на том же хосте, что и тестовый скрипт. Хук Stop, который вы устанавливаете на runner, записывает финальный ответ каждого хода в локальный файл, и скрипт читает его оттуда. Если ваши тестовые runner находятся на отдельной инфраструктуре, см. <a href="#remote-test-runners">Удалённые тестовые runner</a>.</p>
+<h3 id="установите-hook-захвата-на-ваш-тестовый-runner">Установите hook захвата на ваш тестовый runner <a class="h-anchor" href="#установите-hook-захвата-на-ваш-тестовый-runner" aria-label="Ссылка на раздел">#</a></h3>
+<p>Обратное чтение работает через Claude Code <a href="https://code.claude.com/docs/ru/hooks.md#stop">hook Stop</a>: когда Claude завершает ход, hook получает финальное сообщение ассистента как <code>last_assistant_message</code> в JSON stdin и добавляет его в <code>$E2E_REPLY_DIR/&lt;session_id&gt;.txt</code>. Установите его так же, как <a href="https://code.claude.com/docs/ru/self-hosted-environments-configuration.md#prompt-sessions-to-push-their-work">hook Stop commit-nudge</a>, в <code>~/.claude/</code> на хосте runner, который runner вносит в каждый сеанс.</p>
+<h4 id="сохраните-файлы-hook">Сохраните файлы hook <a class="h-anchor" href="#сохраните-файлы-hook" aria-label="Ссылка на раздел">#</a></h4>
+<p>Сохраните два файла ниже на хосте runner:</p>
+<ul>
+<li>Блок настроек: объедините в <code>~/.claude/settings.json</code> на хосте runner</li>
+<li>Скрипт: сохраните как <code>~/.claude/hooks/e2e-stop-hook-capture.sh</code> на хосте runner и сделайте его исполняемым</li>
+</ul>
+<p>```json theme={null}
+{
+  &quot;hooks&quot;: {
+    &quot;Stop&quot;: [
+      {
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;timeout&quot;: 10,
+            &quot;command&quot;: &quot;\&quot;$CLAUDE_CONFIG_DIR/hooks/e2e-stop-hook-capture.sh\&quot;&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</p>
+<pre><code></code></pre>
+<p>#!/bin/sh</p>
+<h1 id="stop-hook-for-testing-a-self-hosted-environment-end-to-end-writes-each">Stop hook for testing a self-hosted environment end to end: writes each <a class="h-anchor" href="#stop-hook-for-testing-a-self-hosted-environment-end-to-end-writes-each" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="turn-s-final-assistant-reply-to-e2e_reply_dir-session_id-txt-so-a">turn&#x27;s final assistant reply to $E2E_REPLY_DIR/&lt;session_id&gt;.txt so a <a class="h-anchor" href="#turn-s-final-assistant-reply-to-e2e_reply_dir-session_id-txt-so-a" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="co-located-test-driver-can-read-it-without-calling-the-anthropic-api">co-located test driver can read it without calling the Anthropic API. <a class="h-anchor" href="#co-located-test-driver-can-read-it-without-calling-the-anthropic-api" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="install-on-the-test-runner-only-requires-jq">Install on the TEST runner only. Requires jq. <a class="h-anchor" href="#install-on-the-test-runner-only-requires-jq" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="no-op-unless-the-driver-is-listening-never-fail-the-turn">No-op unless the driver is listening. Never fail the turn. <a class="h-anchor" href="#no-op-unless-the-driver-is-listening-never-fail-the-turn" aria-label="Ссылка на раздел">#</a></h1>
+<p>[ -n &quot;${E2E_REPLY_DIR:-}&quot; ] &amp;&amp; [ -d &quot;$E2E_REPLY_DIR&quot; ] || exit 0</p>
+<h1 id="claude_code_remote_session_id-is-exported-in-cse_-form-the-session">CLAUDE_CODE_REMOTE_SESSION_ID is exported in cse_... form; the session <a class="h-anchor" href="#claude_code_remote_session_id-is-exported-in-cse_-form-the-session" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="id-the-dispatch-cli-prints-is-in-session_-form-same-id-different">id the dispatch CLI prints is in session_... form. Same id, different <a class="h-anchor" href="#id-the-dispatch-cli-prints-is-in-session_-form-same-id-different" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="prefix">prefix. <a class="h-anchor" href="#prefix" aria-label="Ссылка на раздел">#</a></h1>
+<p>sid=$(printf &#x27;%s&#x27; &quot;${CLAUDE_CODE_REMOTE_SESSION_ID:-}&quot; | sed &#x27;s/^cse_/session_/&#x27;)
+[ -n &quot;$sid&quot; ] || exit 0</p>
+<h1 id="last_assistant_message-is-absent-when-the-final-assistant-turn-had-no">last_assistant_message is absent when the final assistant turn had no <a class="h-anchor" href="#last_assistant_message-is-absent-when-the-final-assistant-turn-had-no" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="text-such-as-a-tool-use-only-turn-the-empty-filter-makes-that-a">text, such as a tool-use-only turn. The <code>// empty</code> filter makes that a <a class="h-anchor" href="#text-such-as-a-tool-use-only-turn-the-empty-filter-makes-that-a" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="zero-byte-write-rather-than-the-literal-string-null">zero-byte write rather than the literal string &quot;null&quot;. <a class="h-anchor" href="#zero-byte-write-rather-than-the-literal-string-null" aria-label="Ссылка на раздел">#</a></h1>
+<p>jq -r &#x27;.last_assistant_message // empty&#x27; &gt;&gt; &quot;$E2E_REPLY_DIR/$sid.txt&quot; 2&gt;/dev/null
+exit 0</p>
+<pre><code>
+### Перед запуском runner
+
+Hook имеет следующие требования:
+
+* Установите его перед запуском runner. Runner создаёт снимок `~/.claude/` один раз при запуске, поэтому hook, добавленный к работающему runner, вступает в силу только после перезагрузки.
+* Экспортируйте `E2E_REPLY_DIR` в процесс runner. Hook не выполняет никаких действий, когда переменная не установлена или каталог не существует, поэтому установите её везде, где вы запускаете runner, например в модуле systemd, спецификации pod или шаге CI. Тестовый скрипт ниже также требует её.
+
+Установите этот hook только на runner, обслуживающих ваше тестовое окружение. Он записывает финальный ответ каждого сеанса на диск всякий раз, когда существует `E2E_REPLY_DIR`, что безвредно на одноразовом CI runner, но не то, что нужно переносить в образ runner production-окружения, где переменная может быть установлена случайно.
+
+## Запустите тестовый цикл
+
+Флаги dispatch `--environment` и `--ref` требуют Claude Code v2.1.224 или позже на машине, которая запускает скрипт, то же минимальное требование, что и для самого runner. С установленным hook и запущенным runner на этом хосте тестовый скрипт:
+
+1. Создаёт сессию в тестовом окружении с помощью `claude -p &quot;&lt;prompt&gt;&quot; --environment &lt;environment-id&gt; --output-format json`. Запускайте команду из git-checkout, чтобы CLI мог автоматически определить репозиторий по удалённому `origin`. Опциональный флаг `--ref &lt;branch&gt;` основывает checkout сессии на именованном ref. Команда завершается, не дожидаясь ответа Claude. То, что она выводит, сообщает вашему скрипту результат:
+   * **Сессия создана**: одна строка JSON, например `{&quot;ok&quot;:true,&quot;session_id&quot;:&quot;session_...&quot;,&quot;title&quot;:&quot;...&quot;,&quot;url&quot;:&quot;...&quot;,&quot;pool_id&quot;:&quot;...&quot;}`
+   * **Не удалось создать сессию**: строка `{&quot;ok&quot;:false,&quot;error&quot;:&quot;...&quot;}`, и команда завершается с кодом 1
+   * **Некоторые более ранние ошибки**, например недоступность облачных сессий для вашей организации или отсутствующий промпт: ошибка выводится в stderr без строки JSON, и команда завершается с кодом 1
+2. Ждёт, пока ответ появится в `$E2E_REPLY_DIR/&lt;session_id&gt;.txt`, записанный hook Stop на runner после завершения хода.
+3. Отправляет дополнительный вопрос с помощью `claude -p &quot;&lt;message&gt;&quot; --cloud &lt;session_id&gt; --output-format json` (см. [Отправка дополнительного сообщения в работающий сеанс](https://code.claude.com/docs/ru/claude-code-on-the-web.md#send-follow-ups-from-the-cli)), который отправляет событие пользователя в существующий сеанс и выходит.
+4. Ждёт ответа на дополнительный вопрос так же, как на шаге 2.
+
+### Поведение dispatch `--environment`
+
+Claude Code создаёт сеанс, выводит ID сеанса и ссылку на него, и выходит.
+
+Флаг имеет приоритет над параметром [`remote.defaultEnvironmentId`](https://code.claude.com/docs/ru/settings-reference#remote-defaultenvironmentid). Он не поддерживает `--output-format stream-json` и не может быть объединён с флагами, которые возобновляют, присоединяются к или предварительно настраивают сеанс, такими как `--resume`, `--continue`, `--teleport`, `--session-id` или `--init-only`. `--cloud` отклоняется с ID сеанса или URL, и в неинтерактивных запусках, когда он содержит описание. Голый `--cloud` рассматривается как отсутствующий. Из терминала вы можете передать задачу как описание `--cloud` вместо позиционного prompt.
+
+## Пример скрипта
+
+Пример скрипта запускается на той же машине, что и тестовый runner. Перед запуском подготовьте эту машину:
+
+* **Клон репозитория**: запускайте скрипт из git-клона репозитория, в котором должна работать сессия.
+* **Runner**: запустите runner на этом хосте с установленным хуком захвата и экспортированной переменной `E2E_REPLY_DIR`.
+* **Вход**: войдите с учётной записью claude.ai на машине, на которой запускается скрипт, как описано в разделе [Аутентификация из CI](#authenticate-from-ci).
+* **ID окружения**: задайте в `CLAUDE_TEST_ENVIRONMENT_ID` ID `ccpool_...` вашего тестового окружения, показанный в диалоговом окне деталей окружения на странице администратора или возвращённый [вызовом create-environment](#create-a-dedicated-test-environment).
+
+Скрипт ниже запускает полный цикл против `$CLAUDE_TEST_ENVIRONMENT_ID` и проверяет наличие фразы-маркера в каждом ответе.
+</code></pre>
+<p>#!/usr/bin/env bash</p>
+<h1 id="end-to-end-test-against-a-self-hosted-environment-using-stop-hook-read-back">End-to-end test against a self-hosted environment, using Stop-hook read-back. <a class="h-anchor" href="#end-to-end-test-against-a-self-hosted-environment-using-stop-hook-read-back" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="prereqs-claude-auth-login-has-been-run-on-this-machine-see-authenticate">Prereqs: <code>claude auth login</code> has been run on this machine (see &quot;Authenticate <a class="h-anchor" href="#prereqs-claude-auth-login-has-been-run-on-this-machine-see-authenticate" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="from-ci-below-jq-is-installed-claude_test_environment_id-names-an">from CI&quot; below); jq is installed; CLAUDE_TEST_ENVIRONMENT_ID names an <a class="h-anchor" href="#from-ci-below-jq-is-installed-claude_test_environment_id-names-an" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="environment-whose-runner-is-the-one-on-this-host-with-the-capture-hook">environment whose runner is the one on this host, with the capture hook <a class="h-anchor" href="#environment-whose-runner-is-the-one-on-this-host-with-the-capture-hook" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="installed-and-e2e_reply_dir-in-its-environment">installed and E2E_REPLY_DIR in its environment. <a class="h-anchor" href="#installed-and-e2e_reply_dir-in-its-environment" aria-label="Ссылка на раздел">#</a></h1>
+<p>set -euo pipefail</p>
+<p>: &quot;${CLAUDE_TEST_ENVIRONMENT_ID:=${CLAUDE_TEST_POOL_ID:-}}&quot;  # CLAUDE_TEST_POOL_ID is the legacy spelling
+: &quot;${CLAUDE_TEST_ENVIRONMENT_ID:?set CLAUDE_TEST_ENVIRONMENT_ID to a ccpool_... id served by a runner on this host}&quot;
+: &quot;${E2E_REPLY_DIR:?set E2E_REPLY_DIR to the directory the Stop hook on your test runner writes to, and export it to the runner process}&quot;
+: &quot;${TEST_REPO_REF:=main}&quot;</p>
+<p>[ -d &quot;$E2E_REPLY_DIR&quot; ] || {
+  echo &quot;FAIL: E2E_REPLY_DIR ($E2E_REPLY_DIR) does not exist. The Stop hook on the runner needs it.&quot; &gt;&amp;2
+  exit 1
+}</p>
+<h1 id="waits-until-e2e_reply_dir-session_id-txt-contains-2-or-fails-after">Waits until $E2E_REPLY_DIR/&lt;session_id&gt;.txt contains $2, or fails after <a class="h-anchor" href="#waits-until-e2e_reply_dir-session_id-txt-contains-2-or-fails-after" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="90-seconds-tune-the-timeout-to-your-environment-s-cold-start-time-the">90 seconds. Tune the timeout to your environment&#x27;s cold-start time. The <a class="h-anchor" href="#90-seconds-tune-the-timeout-to-your-environment-s-cold-start-time-the" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="file-is-written-by-the-stop-hook-on-the-runner">file is written by the Stop hook on the runner. <a class="h-anchor" href="#file-is-written-by-the-stop-hook-on-the-runner" aria-label="Ссылка на раздел">#</a></h1>
+<p>await_reply() {
+  local expect=&quot;$2&quot; f=&quot;$E2E_REPLY_DIR/$1.txt&quot;
+  local deadline=$(($(date +%s) + 90))
+  while :; do
+    if [ -f &quot;$f&quot; ] &amp;&amp; grep -qF -- &quot;$expect&quot; &quot;$f&quot;; then
+      return
+    fi
+    [ &quot;$(date +%s)&quot; -lt &quot;$deadline&quot; ] || {
+      echo &quot;FAIL: &#x27;$expect&#x27; not in $f within 90s. The Stop hook on the runner did not write it.&quot; &gt;&amp;2
+      echo &quot;-- $E2E_REPLY_DIR contents --&quot; &gt;&amp;2; ls -la &quot;$E2E_REPLY_DIR&quot; &gt;&amp;2
+      [ -f &quot;$f&quot; ] &amp;&amp; { echo &quot;-- $f --&quot; &gt;&amp;2; cat &quot;$f&quot; &gt;&amp;2; }
+      exit 1
+    }
+    sleep 1
+  done
+}</p>
+<h1 id="1-create-the-session-on-the-test-environment-run-from-a-git-checkout">1. Create the session on the test environment. Run from a git checkout <a class="h-anchor" href="#1-create-the-session-on-the-test-environment-run-from-a-git-checkout" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="so-the-cli-can-auto-detect-the-repo-ref-pins-the-checkout-to-a-named">so the CLI can auto-detect the repo. --ref pins the checkout to a named <a class="h-anchor" href="#so-the-cli-can-auto-detect-the-repo-ref-pins-the-checkout-to-a-named" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="ref">ref. <a class="h-anchor" href="#ref" aria-label="Ссылка на раздел">#</a></h1>
+<p>TURN1=&quot;e2e-probe-$(date +%s)-$$: say exactly &#x27;ok: custom tools are reachable&#x27; and nothing else&quot;
+EXPECT1=&quot;ok: custom tools are reachable&quot;
+create_json=$(claude -p &quot;$TURN1&quot; --environment &quot;$CLAUDE_TEST_ENVIRONMENT_ID&quot; \
+  --ref &quot;$TEST_REPO_REF&quot; --output-format json &lt; /dev/null)
+echo &quot;create: $create_json&quot;
+SESSION_ID=$(jq -er &#x27;.session_id&#x27; &lt;&lt;&lt;&quot;$create_json&quot;)</p>
+<h1 id="2-wait-for-the-turn-1-reply">2. Wait for the turn-1 reply. <a class="h-anchor" href="#2-wait-for-the-turn-1-reply" aria-label="Ссылка на раздел">#</a></h1>
+<p>await_reply &quot;$SESSION_ID&quot; &quot;$EXPECT1&quot;
+echo &quot;turn-1 reply ok&quot;</p>
+<h1 id="3-post-a-follow-up-via-the-cli">3. Post a follow-up via the CLI. <a class="h-anchor" href="#3-post-a-follow-up-via-the-cli" aria-label="Ссылка на раздел">#</a></h1>
+<p>TURN2=&quot;e2e-probe-followup-$(date +%s): say exactly &#x27;ok: follow-up delivered&#x27; and nothing else&quot;
+EXPECT2=&quot;ok: follow-up delivered&quot;
+followup_json=$(claude -p &quot;$TURN2&quot; --cloud &quot;$SESSION_ID&quot; --output-format json &lt; /dev/null)
+echo &quot;followup: $followup_json&quot;
+jq -e &#x27;.ok == true&#x27; &lt;&lt;&lt;&quot;$followup_json&quot; &gt;/dev/null</p>
+<h1 id="4-wait-for-the-turn-2-reply">4. Wait for the turn-2 reply. <a class="h-anchor" href="#4-wait-for-the-turn-2-reply" aria-label="Ссылка на раздел">#</a></h1>
+<p>await_reply &quot;$SESSION_ID&quot; &quot;$EXPECT2&quot;
+echo &quot;turn-2 reply ok&quot;</p>
+<p>echo &quot;PASS: test-environment round-trip (session $SESSION_ID)&quot;</p>
+<pre><code>
+Замените prompts `TURN1`/`TURN2` и маркеры `EXPECT1`/`EXPECT2` на всё, что проверяет вашу настройку, например попросите Claude запустить один из ваших пользовательских инструментов MCP и проверьте его вывод.
+
+## Удалённые тестовые runner
+
+Если ваши тестовые runner находятся на отдельной инфраструктуре, например на постоянном флоте Kubernetes, с которым ваша CI-задача не может поделиться файловой системой, замените запись файла в hook Stop на POST к конечной точке, которую слушает ваш драйвер:
+</code></pre>
+<p>#!/bin/sh</p>
+<h1 id="variant-of-the-capture-hook-for-runners-on-separate-infrastructure">Variant of the capture hook for runners on separate infrastructure. <a class="h-anchor" href="#variant-of-the-capture-hook-for-runners-on-separate-infrastructure" aria-label="Ссылка на раздел">#</a></h1>
+<h1 id="set-e2e_reply_url-on-the-runner-to-an-endpoint-the-driver-controls">Set E2E_REPLY_URL on the runner to an endpoint the driver controls. <a class="h-anchor" href="#set-e2e_reply_url-on-the-runner-to-an-endpoint-the-driver-controls" aria-label="Ссылка на раздел">#</a></h1>
+<p>[ -n &quot;${E2E_REPLY_URL:-}&quot; ] || exit 0
+sid=$(printf &#x27;%s&#x27; &quot;${CLAUDE_CODE_REMOTE_SESSION_ID:-}&quot; | sed &#x27;s/^cse_/session_/&#x27;)
+[ -n &quot;$sid&quot; ] || exit 0
+jq -r &#x27;.last_assistant_message // empty&#x27; | \
+  curl -fsS -X POST --data-binary @- &quot;$E2E_REPLY_URL/$sid&quot; &gt;/dev/null 2&gt;&amp;1
+exit 0</p>
+<pre><code>
+На стороне драйвера запустите что-нибудь, что принимает POST и удерживает ответ до тех пор, пока тест его не запросит, например небольшой HTTP-слушатель внутри CI-задачи или приёмник webhook, который вы уже запускаете. Hook работает на вашей инфраструктуре, поэтому конечная точка должна быть доступна только из ваших runner.
+
+## Аутентификация из CI
+
+Как `claude -p ... --environment`, так и `claude -p ... --cloud` аутентифицируются с помощью токена OAuth claude.ai; API-ключи, такие как `sk-ant-xxxxx`, не принимаются ни для одного из вызовов.
+
+### Долгоживущий хост CI
+
+Запустите `claude auth login` один раз интерактивно на машине, которая выполняет скрипт, используя выделенную учётную запись пользователя для автоматизации. Claude Code хранит токен в OS keychain на macOS или в `~/.claude/.credentials.json` на Linux и Windows. На хосте macOS, чей Keychain не может быть записан, как это типично в SSH-сеансе, где Keychain входа остаётся заблокированным, Claude Code также хранит токен в `~/.claude/.credentials.json`. См. [Управление учётными данными](https://code.claude.com/docs/ru/authentication.md#credential-management).
+
+CLI автоматически обновляет краткосрочный токен доступа при каждом вызове, но базовый грант refresh-token ограничен 30 днями с момента первоначального входа, поэтому повторно запустите `claude auth login` интерактивно на этом хосте каждые 30 дней.
+
+### Эфемерные CI runner
+
+На сегодняшний день нет долгоживущего CI-токена для этого. Область, которая предоставляет управление удалённым сеансом, `user:sessions:claude_code`, ограничена на сервере 30 днями, поэтому `claude setup-token`, который выпускает токен только для вывода на один год, не охватывает это. [Секрет окружения](https://code.claude.com/docs/ru/self-hosted-environments-quickstart.md#set-up-an-environment-and-runner) также не принимается, так как он только авторизует runner на регистрацию в окружении, а не на создание сеансов.
+
+Вместо этого запускайте `claude -p` с [долгоживущего хоста CI](#long-lived-ci-host). Свяжитесь с вашей командой учётных записей Anthropic, если вам нужен путь идентификации машины, который не привязан к учётной записи человека.
+
+## Создайте выделенное тестовое окружение
+
+Создавайте и удаляйте окружения программно, чтобы каждый запуск CI получал чистое; runner, который запускает ваша CI-задача, регистрируется в свежем окружении. Вызовы create и delete ниже — это те же конечные точки, которые использует страница администратора **Cloud environments** на claude.ai, и они требуют заголовка `anthropic-beta: ccr-byoc-2025-07-29`.
+
+### Выпустите токен администратора
+
+`$ADMIN_TOKEN` — это токен доступа OAuth claude.ai для учётной записи, которая имеет роль Owner, выпущенный так же, как [Аутентификация из CI](#authenticate-from-ci):
+
+* **Выпустите его**: запустите `claude auth login` с учётной записью, которая имеет роль Owner, затем прочитайте текущий токен доступа из того места, где [Долгоживущий хост CI](#long-lived-ci-host) говорит, что Claude Code его сохранил.
+* **Прочитайте его свежим при каждом запуске**: CLI ротирует токен доступа, и то же ограничение 30 дней для гранта refresh применяется, поэтому не сохраняйте копию.
+* **Передайте его через stdin**: как делает пример, чтобы токен никогда не попал в список аргументов curl или ваш журнал сборки.
+
+### Создайте окружение
+
+Захватите ответ без его вывода: `pool_secret` — это долгоживущее учётное данные, которое может регистрировать runner в окружении, поэтому сохраните его как замаскированный секрет CI и выводите только ID окружения. Форма `-H @-`, которая держит токен вне списка процессов, требует curl 7.55 или позже; более старый curl рассматривает `@-` как буквальный заголовок и отправляет запрос без авторизации.
+</code></pre>
+<p>create=$(curl -fsS -X POST -H @- \
+  -H &quot;anthropic-beta: ccr-byoc-2025-07-29&quot; -H &quot;anthropic-version: 2023-06-01&quot; \
+  -H &quot;content-type: application/json&quot; \
+  -d &#x27;{&quot;name&quot;:&quot;ci-test-environment&quot;}&#x27; \
+  https://api.anthropic.com/v1/code/runners/self-hosted/pools \
+  &lt;&lt;&lt;&quot;Authorization: Bearer $ADMIN_TOKEN&quot;)
+ENVIRONMENT_ID=$(jq -er .pool.pool_id &lt;&lt;&lt;&quot;$create&quot;)
+ENVIRONMENT_SECRET=$(jq -er .pool_secret &lt;&lt;&lt;&quot;$create&quot;)</p>
+<pre><code>
+Пока [Owner не включит **Allow self-hosted environments**](https://code.claude.com/docs/ru/self-hosted-environments#availability-and-limitations) для организации, вызов завершится с ошибкой `403` `permission_error`, читающей `self-hosted runners are disabled by your organization&#x27;s policy`.
+
+Запустите runner на этом хосте с `SELF_HOSTED_RUNNER_ENVIRONMENT_SECRET=$ENVIRONMENT_SECRET`, плюс hook захвата и `E2E_REPLY_DIR` согласно [Установите hook захвата](#install-the-capture-hook-on-your-test-runner), затем запустите тестовый скрипт.
+
+### Удалите окружение
+
+Удалите окружение после завершения запуска, чтобы каждый запуск CI начинался чистым:
+</code></pre>
+<p>curl -fsS -X DELETE -H @- \
+  -H &quot;anthropic-beta: ccr-byoc-2025-07-29&quot; -H &quot;anthropic-version: 2023-06-01&quot; \
+  &quot;https://api.anthropic.com/v1/code/runners/self-hosted/pools/$ENVIRONMENT_ID&quot; \
+  &lt;&lt;&lt;&quot;Authorization: Bearer $ADMIN_TOKEN&quot;</p>
+<pre><code></code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

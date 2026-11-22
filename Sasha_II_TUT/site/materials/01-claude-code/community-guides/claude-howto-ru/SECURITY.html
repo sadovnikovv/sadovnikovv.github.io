@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Политика безопасности</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a></nav>
+<h1 id="h">Политика безопасности <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="h-2">Обзор <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Безопасность проекта Claude How To важна для нас. Этот документ описывает наши практики безопасности и объясняет, как ответственно сообщать об уязвимостях.</p>
+<h3 id="h-3">Поддерживаемые версии <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Мы предоставляем обновления безопасности для следующих версий:</p>
+<div class="table-wrap"><table><thead><tr><th>Версия</th><th>Статус</th><th>Поддержка до</th></tr></thead><tbody><tr><td>Latest (main)</td><td>✅ Active</td><td>Current + 6 months</td></tr><tr><td>1.x releases</td><td>✅ Active</td><td>Until next major version</td></tr></tbody></table></div>
+<p><strong>Примечание</strong>: поскольку это образовательный проект-гид, мы сосредоточены на поддержании актуальных best practices и безопасности документации, а не на традиционной версии-поддержке. Обновления применяются напрямую в main branch.</p>
+<h3 id="h-4">Практики безопасности <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-5">Безопасность кода <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li><strong>Управление зависимостями</strong></li>
+<li>Все Python-зависимости зафиксированы в <code>requirements.txt</code></li>
+<li>Регулярные обновления через dependabot и ручную проверку</li>
+<li>Проверка безопасности Bandit на каждом коммите</li>
+<li>Pre-commit hooks для проверок безопасности</li>
+</ol>
+<ol>
+<li><strong>Качество кода</strong></li>
+<li>Линтинг с Ruff помогает ловить типовые проблемы</li>
+<li>Проверка типов с mypy предотвращает уязвимости, связанные с типами</li>
+<li>Pre-commit hooks обеспечивают соблюдение стандартов</li>
+<li>Все изменения проверяются перед merge</li>
+</ol>
+<ol>
+<li><strong>Контроль доступа</strong></li>
+<li>Branch protection на <code>main</code> branch</li>
+<li>Обязательные ревью перед merge</li>
+<li>Status checks должны проходить перед merge</li>
+<li>Ограниченный write access к репозиторию</li>
+</ol>
+<h4 id="h-6">Безопасность документации <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li><strong>Никаких секретов в примерах</strong></li>
+<li>Все API keys в примерах являются заглушками</li>
+<li>Credentials никогда не хардкодятся</li>
+<li>Файлы <code>.env.example</code> показывают необходимые переменные</li>
+<li>Есть явные предупреждения про управление секретами</li>
+</ol>
+<ol>
+<li><strong>Лучшие практики безопасности</strong></li>
+<li>Примеры демонстрируют безопасные паттерны</li>
+<li>Предупреждения по безопасности выделены в документации</li>
+<li>Есть ссылки на официальные security guides</li>
+<li>Обращение с credentials обсуждается в релевантных разделах</li>
+</ol>
+<ol>
+<li><strong>Проверка контента</strong></li>
+<li>Вся документация проверяется на security issues</li>
+<li>В contributing guidelines есть security considerations</li>
+<li>Проверяются внешние ссылки и references</li>
+</ol>
+<h4 id="h-7">Безопасность зависимостей <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li><strong>Сканирование</strong></li>
+<li>Bandit проверяет весь Python-код на уязвимости</li>
+<li>Проверки уязвимостей зависимостей через GitHub security alerts</li>
+<li>Регулярные ручные security audits</li>
+</ol>
+<ol>
+<li><strong>Обновления</strong></li>
+<li>Security patches применяются оперативно</li>
+<li>Major versions оцениваются осторожно</li>
+<li>Changelog включает security-related updates</li>
+</ol>
+<ol>
+<li><strong>Прозрачность</strong></li>
+<li>Security updates документируются в коммитах</li>
+<li>Vulnerability disclosures обрабатываются ответственно</li>
+<li>При необходимости публикуются public security advisories</li>
+</ol>
+<h3 id="h-8">Сообщение об уязвимости <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-9">Какие проблемы нас интересуют <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<p>Мы благодарны за отчёты о:</p>
+<ul>
+<li><strong>Уязвимостях кода</strong> в скриптах или примерах</li>
+<li><strong>Уязвимостях зависимостей</strong> в Python-пакетах</li>
+<li><strong>Проблемах криптографии</strong> в любых примерах кода</li>
+<li><strong>Ошибках аутентификации и авторизации</strong> в документации</li>
+<li><strong>Рисках утечки данных</strong> в примерах конфигурации</li>
+<li><strong>Уязвимостях инъекций</strong> (SQL, command и т. д.)</li>
+<li><strong>SSRF/XXE/Path traversal</strong> проблемах</li>
+</ul>
+<h4 id="h-10">Что вне зоны ответственности <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h4>
+<p>Вне scope этого проекта:</p>
+<ul>
+<li>Уязвимости в самом Claude Code (сообщайте в Anthropic)</li>
+<li>Проблемы внешних сервисов или библиотек (сообщайте upstream)</li>
+<li>Social engineering или user education</li>
+<li>Теоретические уязвимости без proof of concept</li>
+<li>Уязвимости в зависимостях, уже отправленные по официальным каналам</li>
+</ul>
+<h3 id="h-11">Как сообщить <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="private-reporting-предпочтительно">Private Reporting (предпочтительно) <a class="h-anchor" href="#private-reporting-предпочтительно" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Для чувствительных security issues используйте приватное vulnerability reporting GitHub:</strong></p>
+<ol>
+<li>Перейдите по ссылке: https://github.com/luongnv89/claude-howto/security/advisories</li>
+<li>Нажмите &quot;Report a vulnerability&quot;</li>
+<li>Заполните детали уязвимости</li>
+<li>Укажите:</li>
+<li>Чёткое описание уязвимости</li>
+<li>Затронутый компонент (файл, раздел, пример)</li>
+<li>Потенциальный impact</li>
+<li>Шаги воспроизведения, если они есть</li>
+<li>Предлагаемое исправление, если оно у вас есть</li>
+</ol>
+<p><strong>Что происходит дальше:</strong></p>
+<ul>
+<li>Мы подтвердим получение в течение 48 часов</li>
+<li>Проведём расследование и оценим severity</li>
+<li>Будем работать с вами над исправлением</li>
+<li>Согласуем сроки disclosure</li>
+<li>Укажем вас в security advisory, если вы не против анонимности</li>
+</ul>
+<h4 id="public-reporting">Public Reporting <a class="h-anchor" href="#public-reporting" aria-label="Ссылка на раздел">#</a></h4>
+<p>Для не чувствительных или уже публичных вопросов:</p>
+<ol>
+<li><strong>Откройте GitHub Issue</strong> с label <code>security</code></li>
+<li>Укажите:</li>
+<li>Заголовок: <code>[SECURITY]</code> и краткое описание</li>
+<li>Подробное описание</li>
+<li>Затронутый файл или раздел</li>
+<li>Потенциальный impact</li>
+<li>Предлагаемое исправление</li>
+</ol>
+<h3 id="h-12">Процесс реагирования на уязвимость <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="assessment-24-hours">Assessment (24 hours) <a class="h-anchor" href="#assessment-24-hours" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Мы подтверждаем получение отчёта</li>
+<li>Оцениваем severity с помощью <a href="https://www.first.org/cvss/v3.1/specification-document">CVSS v3.1</a></li>
+<li>Определяем, входит ли проблема в scope</li>
+<li>Связываемся с вами с первичной оценкой</li>
+</ol>
+<h4 id="development-1-7-days">Development (1-7 days) <a class="h-anchor" href="#development-1-7-days" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Мы разрабатываем исправление</li>
+<li>Проверяем и тестируем исправление</li>
+<li>Создаём security advisory</li>
+<li>Готовим release notes</li>
+</ol>
+<h4 id="disclosure-зависит-от-severity">Disclosure (зависит от severity) <a class="h-anchor" href="#disclosure-зависит-от-severity" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Critical (CVSS 9.0-10.0)</strong></p>
+<ul>
+<li>Исправление выпускается немедленно</li>
+<li>Публикуется advisory</li>
+<li>Репортерам отправляется предупреждение за 24 часа</li>
+</ul>
+<p><strong>High (CVSS 7.0-8.9)</strong></p>
+<ul>
+<li>Исправление выпускается в течение 48-72 часов</li>
+<li>Репортерам отправляется предупреждение за 5 дней</li>
+<li>Advisory публикуется вместе с релизом</li>
+</ul>
+<p><strong>Medium (CVSS 4.0-6.9)</strong></p>
+<ul>
+<li>Исправление включается в следующий обычный update</li>
+<li>Advisory публикуется вместе с релизом</li>
+</ul>
+<p><strong>Low (CVSS 0.1-3.9)</strong></p>
+<ul>
+<li>Исправление включается в следующий обычный update</li>
+<li>Advisory публикуется вместе с релизом</li>
+</ul>
+<h4 id="h-13">Публикация <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h4>
+<p>Мы публикуем security advisories, которые включают:</p>
+<ul>
+<li>Описание уязвимости</li>
+<li>Затронутые компоненты</li>
+<li>Оценку severity (CVSS score)</li>
+<li>Версию исправления</li>
+<li>Workarounds, если применимо</li>
+<li>Credit reporter&#x27;у с его согласия</li>
+</ul>
+<h3 id="h-14">Лучшие практики для репортов <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-15">Перед отправкой <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Проверьте проблему</strong>: можно ли воспроизвести её стабильно?</li>
+<li><strong>Поищите существующие issues</strong>: не сообщал ли кто-то уже об этом?</li>
+<li><strong>Проверьте документацию</strong>: есть ли рекомендации по безопасному использованию?</li>
+<li><strong>Проверьте исправление</strong>: работает ли ваш вариант?</li>
+</ul>
+<h4 id="h-16">При отправке <a class="h-anchor" href="#h-16" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Будьте конкретны</strong>: указывайте точные пути к файлам и номера строк</li>
+<li><strong>Дайте контекст</strong>: почему это security issue?</li>
+<li><strong>Покажите impact</strong>: что может сделать атакующий?</li>
+<li><strong>Опишите шаги</strong>: как воспроизвести проблему?</li>
+<li><strong>Предложите fixes</strong>: как бы вы это исправили?</li>
+</ul>
+<h4 id="h-17">После отправки <a class="h-anchor" href="#h-17" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Наберитесь терпения</strong>: ресурсы ограничены</li>
+<li><strong>Будьте на связи</strong>: быстро отвечайте на уточняющие вопросы</li>
+<li><strong>Сохраняйте конфиденциальность</strong>: не публикуйте до исправления</li>
+<li><strong>Соблюдайте координацию</strong>: следуйте нашему графику disclosure</li>
+</ul>
+<h3 id="security-headers-and-configuration">Security Headers and Configuration <a class="h-anchor" href="#security-headers-and-configuration" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="repository-security">Repository Security <a class="h-anchor" href="#repository-security" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Branch protection</strong>: Main branch requires 2 approvals for changes</li>
+<li><strong>Status checks</strong>: All CI/CD checks must pass</li>
+<li><strong>CODEOWNERS</strong>: Designated reviewers for key files</li>
+<li><strong>Signed commits</strong>: Recommended for contributors</li>
+</ul>
+<h4 id="development-security">Development Security <a class="h-anchor" href="#development-security" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Install pre-commit hooks
+pre-commit install
+
+# Run security scans locally
+bandit -c pyproject.toml -r scripts/
+mypy scripts/ --ignore-missing-imports
+ruff check scripts/</code></pre>
+<h4 id="dependency-security">Dependency Security <a class="h-anchor" href="#dependency-security" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Check for known vulnerabilities
+pip install safety
+safety check
+
+# Or use pip-audit
+pip install pip-audit
+pip-audit</code></pre>
+<h3 id="security-guidelines-for-contributors">Security Guidelines for Contributors <a class="h-anchor" href="#security-guidelines-for-contributors" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="when-writing-examples">When Writing Examples <a class="h-anchor" href="#when-writing-examples" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li><strong>Never hardcode secrets</strong></li>
+</ol>
+<pre><code class="language-python">   # ❌ Bad
+   api_key = &quot;sk-1234567890&quot;
+
+   # ✅ Good
+   api_key = os.getenv(&quot;API_KEY&quot;)</code></pre>
+<ol>
+<li><strong>Warn about security implications</strong></li>
+</ol>
+<pre><code class="language-markdown">   ⚠️ **Security Note**: Never commit `.env` files to git.
+   Add to `.gitignore` immediately.</code></pre>
+<ol>
+<li><strong>Use secure defaults</strong></li>
+<li>Enable authentication by default</li>
+<li>Use HTTPS where applicable</li>
+<li>Validate and sanitize inputs</li>
+<li>Use parameterized queries</li>
+</ol>
+<ol>
+<li><strong>Document security considerations</strong></li>
+<li>Explain why security matters</li>
+<li>Show secure vs. insecure patterns</li>
+<li>Link to authoritative sources</li>
+<li>Include warnings prominently</li>
+</ol>
+<h4 id="when-reviewing-contributions">When Reviewing Contributions <a class="h-anchor" href="#when-reviewing-contributions" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li><strong>Check for exposed secrets</strong></li>
+<li>Scan for common patterns (api_key=, password=)</li>
+<li>Review configuration files</li>
+<li>Check environment variables</li>
+</ol>
+<ol>
+<li><strong>Verify secure coding practices</strong></li>
+<li>No hardcoded credentials</li>
+<li>Proper input validation</li>
+<li>Secure authentication/authorization</li>
+<li>Safe file handling</li>
+</ol>
+<ol>
+<li><strong>Test security implications</strong></li>
+<li>Can this be misused?</li>
+<li>What is the worst case?</li>
+<li>Are there edge cases?</li>
+</ol>
+<h3 id="security-resources">Security Resources <a class="h-anchor" href="#security-resources" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="official-standards">Official Standards <a class="h-anchor" href="#official-standards" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><a href="https://owasp.org/www-project-top-ten/">OWASP Top 10</a></li>
+<li><a href="https://cwe.mitre.org/top25/">CWE Top 25</a></li>
+<li><a href="https://www.first.org/cvss/calculator/3.1">CVSS Calculator</a></li>
+</ul>
+<h4 id="python-security">Python Security <a class="h-anchor" href="#python-security" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><a href="https://www.python.org/dev/security/">Python Security Advisories</a></li>
+<li><a href="https://pypi.org/help/#security">PyPI Security</a></li>
+<li><a href="https://bandit.readthedocs.io/">Bandit Documentation</a></li>
+</ul>
+<h4 id="dependency-management">Dependency Management <a class="h-anchor" href="#dependency-management" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><a href="https://owasp.org/www-project-dependency-check/">OWASP Dependency Check</a></li>
+<li><a href="https://docs.github.com/en/code-security/dependabot/dependabot-alerts/about-dependabot-alerts">GitHub Security Alerts</a></li>
+</ul>
+<h4 id="general-security">General Security <a class="h-anchor" href="#general-security" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><a href="https://www.anthropic.com/">Anthropic Security</a></li>
+<li><a href="https://docs.github.com/en/code-security">GitHub Security Best Practices</a></li>
+</ul>
+<h3 id="security-advisories-archive">Security Advisories Archive <a class="h-anchor" href="#security-advisories-archive" aria-label="Ссылка на раздел">#</a></h3>
+<p>Previous security advisories are available in the <a href="https://github.com/luongnv89/claude-howto/security/advisories">GitHub Security Advisories</a> tab.</p>
+<h3 id="h-18">Контакт <a class="h-anchor" href="#h-18" aria-label="Ссылка на раздел">#</a></h3>
+<p>По вопросам безопасности или для обсуждения security practices:</p>
+<ol>
+<li><strong>Private Security Report</strong>: используйте приватное vulnerability reporting GitHub</li>
+<li><strong>General Security Questions</strong>: откройте discussion с тегом <code>[SECURITY]</code></li>
+<li><strong>Security Policy Feedback</strong>: создайте issue с label <code>security</code></li>
+</ol>
+<h3 id="h-19">Благодарности <a class="h-anchor" href="#h-19" aria-label="Ссылка на раздел">#</a></h3>
+<p>Мы ценим security researchers и участников сообщества, которые помогают сохранять проект безопасным. Контрибьюторы, сообщающие об уязвимостях ответственно, будут отмечены в наших security advisories, если они не захотят остаться анонимными.</p>
+<h3 id="h-20">Обновления политики <a class="h-anchor" href="#h-20" aria-label="Ссылка на раздел">#</a></h3>
+<p>Эта политика безопасности пересматривается и обновляется:</p>
+<ul>
+<li>Когда обнаруживаются новые уязвимости</li>
+<li>Когда меняются best practices по безопасности</li>
+<li>Когда меняется scope проекта</li>
+<li>Не реже одного раза в год</li>
+</ul>
+<p><strong>Last Updated</strong>: January 2026
+<strong>Next Review</strong>: January 2027</p>
+<hr>
+<p>Спасибо, что помогаете сохранять Claude How To безопасным! 🔒</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

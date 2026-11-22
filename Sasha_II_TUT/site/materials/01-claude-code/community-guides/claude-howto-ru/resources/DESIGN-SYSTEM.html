@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Claude How To - Дизайн-система</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/resources/index.html">resources</a></nav>
+<h1 id="claude-how-to-дизайн-система">Claude How To - Дизайн-система <a class="h-anchor" href="#claude-how-to-дизайн-система" aria-label="Ссылка на раздел">#</a></h1>
+<h3 id="h">Визуальная идентичность <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="концепция-иконки-compass-с-code-bracket">Концепция иконки: Compass с Code Bracket <a class="h-anchor" href="#концепция-иконки-compass-с-code-bracket" aria-label="Ссылка на раздел">#</a></h4>
+<p>Иконка Claude How To использует <strong>compass с кодовой скобкой <code>&gt;</code></strong>, чтобы показать навигацию через код:</p>
+<pre><code>     N (green)
+     ▲
+     │
+W ───&gt;─── E     Compass = Guidance/Direction
+     │          &gt; Bracket = Code/Terminal/CLI
+     ▼
+     S (black)</code></pre>
+<p>Это даёт:</p>
+<ul>
+<li><strong>Визуальную ясность</strong>: сразу понятно, что это гид по навигации в коде</li>
+<li><strong>Смысловую нагрузку</strong>: compass = поиск пути; <code>&gt;</code> = code/terminal</li>
+<li><strong>Масштабируемость</strong>: работает от 16px до 512px</li>
+<li><strong>Соответствие бренду</strong>: минималистичная палитра в духе developer tools</li>
+</ul>
+<hr>
+<h3 id="h-2">Цветовая система <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-3">Палитра <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Цвет</th><th>Hex</th><th>RGB</th><th>Использование</th></tr></thead><tbody><tr><td>Black (Primary)</td><td><code>#000000</code></td><td>0, 0, 0</td><td>Основные штрихи, текст, южная стрелка</td></tr><tr><td>White (Background)</td><td><code>#FFFFFF</code></td><td>255, 255, 255</td><td>Светлый фон</td></tr><tr><td>Gray (Secondary)</td><td><code>#6B7280</code></td><td>107, 114, 128</td><td>Малые деления, вторичный текст</td></tr><tr><td>Bright Green (Accent)</td><td><code>#22C55E</code></td><td>34, 197, 94</td><td>Северная стрелка, центральная точка, акценты</td></tr><tr><td>Near Black (Dark BG)</td><td><code>#0A0A0A</code></td><td>10, 10, 10</td><td>Фоны тёмного режима</td></tr></tbody></table></div>
+<h4 id="контрастность-wcag">Контрастность (WCAG) <a class="h-anchor" href="#контрастность-wcag" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Black on White: <strong>21:1</strong> AAA</li>
+<li>Gray on White: <strong>4.6:1</strong> AA</li>
+<li>Green on White: <strong>3.2:1</strong> (только декоративно, не для текста)</li>
+<li>White on Dark: <strong>19.5:1</strong> AAA</li>
+</ul>
+<h4 id="h-4">Правило для акцентного цвета <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Bright Green (#22C55E) зарезервирован только для акцентов:</strong></p>
+<ul>
+<li>Северная стрелка компаса</li>
+<li>Центральная точка</li>
+<li>Акцентные подчеркивания/границы</li>
+<li>Никогда не использовать как background</li>
+<li>Никогда не использовать для основного текста</li>
+</ul>
+<hr>
+<h3 id="h-5">Типографика <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-6">Шрифт логотипа <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Семейство</strong>: Inter, SF Pro Display, -apple-system, Segoe UI, sans-serif</li>
+<li><strong>&quot;Claude&quot;</strong>: 42px, weight 700 (bold), Black</li>
+<li><strong>&quot;How-To&quot;</strong>: 32px, weight 500 (medium), Gray (#6B7280)</li>
+<li><strong>Subtitle</strong>: 10px, weight 500, Gray, letter-spacing 1.5px, uppercase</li>
+</ul>
+<h4 id="h-7">Интерфейсный шрифт <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Семейство</strong>: Inter, SF Pro, system fonts (sans-serif)</li>
+<li><strong>Weight</strong>: 400-600</li>
+<li><strong>Стиль</strong>: чистый, читаемый</li>
+</ul>
+<hr>
+<h3 id="h-8">Детали иконки <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-9">Спецификация компаса <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<p>Марк компаса собран из следующих геометрических элементов:</p>
+<pre><code>Element             | Stroke/Fill    | Color
+--------------------|----------------|------------------
+Outer ring          | 3px stroke     | Black / White (dark mode)
+North tick          | 2.5px stroke   | Black / White (dark mode)
+Other cardinal ticks| 2px stroke     | Gray / White 50% (dark mode)
+Intercardinal ticks | 1.5px stroke   | Gray / White 40% (dark mode)
+North needle        | filled polygon | #22C55E (always green)
+South needle        | filled polygon | Black / White (dark mode)
+&gt; bracket           | 3px stroke     | Black / White (dark mode)
+Center dot          | filled circle  | #22C55E (always green)</code></pre>
+<h4 id="h-10">Прогрессия размеров <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>16px  → Ring + needles + chevron only (minimal)
+32px  → Adds cardinal tick marks
+64px  → Adds intercardinal tick marks
+128px → Full detail, all elements crisp
+256px → Maximum detail, thick strokes</code></pre>
+<hr>
+<h3 id="h-11">Рекомендации по размерам <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-12">Размер логотипа <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Минимум</strong>: 200px width (для web)</li>
+<li><strong>Рекомендуемый</strong>: 520px (native size)</li>
+<li><strong>Максимум</strong>: без ограничений (vector format)</li>
+<li><strong>Соотношение сторон</strong>: ~4.3:1 (width:height)</li>
+</ul>
+<h4 id="h-13">Размер иконки <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Минимум</strong>: 16px (favicon)</li>
+<li><strong>Рекомендуемый</strong>: 64-256px (apps, avatars)</li>
+<li><strong>Максимум</strong>: без ограничений (vector format)</li>
+<li><strong>Соотношение сторон</strong>: 1:1 (square)</li>
+</ul>
+<hr>
+<h3 id="h-14">Отступы и выравнивание <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-15">Отступы логотипа <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>┌─────────────────────────────────────┐
+│                                     │
+│        Clear Space Minimum          │
+│         (logo height / 2)           │
+│                                     │
+│    [COMPASS]  Claude                │
+│               How-To                │
+│                                     │
+└─────────────────────────────────────┘</code></pre>
+<h4 id="h-16">Центральная точка иконки <a class="h-anchor" href="#h-16" aria-label="Ссылка на раздел">#</a></h4>
+<p>Все иконки центрируются в середине canvas:</p>
+<ul>
+<li>128×128 для canvas 256px</li>
+<li>64×64 для canvas 128px</li>
+<li>Это обеспечивает выравнивание с другими UI-элементами</li>
+</ul>
+<hr>
+<h3 id="h-17">Доступность <a class="h-anchor" href="#h-17" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-18">Контрастность <a class="h-anchor" href="#h-18" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Весь текст соответствует WCAG AA (минимум 4.5:1)</li>
+<li>Зелёный акцент декоративный, не информационный</li>
+<li>Нет зависимости от красно-зелёной палитры</li>
+</ul>
+<h4 id="h-19">Масштабируемость <a class="h-anchor" href="#h-19" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Векторный формат обеспечивает чёткость на любом размере</li>
+<li>Геометрические формы остаются узнаваемыми на 16px</li>
+<li>Детализация растёт по мере увеличения размера</li>
+</ul>
+<hr>
+<h3 id="h-20">Примеры применения <a class="h-anchor" href="#h-20" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="web-header">Web Header <a class="h-anchor" href="#web-header" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Size: 520×120px logo</li>
+<li>File: <code>logos/claude-howto-logo.svg</code></li>
+<li>Background: White or dark (#0A0A0A)</li>
+<li>Padding: минимум 20px</li>
+</ul>
+<h4 id="app-icon">App Icon <a class="h-anchor" href="#app-icon" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Size: 256×256px</li>
+<li>File: <code>icons/claude-howto-icon.svg</code></li>
+<li>Background: White or dark</li>
+<li>Use: ярлыки приложений, аватары</li>
+</ul>
+<h4 id="browser-favicon">Browser Favicon <a class="h-anchor" href="#browser-favicon" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Size: 32px (primary), 16px (fallback)</li>
+<li>File: <code>favicons/favicon-32.svg</code></li>
+<li>Format: SVG for crisp display</li>
+</ul>
+<h4 id="social-media">Social Media <a class="h-anchor" href="#social-media" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Profile: 256×256px icon</li>
+<li>Banner: 520×120px logo (centered)</li>
+</ul>
+<h4 id="documentation">Documentation <a class="h-anchor" href="#documentation" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Chapter Headers: Logo scaled to fit</li>
+<li>Section Icons: 64×64px favicon</li>
+<li>Inline: 32×32px favicon</li>
+</ul>
+<hr>
+<h3 id="h-21">Детали формата файлов <a class="h-anchor" href="#h-21" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="svg-structure">SVG Structure <a class="h-anchor" href="#svg-structure" aria-label="Ссылка на раздел">#</a></h4>
+<p>Все SVG файлы выполнены в flat design:</p>
+<ul>
+<li>Без градиентов (только solid colors)</li>
+<li>Без filter effects (никаких blur, glow или shadow)</li>
+<li>Чистая stroke и fill geometry</li>
+<li>ViewBox для responsive scaling</li>
+<li>Читаемый, прокомментированный код</li>
+</ul>
+<h4 id="h-22">Совместимость с браузерами <a class="h-anchor" href="#h-22" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Chrome/Edge: Full support</li>
+<li>Firefox: Full support</li>
+<li>Safari: Full support</li>
+<li>iOS Safari: Full support</li>
+<li>Все современные браузеры: Full support</li>
+</ul>
+<hr>
+<h3 id="h-23">Кастомизация <a class="h-anchor" href="#h-23" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-24">Изменение акцентного цвета <a class="h-anchor" href="#h-24" aria-label="Ссылка на раздел">#</a></h4>
+<p>Чтобы создать вариант с другим accent color:</p>
+<ol>
+<li>Замените все вхождения <code>#22C55E</code> на ваш акцентный цвет</li>
+<li>Убедитесь, что контрастность остаётся выше 3:1 для декоративных элементов</li>
+<li>Оставьте структуру black/white/gray без изменений</li>
+</ol>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

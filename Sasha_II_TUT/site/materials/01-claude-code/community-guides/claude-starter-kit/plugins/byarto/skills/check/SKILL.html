@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>SKILL.md</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../../../../materials/index.html">Материалы</a> / <a href="../../../../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../../../../materials/01-claude-code/community-guides/claude-starter-kit/index.html">claude-starter-kit</a> / <a href="../../../../../../../../materials/01-claude-code/community-guides/claude-starter-kit/plugins/index.html">plugins</a> / <a href="../../../../../../../../materials/01-claude-code/community-guides/claude-starter-kit/plugins/byarto/index.html">byarto</a> / <a href="../../../../../../../../materials/01-claude-code/community-guides/claude-starter-kit/plugins/byarto/skills/index.html">skills</a> / <a href="../../../../../../../../materials/01-claude-code/community-guides/claude-starter-kit/plugins/byarto/skills/check/index.html">check</a></nav>
+<hr>
+<p>name: check
+description: Строгое ревью перед выкладкой — баги, безопасность, лишняя сложность. Сначала список, правки только после ответа.
+argument-hint: &quot;[файл, папка или пусто — всё с последнего коммита]&quot;
+disable-model-invocation: true</p>
+<hr>
+<p>Проверь: $ARGUMENTS
+Если аргумент пустой — проверь всё, что изменилось с последнего коммита.</p>
+<p>Смотри как строгий сеньор:</p>
+<ol>
+<li>Баги и крайние случаи: пустые данные, ошибки сети, двойные клики.</li>
+<li>Безопасность: секреты в коде, открытые ключи, SQL- и XSS-инъекции, права доступа.</li>
+<li>Лишняя сложность и дубли.</li>
+<li>Производительность там, где её заметит пользователь.</li>
+</ol>
+<p>Выдай список проблем по важности: 🔴 критично, 🟡 стоит поправить, ⚪ мелочь. Для каждой — где она и почему это проблема.
+Потом спроси, что исправлять. Сам ничего не меняй, пока я не отвечу.</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Конфигурация сети для предприятия</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Конфигурация сети для предприятия <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Настройте Claude Code для корпоративных сред с прокси-серверами, пользовательскими центрами сертификации (CA) и взаимной аутентификацией Transport Layer Security (mTLS).</p>
+</blockquote>
+<p>Claude Code поддерживает различные конфигурации сети и безопасности предприятия через переменные окружения.</p>
+<p>Установите эти переменные окружения перед запуском Claude Code. Переменные, экспортированные в вашей оболочке, читаются один раз при запуске, поэтому запущенный сеанс не подхватывает последующие изменения в переменных окружения вашей оболочки.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Все переменные окружения, показанные на этой странице, также можно настроить в <a href="https://code.claude.com/docs/ru/settings"><code>settings.json</code></a>.</p>
+</blockquote>
+<p>Когда вы <a href="https://code.claude.com/docs/ru/mcp.md#authenticate-with-remote-mcp-servers">входите на удалённый MCP-сервер</a>, Claude Code применяет ваши переменные для <a href="#proxy-configuration">прокси</a>, <a href="#custom-ca-certificates">CA</a> и <a href="#mtls-authentication">клиентского сертификата</a> к отправляемым запросам на вход. Для <a href="https://code.claude.com/docs/ru/mcp#authenticate-from-the-command-line"><code>claude mcp login</code></a> задайте переменные в вашей оболочке, в <code>~/.claude/settings.json</code> или в <a href="https://code.claude.com/docs/ru/managed-settings.md#deploy-a-managed-settings-file">файле управляемых настроек</a>, а не в настройках проекта или локальных настройках.</p>
+<h3 id="h-2">Конфигурация прокси <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-3">Переменные окружения <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Claude Code соответствует стандартным переменным окружения прокси. В сеансах Claude Desktop, где приложение управляет подключением поставщика, Claude Code читает их только из управляемых параметров и <code>~/.claude/settings.json</code>; см. <a href="#mtls-authentication">mTLS аутентификация</a> для правил области действия.</p>
+<p>```bash theme={null}</p>
+<h1 id="https-прокси-рекомендуется">HTTPS прокси (рекомендуется) <a class="h-anchor" href="#https-прокси-рекомендуется" aria-label="Ссылка на раздел">#</a></h1>
+<p>export HTTPS_PROXY=https://proxy.example.com:8080</p>
+<h1 id="http-прокси-если-https-недоступен">HTTP прокси (если HTTPS недоступен) <a class="h-anchor" href="#http-прокси-если-https-недоступен" aria-label="Ссылка на раздел">#</a></h1>
+<p>export HTTP_PROXY=http://proxy.example.com:8080</p>
+<h1 id="h-4">Обход прокси для конкретных запросов - формат с разделением пробелом <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h1>
+<p>export NO_PROXY=&quot;localhost 192.168.1.1 example.com .example.com&quot;</p>
+<h1 id="h-5">Обход прокси для конкретных запросов - формат с разделением запятой <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h1>
+<p>export NO_PROXY=&quot;localhost,192.168.1.1,example.com,.example.com&quot;</p>
+<h1 id="h-6">Обход прокси для всех запросов <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h1>
+<p>export NO_PROXY=&quot;*&quot;</p>
+<pre><code>
+Варианты в нижнем регистре также работают, и Claude Code использует первый установленный в порядке `https_proxy`, `HTTPS_PROXY`, `http_proxy`, `HTTP_PROXY`.
+
+Claude Code никогда не отправляет свои WebSocket соединения на `localhost`, `::1` или `127.0.0.0/8` через прокси, поэтому вам не нужна запись loopback в `NO_PROXY` для них.
+
+&gt; [!NOTE]
+&gt;
+&gt; Claude Code не поддерживает SOCKS прокси.
+
+### Базовая аутентификация
+
+Если ваш прокси требует базовую аутентификацию, включите учетные данные в URL прокси:
+</code></pre>
+<p>export HTTPS_PROXY=http://username:password@proxy.example.com:8080</p>
+<pre><code>
+&gt; [!WARNING]
+&gt;
+&gt; Избегайте жесткого кодирования паролей в скриптах. Используйте переменные окружения или безопасное хранилище учетных данных вместо этого.
+
+&gt; [!TIP]
+&gt;
+&gt; Для прокси, требующих расширенную аутентификацию (NTLM, Kerberos и т. д.), рассмотрите использование сервиса LLM Gateway, который поддерживает ваш метод аутентификации.
+
+## Хранилище сертификатов CA
+
+По умолчанию Claude Code доверяет как своему встроенному набору сертификатов Mozilla CA, так и хранилищу сертификатов вашей операционной системы. Чтение хранилища ОС требует среды выполнения с `tls.getCACertificates`: встроенный установщик всегда его имеет, а установки npm требуют Node 22.15 или более поздней версии. На более старых версиях Node применяются только встроенный набор и `NODE_EXTRA_CA_CERTS`. Корпоративные прокси с TLS-инспекцией работают без дополнительной конфигурации, когда их корневой сертификат установлен в хранилище доверия ОС и среда выполнения может его прочитать. Если такой прокси некорректно обрабатывает тела запросов, сжатые gzip, установите [`CLAUDE_CODE_GZIP_REQUEST_BODIES=0`](https://code.claude.com/docs/ru/env-vars), чтобы отключить сжатие для запросов к Claude API, запросов телеметрии и запросов публикации артефактов.
+
+`CLAUDE_CODE_CERT_STORE` принимает список источников, разделенный запятыми. Признанные значения: `bundled` для набора Mozilla CA, поставляемого с Claude Code, и `system` для хранилища доверия операционной системы. По умолчанию используется `bundled,system`.
+
+Для доверия только встроенному набору Mozilla CA:
+</code></pre>
+<p>export CLAUDE_CODE_CERT_STORE=bundled</p>
+<pre><code>
+Для доверия только хранилищу сертификатов ОС:
+</code></pre>
+<p>export CLAUDE_CODE_CERT_STORE=system</p>
+<pre><code>
+&gt; [!NOTE]
+&gt;
+&gt; `CLAUDE_CODE_CERT_STORE` не имеет выделенного ключа схемы `settings.json`. Установите его через блок `env` в `~/.claude/settings.json` или непосредственно в окружении процесса.
+
+## Пользовательские сертификаты CA
+
+Если ваша корпоративная среда использует пользовательский CA, настройте Claude Code для доверия ему напрямую:
+</code></pre>
+<p>export NODE_EXTRA_CA_CERTS=/path/to/ca-cert.pem</p>
+<pre><code>
+Если вы видите одно из этих предупреждений, Claude Code не удалось загрузить файл `NODE_EXTRA_CA_CERTS` целиком, и подключения, которым нужен пропущенный сертификат, могут завершаться ошибкой:
+
+* `Claude Code used only the certificates that it could read in full from the NODE_EXTRA_CA_CERTS file`
+* `Claude Code ignored all of the NODE_EXTRA_CA_CERTS file: it holds no certificate that Claude Code can read`
+
+Полный текст каждого предупреждения объясняет, как исправить файл. Пропущенный сертификат, который также есть в [хранилище сертификатов CA](#ca-certificate-store), по-прежнему работает.
+
+## Аутентификация mTLS
+
+Для корпоративных сред, требующих аутентификации с использованием сертификата клиента:
+</code></pre>
+<h1 id="h-7">Сертификат клиента для аутентификации <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h1>
+<p>export CLAUDE_CODE_CLIENT_CERT=/path/to/client-cert.pem</p>
+<h1 id="h-8">Приватный ключ клиента <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h1>
+<p>export CLAUDE_CODE_CLIENT_KEY=/path/to/client-key.pem</p>
+<h1 id="h-9">Опционально: Парольная фраза для зашифрованного приватного ключа <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h1>
+<p>export CLAUDE_CODE_CLIENT_KEY_PASSPHRASE=&quot;your-passphrase&quot;</p>
+<pre><code>
+Claude Code читает файлы сертификата и ключа при запуске и перечитывает их каждый раз при применении параметров, например, когда ваша организация изменяет блок `env` в [управляемых параметрах](https://code.claude.com/docs/ru/server-managed-settings.md) во время сеанса.
+
+Чтобы ротировать сертификат и ключ, замените файлы по тем же путям. Claude Code подхватывает замену в работающем сеансе без перезагрузки. Когда запрос API завершается с ошибкой на уровне соединения, такой как сброс соединения или ошибка TLS handshake, он перечитывает оба файла и повторяет запрос с новой парой. До версии 2.1.232 Claude Code не перечитывал при ошибках соединения, поэтому он сохранял уже загруженную пару до следующего применения параметров или перезагрузки.
+
+Claude Code перечитывает файлы в ответ на неудачные запросы, а не путём отслеживания их изменений:
+
+* **Время**: Claude Code ничего не делает в момент замены файлов. Он представляет новую пару при повторной попытке после квалифицирующегося сбоя или при следующем запросе после применения параметров, в зависимости от того, что произойдёт раньше.
+* **Отклонения шлюза**: Claude Code перечитывает, когда ваш шлюз сбрасывает соединение или отклоняет TLS handshake после того, как перестаёт принимать старую пару. Он не перечитывает, когда шлюз завершает handshake и отвечает с ошибкой HTTP. В этом случае Claude Code загружает новую пару при следующем применении параметров или при перезагрузке.
+* **Неполные ротации**: когда Claude Code перечитывает во время выполнения ротации, например, читая сертификат и ключ, которые не совпадают друг с другом, он сохраняет предыдущую пару и перечитывает при следующем сбое.
+* **Экспортеры телеметрии OTLP**: Claude Code сохраняет сертификат, который [экспортеры](https://code.claude.com/docs/ru/monitoring-usage.md#mtls-authentication) загрузили при первом использовании, поэтому перезагрузите Claude Code, чтобы ротированный сертификат достиг вашего сборщика телеметрии.
+* **Отключение перезагрузки**: установите [`CLAUDE_CODE_DISABLE_MTLS_RELOAD_ON_STALE_CONNECTION=1`](https://code.claude.com/docs/ru/env-vars#variables), чтобы отключить перечитывание при ошибке соединения. Claude Code затем подхватывает ротированные файлы только при следующем применении параметров или при следующем запуске.
+
+Чтобы подтвердить, что Claude Code подхватил ротацию, [запустите сеанс с отладочным логированием](#verify-your-configuration) и ищите `Stale connection — reloaded rotated mTLS client material` в логе. Claude Code не логирует эту строку, когда подхватывает ротацию при применении параметров, поэтому отсутствие строки само по себе не означает, что ротация не удалась.
+
+Замените файлы до истечения срока действия текущей пары, чтобы Claude Code не загружал уже истёкшую пару при следующем запуске.
+
+В [облачных сеансах](https://code.claude.com/docs/ru/claude-code-on-the-web.md) среда хостинга управляет соединением с API, поэтому Claude Code игнорирует следующие переменные, когда они поступают из блока `env` файла параметров:
+
+* `CLAUDE_CODE_CLIENT_CERT`
+* `CLAUDE_CODE_CLIENT_KEY`
+* `CLAUDE_CODE_CLIENT_KEY_PASSPHRASE`
+* `NODE_EXTRA_CA_CERTS`
+* `NODE_TLS_REJECT_UNAUTHORIZED`
+* `CLAUDE_CODE_OAUTH_SCOPES`
+
+Claude Code отмечает каждый игнорируемый ключ в логе отладки сеанса.
+
+В сессиях [Claude Desktop](https://code.claude.com/docs/ru/desktop.md), где приложение управляет подключением к поставщику, например на вкладке Code со [сторонним поставщиком](https://code.claude.com/docs/ru/third-party-integrations.md) и в сессиях Cowork, Claude Code читает эти переменные, кроме `CLAUDE_CODE_OAUTH_SCOPES`, а также переменные прокси `HTTP_PROXY`, `HTTPS_PROXY` и `NO_PROXY` только из [управляемых настроек](https://code.claude.com/docs/ru/managed-settings.md) и `~/.claude/settings.json`. Он игнорирует их в собственных файлах настроек репозитория, поэтому извлечённый репозиторий не может перенаправить путь TLS или прокси сессии, учётные данные которой поступают из приложения. До версии 2.1.217 Claude Code игнорировал эти переменные в каждом файле настроек, когда приложение управляло соединением.
+
+В локальной, SSH- или WSL-сессии на вкладке Code, вход в которую выполнен через claude.ai, вы можете задавать эти переменные и переменные прокси в любом файле настроек, за исключением `CLAUDE_CODE_OAUTH_SCOPES`. Desktop сам задаёт `CLAUDE_CODE_OAUTH_SCOPES` в сессиях вкладки Code и Cowork, поэтому вы не можете его задать.
+
+Если среда запуска сессии уже задаёт переменную, Claude Code [игнорирует значение из файла настроек](https://code.claude.com/docs/ru/settings-reference.md#how-env-values-interact-with-your-shell) и указывает эту переменную в [отладочном логе](https://code.claude.com/docs/ru/debug-your-config.md). Чтобы использовать собственное значение прокси или сертификата в локальной сессии, [добавьте его в сохранённую локальную среду](https://code.claude.com/docs/ru/desktop.md#set-environment-variables-for-local-sessions). [Облачные сессии](https://code.claude.com/docs/ru/claude-code-on-the-web.md) следуют приведённым выше правилам для облачных сессий, где бы вы их ни запустили.
+
+## Проверьте вашу конфигурацию
+
+Обычно вы узнаете об неправильном адресе прокси или неправильном пути к сертификату из [ошибки подключения или сертификата](https://code.claude.com/docs/ru/errors.md#network-and-connection-errors) при последующем запросе, так как Claude Code не проверяет большинство этих параметров при их чтении. Единственный параметр, который он проверяет при запуске, — это URL прокси: когда он не может разобрать значение, например если отсутствует схема `http://`, Claude Code останавливает запуск с ошибкой, указывающей переменную для исправления.
+
+Чтобы подтвердить, что ваша конфигурация загружена перед отправкой запроса, запустите Claude Code с отладочным логированием:
+</code></pre>
+<p>claude --debug</p>
+<pre><code>
+Отладочный вывод идёт в `~/.claude/debug/&lt;session-id&gt;.txt` вместо терминала или в путь, который вы установили с помощью `--debug-file &lt;path&gt;`. В журнале ищите строки, которые подтверждают загрузку каждого файла:
+</code></pre>
+<p>CA certs: Appended extra certificates from NODE_EXTRA_CA_CERTS (/etc/ssl/certs/corp-ca.pem)
+mTLS: Loaded client certificate from CLAUDE_CODE_CLIENT_CERT
+mTLS: Loaded client key from CLAUDE_CODE_CLIENT_KEY</p>
+<pre><code>
+Если Claude Code не может прочитать один из этих файлов, журнал показывает строку `Failed to read` или `Failed to load` с причиной вместо этого.
+
+Вы также можете запустить `/status` в интерактивном сеансе и проверить эти строки:
+
+* **Proxy**: показывает активный URL прокси и отмечает значение, которое он не может разобрать, как недействительное и игнорируемое.
+* **mTLS client cert** и **mTLS client key**: появляются только при загрузке файлов, поэтому отсутствующая строка означает, что загрузка не удалась, и отладочный журнал содержит причину.
+* **Additional CA cert(s)**: показывает путь `NODE_EXTRA_CA_CERTS` без проверки загрузки файла, поэтому подтвердите это в отладочном журнале.
+
+## Применение параметров сети к фоновым агентам
+
+[Фоновые агенты](https://code.claude.com/docs/ru/agent-view.md) не запускаются внутри терминала, который их отправил. Процесс супервизора для каждого пользователя запускается по требованию, существует дольше вашей оболочки и размещает каждый сеанс `claude agents`, `--bg` и `/background`. См. [Как размещаются фоновые сеансы](https://code.claude.com/docs/ru/agent-view.md#how-background-sessions-are-hosted). Это изменяет способ, которым конфигурация на этой странице достигает эти сеансы.
+
+### Установите переменные сети в параметрах, а не в оболочке
+
+Супервизор — это один процесс, общий для каждого терминала. Он наследует окружение той оболочки, которая запустила его первой. Если вы экспортируете прокси, путь ЦС или переменную mTLS только в вашей оболочке, она достигает фоновых агентов, когда эта оболочка случайно холодно запустила супервизор, и молча не достигает, когда это сделала другая оболочка.
+
+Поместите те же переменные в блок `env` файла `~/.claude/settings.json` или в [управляемые параметры](https://code.claude.com/docs/ru/settings.md). Каждая переменная на этой странице может быть установлена там, и параметры — это единственная конфигурация, которая достигает каждый фоновый сеанс на каждой машине.
+
+### Настройте корпоративный запускатель как параметр
+
+Некоторые организации требуют, чтобы каждый процесс Claude Code запускался через корпоративный запускатель, который применяет изоляцию, сетевые элементы управления или внедрение учетных данных. Супервизор и его рабочие процессы запускают Claude Code из фиксированного пути, а не путем поиска `claude` в `PATH`, поэтому каждый фоновый агент обходит оболочку, которую вы разместили ранее в `PATH`.
+
+Установите параметр [`processWrapper`](https://code.claude.com/docs/ru/settings-reference#processwrapper), чтобы добавить префикс супервизору, его рабочим процессам и другим фоновым процессам, перечисленным в разделе [Что охватывает запускатель](https://code.claude.com/docs/ru/corporate-launcher.md#what-the-launcher-covers), с помощью вашего запускателя. Эквивалентная переменная окружения [`CLAUDE_CODE_PROCESS_WRAPPER`](https://code.claude.com/docs/ru/env-vars) имеет приоритет, когда установлены оба варианта, и она подчиняется тому же правилу: доставляйте её через управляемые параметры или `~/.claude/settings.json`, а не через экспорт оболочки. [Запуск Claude Code за корпоративным запускателем](https://code.claude.com/docs/ru/corporate-launcher.md) охватывает контракт, который должен удовлетворять запускатель, что он делает и не делает, и как его развернуть.
+
+&gt; [!NOTE]
+&gt;
+&gt; Уже запущенный супервизор сохраняет конфигурацию запуска, с которой он начал. После развёртывания настройки запускателя запустите [`claude daemon stop --any`](https://code.claude.com/docs/ru/agent-view#the-supervisor-process), чтобы следующий `claude agents` или `--bg` запустил супервизор, который её соблюдает.
+
+## Сторожевые таймеры простоя потоковой передачи
+
+Claude Code запускает четыре независимых таймера, которые прерывают потоковый ответ модели, когда он затихает, чтобы оборванное соединение завершалось ошибкой и повторной попыткой, а не зависало. Запрос, на который вообще не приходят заголовки ответа, завершается одним из двух способов:
+
+* **Там, где действует крайний срок первого байта**: первая попытка завершается не позже этого срока. Чтобы изменить его, задайте `CLAUDE_STREAM_FIRST_BYTE_TIMEOUT_MS`. О времени ожидания перед повторной попыткой см. [No response from API](https://code.claude.com/docs/ru/errors.md#no-response-from-api).
+* **На остальных соединениях**: запрос завершается через 5–6 минут, когда срабатывает таймаут простоя тела ответа, если только вы не отключили этот таймаут. Чтобы завершать запрос раньше, уменьшите `API_TIMEOUT_MS`. В сессии [Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway) вместо этого можно завершать первую попытку раньше, [включив крайний срок первого байта](https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#retry-an-unanswered-request-sooner-with-the-first-byte-deadline).
+
+| Таймер | Прерывает, когда | Где действует | Таймаут по умолчанию |
+| :- | :- | :- | :- |
+| Крайний срок первого байта | После отправки запроса Claude Code не приходят заголовки ответа | Прямой Anthropic API и [Claude Platform on AWS](https://code.claude.com/docs/ru/claude-platform-on-aws.md), в том числе через HTTPS-прокси, но не когда `ANTHROPIC_BASE_URL` или `ANTHROPIC_AWS_BASE_URL` направляет их через [шлюз](https://code.claude.com/docs/ru/gateways.md). Включается по желанию для [сессии Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#retry-an-unanswered-request-sooner-with-the-first-byte-deadline), а также на Amazon Bedrock с помощью `CLAUDE_ENABLE_BYTE_WATCHDOG_BEDROCK=1`; не действует на Agent Platform от Google Cloud и Microsoft Foundry | 180 секунд для прямого Anthropic API и 300 секунд на Claude Platform on AWS или Amazon Bedrock, плюс одна секунда на каждые 32 КБ тела запроса |
+| Сторожевой таймер уровня событий | Не разбирается ни одно событие ответа. Там, где сторожевой таймер уровня байтов работает на соединении, отличном от Amazon Bedrock, поступающие байты, включая keep-alive-пинги, также сбрасывают этот таймер — в течение ограниченного времени без разобранного события. Это время составляет около пяти минут, когда байты поступают не реже чем раз в 10 секунд. При 15-секундных пингах Claude apps gateway оно составляет около 7,5 минут, поэтому поток, состоящий только из пингов, завершается примерно через 12,5 минут при таймауте по умолчанию. | Все провайдеры | 300 секунд |
+| Сторожевой таймер уровня байтов | По сети не поступает ни одного байта, включая SSE keep-alive-пинги | Прямой Anthropic API, [Claude Platform on AWS](https://code.claude.com/docs/ru/claude-platform-on-aws.md) и соединения через [шлюз](https://code.claude.com/docs/ru/gateways.md), включая пользовательский `ANTHROPIC_BASE_URL`. Включается по желанию для ответов `vnd.amazon.eventstream` Amazon Bedrock с помощью `CLAUDE_ENABLE_BYTE_WATCHDOG_BEDROCK=1`; не действует на Agent Platform от Google Cloud и Microsoft Foundry | 180 секунд для прямого Anthropic API. 300 секунд на Claude Platform on AWS, на Amazon Bedrock, в сессии [Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway) и через пользовательский `ANTHROPIC_BASE_URL` |
+| Таймаут простоя тела ответа | В течение 5 минут не поступает ни одного байта, включая ожидание заголовков ответа | Провайдеры, кроме прямого Anthropic API, Claude Platform on AWS и Amazon Bedrock с заданным `CLAUDE_ENABLE_BYTE_WATCHDOG_BEDROCK=1`, если только [`API_FORCE_IDLE_TIMEOUT`](https://code.claude.com/docs/ru/env-vars) не меняет это | 5 минут |
+
+Если вы задаёте `CLAUDE_ENABLE_BYTE_WATCHDOG_BEDROCK=1`, сторожевой таймер уровня байтов заменяет таймаут простоя тела ответа на Bedrock, а не работает вместе с ним. Тогда `CLAUDE_STREAM_IDLE_TIMEOUT_MS` также определяет, как долго поток Bedrock может молчать, прежде чем Claude Code сочтёт соединение оборванным, в пределах ограничений, перечисленных ниже. Поступающие байты по-прежнему не сбрасывают сторожевой таймер уровня событий на Bedrock. При включённом отладочном логировании каждый поток Bedrock в этом случае записывает в лог отладочное сообщение, начинающееся с `wire-heartbeat: _chunkTimes absent`.
+
+Настраивайте таймеры с помощью следующих переменных, каждая из которых подробно описана в [справочнике по переменным окружения](https://code.claude.com/docs/ru/env-vars.md):
+
+* `CLAUDE_ENABLE_STREAM_WATCHDOG` и `CLAUDE_ENABLE_BYTE_WATCHDOG` принудительно включают соответствующий сторожевой таймер значением `1` или отключают значением `0` в пределах соединений, перечисленных в таблице; ни одна из переменных не распространяет сторожевой таймер на тип соединения, который он не охватывает. Значение `0` для `CLAUDE_ENABLE_BYTE_WATCHDOG` также отключает крайний срок первого байта.
+* `CLAUDE_STREAM_IDLE_TIMEOUT_MS` задаёт таймаут обоих сторожевых таймеров. Claude Code повышает значения меньше 5 минут до 5 минут и ограничивает значение 30 минутами для сторожевого таймера уровня байтов.
+* `CLAUDE_BYTE_STREAM_IDLE_TIMEOUT_MS` задаёт таймаут сторожевого таймера уровня байтов, не меняя таймаут сторожевого таймера уровня событий, ограничивается диапазоном от 10 секунд до 30 минут и имеет приоритет над `CLAUDE_STREAM_IDLE_TIMEOUT_MS` для этого таймера.
+* `CLAUDE_STREAM_FIRST_BYTE_TIMEOUT_MS` задаёт крайний срок первого байта. В сессии Claude apps gateway задайте эту переменную, чтобы [включить этот срок](https://code.claude.com/docs/ru/claude-apps-gateway-deploy.md#retry-an-unanswered-request-sooner-with-the-first-byte-deadline). Если на другом соединении, где этот срок действует, переменная не задана, Claude Code использует таймаут сторожевого таймера уровня байтов, поэтому `CLAUDE_STREAM_IDLE_TIMEOUT_MS` и `CLAUDE_BYTE_STREAM_IDLE_TIMEOUT_MS` также меняют этот срок. Об ограничениях значения см. [No response from API](https://code.claude.com/docs/ru/errors.md#no-response-from-api).
+* `API_TIMEOUT_MS` ограничивает ожидание заголовков ответа, а не то, как долго ответ передаётся потоком после них. Там, где крайний срок первого байта не действует, задайте `API_TIMEOUT_MS` положительное значение меньше `300000`, чтобы повторять попытку для запроса без ответа менее чем через 5 минут. Держите `API_TIMEOUT_MS` выше самого долгого ожидаемого ожидания заголовков и самого долгого [непотокового запроса](https://code.claude.com/docs/ru/errors.md#streaming-response-ended-before-any-complete-data-was-received): запрос, которому нужно больше времени, будет снова завершаться по таймауту при каждой повторной попытке.
+* `API_FORCE_IDLE_TIMEOUT` со значением `0` отключает таймаут простоя тела ответа, а со значением `1` включает его для всех провайдеров. Сторожевые таймеры работают независимо от него, поэтому, чтобы поток мог делать паузы дольше их порогов, также увеличьте их значения или отключите их.
+
+Когда сторожевой таймер прерывает зависший поток, Claude Code рассматривает прерывание как сбой посреди потока, и то, что вы увидите, зависит от того, насколько далеко продвинулся ответ. Claude Code повторяет запрос или завершает ход с ошибкой, сохраняет завершённый вывод и показывает [уведомление о неполном ответе](https://code.claude.com/docs/ru/errors.md#the-response-above-may-be-incomplete) либо завершает ход обычным образом. В разделе [Automatic retries](https://code.claude.com/docs/ru/errors.md#automatic-retries) указано, где применяется каждый из этих исходов.
+
+В [неинтерактивной сессии](https://code.claude.com/docs/ru/headless.md), а также для ответа субагента в любой сессии Claude Code может сначала попросить Claude продолжить оборванный ответ; в [описании этого уведомления](https://code.claude.com/docs/ru/errors.md#the-response-above-may-be-incomplete) сказано, когда это происходит и когда вы всё равно видите уведомление.
+
+Когда срабатывает крайний срок первого байта, ответ ещё не начался, поэтому частичного вывода для сохранения нет. О том, как Claude Code повторно отправляет запрос и когда вместо этого завершается ход, см. [No response from API](https://code.claude.com/docs/ru/errors.md#no-response-from-api).
+
+## Требования к доступу в сеть
+
+Claude Code требует доступа к следующим URL-адресам. Добавьте их в белый список конфигурации прокси и правил брандмауэра, особенно в контейнеризованных или ограниченных сетевых средах. Проверка подключения при первом запуске указывает сюда, когда не может достичь `api.anthropic.com` или `platform.claude.com`; см. [Unable to connect to Anthropic services](https://code.claude.com/docs/ru/errors.md#unable-to-connect-to-anthropic-services) для сообщений проверки и шагов восстановления.
+
+| URL | Требуется для |
+| - | - |
+| `api.anthropic.com` | Запросы Claude API, включая проверку безопасности домена WebFetch [domain safety check](https://code.claude.com/docs/ru/data-usage.md#webfetch-domain-safety-check), получение флагов функций и логирование событий телеметрии |
+| `claude.ai` | Аутентификация учетной записи claude.ai |
+| `claude.com` | Вход в учетную запись claude.ai открывает страницу `claude.com` в браузере, которая перенаправляет на `claude.ai`; предварительно одобренные поиски документации WebFetch также достигают этого хоста из CLI |
+| `platform.claude.com` | Аутентификация учетной записи Anthropic Console. Обмен токенов OAuth, обновление и отзыв также идут на этот хост для учетных записей claude.ai, поэтому как вход в Console, так и вход в claude.ai требуют его |
+| `sso.claude.com` | Часть процесса входа через браузер для организаций, использующих единый вход (SSO). Если прокси блокирует этот хост, такой вход может завершиться неудачей |
+| `mcp-proxy.anthropic.com` | [MCP connectors from claude.ai](https://code.claude.com/docs/ru/mcp.md#use-mcp-servers-from-claude-ai), включая соединители, которые настраивает администратор организации. Трафик соединителей маршрутизируется через этот прокси; соединители включены по умолчанию для пользователей, аутентифицированных через claude.ai. Чтобы остановить Claude Code от их получения, установите [`ENABLE_CLAUDEAI_MCP_SERVERS=false`](https://code.claude.com/docs/ru/env-vars) или параметр [`disableClaudeAiConnectors`](https://code.claude.com/docs/ru/settings-reference#disableclaudeaiconnectors) |
+| `downloads.claude.ai` | Загрузки исполняемых файлов плагинов; собственный установщик, собственный автоматический обновитель и проверки версий обновлений |
+| `storage.googleapis.com` | Количество установок плагинов и метаданные, показанные в `/plugin` |
+| `storage.googleapis.com` | Собственный установщик и собственный автоматический обновитель в версиях до 2.1.116 |
+| `registry.npmjs.org` | Установки плагинов (получение пакетов плагинов из источника npm и установка зависимостей пакетов Node.js плагинов), MCP-серверы, запущенные через `npx`, и реестр пакетов для установок npm и bun самого Claude Code |
+| `bridge.claudeusercontent.com` | [Claude in Chrome](https://code.claude.com/docs/ru/chrome.md) расширение WebSocket bridge |
+| `*.frame.claudeusercontent.com` | [Artifact](https://code.claude.com/docs/ru/artifacts.md) чтение содержимого. CLI получает файлы артефакта с этого хоста, когда Claude открывает его, и только когда инструмент Artifact [доступен](https://code.claude.com/docs/ru/artifacts.md#availability) для вашей учетной записи. Чтобы отключить инструмент и удалить это требование, установите [`&quot;enableArtifact&quot;: false`](https://code.claude.com/docs/ru/settings-reference#enableartifact) или [`CLAUDE_CODE_DISABLE_ARTIFACT=1`](https://code.claude.com/docs/ru/env-vars) |
+| `github.com` | Клонирование размещенных на GitHub [plugin marketplaces](https://code.claude.com/docs/ru/plugins/overview.md) и плагинов, включая официальный рынок Anthropic, через HTTPS или SSH. Чтобы клонировать источники GitHub `owner/repo` только через HTTPS, установите [`CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1`](https://code.claude.com/docs/ru/env-vars) |
+| `raw.githubusercontent.com` | Лента изменений для [`/release-notes`](https://code.claude.com/docs/ru/commands). В интерактивных сеансах Claude Code также получает ее в фоновом режиме при запуске, когда его кэшированная лента изменений еще не охватывает запущенную версию, например при первом запуске после обновления; неинтерактивные и облачные сеансы никогда не получают ее |
+| `*-review.googlesource.com` | Поиск изменений Gerrit на checkouts `googlesource.com`. Когда сеанс вкладки Claude Desktop Code запускается или возобновляется на [доверенном](https://code.claude.com/docs/ru/permissions.md#project-allow-rules-and-workspace-trust) checkout, чей `origin` является хостом `googlesource.com`, Claude Code анонимно запрашивает сервер `-review` этого хоста для открытого изменения, соответствующего `Change-Id` HEAD, один раз за запуск или возобновление. Другие типы сеансов пропускают поиск, и никакой другой хост Gerrit не контактируется. Опционально: отключите с помощью [`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`](https://code.claude.com/docs/ru/env-vars) |
+| `http-intake.logs.us5.datadoghq.com` | События операционной телеметрии, отправляемые только когда CLI использует Anthropic API напрямую, никогда для Amazon Bedrock, Google Cloud&#x27;s Agent Platform или Microsoft Foundry. Опционально: отключите с помощью [`DISABLE_TELEMETRY`](https://code.claude.com/docs/ru/data-usage#telemetry-services) или `DO_NOT_TRACK` |
+| `browser-intake-us5-datadoghq.com` | Отчеты об операционных ошибках, отправляемые когда CLI использует Anthropic API напрямую и вентиль развертывания на стороне сервера их включает. Опционально: отключите с помощью `DISABLE_ERROR_REPORTING` или `DISABLE_TELEMETRY`; см. [Telemetry services](https://code.claude.com/docs/ru/data-usage.md#telemetry-services) |
+| `formulae.brew.sh` | Проверки версий обновлений при установке Homebrew. Другие методы установки не контактируют этот хост |
+| `code.claude.com` | Поиски документации Claude Code встроенным агентом claude-code-guide и предварительно одобренными запросами WebFetch. Блокировка этого хоста влияет только на поиски документации |
+
+Если вы устанавливаете Claude Code через npm или управляете собственным распределением двоичных файлов, конечным пользователям не нужны собственный установщик и использование автоматического обновителя `downloads.claude.ai`, но установки npm и bun нуждаются в реестре пакетов, `registry.npmjs.org`, если только ваша организация его не зеркалирует. Другие использования в таблице применяются независимо от метода установки.
+
+Два хоста приема Datadog содержат только опциональную операционную телеметрию, и установка [`CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`](https://code.claude.com/docs/ru/env-vars) отключает обе. Сеансы на сторонних поставщиках никогда не отправляют на эти хосты, даже когда платформа устанавливает [`CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST`](https://code.claude.com/docs/ru/env-vars) и метрики телеметрии включены по умолчанию. См. [Telemetry services](https://code.claude.com/docs/ru/data-usage.md#telemetry-services) для всего, что отправляет Claude Code и как это отключить перед финализацией вашего белого списка.
+
+### Маршрутизация через облачных поставщиков и LLM-шлюзы
+
+При использовании [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md), [Google Cloud&#x27;s Agent Platform](https://code.claude.com/docs/ru/google-vertex-ai.md), [Microsoft Foundry](https://code.claude.com/docs/ru/microsoft-foundry.md) или вошедшего в систему сеанса [Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway), трафик модели и аутентификация идут к вашему поставщику или шлюзу вместо `api.anthropic.com`, `claude.ai` или `platform.claude.com`. Инструмент WebFetch по-прежнему вызывает `api.anthropic.com` для своей [проверки безопасности домена](https://code.claude.com/docs/ru/data-usage.md#webfetch-domain-safety-check), если вы не установите `skipWebFetchPreflight: true` в [settings](https://code.claude.com/docs/ru/settings.md).
+
+Если ваши разработчики используют [быстрый режим](https://code.claude.com/docs/ru/fast-mode.md) за [LLM-шлюзом](https://code.claude.com/docs/ru/llm-gateway), заданным через [`ANTHROPIC_BASE_URL`](https://code.claude.com/docs/ru/llm-gateway-connect#set-the-base-url-and-credential), оставьте `api.anthropic.com` доступным через ваш прокси. Когда Claude Code отправляет проверку доступности быстрого режима, она идет на этот хост через любой настроенный HTTP-прокси и никогда не идет на шлюз. О том, когда проверка не отправляется, и о переменной, которая восстанавливает быстрый режим в каждом случае, см. [Использование быстрого режима за прокси и LLM-шлюзами](https://code.claude.com/docs/ru/fast-mode.md#use-fast-mode-behind-proxies-and-llm-gateways).
+
+### Белые списки IP организации и выход прокси
+
+Если ваша организация имеет [IP allowlisting](https://support.claude.com/en/articles/13200993-restrict-access-to-claude-with-ip-allowlisting) включенный для Claude, маршрутизируйте `bridge.claudeusercontent.com` через тот же выход прокси, что и `claude.ai` и `api.anthropic.com`, например, поместив его в тот же сегмент приложения Zscaler или политику маршрутизации Netskope. Если вы не можете маршрутизировать его таким образом, добавьте адрес выхода, который ваш прокси использует для этого хоста, в белый список IP вашей организации, но только когда этот адрес выделен для вашей организации: общий диапазон выхода прокси также допускает других клиентов поставщика прокси.
+
+Anthropic проверяет соединения с `bridge.claudeusercontent.com` против белого списка IP вашей организации, используя адрес, с которого они поступают. Если ваш прокси отправляет трафик для этого хоста через адрес, который не находится в этом белом списке, Claude Code не может подключиться к расширению [Claude in Chrome](https://code.claude.com/docs/ru/chrome.md), даже если остальная часть Claude Code работает.
+
+### Белые списки GitHub и брандмауэры
+
+[Cloud sessions](https://code.claude.com/docs/ru/claude-code-on-the-web.md) в размещенных Anthropic средах и [Code Review](https://code.claude.com/docs/ru/code-review.md) подключаются к вашим репозиториям из управляемой Anthropic инфраструктуры; сеансы в [self-hosted environment](https://code.claude.com/docs/ru/self-hosted-environments) подключаются изнутри вашей сети, если только runner не согласится на [Anthropic git proxy](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#use-the-anthropic-git-proxy), который получает со стороны Anthropic.
+
+Если ваша организация GitHub Enterprise Cloud ограничивает доступ по IP-адресу, включите [IP allow list inheritance for installed GitHub Apps](https://docs.github.com/en/enterprise-cloud@latest/organizations/keeping-your-organization-secure/managing-security-settings-for-your-organization/managing-allowed-ip-addresses-for-your-organization#allowing-access-by-github-apps) и также [add an allow list entry](https://docs.github.com/en/enterprise-cloud@latest/organizations/keeping-your-organization-secure/managing-security-settings-for-your-organization/managing-allowed-ip-addresses-for-your-organization#adding-an-allowed-ip-address) для [исходящих IP-адресов](https://platform.claude.com/docs/en/api/ip-addresses#outbound-ip-addresses) Anthropic. Наследование охватывает только запросы, которые делает Claude GitHub App как установка, а не запросы, которые она делает от имени ваших пользователей. Для других брандмауэров см. [Anthropic API IP addresses](https://platform.claude.com/docs/en/api/ip-addresses).
+
+Для размещенных на собственном сервере экземпляров [GitHub Enterprise Server](https://code.claude.com/docs/ru/github-enterprise-server.md) за брандмауэром добавьте в белый список [исходящие IP-адреса](https://platform.claude.com/docs/en/api/ip-addresses#outbound-ip-addresses) Anthropic, чтобы инфраструктура Anthropic могла достичь вашего хоста GHES для клонирования репозиториев и публикации комментариев рецензии. Сеансы в [self-hosted environment](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#configure-git) достигают вашего хоста GHES изнутри вашей сети вместо этого, поэтому это воздействие применяется только к сеансам, размещенным на Anthropic, к размещенным предварительным потокам сеанса, таким как средство выбора репозитория, и к размещенным на собственном сервере runners, которые согласятся на [Anthropic git proxy](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#use-the-anthropic-git-proxy), который получает со стороны Anthropic. [SCM connector](https://code.claude.com/docs/ru/self-hosted-environments-reference.md#scm-connector-flags) недоступен, поэтому размещенные предварительные потоки сеанса не могут достичь хост GHES, который маршрутизируется только внутри вашей сети.
+
+### Desktop и claude.ai
+
+Предыдущая таблица охватывает автономный CLI. Приложение Claude Desktop и claude.ai в браузере загружают код приложения и содержимое пользователя из дополнительных хостов CDN Anthropic, включая `assets-proxy.anthropic.com` и другие источники `*.claudeusercontent.com`, которые обслуживают [artifacts](https://code.claude.com/docs/ru/artifacts.md) в этих приложениях. Разрешение `claude.ai` при блокировке этих хостов создает пустую страницу вместо ошибки. См. [network access requirements](https://code.claude.com/docs/ru/desktop.md#network-access-requirements) на странице Desktop.
+
+Claude Desktop и claude.ai также отображают некоторые результаты инструментов внутри диалога в виде интерактивных виджетов, таких как [MCP Apps](https://claude.com/docs/connectors/building/mcp-apps/getting-started), которые предоставляют некоторые коннекторы. Эти виджеты загружаются с генерируемых поддоменов `claudemcpcontent.com`, поэтому разрешите `*.claudemcpcontent.com`, сохранив подстановочный знак. Если вы его заблокируете, остальная часть приложения продолжит работать, но эти виджеты не загрузятся.
+
+#### Сторонние хосты для шрифтов и библиотек артефактов
+
+[Artifact](https://code.claude.com/docs/ru/artifacts.md), который загружает шрифт из [Google Fonts](https://code.claude.com/docs/ru/artifacts.md#improve-the-visual-design), также запрашивает `fonts.googleapis.com` и `fonts.gstatic.com`. Оба хоста опциональны. Если вы их блокируете, артефакты отображаются в резервных шрифтах. Блокируйте с быстрым отклонением, а не с молчаливым отбросом, чтобы запрос шрифта немедленно не прошел вместо задержки первого отображения страницы.
+
+Артефакты также могут загружать библиотеки JavaScript, такие как React или пакет диаграмм, из `cdnjs.cloudflare.com`, `cdn.jsdelivr.net`, `cdn.tailwindcss.com`, `code.jquery.com` и `unpkg.com`, и ни с какого другого внешнего хоста. Если вы блокируете эти хосты, части артефакта, которые зависят от библиотеки, не работают, и в отличие от заблокированного шрифта, заблокированная библиотека не имеет резервного варианта. Блокируйте с быстрым отклонением и здесь, чтобы заблокированный запрос библиотеки немедленно не прошел вместо зависания до истечения времени ожидания.
+
+## Дополнительные ресурсы
+
+* [Файлы параметров и приоритет](https://code.claude.com/docs/ru/settings.md)
+* [Справочник переменных окружения](https://code.claude.com/docs/ru/env-vars.md)
+* [Руководство по устранению неполадок](https://code.claude.com/docs/ru/troubleshooting.md)
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Аутентификация</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Аутентификация <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Войдите в Claude Code и настройте аутентификацию для отдельных пользователей, команд и организаций.</p>
+</blockquote>
+<p>Claude Code поддерживает несколько методов аутентификации в зависимости от вашей конфигурации. Отдельные пользователи могут войти с помощью учетной записи claude.ai, а команды могут использовать Claude for Teams или Enterprise, Claude Console или облачного провайдера, такого как Amazon Bedrock, Google Cloud&#x27;s Agent Platform или Microsoft Foundry.</p>
+<h3 id="вход-в-claude-code">Вход в Claude Code <a class="h-anchor" href="#вход-в-claude-code" aria-label="Ссылка на раздел">#</a></h3>
+<p>После <a href="https://code.claude.com/docs/ru/setup.md#install-claude-code">установки Claude Code</a> выполните <code>claude</code> в терминале. При первом запуске Claude Code открывает окно браузера для входа, за исключением, например, следующих случаев, когда запрос на вход можно пропустить:</p>
+<ul>
+<li><strong>API-ключ</strong>: вы задали переменную окружения <code>ANTHROPIC_API_KEY</code> и одобрили этот ключ, когда Claude Code спросил, использовать ли его</li>
+<li><strong>Предыдущий вход</strong>: вы выполнили <a href="https://code.claude.com/docs/ru/cli-reference#cli-commands"><code>claude auth login</code></a> в оболочке до первой сессии или пересобрали dev-контейнер, который хранит ваши учётные данные в <a href="https://code.claude.com/docs/ru/devcontainer.md#persist-authentication-and-settings-across-rebuilds">томе</a>. Если запрос на вход всё равно появляется, <a href="#login-prompt-still-appears-after-an-earlier-sign-in">проверьте, что может быть причиной</a>.</li>
+</ul>
+<p>Если браузер не открывается автоматически, нажмите <code>c</code>, чтобы скопировать URL для входа в буфер обмена, а затем вставьте его в браузер.</p>
+<p>Если после входа браузер показывает код входа вместо перенаправления обратно, вставьте его в терминал в ответ на запрос <code>Paste code here if prompted</code>.</p>
+<p>Когда вход завершится, терминал покажет <code>Login successful</code> и предложит нажать <code>Enter</code>, чтобы продолжить.</p>
+<p>Вы можете пройти аутентификацию с любым из следующих типов учётных записей:</p>
+<ul>
+<li><strong>Подписка Claude Pro, Max или Ultra</strong>: войдите с помощью своей учётной записи claude.ai. Оформить подписку можно на <a href="https://claude.com/pricing?utm_source=claude_code\&amp;utm_medium=docs\&amp;utm_content=authentication_pro_max">claude.com/pricing</a>.</li>
+<li><strong>Claude for Teams или Enterprise</strong>: войдите с помощью учётной записи claude.ai, на которую вас пригласил администратор вашей команды.</li>
+<li><strong>Claude Console</strong>: войдите с помощью своих учётных данных Console. Сначала администратор должен <a href="#claude-console-authentication">пригласить вас</a>. Вы можете войти как с <a href="#sign-in-without-an-api-key">созданием API-ключа</a>, так и без него.</li>
+<li><strong>Облачные провайдеры</strong>: если ваша организация использует <a href="https://code.claude.com/docs/ru/amazon-bedrock.md">Amazon Bedrock</a>, <a href="https://code.claude.com/docs/ru/google-vertex-ai.md">Google Cloud&#x27;s Agent Platform</a> или <a href="https://code.claude.com/docs/ru/microsoft-foundry.md">Microsoft Foundry</a>, задайте необходимые переменные окружения перед запуском <code>claude</code> или выберите <strong>3rd-party platform</strong> в запросе на вход — это запустит интерактивный мастер настройки для Bedrock и Vertex AI. Вход через браузер не требуется.</li>
+<li><strong>Cloud gateway</strong>: если ваша организация использует собственный <a href="https://code.claude.com/docs/ru/claude-apps-gateway">шлюз приложений Claude</a>, войдите через корпоративный SSO с помощью <code>/login</code>. Токен, выданный шлюзом, является единственными учётными данными сессии.</li>
+</ul>
+<p>Администраторы могут определять, какой способ входа используют разработчики, и требовать, чтобы входы через claude.ai принадлежали определённой организации; см. <a href="#restrict-login-to-your-organization">Ограничение входа вашей организацией</a>.</p>
+<p>Чтобы выйти и пройти аутентификацию заново, введите <code>/logout</code> в промпте Claude Code. Выход также сбрасывает состояние первоначальной настройки, поэтому при следующем запуске <code>claude</code> вы снова пройдёте через вход и настройку.</p>
+<p>Если у вас возникли проблемы со входом, см. <a href="https://code.claude.com/docs/ru/troubleshoot-install.md#login-and-authentication">устранение неполадок аутентификации</a>.</p>
+<h4 id="h-2">Запрос на вход появляется, несмотря на предыдущий вход <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если вы уже входили ранее, а первоначальная настройка показывает запрос на вход вместо того, чтобы <a href="#log-in-to-claude-code">пропустить его</a>, проверьте, например, следующие причины:</p>
+<ul>
+<li><strong>Истёкший вход</strong>: срок действия вашего предыдущего входа истёк, и Claude Code не может его обновить. Войдите снова в ответ на запрос.</li>
+<li><strong>Вход ограничен организацией</strong>: администратор задал <a href="https://code.claude.com/docs/ru/settings-reference#forceloginorguuid"><code>forceLoginOrgUUID</code></a> в управляемых настройках, чтобы <a href="#restrict-login-to-your-organization">требовать вход из определённых организаций</a>. Запрос появляется независимо от того, принадлежит ли ваша учётная запись одной из них. Войдите с учётной записью из требуемой организации. Если у вас её нет, попросите администратора добавить вас.</li>
+<li><strong>Обязательный способ входа</strong>: ваш вход не того типа, который требует <a href="https://code.claude.com/docs/ru/settings-reference#forceloginmethod"><code>forceLoginMethod</code></a> в файле настроек. При значении <code>&quot;claudeai&quot;</code> API-ключ от предыдущего входа в Claude Console не считается существующим входом. При значении <code>&quot;console&quot;</code> не считается учётная запись claude.ai. Войдите с учётной записью того типа, который указан в этой настройке.</li>
+<li><strong>Старая версия</strong>: до v2.1.290 запрос появлялся во время настройки независимо от того, выполнен ли вход. <a href="https://code.claude.com/docs/ru/setup.md#update-claude-code">Обновите Claude Code</a>, чтобы пропустить его.</li>
+</ul>
+<h4 id="h-3">Вход с несколькими учётными записями <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Чтобы оставаться в системе одновременно в нескольких учётных записях, например рабочей и личной, выделите каждой учётной записи собственный каталог конфигурации. При запуске <code>claude</code> задайте переменную окружения <a href="https://code.claude.com/docs/ru/env-vars#variables"><code>CLAUDE_CONFIG_DIR</code></a>, указав каталог нужной учётной записи. У каждого каталога свои настройки, история сессий и вход claude.ai или API-ключ. Например, в Bash или Zsh добавьте этот псевдоним в <code>~/.bashrc</code> или <code>~/.zshrc</code>, чтобы <code>claude-work</code> использовал вашу рабочую учётную запись, а <code>claude</code> — личную:</p>
+<p>```bash theme={null}
+alias claude-work=&#x27;CLAUDE_CONFIG_DIR=~/.claude-work claude&#x27;</p>
+<pre><code>
+Когда вы откроете новый терминал и впервые выполните `claude-work`, Claude Code проведёт вас через вход и настройку для нового каталога. Отдельные каталоги не разграничивают два входа в Claude Console [без API-ключа](#sign-in-without-an-api-key): такие входы не остаются независимыми друг от друга, поскольку Claude Code хранит этот тип входа вне каталога конфигурации.
+
+## Настройка аутентификации команды
+
+Для команд и организаций вы можете настроить доступ к Claude Code одним из следующих способов:
+
+* [Claude for Teams или Enterprise](#claude-for-teams-or-enterprise), рекомендуется для большинства команд
+* [Claude Console](#claude-console-authentication)
+* [Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway), самостоятельно размещаемый шлюз, который подписывает разработчиков с помощью вашего IdP и маршрутизирует вывод на облачного провайдера, который вы настраиваете
+* [Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md)
+* [Google Cloud&#x27;s Agent Platform](https://code.claude.com/docs/ru/google-vertex-ai.md)
+* [Microsoft Foundry](https://code.claude.com/docs/ru/microsoft-foundry.md)
+
+### Claude for Teams или Enterprise
+
+[Claude for Teams](https://claude.com/pricing?utm_source=claude_code\&amp;utm_medium=docs\&amp;utm_content=authentication_teams#team-&amp;-enterprise) и [Claude for Enterprise](https://anthropic.com/contact-sales?utm_source=claude_code\&amp;utm_medium=docs\&amp;utm_content=authentication_enterprise) обеспечивают лучший опыт для организаций, использующих Claude Code. Члены команды получают доступ как к Claude Code, так и к Claude в веб-версии с централизованным выставлением счетов и управлением командой.
+
+* **Claude for Teams**: самостоятельный план с функциями сотрудничества, инструментами администратора, SSO, управлением выставлением счетов и [параметрами, управляемыми сервером](https://code.claude.com/docs/ru/server-managed-settings.md) для конфигурации Claude Code на уровне организации. Лучше всего подходит для небольших команд.
+* **Claude for Enterprise**: добавляет захват домена, разрешения на основе ролей и API соответствия. Лучше всего подходит для крупных организаций с требованиями безопасности и соответствия.
+
+**1. Подписка**
+
+Подпишитесь на [Claude for Teams](https://claude.com/pricing?utm_source=claude_code\&amp;utm_medium=docs\&amp;utm_content=authentication_teams_step#team-&amp;-enterprise) или свяжитесь с отделом продаж для [Claude for Enterprise](https://anthropic.com/contact-sales?utm_source=claude_code\&amp;utm_medium=docs\&amp;utm_content=authentication_enterprise_step).
+
+**2. Пригласить членов команды**
+
+Пригласите членов команды из панели администратора.
+
+**3. Установка и вход**
+
+Члены команды устанавливают Claude Code и входят со своими учетными записями claude.ai.
+
+### Claude Console аутентификация
+
+Для организаций, которые предпочитают выставление счетов на основе API, вы можете настроить доступ через Claude Console.
+
+**1. Создать или использовать учётную запись Console**
+
+Используйте существующую учётную запись Claude Console или создайте новую.
+
+**2. Добавить пользователей**
+
+Вы можете добавить пользователей одним из двух способов:
+
+* Массово пригласите пользователей со страницы Members в Console по адресу [platform.claude.com/settings/members](https://platform.claude.com/settings/members): нажмите **Invite to organization**
+* [Настройте SSO](https://support.claude.com/en/articles/13132885-setting-up-single-sign-on-sso)
+
+**3. Назначить роли**
+
+При приглашении пользователей назначьте одну из следующих ролей:
+
+* Роль **Claude Code**: пользователи могут создавать только API-ключи Claude Code
+* Роль **Developer**: пользователи могут создавать API-ключи любого вида
+
+**4. Пользователи завершают настройку**
+
+Каждый приглашённый пользователь должен:
+
+* Принять приглашение Console
+* [Проверить системные требования](https://code.claude.com/docs/ru/setup.md#system-requirements)
+* [Установить Claude Code](https://code.claude.com/docs/ru/setup.md#install-claude-code)
+* Войти с учётными данными учётной записи Console
+
+#### Вход без ключа API
+
+Вы можете войти в свою учетную запись Console без создания ключа API, даже если ваша организация не позволяет разработчикам их создавать. Выберите учетную запись Anthropic Console в приглашении `/login` и Claude Code спросит, как вы хотите войти. Требуется Claude Code v2.1.242 или позже. Оба маршрута подписывают вас в Console в браузере и отличаются тем, что Claude Code сохраняет впоследствии:
+
+* **Вход с вашей учетной записью Console**, помечено как `(recommended)`: Claude Code сохраняет токен OAuth из этого входа и сохраняет его как [профиль Anthropic](#anthropic-profiles-and-federation-credentials). Он не создает ключ API
+* **Создать ключ API**, помечено как `(legacy)`: Claude Code создает ключ API Console для вас и сохраняет его с вашими другими учетными данными
+
+На практике профиль хранит вход OAuth, а API-ключ — это статические учётные данные. Claude Code автоматически обновляет вход профиля, а если обновление не удаётся, запросы завершаются [ошибкой истёкшего входа профиля](https://code.claude.com/docs/ru/errors.md#anthropic-profile-login-expired), пока вы снова не войдёте.
+
+Вы не получаете выбор на каждой машине. Claude Code создает ключ API без запроса в этих случаях:
+
+* Вы работаете с облачным провайдером, таким как [Amazon Bedrock, Google Cloud&#x27;s Agent Platform или Microsoft Foundry](https://code.claude.com/docs/ru/third-party-integrations.md) или [Claude Platform on AWS](https://code.claude.com/docs/ru/claude-platform-on-aws.md)
+* Любой файл настроек задаёт [`forceLoginOrgUUID`](#restrict-login-to-your-organization) или устанавливает `forceLoginMethod` в значение `&quot;claudeai&quot;`
+* `forceLoginMethod` имеет значение `&quot;console&quot;`, и ни один файл настроек не задаёт `forceLoginOrgUUID` — пока вы не повторите попытку с экрана ошибки после неудачного входа
+* На вашей машине существует источник управляемых параметров, такой как файл управляемых параметров, профиль MDM или кэшированные параметры, управляемые сервером, но Claude Code [не может его прочитать](https://code.claude.com/docs/ru/managed-settings.md#invalid-entries-in-managed-settings) и никакой другой управляемый источник не предоставляет политику
+
+Отмените установку `ANTHROPIC_API_KEY` перед входом без ключа.
+
+После входа без ключа у вас есть профиль вместо сохраненного ключа API:
+
+* **Какой профиль он записывает**: Claude Code записывает профиль, названный `ANTHROPIC_PROFILE`, или ваш активный профиль, или `default`. Если этот профиль является профилем федерации, Claude Code отказывает в входе вместо его перезаписи
+* **Из чего он вас выходит**: Claude Code выходит из любого входа claude.ai, сохраненного на машине
+* **Как это отменить**: запустите `/logout`, который удаляет и отзывает учетные данные, которые этот вход записал
+
+Все остальное о профилях применяется к этому входу, включая его ранжирование по сравнению с вашими другими учетными данными, строку `Profile`, которую вы получаете в `/status`, и функции, которые требуют входа claude.ai. См. [Профили Anthropic и учетные данные федерации](#anthropic-profiles-and-federation-credentials).
+
+#### Прекращение предложения входа без ключа на управляемых машинах
+
+Чтобы Claude Code перестал предлагать [вход без ключа](#sign-in-without-an-api-key), с помощью инструментов управления устройствами разверните [`forceLoginOrgUUID`](https://code.claude.com/docs/ru/settings-reference#forceloginorguuid) в [управляемых настройках](https://code.claude.com/docs/ru/managed-settings.md) на машине каждого разработчика. Укажите в нём [ID вашей организации Console](https://platform.claude.com/settings/organization). Перед развёртыванием убедитесь, что у каждого разработчика есть [роль, позволяющая создавать API-ключи](#claude-console-authentication). После развёртывания разработчик без такой роли не сможет войти в Console через `/login`.
+
+Если задан только `forceLoginMethod` со значением `&quot;console&quot;`, разработчики могут повторить попытку после неудачного входа и выбрать вариант без ключа. После развёртывания `forceLoginOrgUUID` экран входа больше не показывает этот вариант, но разработчики по-прежнему могут использовать [профиль Anthropic](#anthropic-profiles-and-federation-credentials), который у них уже есть или который они создадут с помощью [`ant auth login`](https://platform.claude.com/docs/en/cli-sdks-libraries/cli/authentication). После развёртывания разберитесь со следующими учётными данными и входами на каждой машине:
+
+* **Входы без ключа**: чтобы перевести разработчика на API-ключ, попросите его выйти и снова войти в Console — при этом будет создан ключ. Для входа без ключа он выполняет `claude auth logout` в своей оболочке. Для профиля `ant auth login` он выполняет `ant auth logout`. Claude Code отклоняет сессию, если на машине есть и профиль, и API-ключ, поэтому сначала нужно выйти.
+* **Учётные данные из окружения и хелпера**: Claude Code отклоняет сессии, которые аутентифицируются с помощью `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN` или `apiKeyHelper`, даже если их предоставляют управляемые настройки. Удалите эти учётные данные, затем попросите разработчиков выполнить `/login`, чтобы создать сохранённый API-ключ.
+* **Входы claude.ai**: Claude Code [отклоняет вход](#restrict-login-to-your-organization) в организацию, которую вы не указали, включая ту, что уже используется на машине. Чтобы сохранить её, добавьте её в массив `forceLoginOrgUUID`.
+
+### Аутентификация облачного провайдера
+
+Для команд, использующих Amazon Bedrock, Google Cloud&#x27;s Agent Platform или Microsoft Foundry:
+
+**1. Следуйте настройке провайдера**
+
+Следуйте [документации Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md), [документации Google Cloud&#x27;s Agent Platform](https://code.claude.com/docs/ru/google-vertex-ai.md) или [документации Microsoft Foundry](https://code.claude.com/docs/ru/microsoft-foundry.md).
+
+**2. Распределить конфигурацию**
+
+Распределите переменные окружения и инструкции по созданию облачных учетных данных вашим пользователям. Узнайте больше о том, как [управлять конфигурацией здесь](https://code.claude.com/docs/ru/settings.md).
+
+**3. Установить Claude Code**
+
+Пользователи могут [установить Claude Code](https://code.claude.com/docs/ru/setup.md#install-claude-code).
+
+### Ограничить вход в вашу организацию
+
+Чтобы требовать, чтобы входы claude.ai разработчиков принадлежали определенной организации Anthropic, установите [`forceLoginMethod`](https://code.claude.com/docs/ru/settings-reference#forceloginmethod) и [`forceLoginOrgUUID`](https://code.claude.com/docs/ru/settings-reference#forceloginorguuid) в [управляемых параметрах](https://code.claude.com/docs/ru/managed-settings.md). Установите `forceLoginOrgUUID` на ваш ID организации, показанный в [параметрах администратора claude.ai](https://claude.ai/admin-settings/organization) для организаций Claude for Teams или Enterprise. Claude Code сообщает об ошибке для входа claude.ai в любую другую организацию и выходит при запуске, если используемые учетные данные claude.ai принадлежат организации, которая не указана в списке.
+
+Для входов Claude Console, Claude Code использует `forceLoginOrgUUID` для предварительного выбора организации на странице входа Console, когда вы устанавливаете его на один ID организации Console, показанный на [platform.claude.com/settings/organization](https://platform.claude.com/settings/organization). Он не проверяет, какой организации принадлежат полученные учетные данные Console, при входе или при запуске. Разработчик, который вошел с учетной записью Console до развертывания ключей, остается в системе, и этот сохраненный ключ блокируется на машине, которая также требует входа [шлюза](https://code.claude.com/docs/ru/claude-apps-gateway) или в сеансе, который выбирает облачного провайдера.
+
+Если вы установите `forceLoginOrgUUID` в любом файле параметров, Claude Code прекратит предлагать [вход в Console без ключа](#sign-in-without-an-api-key) в сеансах, к которым применяется этот файл, и вместо этого создаст ключ API. Чтобы направить разработчиков на вход claude.ai, установите `forceLoginMethod` на `&quot;claudeai&quot;`.
+
+На Claude Code v2.1.212 или позже каждый путь входа, указанный здесь, применяет `forceLoginMethod`. На интерактивном экране входа терминала, доступном через `/login` или первоначальную настройку, Claude Code предварительно выбирает метод `claudeai` или `console` без его принудительного применения, поэтому даже с установленным `forceLoginMethod` на `&quot;claudeai&quot;`, разработчик все еще может завершить вход Console там.
+
+Пути отличаются на `forceLoginOrgUUID`:
+
+* **Входы терминала, [расширения VS Code](https://code.claude.com/docs/ru/vs-code.md) и Agent SDK**: проверяют `forceLoginOrgUUID` для входов учетной записи claude.ai
+* **`claude setup-token` и `/install-github-app`**: применяют только `forceLoginMethod`, поэтому они могут создать токен в другой организации
+* **Вход [шлюза](https://code.claude.com/docs/ru/claude-apps-gateway)**: выбирается `forceLoginMethod: &quot;gateway&quot;` вместо ограничения им, и не аутентифицируется против организации Anthropic, поэтому `forceLoginOrgUUID` не применяется; используйте поставщика удостоверений вашего шлюза для ограничения доступа
+
+Развёртывайте `forceLoginMethod` и `forceLoginOrgUUID` через инструменты управления устройствами. Разработчик получает [настройки, управляемые сервером](https://code.claude.com/docs/ru/server-managed-settings.md), только после аутентификации в вашей организации, поэтому перенаправить первый вход с помощью этих настроек нельзя. Если вы также распространяете настройки, управляемые сервером, из claude.ai, задайте оба ключа и там, пока все клиенты не будут работать на v2.1.299 или новее. О том, где задавать ключи в дальнейшем и значение какого источника применяется, см. [Какой управляемый источник предоставляет ключи входа](https://code.claude.com/docs/ru/managed-settings.md#which-managed-source-supplies-login-keys).
+
+При развертывании [шлюза](https://code.claude.com/docs/ru/claude-apps-gateway) также держите `forceLoginMethod` и `forceLoginOrgUUID` вне [параметров, которые служит шлюз](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#managed).
+
+Ключи также определяют, может ли сеанс, который не использует учетные данные входа, начаться. См. [`forceLoginOrgUUID`](https://code.claude.com/docs/ru/settings-reference#forceloginorguuid) в справочнике параметров для полного поведения.
+
+* **`ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN` или `apiKeyHelper`**: заблокировано при запуске. При `forceLoginOrgUUID` членство в организации не может быть проверено для учетных данных окружения, и при `forceLoginMethod` учетные данные будут служить вместо требуемого входа. Когда управляемые параметры также требуют входа [шлюза](https://code.claude.com/docs/ru/claude-apps-gateway), Claude Code блокирует ключ API, сохраненный более ранним входом Claude Console, таким же образом. См. [Политика администратора требует входа облачного шлюза](https://code.claude.com/docs/ru/errors.md#administrator-policy-requires-a-cloud-gateway-sign-in)
+* **Сеансы облачного провайдера, такие как Amazon Bedrock**: блокируются только при наличии учетных данных `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN` или `apiKeyHelper`, или ключа API, сохраненного более ранним входом Claude Console, на машине. Удалите его и сеанс начнется. Эти сеансы аутентифицируются против вашего облачного провайдера, политики доступа которого их регулируют
+* **[Профиль Anthropic или учетные данные федерации](#anthropic-profiles-and-federation-credentials)**: не блокируются, если только учетные данные `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN` или `apiKeyHelper`, или ключ API, сохраненный более ранним входом Claude Console, также не присутствуют на машине. Ключи не проверяют, какой организации принадлежит профиль
+
+### Ограничить, какие поставщики API может использовать машина
+
+[`allowedProviders`](https://code.claude.com/docs/ru/settings-reference#allowedproviders) в [управляемых параметрах](https://code.claude.com/docs/ru/managed-settings.md) перечисляет, какие сервисы управляемая машина может использовать для доступа к Claude, такие как Anthropic API, Amazon Bedrock или шлюз LLM. Он дополняет `forceLoginMethod` и `forceLoginOrgUUID`, которые управляют тем, какую учетную запись использует сеанс при разговоре с Anthropic. Требуется Claude Code v2.1.285 или позже.
+</code></pre>
+<p>{
+  &quot;forceLoginMethod&quot;: &quot;claudeai&quot;,
+  &quot;forceLoginOrgUUID&quot;: [&quot;xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx&quot;],
+  &quot;allowedProviders&quot;: [&quot;anthropic&quot;, &quot;bedrock&quot;]
+}</p>
+<pre><code>
+С этим файлом разработчик, вошедший в вашу организацию claude.ai или настроенный для Amazon Bedrock, запускается нормально. Сеанс, настроенный для любого другого провайдера, отказывается при запуске, и работающий сеанс, который переключается на один, отказывается при следующем запросе. [Управляемые параметры не позволяют этому поставщику API](https://code.claude.com/docs/ru/errors.md#managed-settings-dont-allow-this-api-provider) показывает каждое сообщение.
+
+* **Разрешить шлюз LLM или прокси**: перечислите `&quot;customEndpoint&quot;` и установите URL шлюза в управляемом блоке `env` того же источника. [Справочник параметров](https://code.claude.com/docs/ru/settings-reference.md#allowedproviders) перечисляет каждое значение и говорит, какие переменные конечной точки требуют управляемого закрепления `env`.
+* **Развертывание на управляемых машинах**: поместите список в управляемый источник, который несет остальную часть вашей политики. Примечание [Scope](https://code.claude.com/docs/ru/settings-reference.md#allowedproviders) записи говорит, как управляемый список сервера объединяется с ним.
+* **Только параметры, управляемые сервером**: список, который вы устанавливаете только в [параметрах, управляемых сервером](https://code.claude.com/docs/ru/server-managed-settings.md), достигает только сеансов, которые получают параметры вашей организации, поэтому рассматривайте его как удобство для машин, которые вы не можете достичь с помощью управления устройствами, а не как принудительное применение. [Доступность платформы](https://code.claude.com/docs/ru/server-managed-settings.md#platform-availability) перечисляет, какие сеансы их получают.
+
+## Управление учетными данными
+
+Claude Code безопасно управляет вашими учетными данными аутентификации:
+
+* **Место хранения**:
+  * На macOS учетные данные хранятся в зашифрованной цепочке ключей macOS Keychain. Когда Keychain отклоняет запись, например когда она заблокирована в сеансе SSH, Claude Code вместо этого сохраняет ваш вход в `~/.claude/.credentials.json` с режимом файла `0600`, то же хранилище, которое он использует на Linux. Вход через Console, который создает ключ API, завершается ошибкой до тех пор, пока Keychain не станет доступным для записи. Чтобы переместить ваш вход обратно в Keychain, следуйте [шагам восстановления](https://code.claude.com/docs/ru/troubleshoot-install.md#not-logged-in-or-token-expired).
+  * На Linux учетные данные хранятся в `~/.claude/.credentials.json` с режимом файла `0600`.
+  * На Windows учетные данные хранятся в `%USERPROFILE%\.claude\.credentials.json` и наследуют элементы управления доступом из каталога профиля пользователя, что по умолчанию ограничивает доступ к файлу вашей учетной записью.
+  * Если вы установили переменную окружения `CLAUDE_CONFIG_DIR`, Claude Code хранит файл `.credentials.json` в этом каталоге вместо этого, включая файл, который записывает резервный вариант macOS, и также привязывает запись macOS Keychain к этому каталогу, поэтому сеанс с другим `CLAUDE_CONFIG_DIR` читает другую запись.
+  * Claude Code управляет `.credentials.json` через `/login` и `/logout`. Чтобы маршрутизировать запросы через пользовательскую конечную точку API, установите переменную окружения [`ANTHROPIC_BASE_URL`](https://code.claude.com/docs/ru/env-vars).
+* **Поддерживаемые типы аутентификации**: учетные данные claude.ai, учетные данные Claude API, Microsoft Foundry Auth, Bedrock Auth, Vertex Auth, учетные данные профиля Anthropic и [Workload Identity Federation](https://platform.claude.com/docs/en/manage-claude/workload-identity-federation), а также токены сеанса [Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway).
+* **Пользовательские скрипты учетных данных**: настройте параметр [`apiKeyHelper`](https://code.claude.com/docs/ru/settings-reference#apikeyhelper) для запуска скрипта оболочки, который возвращает ключ API.
+* **Интервалы обновления**: смотрите [`apiKeyHelper`](https://code.claude.com/docs/ru/settings-reference#apikeyhelper) для случаев, в которых Claude Code повторно запускает помощник.
+* **Уведомление о медленном помощнике**: если `apiKeyHelper` требует более 10 секунд для возврата ключа, Claude Code отображает предупреждающее уведомление в строке приглашения, показывающее прошедшее время. Если вы видите это уведомление регулярно, проверьте, можно ли оптимизировать ваш скрипт учетных данных.
+* **Сбои помощника**: когда скрипт завершается с ошибкой, истекает время ожидания или не выводит ничего, запросы завершаются с ошибкой [`Your apiKeyHelper script is failing`](https://code.claude.com/docs/ru/errors#your-apikeyhelper-script-is-failing) в течение трех попыток.
+
+`apiKeyHelper`, `ANTHROPIC_API_KEY` и `ANTHROPIC_AUTH_TOKEN` применяются к CLI и поверхностям, которые его оборачивают, включая расширение VS Code, Agent SDK и GitHub Actions. Claude Desktop и облачные сеансы не вызывают `apiKeyHelper` и не читают эти переменные окружения: они используют OAuth, за исключением сеансов рабочего стола, работающих с [конфигурацией вывода третьей стороны](https://code.claude.com/docs/ru/llm-gateway-connect.md#desktop-app), которые аутентифицируются с помощью учетных данных этой конфигурации.
+
+### Обновление истекающего входа
+
+Когда вход, созданный с помощью `/login`, находится в пределах трех дней до истечения срока действия, Claude Code показывает предупреждение при запуске: `Your login expires in 3 days · run /login to renew`.
+
+Запустите `/login` для обновления. Предупреждение появляется только тогда, когда активными учётными данными является вход claude.ai.
+
+#### После истечения срока действия входа
+
+Когда срок действия сохранённого входа истёк и его невозможно обновить, запустите `/login`, чтобы войти снова. Пока вы этого не сделаете, запросы либо завершаются ошибкой, либо используют другие сохранённые вами учётные данные:
+
+* **Других учётных данных нет**: запросы к модели завершаются ошибкой [`Login reached its time limit` или `Login expired`](https://code.claude.com/docs/ru/errors#login-expired).
+* **Есть другие учётные данные**, например [профиль `ant auth login`](#anthropic-profiles-and-federation-credentials): запросы могут использовать вместо этого эти учётные данные, и оплата будет списываться с их организации.
+
+Вы можете проверить, не истёк ли вход, до того как запрос завершится ошибкой: [`/status`](https://code.claude.com/docs/ru/commands) показывает строку `Login` со значением `Expired — log in again`.
+
+Раннее обновление особенно важно для сессий, которые работают без присмотра. Сессия [Remote Control](https://code.claude.com/docs/ru/remote-control.md), пережившая срок действия входа, отключается, пока вы снова не войдёте. [Фоновая сессия в представлении агентов](https://code.claude.com/docs/ru/agent-view.md) перестаёт продвигаться, если у вас нет других сохранённых учётных данных.
+
+### Приоритет аутентификации
+
+Когда присутствуют несколько учетных данных, Claude Code выбирает одно в этом порядке:
+
+1. Учетные данные облачного провайдера, когда установлены `CLAUDE_CODE_USE_BEDROCK`, `CLAUDE_CODE_USE_VERTEX` или `CLAUDE_CODE_USE_FOUNDRY`. Смотрите [интеграции третьих сторон](https://code.claude.com/docs/ru/third-party-integrations.md) для настройки.
+2. Переменная окружения `ANTHROPIC_AUTH_TOKEN`. Отправляется как заголовок `Authorization: Bearer`. Используйте это при маршрутизации через [шлюз LLM или прокси](https://code.claude.com/docs/ru/llm-gateway), который аутентифицируется с помощью токенов-носителей, а не ключей API Anthropic.
+3. Переменная окружения `ANTHROPIC_API_KEY`. Отправляется как заголовок `X-Api-Key`. Используйте это для прямого доступа к API Anthropic с ключом из [Claude Console](https://platform.claude.com). В интерактивном режиме вам предлагается один раз одобрить или отклонить ключ, и ваш выбор запоминается. Чтобы изменить его позже, используйте переключатель &quot;Use custom API key&quot; в `/config`. Переключатель появляется только при установке `ANTHROPIC_API_KEY` в вашей среде. В неинтерактивном режиме (`-p`) ключ всегда используется при наличии.
+4. Выход скрипта [`apiKeyHelper`](https://code.claude.com/docs/ru/settings-reference#apikeyhelper). Используйте это для динамических или ротирующихся учетных данных, таких как краткосрочные токены, полученные из хранилища.
+5. Переменная окружения `CLAUDE_CODE_OAUTH_TOKEN`. Долгоживущий токен OAuth, созданный [`claude setup-token`](#generate-a-long-lived-token). Используйте это для конвейеров CI и скриптов, где вход через браузер недоступен. Если вы запустите `/login` при установленной переменной, Claude Code переключит текущую сессию на новый вход. Чтобы сохранить этот вход в новых сессиях, удалите переменную из профиля оболочки и из [файлов настроек, которые могут её задавать](https://code.claude.com/docs/ru/settings-reference.md#variables-claude-code-ignores-in-env), например из ваших пользовательских настроек.
+6. Учетные данные профиля Anthropic и федерации, учетные данные, которые используют CLI `ant` и Workload Identity Federation. Профиль, который написал `ant auth login`, ранжируется здесь только когда вы называете его в `ANTHROPIC_PROFILE`; в противном случае он ранжируется ниже `/login`. Смотрите [Профили Anthropic и учетные данные федерации](#anthropic-profiles-and-federation-credentials).
+7. Учётные данные OAuth подписки из `/login`. Это значение по умолчанию для пользователей Claude Pro, Max, Ultra, Team и Enterprise.
+
+Подписанный сеанс [Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway) находится вне этого списка: это выбор провайдера, как Amazon Bedrock или Google Cloud&#x27;s Agent Platform, и он имеет приоритет над ними. Когда существует сеанс шлюза, CLI аутентифицируется с помощью токена шлюза, даже если установлены `CLAUDE_CODE_USE_BEDROCK`, `CLAUDE_CODE_USE_VERTEX` или `CLAUDE_CODE_USE_FOUNDRY`, и источники учетных данных выше, такие как токен-носитель, ключ API, `apiKeyHelper` и профили, не используются.
+
+Если [управляемые параметры](https://code.claude.com/docs/ru/managed-settings.md) вашей машины устанавливают [`forceLoginMethod`](https://code.claude.com/docs/ru/settings-reference#forceloginmethod) на `&quot;gateway&quot;` или устанавливают [`forceLoginGatewayUrl`](https://code.claude.com/docs/ru/settings-reference#forcelogingatewayurl), и вы не выбираете облачного провайдера через переменную, такую как `CLAUDE_CODE_USE_BEDROCK` или `CLAUDE_CODE_USE_VERTEX`, ваш сеанс использует только вход через шлюз. Claude Code пропускает другие источники учетных данных и просит вас войти с помощью `/login`. Смотрите [Administrator policy requires a Cloud gateway sign-in](https://code.claude.com/docs/ru/errors.md#administrator-policy-requires-a-cloud-gateway-sign-in) для того, что вы видите с каждым оставшимся учетным данием. Требуется Claude Code v2.1.261 или позже, или v2.1.265 или позже на машине, которая устанавливает только `forceLoginGatewayUrl`.
+
+Если у вас есть активная подписка Claude, но также установлен `ANTHROPIC_API_KEY` в вашей среде, Claude Code использует ключ API после одобрения. Это может привести к сбоям аутентификации, если ключ принадлежит отключенной или истекшей организации.
+
+Запустите `unset ANTHROPIC_API_KEY`, чтобы вернуться к вашей подписке, и проверьте `/status`, чтобы подтвердить, какой метод активен. Когда вход и ключ API оба настроены, `/status` отмечает учетное данные, которое не используется.
+
+[Облачные сеансы](https://code.claude.com/docs/ru/claude-code-on-the-web.md) всегда используют учетные данные вашей подписки. Если вы установите `ANTHROPIC_API_KEY` или `ANTHROPIC_AUTH_TOKEN` в облачной среде, это не переопределит учетные данные вашей подписки.
+
+#### Профили Anthropic и учетные данные федерации
+
+Профиль — это именованный файл конфигурации учетных данных в вашем [каталоге конфигурации Anthropic](https://platform.claude.com/docs/en/manage-claude/wif-reference#configuration-directory), по умолчанию `~/.config/anthropic` на macOS и Linux или `%APPDATA%\Anthropic` на Windows. Режим аутентификации профиля — это `oidc_federation` когда вы настраиваете его для [Workload Identity Federation (WIF)](https://platform.claude.com/docs/en/manage-claude/workload-identity-federation) или `user_oauth` когда [`ant auth login`](https://platform.claude.com/docs/en/cli-sdks-libraries/cli/authentication) написал его или вы [вошли в учетную запись Console без ключа API](#sign-in-without-an-api-key).
+
+Claude Code не читает профили или переменные федерации в [bare mode](https://code.claude.com/docs/ru/headless.md#start-faster-with-bare-mode), в Claude Desktop или в облачных сеансах. В этих сеансах `/status` не показывает строку `Profile`.
+
+Claude Code проверяет три источника в этом порядке и останавливается на первом установленном. Таблица показывает, что устанавливает каждый источник и где он ранжируется против вашего учетного данного `/login`.
+
+| Источник | Установлено | Ранг против `/login` |
+| :- | :- | :- |
+| Именованный профиль | `ANTHROPIC_PROFILE` | Выше, независимо от режима аутентификации профиля |
+| Переменные федерации | `ANTHROPIC_FEDERATION_RULE_ID` и `ANTHROPIC_ORGANIZATION_ID`, оба установлены | Выше |
+| Активный профиль | Файл [`active_config`](https://platform.claude.com/docs/en/manage-claude/wif-reference#active-profile) в вашем каталоге конфигурации или профиль с именем `default` | Выше когда его режим аутентификации — `oidc_federation`; ниже рабочего учетного данного `/login` когда его режим аутентификации — `user_oauth` |
+
+Для переменных федерации Claude Code также читает другие переменные в [справочнике WIF](https://platform.claude.com/docs/en/manage-claude/wif-reference#environment-variables), такие как `ANTHROPIC_IDENTITY_TOKEN_FILE`, когда он обменивает ваш токен идентификации. Для формата файла профиля смотрите [справочник WIF](https://platform.claude.com/docs/en/manage-claude/wif-reference#profile-configuration-file).
+
+Чтобы подтвердить, какой источник выбрал Claude Code, запустите `/status`. Строка `Profile` называет источник вместо строки `Login method`. Когда профиль является используемым учетным данием, строки `Organization` и `Email` показывают его учетную запись.
+
+Когда срок действия входа профиля `user_oauth` истёк и Claude Code не может его обновить, запросы завершаются [ошибкой об истёкшем входе профиля](https://code.claude.com/docs/ru/errors.md#anthropic-profile-login-expired).
+
+Функции, которые требуют вашего входа claude.ai, такие как [соединители claude.ai](https://code.claude.com/docs/ru/mcp.md#use-mcp-servers-from-claude-ai) и [`/schedule`](https://code.claude.com/docs/ru/routines), недоступны при выборе одного из этих источников. Чтобы остановить Claude Code от выбора источника:
+
+* **Именованный профиль или переменные федерации**: отмените установку `ANTHROPIC_PROFILE` или отмените установку любой переменной федерации
+* **Активный профиль**: запустите `/logout` для профиля `user_oauth` чье текущее учетное данные вы написали [войдя в учетную запись Console без ключа API](#sign-in-without-an-api-key), запустите `ant auth logout` для одного чье текущее учетное данные написал `ant auth login`, или удалите файл профиля из `configs/` в вашем каталоге конфигурации для любого режима аутентификации
+
+### Создание долгоживущего токена
+
+Для конвейеров CI, скриптов или других сред, где интерактивный вход через браузер недоступен, создайте однолетний токен OAuth с помощью `claude setup-token`:
+</code></pre>
+<p>claude setup-token</p>
+<pre><code>
+Команда открывает тот же поток авторизации браузера, что и `/login`, и токен выводится в терминал после того, как вы одобрите доступ в браузере. Она не сохраняет токен нигде; скопируйте его и установите его как переменную окружения `CLAUDE_CODE_OAUTH_TOKEN` везде, где вы хотите аутентифицироваться:
+
+&gt; [tab] macOS, Linux, WSL
+&gt;
+&gt; ```bash theme={null}
+&gt; export CLAUDE_CODE_OAUTH_TOKEN=your-token
+&gt; ```
+
+&gt; [tab] Windows PowerShell
+&gt;
+&gt; ```powershell theme={null}
+&gt; $env:CLAUDE_CODE_OAUTH_TOKEN = &quot;your-token&quot;
+&gt; ```
+
+&gt; [tab] Windows CMD
+&gt;
+&gt; ```batch theme={null}
+&gt; set CLAUDE_CODE_OAUTH_TOKEN=your-token
+&gt; ```
+
+Этот токен аутентифицируется с помощью вашей подписки Claude и требует тариф Pro, Max, Ultra, Team или Enterprise. Он может только выполнять запросы к модели, поэтому не может устанавливать сессии [Remote Control](https://code.claude.com/docs/ru/remote-control.md) или получать [коннекторы claude.ai](https://code.claude.com/docs/ru/mcp.md#use-mcp-servers-from-claude-ai). MCP-серверы, которые вы настраиваете локально, по-прежнему работают.
+
+[Bare mode](https://code.claude.com/docs/ru/headless.md#start-faster-with-bare-mode) не читает `CLAUDE_CODE_OAUTH_TOKEN`. Если ваш скрипт передает `--bare`, аутентифицируйтесь с помощью `ANTHROPIC_API_KEY` или `apiKeyHelper` вместо этого.
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>EPUB Builder Script</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/scripts/index.html">scripts</a></nav>
+<p>&lt;picture&gt;
+  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;../resources/logos/claude-howto-logo-dark.svg&quot;&gt;
+  &lt;img alt=&quot;Claude How To&quot; src=&quot;../resources/logos/claude-howto-logo.svg&quot;&gt;
+&lt;/picture&gt;</p>
+<h1 id="epub-builder-script">EPUB Builder Script <a class="h-anchor" href="#epub-builder-script" aria-label="Ссылка на раздел">#</a></h1>
+<p>Build an EPUB ebook from the Claude How-To markdown files.</p>
+<h3 id="features">Features <a class="h-anchor" href="#features" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Organizes chapters by folder structure (01-slash-commands, 02-memory, etc.)</li>
+<li>Renders Mermaid diagrams as PNG images via Kroki.io API</li>
+<li>Async concurrent fetching - renders all diagrams in parallel</li>
+<li>Generates a cover image from the project logo</li>
+<li>Converts internal markdown links to EPUB chapter references</li>
+<li>Strict error mode - fails if any diagram cannot be rendered</li>
+</ul>
+<h3 id="requirements">Requirements <a class="h-anchor" href="#requirements" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Python 3.10+</li>
+<li><a href="https://github.com/astral-sh/uv">uv</a></li>
+<li>Internet connection for Mermaid diagram rendering</li>
+</ul>
+<h3 id="quick-start">Quick Start <a class="h-anchor" href="#quick-start" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-bash"># Simplest way - uv handles everything
+uv run scripts/build_epub.py</code></pre>
+<h3 id="development-setup">Development Setup <a class="h-anchor" href="#development-setup" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-bash"># Create virtual environment
+uv venv
+
+# Activate and install dependencies
+source .venv/bin/activate
+uv pip install -r requirements-dev.txt
+
+# Run tests
+pytest scripts/tests/ -v
+
+# Run the script
+python scripts/build_epub.py</code></pre>
+<h3 id="command-line-options">Command-Line Options <a class="h-anchor" href="#command-line-options" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>usage: build_epub.py [-h] [--root ROOT] [--output OUTPUT] [--verbose]
+                     [--timeout TIMEOUT] [--max-concurrent MAX_CONCURRENT]
+
+options:
+  -h, --help            show this help message and exit
+  --root, -r ROOT       Root directory (default: repo root)
+  --output, -o OUTPUT   Output path (default: claude-howto-guide.epub)
+  --verbose, -v         Enable verbose logging
+  --timeout TIMEOUT     API timeout in seconds (default: 30)
+  --max-concurrent N    Max concurrent requests (default: 10)</code></pre>
+<h3 id="examples">Examples <a class="h-anchor" href="#examples" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-bash"># Build with verbose output
+uv run scripts/build_epub.py --verbose
+
+# Custom output location
+uv run scripts/build_epub.py --output ~/Desktop/claude-guide.epub
+
+# Limit concurrent requests (if rate-limited)
+uv run scripts/build_epub.py --max-concurrent 5</code></pre>
+<h3 id="output">Output <a class="h-anchor" href="#output" aria-label="Ссылка на раздел">#</a></h3>
+<p>Creates <code>claude-howto-guide.epub</code> in the repository root directory.</p>
+<p>The EPUB includes:</p>
+<ul>
+<li>Cover image with project logo</li>
+<li>Table of contents with nested sections</li>
+<li>All markdown content converted to EPUB-compatible HTML</li>
+<li>Mermaid diagrams rendered as PNG images</li>
+</ul>
+<h3 id="running-tests">Running Tests <a class="h-anchor" href="#running-tests" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-bash"># With virtual environment
+source .venv/bin/activate
+pytest scripts/tests/ -v
+
+# Or with uv directly
+uv run --with pytest --with pytest-asyncio \
+    --with ebooklib --with markdown --with beautifulsoup4 \
+    --with httpx --with pillow --with tenacity \
+    pytest scripts/tests/ -v</code></pre>
+<h3 id="dependencies">Dependencies <a class="h-anchor" href="#dependencies" aria-label="Ссылка на раздел">#</a></h3>
+<p>Managed via PEP 723 inline script metadata:</p>
+<div class="table-wrap"><table><thead><tr><th>Package</th><th>Purpose</th></tr></thead><tbody><tr><td><code>ebooklib</code></td><td>EPUB generation</td></tr><tr><td><code>markdown</code></td><td>Markdown to HTML conversion</td></tr><tr><td><code>beautifulsoup4</code></td><td>HTML parsing</td></tr><tr><td><code>httpx</code></td><td>Async HTTP client</td></tr><tr><td><code>pillow</code></td><td>Cover image generation</td></tr><tr><td><code>tenacity</code></td><td>Retry logic</td></tr></tbody></table></div>
+<h3 id="troubleshooting">Troubleshooting <a class="h-anchor" href="#troubleshooting" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Build fails with network error</strong>: Check internet connectivity and Kroki.io status. Try <code>--timeout 60</code>.</p>
+<p><strong>Rate limiting</strong>: Reduce concurrent requests with <code>--max-concurrent 3</code>.</p>
+<p><strong>Missing logo</strong>: The script generates a text-only cover if <code>claude-howto-logo.png</code> is not found.</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

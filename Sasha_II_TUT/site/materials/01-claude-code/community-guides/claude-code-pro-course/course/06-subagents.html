@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Модуль 06. Subagents</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/index.html">claude-code-pro-course</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/course/index.html">course</a></nav>
+<h1 id="модуль-06-subagents">Модуль 06. Subagents <a class="h-anchor" href="#модуль-06-subagents" aria-label="Ссылка на раздел">#</a></h1>
+<p><strong>Subagent</strong> — отдельный экземпляр Claude со своим системным промптом, набором инструментов и, главное, <strong>собственным контекстом</strong>. Основной агент делегирует ему задачу и получает только итог.</p>
+<h3 id="h">Зачем <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li><strong>Экономия контекста.</strong> Поиск по 200 файлам происходит в контексте субагента, вам возвращается короткий вывод.</li>
+<li><strong>Специализация.</strong> Ревьюер с чек-листом, дебаггер с методикой, тест-раннер.</li>
+<li><strong>Ограничение прав.</strong> Ревьюеру не нужен <code>Edit</code> — не давайте.</li>
+<li><strong>Параллельность.</strong> Несколько субагентов исследуют разные части кода одновременно.</li>
+</ol>
+<h3 id="h-2">Встроенные <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude уже использует встроенные субагенты (например, <code>Explore</code> для поиска по коду, <code>Plan</code> для планирования) — часто сам. Можно просить явно:</p>
+<pre><code>&gt; используй субагентов, чтобы параллельно изучить модули auth, billing и notifications</code></pre>
+<h3 id="h-3">Свои субагенты <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Путь</th><th>Область</th></tr></thead><tbody><tr><td><code>.claude/agents/&lt;name&gt;.md</code></td><td>Проект</td></tr><tr><td><code>~/.claude/agents/&lt;name&gt;.md</code></td><td>Лично вам</td></tr></tbody></table></div>
+<p>Создать интерактивно: <code>/agents</code>.</p>
+<pre><code class="language-markdown">---
+name: code-reviewer
+description: Опытный ревьюер. Используй ПРОАКТИВНО сразу после написания или изменения кода.
+tools: Read, Grep, Glob, Bash
+model: sonnet
+---
+
+Ты senior-ревьюер. При вызове:
+1. Выполни `git diff`, сфокусируйся на изменённых файлах.
+2. Проверь: читаемость, дублирование, обработку ошибок, секреты, валидацию ввода, тесты, производительность.
+3. Выдай отчёт по приоритетам: критично / предупреждения / предложения — с конкретными исправлениями.</code></pre>
+<h4 id="h-4">Поля <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Зачем</th></tr></thead><tbody><tr><td><code>name</code></td><td>Идентификатор</td></tr><tr><td><code>description</code></td><td>Когда делегировать. «PROACTIVELY / ПРОАКТИВНО» повышает шанс авто-вызова</td></tr><tr><td><code>tools</code></td><td>Список разрешённых инструментов (нет поля → наследует все)</td></tr><tr><td><code>model</code></td><td><code>sonnet</code>, <code>opus</code>, <code>haiku</code>, <code>inherit</code> или полный ID</td></tr></tbody></table></div>
+<h3 id="h-5">Вызов <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>&gt; попроси code-reviewer проверить мои изменения
+&gt; @code-reviewer посмотри последний коммит</code></pre>
+<p>Или Claude вызовет сам, если описание подходит.</p>
+<h3 id="h-6">Паттерны <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-7">Писатель + ревьюер <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<p>Один агент пишет, второй (с чистым контекстом) ревьюит. Свежий взгляд находит больше ошибок, чем «проверь сам себя».</p>
+<h4 id="h-8">Исследователь → исполнитель <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>&gt; используй субагента, чтобы найти все места, где вызывается legacy API, и вернуть список файл:строка.
+&gt; теперь мигрируй их по одному, с тестами</code></pre>
+<h4 id="h-9">Параллельный анализ <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>&gt; запусти 3 субагента: безопасность, производительность, покрытие тестами. Сведи отчёты в один.</code></pre>
+<h3 id="subagent-vs-skill">Subagent vs Skill <a class="h-anchor" href="#subagent-vs-skill" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th></th><th>Skill</th><th>Subagent</th></tr></thead><tbody><tr><td>Контекст</td><td>Общий с основной сессией</td><td>Отдельный</td></tr><tr><td>Для чего</td><td>«Как делать» — процедура, знания</td><td>«Кто делает» — изолированный исполнитель</td></tr><tr><td>Видит историю разговора</td><td>Да</td><td>Нет — только задачу</td></tr><tr><td>Результат</td><td>В ходе основной сессии</td><td>Сводка обратно</td></tr></tbody></table></div>
+<p>Их можно комбинировать: subagent может использовать skills.</p>
+<h3 id="готовые-агенты-в-starter-kit">Готовые агенты в starter-kit <a class="h-anchor" href="#готовые-агенты-в-starter-kit" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="../starter-kit/.claude/agents/code-reviewer.md"><code>code-reviewer</code></a></li>
+<li><a href="../starter-kit/.claude/agents/test-runner.md"><code>test-runner</code></a></li>
+<li><a href="../starter-kit/.claude/agents/debugger.md"><code>debugger</code></a></li>
+</ul>
+<h3 id="h-10">Практика <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li>Скопируйте агентов из starter-kit, выполните <code>/agents</code> — убедитесь, что видны.</li>
+<li>Напишите код и попросите <code>code-reviewer</code> его проверить.</li>
+<li>Запустите параллельное исследование трёх модулей и сравните расход контекста (<code>/context</code>) с последовательным.</li>
+</ol>
+<p>🧪 Закрепите на практике: <a href="../labs/lab-05-subagents.md">лабораторная работа</a></p>
+<p>➡️ Далее: <a href="07-hooks.md">07. Hooks</a></p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

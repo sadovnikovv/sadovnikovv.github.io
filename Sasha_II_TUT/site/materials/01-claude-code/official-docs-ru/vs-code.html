@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Использование Claude Code в VS Code</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="использование-claude-code-в-vs-code">Использование Claude Code в VS Code <a class="h-anchor" href="#использование-claude-code-в-vs-code" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Установите и настройте расширение Claude Code для VS Code. Получите помощь AI при кодировании с встроенными diff, @-упоминаниями, проверкой плана и сочетаниями клавиш.</p>
+</blockquote>
+<p><img src="https://mintcdn.com/claude-code/-YhHHmtSxwr7W8gy/images/vs-code-extension-interface.jpg?fit=max\&amp;auto=format\&amp;n=-YhHHmtSxwr7W8gy\&amp;q=85\&amp;s=300652d5678c63905e6b0ea9e50835f8" alt="Редактор VS Code с открытой панелью расширения Claude Code справа, показывающей диалог с Claude" loading="lazy"></p>
+<p>Расширение VS Code предоставляет собственный графический интерфейс для Claude Code, интегрированный непосредственно в вашу IDE. Это рекомендуемый способ использования Claude Code в VS Code.</p>
+<p>С расширением вы можете:</p>
+<ul>
+<li>Просматривать и редактировать планы Claude перед их принятием</li>
+<li>Автоматически принимать правки по мере их внесения</li>
+<li>Использовать @-упоминания файлов с определёнными диапазонами строк из вашего выделения</li>
+<li>Получать доступ к истории диалога</li>
+<li>Открывать несколько диалогов в отдельных вкладках или окнах</li>
+</ul>
+<h3 id="h">Предварительные требования <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Перед установкой убедитесь, что у вас есть:</p>
+<ul>
+<li>VS Code версии 1.94.0 или выше</li>
+<li>Учётная запись Anthropic: подойдёт любая платная подписка Claude (Pro, Max, Ultra, Team или Enterprise) или учётная запись Claude Console, API-ключ не требуется. Вы <a href="https://code.claude.com/docs/ru/authentication.md#log-in-to-claude-code">войдёте</a> с помощью этой учётной записи при первом открытии расширения. Если вы получаете доступ к Claude через поставщика услуг третьей стороны, такого как Amazon Bedrock или Google Cloud&#x27;s Agent Platform, см. <a href="#use-third-party-providers">Использование поставщиков третьей стороны</a> для инструкций по настройке.</li>
+</ul>
+<blockquote>
+<p>[!TIP]</p>
+<p>Расширение включает собственную копию CLI (интерфейс командной строки) для панели чата. Чтобы запустить <code>claude</code> во встроенном терминале VS Code, вам также нужна <a href="https://code.claude.com/docs/ru/setup.md">автономная установка CLI</a>. Подробности см. в разделе <a href="#vs-code-extension-vs-claude-code-cli">Расширение VS Code и Claude Code CLI</a>.</p>
+</blockquote>
+<h3 id="h-2">Установка расширения <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Нажмите на ссылку для вашей IDE, чтобы установить расширение напрямую:</p>
+<ul>
+<li><a href="vscode:extension/anthropic.claude-code">Установить для VS Code</a></li>
+<li><a href="cursor:extension/anthropic.claude-code">Установить для Cursor</a></li>
+</ul>
+<p>Или в VS Code нажмите <code>Cmd+Shift+X</code> (Mac) или <code>Ctrl+Shift+X</code> (Windows/Linux), чтобы открыть представление Extensions, найдите «Claude Code» и нажмите <strong>Install</strong>.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Маркетплейсы расширений — это стороннее программное обеспечение, которое Anthropic не одобряет, не поддерживает и не проверяет. Anthropic отправляет расширения для публикации в Visual Studio Marketplace и Open VSX Registry.</p>
+</blockquote>
+<p>Номер версии расширения соответствует версии Claude Code, которая в него входит. Например, для функции, требующей Claude Code v2.1.286 или новее, нужна версия расширения 2.1.286 или новее; её можно увидеть в представлении Extensions.</p>
+<p>Claude Code также работает в других редакторах и контейнерах:</p>
+<ul>
+<li><strong>Другие форки VS Code</strong>: расширение также устанавливается в форках, таких как Devin Desktop или Kiro. Найдите «Claude Code» в представлении Extensions редактора или установите его из <a href="https://open-vsx.org/extension/Anthropic/claude-code">Open VSX Registry</a>.</li>
+<li><strong>Редакторы, в которые нельзя установить расширение</strong>: <a href="https://code.claude.com/docs/ru/quickstart.md">установите CLI</a> и запускайте <code>claude</code> во встроенном терминале редактора. CLI работает в любом терминале.</li>
+<li><strong>Dev-контейнеры</strong>: чтобы запустить Claude Code внутри dev-контейнера, см. раздел <a href="https://code.claude.com/docs/ru/devcontainer.md">Контейнеры для разработки</a>.</li>
+</ul>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Если расширение не появилось после установки, перезапустите VS Code или выполните «Developer: Reload Window» из палитры команд.</p>
+</blockquote>
+<h3 id="h-3">Начало работы <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>После установки вы можете начать использовать Claude Code через интерфейс VS Code:</p>
+<p><strong>1. Откройте панель Claude Code</strong></p>
+<p>Во всём VS Code значок Spark обозначает Claude Code: <img src="https://mintcdn.com/claude-code/c5r9_6tjPMzFdDDT/images/vs-code-spark-icon.svg?fit=max\&amp;auto=format\&amp;n=c5r9_6tjPMzFdDDT\&amp;q=85\&amp;s=3ca45e00deadec8c8f4b4f807da94505" alt="Значок Spark" loading="lazy"></p>
+<p>Самый быстрый способ открыть Claude — нажать на значок Spark на <strong>панели инструментов редактора</strong> (правый верхний угол редактора). Значок отображается только тогда, когда у вас открыт файл.</p>
+<p><img src="https://mintcdn.com/claude-code/mfM-EyoZGnQv8JTc/images/vs-code-editor-icon.png?fit=max\&amp;auto=format\&amp;n=mfM-EyoZGnQv8JTc\&amp;q=85\&amp;s=eb4540325d94664c51776dbbfec4cf02" alt="Редактор VS Code со значком Spark на панели инструментов редактора" loading="lazy"></p>
+<p>Другие способы открыть Claude Code:</p>
+<ul>
+<li><strong>Панель действий (Activity Bar)</strong>: нажмите на значок Spark на левой боковой панели, чтобы открыть список сессий. Нажмите на любую сессию, чтобы открыть её в <a href="#extension-settings">предпочитаемом расположении</a>, или начните новую. Этот значок всегда виден на панели действий.</li>
+<li><strong>Палитра команд</strong>: <code>Cmd+Shift+P</code> (Mac) или <code>Ctrl+Shift+P</code> (Windows/Linux), введите «Claude Code» и выберите вариант, например «Open in New Tab»</li>
+<li><strong>Строка состояния</strong>: нажмите <strong>✻ Claude Code</strong> в правом нижнем углу окна. Это работает, даже когда ни один файл не открыт.</li>
+</ul>
+<p>Вы можете перетащить панель Claude в любое место VS Code. Подробнее см. в разделе <a href="#customize-your-workflow">Настройка рабочего процесса</a>.</p>
+<p><strong>2. Войдите в систему</strong></p>
+<p>При первом открытии панели появляется экран входа. Нажмите <strong>Sign in</strong> и завершите авторизацию в браузере.</p>
+<p>Если позже вы увидите <strong>Not logged in · Please run /login</strong>, расширение автоматически снова откроет экран входа. Если он не появился, перезагрузите окно из палитры команд с помощью <strong>Developer: Reload Window</strong>.</p>
+<p>Если в вашей оболочке задана переменная <code>ANTHROPIC_API_KEY</code>, но запрос на вход всё равно появляется, возможно, VS Code не унаследовал окружение вашей оболочки. Запустите VS Code из терминала командой <code>code .</code>, чтобы он унаследовал ваши переменные окружения, или вместо этого войдите с помощью своей учётной записи Claude.</p>
+<p>После входа появится контрольный список <strong>Learn Claude Code</strong>. Пройдите по каждому пункту, нажимая <strong>Show me</strong>, или закройте его с помощью X. Чтобы снова открыть его позже, снимите флажок <strong>Hide Onboarding</strong> в настройках VS Code в разделе <strong>Extensions &gt; Claude Code</strong>.</p>
+<p><strong>3. Отправьте промпт</strong></p>
+<p>Попросите Claude помочь с вашим кодом или файлами — будь то объяснение того, как что-то работает, отладка проблемы или внесение изменений.</p>
+<blockquote>
+<p>[!TIP]</p>
+<p>Claude автоматически видит выделенный вами текст. Нажмите <code>Option+K</code> (Mac) / <code>Alt+K</code> (Windows/Linux), чтобы также вставить в промпт ссылку с @-упоминанием (например, <code>@file.ts#5-10</code>).</p>
+</blockquote>
+<p>Вот пример вопроса о конкретной строке в файле:</p>
+<p><img src="https://mintcdn.com/claude-code/FVYz38sRY-VuoGHA/images/vs-code-send-prompt.png?fit=max\&amp;auto=format\&amp;n=FVYz38sRY-VuoGHA\&amp;q=85\&amp;s=ede3ed8d8d5f940e01c5de636d009cfd" alt="Редактор VS Code с выделенными строками 2–3 в файле Python и панель Claude Code с вопросом об этих строках, содержащим ссылку с @-упоминанием" loading="lazy"></p>
+<p><strong>4. Просмотрите изменения</strong></p>
+<p>Проверьте <a href="https://code.claude.com/docs/ru/permission-modes.md#which-mode-a-session-starts-in">режим разрешений</a>, отображаемый в нижней части поля ввода промпта:</p>
+<ul>
+<li>В режиме Auto или Edit automatically Claude редактирует <a href="https://code.claude.com/docs/ru/permission-modes.md#protected-paths">большинство файлов</a> в вашей рабочей области, не спрашивая.</li>
+<li>В режиме Manual, когда Claude хочет отредактировать файл, он показывает сравнение исходного содержимого и предлагаемых изменений бок о бок, а затем запрашивает разрешение. Вы можете принять, отклонить изменения или сказать Claude, что сделать вместо этого. Если вы отредактируете предлагаемое содержимое непосредственно в представлении diff перед принятием, Claude получит информацию о том, что вы его изменили, чтобы он не предполагал, что файл соответствует его исходному предложению.</li>
+</ul>
+<p><img src="https://mintcdn.com/claude-code/FVYz38sRY-VuoGHA/images/vs-code-edits.png?fit=max\&amp;auto=format\&amp;n=FVYz38sRY-VuoGHA\&amp;q=85\&amp;s=e005f9b41c541c5c7c59c082f7c4841c" alt="VS Code с diff предлагаемых Claude изменений и запросом разрешения на внесение правки" loading="lazy"></p>
+<p>Чтобы просматривать предлагаемую правку по одному изменению за раз, используйте кнопки <strong>Accept this change</strong> и <strong>Reject this change</strong> под каждым изменением в diff. Отклонение изменения отменяет его в предлагаемом содержимом; принятие помечает его как просмотренное. Для просмотра по отдельным изменениям требуется Claude Code v2.1.275 или более поздней версии.</p>
+<p>Принятие или отклонение всего файла по-прежнему завершает просмотр. Diff, содержащий более 100 изменений, открывается без кнопок для отдельных изменений, поэтому просматривайте его как целый файл.</p>
+<p>Те же действия доступны в позиции курсора из контекстного меню редактора и из палитры команд как <strong>Claude Code: Accept Change at Cursor</strong> и <strong>Claude Code: Reject Change at Cursor</strong>.</p>
+<p>Больше идей о том, что можно делать с Claude Code, см. в разделе <a href="https://code.claude.com/docs/ru/common-workflows.md">Типичные рабочие процессы</a>.</p>
+<blockquote>
+<p>[!TIP]</p>
+<p>Запустите «Claude Code: Open Walkthrough» из палитры команд, чтобы пройти пошаговый обзор основ.</p>
+</blockquote>
+<h3 id="h-4">Использование поля ввода промпта <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Поле ввода промпта поддерживает несколько функций:</p>
+<ul>
+<li><strong>Режимы разрешений</strong>: нажмите на индикатор режима внизу поля ввода промпта, чтобы переключить режим разрешений. В Claude Code v2.1.283 и более поздних версиях Auto является встроенным начальным режимом разрешений, а в более ранних версиях — только на тарифах Pro, Max, Ultra и Team. О том, что на это влияет, и обо всех режимах разрешений, которые предлагает индикатор, см. в разделе <a href="https://code.claude.com/docs/ru/permission-modes.md#switch-permission-modes">как расширение выбирает начальный режим разрешений</a>.</li>
+<li><strong>Auto</strong>: классификатор проверяет большинство действий вместо того, чтобы спрашивать вас. О том, что он проверяет и блокирует, см. в разделе <a href="https://code.claude.com/docs/ru/permission-modes.md#eliminate-prompts-with-auto-mode">авторежим</a>.</li>
+<li><strong>Manual</strong>: Claude запрашивает разрешение перед редактированием файлов и большинством shell-команд.</li>
+<li><strong>Plan</strong>: Claude описывает, что собирается сделать, и ждёт подтверждения, прежде чем вносить изменения. VS Code автоматически открывает план как полноценный документ Markdown, в котором можно добавлять встроенные комментарии, чтобы дать обратную связь до того, как Claude начнёт работу.</li>
+</ul>
+<p>Также можно ввести <code>/plan</code> в поле ввода промпта. Требуется Claude Code v2.1.280 или более поздней версии.</p>
+<ul>
+<li><code>/plan</code>: переключает в режим планирования. Если вы уже в режиме планирования, вместо этого показывает текущий план.</li>
+<li><code>/plan</code> с задачей, например <code>/plan fix the auth bug</code>: переключает в режим планирования и начинает планировать эту задачу.</li>
+<li><code>/plan open</code>: если вы уже в режиме планирования, открывает файл плана в редакторе.</li>
+<li><strong>Edit automatically</strong>: Claude вносит правки, не спрашивая.</li>
+<li><strong>Модель</strong>: выберите <strong>Switch model…</strong> в меню команд, чтобы сменить модель посреди сессии. Также можно нажать на название модели внизу поля ввода промпта, чтобы открыть то же окно выбора. В Claude Code v2.1.284 и более поздних версиях окно выбора также открывается, если ввести в поле ввода промпта только <code>/model</code>.</li>
+</ul>
+<p>Если текущая модель поддерживает <a href="https://code.claude.com/docs/ru/model-config.md#adjust-effort-level">уровни effort</a>, в окне выбора также отображается строка <strong>Effort</strong>, а на кнопке с названием модели показывается выбранный уровень. Если вы выбираете уровень, отличный от <code>max</code>, Claude Code сохраняет его для текущей модели как уровень по умолчанию в <a href="https://code.claude.com/docs/ru/settings-reference#modelsettings"><code>modelSettings</code></a> в ваших пользовательских настройках; <code>max</code> применяется только к текущей сессии. Кнопка с названием модели и строка <strong>Effort</strong> требуют Claude Code v2.1.257 или более поздней версии.</p>
+<p>Если включены <a href="https://code.claude.com/docs/ru/workflows.md">динамические рабочие процессы</a> и текущая модель их поддерживает, под строкой <strong>Effort</strong> появляется переключатель <strong>Ultracode</strong>. Включите его, чтобы Claude планировал <a href="https://code.claude.com/docs/ru/workflows.md#let-claude-decide-with-ultracode">рабочий процесс</a> для каждой содержательной задачи в этой сессии с выбранным уровнем effort. Пока он включён, на кнопке с названием модели после уровня отображается <code>· Ultracode</code>. Переключатель требует Claude Code v2.1.284 или более поздней версии.</p>
+<ul>
+<li><strong>Меню команд</strong>: нажмите <code>/</code> или введите <code>/</code>, чтобы открыть меню команд. Среди вариантов — прикрепление файлов и переключение моделей.</li>
+</ul>
+<p>Раздел Customize содержит такие пункты, как MCP-серверы, команды, стили вывода, хуки, память, инструкции, разрешения и плагины. Пункты со значком терминала открываются во встроенном терминале.</p>
+<ul>
+<li>Чтобы просмотреть команды, такие как <code>/usage</code> или <a href="https://code.claude.com/docs/ru/remote-control"><code>/remote-control</code></a>, выберите <strong>Slash commands</strong> в разделе Customize. Откроется диалоговое окно со списком команд и полем фильтра. Выберите команду, чтобы выполнить её. Ввод <code>/</code> в поле ввода промпта по-прежнему предлагает команды прямо в строке. Требуется Claude Code v2.1.257 или более поздней версии.</li>
+</ul>
+<p>Ввод <code>/skills</code> также открывает это диалоговое окно. В каждой строке <a href="https://code.claude.com/docs/ru/skills.md">скилла</a> отображается его <a href="https://code.claude.com/docs/ru/skills.md#override-skill-visibility-from-settings">видимость</a>, например <strong>On</strong> или <strong>Name only</strong>. Нажмите на значение видимости, чтобы изменить его, за исключением строк с пометкой <strong>locked</strong>, например скиллов плагинов. Сокращение <code>/skills</code> и элементы управления видимостью требуют Claude Code v2.1.280 или более поздней версии.</p>
+<ul>
+<li>Выберите <strong>Output styles</strong> в разделе Customize, чтобы выбрать <a href="https://code.claude.com/docs/ru/output-styles.md">стиль вывода</a>, включая ваши пользовательские стили. Требуется Claude Code v2.1.257 или более поздней версии.</li>
+</ul>
+<p>Чтобы вместо этого создать пользовательский стиль, выберите <strong>Build a custom style</strong> в меню <strong>Output styles</strong>. Claude Code создаст для вас <a href="https://code.claude.com/docs/ru/output-styles.md#create-a-custom-output-style">файл стиля</a> на уровне проекта или пользователя. Требуется Claude Code v2.1.261 или более поздней версии.</p>
+<ul>
+<li>Выберите <strong>Hooks</strong> в разделе Customize, чтобы просмотреть <a href="https://code.claude.com/docs/ru/hooks.md">хуки</a>, загруженные в сессии, сгруппированные по событиям. Можно добавлять, редактировать или удалять хуки, сохранённые в ваших файлах пользовательских, проектных и локальных настроек. Хуки из других источников, например из управляемых настроек или плагинов, доступны только для чтения. Требуется Claude Code v2.1.269 или более поздней версии.</li>
+<li>Выберите <strong>Permissions</strong> в разделе Customize, чтобы просмотреть <a href="https://code.claude.com/docs/ru/permissions.md">правила разрешений</a> сессии, сгруппированные на Allow, Ask и Deny. Можно добавлять правила в пользовательские, проектные или локальные настройки и удалять сохранённые там правила. Правила из других источников, например из управляемых настроек или подтверждений, данных только для этой сессии, доступны только для чтения. Требуется Claude Code v2.1.269 или более поздней версии.</li>
+<li>Выберите <strong>Memory</strong> в разделе Customize, чтобы включить или отключить <a href="https://code.claude.com/docs/ru/memory.md#auto-memory">автоматическую память</a>. Пока она включена, можно также просматривать воспоминания, сохранённые Claude, и открывать папки, в которых они хранятся, в файловом менеджере. Требуется Claude Code v2.1.274 или более поздней версии.</li>
+</ul>
+<p>Нажмите на сохранённое воспоминание, чтобы прочитать его в диалоговом окне, где можно отредактировать текст, удалить воспоминание или открыть его файл в редакторе. Просмотр, редактирование и удаление воспоминания в диалоговом окне требуют Claude Code v2.1.275 или более поздней версии.</p>
+<ul>
+<li>Выберите <strong>Instructions</strong> в разделе Customize, чтобы редактировать <a href="https://code.claude.com/docs/ru/memory.md#claude-md-files">файлы CLAUDE.md</a>, которые читает Claude. Выберите файл, чтобы открыть его в редакторе. Если файл ещё не существует, Claude Code сначала создаст его. Требуется Claude Code v2.1.274 или более поздней версии.</li>
+<li>Выберите <strong>Status</strong> в разделе Customize или введите <code>/status</code>, чтобы проверить версию Claude Code, учётную запись, модель и сведения о MCP-серверах для сессии. Требуется Claude Code v2.1.280 или более поздней версии.</li>
+<li>Выберите <strong>Sandbox</strong> в разделе Customize или введите <code>/sandbox</code>, чтобы узнать, выполняются ли команды Bash от Claude <a href="https://code.claude.com/docs/ru/sandboxing.md">в песочнице</a>. Там же можно переключить режим песочницы и добавить <a href="https://code.claude.com/docs/ru/settings-reference.md#sandbox-excludedcommands">исключённые команды</a>. Требуется Claude Code v2.1.280 или более поздней версии.</li>
+<li>Выберите <strong>Claude in Chrome</strong> в разделе Customize или введите <code>/chrome</code>, чтобы проверить подключение <a href="https://code.claude.com/docs/ru/chrome.md">Claude in Chrome</a> и управлять им. Оба способа требуют входа с учётной записью claude.ai. Требуется Claude Code v2.1.280 или более поздней версии.</li>
+<li>Выберите <strong>Export conversation</strong> в разделе Context или введите <code>/export</code>, чтобы скопировать диалог как обычный текст или сохранить его в файл. Добавьте имя файла, например <code>/export notes.txt</code>, чтобы пропустить диалоговое окно и выбрать, куда сохранить файл. Требуется Claude Code v2.1.280 или более поздней версии.</li>
+<li>Раздел Settings содержит пункт <strong>Enable Remote Control for all sessions</strong>, который задаёт <a href="https://code.claude.com/docs/ru/settings-reference#remotecontrolatstartup"><code>remoteControlAtStartup</code></a> и определяет, будут ли <a href="https://code.claude.com/docs/ru/remote-control.md#enable-remote-control-for-all-sessions">новые интерактивные сессии автоматически подключаться к Remote Control</a>. Требуется Claude Code v2.1.203 или более поздней версии.</li>
+</ul>
+<p>Когда вы включаете или отключаете переключатель в окне VS Code, изменение касается не только сессий, которые вы запустите после этого. Оно также применяется к сессиям, уже открытым в этом окне VS Code. Если вы его отключите, открытые сессии отключатся. В Claude Code v2.1.261 и более поздних версиях изменение также распространяется на сессии, открытые в других ваших окнах VS Code.</p>
+<ul>
+<li>Раздел Settings также содержит пункт <strong>Focus view</strong>, который скрывает вызовы инструментов, результаты инструментов и размышления за разворачиваемыми строками, оставляя ваши промпты и ответы Claude. Переключайте его там же, сочетанием <code>Ctrl+Option+F</code> (Mac) / <code>Ctrl+Alt+F</code> (Windows/Linux) или из палитры команд с помощью <strong>Claude Code: Toggle Focus view</strong>. Изменение применяется ко всем открытым сессиям и сохраняется между сессиями. Требуется Claude Code v2.1.221 или более поздней версии.</li>
+</ul>
+<p>Последний список задач Claude остаётся видимым, как и текст, о котором спрашивает ожидающий ответа вопрос от Claude; для этого требуется Claude Code v2.1.225 или более поздней версии. Пока Claude запускает <a href="https://code.claude.com/docs/ru/sub-agents.md">субагентов</a>, под группой вызовов инструментов, которая их запустила, появляются строки с ходом выполнения в реальном времени и их последней активностью. Для этого требуется Claude Code v2.1.269 или более поздней версии.</p>
+<ul>
+<li>Чтобы выйти из учётной записи Anthropic, выберите <strong>Sign out</strong> в разделе Settings или введите <code>/logout</code>. При использовании <a href="#use-third-party-providers">стороннего провайдера</a> меню не предлагает ни того, ни другого. Требуется Claude Code v2.1.277 или более поздней версии.</li>
+<li>Чтобы сообщить об ошибке, нажмите <strong>Report a problem</strong> внизу меню или введите <code>/bug</code> или <code>/feedback</code> с необязательным описанием, которым будет предварительно заполнен отчёт. Когда вы отправляете отчёт и при этом вошли в Anthropic через собственное подключение Anthropic, Claude Code отправляет его в Anthropic. Требуется Claude Code v2.1.229 или более поздней версии.</li>
+</ul>
+<p>При использовании стороннего провайдера или без учётных данных Anthropic ничего не отправляется. Диалоговое окно сообщает об этом до того, как вы начнёте писать. При отправке отчёт сохраняется как <a href="https://code.claude.com/docs/ru/data-usage#telemetry-services">локальный архив в <code>~/.claude/feedback-bundles/</code></a>, в котором известные шаблоны API-ключей и токенов скрыты. Сохранение отчёта на вашем компьютере требует Claude Code v2.1.284 или более поздней версии.</p>
+<p>После сохранения отчёта в подтверждении указывается имя файла и есть кнопка <strong>Show folder</strong>. Отправьте этот файл представителю вашей учётной записи в Anthropic или прикрепите его к обращению в службу поддержки.</p>
+<p>Если политика вашей организации отключает отзывы о продукте, пункт <strong>Report a problem</strong> не отображается в меню, а <code>/bug</code> и <code>/feedback</code> вместо открытия отчёта показывают уведомление <code>Feedback is turned off by your organization&#x27;s policy or this environment&#x27;s settings.</code>. В Claude Code v2.1.284 и более поздних версиях, если вы задали переменную окружения <code>DISABLE_FEEDBACK_COMMAND</code> или <code>CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC</code>, отзывы также отключаются, и при открытии отчёта вместо него показывается это уведомление.</p>
+<ul>
+<li><strong>Побочные вопросы</strong>: введите <code>/btw</code>, а затем вопрос, чтобы спросить о вашей сессии, <a href="https://code.claude.com/docs/ru/interactive-mode.md#side-questions-with-%2Fbtw">не добавляя его в диалог</a>. Ответ открывается на панели рядом с чатом, где можно задавать уточняющие вопросы. Требуется Claude Code v2.1.227 или более поздней версии.</li>
+</ul>
+<p>Ветка сохраняется при перезагрузке окна. Claude Code хранит 20 последних обменов сообщениями и удаляет сохранённые ветки по расписанию <a href="https://code.claude.com/docs/ru/settings-reference#cleanupperioddays"><code>cleanupPeriodDays</code></a>, если Claude Code может <a href="https://code.claude.com/docs/ru/claude-directory.md#cleaned-up-automatically">безопасно определить срок хранения</a>. Чтобы очистить ветку, нажмите на значок корзины на панели.</p>
+<ul>
+<li><strong>Копирование ответа</strong>: наведите курсор на ответ и нажмите <strong>Copy response</strong>, чтобы скопировать его в буфер обмена, или введите <code>/copy</code>, чтобы скопировать последний ответ. <code>/copy 2</code> копирует предпоследний. Требуется Claude Code v2.1.277 или более поздней версии.</li>
+<li><strong>Закладки</strong>: наведите курсор на ответ и нажмите <strong>Bookmark response</strong>, чтобы сохранить его, или нажмите <strong>Remove bookmark</strong> на сохранённом ответе, чтобы удалить закладку.</li>
+</ul>
+<p>Чтобы просмотреть сохранённые ответы, откройте панель Bookmarks. Можно нажать на значок закладки вверху панели Claude Code, выбрать <strong>Bookmarks</strong> в разделе Context меню команд или ввести <code>/bookmarks</code>. Требуется Claude Code v2.1.286 или более поздней версии.</p>
+<ul>
+<li><strong>Файлы, которые отправляет вам Claude</strong>: когда сессия подключена к <a href="https://code.claude.com/docs/ru/remote-control.md#start-a-remote-control-session">Remote Control</a> и Claude отправляет вам файлы с помощью <a href="https://code.claude.com/docs/ru/tools-reference">инструмента <code>SendUserFile</code></a>, в диалоге отображается строка вида <strong>Sent report.md, chart.png</strong>. Нажмите на имя файла, чтобы открыть его в редакторе. Строка остаётся видимой в Focus view. Требуется Claude Code v2.1.295 или более поздней версии.</li>
+</ul>
+<p>Файл отображается как полный путь, на который нельзя нажать, например <code>\\server\share\report.md</code>, если его путь указывает на сетевой узел. Claude Code не делает такой файл ссылкой, потому что его открытие привело бы к обращению к этому узлу и в Windows <a href="https://code.claude.com/docs/ru/permissions.md#read-only-commands">могло бы отправить ваши учётные данные Windows на этот узел</a>.</p>
+<ul>
+<li><strong>Индикатор контекста</strong>: поле ввода промпта показывает, какую часть контекстного окна Claude вы используете. Claude автоматически выполняет сжатие контекста при необходимости, или вы можете запустить <code>/compact</code> вручную.</li>
+<li><strong>Часы кэша промптов</strong>: значок часов рядом с индикатором контекста оценивает, сколько времени осталось до истечения срока действия <a href="https://code.claude.com/docs/ru/prompt-caching.md">кэша промптов</a> диалога. Он отсчитывает время от пятиминутного или часового <a href="https://code.claude.com/docs/ru/prompt-caching.md#cache-lifetime">срока жизни</a> кэша, и каждый ответ, использующий кэш, перезапускает отсчёт. Помимо сжатия контекста, <a href="https://code.claude.com/docs/ru/prompt-caching.md#actions-that-invalidate-the-cache">действия, которые делают кэш недействительным</a>, не сбрасывают часы, поэтому после смены модели они всё ещё могут показывать оставшиеся минуты.</li>
+<li>Пока отсчёт не закончился, значок показывает оставшиеся минуты, например <strong>12m</strong>.</li>
+<li>Когда отсчёт заканчивается, минуты исчезают, а значок становится красным или цвета ошибки вашей темы до следующего ответа. Срок действия кэша, скорее всего, истёк, поэтому ожидайте более медленный и более дорогой ответ на следующее сообщение, пока кэш перестраивается. Если пятиминутный срок жизни постоянно истекает между вашими сообщениями, см. раздел <a href="https://code.claude.com/docs/ru/prompt-caching.md#choose-the-ttl-yourself">Выбор TTL самостоятельно</a>.</li>
+<li>Сразу после <a href="https://code.claude.com/docs/ru/prompt-caching.md#compacting-the-conversation">сжатия диалога</a> значок также становится красным без минут до следующего ответа, потому что кэш ещё не охватывает сжатый диалог.</li>
+<li><strong>Карта агентов</strong>: когда диалог включает <a href="https://code.claude.com/docs/ru/sub-agents.md">субагентов</a>, внизу поля ввода промпта появляется счётчик агентов, например <strong>2 agents</strong>. Его точка показывает, работает ли какой-либо субагент или ожидает вашего разрешения.</li>
+</ul>
+<p>Нажмите на счётчик агентов, чтобы открыть карту агентов, на которой субагенты диалога изображены в виде дерева под основным агентом, у каждого — статус, затраченное время и количество токенов. Нажмите на субагента, чтобы увидеть его промпт и вызовы инструментов, открыть его транскрипт только для чтения или остановить его во время работы. Требуется Claude Code v2.1.269 или более поздней версии.</p>
+<p>На карте также перечислены другие <a href="https://code.claude.com/docs/ru/tools-reference.md#background-commands">фоновые задачи</a> сессии, такие как фоновые shell-команды и <a href="https://code.claude.com/docs/ru/tools-reference.md#monitor-tool">мониторы</a>, под агентами. Нажмите на строку, чтобы открыть карточку задачи и остановить её там.</p>
+<p>Чтобы открыть карту, когда счётчик агентов не отображается, например когда Claude запустил фоновую оболочку, но не запустил субагентов, введите <code>/tasks</code> в поле ввода промпта. Фоновые задачи на карте и ввод <code>/tasks</code> требуют Claude Code v2.1.277 или более поздней версии.</p>
+<p>В Claude Code v2.1.286 и более поздних версиях, когда вы нажимаете <strong>Stop</strong> или клавишу <code>Esc</code>, текущий ход завершается. Фоновые агенты продолжают работать, пока не закончат или пока вы не остановите их с карты.</p>
+<ul>
+<li><strong>Расширенное мышление</strong>: позволяет Claude тратить больше времени на рассуждения над сложными задачами. Чтобы отключить его или снова включить, используйте переключатель <strong>Thinking</strong> в разделе Model меню команд (<code>/</code>). В моделях, где <a href="https://code.claude.com/docs/ru/model-config.md#extended-thinking">мышление нельзя отключить</a>, в меню нет переключателя <strong>Thinking</strong>, и мышление остаётся включённым.</li>
+</ul>
+<p>Блок размышлений, в котором отображается только метка, например <code>Thought for 12s</code>, не содержит текста и не раскрывается при нажатии. Чтобы видеть сводки размышлений, задайте для <a href="https://code.claude.com/docs/ru/settings-reference#showthinkingsummaries"><code>showThinkingSummaries</code></a> значение <code>true</code> в <code>~/.claude/settings.json</code>, затем выполните <strong>Developer: Reload Window</strong> из палитры команд.</p>
+<p>Уже имеющиеся блоки размышлений остаются пустыми. В ответах после перезагрузки нажмите на блок или нажмите <code>Ctrl+O</code>, чтобы развернуть их все.</p>
+<ul>
+<li><strong>Многострочный ввод</strong>: нажмите <code>Shift+Enter</code>, чтобы добавить новую строку без отправки. Это также работает в поле свободного ввода «Other» в диалоговых окнах с вопросами.</li>
+</ul>
+<h4 id="h-5">Использование или отключение предлагаемых промптов <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<p>После ответа Claude панель может показывать предлагаемый следующий промпт серым курсивным текстом в пустом поле ввода промпта. Каждое предложение использует <a href="https://code.claude.com/docs/ru/interactive-mode.md#prompt-suggestions">короткий фоновый запрос</a>, который учитывается в лимитах использования вашего тарифа или в расходах на API.</p>
+<ul>
+<li><strong>Использовать предложение</strong>: нажмите <code>Tab</code>, чтобы превратить его в редактируемый текст, затем отправьте его. Нажатие <code>Enter</code> до того, как вы примете предложение, не отправляет его.</li>
+<li><strong>Написать собственный промпт</strong>: начните вводить текст, и предложение скроется.</li>
+</ul>
+<p>Чтобы отключить предложения, задайте для <a href="https://code.claude.com/docs/ru/settings-reference#promptsuggestionenabled"><code>promptSuggestionEnabled</code></a> значение <code>false</code> в <code>~/.claude/settings.json</code>. Вы перестанете видеть их в новых диалогах, а в открытых — после того, как выполните <strong>Developer: Reload Window</strong> из палитры команд. Если вы задали для <a href="https://code.claude.com/docs/ru/env-vars"><code>CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION</code></a> значение <code>true</code>, измените его на <code>false</code> там, где вы его задали, иначе предложения продолжат появляться.</p>
+<h4 id="h-6">Ссылки на файлы и папки <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте @-упоминания, чтобы дать Claude контекст о конкретных файлах или папках. Когда вы вводите <code>@</code>, а затем имя файла или папки, Claude читает это содержимое и может отвечать на вопросы о нём или вносить в него изменения. Claude Code поддерживает нечёткое сопоставление, поэтому можно вводить частичные имена, чтобы найти нужное:</p>
+<p>```text wrap theme={null}
+Explain the logic in @auth (fuzzy matches auth.js, AuthService.ts, etc.)
+What&#x27;s in @src/components/ (include a trailing slash for folders)</p>
+<pre><code>
+### Чтение определённых страниц PDF
+
+Для больших PDF-файлов можно попросить Claude прочитать определённые страницы вместо всего файла. Запросите одну страницу, диапазон, например страницы 1–10, или открытый диапазон, например со страницы 3 и далее. Чтение определённых страниц требует наличия [poppler-utils](https://code.claude.com/docs/ru/tools-reference.md#read-tool-behavior) на машине, где работает Claude Code.
+
+### Включение вывода терминала в промпты
+
+Ссылайтесь на вывод терминала в промптах с помощью `@terminal:name`, где `name` — заголовок терминала. Это позволяет Claude видеть вывод команд, сообщения об ошибках или логи без копирования и вставки.
+
+### Прикрепление изображений и файлов
+
+* Чтобы прикрепить изображение, вставьте его из буфера обмена в поле ввода промпта.
+* Чтобы прикрепить файлы, перетащите их в поле ввода промпта, удерживая `Shift`.
+* Чтобы удалить вложение из контекста, нажмите на X на нём.
+
+### Вставка текста
+
+Вставленный текст остаётся видимым в поле ввода промпта, а не сворачивается в заполнитель, как это происходит [в терминале](https://code.claude.com/docs/ru/terminal-config.md#paste-large-content). В сессиях, где Claude Code [помечает вставленный текст](https://code.claude.com/docs/ru/terminal-config.md#how-claude-treats-pasted-text), Claude по-прежнему видит большой фрагмент как вставленный вами текст, а не набранный.
+
+Claude Code также удаляет [невидимые символы Unicode](https://code.claude.com/docs/ru/interactive-mode.md#invisible-characters-in-prompts) из текста, который вы вставляете в поле ввода промпта, и из всего остального, что вы отправляете:
+
+* Если при вставке появляется уведомление, например `Removed 3 invisible characters from the pasted text`, текст был вставлен без этих символов.
+* Если уведомление об удалённых символах появляется при отправке, ничего не было отправлено. Очищенный текст возвращается в поле ввода промпта. Отправьте снова, чтобы отправить текст в том виде, в котором он отображается.
+
+### Автоматический контекст из выделения и открытого файла
+
+Когда вы выделяете текст в редакторе, Claude автоматически видит выделенный код. В нижней части поля ввода промпта показывается, сколько строк выделено. Claude также видит, какой файл открыт в редакторе, даже если ничего не выделено, и поле ввода промпта показывает его имя.
+
+Нажмите `Option+K` (Mac) / `Alt+K` (Windows/Linux), чтобы вставить @-упоминание с путём к файлу и номерами строк, например `@app.ts#5-10`.
+
+#### Как не передавать выделение и открытый файл в сообщениях
+
+Чтобы выделенный текст или открытый файл не попадали в ваши сообщения, отключите соответствующую настройку в настройках VS Code:
+
+* **Выделенный текст**: отключите [настройку Attach Selection](vscode://settings/claudeCode.attachSelection). Требуется Claude Code v2.1.300 или более поздней версии. Чтобы убрать одно выделение, нажмите **X** рядом со счётчиком строк. Счётчик вернётся, когда вы выделите другой текст.
+* **Открытый файл**: отключите [настройку Attach Open File](vscode://settings/claudeCode.attachOpenFile). Требуется Claude Code v2.1.271 или более поздней версии. Файл не передаётся, если только ваше сообщение не включает выделенный в нём текст.
+
+Чтобы добавить текст как @-упоминание при отключённой настройке Attach Selection, выделите его и нажмите `Option+K` на Mac или `Alt+K` в Windows и Linux.
+
+Обе настройки также применяются, когда вы запускаете `claude` во встроенном терминале VS Code.
+
+#### Выделенный текст из исключённых или игнорируемых файлов
+
+На панели чата расширение не передаёт выделенный текст из некоторых файлов:
+
+* Если файл находится внутри вашей рабочей области и соответствует настройкам `files.exclude` или `search.exclude`, Claude получает не более чем путь к файлу, но не выделенный вами текст.
+* То же самое относится к файлу, который игнорируется git, при условии что настройка VS Code `search.useIgnoreFiles` и [настройка `respectGitIgnore`](#extension-settings) расширения обе включены, что является значением по умолчанию.
+
+Этот фильтр распространяется только на панель чата. Когда Claude Code работает во встроенном терминале, Claude может получать текст, который вы выделяете в этих файлах. Чтобы скрыть содержимое файла от Claude в этом случае, добавьте [правило запрета `Read`](https://code.claude.com/docs/ru/permissions#read-and-edit).
+
+### Математика LaTeX в ответах
+
+Панель чата отображает математические выражения LaTeX в ответах Claude в виде свёрстанных формул. Отрисовка математики требует Claude Code v2.1.301 или более поздней версии. В [режиме терминала](#switch-to-terminal-mode) математика не верстается. Панель верстает как выносные, так и строчные формулы:
+
+* **Выносные формулы**: блок `$$ … $$` или `\[ … \]` на отдельной строке или строках, а также огороженный блок кода с языком `math`
+* **Строчные формулы**: `$…$` или `\(…\)`, которые открываются и закрываются на одной строке, например `$E = mc^2$` или `\(a^2 + b^2 = c^2\)`
+
+Панель пытается отличать математику от других вариантов использования тех же символов, поэтому такой текст, как `$HOME`, цена вроде `$5` или `sed &#x27;s/\(foo\)/\1/&#x27;`, не верстается. Не верстается и текст внутри фрагмента кода или внутри любого блока кода, кроме огороженного блока `math`. Если формула отображается в исходном виде, хотя вы ожидали её свёрстанной, см. раздел [Формула отображается как необработанный LaTeX](#a-formula-shows-as-raw-latex).
+
+Когда вы выделяете и копируете текст, содержащий свёрстанную формулу, вы получаете исходный код TeX формулы в разделителях `$…$` или `$$…$$`, а не отрисованные символы. [**Copy response**](#use-the-prompt-box) и `/copy` дают ответ в том виде, в котором его написал Claude, включая исходный код TeX.
+
+### Возобновление прошлых диалогов
+
+Нажмите кнопку **Session history** вверху панели Claude Code, чтобы получить доступ к истории диалогов. Можно искать по ключевому слову или просматривать по времени.
+
+Нажмите на любой диалог, чтобы возобновить его. Если диалог уже открыт в другой вкладке текущего окна, нажатие переключит на эту вкладку. Если уведомление сообщает, что диалог всё ещё открыт в другом месте, см. раздел [как продолжить его в этом окне](#the-conversation-is-still-open-somewhere-else). Если диалог открывается без отображаемых сообщений, см. раздел [почему возобновлённый диалог поначалу пуст](#a-resumed-conversation-is-blank-at-first). Подробнее о возобновлении сессий см. в разделе [Управление сессиями](https://code.claude.com/docs/ru/sessions.md).
+
+* **Заголовки сессий**: новые сессии получают сгенерированные ИИ заголовки на основе вашего первого сообщения.
+* **Переименование и архивация**: наведите курсор на сессию, чтобы увидеть эти действия. Переименуйте её, чтобы дать описательный заголовок, или заархивируйте, чтобы переместить в группу **Archived sessions** внизу списка.
+* **Диалоги отсутствуют, когда задана настройка [`claudeProcessWrapper`](#extension-settings)**: обновите расширение до версии 2.1.304 или более поздней. После этого в списке появятся отсутствовавшие диалоги, а также сессии, которые `claude -p` или [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/overview.md) запустили в этой рабочей области.
+
+По умолчанию сессия без активности в течение 14 дней автоматически перемещается в **Archived sessions**, если она не открыта, не является непрочитанной и не находится в [группе](#organize-sessions-into-groups). Автоматическая архивация требует Claude Code v2.1.265 или более поздней версии. Чтобы изменить период или отключить её, откройте [настройку Archive Inactive Sessions](vscode://settings/claudeCode.archiveInactiveSessions) и выберите количество дней или **Never**.
+
+Чтобы восстановить заархивированные сессии:
+
+* **Одна сессия**: разверните **Archived sessions** и нажмите **Unarchive session**.
+* **Все заархивированные сессии сразу**: наведите курсор на заголовок **Archived sessions** в списке сессий на панели действий и нажмите на его значок разархивации. Требуется Claude Code v2.1.277 или более поздней версии.
+
+До v2.1.257 это действие называлось **Delete session** и скрывало сессию без возможности восстановления. Сессии, которые вы тогда удалили, после обновления появятся в разделе **Archived sessions**.
+
+Если возобновляемый диалог завершился в режиме планирования, Claude Code восстанавливает режим планирования. Требуется Claude Code v2.1.246 или более поздней версии. Claude Code не восстанавливает его в следующих случаях:
+
+* Расширение [выбирает начальный режим разрешений](https://code.claude.com/docs/ru/permission-modes.md#switch-permission-modes) из `claudeCode.initialPermissionMode` или из выбора, перенесённого из более раннего диалога
+* У вас настроен `claudeCode.claudeProcessWrapper`
+* [Правило запрета](https://code.claude.com/docs/ru/permissions.md#manage-permissions) удаляет инструмент [`ExitPlanMode`](https://code.claude.com/docs/ru/tools-reference)
+* Включена настройка [`permissions.denyInsteadOfPrompting`](https://code.claude.com/docs/ru/settings-reference#permissions-denyinsteadofprompting)
+
+#### Диалог всё ещё открыт в другом месте
+
+Чтобы продолжить в этом окне, когда уведомление сообщает, что диалог всё ещё открыт в другом месте, нажмите **Open here anyway** после выполнения шага для вашего случая:
+
+* **У вас больше ничего не открыто**: процесс Claude, запущенный до перезапуска расширения, возможно, всё ещё держит диалог открытым. Обычно такой процесс завершается сам примерно в течение 10 минут, поэтому подождите это время, а затем нажмите. Если нажать до его завершения, диалог будет открыт в двух местах, пока процесс не завершится.
+* **Диалог открыт у вас в другом месте**: сначала закройте его там, например выйдите из `claude` в терминале или закройте его вкладку в другом окне VS Code
+
+Когда диалог всё ещё открыт в другом процессе Claude Code, вместо поля ввода промпта появляется следующее уведомление:
+</code></pre>
+<p>This conversation is still open somewhere else. Using it in two places at once can mix up its messages. If the extension restarted recently, a Claude process from before the restart may still be finishing. It usually ends on its own within about 10 minutes. This notice stays until you choose Open here anyway.</p>
+<pre><code>
+Если задана настройка [`claudeProcessWrapper`](#extension-settings), расширение пропускает эту проверку и открывает диалог напрямую.
+
+### Возобновление облачных сессий из claude.ai
+
+Если вы запускаете [облачные сессии](https://code.claude.com/docs/ru/claude-code-on-the-web.md), их можно возобновлять прямо в VS Code. Для этого требуется вход с помощью **Claude.ai Subscription**, а не Anthropic Console.
+
+**1. Откройте историю сессий**
+
+Нажмите кнопку **Session history** вверху панели Claude Code.
+
+**2. Выберите вкладку Web**
+
+В диалоговом окне отображаются две вкладки: Local и Web. Нажмите **Web**, чтобы увидеть сессии из claude.ai.
+
+**3. Выберите сессию для возобновления**
+
+Просмотрите сессии или найдите нужную. Нажмите на сессию, чтобы продолжить диалог локально.
+
+&gt; [!NOTE]
+&gt;
+&gt; Если открытая папка является репозиторием GitHub, на вкладке Web отображаются только сессии из этого репозитория.
+&gt;
+&gt; При возобновлении облачной сессии расширение загружает копию истории диалога; изменения не синхронизируются обратно с claude.ai.
+
+На вкладке Web также перечислены ваши сессии [Remote Control](https://code.claude.com/docs/ru/remote-control.md). Если нажать на сессию, которая выполнялась в открытой у вас папке, расширение откроет этот локальный диалог вместо загрузки копии. Расширение переходит на вкладку, в которой он уже отображается, если такая есть. Если расширение не может исключить, что диалог открыт другим процессом Claude, вместо этого вы получите загруженную копию.
+
+Если какую-либо часть диалога не удаётся загрузить, появляется ошибка и копия не сохраняется. Выберите сессию снова, чтобы повторить попытку. Если вы выбираете сессию, в которой ещё нет диалога для загрузки, ошибка сообщит, где его можно продолжить.
+
+### Проверка учётной записи и использования
+
+Выполните `/usage`, чтобы открыть диалоговое окно Account &amp; usage, в котором отображаются учётная запись, с которой вы вошли, и ваше использование. Показатели использования зависят от способа входа:
+
+* **Тариф claude.ai**: полосы использования для лимитов вашего тарифа, например для текущей сессии и недели.
+
+  Диалоговое окно также показывает разбивку того, что влияет на лимиты тарифа:
+
+  * **Рекомендации**: предлагаемые изменения, по одному в строке, например `Trim ~/code/api/CLAUDE.md · 49k tokens per request`
+  * **Кнопка исправления**: чтобы Claude Code применил те рекомендации, которые может, нажмите кнопку под ними, например **Fix both**. О том, на какие строки действует кнопка и что затем происходит в вашей сессии, см. в разделе [Применение рекомендаций с помощью кнопки исправления](https://code.claude.com/docs/ru/costs.md#apply-recommendations-with-the-fix-shortcut). Требуется Claude Code v2.1.305 или более поздней версии.
+
+    Кнопка не отображается, пока подключён [Remote Control](https://code.claude.com/docs/ru/remote-control.md). Если после подключения Remote Control появляется предупреждение `The usage fix wasn’t fully sent. Open usage and try again.`, [отключите Remote Control](https://code.claude.com/docs/ru/remote-control.md#check-connection-status), прежде чем повторить попытку.
+  * **Атрибуция**: таблицы, показывающие, сколько использования пришлось на каждый скилл, субагент, плагин и MCP-сервер
+
+  Используйте переключатель Day и Week, чтобы переключаться между последними 24 часами и последними 7 днями. Показатели приблизительны и вычисляются по локальным сессиям на этой машине, поэтому использование с других устройств или claude.ai не учитывается.
+* **Другие способы входа**: когда лимиты тарифа не применяются к вашему способу входа, например при использовании [стороннего провайдера](#use-third-party-providers) или API-ключа, раздел Usage вместо этого показывает стоимость и использование токенов самой сессии. `/usage` в CLI показывает те же итоги в своём [блоке Session](https://code.claude.com/docs/ru/costs.md#track-your-costs). Список сессий на панели действий также показывает итоги активной сессии под заголовком **Account &amp; usage**. Требуется Claude Code v2.1.277 или более поздней версии.
+
+Подробнее об отслеживании и сокращении использования см. в разделе [Отслеживание расходов](https://code.claude.com/docs/ru/costs.md#track-your-costs).
+
+### Откат с помощью чекпоинтов
+
+Расширение VS Code поддерживает чекпоинты, которые отслеживают правки файлов, сделанные Claude, и позволяют вернуться к предыдущему состоянию. Наведите курсор на любое сообщение, чтобы увидеть кнопку отката, затем выберите один из трёх вариантов:
+
+* **Fork conversation from here**: начать новую ветку диалога с этого сообщения, сохранив все изменения кода
+* **Rewind code to here**: откатить изменения файлов к этому моменту диалога, сохранив полную историю диалога
+* **Fork conversation and rewind code**: начать новую ветку диалога и откатить изменения файлов к этому моменту
+
+Подробнее о том, как работают чекпоинты, и об их ограничениях см. в разделе [Чекпоинты](https://code.claude.com/docs/ru/checkpointing.md).
+
+## Настройка рабочего процесса
+
+Вы можете переместить панель Claude и изменить её шрифт. Также можно вести несколько диалогов, группировать или фильтровать список сессий, а также переключиться в режим терминала.
+
+### Выбор расположения Claude
+
+Вы можете перетащить панель Claude в любое место в VS Code. Захватите вкладку или заголовок панели и перетащите её в одно из следующих мест:
+
+* **Вторичная боковая панель**: правая часть окна. Claude остаётся на виду, пока вы пишете код.
+* **Основная боковая панель**: левая боковая панель со значками Explorer, Search и т. д.
+* **Область редактора**: Claude открывается как вкладка рядом с вашими файлами. Удобно для побочных задач.
+
+Когда Claude открывает вкладку в новой группе редакторов, расширение блокирует эту группу. Файлы, которые вы открываете, пока вкладка Claude в фокусе, в этом случае попадают в другую группу, а не рядом с ней.
+
+Чтобы расширение не блокировало группы, отключите [настройку Lock Editor Groups](vscode://settings/claudeCode.lockEditorGroups). Уже заблокированные группы остаются заблокированными, пока вы их не разблокируете. Для этой настройки требуется Claude Code v2.1.274 или новее.
+
+&gt; [!TIP]
+&gt;
+&gt; Используйте боковую панель для основной сессии Claude и открывайте дополнительные вкладки для побочных задач. Claude запоминает выбранное вами расположение. Значок списка сессий на панели действий (Activity Bar) не связан с панелью Claude. Список сессий всегда доступен на панели действий, а значок панели Claude появляется там, только когда панель закреплена на левой боковой панели.
+
+### Изменение шрифта
+
+Панель Claude использует настройки шрифта чата VS Code — те же, что задают оформление встроенного представления чата VS Code. Откройте настройки VS Code с помощью `Cmd+,` на Mac или `Ctrl+,` на Windows и Linux, затем выполните поиск по `chat font`.
+
+| Настройка | На что влияет |
+| - | - |
+| [`chat.fontSize`](vscode://settings/chat.fontSize) | Размер текста диалога и поля ввода промпта в пикселях. Блоки кода и вывод инструментов масштабируются вместе с ним. Требуется VS Code 1.104 или новее |
+| [`chat.fontFamily`](vscode://settings/chat.fontFamily) | Шрифт текста диалога и поля ввода промпта. Требуется VS Code 1.104 или новее |
+| [`chat.editor.fontSize`](vscode://settings/chat.editor.fontSize) | Размер diff в пикселях. Требуется Claude Code v2.1.300 или новее |
+| [`chat.editor.fontFamily`](vscode://settings/chat.editor.fontFamily) | Шрифт блоков кода и вывода инструментов |
+
+Чтобы масштабировать весь VS Code вместе с панелью Claude, увеличьте масштаб окна с помощью `Cmd+=` на Mac или `Ctrl+=` на Windows и Linux.
+
+### Продолжение диалогов после перезагрузки
+
+После выполнения **Developer: Reload Window** или перезапуска VS Code проверьте, где был открыт диалог:
+
+* **Вкладка редактора**: диалог возвращается вместе со своей вкладкой.
+* **Боковая панель**: диалог возвращается, если в последние 10 минут вы отправили в нём сообщение или Claude ответил в нём. Если диалог не вернулся, возобновите его из [истории сессий](#resume-past-conversations).
+
+Если вместо поля ввода промпта отображается уведомление о том, что диалог всё ещё открыт в другом месте, см. раздел [о том, как продолжить диалог здесь](#the-conversation-is-still-open-somewhere-else). Если сообщения поначалу пустые, см. раздел [о том, почему они пустые и когда появятся](#a-resumed-conversation-is-blank-at-first).
+
+#### Прерванные шаги после перезагрузки
+
+Если перезагрузка прервала Claude посреди шага, Claude продолжит этот шаг, когда диалог вернётся, а уведомление в чате отметит продолжение. Требуется Claude Code v2.1.274 или новее. Если шаг был прерван более часа назад или сессия открыта в другом месте, диалог вернётся в неактивном состоянии.
+
+Если уведомление в чате содержит `plan mode is now off, so Claude did not continue on its own`, шаг был прерван в режиме планирования. Чтобы продолжить планирование, выберите **Plan** в индикаторе режима, прежде чем отправить следующее сообщение.
+
+#### Отключение продолжения после перезагрузки
+
+Чтобы Claude не продолжал прерванный шаг после перезагрузки, откройте [настройку Continue After Reload](vscode://settings/claudeCode.continueAfterReload) и снимите флажок.
+
+Если вы задали [`CLAUDE_CODE_RESUME_INTERRUPTED_TURN`](https://code.claude.com/docs/ru/env-vars#variables) или любую другую переменную `CLAUDE_CODE_RESUME_` в окружении VS Code или в [настройке `environmentVariables`](#extension-settings), это не повлияет на панель. Дело в том, что расширение удаляет эти переменные перед запуском сессий панели.
+
+#### Диалог не был открыт повторно
+
+Если после перезагрузки открылся новый чат с подобным уведомлением над полем ввода промпта, значит, панель оставила ваш диалог закрытым, потому что два последних его открытия не завершились:
+</code></pre>
+<p>“Fix the login bug” was not reopened. It did not finish opening the last 2 times, and opening it again may stop Claude Code from responding here.</p>
+<pre><code>
+Открытие не завершается, если панель аварийно завершает работу или перестаёт отвечать во время загрузки диалога, либо если вы перезагружаете или закрываете окно примерно в течение трёх секунд после его открытия. Диалог не изменяется и остаётся в [истории сессий](#resume-past-conversations).
+
+* **Чтобы всё равно открыть его**: нажмите **Open it anyway** или выберите диалог в истории сессий. Как только диалог завершит открытие, он [будет возвращаться при последующих перезагрузках как обычно](#continue-conversations-after-a-reload).
+* **Если панель перестаёт отвечать во время загрузки диалога**: перезагрузите окно. Откроется новый чат.
+* **Чтобы оставить его закрытым**: продолжайте работать в новом чате. Уведомление исчезнет, как только вы отправите промпт.
+
+### Несколько диалогов одновременно
+
+Используйте **Open in New Tab** или **Open in New Window** из палитры команд, чтобы начать дополнительные диалоги. Каждый диалог хранит собственную историю и контекст, что позволяет работать над разными задачами параллельно.
+
+При использовании вкладок небольшая цветная точка на значке искры показывает статус: синяя означает ожидающий запрос разрешения, оранжевая — что Claude завершил работу, пока вкладка была скрыта.
+
+### Группировка сессий
+
+В списке сессий на панели действий можно объединять связанные сессии в именованные сворачиваемые группы. Требуется Claude Code v2.1.229 или новее.
+
+* **Добавление сессии в группу и удаление из неё**: щёлкните сессию правой кнопкой мыши, чтобы создать на её основе группу, переместить её в существующую группу или удалить из группы. Каждая сессия одновременно принадлежит только одной группе, поэтому при перемещении в другую группу она удаляется из первой.
+* **Перемещение нескольких сессий сразу**: щёлкните каждую сессию с `Cmd` (Mac) / `Ctrl` (Windows/Linux) или щёлкните с `Shift`, чтобы выбрать диапазон, затем щёлкните выделение правой кнопкой мыши.
+* **Добавление сессии в группу с её вкладки**: выполните **Claude Code: Add Session Tab to Group** из палитры команд, затем выберите или создайте группу. Требуется Claude Code v2.1.257 или новее.
+* **Переименование или удаление группы**: щёлкните заголовок группы правой кнопкой мыши. При удалении группы удаляется только сама группа, а её сессии возвращаются в список без группы.
+
+Расширение сохраняет группы для каждой папки рабочей области, поэтому они сохраняются после перезагрузки окна и отображаются в каждом окне, где открыта та же папка. При поиске по списку расширение показывает совпадения единым плоским списком по всем группам.
+
+### Фильтрация списка сессий
+
+Чтобы сократить длинный список сессий на панели действий, используйте два элемента фильтрации в верхней части списка. Требуется Claude Code v2.1.271 или новее. Архивированные сессии не отображаются, пока включён любой из фильтров.
+
+* **Active**: включите этот переключатель, чтобы показывать только сессии, которые ожидают вашего ввода, выполняются или не прочитаны, а также сессию во вкладке Claude, на которой вы последний раз были в фокусе.
+* **Фильтр по статусу**: щёлкните значок воронки, затем отметьте **Needs input**, **Working** или **Completed**, чтобы показать сессии в любом из этих состояний. Отметьте **Open** или **Closed**, чтобы отфильтровать сессии по тому, открыты ли они. Сессия считается открытой, если у неё есть вкладка в этом окне или она выполняется в другом процессе Claude Code на этом компьютере, например в терминале.
+
+Когда **Active** включён и вы отмечаете статус, **Open** или **Closed**, в списке также отображаются все сессии, соответствующие отмеченным условиям. Заданные вами фильтры сохраняются после перезагрузки окна.
+
+### Переключение в режим терминала
+
+По умолчанию расширение открывает графическую панель чата. Если вы предпочитаете интерфейс в стиле CLI, откройте [настройку Use Terminal](vscode://settings/claudeCode.useTerminal) и установите флажок.
+
+Также можно нажать `Cmd+,` на Mac или `Ctrl+,` на Windows/Linux, чтобы открыть настройки VS Code, перейти в **Extensions &gt; Claude Code** и отметить **Use Terminal**.
+
+## Управление плагинами
+
+Расширение VS Code включает графический интерфейс для установки [плагинов](https://code.claude.com/docs/ru/plugins/overview.md) и управления ими. Введите `/plugins` в поле промпта, чтобы открыть интерфейс **Manage plugins**.
+
+### Установка плагинов
+
+В диалоговом окне плагинов есть две вкладки: **Plugins** и **Marketplaces**.
+
+На вкладке Plugins:
+
+* **Установленные плагины** отображаются вверху с переключателями для их включения или отключения.
+  * Если вы отключаете плагин, который включён в общем файле `.claude/settings.json` вашего проекта, расширение сначала задаёт вопрос: **Disable for me** отключает его только для вас, а **Disable for everyone** изменяет общий файл.
+  * Для плагина, который не удалось загрузить, в его строке отображается краткая причина. Нажмите на причину, чтобы узнать, что можно сделать, включая копирование полного сообщения об ошибке для поиска в разделе [Устранение неполадок с плагинами](https://code.claude.com/docs/ru/plugins/troubleshooting.md).
+* **Доступные плагины** из настроенных вами маркетплейсов отображаются ниже
+* Используйте поиск, чтобы отфильтровать плагины по имени или описанию
+* Нажмите **Install** у любого доступного плагина
+
+При установке плагина выберите область действия установки:
+
+* **Install for you**: доступен во всех ваших проектах (область действия пользователя)
+* **Install for this project**: доступен участникам проекта (область действия проекта)
+* **Install locally**: только для вас и только в этом репозитории (локальная область действия)
+
+После завершения установки появляется форма, запрашивающая те [параметры конфигурации](https://code.claude.com/docs/ru/plugins/components.md#user-configuration) плагина, которые ещё не заданы. Чтобы просмотреть или изменить параметры позже, нажмите значок шестерёнки в строке плагина.
+
+Конфиденциальные текстовые поля маскируются, а для ранее сохранённого секрета отображается **(unchanged)**. Оставьте поле пустым, чтобы сохранить прежнее значение. После сохранения изменений открытые сессии перезагружают свои плагины, а в диалоговом окне отображается **Restart Claude to apply plugin changes**.
+
+### Удаление плагинов
+
+В каждой строке установленного плагина указана [область действия](https://code.claude.com/docs/ru/plugins/install.md#choose-an-install-scope), на уровне которой он установлен. Чтобы удалить эту установку, нажмите значок корзины в строке. Затемнённый значок корзины отмечает строку, которую нельзя удалить из этой рабочей области, например плагин, управляемый вашей организацией, или плагин, установленный для другого проекта.
+
+Расширение сначала задаёт вопрос в двух случаях:
+
+* **Плагин, который включён в общем файле `.claude/settings.json` вашего проекта**: выберите **Disable for me**, чтобы плагин остался установленным для ваших коллег, или **Uninstall for everyone**, чтобы удалить установку проекта с флагом [`--keep-data`](https://code.claude.com/docs/ru/plugins/cli-reference#what-an-uninstall-deletes-and-keeps), при этом каталог сохранённых данных плагина останется. Если вы уже отключили плагин для себя, значок корзины удаляет вашу собственную установку без вопроса.
+* **В остальных случаях — последняя установка плагина с сохранёнными данными**: выберите, сохранить или удалить данные; по умолчанию выбрано **Keep**
+
+### Отправка ссылки на установку плагина
+
+Чтобы сразу направить кого-либо к установке определённого плагина, отправьте ему URL расширения `install-plugin`. При открытии ссылки запускается или выводится на передний план VS Code, открывается панель Claude Code и диалоговое окно **Manage plugins** на выборе области действия для этого плагина. Ничего не устанавливается, пока человек не выберет область действия. Если маркетплейс плагина ещё не настроен в его Claude Code, диалоговое окно сначала предложит его добавить.
+</code></pre>
+<p>vscode://anthropic.claude-code/install-plugin?plugin=code-review&amp;marketplace=anthropics/claude-plugins-official</p>
+<pre><code>
+URL принимает два параметра запроса:
+
+| Параметр | Описание |
+| - | - |
+| `plugin` | Имя плагина в том виде, в каком оно указано в маркетплейсе. Обязательный. |
+| `marketplace` | [Источник](https://code.claude.com/docs/ru/plugins/install.md#add-a-marketplace) маркетплейса: `owner/repo` на GitHub, URL `https://` или SSH-адрес git, например `git@github.com:owner/repo.git`. Если не указан, по умолчанию используется `anthropics/claude-plugins-official`. |
+
+Расширение проверяет оба значения, прежде чем что-либо открыть:
+
+* **Имя плагина**: не более 100 символов, начинается с ASCII-буквы или цифры и в остальном содержит только ASCII-буквы, цифры, `.`, `_` и `-`.
+* **Источник маркетплейса**: только формы, перечисленные для параметра `marketplace`, то есть не локальный путь, не адрес `http://` и не имя маркетплейса, например `claude-plugins-official`. URL `https://` не может содержать имя пользователя, пароль или строку запроса.
+* **Git-ссылка (ref)**: чтобы закрепить маркетплейс за веткой или тегом, добавьте ref к источнику после `%23` — закодированной формы `#`, например `marketplace=owner/repo%23v1.0`. Ссылка с незакодированным `#` не сработает. Маркетплейсы в организации GitHub `anthropics` нельзя закрепить в ссылке.
+
+Тот, кто откроет ссылку, нарушающую эти правила, увидит ошибку, начинающуюся с `Invalid plugin installation URL`. Панель Claude Code и диалоговое окно не открываются, и ничего не устанавливается. Если имя вашего плагина или маркетплейс нельзя поместить в ссылку, попросите пользователей добавить маркетплейс на вкладке **Marketplaces**, а затем установить плагин на вкладке **Plugins**.
+
+В следующих случаях вместо выбора области действия в диалоговом окне отображается сообщение:
+
+* **В маркетплейсе нет плагина с таким именем**: диалоговое окно сообщает, что плагин не найден. Сверьте значение `plugin` со списком маркетплейса.
+* **Плагин уже установлен**: диалоговое окно сообщает об этом, и ничего не меняется.
+* **Уже добавлен другой маркетплейс с тем же именем**: диалоговое окно сообщает, что маркетплейс из ссылки не был добавлен, и ничего не устанавливается.
+
+README и issues на GitHub, а также некоторые другие платформы для markdown удаляют ссылки, схема которых не `http` или `https`, поэтому ссылка `vscode://` там отображается как обычный текст. На таких платформах помещайте URL в блок кода, как описано в разделе [Ссылка отображается как обычный текст, а не как кликабельная](https://code.claude.com/docs/ru/deep-links.md#the-link-renders-as-plain-text-instead-of-being-clickable) для ссылок `claude-cli://`.
+
+### Управление маркетплейсами
+
+Перейдите на вкладку **Marketplaces**, чтобы добавить или удалить источники плагинов:
+
+* Введите репозиторий GitHub, URL или локальный путь, чтобы добавить новый маркетплейс
+* Нажмите значок обновления, чтобы обновить список плагинов маркетплейса
+* Нажмите значок корзины, чтобы удалить маркетплейс. Его удаление [удаляет все плагины, которые вы из него установили](https://code.claude.com/docs/ru/plugins/install.md#manage-marketplaces), поэтому сначала отображается подтверждение с перечнем этих плагинов
+
+Изменения плагинов, внесённые в диалоговом окне, сразу применяются к сессиям Claude Code, открытым в этом окне VS Code.
+
+Если сессия, из которой вы открыли диалоговое окно, не может перезагрузить свои плагины, диалоговое окно предлагает повторить попытку или перезапустить Claude в этой сессии.
+
+&gt; [!NOTE]
+&gt;
+&gt; Расширение управляет плагинами, выполняя те же команды, что и CLI. Плагины и маркетплейсы, настроенные в расширении, также доступны в CLI, и наоборот.
+
+Подробнее о системе плагинов см. в разделах [Плагины](https://code.claude.com/docs/ru/plugins/overview.md) и [Маркетплейсы плагинов](https://code.claude.com/docs/ru/plugins/overview.md).
+
+### Плагины, которые отображают содержимое в панели
+
+Плагин, содержащий [мод](https://code.claude.com/docs/ru/plugins/mods/overview.md), может отображать содержимое в панели чата. Для этого требуется расширение версии 2.1.299 или новее. Для сессии, которая [не получает флаги функций](https://code.claude.com/docs/ru/env-vars.md#features-that-need-feature-flag-fetching), например сессии в Amazon Bedrock, требуется версия 2.1.304 или новее. От такого плагина вы можете увидеть:
+
+* Панель рядом с диалогом или над полем промпта
+* Всплывающее уведомление или строку состояния над полем промпта
+* Сообщение или вызов инструмента, отображённые собственным способом плагина
+
+Когда установленный вами плагин добавляет или изменяет что-либо в панели, это обозначается меткой с формулировками, например такими:
+
+* **From the token-chart plugin**: плагин отобразил или вывел это, либо эта карточка — вопрос плагина к вам
+* **Edited by the token-chart plugin**: плагин изменил что-то, что отображает Claude Code, например вызов инструмента
+* **Prompt from the token-chart plugin**: плагин отправил это сообщение от вашего имени
+
+Чтобы запретить плагину отображать содержимое, отключите плагин в [диалоговом окне плагинов](#install-plugins).
+
+## Автоматизация задач в браузере с помощью Chrome
+
+Подключите Claude к браузеру Chrome, чтобы тестировать веб-приложения, выполнять отладку с помощью логов консоли и автоматизировать рабочие процессы в браузере, не покидая VS Code. Для этого требуется [расширение Claude in Chrome](https://chromewebstore.google.com/detail/claude/fcoeoabgfenejglbffodgkkbkcdhcgfn) версии 1.0.36 или новее.
+
+Введите `@browser` в поле промпта, а затем опишите, что должен сделать Claude:
+</code></pre>
+<p>@browser go to localhost:3000 and check the console for errors</p>
+<pre><code>
+Вы также можете открыть меню вложений, чтобы выбрать конкретные инструменты браузера, например открытие новой вкладки или чтение содержимого страницы.
+
+Claude открывает новые вкладки для задач в браузере и использует состояние входа вашего браузера, поэтому может получить доступ к любому сайту, на котором вы уже авторизованы.
+
+Подробнее о работе с браузером см.:
+
+* [Включение Chrome по умолчанию](https://code.claude.com/docs/ru/chrome.md#enable-chrome-by-default): каждая сессия будет подключаться к вашему браузеру при запуске без ввода `@browser`
+* [Запросы разрешений в сессиях VS Code](https://code.claude.com/docs/ru/chrome.md#permission-prompts-in-vs-code-sessions): когда Claude Code спрашивает вас перед действием в браузере
+* [Использование Claude Code с Chrome](https://code.claude.com/docs/ru/chrome.md): инструкции по настройке, полный список возможностей и устранение неполадок
+
+## Работа с git
+
+Claude Code интегрируется с git для помощи в рабочих процессах контроля версий прямо в VS Code. Попросите Claude совершить коммиты, создать pull request&#x27;ы или работать между ветками. Чтобы запустить Claude в изолированном worktree с собственными файлами и веткой, см. [Запуск параллельных сеансов с worktrees](https://code.claude.com/docs/ru/worktrees.md).
+
+### Создание коммитов и pull request&#x27;ов
+
+Claude может подготавливать изменения, писать сообщения коммитов и создавать pull request&#x27;ы на основе вашей работы:
+</code></pre>
+<p>commit my changes with a descriptive message
+create a pr for this feature
+summarize the changes I&#x27;ve made to the auth module</p>
+<pre><code>
+При создании pull request&#x27;ов Claude генерирует описания на основе фактических изменений кода и может добавлять контекст о тестировании или решениях по реализации.
+
+### Повторное открытие диалога, перешедшего в worktree
+
+В повторно открытом диалоге баннер **This session is in worktree** означает, что рабочий каталог диалога — это указанный в баннере [worktree](https://code.claude.com/docs/ru/worktrees.md), а не папка, открытая в этом окне. Чтобы открыть worktree в новом окне VS Code, нажмите **Open worktree** на баннере.
+
+Диалог переходит в worktree, например, когда вы [просите Claude работать в нём](https://code.claude.com/docs/ru/worktrees.md#ask-claude-to-create-a-worktree). Когда вы снова открываете его или панель [повторно открывает его после перезагрузки окна](#continue-conversations-after-a-reload), он возобновляется в worktree, если Claude Code создал этот worktree в `.claude/worktrees/` и тот всё ещё существует. До Claude Code v2.1.300 вместо этого открывался пустой диалог. В этих версиях обновите расширение.
+
+## Работа с блокнотами Jupyter
+
+Claude Code редактирует блокноты с помощью [инструмента NotebookEdit](https://code.claude.com/docs/ru/tools-reference.md#notebookedit-tool-behavior).
+
+### Повторный запуск отредактированных ячеек
+
+Когда Claude заменяет ячейку с кодом, он перезаписывает исходный код ячейки в файле и очищает сохранённый вывод ячейки и счётчик выполнения.
+
+Редактирование не требует перезапуска ядра: NotebookEdit записывает только файл и не подключается к вашему ядру. Перезапустите эту ячейку, а также все ячейки, которые используют определённые в ней функции или переменные.
+
+### Сохраняйте блокнот перед редактированием
+
+Сохраните блокнот, прежде чем просить о редактировании: [настройка `autosave`](#extension-settings) расширения не сохраняет блокнот перед запуском NotebookEdit.
+
+## Выполнение работы в фоновом режиме
+
+Отправьте длительную команду или субагента в фоновый режим, а затем проверяйте их состояние из поля ввода промпта.
+
+### Перевод выполняющейся команды или субагента в фоновый режим
+
+Когда команда или [субагент](https://code.claude.com/docs/ru/sub-agents.md) заставляет Claude ждать дольше, чем вам хотелось бы, нажмите **Run in background** под соответствующим вызовом инструмента в диалоге. Требуется Claude Code v2.1.287 или новее.
+
+* **Когда появляется**: действие становится доступным, когда команда выполняется около двух секунд, или сразу после того, как Claude начинает ждать [субагента](https://code.claude.com/docs/ru/sub-agents.md#run-subagents-in-foreground-or-background), которого он запустил из основного диалога.
+* **После нажатия**: Claude перестаёт ждать и продолжает ход. Команда или субагент продолжают работать как [фоновая задача](https://code.claude.com/docs/ru/tools-reference.md#background-commands), которая уведомит Claude о завершении.
+
+Чтобы тем временем проверить состояние задачи или остановить её, введите `/tasks` в поле ввода промпта, чтобы открыть [карту агентов](#use-the-prompt-box). Субагент сохраняет своё место в дереве агентов, а команда отображается под агентами с [последним выводом на её карточке](#monitor-background-processes).
+
+#### The Run in background action is missing under a subagent
+
+По умолчанию в VS Code для субагентов это действие не отображается. Чтобы выяснить причину для конкретного субагента, откройте его карточку в [карте агентов](#use-the-prompt-box) и прочитайте строку `Spawned by`:
+
+* **`Spawned by the main agent`**: субагент был запущен в фоновом режиме, поэтому Claude его не ждёт, и вам ничего делать не нужно. Чтобы Claude вместо этого ждал субагентов, см. раздел [Как заставить Claude ждать субагента](https://code.claude.com/docs/ru/sub-agents.md#let-claude-wait-for-a-subagent).
+* **В `Spawned by` указан другой субагент**: действие появляется только для субагентов, запущенных основным агентом, но не для [вложенного субагента](https://code.claude.com/docs/ru/sub-agents.md#let-subagents-spawn-their-own-subagents), которого ждёт другой субагент. Чтобы досрочно завершить вложенного субагента, нажмите **Stop agent** на его карточке. После этого ожидающий субагент продолжит работу без этого результата.
+
+### Отслеживание фоновых процессов
+
+Введите `/tasks` в поле ввода промпта, чтобы открыть [карту агентов](#use-the-prompt-box), где перечислены фоновые задачи сессии, например dev-сервер, который Claude оставил работать как фоновую shell-команду. Нажмите на задачу, чтобы открыть её карточку, где её можно остановить. Требуется Claude Code v2.1.277 или новее.
+
+Для фоновой shell-команды или [монитора](https://code.claude.com/docs/ru/tools-reference.md#monitor-tool), который запускает команду, карточка также показывает последний вывод команды и обновляет его, пока команда выполняется.
+
+#### Просмотр вызовов инструментов фонового субагента
+
+Если субагент отображается одной строкой состояния без вызовов инструментов, введите `/tasks` в поле ввода промпта, чтобы открыть [карту агентов](#use-the-prompt-box), и нажмите на этого субагента там. Субагент [работает в фоновом режиме](#the-run-in-background-action-is-missing-under-a-subagent), и его карточка показывает его вызовы инструментов и кнопку, которая открывает его транскрипт.
+
+## Команды и сочетания клавиш VS Code
+
+Чтобы открыть палитру команд, нажмите `Cmd+Shift+P` на Mac или `Ctrl+Shift+P` на Windows/Linux. Введите там «Claude Code», чтобы увидеть команды расширения в палитре команд.
+
+Некоторые сочетания клавиш зависят от того, какая панель находится «в фокусе» (получает ввод с клавиатуры). Когда курсор находится в файле с кодом, в фокусе редактор. Когда курсор находится в поле ввода промпта Claude, в фокусе Claude. Используйте `Cmd+Esc` / `Ctrl+Esc` для переключения между ними.
+
+&gt; [!NOTE]
+&gt;
+&gt; Это команды VS Code для управления расширением. Не все встроенные команды Claude Code доступны в расширении. Подробнее см. в разделе [Расширение VS Code и Claude Code CLI](#vs-code-extension-vs-claude-code-cli).
+
+| Команда | Сочетание клавиш | Описание |
+| - | - | - |
+| Focus Input | `Cmd+Esc` (Mac) / `Ctrl+Esc` (Windows/Linux) | Переключить фокус между редактором и Claude |
+| Focus last message | - | Переместить фокус клавиатуры на самое новое сообщение в диалоге или на ожидающий запрос разрешения, чтобы читать оттуда с помощью клавиатуры или программы чтения с экрана. Недоступно в [режиме терминала](#switch-to-terminal-mode). Требуется Claude Code v2.1.268 или новее |
+| Open in Side Bar | - | Открыть Claude на боковой панели |
+| Open in Terminal | - | Открыть Claude в режиме терминала |
+| Open in New Tab | `Cmd+Shift+Esc` (Mac) / `Ctrl+Shift+Esc` (Windows/Linux) | Открыть новый диалог во вкладке редактора |
+| Open in New Window | - | Открыть новый диалог в отдельном окне |
+| New Conversation | `Cmd+N` (Mac) / `Ctrl+N` (Windows/Linux) | Начать новый диалог. Требуется, чтобы Claude был в фокусе, а `enableNewConversationShortcut` имел значение `true` |
+| Reopen Closed Session | `Cmd+Shift+T` (Mac) / `Ctrl+Shift+T` (Windows/Linux) | Повторно открыть последнюю закрытую вкладку сессии Claude. Если последняя закрытая вкладка не была сессией Claude, выполняется стандартное повторное открытие закрытого редактора VS Code. Отключается с помощью `enableReopenClosedSessionShortcut` |
+| Insert @-Mention Reference | `Option+K` (Mac) / `Alt+K` (Windows/Linux) | Вставить ссылку на текущий файл и выделение (требуется, чтобы редактор был в фокусе) |
+| Accept Change at Cursor | - | Принять изменение в позиции курсора при [просмотре предложенной правки](#get-started) по одному изменению за раз. Требуется Claude Code v2.1.275 или новее |
+| Reject Change at Cursor | - | Отменить изменение в позиции курсора при просмотре предложенной правки по одному изменению за раз. Требуется Claude Code v2.1.275 или новее |
+| Toggle Focus view | `Ctrl+Option+F` (Mac) / `Ctrl+Alt+F` (Windows/Linux) | Скрыть или показать активность инструментов в диалоге. Работает, когда видна панель или боковая панель Claude. В Windows/Linux, когда фокус находится в Debug Console или в списке с поиском, например в Explorer, `Ctrl+Alt+F` вместо этого открывает поиск VS Code. Переместите фокус в редактор или на панель Claude и нажмите сочетание ещё раз. Требуется Claude Code v2.1.221 или новее |
+| Rename Session Tab | - | Переименовать сессию в активной вкладке Claude. Требуется Claude Code v2.1.257 или новее |
+| Add Session Tab to Group | - | Добавить сессию из активной вкладки Claude в [группу сессий](#organize-sessions-into-groups), которую вы выберете или создадите. Требуется Claude Code v2.1.257 или новее |
+| Mark Session as Unread | - | Отметить сессию в активной вкладке Claude как непрочитанную в списке сессий. Требуется Claude Code v2.1.257 или новее |
+| `claude-vscode.toggleDictation` | `Cmd+D` (Mac) / `Ctrl+D` (Windows/Linux) | Начать или остановить [голосовую диктовку](https://code.claude.com/docs/ru/voice-dictation.md). Сочетание клавиш работает, только когда Claude в фокусе. Этой команды нет в палитре команд |
+| Show Logs | - | Просмотреть отладочные логи расширения |
+| Logout | - | Выйти из учётной записи Anthropic |
+
+### Запуск вкладки VS Code из других инструментов
+
+Расширение регистрирует обработчик URI по адресу `vscode://anthropic.claude-code/open`. Используйте его, чтобы открыть новую вкладку Claude Code из собственных инструментов: псевдонима оболочки, букмарклета браузера или любого скрипта, который может открыть URL. Если VS Code ещё не запущен, открытие URL сначала запустит его. Если VS Code уже запущен, URL откроется в том окне, которое сейчас находится в фокусе.
+
+Вызовите обработчик с помощью средства открытия URL вашей операционной системы.
+
+&gt; [tab] macOS
+&gt;
+&gt; ```bash theme={null}
+&gt; open &quot;vscode://anthropic.claude-code/open&quot;
+&gt; ```
+
+&gt; [tab] Linux
+&gt;
+&gt; ```bash theme={null}
+&gt; xdg-open &quot;vscode://anthropic.claude-code/open&quot;
+&gt; ```
+&gt;
+&gt; Команда `xdg-open` входит в пакет `xdg-utils`. Если оболочка сообщает, что команда не найдена, см. раздел [xdg-open не найден в Linux](https://code.claude.com/docs/ru/deep-links.md#xdg-open-is-not-found-on-linux).
+
+&gt; [tab] Windows
+&gt;
+&gt; В PowerShell:
+&gt;
+&gt; ```powershell theme={null}
+&gt; Start-Process &quot;vscode://anthropic.claude-code/open&quot;
+&gt; ```
+&gt;
+&gt; В `cmd.exe` команда `start` воспринимает первый аргумент в кавычках как заголовок окна, поэтому передайте пустой заголовок перед URL:
+&gt;
+&gt; ```cmd theme={null}
+&gt; start &quot;&quot; &quot;vscode://anthropic.claude-code/open&quot;
+&gt; ```
+
+Обработчик принимает два необязательных параметра запроса:
+
+| Параметр | Описание |
+| - | - |
+| `prompt` | Текст для предварительного заполнения поля ввода промпта. Должен быть закодирован для URL. Промпт подставляется, но не отправляется автоматически. |
+| `session` | ID сессии, которую нужно возобновить, из папки, открытой в VS Code. В Claude Code v2.1.300 или новее также возобновляется сессия из основного checkout или [worktree](https://code.claude.com/docs/ru/worktrees.md) репозитория этой папки. Если сессия не найдена, вместо неё начинается новый диалог. Если сессия уже открыта во вкладке, фокус переходит на эту вкладку. Чтобы получить ID сессии программно, см. раздел [Продолжение диалогов](https://code.claude.com/docs/ru/headless.md#continue-conversations). |
+
+Например, чтобы открыть вкладку с предварительно заполненным текстом «review my changes»:
+</code></pre>
+<p>vscode://anthropic.claude-code/open?prompt=review%20my%20changes</p>
+<pre><code>
+Расширение также обрабатывает `vscode://anthropic.claude-code/install-plugin`, который [открывает диалоговое окно плагинов для одного плагина](#share-a-plugin-install-link). Чтобы запустить сессию в терминале вместо вкладки VS Code, используйте обработчик `claude-cli://` из CLI. См. раздел [Запуск сессий по ссылкам](https://code.claude.com/docs/ru/deep-links.md).
+
+## Настройка параметров
+
+Расширение настраивается в настройках расширения VS Code и в файле настроек Claude Code:
+
+* **Настройки расширения** в VS Code: управляют поведением расширения внутри VS Code. Откройте их с помощью `Cmd+,` (Mac) или `Ctrl+,` (Windows/Linux), затем перейдите в **Extensions &gt; Claude Code**. Также можно ввести `/` и выбрать **General config…**, чтобы открыть настройки.
+* **Настройки Claude Code** в `~/.claude/settings.json`: общие для расширения и CLI. Используйте их для разрешённых команд, переменных окружения, хуков и MCP-серверов. В Claude Code v2.1.283 и более поздних версиях они также являются одним из факторов, определяющих режим разрешений, в котором начинаются диалоги, а в более ранних версиях — только в планах Pro, Max, Ultra и Team. Порядок приведён в разделе [Переключение режимов разрешений](https://code.claude.com/docs/ru/permission-modes.md#switch-permission-modes). Подробнее см. в разделе [Настройки](https://code.claude.com/docs/ru/settings.md).
+
+&gt; [!TIP]
+&gt;
+&gt; Добавьте `&quot;$schema&quot;: &quot;https://json.schemastore.org/claude-code-settings.json&quot;` в ваш `settings.json`, чтобы получить автодополнение и встроенную валидацию всех доступных настроек прямо в VS Code.
+
+### Настройки расширения
+
+VS Code считывает `initialPermissionMode` из ваших пользовательских настроек и игнорирует значения рабочей области. До v2.1.225 VS Code по умолчанию устанавливал для этой настройки значение `default` и применял значения рабочей области.
+
+| Настройка | По умолчанию | Описание |
+| - | - | - |
+| `useTerminal` | `false` | Запускать Claude в режиме терминала вместо графической панели |
+| `initialPermissionMode` | - | Управляет запросами подтверждения для новых диалогов: `default`, `plan`, `acceptEdits` или `bypassPermissions`. `manual` — псевдоним для `default`, он выбирает режим с меткой **Manual** в индикаторе режима. Если настройка не задана, расширение выбирает начальный режим разрешений так, как описано в разделе [Переключение режимов разрешений](https://code.claude.com/docs/ru/permission-modes.md#switch-permission-modes). |
+| `preferredLocation` | `panel` | Где открывается Claude: `sidebar` (справа) или `panel` (новая вкладка) |
+| `lockEditorGroups` | `true` | [Блокировать группы редактора, которые Claude создаёт для своих вкладок](#choose-where-claude-lives), чтобы файлы, открываемые, когда в фокусе вкладка Claude, попадали в другую группу. Если отключено, расширение никогда не блокирует группу редактора. Требуется Claude Code v2.1.274 или более поздней версии |
+| `autosave` | `true` | Автоматически сохранять файлы перед запуском инструментов Read, Edit и Write |
+| `attachOpenFile` | `true` | Добавлять файл, открытый в редакторе, к вашим сообщениям и показывать его в поле ввода промпта. Если отключено, файл добавляется только вместе с выделенным вами текстом. Требуется Claude Code v2.1.271 или более поздней версии |
+| `attachSelection` | `true` | Добавлять текст, выделенный в редакторе, к вашим сообщениям и показывать его в поле ввода промпта. Если отключено, вы по-прежнему можете [добавить выделение как @-упоминание](#automatic-context-from-your-selection-and-open-file). Требуется Claude Code v2.1.300 или более поздней версии |
+| `useCtrlEnterToSend` | `false` | Использовать Ctrl/Cmd+Enter вместо Enter для отправки промптов |
+| `scrollToBottomOnSend` | `true` | Прокручивать диалог вниз при отправке сообщения. Если отключено, диалог остаётся там, где вы его оставили. Требуется Claude Code v2.1.275 или более поздней версии |
+| `showMessageTimestamps` | `true` | Показывать, когда было отправлено каждое сообщение. Строка с датой отмечает место, где меняется день. Требуется Claude Code v2.1.284 или более поздней версии. До v2.1.290 значение по умолчанию было `false` |
+| `spinnerVerbs` | `{&quot;mode&quot;: &quot;append&quot;, &quot;verbs&quot;: []}` | Задаёт глаголы, которые поочерёдно отображает индикатор выполнения диалога во время хода, с теми же полями `mode` и `verbs`, что и в настройке CLI [`spinnerVerbs`](https://code.claude.com/docs/ru/settings-reference#spinnerverbs). |
+| `enableNewConversationShortcut` | `false` | Включить Cmd/Ctrl+N для начала нового диалога |
+| `enableReopenClosedSessionShortcut` | `true` | Использовать Cmd/Ctrl+Shift+T для повторного открытия последней закрытой вкладки сессии Claude. Если последняя закрытая вкладка не была сессией Claude, сочетание клавиш выполняет обычную команду VS Code для повторного открытия закрытого редактора. |
+| `archiveInactiveSessions` | `14` | [Автоматически архивировать сессию](#resume-past-conversations) после указанного количества дней без активности: `1`, `2`, `7` или `14`. Установите `0`, чтобы отключить. Требуется Claude Code v2.1.265 или более поздней версии |
+| `continueAfterReload` | `true` | После перезагрузки окна Claude [продолжает прерванный шаг](#continue-conversations-after-a-reload) в восстановленной сессии. Требуется Claude Code v2.1.274 или более поздней версии |
+| `hideOnboarding` | `false` | Скрыть контрольный список знакомства (значок выпускной шапочки) |
+| `focusView` | `false` | Скрывать вызовы инструментов, результаты инструментов и размышления за раскрываемыми строками, оставляя ваши промпты и ответы Claude. Последний список задач Claude остаётся видимым; для этого требуется Claude Code v2.1.225 или более поздней версии. Режим Focus view также можно переключать из меню команд. Требуется Claude Code v2.1.221 или более поздней версии |
+| `respectGitIgnore` | `true` | Исключать шаблоны .gitignore из поиска файлов и из [контекста выделения](#selected-text-from-excluded-or-ignored-files) |
+| `usePythonEnvironment` | `true` | Активировать окружение Python рабочей области при запуске Claude. Требуется расширение Python. |
+| `environmentVariables` | `[]` | Задать переменные окружения для процесса Claude. Для общей конфигурации используйте вместо этого настройки Claude Code. Запись [`CLAUDE_CONFIG_DIR`](https://code.claude.com/docs/ru/env-vars) применяется только в том случае, если её значение — абсолютный путь; расширение не раскрывает `~` и игнорирует относительное значение. |
+| `disableLoginPrompt` | `false` | Пропускать запросы аутентификации (для конфигураций со сторонними провайдерами) |
+| `allowDangerouslySkipPermissions` | `false` | Добавляет Bypass permissions в селектор режимов. Используйте только в песочницах без доступа к интернету. |
+| `claudeProcessWrapper` | - | Исполняемый файл, используемый для запуска процесса Claude. Путь к встроенному бинарному файлу передаётся как аргумент, если он присутствует. Укажите здесь отдельно установленный бинарный файл `claude`, если сборка расширения не содержит его для вашей платформы. |
+
+## Использование сторонних провайдеров
+
+По умолчанию Claude Code подключается напрямую к API Anthropic. Если ваша организация использует Amazon Bedrock, Google Cloud&#x27;s Agent Platform или Microsoft Foundry для доступа к Claude, настройте расширение на использование вашего провайдера:
+
+**1. Отключите промпт входа**
+
+Откройте [настройку Disable Login Prompt](vscode://settings/claudeCode.disableLoginPrompt) и установите флажок.
+
+Вы также можете нажать `Cmd+,` на Mac или `Ctrl+,` на Windows/Linux, чтобы открыть настройки VS Code, выполнить поиск по запросу &quot;Claude Code login&quot; и установить флажок **Disable Login Prompt**.
+
+**2. Настройте провайдера**
+
+Следуйте руководству по настройке для вашего провайдера:
+
+* [Claude Code в Amazon Bedrock](https://code.claude.com/docs/ru/amazon-bedrock.md)
+* [Claude Code в Google Cloud&#x27;s Agent Platform](https://code.claude.com/docs/ru/google-vertex-ai.md)
+* [Claude Code в Microsoft Foundry](https://code.claude.com/docs/ru/microsoft-foundry.md)
+
+В этих руководствах описана настройка провайдера в `~/.claude/settings.json`, что гарантирует общие настройки для расширения VS Code и CLI.
+
+При использовании стороннего провайдера расширение не предоставляет функции, для которых требуется учётная запись claude.ai, например шкалы использования плана, [голосовую диктовку](https://code.claude.com/docs/ru/voice-dictation.md) и вкладку Web для [облачных сессий](#resume-cloud-sessions-from-claude-ai). О том, что показывает диалог Account &amp; usage при таких способах входа, см. раздел [Проверка учётной записи и использования](#check-account-and-usage).
+
+Вход в claude.ai, оставшийся от предыдущего выполнения `/login`, не используется: расширение не отправляет его ни с одним запросом.
+
+## Использование программы чтения с экрана
+
+Панель чата расширения работает с программами чтения с экрана. Вам не нужно ничего включать: расширение озвучивает активность в диалоге для всех пользователей, без каких-либо визуальных изменений. Это не связано с [режимом чтения с экрана](https://code.claude.com/docs/ru/accessibility.md) в CLI, который включается вручную и адаптирует интерфейс терминала.
+
+Поддержка программ чтения с экрана в панели чата требует Claude Code v2.1.236 или новее.
+
+Во время диалога расширение озвучивает:
+
+* **Ответы Claude**: расширение озвучивает каждый ответ один раз, когда он завершён, и молчит, пока текст поступает потоком. Программа чтения с экрана зачитывает блоки кода в виде сводки с количеством строк, ссылки — по их подписи, а таблицы — ячейка за ячейкой; полный ответ остаётся доступным для чтения в транскрипте.
+* **Запросы разрешений и вопросы**: расширение озвучивает запрос, когда появляется запрос разрешения, называя инструмент, который Claude хочет использовать. Аналогичным образом оно сообщает, когда Claude задаёт вам вопрос и когда Claude завершает план и ждёт вашей проверки.
+* **Изменения статуса**: расширение сообщает, когда Claude начинает работу, когда Claude готов к вашему вводу и когда Claude Code начинает сжатие диалога. Если вы отправляете промпт, пока хуки [SessionStart](https://code.claude.com/docs/ru/hooks.md#sessionstart) сессии ещё выполняются, программа чтения с экрана также произносит «Running start-up hooks.»
+* **Сообщения в очереди**: когда вы отправляете сообщение, пока Claude работает, расширение озвучивает для этого сообщения «Message queued.».
+* **Ошибки и запросы, связанные с моделью**: расширение озвучивает ошибки в диалоге, а также сообщает о появлении [запроса согласия на использование кредитов использования](https://code.claude.com/docs/ru/model-config.md#fable-and-usage-credits) или [запроса для помеченного запроса](https://code.claude.com/docs/ru/model-config.md#ask-before-switching).
+
+Пока Claude работает, программа чтения с экрана зачитывает текстовую метку вместо анимации индикатора выполнения.
+
+Когда вы повторно открываете сессию или переключаетесь на другую, расширение ничего не озвучивает: восстановленная история, ожидающие запросы разрешений и статус выполнения остаются без озвучивания, пока не произойдёт что-то новое.
+
+### Использование панели чата с клавиатуры
+
+Каждый ход в транскрипте начинается с визуально скрытого заголовка, подписанного промптом, с которого начался этот ход. Используйте навигацию по заголовкам в вашей программе чтения с экрана, чтобы переходить между ходами.
+
+Внутри хода программа чтения с экрана по мере перемещения сообщает, чьё сообщение перед вами:
+
+* **Ваши сообщения**: «You»
+* **Сообщения Claude**: «Claude»
+* **Шаги инструментов**: «Claude» плюс название инструмента, например «Claude, Bash»
+* **Блоки размышлений**: «Claude, thinking»
+
+Поскольку расширение представляет транскрипт как помеченную область, вы также можете переместить фокус на сам транскрипт с помощью `Tab` и читать его в удобном вам темпе. Чтобы вместо этого переместить фокус на последнее сообщение или ожидающий запрос разрешения, выполните **Claude Code: Focus last message** из [палитры команд](#vs-code-commands-and-shortcuts).
+
+Когда вариант в запросе разрешения сохраняет правило разрешений или доступ к каталогу, его подпись заканчивается указанием места сохранения подтверждения, например «all projects» или «this session». Чтобы изменить место сохранения:
+
+* Установив фокус на этом варианте, нажмите клавишу со стрелкой `Left` или `Right`. Расширение озвучивает каждое место сохранения при переходе к нему. Клавиши со стрелками требуют Claude Code v2.1.268 или новее.
+* Щёлкните место сохранения в подписи.
+
+## Расширение VS Code и Claude Code CLI
+
+Claude Code доступен как в виде расширения VS Code (графическая панель), так и в виде CLI (интерфейс командной строки в терминале). Некоторые функции доступны только в CLI. Если вам нужна функция, доступная только в CLI, запустите `claude` во встроенном терминале VS Code. Для этого требуется [автономная установка CLI](https://code.claude.com/docs/ru/setup.md): расширение не добавляет `claude` в ваш PATH. См. раздел [Запуск CLI в VS Code](#run-cli-in-vs-code).
+
+| Функция | CLI | Расширение VS Code |
+| - | - | - |
+| Команды и скиллы | [Все](https://code.claude.com/docs/ru/commands.md) | Часть (введите `/`, чтобы увидеть доступные) |
+| Настройка MCP-серверов | Да | Да: [добавляйте серверы и управляйте ими](#connect-to-external-tools-with-mcp) с помощью `/mcp` в панели чата |
+| Чекпоинты | Да | Да |
+| Ярлык `!` для Bash | Да | Нет |
+| Автодополнение по Tab | Да | Нет |
+
+### Запуск CLI в VS Code
+
+Чтобы использовать CLI, не выходя из VS Code, нажмите `` Ctrl+` `` в Windows/Linux или `` Cmd+` `` на Mac, чтобы открыть встроенный терминал, а затем выполните `claude`.
+
+Чтобы получить такие функции, как просмотр diff и передача диагностики, подключите CLI к расширению из встроенного или внешнего терминала:
+
+* **Встроенный терминал**: [установите расширение](#install-the-extension), а затем запустите `claude`. CLI подключится автоматически. Claude Code v2.1.318 или новее не устанавливает расширение за вас, поэтому, пока вы его не установите, `/ide` сообщает &quot;No available IDEs detected&quot;, а `/status` показывает IDE как &quot;Not connected&quot;.
+* **Внешний терминал**: выполните `/ide` внутри Claude Code, чтобы подключиться к VS Code. Если VS Code запущен без расширения, `/ide` установит его, если только вы не отключили [`autoInstallIdeExtension`](https://code.claude.com/docs/ru/settings-reference#autoinstallideextension).
+
+Установка расширения не добавляет `claude` в PATH вашей оболочки. Расширение содержит собственную копию CLI для своей панели чата, но для ввода `claude` в терминале требуется [автономная установка CLI](https://code.claude.com/docs/ru/setup.md). Выполните установку один раз, и команды на этой странице, включая `claude mcp add` и `claude --resume`, будут работать в любом терминале. Если после установки `claude` по-прежнему не найден, [проверьте ваш PATH](https://code.claude.com/docs/ru/troubleshoot-install.md#verify-your-path).
+
+### Переключение между расширением и CLI
+
+Расширение и CLI используют общую историю диалогов. Чтобы продолжить диалог из расширения в CLI, выполните `claude --resume` в терминале. Откроется интерактивное окно выбора, в котором вы можете найти и выбрать нужный диалог.
+
+## Подключение к внешним инструментам с помощью MCP
+
+MCP-серверы (Model Context Protocol) предоставляют Claude доступ к внешним инструментам, базам данных и API.
+
+Чтобы управлять MCP-серверами, не выходя из VS Code, введите `/mcp` на панели чата. В открывшемся диалоговом окне вы можете:
+
+* Добавлять серверы
+* Удалять серверы, сохранённые в локальной, пользовательской или проектной [области действия](https://code.claude.com/docs/ru/mcp.md#mcp-installation-scopes)
+* Включать или отключать серверы
+* Переподключаться к серверу
+* Управлять аутентификацией OAuth
+
+Для добавления и удаления серверов в диалоговом окне требуется Claude Code v2.1.261 или более поздней версии.
+
+Вы также можете выполнить `claude mcp add` во встроенном терминале VS Code (`` Ctrl+` `` или `` Cmd+` ``). Диалоговое окно и команда терминала сохраняют данные в одну и ту же конфигурацию MCP, и изменения, внесённые любым из способов, вступают в силу в диалогах, которые вы начнёте после этого. В примере ниже добавляется удалённый MCP-сервер GitHub, который выполняет аутентификацию с помощью [персонального токена доступа](https://github.com/settings/personal-access-tokens), передаваемого в заголовке:
+</code></pre>
+<p>claude mcp add --transport http github https://api.githubcopilot.com/mcp/ \
+  --header &quot;Authorization: Bearer YOUR_GITHUB_PAT&quot;</p>
+<pre><code>
+Замените `YOUR_GITHUB_PAT` своим персональным токеном доступа. Команда `claude mcp add` сохраняет конфигурацию без проверки учётных данных, поэтому значение-заполнитель здесь будет принято, но позже сервер не сможет подключиться. Чтобы проверить подключение, начните новый диалог, введите `/mcp` и убедитесь, что у сервера отображается статус **Connected**. Для сервера с неверными учётными данными отображается **Failed**.
+
+После настройки попросите Claude использовать инструменты (например, «Review PR #456»).
+
+&gt; [!NOTE]
+&gt;
+&gt; Чтобы найти серверы для подключения, см. раздел [Поиск и создание MCP-серверов](https://code.claude.com/docs/ru/mcp.md#find-and-build-mcp-servers).
+
+## Встроенный MCP-сервер IDE
+
+Когда расширение активно, оно запускает локальный MCP-сервер, к которому CLI подключается автоматически. Через этот сервер CLI:
+
+* Открывает diff во встроенном средстве просмотра diff в VS Code
+* Считывает ваше текущее выделение для `@`-упоминаний
+* Просит VS Code выполнить ячейки, когда вы работаете в блокноте Jupyter
+
+Сервер называется `ide` и скрыт из `/mcp`, поскольку в нём нечего настраивать. Однако если ваша организация использует хук `PreToolUse` для ведения списка разрешённых инструментов MCP, вам нужно знать о его существовании.
+
+**Контекст выделения и открытого файла.** Пока CLI подключён, он включает ваше текущее выделение в редакторе и путь к активному файлу в качестве контекста в каждый отправляемый вами промпт. Когда это происходит, в транскрипте отображается строка `⧉ Selected N lines from &lt;file&gt;`. Следующие случаи изменяют этот контекст:
+
+* **[Настройка Attach Selection](#keep-your-selection-and-open-file-out-of-your-messages) отключена**: CLI не включает ваше выделение в качестве контекста.
+* **Настройка Attach Open File отключена**: CLI включает путь к активному файлу только тогда, когда также включает выделение.
+* **Сообщения в очереди**: если вы [ставите сообщение в очередь, пока Claude работает](https://code.claude.com/docs/ru/interactive-mode.md#queue-messages-while-claude-works), оно сохраняет выделение, которое было у вас в момент нажатия `Enter`, независимо от того, что вы выделите после этого.
+* **Конфиденциальные файлы**: чтобы исключить конфиденциальный файл, например `.env`, добавьте [запрещающее правило `Read`](https://code.claude.com/docs/ru/permissions#read-and-edit) для его пути. Соответствующее запрещающее правило не позволяет ни выделенному тексту, ни уведомлению об открытом файле для этого файла попасть к Claude.
+
+**Транспорт и аутентификация.** Сервер привязывается к `127.0.0.1` на случайном порту в диапазоне 10000–65535, и этот порт нельзя настроить. Транспорт и токен аутентификации работают следующим образом:
+
+* **Транспорт**: незашифрованный `ws://`. Поскольку сокет доступен только через loopback, любой процесс, способный перехватить трафик, может также прочитать токен из lock-файла, поэтому TLS не добавил бы защиты.
+* **Токен аутентификации**: при каждой активации расширение генерирует новый случайный токен аутентификации и записывает его в lock-файл `~/.claude/ide/&lt;port&gt;.lock`. Для подключения CLI должен предъявить токен в заголовке `X-Claude-Code-Ide-Authorization`.
+* **Права доступа к lock-файлу**: lock-файл имеет права доступа `0600` в каталоге с правами `0700`, поэтому прочитать его может только пользователь, запустивший VS Code. Если задана переменная `CLAUDE_CONFIG_DIR`, lock-файл вместо этого записывается в `$CLAUDE_CONFIG_DIR/ide/`.
+
+**Инструменты, доступные модели.** Сервер предоставляет около дюжины инструментов, но модели видны только два. Остальные — это внутренние RPC, которые CLI использует для собственного интерфейса, например для открытия diff, чтения выделения и сохранения файлов. Они отфильтровываются до того, как список инструментов попадает к Claude.
+
+| Имя инструмента (как его видят хуки) | Что он делает | Только для чтения |
+| - | - | - |
+| `mcp__ide__getDiagnostics` | Возвращает диагностику языкового сервера: ошибки и предупреждения из панели Problems в VS Code. При необходимости может ограничиваться одним файлом. | Да |
+| `mcp__ide__executeCode` | Выполняет код Python в ядре активного блокнота Jupyter. См. процесс подтверждения ниже. | Нет |
+
+**Диагностика в панели чата.** В панели чата при использовании Claude Code v2.1.285 или более поздней версии Claude считывает панель Problems в VS Code через отдельный встроенный сервер с именем `claude-vscode`. Claude может запросить у него текущие ошибки и предупреждения в одном файле или во всех файлах, для которых у VS Code есть диагностика.
+
+Хуки и правила разрешений видят инструмент диагностики панели чата как `mcp__claude-vscode__getDiagnostics`. Чтобы охватить диагностику и в CLI, и в панели чата, укажите в хуке или правиле оба имени: `mcp__ide__getDiagnostics` и `mcp__claude-vscode__getDiagnostics`.
+
+Этот пример `settings.json` запрещает оба инструмента:
+</code></pre>
+<p>{
+  &quot;permissions&quot;: {
+    &quot;deny&quot;: [
+      &quot;mcp__ide__getDiagnostics&quot;,
+      &quot;mcp__claude-vscode__getDiagnostics&quot;
+    ]
+  }
+}</p>
+<pre><code>
+Запрещающее правило `Read` не распространяется ни на один из этих инструментов, поэтому блокируйте их по имени с помощью [запрещающего правила](https://code.claude.com/docs/ru/permissions.md#mcp), как показано в примере.
+
+**Выполнение в Jupyter всегда требует подтверждения.** `mcp__ide__executeCode` не может ничего выполнить незаметно. Каждый вызов проходит следующие шаги:
+
+1. Код вставляется как новая ячейка в конец активного блокнота.
+2. VS Code прокручивает представление к этой ячейке.
+3. Встроенное окно Quick Pick предлагает выбрать **Execute** или **Cancel**.
+
+Отмена или закрытие окна выбора клавишей `Esc` возвращает Claude ошибку, и ничего не выполняется. Инструмент также сразу отказывает в выполнении, если нет активного блокнота, если не установлено расширение Jupyter (`ms-toolsai.jupyter`) или если ядро не Python.
+
+&gt; [!NOTE]
+&gt;
+&gt; Подтверждение через Quick Pick не связано с хуками `PreToolUse`. Запись в списке разрешённых для `mcp__ide__executeCode` позволяет Claude *предложить* выполнить ячейку; а *фактически* выполнить её позволяет именно Quick Pick внутри VS Code.
+
+## Устранение распространённых проблем
+
+Ошибкам входа, сети и запуска посвящены отдельные разделы на страницах устранения неполадок установки и справочника ошибок. Найдите в таблице то, что вы видите, и перейдите по ссылке.
+
+| Что вы видите | Куда перейти |
+| - | - |
+| `API Error: 403 Request not allowed` после входа | [403 Forbidden после входа](https://code.claude.com/docs/ru/troubleshoot-install.md#403-forbidden-after-login) |
+| Вас просят войти снова, хотя вы уже вошли | [Вход не выполнен или срок действия токена истёк](https://code.claude.com/docs/ru/troubleshoot-install.md#not-logged-in-or-token-expired) |
+| Учётные данные облачного провайдера работают в терминале, но не в расширении | [Учётные данные Bedrock, Agent Platform или Foundry не загружаются](https://code.claude.com/docs/ru/troubleshoot-install.md#bedrock-agent-platform-or-foundry-credentials-not-loading) |
+| `SSL certificate verification failed` или `Self-signed certificate detected` | [Ошибки SSL-сертификатов](https://code.claude.com/docs/ru/errors.md#ssl-certificate-errors) |
+| `Dictation error: WebSocket error:`, за которым следует ошибка сертификата, например `unable to get local issuer certificate`, или `Remote server is not connected` на вкладке Web | [Диктовка или вкладка Web не работают за прокси с TLS-инспекцией](#dictation-or-the-web-tab-fails-behind-a-tls-inspecting-proxy) |
+| `Claude Code process exited with code 1` или другой код | [Claude Code process exited with code N](https://code.claude.com/docs/ru/errors.md#claude-code-process-exited-with-code-n) |
+| `Claude Code did not finish starting` или `Subprocess initialization did not complete within 60000ms` | [Subprocess initialization did not complete within 60000ms](https://code.claude.com/docs/ru/errors.md#subprocess-initialization-did-not-complete-within-60000ms) |
+| `Could not locate the Claude CLI on PATH` | [Could not locate the Claude CLI on PATH](https://code.claude.com/docs/ru/errors.md#could-not-locate-the-claude-cli-on-path) |
+| `The connection to Claude Code ended before this message completed` | [The connection to Claude Code ended before this message completed](https://code.claude.com/docs/ru/errors.md#the-connection-to-claude-code-ended-before-this-message-completed) |
+| `The Claude Code program for this computer, the &lt;build&gt; build, could not be found` | [The Claude Code program for this computer could not be found](https://code.claude.com/docs/ru/errors.md#the-claude-code-program-for-this-computer-could-not-be-found) |
+| `claude` не найден во встроенном терминале VS Code | [Запуск CLI в VS Code](#run-cli-in-vs-code) |
+
+### Расширение не устанавливается
+
+* Убедитесь, что у вас совместимая версия VS Code (1.94.0 или новее)
+* Проверьте, что у VS Code есть разрешение на установку расширений
+* Попробуйте установить расширение напрямую из [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code)
+
+### Значок Spark не отображается
+
+Значок Spark появляется на **панели инструментов редактора** (в правом верхнем углу редактора), когда у вас открыт файл. Если вы его не видите:
+
+1. **Откройте файл**: для отображения значка должен быть открыт файл. Открытой папки недостаточно.
+2. **Проверьте версию VS Code**: требуется 1.94.0 или новее. Проверьте в разделе **Help &gt; About**
+3. **Перезапустите VS Code**: выполните «Developer: Reload Window» из палитры команд
+4. **Отключите конфликтующие расширения**: временно отключите другие AI-расширения (Cline, Continue и т. д.)
+5. **Проверьте доверие к рабочей области**: расширение не работает в ограниченном режиме (Restricted Mode)
+
+Кроме того, можно нажать **✻ Claude Code** в **строке состояния** в правом нижнем углу окна. Это работает даже без открытого файла. Также можно открыть **палитру команд** (`Cmd+Shift+P` / `Ctrl+Shift+P`) и ввести «Claude Code».
+
+### Cmd+Esc ничего не делает в macOS
+
+В macOS Tahoe и новее системное сочетание клавиш Game Overlay по умолчанию назначено на `Cmd+Esc` и перехватывает нажатие до того, как оно дойдёт до VS Code. Чтобы освободить это сочетание клавиш:
+
+1. Откройте System Settings
+2. Перейдите в Keyboard, затем Keyboard Shortcuts, затем Game Controllers
+3. Снимите флажок Game Overlay
+
+Либо назначьте расширению другое сочетание клавиш: откройте в VS Code [редактор сочетаний клавиш](https://code.visualstudio.com/docs/configure/keybindings) (`Cmd+K Cmd+S`), найдите `Claude Code: Focus input` и назначьте новое сочетание.
+
+### Ctrl+J добавляет новую строку в поле ввода промпта
+
+Чтобы `Ctrl+J` перестало добавлять новую строку в поле ввода промпта, [отмените привязку клавиши](https://code.claude.com/docs/ru/keybindings.md#unbind-default-shortcuts) в файле `keybindings.json` Claude Code. Расширение читает этот файл начиная с версии 2.1.309, поэтому сначала обновите устаревшее расширение в представлении Extensions.
+
+Этот пример — весь файл с единственной записью, которая отменяет привязку клавиши: `&quot;ctrl+j&quot;: null` в блоке `Chat`:
+</code></pre>
+<p>{
+  &quot;bindings&quot;: [
+    {
+      &quot;context&quot;: &quot;Chat&quot;,
+      &quot;bindings&quot;: {
+        &quot;ctrl+j&quot;: null
+      }
+    }
+  ]
+}</p>
+<pre><code>
+Файл находится в каталоге конфигурации Claude Code, которым является `~/.claude`, если вы не перенесли его с помощью `CLAUDE_CONFIG_DIR`. Посмотрите в этот каталог и выполните шаг, соответствующий тому, что вы найдёте:
+
+* **Файла `keybindings.json` ещё нет**: создайте его точно с содержимым из примера
+* **Есть `keybindings.json` без блока `Chat`**: добавьте блок `Chat` из примера в массив `bindings` верхнего уровня, в любую позицию
+* **Есть блок `Chat` без строки `&quot;ctrl+j&quot;`**: добавьте `&quot;ctrl+j&quot;: null` в `bindings` этого блока
+* **Есть блок `Chat`, в котором уже есть строка `&quot;ctrl+j&quot;`**: измените значение этой строки на `null`
+
+После сохранения файла нажатие `Ctrl+J` в поле ввода промпта не добавляет новую строку.
+
+Если `Ctrl+J` всё ещё добавляет строку в поле ввода промпта, выполните по порядку эти две команды из палитры команд:
+
+1. **Developer: Reload Window**, затем снова нажмите `Ctrl+J` в поле ввода промпта
+2. **Claude Code: Show Logs**, затем найдите предупреждение, содержащее `Ctrl+J in the chat input still inserts a newline`. Исправьте указанную в нём проблему в названном в нём файле, сохраните файл и снова нажмите `Ctrl+J`.
+
+Если в логе нет такого предупреждения, проверьте, что файл находится в каталоге конфигурации Claude Code и что его блок `Chat` задаёт для `&quot;ctrl+j&quot;` значение `null`. [Сообщите о проблеме](https://github.com/anthropics/claude-code/issues), если `Ctrl+J` всё ещё добавляет строку.
+
+### Панель Claude Code пуста или не удалось её загрузить
+
+Если панель Claude Code открывается, но ничего не показывает, даже поле ввода промпта, обновите расширение до v2.1.309 или новее в представлении Extensions. Затем выполните **Developer: Reload Window** из палитры команд. Если после этого вы увидите уведомление `Claude Code couldn’t load`, выполните по порядку перечисленные в нём шаги.
+
+Если панель по-прежнему не загружается, откройте лог расширения и [сообщите о проблеме](https://github.com/anthropics/claude-code/issues), приложив его копию:
+
+* **Панель всё ещё пуста на v2.1.309 или новее**: откройте лог с помощью **Claude Code: Show Logs** из палитры команд
+* **Шаги из уведомления не помогли**: нажмите **Show logs** в уведомлении, чтобы открыть лог
+
+### Возобновлённый диалог сначала пуст
+
+Когда вы [возобновляете прошлый диалог](#resume-past-conversations) или диалог [восстанавливается после перезагрузки](#continue-conversations-after-a-reload), его сообщения могут оставаться пустыми, пока запускается процесс Claude Code для этого диалога. Примерно через секунду на пустом месте появляется `Waiting for your plugins…`.
+
+Ничего делать не нужно. Сообщения появятся, как только процесс запустится и подтвердит, что ни одному плагину не нужно предварительно их проверить, либо через 20 секунд, если запуск занимает больше времени.
+
+### Панель перестаёт отвечать каждый раз, когда перезагрузка заново открывает диалог
+
+Если вся панель аварийно завершает работу, зависает или показывает только `Something went wrong` каждый раз, когда вы перезагружаете окно и ваш диалог восстанавливается, обновите расширение до v2.1.301 или новее. Затем снова перезагрузите окно или перезапустите VS Code. После того как диалогу дважды подряд не удастся полностью открыться, вместо него вы получите новый чат с уведомлением о том, что [он не был открыт заново](#a-conversation-was-not-reopened).
+
+### Формула отображается как исходный LaTeX
+
+Если никакие математические выражения в ответах Claude не отображаются в наборе, проверьте версию расширения в представлении Extensions, поскольку [отображение математики](#latex-math-in-responses) требует версии 2.1.301 или новее. Если вы используете [режим терминала](#switch-to-terminal-mode), который не отображает математику независимо от версии, снимите флажок [настройки Use Terminal](vscode://settings/claudeCode.useTerminal), чтобы Claude Code открывался в панели чата.
+
+Если одна формула отображается в исходном виде, а соседние — в наборе, проверьте её на следующие причины:
+
+* **Формула встроенная, и панель не считает её математикой**: попросите Claude отправить её ещё раз в виде блока `$$` на отдельных строках. Панель оставляет встроенную формулу в исходном виде, если текст между её разделителями `$…$`:
+  * Сложнее простой арифметики, но не содержит символа вроде `=`, `+` или `^`, который помечал бы его как математику, например `$O(n log n)$`
+  * Начинается с цифры и не содержит такого символа, например `$30$` и `$1/N$`
+  * Содержит пробелы внутри знаков доллара, например `$ x^2 $`
+  * Длиннее 60 символов
+  * Разбит на две строки. Формула `\(…\)`, разбитая на две строки, тоже не отображается в наборе.
+* **В формуле синтаксическая ошибка TeX**: попросите Claude переписать её с исправленной ошибкой.
+* **Формула определяет макрос**: формула с определением макроса, например `\newcommand` или `\def`, отображается в исходном виде. Попросите Claude переписать её без макроса.
+* **Формула содержит неэкранированный `%`**: попросите Claude переписать её с `\%` для знака процента.
+* **Формула слишком большая**: формула длиннее 8 192 символов или формула, которая при отрисовке получилась бы намного больше своего исходного текста TeX, отображается в исходном виде. Попросите Claude разбить её на формулы поменьше или записать компактнее.
+* **Формула следует за большим объёмом математики**: в пределах одного текстового блока ответа панель отображает формулы в наборе по порядку до определённого предела. Последующая формула, которая превысила бы этот предел, отображается в исходном виде. Попросите Claude отправить нужную вам формулу ещё раз отдельно.
+
+### Диктовка или вкладка Web не работают за прокси с TLS-инспекцией
+
+Если диктовка или вкладка Web завершаются с ошибкой сертификата, например `unable to get local issuer certificate`, задайте [`NODE_EXTRA_CA_CERTS`](https://code.claude.com/docs/ru/network-config#custom-ca-certificates) в блоке `env` файла `~/.claude/settings.json`. Укажите в ней путь к PEM-файлу с корневым CA-сертификатом вашего прокси, который может предоставить ваша IT-команда. Сбой отображается на кнопке микрофона или вкладке Web либо в логах:
+
+* **Диктовка**: кнопка микрофона показывает текст ошибки после `Dictation error: WebSocket error:`.
+* **Вкладка Web**: вкладка со списком [облачных сессий](#resume-cloud-sessions-from-claude-ai) показывает `Remote server is not connected` без текста ошибки. Чтобы прочитать его в логах:
+  1. Выполните **Claude Code: Show Logs** из [палитры команд](#vs-code-commands-and-shortcuts), чтобы открыть канал вывода `Claude VSCode`.
+  2. Нажмите **Reconnect** на вкладке и подождите, пока она перестанет показывать `Connecting…`.
+  3. Найдите в канале `Error fetching remote sessions:` или `Failed to fetch organization UUID:`, затем прочитайте текст ошибки после этого префикса в самой новой подходящей строке.
+* **Предупреждение в логе**: предупреждение, в котором упоминается `an authority that Claude Code does not trust`, сообщает об ошибке сертификата. За прокси с TLS-инспекцией задайте `NODE_EXTRA_CA_CERTS` в `env` в `~/.claude/settings.json`. Версии до v2.1.309 не записывают это предупреждение в лог.
+
+Для этого исправления требуется расширение версии 2.1.307 или новее, поэтому сначала обновите расширение. Затем задайте в `NODE_EXTRA_CA_CERTS` полный путь к файлу сертификата без `~`. Для пути Windows в `settings.json` пишите каждую обратную косую черту дважды, например `C:\\certs\\example-ca.pem`.
+
+&gt; [!NOTE]
+&gt;
+&gt; В окне, подключённом к WSL, SSH-хосту, dev-контейнеру или другой системе, сохраните файл сертификата и отредактируйте `~/.claude/settings.json` в этой системе, а не на вашем локальном компьютере.
+
+В этом примере указан файл сертификата по пути Linux или macOS `/etc/ssl/certs/example-ca.pem`:
+</code></pre>
+<p>{
+  &quot;env&quot;: {
+    &quot;NODE_EXTRA_CA_CERTS&quot;: &quot;/etc/ssl/certs/example-ca.pem&quot;
+  }
+}</p>
+<pre><code>
+Сохраните `settings.json`, затем начните запись или снова нажмите **Reconnect**. Если ошибка возвращается, откройте канал вывода с помощью **Claude Code: Show Logs** и найдите в нём `use the CA certificates file`. Такое предупреждение сообщает причину, по которой расширение не может использовать ваш файл, и указывает, откуда был прочитан путь. Затем найдите в этой таблице каждое место, где вы задали `NODE_EXTRA_CA_CERTS`, и выполните указанное в соответствующей строке:
+
+| Где вы её задали | Что сделать |
+| - | - |
+| Окружение, с которым был запущен VS Code | Заданное здесь значение имеет приоритет над значением в `~/.claude/settings.json`, даже если указанный в нём файл нельзя использовать. Исправьте или удалите его, затем перезапустите VS Code |
+| `env` в `~/.claude/settings.json` | Исправьте значение или указанный в нём файл, затем начните запись или снова нажмите **Reconnect** |
+| Настройка VS Code [`claudeCode.environmentVariables`](#extension-settings), `~/.claude.json`, файл проекта `.claude/settings.json` или `.claude/settings.local.json` либо управляемые настройки | Заданное здесь значение не применяется к диктовке и вкладке Web. Задайте переменную также в `env` в `~/.claude/settings.json` |
+
+### Claude Code не отвечает
+
+Если Claude Code не отвечает на ваши промпты:
+
+1. **Проверьте подключение к интернету**: убедитесь, что у вас стабильное подключение к интернету
+2. **Начните новый диалог**: попробуйте начать новый диалог, чтобы проверить, сохраняется ли проблема
+3. **Попробуйте CLI**: запустите `claude` в терминале, чтобы увидеть более подробные сообщения об ошибках
+
+Если проблемы не исчезают, [создайте issue на GitHub](https://github.com/anthropics/claude-code/issues) с подробным описанием ошибки.
+
+## Удаление расширения
+
+Чтобы удалить расширение Claude Code:
+
+1. Нажмите `Cmd+Shift+X` на Mac или `Ctrl+Shift+X` на Windows/Linux, чтобы открыть представление Extensions
+2. Найдите «Claude Code»
+3. Нажмите **Uninstall**
+
+Если после удаления вы выполните любое из следующих действий, расширение вернётся:
+
+* Запуск `/ide` во внешнем терминале, пока запущен VS Code
+* Запуск `claude` во встроенном терминале в версии Claude Code ниже v2.1.318
+
+Чтобы расширение не возвращалось, выполните одно из следующих действий, а затем снова удалите его, если оно уже вернулось:
+
+* Задайте для [`autoInstallIdeExtension`](https://code.claude.com/docs/ru/settings-reference#autoinstallideextension) значение `false` в `~/.claude.json`
+* Задайте для [`CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL`](https://code.claude.com/docs/ru/env-vars#variables) значение `1` в разделе `env` [файла настроек](https://code.claude.com/docs/ru/env-vars.md#in-settings-files)
+* Во встроенном терминале отключите **Auto-install IDE extension** в `/config`
+
+Чтобы также удалить данные расширения и сбросить все настройки, удалите каталог хранилища расширения для вашей платформы.
+
+В macOS:
+</code></pre>
+<p>rm -rf ~/Library/&quot;Application Support&quot;/Code/User/globalStorage/anthropic.claude-code</p>
+<pre><code>
+В Linux:
+</code></pre>
+<p>rm -rf ~/.config/Code/User/globalStorage/anthropic.claude-code</p>
+<pre><code>
+В Windows, в PowerShell:
+</code></pre>
+<p>Remove-Item -Recurse -Force &quot;$env:APPDATA\Code\User\globalStorage\anthropic.claude-code&quot;</p>
+<pre><code>
+Дополнительную помощь см. в [руководстве по устранению неполадок](https://code.claude.com/docs/ru/troubleshooting.md).
+
+## Дальнейшие шаги
+
+Теперь, когда вы настроили Claude Code в VS Code:
+
+* [Изучите распространённые рабочие процессы](https://code.claude.com/docs/ru/common-workflows.md), чтобы получить максимум от Claude Code
+* [Настройте MCP-серверы](https://code.claude.com/docs/ru/mcp.md), чтобы расширить возможности Claude с помощью внешних инструментов. Добавляйте их и управляйте ими с помощью `/mcp` в панели чата.
+* [Настройте параметры Claude Code](https://code.claude.com/docs/ru/settings.md), чтобы настроить разрешённые команды, хуки и многое другое. Эти настройки являются общими для расширения и CLI.
+* [Ознакомьтесь с мерами безопасности](https://code.claude.com/docs/ru/security.md) и [использованием данных](https://code.claude.com/docs/ru/data-usage.md) в Claude Code
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

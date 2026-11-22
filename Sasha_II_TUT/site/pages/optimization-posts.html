@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ru" data-book-src="../book.html">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Глава 6I — Claude Code для инженера</title>
+<meta name="description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
+<link rel="canonical" href="https://sadovnikovv.github.io/pages/">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:site_name" content="Claude Code для инженера">
+<meta property="og:title" content="Глава 6I — Claude Code для инженера">
+<meta property="og:description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
+<meta property="og:url" content="https://sadovnikovv.github.io/pages/">
+<meta property="og:image" content="https://sadovnikovv.github.io/assets/favicon.svg">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="../assets/fonts/serif-regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/sans-regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="alternate" type="text/html" href="../book.html#optimization-posts">
+<meta name="page-index" content="16">
+</head>
+<body>
+<a class="skip-link" href="#book">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../index.html">Claude Code для инженера</a></strong>
+    <a href="../materials/index.html">Материалы</a>
+    <a href="../about.html">О книге</a>
+    <a href="../download/Книга-Claude-Code.epub" download>EPUB</a>
+  </div>
+</header>
+<div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+<main class="wrap" id="book">
+<section class="chapter"><h2 id="optimization-posts"><span class="chapter">Глава 6I</span>Оптимизация: что пишут на Хабре и Пикабу</h2>
+
+<p class="lead-in">Ниже — не пересказ всех статей, а отобранные материалы с практической пользой. Ссылки ведут на первоисточники; краткие выводы сформулированы для инженерной работы.</p>
+
+<h3>6I.1. Хабр: экономия токенов и контекст</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Материал</th><th>Практический вывод</th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://habr.com/ru/articles/1045186/">Паттерн экономии токенов в Claude Code на правке файлов</a></td><td>Просите diff и диапазоны строк, а не полный файл; не перечитывайте неизменённое.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/1054410/">Почему один символ убивает prompt caching</a></td><td>Стабильный префикс — в начало, изменчивое — в хвост; не меняйте системную инструкцию без нужды.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/934244/">Анатомия памяти LLM: инженерия контекста</a></td><td>Контекст — управляемый ресурс: отбирайте, сжимайте, структурируйте.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/955688/">Как Senior управляют контекстным окном LLM</a></td><td>Разделяйте задачи, сохраняйте состояние, не тащите всю историю.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/1030964/">Сепаратор для логов: сжимаем логи для контекста</a></td><td>Перед подачей логов выделяйте аномалии и окрестности, а не мегабайты текста.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/1065304/">Большие модели и цена миллиона токенов</a></td><td>Считайте стоимость на свою задачу, а не на прайс-лист.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/972184/">LatentMAS: экономия до 80% токенов</a></td><td>Исследовательский результат; проверяйте воспроизводимость, не принимайте как универсальный рецепт.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>6I.2. Хабр: «Caveman» и хайп вокруг экономии</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Материал</th><th>Вывод</th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://habr.com/ru/articles/1056848/">JetBrains протестировали Caveman: 65% превратились в 8,5%</a></td><td>Обещания экономии в соцсетях обычно завышены; проверяйте на своих данных.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/1048328/">Работает ли Caveman? Тестируем скилл</a></td><td>Сокращение стиля даёт скромный эффект; основной расход — контекст и reasoning.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/1054188/">Компании внедряют «пещерный» стиль речи</a></td><td>Тренд, а не инженерное решение; оценивайте качество и цену вместе.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/1043774/">rtk + context-mode: стоит ли нахлобучивать прокси-экономию</a></td><td>Промежуточные прокси могут помочь, но добавляют сложность и точки отказа.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>6I.3. Хабр: локальные модели и инференс</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Материал</th><th>Вывод</th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://habr.com/ru/articles/1035862/">Калькулятор VRAM для локальных LLM</a></td><td>Считайте не только веса, но и KV-кэш, активации, накладные расходы.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/946900/">Локальные LLM: обзор и тестирование</a></td><td>Сравнивайте на своих задачах; «лучшая» модель зависит от размера и кванта.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/1083490/">Как выбирал локальную модель для кодинга на 16 ГБ VRAM</a></td><td>Практика выбора: несколько моделей, замеры, смена победителя.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/1056192/">Всё о локальных LLM, но боялись заинференсить</a></td><td>Скорость генерации не гарантирует качество поиска в длинном контексте.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/957748/">Внутри vLLM: анатомия высокопроизводительного инференса</a></td><td>PagedAttention, батчинг и управление памятью — ключ к пропускной способности.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/871704/">Алгоритмы спекулятивного инференса</a></td><td>Маленькая модель предлагает, большая проверяет — ускорение без потери качества.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>6I.4. Хабр: RAG и промпты</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Материал</th><th>Вывод</th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://habr.com/ru/articles/931396/">RAG: глубокий технический обзор</a></td><td>RAG — это поиск + генерация; качество зависит от retrieval и chunking.</td></tr>
+    <tr><td><a href="https://habr.com/ru/companies/speshu_ai/articles/1093732/">Ошибки RAG: 6 причин и диагностика retrieval</a></td><td>Сначала проверяйте, находит ли система нужный фрагмент, потом вините модель.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/901426/">Руководство Google по промпт-инжинирингу. Часть 1</a></td><td>База: ясность, контекст, формат, примеры.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/902230/">Промпт-инжиниринг на основе здравого смысла</a></td><td>Понимание модели важнее заклинаний.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/958374/">Промпт-инжиниринг мёртв?</a></td><td>Акцент смещается к контексту, инструментам и оценке качества.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/1023316/">Что такое Harness? Разбор на примере Claude Code</a></td><td>Обвязка вокруг модели (инструменты, память, проверки) часто важнее выбора модели.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>6I.5. Хабр: агенты и Claude Code</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Материал</th><th>Вывод</th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://habr.com/ru/articles/1012184/">Год назад Claude Code не умел план. Сейчас — миллион токенов и субагенты</a></td><td>Возможности быстро растут; проверяйте актуальность своих привычек.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/1105662/">Как перестать пересказывать агенту проект каждое утро</a></td><td>Файлы памяти и состояние проекта экономят время и токены.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/1021098/">research-docs: анализ документов с цитатами</a></td><td>Требуйте цитаты и ссылки на страницы — это снижает галлюцинации.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/1105224/">Потратил $956 на ИИ-подписки: на что пересесть</a></td><td>Сравнение цены и качества; не платите за неиспользуемые лимиты.</td></tr>
+    <tr><td><a href="https://habr.com/ru/articles/1068632/">AI-контур на VPS: OmniRoute, LiteLLM, без VPN</a></td><td>Практическая схема шлюза и маршрутизации.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>6I.6. Пикабу: опыт пользователей</h3>
+
+<p>Пикабу — не техническая документация, а пользовательский опыт. Полезно для понимания бытовых проблем, но проверяйте факты. Поиск по сайту без авторизации отдаёт общую ленту, поэтому использованы тематические теги.</p>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Пост</th><th>О чём</th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://pikabu.ru/story/kak_v_moskve_ispolzovat_claude_code_14519107">Как в Москве использовать Claude Code?</a></td><td>Вопросы доступа и работы через посредников; читать с осторожностью.</td></tr>
+    <tr><td><a href="https://pikabu.ru/story/claude_fable_52__chto_novogo_luchshe_li_ona_drugikh_versiy_i_kak_polzovatsya_v_rossii_14515126">Claude Fable 5.2: что нового и как пользоваться в России</a></td><td>Обзор возможностей и доступа; рекламные ссылки игнорировать.</td></tr>
+    <tr><td><a href="https://pikabu.ru/story/pomogite_nastroit_claude_14535013">Помогите настроить Claude</a></td><td>Типичные трудности новичка.</td></tr>
+    <tr><td><a href="https://pikabu.ru/story/moyo_otnoshenie_k_neyrosetyam_14539797">Моё отношение к нейросетям</a></td><td>Личный взгляд; полезен как «мнение», не как источник фактов.</td></tr>
+    <tr><td><a href="https://pikabu.ru/story/48_let_derevnya_pod_barnaulom_reshil_stat_programmistom_14534631">48 лет, деревня под Барнаулом, решил стать программистом</a></td><td>Мотивационный опыт переобучения; не техническое руководство.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>6I.7. Сводный чек-лист оптимизации</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Область</th><th>Действие</th><th>Ожидаемый эффект</th></tr></thead>
+  <tbody>
+    <tr><td>Контекст</td><td>Конкретные файлы, diff, диапазоны строк</td><td>Меньше входных токенов и шума</td></tr>
+    <tr><td>Кэш</td><td>Стабильный префикс, изменчивое в хвост</td><td>Дешевле и быстрее повторные запросы</td></tr>
+    <tr><td>История</td><td><code>/clear</code>, <code>/compact</code>, файл состояния</td><td>Контроль над переполнением</td></tr>
+    <tr><td>Модель</td><td>flash-none для рутины, high/max для сложного</td><td>Баланс цены и качества</td></tr>
+    <tr><td>Инструменты</td><td>grep до чтения, обрезка логов</td><td>Меньше лишнего текста</td></tr>
+    <tr><td>Архитектура</td><td>Субагенты, RAG, локальный препроцессинг</td><td>Изоляция и точность</td></tr>
+    <tr><td>Измерения</td><td><code>/cost</code>, <code>/context</code>, панель OmniRoute</td><td>Понимание, что реально экономит</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============================================================ -->
+
+</section>
+</main>
+<footer class="site-footer">
+  <nav class="chapter-nav" aria-label="Навигация по главам">
+    <span><a data-rel="prev" href="../pages/agents-ecosystem.html">← Глава 6H</a></span>
+    <a data-rel="toc" href="../index.html">Оглавление</a>
+    <span><a data-rel="next" href="../pages/faq.html">Глава 6J →</a></span>
+  </nav>
+  <p>Источник — <a href="../book.html">книга одним файлом</a>,
+  <a href="../download/Книга-Claude-Code.epub">EPUB</a>.</p>
+</footer>
+<script type="application/json" id="page-list">[{"title":"Глава 0 История этой книги","short":"Глава 0","url":"pages/history.html"},{"title":"Глава 1 Как читать эту книгу","short":"Глава 1","url":"pages/how-to-read.html"},{"title":"Глава 2 Ваш стенд: Claude Code → OmniRoute → DeepSeek","short":"Глава 2","url":"pages/stand.html"},{"title":"Глава 3 Что такое ИИ","short":"Глава 3","url":"pages/what-is-ai.html"},{"title":"Глава 4 Как работает языковая модель","short":"Глава 4","url":"pages/how-llm-works.html"},{"title":"Глава 5 Промпт как техническое задание","short":"Глава 5","url":"pages/prompt.html"},{"title":"Глава 6 Что такое агент","short":"Глава 6","url":"pages/agent.html"},{"title":"Глава 6A История нейронных сетей","short":"Глава 6A","url":"pages/history-nn.html"},{"title":"Глава 6B Анатомия трансформера","short":"Глава 6B","url":"pages/transformer-anatomy.html"},{"title":"Глава 6C Веса, биты и точность","short":"Глава 6C","url":"pages/weights-bits.html"},{"title":"Глава 6D Ландшафт моделей 2026","short":"Глава 6D","url":"pages/model-landscape.html"},{"title":"Глава 6E Локальные модели","short":"Глава 6E","url":"pages/local-models.html"},{"title":"Глава 6F Токены, контекст и сжатие","short":"Глава 6F","url":"pages/tokens-compression.html"},{"title":"Глава 6G Железо и вычислительность","short":"Глава 6G","url":"pages/hardware.html"},{"title":"Глава 6H Агенты и их экосистема","short":"Глава 6H","url":"pages/agents-ecosystem.html"},{"title":"Глава 6I Оптимизация: что пишут на Хабре и Пикабу","short":"Глава 6I","url":"pages/optimization-posts.html"},{"title":"Глава 6J Вопросы и ответы","short":"Глава 6J","url":"pages/faq.html"},{"title":"Глава 6K (не публикуется)","short":"Глава 6K (не публикуется)","url":"pages/deepseek-billing.html"},{"title":"Глава 7 Установка и первый запуск","short":"Глава 7","url":"pages/install.html"},{"title":"Глава 7A (не публикуется)","short":"Глава 7A (не публикуется)","url":"pages/migration.html"},{"title":"Глава 7B (не публикуется)","short":"Глава 7B (не публикуется)","url":"pages/new-pc.html"},{"title":"Глава 8 Интерфейс и команды","short":"Глава 8","url":"pages/interface.html"},{"title":"Глава 9 Память и CLAUDE.md","short":"Глава 9","url":"pages/memory.html"},{"title":"Глава 9A Память, обучение и превращение в скилл","short":"Глава 9A","url":"pages/memory-training.html"},{"title":"Глава 10 Разрешения и безопасность","short":"Глава 10","url":"pages/permissions.html"},{"title":"Глава 11 Контекст, стоимость, сессии","short":"Глава 11","url":"pages/context-cost.html"},{"title":"Глава 12 Расширения: skills, субагенты, hooks, MCP","short":"Глава 12","url":"pages/extensions.html"},{"title":"Глава 13 Принцип интеграции","short":"Глава 13","url":"pages/integration-principle.html"},{"title":"Глава 14 Схемотехника и симуляция","short":"Глава 14","url":"pages/circuit.html"},{"title":"Глава 15 EDA и трассировка плат","short":"Глава 15","url":"pages/pcb.html"},{"title":"Глава 16 Микроконтроллеры","short":"Глава 16","url":"pages/mcu.html"},{"title":"Глава 17 Отладка и измерения","short":"Глава 17","url":"pages/debug.html"},{"title":"Глава 18 Машиностроение и CAD","short":"Глава 18","url":"pages/cad.html"},{"title":"Глава 19 Документация и traceability","short":"Глава 19","url":"pages/docs.html"},{"title":"Глава 20 Карта связок","short":"Глава 20","url":"pages/integration-map.html"},{"title":"Глава 21 Десять заданий","short":"Глава 21","url":"pages/labs.html"},{"title":"Глава 22 Итоговый проект: термостат лабораторной печи","short":"Глава 22","url":"pages/capstone.html"},{"title":"Глава 23 Как проверять ИИ","short":"Глава 23","url":"pages/verify.html"},{"title":"Глава 24 Команды и флаги","short":"Глава 24","url":"pages/commands.html"},{"title":"Глава 25 Переменные, файлы, настройки","short":"Глава 25","url":"pages/files-settings.html"},{"title":"Глава 26 Шаблоны промптов","short":"Глава 26","url":"pages/prompt-templates.html"},{"title":"Глава 27 Диагностика","short":"Глава 27","url":"pages/troubleshooting.html"},{"title":"Глава 28 Файлы и папки","short":"Глава 28","url":"pages/library.html"},{"title":"Глава 29 Литература","short":"Глава 29","url":"pages/literature.html"},{"title":"Глава 29A Открытая хрестоматия","short":"Глава 29A","url":"pages/open-books.html"},{"title":"Глава 30 План на восемь недель","short":"Глава 30","url":"pages/plan.html"},{"title":"Глава 31 Словарь","short":"Глава 31","url":"pages/glossary.html"},{"title":"Глава 32 Источники","short":"Глава 32","url":"pages/sources.html"}]</script>
+<script src="../assets/app.js" defer></script>
+</body>
+</html>

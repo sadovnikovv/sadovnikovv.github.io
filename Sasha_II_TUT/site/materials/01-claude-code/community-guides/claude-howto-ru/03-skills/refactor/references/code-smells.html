@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Code Smells Catalog</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../../../materials/index.html">Материалы</a> / <a href="../../../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/03-skills/index.html">03-skills</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/03-skills/refactor/index.html">refactor</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/03-skills/refactor/references/index.html">references</a></nav>
+<h1 id="code-smells-catalog">Code Smells Catalog <a class="h-anchor" href="#code-smells-catalog" aria-label="Ссылка на раздел">#</a></h1>
+<p>A comprehensive reference of code smells based on Martin Fowler&#x27;s <em>Refactoring</em> (2nd Edition). Code smells are symptoms of deeper problems—they indicate that something might be wrong with your code&#x27;s design.</p>
+<blockquote>
+<p>&quot;A code smell is a surface indication that usually corresponds to a deeper problem in the system.&quot; — Martin Fowler</p>
+</blockquote>
+<hr>
+<h3 id="bloaters">Bloaters <a class="h-anchor" href="#bloaters" aria-label="Ссылка на раздел">#</a></h3>
+<p>Code smells representing something that has grown too large to be handled effectively.</p>
+<h4 id="long-method">Long Method <a class="h-anchor" href="#long-method" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Signs:</strong></p>
+<ul>
+<li>Method exceeds 30-50 lines</li>
+<li>Need to scroll to see the whole method</li>
+<li>Multiple levels of nesting</li>
+<li>Comments explaining what sections do</li>
+</ul>
+<p><strong>Why it&#x27;s bad:</strong></p>
+<ul>
+<li>Hard to understand</li>
+<li>Difficult to test in isolation</li>
+<li>Changes have unintended consequences</li>
+<li>Duplicate logic hides inside</li>
+</ul>
+<p><strong>Refactorings:</strong></p>
+<ul>
+<li>Extract Method</li>
+<li>Replace Temp with Query</li>
+<li>Introduce Parameter Object</li>
+<li>Replace Method with Method Object</li>
+<li>Decompose Conditional</li>
+</ul>
+<p><strong>Example (Before):</strong></p>
+<pre><code class="language-javascript">function processOrder(order) {
+  // Validate order (20 lines)
+  if (!order.items) throw new Error(&#x27;No items&#x27;);
+  if (order.items.length === 0) throw new Error(&#x27;Empty order&#x27;);
+  // ... more validation
+
+  // Calculate totals (30 lines)
+  let subtotal = 0;
+  for (const item of order.items) {
+    subtotal += item.price * item.quantity;
+  }
+  // ... tax, shipping, discounts
+
+  // Send notifications (20 lines)
+  // ... email logic
+}</code></pre>
+<p><strong>Example (After):</strong></p>
+<pre><code class="language-javascript">function processOrder(order) {
+  validateOrder(order);
+  const totals = calculateOrderTotals(order);
+  sendOrderNotifications(order, totals);
+  return { order, totals };
+}</code></pre>
+<hr>
+<h4 id="large-class">Large Class <a class="h-anchor" href="#large-class" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Signs:</strong></p>
+<ul>
+<li>Class has many instance variables (&gt;7-10)</li>
+<li>Class has many methods (&gt;15-20)</li>
+<li>Class name is vague (Manager, Handler, Processor)</li>
+<li>Methods don&#x27;t use all instance variables</li>
+</ul>
+<p><strong>Why it&#x27;s bad:</strong></p>
+<ul>
+<li>Violates Single Responsibility Principle</li>
+<li>Hard to test</li>
+<li>Changes ripple through unrelated features</li>
+<li>Difficult to reuse parts</li>
+</ul>
+<p><strong>Refactorings:</strong></p>
+<ul>
+<li>Extract Class</li>
+<li>Extract Subclass</li>
+<li>Extract Interface</li>
+</ul>
+<p><strong>Detection:</strong></p>
+<pre><code>Lines of code &gt; 300
+Number of methods &gt; 15
+Number of fields &gt; 10</code></pre>
+<hr>
+<h4 id="primitive-obsession">Primitive Obsession <a class="h-anchor" href="#primitive-obsession" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Signs:</strong></p>
+<ul>
+<li>Using primitives for domain concepts (string for email, int for money)</li>
+<li>Arrays of primitives instead of objects</li>
+<li>String constants for type codes</li>
+<li>Magic numbers/strings</li>
+</ul>
+<p><strong>Why it&#x27;s bad:</strong></p>
+<ul>
+<li>No validation at type level</li>
+<li>Logic scattered across codebase</li>
+<li>Easy to pass wrong values</li>
+<li>Missing domain concepts</li>
+</ul>
+<p><strong>Refactorings:</strong></p>
+<ul>
+<li>Replace Primitive with Object</li>
+<li>Replace Type Code with Class</li>
+<li>Replace Type Code with Subclasses</li>
+<li>Replace Type Code with State/Strategy</li>
+</ul>
+<p><strong>Example (Before):</strong></p>
+<pre><code class="language-javascript">const user = {
+  email: &#x27;john@example.com&#x27;,     // Just a string
+  phone: &#x27;1234567890&#x27;,           // Just a string
+  status: &#x27;active&#x27;,              // Magic string
+  balance: 10050                 // Cents as integer
+};</code></pre>
+<p><strong>Example (After):</strong></p>
+<pre><code class="language-javascript">const user = {
+  email: new Email(&#x27;john@example.com&#x27;),
+  phone: new PhoneNumber(&#x27;1234567890&#x27;),
+  status: UserStatus.ACTIVE,
+  balance: Money.cents(10050)
+};</code></pre>
+<hr>
+<h4 id="long-parameter-list">Long Parameter List <a class="h-anchor" href="#long-parameter-list" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Signs:</strong></p>
+<ul>
+<li>Methods with 4+ parameters</li>
+<li>Parameters that always appear together</li>
+<li>Boolean flags changing method behavior</li>
+<li>Null/undefined passed frequently</li>
+</ul>
+<p><strong>Why it&#x27;s bad:</strong></p>
+<ul>
+<li>Hard to call correctly</li>
+<li>Parameter order confusion</li>
+<li>Indicates method doing too much</li>
+<li>Hard to add new parameters</li>
+</ul>
+<p><strong>Refactorings:</strong></p>
+<ul>
+<li>Introduce Parameter Object</li>
+<li>Preserve Whole Object</li>
+<li>Replace Parameter with Method Call</li>
+<li>Remove Flag Argument</li>
+</ul>
+<p><strong>Example (Before):</strong></p>
+<pre><code class="language-javascript">function createUser(firstName, lastName, email, phone,
+                    street, city, state, zip,
+                    isAdmin, isActive, createdBy) {
+  // ...
+}</code></pre>
+<p><strong>Example (After):</strong></p>
+<pre><code class="language-javascript">function createUser(personalInfo, address, options) {
+  // personalInfo: { firstName, lastName, email, phone }
+  // address: { street, city, state, zip }
+  // options: { isAdmin, isActive, createdBy }
+}</code></pre>
+<hr>
+<h4 id="data-clumps">Data Clumps <a class="h-anchor" href="#data-clumps" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Signs:</strong></p>
+<ul>
+<li>Same 3+ fields appear together repeatedly</li>
+<li>Parameters that always travel together</li>
+<li>Classes with field subsets belonging together</li>
+</ul>
+<p><strong>Why it&#x27;s bad:</strong></p>
+<ul>
+<li>Duplicate handling logic</li>
+<li>Missing abstraction</li>
+<li>Harder to extend</li>
+<li>Indicates hidden class</li>
+</ul>
+<p><strong>Refactorings:</strong></p>
+<ul>
+<li>Extract Class</li>
+<li>Introduce Parameter Object</li>
+<li>Preserve Whole Object</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">// Data clump: (x, y, z) coordinates
+function movePoint(x, y, z, dx, dy, dz) { }
+function scalePoint(x, y, z, factor) { }
+function distanceBetween(x1, y1, z1, x2, y2, z2) { }
+
+// Extract Point3D class
+class Point3D {
+  constructor(x, y, z) { }
+  move(delta) { }
+  scale(factor) { }
+  distanceTo(other) { }
+}</code></pre>
+<hr>
+<h3 id="object-orientation-abusers">Object-Orientation Abusers <a class="h-anchor" href="#object-orientation-abusers" aria-label="Ссылка на раздел">#</a></h3>
+<p>Smells indicating incomplete or incorrect use of OOP principles.</p>
+<h4 id="switch-statements">Switch Statements <a class="h-anchor" href="#switch-statements" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Signs:</strong></p>
+<ul>
+<li>Long switch/case or if/else chains</li>
+<li>Same switch in multiple places</li>
+<li>Switch on type codes</li>
+<li>Adding new cases requires changes everywhere</li>
+</ul>
+<p><strong>Why it&#x27;s bad:</strong></p>
+<ul>
+<li>Violates Open/Closed Principle</li>
+<li>Changes ripple to all switch locations</li>
+<li>Hard to extend</li>
+<li>Often indicates missing polymorphism</li>
+</ul>
+<p><strong>Refactorings:</strong></p>
+<ul>
+<li>Replace Conditional with Polymorphism</li>
+<li>Replace Type Code with Subclasses</li>
+<li>Replace Type Code with State/Strategy</li>
+</ul>
+<p><strong>Example (Before):</strong></p>
+<pre><code class="language-javascript">function calculatePay(employee) {
+  switch (employee.type) {
+    case &#x27;hourly&#x27;:
+      return employee.hours * employee.rate;
+    case &#x27;salaried&#x27;:
+      return employee.salary / 12;
+    case &#x27;commissioned&#x27;:
+      return employee.sales * employee.commission;
+  }
+}</code></pre>
+<p><strong>Example (After):</strong></p>
+<pre><code class="language-javascript">class HourlyEmployee {
+  calculatePay() {
+    return this.hours * this.rate;
+  }
+}
+
+class SalariedEmployee {
+  calculatePay() {
+    return this.salary / 12;
+  }
+}</code></pre>
+<hr>
+<h4 id="temporary-field">Temporary Field <a class="h-anchor" href="#temporary-field" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Signs:</strong></p>
+<ul>
+<li>Instance variables only used in some methods</li>
+<li>Fields set conditionally</li>
+<li>Complex initialization for certain cases</li>
+</ul>
+<p><strong>Why it&#x27;s bad:</strong></p>
+<ul>
+<li>Confusing—field exists but might be null</li>
+<li>Hard to understand object state</li>
+<li>Indicates conditional logic hiding</li>
+</ul>
+<p><strong>Refactorings:</strong></p>
+<ul>
+<li>Extract Class</li>
+<li>Introduce Null Object</li>
+<li>Replace Temp Field with Local</li>
+</ul>
+<hr>
+<h4 id="refused-bequest">Refused Bequest <a class="h-anchor" href="#refused-bequest" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Signs:</strong></p>
+<ul>
+<li>Subclass doesn&#x27;t use inherited methods/data</li>
+<li>Subclass overrides to do nothing</li>
+<li>Inheritance used for code reuse, not IS-A relationship</li>
+</ul>
+<p><strong>Why it&#x27;s bad:</strong></p>
+<ul>
+<li>Wrong abstraction</li>
+<li>Violates Liskov Substitution Principle</li>
+<li>Misleading hierarchy</li>
+</ul>
+<p><strong>Refactorings:</strong></p>
+<ul>
+<li>Push Down Method/Field</li>
+<li>Replace Subclass with Delegate</li>
+<li>Replace Inheritance with Delegation</li>
+</ul>
+<hr>
+<h4 id="alternative-classes-with-different-interfaces">Alternative Classes with Different Interfaces <a class="h-anchor" href="#alternative-classes-with-different-interfaces" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Signs:</strong></p>
+<ul>
+<li>Two classes that do similar things</li>
+<li>Different method names for same concept</li>
+<li>Could be used interchangeably</li>
+</ul>
+<p><strong>Why it&#x27;s bad:</strong></p>
+<ul>
+<li>Duplicate implementations</li>
+<li>No common interface</li>
+<li>Hard to switch between</li>
+</ul>
+<p><strong>Refactorings:</strong></p>
+<ul>
+<li>Rename Method</li>
+<li>Move Method</li>
+<li>Extract Superclass</li>
+<li>Extract Interface</li>
+</ul>
+<hr>
+<h3 id="change-preventers">Change Preventers <a class="h-anchor" href="#change-preventers" aria-label="Ссылка на раздел">#</a></h3>
+<p>Smells that make changes difficult—changing one thing requires changing many others.</p>
+<h4 id="divergent-change">Divergent Change <a class="h-anchor" href="#divergent-change" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Signs:</strong></p>
+<ul>
+<li>One class changed for multiple different reasons</li>
+<li>Changes in different areas trigger same class edits</li>
+<li>Class is a &quot;God class&quot;</li>
+</ul>
+<p><strong>Why it&#x27;s bad:</strong></p>
+<ul>
+<li>Violates Single Responsibility</li>
+<li>High change frequency</li>
+<li>Merge conflicts</li>
+</ul>
+<p><strong>Refactorings:</strong></p>
+<ul>
+<li>Extract Class</li>
+<li>Extract Superclass</li>
+<li>Extract Subclass</li>
+</ul>
+<p><strong>Example:</strong>
+A <code>User</code> class changes for:</p>
+<ul>
+<li>Authentication changes</li>
+<li>Profile changes</li>
+<li>Billing changes</li>
+<li>Notification changes</li>
+</ul>
+<p>→ Extract: <code>AuthService</code>, <code>ProfileService</code>, <code>BillingService</code>, <code>NotificationService</code></p>
+<hr>
+<h4 id="shotgun-surgery">Shotgun Surgery <a class="h-anchor" href="#shotgun-surgery" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Signs:</strong></p>
+<ul>
+<li>One change requires edits in many classes</li>
+<li>Small feature needs touching 10+ files</li>
+<li>Changes are scattered, hard to find all</li>
+</ul>
+<p><strong>Why it&#x27;s bad:</strong></p>
+<ul>
+<li>Easy to miss a spot</li>
+<li>High coupling</li>
+<li>Changes are error-prone</li>
+</ul>
+<p><strong>Refactorings:</strong></p>
+<ul>
+<li>Move Method</li>
+<li>Move Field</li>
+<li>Inline Class</li>
+</ul>
+<p><strong>Detection:</strong>
+Look for: adding one field requires changes in &gt;5 files.</p>
+<hr>
+<h4 id="parallel-inheritance-hierarchies">Parallel Inheritance Hierarchies <a class="h-anchor" href="#parallel-inheritance-hierarchies" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Signs:</strong></p>
+<ul>
+<li>Creating subclass in one hierarchy requires subclass in another</li>
+<li>Class prefixes match (e.g., <code>DatabaseOrder</code>, <code>DatabaseProduct</code>)</li>
+</ul>
+<p><strong>Why it&#x27;s bad:</strong></p>
+<ul>
+<li>Double the maintenance</li>
+<li>Coupling between hierarchies</li>
+<li>Easy to forget one side</li>
+</ul>
+<p><strong>Refactorings:</strong></p>
+<ul>
+<li>Move Method</li>
+<li>Move Field</li>
+<li>Eliminate one hierarchy</li>
+</ul>
+<hr>
+<h3 id="dispensables">Dispensables <a class="h-anchor" href="#dispensables" aria-label="Ссылка на раздел">#</a></h3>
+<p>Something unnecessary that should be removed.</p>
+<h4 id="comments-excessive">Comments (Excessive) <a class="h-anchor" href="#comments-excessive" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Signs:</strong></p>
+<ul>
+<li>Comments explaining what code does</li>
+<li>Commented-out code</li>
+<li>TODO/FIXME that linger forever</li>
+<li>Apologies in comments</li>
+</ul>
+<p><strong>Why it&#x27;s bad:</strong></p>
+<ul>
+<li>Comments lie (get out of sync)</li>
+<li>Code should be self-documenting</li>
+<li>Dead code causes confusion</li>
+</ul>
+<p><strong>Refactorings:</strong></p>
+<ul>
+<li>Extract Method (name explains what)</li>
+<li>Rename (clarity without comments)</li>
+<li>Remove commented code</li>
+<li>Introduce Assertion</li>
+</ul>
+<p><strong>Good vs Bad Comments:</strong></p>
+<pre><code class="language-javascript">// BAD: Explaining what
+// Loop through users and check if active
+for (const user of users) {
+  if (user.status === &#x27;active&#x27;) { }
+}
+
+// GOOD: Explaining why
+// Active users only - inactive are handled by cleanup job
+const activeUsers = users.filter(u =&gt; u.isActive);</code></pre>
+<hr>
+<h4 id="duplicate-code">Duplicate Code <a class="h-anchor" href="#duplicate-code" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Signs:</strong></p>
+<ul>
+<li>Same code in multiple places</li>
+<li>Similar code with small variations</li>
+<li>Copy-paste patterns</li>
+</ul>
+<p><strong>Why it&#x27;s bad:</strong></p>
+<ul>
+<li>Bug fixes needed in multiple places</li>
+<li>Inconsistency risk</li>
+<li>Bloated codebase</li>
+</ul>
+<p><strong>Refactorings:</strong></p>
+<ul>
+<li>Extract Method</li>
+<li>Extract Class</li>
+<li>Pull Up Method (in hierarchies)</li>
+<li>Form Template Method</li>
+</ul>
+<p><strong>Detection Rule:</strong>
+Any code duplicated 3+ times should be extracted.</p>
+<hr>
+<h4 id="lazy-class">Lazy Class <a class="h-anchor" href="#lazy-class" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Signs:</strong></p>
+<ul>
+<li>Class doesn&#x27;t do enough to justify existence</li>
+<li>Wrapper with no added value</li>
+<li>Result of over-engineering</li>
+</ul>
+<p><strong>Why it&#x27;s bad:</strong></p>
+<ul>
+<li>Maintenance overhead</li>
+<li>Unnecessary indirection</li>
+<li>Complexity without benefit</li>
+</ul>
+<p><strong>Refactorings:</strong></p>
+<ul>
+<li>Inline Class</li>
+<li>Collapse Hierarchy</li>
+</ul>
+<hr>
+<h4 id="dead-code">Dead Code <a class="h-anchor" href="#dead-code" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Signs:</strong></p>
+<ul>
+<li>Unreachable code</li>
+<li>Unused variables/methods/classes</li>
+<li>Commented-out code</li>
+<li>Code behind impossible conditions</li>
+</ul>
+<p><strong>Why it&#x27;s bad:</strong></p>
+<ul>
+<li>Confusion</li>
+<li>Maintenance burden</li>
+<li>Slows down understanding</li>
+</ul>
+<p><strong>Refactorings:</strong></p>
+<ul>
+<li>Remove Dead Code</li>
+<li>Safe Delete</li>
+</ul>
+<p><strong>Detection:</strong></p>
+<pre><code class="language-bash"># Look for unused exports
+# Look for unreferenced functions
+# IDE &quot;unused&quot; warnings</code></pre>
+<hr>
+<h4 id="speculative-generality">Speculative Generality <a class="h-anchor" href="#speculative-generality" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Signs:</strong></p>
+<ul>
+<li>Abstract classes with one subclass</li>
+<li>Unused parameters &quot;for future use&quot;</li>
+<li>Methods that only delegate</li>
+<li>&quot;Framework&quot; for one use case</li>
+</ul>
+<p><strong>Why it&#x27;s bad:</strong></p>
+<ul>
+<li>Complexity without benefit</li>
+<li>YAGNI (You Ain&#x27;t Gonna Need It)</li>
+<li>Harder to understand</li>
+</ul>
+<p><strong>Refactorings:</strong></p>
+<ul>
+<li>Collapse Hierarchy</li>
+<li>Inline Class</li>
+<li>Remove Parameter</li>
+<li>Rename Method</li>
+</ul>
+<hr>
+<h3 id="couplers">Couplers <a class="h-anchor" href="#couplers" aria-label="Ссылка на раздел">#</a></h3>
+<p>Smells that represent excessive coupling between classes.</p>
+<h4 id="feature-envy">Feature Envy <a class="h-anchor" href="#feature-envy" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Signs:</strong></p>
+<ul>
+<li>Method uses more data from another class than its own</li>
+<li>Many getter calls to another object</li>
+<li>Data and behavior are separated</li>
+</ul>
+<p><strong>Why it&#x27;s bad:</strong></p>
+<ul>
+<li>Wrong location for behavior</li>
+<li>Poor encapsulation</li>
+<li>Hard to maintain</li>
+</ul>
+<p><strong>Refactorings:</strong></p>
+<ul>
+<li>Move Method</li>
+<li>Move Field</li>
+<li>Extract Method (then move)</li>
+</ul>
+<p><strong>Example (Before):</strong></p>
+<pre><code class="language-javascript">class Order {
+  getDiscountedPrice(customer) {
+    // Uses customer data heavily
+    if (customer.loyaltyYears &gt; 5) {
+      return this.price * customer.discountRate;
+    }
+    return this.price;
+  }
+}</code></pre>
+<p><strong>Example (After):</strong></p>
+<pre><code class="language-javascript">class Customer {
+  getDiscountedPriceFor(price) {
+    if (this.loyaltyYears &gt; 5) {
+      return price * this.discountRate;
+    }
+    return price;
+  }
+}</code></pre>
+<hr>
+<h4 id="inappropriate-intimacy">Inappropriate Intimacy <a class="h-anchor" href="#inappropriate-intimacy" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Signs:</strong></p>
+<ul>
+<li>Classes access each other&#x27;s private parts</li>
+<li>Bidirectional references</li>
+<li>Subclasses know too much about parents</li>
+</ul>
+<p><strong>Why it&#x27;s bad:</strong></p>
+<ul>
+<li>High coupling</li>
+<li>Changes cascade</li>
+<li>Hard to modify one without other</li>
+</ul>
+<p><strong>Refactorings:</strong></p>
+<ul>
+<li>Move Method</li>
+<li>Move Field</li>
+<li>Change Bidirectional to Unidirectional</li>
+<li>Extract Class</li>
+<li>Hide Delegate</li>
+</ul>
+<hr>
+<h4 id="message-chains">Message Chains <a class="h-anchor" href="#message-chains" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Signs:</strong></p>
+<ul>
+<li>Long chains of method calls: <code>a.getB().getC().getD().getValue()</code></li>
+<li>Client depends on navigation structure</li>
+<li>&quot;Train wreck&quot; code</li>
+</ul>
+<p><strong>Why it&#x27;s bad:</strong></p>
+<ul>
+<li>Fragile—any change breaks chain</li>
+<li>Violates Law of Demeter</li>
+<li>Coupling to structure</li>
+</ul>
+<p><strong>Refactorings:</strong></p>
+<ul>
+<li>Hide Delegate</li>
+<li>Extract Method</li>
+<li>Move Method</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">// Bad: Message chain
+const managerName = employee.getDepartment().getManager().getName();
+
+// Better: Hide delegation
+const managerName = employee.getManagerName();</code></pre>
+<hr>
+<h4 id="middle-man">Middle Man <a class="h-anchor" href="#middle-man" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Signs:</strong></p>
+<ul>
+<li>Class that only delegates to another</li>
+<li>Half the methods are delegations</li>
+<li>No added value</li>
+</ul>
+<p><strong>Why it&#x27;s bad:</strong></p>
+<ul>
+<li>Unnecessary indirection</li>
+<li>Maintenance overhead</li>
+<li>Confusing architecture</li>
+</ul>
+<p><strong>Refactorings:</strong></p>
+<ul>
+<li>Remove Middle Man</li>
+<li>Inline Method</li>
+</ul>
+<hr>
+<h3 id="smell-severity-guide">Smell Severity Guide <a class="h-anchor" href="#smell-severity-guide" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Severity</th><th>Description</th><th>Action</th></tr></thead><tbody><tr><td><strong>Critical</strong></td><td>Blocks development, causes bugs</td><td>Fix immediately</td></tr><tr><td><strong>High</strong></td><td>Significant maintenance burden</td><td>Fix in current sprint</td></tr><tr><td><strong>Medium</strong></td><td>Noticeable but manageable</td><td>Plan for near future</td></tr><tr><td><strong>Low</strong></td><td>Minor inconvenience</td><td>Fix opportunistically</td></tr></tbody></table></div>
+<hr>
+<h3 id="quick-detection-checklist">Quick Detection Checklist <a class="h-anchor" href="#quick-detection-checklist" aria-label="Ссылка на раздел">#</a></h3>
+<p>Use this checklist when scanning code:</p>
+<ul>
+<li>[ ] Any method &gt; 30 lines?</li>
+<li>[ ] Any class &gt; 300 lines?</li>
+<li>[ ] Any method with &gt; 4 parameters?</li>
+<li>[ ] Any duplicated code blocks?</li>
+<li>[ ] Any switch/case on type codes?</li>
+<li>[ ] Any unused code?</li>
+<li>[ ] Any methods using another class&#x27;s data heavily?</li>
+<li>[ ] Any long chains of method calls?</li>
+<li>[ ] Any comments explaining &quot;what&quot; not &quot;why&quot;?</li>
+<li>[ ] Any primitives that should be objects?</li>
+</ul>
+<hr>
+<h3 id="further-reading">Further Reading <a class="h-anchor" href="#further-reading" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Fowler, M. (2018). <em>Refactoring: Improving the Design of Existing Code</em> (2nd ed.)</li>
+<li>Kerievsky, J. (2004). <em>Refactoring to Patterns</em></li>
+<li>Feathers, M. (2004). <em>Working Effectively with Legacy Code</em></li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

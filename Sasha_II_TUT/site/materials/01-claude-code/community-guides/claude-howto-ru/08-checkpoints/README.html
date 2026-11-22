@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Checkpoints и откат</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/08-checkpoints/index.html">08-checkpoints</a></nav>
+<p>&lt;picture&gt;
+  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;../resources/logos/claude-howto-logo-dark.svg&quot;&gt;
+  &lt;img alt=&quot;Claude How To&quot; src=&quot;../resources/logos/claude-howto-logo.svg&quot;&gt;
+&lt;/picture&gt;</p>
+<h1 id="checkpoints-и-откат">Checkpoints и откат <a class="h-anchor" href="#checkpoints-и-откат" aria-label="Ссылка на раздел">#</a></h1>
+<p>Checkpoints позволяют сохранять состояние разговора и откатываться к предыдущим точкам в сессии Claude Code. Это незаменимо, когда вы исследуете разные подходы, восстанавливаетесь после ошибок или сравниваете альтернативные решения.</p>
+<h3 id="h">Обзор <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Checkpoints позволяют сохранять состояние разговора и возвращаться к предыдущим точкам, что даёт безопасное пространство для экспериментов и возможность исследовать несколько подходов. Это снимки состояния вашей сессии, включая:</p>
+<ul>
+<li>все сообщения в разговоре</li>
+<li>внесённые изменения в файлах</li>
+<li>историю использования инструментов</li>
+<li>контекст сессии</li>
+</ul>
+<p>Checkpoints особенно полезны, когда вы исследуете разные подходы, исправляете ошибки или сравниваете альтернативные решения.</p>
+<h3 id="h-2">Ключевые понятия <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Понятие</th><th>Описание</th></tr></thead><tbody><tr><td><strong>Checkpoint</strong></td><td>Снимок состояния разговора, включая сообщения, файлы и контекст</td></tr><tr><td><strong>Rewind</strong></td><td>Возврат к предыдущему checkpoint с отбрасыванием последующих изменений</td></tr><tr><td><strong>Branch Point</strong></td><td>Checkpoint, от которого исследуются несколько вариантов решения</td></tr></tbody></table></div>
+<h3 id="доступ-к-checkpoints">Доступ к Checkpoints <a class="h-anchor" href="#доступ-к-checkpoints" aria-label="Ссылка на раздел">#</a></h3>
+<p>Вы можете открывать и управлять checkpoints двумя основными способами:</p>
+<h4 id="h-3">Через сочетание клавиш <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Нажмите <code>Esc</code> дважды (<code>Esc</code> + <code>Esc</code>), чтобы открыть интерфейс checkpoints и просмотреть сохранённые точки.</p>
+<h4 id="через-slash-команду">Через slash-команду <a class="h-anchor" href="#через-slash-команду" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте команду <code>/rewind</code> (<code>alias</code>: <code>/checkpoint</code>) для быстрого доступа:</p>
+<pre><code class="language-bash"># Открыть интерфейс отката
+/rewind
+
+# Или использовать алиас
+/checkpoint</code></pre>
+<h3 id="варианты-rewind">Варианты Rewind <a class="h-anchor" href="#варианты-rewind" aria-label="Ссылка на раздел">#</a></h3>
+<p>При откате вам предлагается меню из пяти вариантов:</p>
+<ol>
+<li><strong>Restore code and conversation</strong> -- вернуть и файлы, и сообщения к этому checkpoint</li>
+<li><strong>Restore conversation</strong> -- откатить только сообщения, оставив текущий код без изменений</li>
+<li><strong>Restore code</strong> -- откатить только изменения файлов, сохранив всю историю разговора</li>
+<li><strong>Summarize from here</strong> -- сжать разговор от этой точки в AI-сводку вместо удаления. Исходные сообщения сохраняются в транскрипте. При желании можно задать инструкции, чтобы сфокусировать сводку на конкретных темах.</li>
+<li><strong>Never mind</strong> -- отменить действие и вернуться к текущему состоянию</li>
+</ol>
+<h3 id="автоматические-checkpoints">Автоматические Checkpoints <a class="h-anchor" href="#автоматические-checkpoints" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code автоматически создаёт checkpoints для вас:</p>
+<ul>
+<li><strong>Каждый запрос пользователя</strong> - Новый checkpoint создаётся при каждом вводе пользователя</li>
+<li><strong>Постоянные</strong> - Checkpoints сохраняются между сессиями</li>
+<li><strong>Автоочистка</strong> - Checkpoints автоматически удаляются через 30 дней</li>
+</ul>
+<p>Это значит, что вы всегда можете откатиться к любой предыдущей точке разговора, будь то несколько минут назад или несколько дней назад.</p>
+<h3 id="h-4">Сценарии использования <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Сценарий</th><th>Рабочий процесс</th></tr></thead><tbody><tr><td><strong>Исследование подходов</strong></td><td>Сохранить → попробовать вариант A → сохранить → откатиться → попробовать вариант B → сравнить</td></tr><tr><td><strong>Безопасный рефакторинг</strong></td><td>Сохранить → отрефакторить → протестировать → если есть сбой, откатиться</td></tr><tr><td><strong>A/B-тестирование</strong></td><td>Save → Design A → Save → Rewind → Design B → Compare</td></tr><tr><td><strong>Восстановление после ошибки</strong></td><td>Замечаете проблему → откат к последнему рабочему состоянию</td></tr></tbody></table></div>
+<h3 id="использование-checkpoints">Использование Checkpoints <a class="h-anchor" href="#использование-checkpoints" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-5">Просмотр и откат <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<p>Нажмите <code>Esc</code> дважды или используйте <code>/rewind</code>, чтобы открыть браузер checkpoints. Вы увидите список всех доступных checkpoint с временными метками. Выберите любой checkpoint, чтобы откатиться к этому состоянию.</p>
+<h4 id="сведения-о-checkpoint">Сведения о checkpoint <a class="h-anchor" href="#сведения-о-checkpoint" aria-label="Ссылка на раздел">#</a></h4>
+<p>У каждого checkpoint показываются:</p>
+<ul>
+<li>Время создания</li>
+<li>Изменённые файлы</li>
+<li>Количество сообщений в разговоре</li>
+<li>Использованные инструменты</li>
+</ul>
+<h3 id="h-6">Практические примеры <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="пример-1-исследование-разных-подходов">Пример 1: Исследование разных подходов <a class="h-anchor" href="#пример-1-исследование-разных-подходов" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>Пользователь: Давай добавим слой кэширования в API
+
+Claude: Я добавлю Redis-кэширование в ваши API endpoint-ы...
+[Вносит изменения в checkpoint A]
+
+Пользователь: Вообще давай лучше попробуем кэширование в памяти
+
+Claude: Я выполню откат, чтобы попробовать другой подход...
+[Пользователь нажимает Esc+Esc и откатывается к checkpoint A]
+[Реализует кэширование в памяти в checkpoint B]
+
+Пользователь: Теперь я могу сравнить оба подхода</code></pre>
+<h4 id="пример-2-восстановление-после-ошибки">Пример 2: Восстановление после ошибки <a class="h-anchor" href="#пример-2-восстановление-после-ошибки" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>Пользователь: Отрефакторь модуль аутентификации так, чтобы он использовал JWT
+
+Claude: Я отрефакторю модуль аутентификации...
+[Вносит большие изменения]
+
+Пользователь: Подожди, это сломало интеграцию с OAuth. Давай вернёмся назад.
+
+Claude: Я помогу откатиться к состоянию до рефакторинга...
+[Пользователь нажимает Esc+Esc и выбирает checkpoint до рефакторинга]
+
+Пользователь: Давай в этот раз попробуем более консервативный подход</code></pre>
+<h4 id="пример-3-безопасные-эксперименты">Пример 3: Безопасные эксперименты <a class="h-anchor" href="#пример-3-безопасные-эксперименты" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>Пользователь: Давай попробуем переписать это в функциональном стиле
+[Создаётся checkpoint перед экспериментом]
+
+Claude: [Вносит экспериментальные изменения]
+
+Пользователь: Тесты падают. Давай откатимся.
+[Пользователь нажимает Esc+Esc и откатывается к checkpoint]
+
+Claude: Я откатил изменения. Давай попробуем другой подход.</code></pre>
+<h4 id="пример-4-ветвление-подходов">Пример 4: Ветвление подходов <a class="h-anchor" href="#пример-4-ветвление-подходов" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>Пользователь: Я хочу сравнить два варианта дизайна базы данных
+[Фиксирует checkpoint и условно называет его &quot;Start&quot;]
+
+Claude: Я создам первый вариант...
+[Реализует Schema A]
+
+Пользователь: Теперь дай мне вернуться назад и попробовать второй подход
+[Пользователь нажимает Esc+Esc и откатывается к &quot;Start&quot;]
+
+Claude: Теперь я реализую Schema B...
+[Реализует Schema B]
+
+Пользователь: Отлично. Теперь у меня есть обе схемы на выбор</code></pre>
+<h3 id="хранение-checkpoint">Хранение checkpoint <a class="h-anchor" href="#хранение-checkpoint" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code автоматически управляет вашими checkpoints:</p>
+<ul>
+<li>Checkpoints создаются автоматически при каждом запросе пользователя</li>
+<li>Старые checkpoints хранятся до 30 дней</li>
+<li>Checkpoints автоматически очищаются, чтобы не росло бесконечное хранилище</li>
+</ul>
+<h3 id="h-7">Шаблоны рабочих процессов <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-8">Стратегия ветвления для исследования <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<p>Когда вы исследуете несколько подходов:</p>
+<pre><code>1. Начните с исходной реализации → Checkpoint A
+2. Попробуйте подход 1 → Checkpoint B
+3. Откатитесь к Checkpoint A
+4. Попробуйте подход 2 → Checkpoint C
+5. Сравните результаты B и C
+6. Выберите лучший подход и продолжайте</code></pre>
+<h4 id="h-9">Шаблон безопасного рефакторинга <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<p>Когда вы вносите значительные изменения:</p>
+<pre><code>1. Текущее состояние → Checkpoint (автоматически)
+2. Начните рефакторинг
+3. Запустите тесты
+4. Если тесты проходят → продолжайте работу
+5. Если тесты падают → выполните откат и попробуйте другой подход</code></pre>
+<h3 id="h-10">Лучшие практики <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h3>
+<p>Поскольку checkpoints создаются автоматически, вы можете сосредоточиться на работе, не думая о ручном сохранении состояния. Но держите в уме следующие практики:</p>
+<h4 id="эффективное-использование-checkpoints">Эффективное использование checkpoints <a class="h-anchor" href="#эффективное-использование-checkpoints" aria-label="Ссылка на раздел">#</a></h4>
+<p>✅ <strong>Делайте:</strong></p>
+<ul>
+<li>Просматривайте доступные checkpoints перед откатом</li>
+<li>Используйте rewind, когда хотите исследовать разные направления</li>
+<li>Сохраняйте checkpoints, чтобы сравнивать подходы</li>
+<li>Понимайте, что делает каждый вариант rewind (restore code and conversation, restore conversation, restore code или summarize)</li>
+</ul>
+<p>❌ <strong>Не делайте:</strong></p>
+<ul>
+<li>Не полагайтесь только на checkpoints для сохранности кода</li>
+<li>Не ожидайте, что checkpoints отслеживают внешние изменения файловой системы</li>
+<li>Не используйте checkpoints как замену git commit</li>
+</ul>
+<h3 id="h-11">Конфигурация <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h3>
+<p>Вы можете включать и отключать автоматические checkpoints в настройках:</p>
+<pre><code class="language-json">{
+  &quot;autoCheckpoint&quot;: true
+}</code></pre>
+<ul>
+<li><code>autoCheckpoint</code>: Включает или отключает автоматическое создание checkpoint при каждом запросе пользователя (по умолчанию: <code>true</code>)</li>
+</ul>
+<h3 id="h-12">Ограничения <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h3>
+<p>У checkpoints есть следующие ограничения:</p>
+<ul>
+<li><strong>Изменения через Bash-команды НЕ отслеживаются</strong> - Операции вроде <code>rm</code>, <code>mv</code>, <code>cp</code> в файловой системе не попадают в checkpoints</li>
+<li><strong>Внешние изменения НЕ отслеживаются</strong> - Изменения, сделанные вне Claude Code (в редакторе, терминале и т. д.), не фиксируются</li>
+<li><strong>Это не замена системе контроля версий</strong> - Используйте git для постоянных и проверяемых изменений в кодовой базе</li>
+</ul>
+<h3 id="h-13">Устранение неполадок <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="отсутствуют-checkpoints">Отсутствуют checkpoints <a class="h-anchor" href="#отсутствуют-checkpoints" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Проблема</strong>: Ожидаемый checkpoint не найден</p>
+<p><strong>Решение</strong>:</p>
+<ul>
+<li>Проверьте, не были ли checkpoints очищены</li>
+<li>Убедитесь, что <code>autoCheckpoint</code> включён в настройках</li>
+<li>Проверьте свободное место на диске</li>
+</ul>
+<h4 id="не-удалось-выполнить-rewind">Не удалось выполнить rewind <a class="h-anchor" href="#не-удалось-выполнить-rewind" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Проблема</strong>: Невозможно откатиться к checkpoint</p>
+<p><strong>Решение</strong>:</p>
+<ul>
+<li>Убедитесь, что нет конфликтующих незакоммиченных изменений</li>
+<li>Проверьте, не повреждён ли checkpoint</li>
+<li>Попробуйте откатиться к другому checkpoint</li>
+</ul>
+<h3 id="интеграция-с-git">Интеграция с Git <a class="h-anchor" href="#интеграция-с-git" aria-label="Ссылка на раздел">#</a></h3>
+<p>Checkpoints дополняют git, но не заменяют его:</p>
+<div class="table-wrap"><table><thead><tr><th>Возможность</th><th>Git</th><th>Checkpoints</th></tr></thead><tbody><tr><td>Область</td><td>Файловая система</td><td>Разговор + файлы</td></tr><tr><td>Постоянство</td><td>Постоянное</td><td>Привязанное к сессии</td></tr><tr><td>Гранулярность</td><td>Коммиты</td><td>Любая точка</td></tr><tr><td>Скорость</td><td>Медленнее</td><td>Мгновенно</td></tr><tr><td>Совместное использование</td><td>Да</td><td>Ограничено</td></tr></tbody></table></div>
+<p>Используйте оба инструмента вместе:</p>
+<ol>
+<li>Используйте checkpoints для быстрого экспериментирования</li>
+<li>Используйте git commit для окончательно принятых изменений</li>
+<li>Создавайте checkpoint перед git-операциями</li>
+<li>Фиксируйте в git успешные состояния после checkpoint</li>
+</ol>
+<h3 id="h-14">Краткий старт <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-15">Базовый рабочий процесс <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li><strong>Работайте как обычно</strong> - Claude Code создаёт checkpoints автоматически</li>
+<li><strong>Хотите вернуться назад?</strong> - Нажмите <code>Esc</code> дважды или используйте <code>/rewind</code></li>
+<li><strong>Выберите checkpoint</strong> - Выберите его из списка для отката</li>
+<li><strong>Выберите, что восстановить</strong> - Выберите restore code and conversation, restore conversation, restore code, summarize from here или отмену</li>
+<li><strong>Продолжайте работу</strong> - Вы снова оказались в той точке</li>
+</ol>
+<h4 id="h-16">Горячие клавиши <a class="h-anchor" href="#h-16" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong><code>Esc</code> + <code>Esc</code></strong> - Открыть браузер checkpoint</li>
+<li><strong><code>/rewind</code></strong> - Альтернативный способ доступа к checkpoints</li>
+<li><strong><code>/checkpoint</code></strong> - Алиас для <code>/rewind</code></li>
+</ul>
+<h3 id="h-17">Как понять, когда пора откатываться: мониторинг контекста <a class="h-anchor" href="#h-17" aria-label="Ссылка на раздел">#</a></h3>
+<p>Checkpoints позволяют откатываться назад, но как понять, <em>когда</em> это нужно? По мере роста разговора окно контекста Claude заполняется, и качество модели незаметно падает. Можно продолжать писать код, по сути опираясь на «полуслепую» модель, даже не замечая этого.</p>
+<p><strong><a href="https://github.com/luongnv89/cc-context-stats">cc-context-stats</a></strong> решает эту задачу, добавляя в строку состояния Claude Code зоны контекста в реальном времени. Он показывает, где вы находитесь в окне контекста — от <strong>Plan</strong> (зелёная зона, можно спокойно планировать и кодировать) через <strong>Code</strong> (жёлтая зона, не стоит начинать новые планы) до <strong>Dump</strong> (оранжевая зона, пора завершать и откатываться). Когда зона меняется, вы понимаете, что пора сделать checkpoint и начать заново, а не продолжать работу на деградирующем качестве.</p>
+<h3 id="h-18">Связанные концепции <a class="h-anchor" href="#h-18" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong><a href="../09-advanced-features/">Advanced Features</a></strong> - Режим планирования и другие продвинутые возможности</li>
+<li><strong><a href="../02-memory/">Memory Management</a></strong> - Управление историей разговора и контекстом</li>
+<li><strong><a href="../01-slash-commands/">Slash Commands</a></strong> - Команды, запускаемые пользователем</li>
+<li><strong><a href="../06-hooks/">Hooks</a></strong> - Автоматизация, основанная на событиях</li>
+<li><strong><a href="../07-plugins/">Plugins</a></strong> - Встроенные пакеты расширений</li>
+</ul>
+<h3 id="h-19">Дополнительные ресурсы <a class="h-anchor" href="#h-19" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/en/checkpointing">Официальная документация по checkpointing</a></li>
+<li><a href="../09-advanced-features/">Руководство по Advanced Features</a> - Расширенное мышление и другие возможности</li>
+</ul>
+<h3 id="h-20">Итог <a class="h-anchor" href="#h-20" aria-label="Ссылка на раздел">#</a></h3>
+<p>Checkpoints — это автоматическая функция Claude Code, которая позволяет безопасно исследовать разные подходы, не боясь потерять работу. Каждый запрос пользователя автоматически создаёт новый checkpoint, поэтому вы можете откатиться к любой предыдущей точке сессии.</p>
+<p>Ключевые преимущества:</p>
+<ul>
+<li>Без страха экспериментировать с несколькими подходами</li>
+<li>Быстро восстанавливаться после ошибок</li>
+<li>Сравнивать разные решения бок о бок</li>
+<li>Безопасно сочетать checkpoints с системами контроля версий</li>
+</ul>
+<p>Помните: checkpoints не заменяют git. Используйте checkpoints для быстрого экспериментирования, а git — для постоянных изменений в коде.</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

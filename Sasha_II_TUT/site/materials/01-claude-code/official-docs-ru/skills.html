@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Расширение Claude с помощью skills</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="расширение-claude-с-помощью-skills">Расширение Claude с помощью skills <a class="h-anchor" href="#расширение-claude-с-помощью-skills" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Создавайте, управляйте и делитесь skills для расширения возможностей Claude в Claude Code. Включает пользовательские команды и встроенные skills.</p>
+</blockquote>
+<p>Skills расширяют возможности Claude. Создайте файл <code>SKILL.md</code> с инструкциями, и Claude добавит его в свой набор инструментов. Claude использует skills при необходимости, или вы можете вызвать один напрямую с помощью <code>/skill-name</code>.</p>
+<p>Создавайте skill, когда вы постоянно вставляете одни и те же инструкции, контрольный список или многошаговую процедуру в чат, или когда раздел CLAUDE.md превратился в процедуру, а не в факт. В отличие от содержимого CLAUDE.md, тело skill загружается только при его использовании, поэтому длинный справочный материал стоит почти ничего, пока вам он не понадобится.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Для встроенных команд, таких как <code>/help</code> и <code>/compact</code>, и встроенных skills, таких как <code>/debug</code> и <code>/code-review</code>, см. <a href="https://code.claude.com/docs/ru/commands.md">справочник команд</a>.</p>
+<p><strong>Пользовательские команды были объединены со скиллами.</strong> Ваши существующие файлы <code>.claude/commands/</code> продолжают работать. Claude может вызывать их без того, чтобы вы вводили команду. Отредактируйте команду, чтобы Claude не вызывал её самостоятельно, или преобразуйте в скилл команду, которой требуется больше одного файла:</p>
+<ul>
+<li><strong>Запретить Claude самостоятельно вызывать команду</strong>: добавьте <a href="#control-who-invokes-a-skill"><code>disable-model-invocation: true</code></a> во <a href="#frontmatter-reference">frontmatter</a> файла команды</li>
+<li><strong>Добавить <a href="#add-supporting-files">вспомогательные файлы</a>, например скрипты</strong>: преобразуйте команду в скилл. Например, переместите <code>.claude/commands/deploy.md</code> в <code>.claude/skills/deploy/SKILL.md</code>. <a href="#how-a-skill-gets-its-command-name">Имя папки становится командой</a>, поэтому вы по-прежнему вводите <code>/deploy</code>.</li>
+</ul>
+</blockquote>
+<p>Skills Claude Code следуют открытому стандарту <a href="https://agentskills.io">Agent Skills</a>, который работает с несколькими инструментами AI. Claude Code расширяет стандарт дополнительными функциями, такими как <a href="#control-who-invokes-a-skill">управление вызовом</a>, <a href="#run-skills-in-a-subagent">выполнение в подагенте</a> и <a href="#inject-dynamic-context">динамическое внедрение контекста</a>. См. <a href="#using-skill-frontmatter-outside-claude-code">Использование frontmatter skill вне Claude Code</a> для информации о том, какие поля frontmatter являются частью стандарта, а какие — расширениями Claude Code.</p>
+<h3 id="встроенные-skills">Встроенные skills <a class="h-anchor" href="#встроенные-skills" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code включает набор встроенных skills, таких как <code>/doctor</code>, <code>/code-review</code>, <code>/batch</code>, <code>/debug</code>, <code>/loop</code> и <code>/claude-api</code>. Встроенные skills основаны на промптах: они дают Claude подробные инструкции и позволяют ему организовать работу, используя его инструменты. Большинство встроенных команд вместо этого выполняют фиксированную логику напрямую.</p>
+<p>Чтобы вызвать встроенный skill, введите <code>/</code> и затем имя skill. Claude автоматически вызывает некоторые встроенные skills, когда это уместно.</p>
+<p>Большинство встроенных skills доступны в каждой сессии. Несколько зависят от конкретной функции: <code>/workflow-authoring</code>, например, доступен только когда <a href="https://code.claude.com/docs/ru/workflows.md">динамические workflows</a> включены.</p>
+<p>Чтобы отключить встроенные skills, используйте параметр <a href="https://code.claude.com/docs/ru/settings-reference#disablebundledskills"><code>disableBundledSkills</code></a>.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Проверка настройки <a href="https://code.claude.com/docs/ru/commands#all-commands"><code>/doctor</code></a> остается доступной для ввода, когда <code>disableBundledSkills</code> включен. Чтобы скрыть её, установите переменную окружения <code>DISABLE_DOCTOR_COMMAND</code> или запись <a href="#override-skill-visibility-from-settings"><code>skillOverrides</code></a> <code>&quot;doctor&quot;: &quot;off&quot;</code>.</p>
+</blockquote>
+<p>Встроенные skills перечислены вместе со встроенными командами в <a href="https://code.claude.com/docs/ru/commands.md">справочнике команд</a>, отмечены как <strong>Skill</strong> в столбце Purpose.</p>
+<h4 id="проверка-настройки-с-помощью-doctor">Проверка настройки с помощью <code>/doctor</code> <a class="h-anchor" href="#проверка-настройки-с-помощью-doctor" aria-label="Ссылка на раздел">#</a></h4>
+<p>Запустите <code>/doctor</code> в промпте Claude Code, чтобы выполнить проверку настройки, которая диагностирует проблемы и может их исправить. Claude сначала сообщает о результатах и запрашивает подтверждение, прежде чем что-либо изменить. Проверка охватывает следующие области:</p>
+<ul>
+<li><strong>Состояние установки</strong>: дублирующиеся или оставшиеся установки, проблемы с <code>PATH</code>, файлы настроек, которые не удается разобрать, а также наличие более новой версии в вашем <a href="https://code.claude.com/docs/ru/setup.md#configure-release-channel">канале выпусков</a></li>
+<li><strong>Расширения</strong>: неиспользуемые skills, MCP-серверы и плагины в сравнении с их затратами контекста, а также медленные <a href="https://code.claude.com/docs/ru/hooks.md">хуки</a></li>
+<li><strong>Файлы <code>CLAUDE.md</code></strong>: локальные файлы <code>CLAUDE.md</code>, дублирующие файлы из репозитория, <a href="https://code.claude.com/docs/ru/memory#my-claude-md-is-too-large">содержимое <code>CLAUDE.md</code> в репозитории, которое Claude мог бы вывести из кодовой базы</a>, а также оставшиеся всегда загружаемые указания, которые Claude предлагает перенести в skills и вложенные файлы <code>CLAUDE.md</code>, загружаемые по требованию</li>
+<li><strong>Разрешения</strong>: предложение сделать <a href="https://code.claude.com/docs/ru/permissions.md#permission-modes">авторежим</a> вашим режимом разрешений по умолчанию и <a href="https://code.claude.com/docs/ru/permissions.md">заранее одобрить</a> команды только для чтения, которые вы часто отклоняете</li>
+<li><strong>Использование</strong>: на тарифах Pro, Max, Ultra, Team или Enterprise — <a href="https://code.claude.com/docs/ru/costs#plan-usage-breakdown">изменения, которые рекомендует <code>/usage</code></a>, чтобы снизить использование вашего тарифа, измеренное за последние 7 дней. Claude предлагает изменения, которые может внести сам, а остальное сообщает в виде советов, например команды, которую нужно выполнить вам. Проверка использования требует Claude Code v2.1.305 или позже, и <code>/doctor</code> пропускает её, пока подключен <a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a>.</li>
+</ul>
+<p>Для диагностики установки только для чтения без запуска сессии выполните вместо этого <code>claude doctor</code> в терминале.</p>
+<p>Чтобы проверить ваши инструкции, а не настройку, запустите <code>/doctor prompt-audit</code> в промпте Claude Code. Вместо проверки настройки Claude <a href="https://code.claude.com/docs/ru/memory#audit-your-instruction-files">проверяет ваши файлы <code>CLAUDE.md</code>, skills и другую конфигурацию</a> на наличие устаревших или противоречащих друг другу инструкций. Подкоманда <code>prompt-audit</code> требует Claude Code v2.1.283 или позже.</p>
+<h4 id="h">Запуск и проверка вашего приложения <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h4>
+<p>Три встроенных skills работают вместе, чтобы запустить ваше приложение и подтвердить изменения в работающем приложении вместо просто тестов:</p>
+<p>| Skill | Purpose |
+| :- | :- |
+| <code>/run</code> | Запустить и управлять вашим приложением, чтобы увидеть работающее изменение |
+| <code>/verify</code> | Собрать и запустить ваше приложение, чтобы подтвердить, что изменение кода делает то, что должно, без возврата к тестам или проверкам типов |
+| <code>/run-skill-generator</code> | Научить <code>/run</code> и <code>/verify</code> собирать и запускать ваш проект |</p>
+<p><code>/run</code> и <code>/verify</code> работают без настройки. Они определяют запуск из типа вашего проекта (CLI, сервер, TUI, управляемый браузером) и из того, что находится в вашем README, <code>package.json</code> или <code>Makefile</code>. Это определение становится ненадежным для проектов, которым нужно что-то большее, чем стандартный запуск: база данных, файл env, графический сеанс, многошаговая сборка.</p>
+<p><code>/run-skill-generator</code> вместо этого записывает рецепт. Он запускает ваше приложение из чистой среды, захватывает то, что сработало (команды установки, переменные env, скрипт запуска), и фиксирует это как skill для каждого проекта в <code>.claude/skills/run-&lt;name&gt;/</code>. После этого <code>/run</code>, <code>/verify</code> и любой другой агент в репозитории следуют записанному рецепту вместо его переоткрытия. Запустите <code>/run-skill-generator</code> один раз на проект, и снова, если процесс сборки или запуска изменится.</p>
+<p><code>/verify</code> также может записать свой собственный рецепт. Когда ему нужно собрать и управлять вашим приложением без записанного рецепта, он записывает то, что сработало, в <code>.claude/skills/verify/SKILL.md</code> в корне репозитория, или в затронутом каталоге пакета в монорепозитории, чтобы более поздние запуски и другие агенты следовали тем же шагам. В корне репозитория записанный скилл заменяет встроенный <code>/verify</code>.</p>
+<p>Claude редактирует записанный файл только когда он неправильно направил запуск, например команду, которая не удалась, или отсутствующий шаг, поэтому вы можете сделать коммит файла без различий для каждой сессии.</p>
+<h4 id="h-2">Запуск проверок перед каждым коммитом <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<p>Когда сессия начинается при наличии skill с именем <code>verify</code> или <code>simplify</code>, инструкции Claude Code по коммитам указывают Claude запускать его непосредственно перед каждым коммитом, за исключением изменений в документации или тестах. Это требует Claude Code v2.1.286 или позже. Claude получает эту инструкцию, когда в начале сессии выполняются следующие условия:</p>
+<ul>
+<li><strong>Расположение</strong>: skill загружается из корпоративного, личного, проектного или дополнительного каталога <a href="#where-skills-live">расположения</a>, либо из файла <code>.claude/commands/</code> с таким именем. Рецепт, который <code>/verify</code> записывает в корне вашего репозитория, является проектным skill, поэтому он учитывается. Встроенные <code>/verify</code> и <code>/simplify</code>, skills плагинов и skills из вашей учетной записи claude.ai не учитываются.</li>
+<li><strong>Вызов</strong>: Claude может вызвать skill. Если вы <a href="#control-who-invokes-a-skill">запретили Claude вызывать его</a>, например с помощью <code>disable-model-invocation: true</code>, Claude не получает эту инструкцию.</li>
+<li><strong>Инструкции Git</strong>: вы не отключили <a href="https://code.claude.com/docs/ru/settings-reference#includegitinstructions"><code>includeGitInstructions</code></a>. Его отключение удаляет эту инструкцию вместе с остальными встроенными инструкциями по коммитам и PR.</li>
+</ul>
+<h4 id="работа-с-проектами-claude-api">Работа с проектами Claude API <a class="h-anchor" href="#работа-с-проектами-claude-api" aria-label="Ссылка на раздел">#</a></h4>
+<p>Встроенный skill <code>/claude-api</code> загружает справочный материал <a href="https://platform.claude.com/docs/en/api/overview">Claude API</a> и <a href="https://platform.claude.com/docs/en/managed-agents/overview">Managed Agents</a> для языка вашего проекта. Claude также активирует его автоматически, когда ваш код импортирует <code>anthropic</code> или <code>@anthropic-ai/sdk</code>.</p>
+<p>Чтобы запустить один из рабочих процессов skill, введите подкоманду после имени skill в приглашении Claude Code, например <code>/claude-api migrate</code>. Таблица перечисляет, что делает каждая подкоманда, и самую раннюю версию Claude Code, которая её включает. <code>migrate</code> и <code>managed-agents-onboard</code> предшествуют v2.1.221, самой старой версии, которую отслеживает таблица.</p>
+<p>| Подкоманда | Что она делает | Минимальная версия |
+| :- | :- | :- |
+| <code>migrate</code> | Обновить ваш существующий код Claude API на более новую модель | Ранее v2.1.221 |
+| <code>upgrade</code> | Обновить Anthropic SDK вашего проекта до новой основной версии и обновить ваш код с учётом её критических изменений | v2.1.236 или позже |
+| <code>api-version</code> | Обновить ваш код Claude API для более новой <a href="https://platform.claude.com/docs/en/api/versioning">версии API</a>, а затем переключить ваши запросы на эту версию | v2.1.307 или позже |
+| <code>managed-agents-onboard</code> | Пройти через создание нового Managed Agent | Ранее v2.1.221 |
+| <code>managed-agents-onboard &lt;url&gt;</code> | Создать Managed Agent, описанный на странице по указанному URL, например на странице в <a href="https://platform.claude.com/docs/en/managed-agents/overview">документации Managed Agents</a> | v2.1.290 или позже |
+| <code>managed-agents-onboard &lt;quickstart-name&gt;</code> | Создать один из шаблонов быстрого старта Console, например <code>deep-researcher</code>. Если вы укажете одно слово, которое не является именем шаблона, Claude перечислит допустимые имена | v2.1.290 или позже |
+| <code>managed-agents-secure [&lt;agent-id&gt;]</code> | Прочитать настройки одного Managed Agent и сообщить, где они соответствуют руководству <a href="https://platform.claude.com/docs/en/managed-agents/secure-deployment">Secure your Managed Agents deployment</a> или отличаются от него. Требует <a href="https://platform.claude.com/docs/en/cli-sdks-libraries/cli/quickstart"><code>ant</code> CLI</a> | v2.1.304 или позже |
+| <code>prompt-audit</code> | Отметить инструкции, написанные для более старых моделей в ваших промптах, skills и описаниях инструментов, и предложить исправления в виде diff | v2.1.221 или позже |
+| <code>cost-optimize</code> | Профилировать, куда идут расходы Claude API вашего проекта, и предложить экономию из таких опций, как кэширование промптов, сокращение ненужных входных и выходных токенов, пакетная обработка, усилие и выбор модели, по одному изменению за раз | v2.1.247 или позже |
+| <code>latency-optimize</code> | Найти, на что уходит время в вашем существующем коде Claude API, и предложить изменения, которые сокращают время ожидания для пользователей | v2.1.319 или позже |
+| <code>build-eval</code> | Построить набор eval для вашего приложения на базе Claude | v2.1.259 или позже |
+| <code>hillclimb</code> | Итеративно улучшить ваше приложение в сравнении с существующим eval | v2.1.259 или позже |
+| <code>preserved-thinking-migration</code> | Найти правки, которые ваша интеграция делает в более ранних ходах, её системный промпт или список инструментов, которые делают недействительными блоки <a href="https://platform.claude.com/docs/en/build-with-claude/preserved-thinking">preserved thinking</a>, измерить, сколько рассуждений каждый из них отбрасывает, и предложить исправления по одному за раз, переизмеряя после каждого изменения | v2.1.282 или позже |</p>
+<h3 id="h-3">Начало работы <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="создайте-свой-первый-skill">Создайте свой первый skill <a class="h-anchor" href="#создайте-свой-первый-skill" aria-label="Ссылка на раздел">#</a></h4>
+<p>Этот пример создает skill, который суммирует незафиксированные изменения в вашем git-репозитории и отмечает все рискованные моменты. Он загружает живой diff в подсказку перед тем, как Claude его прочитает, поэтому ответ основан на вашем фактическом рабочем дереве, а не на том, что Claude может предположить из открытых файлов. Claude автоматически загружает skill, когда вы спрашиваете об изменениях, или вы можете вызвать его напрямую с помощью <code>/summarize-changes</code>.</p>
+<p><strong>1. Создайте директорию skill</strong></p>
+<p>Создайте директорию для skill в папке ваших личных skills. Личные skills доступны во всех ваших проектах.</p>
+<p>```bash theme={null}
+mkdir -p ~/.claude/skills/summarize-changes</p>
+<pre><code>
+**2. Напишите SKILL.md**
+
+Каждому skill нужен файл `SKILL.md` с двумя частями: YAML frontmatter между маркерами `---`, который говорит Claude, когда использовать skill, и содержимое markdown с инструкциями, которые Claude следует при запуске skill. Имя директории становится командой, которую вы вводите, а `description` помогает Claude решить, когда автоматически загружать skill.
+
+Сохраните это в `~/.claude/skills/summarize-changes/SKILL.md`:
+</code></pre>
+<hr>
+<p>description: Summarizes uncommitted changes and flags anything risky. Use when the user asks what changed, wants a commit message, or asks to review their diff.</p>
+<hr>
+<h3 id="current-changes">Current changes <a class="h-anchor" href="#current-changes" aria-label="Ссылка на раздел">#</a></h3>
+<p>!<code>git diff HEAD</code></p>
+<h3 id="instructions">Instructions <a class="h-anchor" href="#instructions" aria-label="Ссылка на раздел">#</a></h3>
+<p>Summarize the changes above in two or three bullet points, then list any risks you notice such as missing error handling, hardcoded values, or tests that need updating. If the diff is empty, say there are no uncommitted changes.</p>
+<pre><code>
+Строка `` !`git diff HEAD` `` использует [динамическое внедрение контекста](#inject-dynamic-context): Claude Code запускает команду и заменяет строку её выводом перед тем, как Claude увидит содержимое skill, поэтому инструкции приходят с уже встроенным текущим diff.
+
+**3. Протестируйте skill**
+
+Откройте git-проект, внесите небольшое изменение в любой файл и запустите Claude Code, выполнив `claude`. Вы можете протестировать skill двумя способами.
+
+**Позвольте Claude вызвать его автоматически**, задав вопрос, который соответствует описанию:
+</code></pre>
+<p>What did I change?</p>
+<pre><code>
+**Или вызовите его напрямую** с именем skill:
+</code></pre>
+<p>/summarize-changes</p>
+<pre><code>
+В любом случае Claude должен ответить с кратким резюме вашего изменения и списком рисков.
+
+## Выбор места загрузки скиллов
+
+От того, где вы сохраните скилл, зависит, какие сессии его загрузят. Сохраните его в домашнем каталоге, чтобы он был доступен во всех проектах; сделайте коммит в репозиторий, чтобы поделиться им со всеми, кто там работает; или распространите его через плагин или управляемые настройки, чтобы он был доступен всей команде.
+
+| Расположение | Путь | Где загружается |
+| :- | :- | :- |
+| Корпоративное | `.claude/skills/&lt;skill-name&gt;/SKILL.md` в [каталоге управляемых настроек](https://code.claude.com/docs/ru/managed-settings.md#delivery-mechanisms) | У всех пользователей на компьютерах, где ваша организация его развернула |
+| Личное | `~/.claude/skills/&lt;skill-name&gt;/SKILL.md` | Во всех ваших проектах на этом компьютере, но не в [Cowork и облачных сессиях](#skills-in-cowork-and-cloud-sessions) |
+| Проектное | `.claude/skills/&lt;skill-name&gt;/SKILL.md` | В сессиях в этом репозитории, но не в [облачных тредах в проекте](https://code.claude.com/docs/ru/claude-projects.md#what-threads-pick-up-from-your-repositories). Сделайте коммит, чтобы скилл получила и ваша команда |
+| Вложенное | `&lt;subdir&gt;/.claude/skills/&lt;skill-name&gt;/SKILL.md` | В сессиях, запущенных в `&lt;subdir&gt;` или ниже, но не в облачных тредах в проекте. Вне таких тредов сессия, запущенная уровнем выше, загружает скилл, как только Claude начинает работать с файлами там. См. [монорепозитории и подкаталоги](#discovery-from-parent-and-nested-directories) |
+| Дополнительный каталог | `.claude/skills/&lt;skill-name&gt;/SKILL.md` в каталоге, который вы передаёте через `--add-dir` | В этой сессии. См. [каталоги вне проекта](#skills-from-additional-directories) |
+| Плагин | `&lt;plugin&gt;/skills/&lt;skill-name&gt;/SKILL.md` | Везде, где включён [плагин](https://code.claude.com/docs/ru/plugins/overview.md), в виде `/plugin-name:skill-name` |
+| Аккаунт claude.ai | Скиллы, включённые для вашего аккаунта claude.ai | В сессиях Cowork, облачных сессиях и сессиях в терминале, где вы входите с этим аккаунтом. См. [Скиллы, синхронизированные с claude.ai](#how-synced-skills-behave) |
+
+Папки скиллов также подчиняются следующим правилам:
+
+* **Папки-символические ссылки**: запись `&lt;skill-name&gt;` в корпоративном, личном или проектном расположении может быть символической ссылкой на каталог в другом месте на диске. Claude Code читает `SKILL.md` из целевого каталога и загружает скилл один раз, даже если на один и тот же целевой каталог указывают несколько расположений. Скиллы плагинов [обрабатывают символические ссылки иначе](https://code.claude.com/docs/ru/plugins/host-marketplace.md#share-files-within-a-marketplace-with-symlinks).
+* **Зарезервированное имя `synced`**: не называйте папку скилла `synced` ни в каком регистре. Claude Code использует `~/.claude/skills/synced/` для [скиллов, загруженных с claude.ai](#where-synced-skills-load), и пропускает созданный вами скилл с этим именем в корпоративном, личном и проектном расположениях.
+* **Зарезервированное имя `anthropic-skills`**: вне плагина папка скилла или файл команды с именем `anthropic-skills` или именем, начинающимся с `anthropic-skills:`, не загружается. См. [Имена, зарезервированные для синхронизированных скиллов](#names-reserved-for-synced-skills).
+* **Символы в имени**: вне плагина папка скилла не загружается, если её имя содержит такой символ, как пробел нулевой ширины или `&lt;`. См. [Символы, которые не может содержать имя скилла](#characters-a-skill-name-cant-hold).
+* **Файлы команд**: файл Markdown в `.claude/commands/` — это более старый формат, который по-прежнему работает. Он поддерживает тот же [frontmatter](#frontmatter-reference), за исключением `name` и `paths`. Чтобы узнать имя, которое нужно ввести для его вызова, см. [Как скилл получает имя команды](#how-a-skill-gets-its-command-name). Для новой работы предпочтительнее скилл, поскольку скиллы также поддерживают [вспомогательные файлы](#add-supporting-files).
+* **Папка скилла как плагин**: добавьте `.claude-plugin/plugin.json` в папку личного или проектного скилла, и Claude Code сможет загрузить её как [плагин](https://code.claude.com/docs/ru/plugins/loading.md#plugins-shared-through-a-repository) с именем `&lt;name&gt;@skills-dir` с собственными агентами, хуками и MCP-серверами. В `.claude/skills/` проекта для этого сначала нужно принять диалог доверия к рабочему пространству, а в обоих расположениях также требуется, чтобы ваш администратор не [заблокировал плагины из каталогов скиллов](https://code.claude.com/docs/ru/plugins/loading.md#skills-directory-plugins-blocked-by-managed-settings).
+
+### Загрузка скиллов в монорепозиториях и подкаталогах
+
+Claude Code загружает проектные скиллы из `.claude/skills/` в каталоге, в котором вы его запускаете, и в каждом родительском каталоге вплоть до корня репозитория, поэтому при запуске в `packages/frontend/` всё равно подхватываются скиллы, определённые в корне. Когда вы [перемещаете сессию с помощью `/cd`](https://code.claude.com/docs/ru/permissions#move-the-session-to-another-directory) в версии v2.1.246 или новее, Claude Code добавляет проектные скиллы нового каталога.
+
+В сессии, работающей в связанном [git worktree](https://code.claude.com/docs/ru/worktrees.md), который вы создали с помощью `--worktree` или `git worktree add`, Claude Code ищет родительские каталоги только до корня worktree. В Claude Code v2.1.277 или новее, если в корне checkout worktree нет каталога `.claude/skills`, Claude Code вместо этого загружает проектные скиллы основного checkout. См. [Что worktree разделяют с основным checkout](https://code.claude.com/docs/ru/worktrees.md#what-worktrees-share-with-the-main-checkout).
+
+Скиллы в каталоге `.claude/skills/` ниже места запуска не загружаются при старте. Они загружаются, когда Claude впервые читает или редактирует файл в этом подкаталоге, и остаются доступными до конца сессии. До этого момента они не отображаются в меню `/`, и вы не можете вызвать их по имени. Чтобы загрузить их раньше, выполните `/add-dir` с путём к подкаталогу; для этого требуется Claude Code v2.1.257 или новее. О сессии в worktree, которую вы запускаете из приложения Desktop, см. [Что worktree разделяют с основным checkout](https://code.claude.com/docs/ru/worktrees.md#what-worktrees-share-with-the-main-checkout).
+
+Когда имя каталога вложенного скилла совпадает с именем другого скилла, доступными остаются оба. Если скилл `deploy` есть в корне репозитория и ещё один — в `apps/web/.claude/skills/`:
+
+* `/deploy` запускает корневой скилл. Claude Code также перечисляет для Claude варианты с указанием каталога вместе с инструкцией вызывать тот, в каталоге которого находятся файлы, с которыми он работает, поэтому вложенный скилл по-прежнему применяется к работе в `apps/web/`.
+* `/apps/web:deploy` запускает только вложенный скилл. В его описании указан каталог, к которому он относится.
+
+### Загрузка скиллов из каталога вне проекта
+
+Когда вы добавляете каталог с помощью `--add-dir` или `/add-dir`, Claude Code загружает скиллы из `.claude/skills/` этого каталога, а также его `.claude/commands/` и `.claude/agents/`. Каталоги, которые Agent SDK добавляет через [`additionalDirectories`](https://code.claude.com/docs/ru/agent-sdk/typescript#options) в TypeScript или [`add_dirs`](https://code.claude.com/docs/ru/agent-sdk/python#claudeagentoptions) в Python, загружаются так же, поскольку SDK передаёт их как `--add-dir`. Настройка `permissions.additionalDirectories` в `settings.json` предоставляет только доступ к файлам и ничего из этого не загружает.
+
+Claude Code отслеживает `.claude/skills/` в каталоге, который вы передаёте через `--add-dir` при запуске, как описано в разделе [Редактирование скилла во время сессии](#live-change-detection). Он не отслеживает `.claude/commands/` и `.claude/agents/` добавленного каталога, поэтому после изменения файла там перезапустите сессию.
+
+Эта загрузка зависит от [источника настроек](https://code.claude.com/docs/ru/agent-sdk/claude-code-features.md#control-filesystem-settings-with-settingsources) `project`, который включён по умолчанию. Политика [`strictPluginOnlyCustomization`](https://code.claude.com/docs/ru/settings-reference#strictpluginonlycustomization), [режим bare](https://code.claude.com/docs/ru/headless.md#start-faster-with-bare-mode) и [`--safe-mode`](https://code.claude.com/docs/ru/cli-reference#cli-flags) дополнительно её ограничивают, как описано на соответствующих страницах. Полную таблицу того, что загружает добавленный каталог, включая `CLAUDE.md` и настройки плагинов, см. в разделе [Дополнительные каталоги предоставляют доступ к файлам, а не конфигурацию](https://code.claude.com/docs/ru/permissions.md#additional-directories-grant-file-access-not-configuration).
+
+#### Запуск одноимённого скилла из добавленного каталога
+
+Скилл добавленного каталога получает префикс, когда имя его папки конфликтует с корпоративным, личным или проектным скиллом либо со скиллом в каталоге, добавленном ранее. Чтобы запустить его, введите `/&lt;prefix&gt;:&lt;skill-name&gt;` в промпте Claude Code. Меню `/` показывает скилл под именем с префиксом, а в разделе [Как скилл получает имя команды](#how-a-skill-gets-its-command-name) описано, откуда берётся префикс. Для этого имени требуется Claude Code v2.1.309 или новее.
+
+Например, при `--add-dir ../cli` и скилле `verify` и в вашем проекте, и в `../cli`:
+
+* `/verify` запускает скилл вашего проекта
+* `/cli:verify` запускает скилл из `../cli`
+
+### Разрешение конфликтов скиллов с одинаковым именем
+
+Когда у двух скиллов совпадает имя каталога или файла, то, какой из них запустит `/name`, зависит от их происхождения. Об имени, заданном полем `name` во frontmatter, см. [Как скилл получает имя команды](#how-a-skill-gets-its-command-name).
+
+| Одинаковое имя в | Какой запускается |
+| :- | :- |
+| Двух из корпоративного, личного и проектного | Корпоративный важнее личного, а личный важнее проектного. Если `deploy` есть и в `~/.claude/skills/`, и в `.claude/skills/` проекта, `/deploy` запускает личный |
+| Любом из этих расположений и [встроенном скилле](#bundled-skills) | Ваш скилл заменяет встроенную команду, но не её псевдонимы. Проектный скилл `code-review` заменяет `/code-review`, а встроенный псевдоним `/review` никогда не запускает ваш скилл |
+| Любом из этих расположений и [встроенной команде](https://code.claude.com/docs/ru/commands.md) | В локальной сессии терминала ваш скилл заменяет встроенную команду, но не её псевдонимы. Проектный скилл `usage` заменяет `/usage`, а встроенный псевдоним `/cost` по-прежнему запускает встроенную команду |
+| Скилле и файле в `.claude/commands/` | Скилл |
+| Скилле в корне проекта и вложенном скилле | Загружаются оба. См. [монорепозитории и подкаталоги](#discovery-from-parent-and-nested-directories) |
+| Корпоративном, личном или проектном скилле и скилле в [добавленном каталоге вне проекта](#skills-from-additional-directories) | Корпоративный, личный или проектный скилл, а скилл добавленного каталога запускается под именем с префиксом. См. [запуск одноимённого скилла из добавленного каталога](#run-a-same-named-skill-from-an-added-directory) |
+| Двух [добавленных каталогах](#skills-from-additional-directories) вне проекта | Скилл из каталога, добавленного первым, в порядке `--add-dir` или `/add-dir`. Другой запускается под [именем с префиксом](#run-a-same-named-skill-from-an-added-directory) |
+| Скилле плагина и скилле в любом из расположений выше | Загружаются оба, поскольку скиллы плагинов находятся в пространстве имён `/plugin-name:skill-name` |
+| Любом из вышеперечисленных и коротком имени скилла, [синхронизированного с вашим аккаунтом claude.ai](#how-synced-skills-behave) | Другой скилл или команда. Синхронизированный скилл тогда отображается и запускается только под своим полным именем. См. [Когда имя синхронизированного скилла совпадает с другой командой](#when-a-synced-skill-name-matches-another-command) |
+
+### Использование скиллов в Cowork и облачных сессиях
+
+Сессии [Cowork](https://claude.com/product/cowork) и [облачные сессии](https://code.claude.com/docs/ru/cloud-environments.md#what-carries-over-from-your-setup), включая [облачные запланированные задачи](https://code.claude.com/docs/ru/routines.md), не читают `~/.claude/skills/` на вашем компьютере. Как интерактивные, так и запланированные сессии Cowork загружают скиллы, включённые для вашего аккаунта claude.ai и синхронизируемые при старте сессии. Управляйте этими скиллами на странице [claude.ai/customize/skills/yours](https://claude.ai/customize/skills/yours).
+
+Если скилл существует только в `~/.claude/skills/` на вашем компьютере, Claude Code сообщает, что скилл не найден, когда его вызывает [облачная запланированная задача](https://code.claude.com/docs/ru/routines.md). Это происходит потому, что каждый запуск начинается как новая облачная сессия. Чтобы сделать личный скилл доступным в этих сессиях:
+
+* Для сессий Cowork, облачных сессий и облачных тредов в [проекте](https://code.claude.com/docs/ru/claude-projects.md#what-threads-pick-up-from-your-repositories) включите скилл для своего аккаунта claude.ai. В облачном треде проекта скиллы, закоммиченные в `.claude/skills/` репозитория, недоступны. [Некоторые сессии в самостоятельно размещённой среде](https://code.claude.com/docs/ru/self-hosted-environments-configuration.md#how-each-session’s-config-is-assembled) не загружают скиллы вашего аккаунта.
+* Для облачных сессий, отличных от тредов проекта, вы можете вместо этого сделать коммит скилла в `.claude/skills/` репозитория. Плагины, объявленные в `.claude/settings.json` репозитория, и плагины, включённые только в ваших пользовательских настройках, [не загружаются в облачных сессиях](https://code.claude.com/docs/ru/cloud-environments.md#what-carries-over-from-your-setup).
+
+[Запланированные задачи Desktop](https://code.claude.com/docs/ru/desktop-scheduled-tasks.md) выполняются локально на вашем компьютере, поэтому они загружают `~/.claude/skills/`.
+
+### Скиллы, синхронизированные с claude.ai
+
+Этот раздел относится к вам, если вы используете Cowork или облачные сессии либо входите в Claude Code в терминале с аккаунтом claude.ai. В таких сессиях Claude Code загружает скиллы, включённые для вашего аккаунта claude.ai, без какой-либо настройки с вашей стороны, как описано в разделе [Где загружаются синхронизированные скиллы](#where-synced-skills-load). К ним относятся скиллы, которые вы создаёте или включаете в настройках claude.ai, скиллы, которые там предоставляет ваша организация, и встроенные скиллы Anthropic, такие как `pdf` и `xlsx`.
+
+Claude Code скачивает синхронизированный скилл из вашего аккаунта, а не читает файл, который вы написали на компьютере, где выполняется сессия, поэтому он применяет к синхронизированным скиллам правила, которые не применяются к скиллам, хранящимся в [расположениях скиллов](#where-skills-live).
+
+#### Где загружаются синхронизированные скиллы
+
+В сессии Cowork или облачной сессии Claude Code загружает скиллы, включённые для вашего аккаунта claude.ai, а в разделе [Скиллы в Cowork и облачных сессиях](#skills-in-cowork-and-cloud-sessions) описано, как выбрать, какие скиллы получат эти сессии.
+
+В терминале Claude Code синхронизирует эти скиллы в сессиях, где вы входите со своим аккаунтом claude.ai. При старте сессии Claude Code в фоновом режиме скачивает скиллы вашего аккаунта в `~/.claude/skills/synced/`, а затем, пока сессия работает, проверяет claude.ai на наличие изменений. Когда проверка обнаруживает, что скилл был добавлен, изменён или отключён на claude.ai, Claude Code добавляет, обновляет или удаляет его в работающей сессии без перезапуска. Для синхронизации в сессиях терминала требуется Claude Code v2.1.273 или новее.
+
+Пока сессия простаивает, проверки выполняются реже:
+
+* **Пока вы или Claude работаете в сессии**: проверка выполняется примерно каждые 10 минут.
+* **Пока сессия простаивает**: проверка выполняется примерно каждые 40 минут. Когда вы снова начинаете вводить текст в сессии, Claude Code выполняет проверку в течение нескольких минут, если последняя проверка была более 10 минут назад.
+
+Синхронизация никогда не задерживает запуск, поскольку Claude ожидает скачивания скилла только тогда, когда вызывает этот скилл. Поэтому короткий [неинтерактивный](https://code.claude.com/docs/ru/headless.md) запуск может завершиться до того, как скачается недавно добавленный скилл; в таком случае его скачает одна из следующих сессий. Чтобы неинтерактивный запуск скачивал ваши скиллы и дожидался списка, прежде чем ответить на промпт, установите [`CLAUDE_CODE_SYNC_SKILLS`](https://code.claude.com/docs/ru/env-vars#variables) в `1`. До v2.1.273 сессии терминала скачивали их только при запуске с `-p` и установленной этой переменной.
+
+Claude Code выполняет синхронизацию только в сессии, в которой выполнен вход с вашим аккаунтом claude.ai и которая [получает флаги функций от Anthropic](https://code.claude.com/docs/ru/env-vars.md#features-that-need-feature-flag-fetching). Синхронизация не выполняется в следующих сессиях:
+
+* Сессия, которая не использует вход, сохранённый через `/login`, например сессия с аутентификацией по API-ключу или сессия, в которой учётные данные предоставляет `ANTHROPIC_AUTH_TOKEN`, `CLAUDE_CODE_OAUTH_TOKEN` или скрипт `apiKeyHelper`
+* Сессия, которая не получает флаги функций, например сессия в Amazon Bedrock или сессия, в которой вы установили `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`
+* Сессия в [режиме bare](https://code.claude.com/docs/ru/headless.md#start-faster-with-bare-mode) или сессия, запущенная с `--safe-mode`
+* Сессия, в которой управляемые настройки вашей организации [ограничивают скиллы источниками-плагинами](https://code.claude.com/docs/ru/settings-reference.md#strictpluginonlycustomization-skills), или сессия, запущенная со списком [`--setting-sources`](https://code.claude.com/docs/ru/cli-reference#cli-flags), в котором нет `user`
+
+Если вы входите через `/login` во время сессии, перезапустите Claude Code, чтобы начать синхронизацию.
+
+Скиллы, синхронизированные в предыдущей сессии, остаются на диске. Claude Code загружает их в последующих сессиях с входом в тот же аккаунт, даже если не может связаться с claude.ai.
+
+Claude Code скачивает синхронизированные скиллы и никогда не отправляет их обратно в ваш аккаунт. Если вы или Claude редактируете файл в `~/.claude/skills/synced/`, изменение не сохраняется в вашем аккаунте claude.ai, и последующая синхронизация может перезаписать или удалить его. Чтобы изменить синхронизированный скилл, обновите его на claude.ai; следующая синхронизация скачает новую версию.
+
+Чтобы увидеть, какие скиллы синхронизированы, выполните `/skills`. Меню перечисляет их в разделе `claude.ai sync`.
+
+Некоторые скиллы Anthropic, такие как `pdf` и `xlsx`, синхронизируются всегда. Для остальных включите или отключите скилл в настройках скиллов на claude.ai, чтобы изменить, синхронизируется ли он.
+
+Чтобы остановить синхронизацию на компьютере, установите [`syncClaudeAiSkills`](https://code.claude.com/docs/ru/settings-reference#syncclaudeaiskills) в `false` в своих пользовательских настройках. Claude Code прекращает скачивание, а при следующем запуске перемещает уже синхронизированные скиллы в `~/.claude/skills/.trash/` и больше их не загружает. Ваша организация может отключить синхронизацию для всех, отключив Skills на claude.ai. Чтобы остановить синхронизацию, оставив Skills включёнными, она может задать тот же ключ в [управляемых настройках](https://code.claude.com/docs/ru/managed-settings.md).
+
+Если ваша организация отключает Skills на claude.ai, Claude Code удаляет скачанные скиллы, и они перестают загружаться. Удалённые скиллы перемещаются в `~/.claude/skills/.trash/`, где вы можете восстановить файлы, пока их не удалит [очистка по сроку хранения](https://code.claude.com/docs/ru/claude-directory.md#cleaned-up-automatically). Как только ваша организация снова включит Skills, Claude Code скачает включённые вами скиллы при следующей синхронизации.
+
+#### Когда имя синхронизированного скилла совпадает с другой командой
+
+Вы можете вызвать синхронизированный скилл по короткому имени, `/&lt;name&gt;`, или по полному имени, `/anthropic-skills:&lt;name&gt;`. Когда короткое имя использует другая команда, `/&lt;name&gt;` запускает другую команду, а синхронизированный скилл запускается только как `/anthropic-skills:&lt;name&gt;`. Если есть локальный скилл `deploy` и синхронизированный `deploy`, `/deploy` запускает локальный скилл, а `/anthropic-skills:deploy` — синхронизированный. До v2.1.269 у синхронизированного скилла было только короткое имя.
+
+В меню `/`, `/skills` и `/context` синхронизированный скилл отображается под своим коротким именем или под полным именем, пока короткое имя использует другая команда. Выполните `/skills` в своей сессии. Примечание под списком поясняет каждый синхронизированный скилл, потерявший своё короткое имя. Если это имя использует один из ваших личных скиллов или файлов команд в `~/.claude/`, в примечании также указано, что переименовать или удалить, чтобы освободить его.
+
+С v2.1.269 по v2.1.280 эти списки показывали каждый синхронизированный скилл под полным именем, а в `/skills` не было такого примечания; и то и другое изменилось в v2.1.281.
+
+Командой, использующей короткое имя, может быть любая из следующих:
+
+* Встроенная команда или [встроенный скилл](#bundled-skills), включая недоступный в вашей сессии, например после того, как вы отключили встроенные скиллы
+* Скилл на любом [локальном уровне](#where-skills-live) или файл в `.claude/commands/`
+* Скилл плагина
+* [MCP-промпт](https://code.claude.com/docs/ru/mcp.md#use-mcp-prompts-as-commands)
+
+Claude Code помечает синхронизированные скиллы, чтобы вы могли определить их происхождение. Меню `/skills` и `/context` группируют синхронизированные скиллы в разделе `claude.ai sync`, а меню команд `/` помечает их как полученные с claude.ai.
+
+При сравнении имён Claude Code игнорирует регистр, пробелы и невидимые символы, а совместимые формы, такие как полноширинные буквы и варианты тире, считает их обычными эквивалентами. Например, синхронизированный скилл с именем `Commit` и локальный скилл с именем `commit` считаются одним и тем же именем, поэтому `/commit` продолжает запускать ваш локальный скилл.
+
+Имя, отличающееся только похожей буквой из другого алфавита, считается другим именем, и различить их можно по метке `claude.ai sync`. Для этих проверок и меток требуется Claude Code v2.1.228 или новее.
+
+#### Имена, зарезервированные для синхронизированных скиллов
+
+Claude Code резервирует имя `anthropic-skills` и все имена внутри этого пространства имён, такие как `anthropic-skills:pdf`, для скиллов, синхронизированных с claude.ai, поэтому полное имя синхронизированного скилла никогда не запускает ничего другого. Имя зарезервировано в каждой сессии, независимо от того, входите ли вы с аккаунтом claude.ai.
+
+* **Папка скилла, `name` во frontmatter, файл или подпапка в `.claude/commands/` или [сохранённый workflow](https://code.claude.com/docs/ru/workflows.md#save-the-workflow-for-reuse)**: не загружается. [Уведомление при запуске](https://code.claude.com/docs/ru/errors.md#a-skill-command-or-workflow-wasnt-loaded-because-its-name-is-reserved) указывает первый элемент, который нужно переименовать или изменить.
+* **Плагин с именем `anthropic-skills`**: загружается. Когда один из его скиллов и синхронизированный скилл оба называются `&lt;name&gt;`, `/anthropic-skills:&lt;name&gt;` запускает синхронизированный скилл.
+* **MCP-сервер с именем `anthropic-skills`**: подключается, и его инструменты работают, но [его промпты не отображаются как команды](https://code.claude.com/docs/ru/mcp.md#use-mcp-prompts-as-commands). Переименуйте сервер в конфигурации MCP, чтобы они отображались.
+
+#### Как Claude Code обрабатывает frontmatter синхронизированного скилла
+
+Claude Code применяет к frontmatter синхронизированного скилла два правила:
+
+* Frontmatter применяется в любой сессии, поэтому разрешение `allowed-tools` проходит через обычный [процесс разрешений](https://code.claude.com/docs/ru/permissions.md). Если ваша организация устанавливает `allowManagedPermissionRulesOnly`, разрешение [не применяется](#when-only-managed-permission-rules-apply).
+* Claude Code очищает отображаемый текст, предоставляемый скиллом, например его описание. Он удаляет управляющие символы, а в тексте, который попадает к Claude, например в описании, также экранирует угловые скобки, чтобы текст не мог имитировать внутреннее форматирование Claude Code. Для этой очистки требуется Claude Code v2.1.228 или новее.
+
+#### Как Claude Code обрабатывает тело синхронизированного скилла
+
+То, что Claude Code делает с телом синхронизированного скилла, зависит от того, где выполняется сессия:
+
+* В облачной сессии тело ведёт себя так же, как у локального скилла, поскольку сессия выполняется в изолированном контейнере.
+* В сессии Cowork на вашем компьютере тело ведёт себя так же, как у локального скилла, за исключением того, что Claude Code заменяет каждую строку команды `!` на [заполнитель `disableSkillShellExecution`](#inject-dynamic-context), как он делает для каждого скилла, который вы там предоставляете.
+* В сессии терминала или VS Code Claude Code не выполняет [команды `!`](#inject-dynamic-context), не прикрепляет файлы, указанные в ссылках `@`, и не подставляет заполнители `${CLAUDE_PROJECT_DIR}` и `${CLAUDE_SESSION_ID}`. Ссылки `@` и оба заполнителя попадают к Claude как буквальный текст. Строка команды `!` также попадает к Claude как буквальный текст или как заполнитель `disableSkillShellExecution`, когда эта настройка включена. Для такой обработки требуется Claude Code v2.1.228 или новее.
+
+### Редактирование скилла во время сессии
+
+Claude Code отслеживает изменения файлов в каталогах скиллов, за исключением [режима bare](https://code.claude.com/docs/ru/headless.md#start-faster-with-bare-mode). Когда вы добавляете, редактируете или удаляете скилл в `~/.claude/skills/`, в `.claude/skills/` проекта или в `.claude/skills/` внутри каталога `--add-dir`, Claude Code подхватывает изменение в текущей сессии без перезапуска.
+
+Если вы создаёте каталог скиллов верхнего уровня, которого не было при старте сессии, выполните [`/reload-skills`](https://code.claude.com/docs/ru/commands#all-commands), чтобы подхватить помещённые туда скиллы. Claude Code ещё не отслеживает этот каталог, поэтому выполняйте `/reload-skills` снова после каждого последующего изменения в нём.
+
+&gt; [!NOTE]
+&gt;
+&gt; Отслеживание изменений в реальном времени охватывает текст `SKILL.md`. Для папки скилла, которая также является [плагином](https://code.claude.com/docs/ru/plugins/loading.md#plugins-shared-through-a-repository), изменения в `.mcp.json`, `agents/` и `output-styles/` вступают в силу только после `/reload-plugins`. Изменениям в `hooks/` это тоже требуется, за исключением файла модуля [мода](https://code.claude.com/docs/ru/plugins/mods/overview.md), когда он [перезагружается самостоятельно](https://code.claude.com/docs/ru/env-vars.md).
+
+### Удаление скилла
+
+Способ удаления скилла зависит от его происхождения:
+
+* **Личный или проектный скилл**: удалите каталог скилла, `~/.claude/skills/&lt;skill-name&gt;/` или `.claude/skills/&lt;skill-name&gt;/`. Claude Code [убирает его из `/skills` в текущей сессии](#live-change-detection); содержимое, которое Claude Code уже загрузил из него, подчиняется [жизненному циклу содержимого скилла](#skill-content-lifecycle).
+* **Корпоративный скилл**: администратор удаляет каталог скилла из `.claude/skills/` внутри [каталога управляемых настроек](https://code.claude.com/docs/ru/managed-settings.md#delivery-mechanisms), например `/etc/claude-code/.claude/skills/&lt;skill-name&gt;/` в Linux.
+* **Скилл плагина**: отключите или удалите плагин, который его предоставляет, через меню `/plugin` или с помощью `/plugin uninstall &lt;plugin-name&gt;@&lt;marketplace-name&gt;`. Claude Code выгружает скиллы плагина, когда [изменение применяется](https://code.claude.com/docs/ru/plugins/cli-reference.md#reload-plugins), или при перезапуске.
+* **Скилл, синхронизированный с claude.ai**: отключите скилл для своего аккаунта claude.ai там же, где вы его [включили](#skills-in-cowork-and-cloud-sessions). Claude Code удалит его из `~/.claude/skills/synced/` при следующей [синхронизации ваших скиллов](#where-synced-skills-load). Если вместо этого вы удалите каталог вручную, следующая синхронизация скачает его снова, пока скилл остаётся включённым на claude.ai.
+* **Встроенный скилл**: установите [`disableBundledSkills`](#bundled-skills) в `true`, чтобы отключить встроенные скиллы, или установите для одного скилла значение `&quot;off&quot;` в [`skillOverrides`](#override-skill-visibility-from-settings), чтобы скрыть его.
+
+Чтобы сохранить личный или проектный скилл, но запретить Claude вызывать его самостоятельно, установите [`disable-model-invocation: true`](#control-who-invokes-a-skill) в его frontmatter или `&quot;user-invocable-only&quot;` в [`skillOverrides`](#override-skill-visibility-from-settings), если не хотите редактировать файл.
+
+## Настройка скиллов
+
+Скиллы настраиваются с помощью YAML frontmatter в начале `SKILL.md` и следующего за ним markdown-содержимого.
+
+### Типы содержимого скилла
+
+Файлы скиллов могут содержать любые инструкции, но если вы заранее продумаете, как собираетесь их вызывать, вам будет проще решить, что в них включить:
+
+**Справочное содержимое** добавляет знания, которые Claude применяет к вашей текущей работе: соглашения, паттерны, руководства по стилю, знания предметной области. Это содержимое встраивается напрямую, поэтому Claude может использовать его вместе с контекстом вашего диалога.
+</code></pre>
+<hr>
+<p>name: api-conventions
+description: API design patterns for this codebase</p>
+<hr>
+<p>When writing API endpoints:</p>
+<ul>
+<li>Use RESTful naming conventions</li>
+<li>Return consistent error formats</li>
+<li>Include request validation</li>
+</ul>
+<pre><code>
+**Содержимое задачи** даёт Claude пошаговые инструкции для конкретного действия, например развёртывания, коммитов или генерации кода. Часто это действия, которые вы хотите вызывать напрямую через `/skill-name`, а не позволять Claude решать, когда их запускать. Добавьте `disable-model-invocation: true`, чтобы Claude не мог запускать скилл автоматически. В примере ниже добавлено `context: fork`, благодаря чему скилл выполняется в собственном контексте субагента; см. [Запуск скиллов в субагенте](#run-skills-in-a-subagent).
+</code></pre>
+<hr>
+<p>name: deploy
+description: Deploy the application to production
+context: fork
+disable-model-invocation: true</p>
+<hr>
+<p>Deploy the application:</p>
+<ol>
+<li>Run the test suite</li>
+<li>Build the application</li>
+<li>Push to the deployment target</li>
+</ol>
+<pre><code>
+Делайте само тело скилла лаконичным. После загрузки скилла его содержимое [остаётся в контексте на протяжении последующих ходов](#skill-content-lifecycle), поэтому каждая строка — это постоянный расход токенов. Указывайте, что делать, а не рассказывайте, как или почему, и применяйте ту же проверку на лаконичность, что и для [содержимого CLAUDE.md](https://code.claude.com/docs/ru/best-practices.md#keep-claude-md-short).
+
+### Справочник по frontmatter
+
+Настройте скилл с помощью YAML [frontmatter](https://code.claude.com/docs/ru/glossary.md#frontmatter) между маркерами `---` в начале `SKILL.md`, а инструкции скилла напишите в формате Markdown после закрывающего `---`. Имена полей состоят из слов в нижнем регистре, разделённых дефисами, за исключением `when_to_use`. [Файл команды](#where-skills-live) в `.claude/commands/` принимает те же поля, кроме `name` и `paths`. В этом примере задано четыре поля:
+</code></pre>
+<hr>
+<p>name: my-skill
+description: What this skill does
+disable-model-invocation: true
+allowed-tools: Read Grep</p>
+<hr>
+<p>Your skill instructions here...</p>
+<pre><code>
+Все поля необязательны. Рекомендуется задавать только `description`, чтобы Claude знал, когда использовать скилл. Имя поля должно точно совпадать с таблицей, включая дефисы: Claude Code игнорирует нераспознанное поле, не сообщая об ошибке. Логические поля, помимо `true` и `false`, принимают `yes`, `no`, `on`, `off`, `1` и `0` в любом регистре.
+
+Claude Code читает frontmatter, только если открывающий `---` находится в первой строке файла. В противном случае весь файл, включая маркеры `---`, рассматривается как содержимое скилла. Если YAML между маркерами не удаётся разобрать, скилл всё равно загружается, но без заданных полей; чтобы найти и исправить ошибку, см. [Скилл не срабатывает](#skill-not-triggering).
+
+| Поле | Обязательное | Описание |
+| :- | :- | :- |
+| `name` | Нет | Имя команды, отображаемое в меню `/`. По умолчанию — имя каталога. О том, как это поле соотносится с именем, которое вы вводите для вызова скилла, см. [Как скилл получает имя команды](#how-a-skill-gets-its-command-name). |
+| `description` | Рекомендуется | Что делает скилл и когда его использовать. Claude использует это, чтобы решить, когда применять скилл. Если поле не задано, используется первая непустая строка markdown-содержимого. Ставьте основной сценарий использования первым: объединённый текст `description` и `when_to_use` обрезается до 1 536 символов в списке скиллов, чтобы сократить использование контекста. Угловые скобки в тексте [отображаются как `&amp;lt;` и `&amp;gt;`](#angle-brackets-in-a-skill-description). |
+| `when_to_use` | Нет | Дополнительный контекст о том, когда Claude следует вызывать скилл, например фразы-триггеры или примеры запросов. Добавляется к `description` в списке скиллов и учитывается в ограничении в 1 536 символов. |
+| `argument-hint` | Нет | Подсказка, отображаемая при автодополнении и указывающая на ожидаемые аргументы. Пример: `[issue-number]` или `[filename] [format]`. |
+| `arguments` | Нет | Именованные позиционные аргументы для [подстановки `$name`](#available-string-substitutions) в содержимом скилла. Принимает строку, разделённую пробелами, или YAML-список. Имена сопоставляются с позициями аргументов по порядку. |
+| `disable-model-invocation` | Нет | Установите `true`, чтобы Claude не мог автоматически загружать этот скилл. Используйте для рабочих процессов, которые вы хотите запускать вручную через `/name`. Также предотвращает [предварительную загрузку скилла в субагенты](https://code.claude.com/docs/ru/sub-agents.md#preload-skills-into-subagents) и его запуск, когда срабатывает [запланированная задача в рамках сессии](https://code.claude.com/docs/ru/scheduled-tasks.md) со скиллом в качестве промпта. По умолчанию: `false`. |
+| `user-invocable` | Нет | Установите `false`, если вызывать скилл должен только Claude: Claude Code скрывает его из меню `/` и не запускает, когда вы вводите `/name`. Используйте для фоновых знаний, которые пользователям не следует вызывать напрямую. По умолчанию: `true`. |
+| `allowed-tools` | Нет | Инструменты, которые Claude может использовать без запроса разрешения в течение хода, в котором вызван этот скилл. Разрешение сбрасывается, когда вы отправляете следующее сообщение. Принимает строку, разделённую пробелами или запятыми, либо YAML-список. См. [Предварительное разрешение инструментов для скилла](#pre-approve-tools-for-a-skill). |
+| `disallowed-tools` | Нет | Инструменты, удаляемые из доступного Claude набора, пока этот скилл активен. Используйте для автономных скиллов, которые никогда не должны вызывать определённые инструменты, например `AskUserQuestion` для фонового цикла. Принимает строку, разделённую пробелами или запятыми, либо YAML-список. Ограничение снимается, когда вы отправляете следующее сообщение. Как и правила запрета, это поле не может удалить [`EndConversation`](https://code.claude.com/docs/ru/tools-reference#endconversation-tool-behavior), пока остаётся хотя бы один другой инструмент. |
+| `model` | Нет | Модель, используемая, пока этот скилл активен. Переопределение действует до конца текущего хода и не сохраняется в настройках. Модель сессии возвращается, когда вы отправляете следующий промпт. Принимает те же значения, что и [`/model`](https://code.claude.com/docs/ru/model-config), или `inherit`, чтобы сохранить активную модель. Значение, исключённое [`availableModels`](https://code.claude.com/docs/ru/model-config#restrict-model-selection) — списком разрешённых моделей вашей организации, — не используется, и сессия сохраняет текущую модель. В [авторежиме](https://code.claude.com/docs/ru/permission-modes.md#eliminate-prompts-with-auto-mode), а также в [режиме планирования, когда классификатор проверяет команды](https://code.claude.com/docs/ru/permission-modes.md#analyze-before-you-edit-with-plan-mode), модель, которую авторежим не поддерживает, тоже не используется, и сессия сохраняет текущую модель. При `context: fork` значение вместо этого задаёт [модель ответвлённого субагента](#run-skills-in-a-subagent), а исключённое значение обрабатывается [по тем же правилам, что и переопределение модели субагента](https://code.claude.com/docs/ru/model-config.md#restrict-model-selection). |
+| `effort` | Нет | [Уровень effort](https://code.claude.com/docs/ru/model-config.md#adjust-effort-level) до конца текущего хода. Переопределяет уровень effort сессии, но не переменную окружения [`CLAUDE_CODE_EFFORT_LEVEL`](https://code.claude.com/docs/ru/env-vars#variables). При `context: fork` значение вместо этого задаёт уровень effort ответвлённого субагента. Если поле не задано, уровень определяется [порядком определения effort](https://code.claude.com/docs/ru/model-config.md#adjust-effort-level). Об ответвлении на другой модели см. [Уровень effort субагентов и участников команды](https://code.claude.com/docs/ru/model-config.md#effort-level-of-subagents-and-teammates). Варианты: `low`, `medium`, `high`, `xhigh`, `max`; доступные уровни зависят от модели. |
+| `context` | Нет | Установите `fork`, чтобы выполнять скилл в контексте ответвлённого субагента. См. [Запуск скиллов в субагенте](#run-skills-in-a-subagent). |
+| `agent` | Нет | Какой тип субагента использовать, когда задано `context: fork`. |
+| `background` | Нет | Применяется только при `context: fork`. Установите `false`, чтобы ожидать результат ответвлённого субагента в том ходе, в котором был вызван скилл, вместо [его выполнения в фоне](#run-skills-in-a-subagent). По умолчанию: `true`. |
+| `hooks` | Нет | Хуки, которые Claude Code регистрирует при вызове скилла и которые продолжают работать до конца сессии. Формат конфигурации, опция `once` и [ограничения хуков скиллов](https://code.claude.com/docs/ru/hooks.md#limits-on-skill-hooks) описаны в разделе [Хуки в скиллах и агентах](https://code.claude.com/docs/ru/hooks.md#hooks-in-skills-and-agents). |
+| `paths` | Нет | Glob-паттерны, ограничивающие, когда активируется этот скилл. Принимает строку, разделённую запятыми, или YAML-список. Если поле задано, Claude автоматически загружает скилл только при работе с файлами, соответствующими паттернам. Паттерны указываются относительно текущего рабочего каталога Claude, и файлы за пределами этого каталога не совпадают. Используется тот же формат glob, что и для [правил для конкретных путей](https://code.claude.com/docs/ru/memory.md#path-specific-rules). |
+| `shell` | Нет | Оболочка для блоков `` !`command` `` и ` ```! ` в этом скилле. Принимает `bash` (по умолчанию) или `powershell`. Значение `powershell` выполняет встроенные shell-команды через PowerShell, когда включён [инструмент PowerShell](https://code.claude.com/docs/ru/tools-reference.md#powershell-tool): он включён по умолчанию в Windows без Git Bash, включён по умолчанию с Git Bash для учётных записей claude.ai и Console и требует `CLAUDE_CODE_USE_POWERSHELL_TOOL=1` в сессиях Amazon Bedrock, Google Cloud&#x27;s Agent Platform и Microsoft Foundry, а также в macOS, Linux и WSL. Установите значение `0`, чтобы отключить инструмент. |
+| `metadata` | Нет | Произвольное YAML-отображение для ваших собственных данных «ключ-значение», например полей прав доступа или каталога, которые ваши собственные инструменты читают из `SKILL.md`. Claude Code никак не использует его содержимое и отбрасывает значение, не являющееся отображением. Не используйте в качестве ключей имена полей frontmatter, например `paths`. |
+| `license` | Нет | Лицензия, распространяющаяся на скилл. Часть спецификации [Agent Skills](https://agentskills.io); см. [Использование frontmatter скилла вне Claude Code](#using-skill-frontmatter-outside-claude-code). Claude Code принимает это поле, но никак его не использует. |
+| `compatibility` | Нет | Требования скилла к окружению, например целевые продукты или системные предварительные требования, как определено спецификацией [Agent Skills](https://agentskills.io); см. [Использование frontmatter скилла вне Claude Code](#using-skill-frontmatter-outside-claude-code). Принимает строку длиной до 500 символов. Claude Code принимает это поле, но никак его не использует. |
+
+#### Использование frontmatter скилла вне Claude Code
+
+Claude Code принимает все поля из таблицы выше. Вне Claude Code можно использовать только поля из спецификации [Agent Skills](https://agentskills.io):
+
+| Способ распространения | Поля frontmatter, которые можно использовать |
+| :- | :- |
+| Скиллы Claude Code на [любом уровне](#where-skills-live), включая скиллы [плагинов](https://code.claude.com/docs/ru/plugins/overview.md) | Все поля из таблицы выше |
+| Загрузка скиллов в claude.ai, Skills API и упаковка с помощью `package_skill.py` из [anthropics/skills](https://github.com/anthropics/skills) | `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools` |
+
+Когда вы включаете личный скилл для своей учётной записи claude.ai, например чтобы использовать его в [Cowork и облачных сессиях](#skills-in-cowork-and-cloud-sessions) и запланированных задачах, вы загружаете его в claude.ai. К такой загрузке применяются те же правила.
+
+Если вы включите любое поле, не разрешённое спецификацией, упаковка или загрузка завершится с ошибкой, а не проигнорирует это поле:
+</code></pre>
+<p>Unexpected key(s) in SKILL.md frontmatter: argument-hint. Allowed properties are: allowed-tools, compatibility, description, license, metadata, name</p>
+<pre><code>
+Если ограничить frontmatter шестью полями спецификации, приведённой выше ошибки о неожиданном ключе не возникнет. Всё остальное, что проверяется при этих способах, определяют [спецификация Agent Skills](https://agentskills.io) и [требования Skills API](https://docs.claude.com/en/api/skills-guide). Возможности тела скилла, доступные только в Claude Code, например [внедрение динамического контекста](#inject-dynamic-context), не работают в чате claude.ai и через API. Claude Code принимает все шесть полей, поэтому frontmatter, соответствующий спецификации, загружается в Claude Code без изменений.
+
+#### Как скилл получает имя команды
+
+Команда, которую вы вводите для вызова скилла, определяется расположением файла скилла, а для каталогов скиллов и скиллов плагинов — ещё и полем `name` во frontmatter. В личном или проектном каталоге скиллов `name` задаёт команду, которую показывает меню `/` и которую вы вводите, если только это имя уже не занято другой командой. Имя каталога тоже вызывает скилл. В скилле плагина `name` задаёт последний сегмент команды, а префикс плагина остаётся на месте.
+
+В таблице ниже показано, откуда берётся имя команды для каждого варианта расположения:
+
+| Расположение скилла | Источник имени команды | Пример |
+| :- | :- | :- |
+| Каталог скилла в `~/.claude/skills/` или `.claude/skills/` | `name` из frontmatter или имя каталога | `.claude/skills/deploy-staging/SKILL.md` → `/deploy-staging` или `/deploy` при `name: deploy` |
+| [Вложенный](#where-skills-live) каталог `.claude/skills/`, когда имя каталога конфликтует с другим скиллом | Путь подкаталога относительно рабочего каталога, затем имя каталога скилла | `apps/web/.claude/skills/deploy/SKILL.md` → `/apps/web:deploy` |
+| `.claude/skills/` в [добавленном каталоге вне проекта](#skills-from-additional-directories), когда имя каталога скилла конфликтует с корпоративным, личным или проектным скиллом либо со скиллом из каталога, добавленного ранее | Имя папки добавленного каталога, затем имя каталога скилла. Если у двух добавленных каталогов одинаковое имя папки, префикс начинается с имени родительской папки. Требуется v2.1.309 или новее | `../cli/.claude/skills/verify/SKILL.md` с `--add-dir ../cli` → `/cli:verify`. При `--add-dir ../a/cli --add-dir ../b/cli`, скилле `verify` в каждом из них и отсутствии такого скилла в других местах скилл из `../a/cli` → `/verify`, а другой → `/b/cli:verify` |
+| Файл в `.claude/commands/` | Имя файла без расширения | `.claude/commands/deploy.md` → `/deploy` |
+| Файл в подкаталоге `.claude/commands/` | Путь подкаталога относительно `commands/`, в котором каждый `/` заменён на `:`, затем имя файла без расширения | `.claude/commands/frontend/component.md` → `/frontend:component` |
+| Подкаталог `skills/` плагина | `name` из frontmatter или имя каталога с пространством имён плагина | `my-plugin/skills/review/SKILL.md` → `/my-plugin:review` или `/my-plugin:fancy` при `name: fancy` |
+| `SKILL.md` в корне плагина | `name` из frontmatter, с именем каталога плагина в качестве резервного варианта | `my-plugin/SKILL.md` с `name: review` → `/my-plugin:review`. См. [отдельный скилл в корне плагина](https://code.claude.com/docs/ru/plugins/components.md#skills) |
+| Скилл, [синхронизированный из claude.ai](#how-synced-skills-behave) | Имя скилла в вашей учётной записи claude.ai с префиксом `anthropic-skills:` | Скилл учётной записи `deploy` → `/anthropic-skills:deploy` или `/deploy`, пока это имя не использует никакая другая команда |
+
+В скилле плагина `name` из frontmatter заменяет имя каталога в последнем сегменте команды, поэтому `my-plugin/skills/review/SKILL.md` с `name: fancy` становится `/my-plugin:fancy`. Простое `/fancy` тоже вызывает скилл, если только это имя уже не занято другой командой. Если указанное вами `name` уже начинается с собственного префикса плагина, Claude Code в v2.1.246 и новее не добавляет префикс повторно. Например, `name: my-plugin:fancy` по-прежнему становится `/my-plugin:fancy`. В версиях с v2.1.216 по v2.1.245 Claude Code удваивал префикс, если `name` уже его содержало.
+
+В [неинтерактивных сессиях](https://code.claude.com/docs/ru/headless.md) имена `help` и `feedback` не зарезервированы за соответствующими встроенными командами, доступными только в терминале, поэтому скилл плагина с одним из этих имён сохраняет там свою простую команду. Имена всех остальных встроенных команд, доступных только в терминале, например `/login`, остаются зарезервированными, хотя сами команды в таких сессиях выполнить нельзя.
+
+Для `SKILL.md` в корне плагина нет каталога скилла, из которого можно взять имя, поэтому `name` задаёт весь последний сегмент. Без поля `name` Claude Code использует имя каталога плагина как резервный вариант.
+
+#### Символы, которые не может содержать имя скилла
+
+Если скилл или пользовательская команда отсутствует в меню `/` или меню не показывает `name` скилла из frontmatter, проверьте имя. Claude Code отклоняет имя команды или `name` из frontmatter, содержащее, например, такие символы:
+
+* Пробел нулевой ширины или управляющий символ
+* Символ из области частного использования или неназначенный символ, например глиф из иконочного шрифта
+* Символ, меняющий направление окружающего его текста
+* Любой пробельный символ, кроме одного обычного пробела между словами, например неразрывный пробел, два пробела подряд или пробел в начале или в конце
+* `&lt;` или `&gt;`
+
+Пользовательская команда или скилл не загружается, если Claude Code отклоняет имя его каталога или файла. Переименуйте эту папку или файл, удалив эти символы. Скилл всё же загружается, если такие символы есть только в имени папки скилла плагина или в его `name` из frontmatter:
+
+* **Папка в каталоге `skills/` плагина или в [путях `skills`](https://code.claude.com/docs/ru/plugins/components#skills) его манифеста**: переименовывать папку не нужно. Эти символы превращаются в дефисы в имени команды скилла, поэтому вводите команду с дефисами.
+* **`name` из frontmatter**: меню `/` не показывает значение `name`, и его ввод не вызывает скилл. Отредактируйте строку `name:`, удалив эти символы.
+
+Чтобы узнать, какое имя отклонил Claude Code, запустите его из оболочки с помощью [`claude --debug`](https://code.claude.com/docs/ru/cli-reference#cli-flags) и найдите в [отладочном логе](https://code.claude.com/docs/ru/debug-your-config.md) `[names]`. В интерактивной сессии о том, что имена были отклонены, также сообщает [уведомление при запуске](https://code.claude.com/docs/ru/errors.md#skill-or-command-name-refused). После переименования или правки `name:` перезапустите сессию, если только файл не находится в каталоге, который Claude Code [отслеживает на предмет изменений](#live-change-detection).
+
+#### Доступные строковые подстановки
+
+Скиллы поддерживают строковую подстановку динамических значений в содержимом скилла:
+
+| Переменная | Описание |
+| :- | :- |
+| `$ARGUMENTS` | Все аргументы, переданные при вызове скилла. Если ни один плейсхолдер не получает аргумент, Claude Code добавляет их в виде `ARGUMENTS: &lt;value&gt;`. См. [Передача аргументов скиллам](#pass-arguments-to-skills). |
+| `$ARGUMENTS[N]` | Доступ к конкретному аргументу по индексу, начиная с 0, например `$ARGUMENTS[0]` для первого аргумента. |
+| `$N` | Сокращение для `$ARGUMENTS[N]`, например `$0` для первого аргумента или `$1` для второго. |
+| `$name` | Именованный аргумент, объявленный в списке [`arguments`](#frontmatter-reference) во frontmatter. Имена сопоставляются с позициями по порядку, поэтому при `arguments: [issue, branch]` плейсхолдер `$issue` раскрывается в первый аргумент, а `$branch` — во второй. |
+| `${CLAUDE_SESSION_ID}` | Идентификатор текущей сессии. Полезен для логирования, создания файлов, привязанных к сессии, или сопоставления вывода скилла с сессиями. |
+| `${CLAUDE_EFFORT}` | Текущий уровень effort: `low`, `medium`, `high`, `xhigh` или `max`. Используйте, чтобы адаптировать инструкции скилла к активной настройке effort. |
+| `${CLAUDE_SKILL_DIR}` | Каталог, содержащий файл `SKILL.md` скилла. Для скиллов плагинов это подкаталог скилла внутри плагина, а не корень плагина. Используйте в командах bash-внедрения, чтобы ссылаться на скрипты или файлы, поставляемые со скиллом, независимо от текущего рабочего каталога. |
+| `${CLAUDE_PROJECT_DIR}` | Корневой каталог проекта. Это тот же путь, который [хуки](https://code.claude.com/docs/ru/hooks.md#reference-scripts-by-path) и MCP-серверы получают как `CLAUDE_PROJECT_DIR`. Используйте, чтобы ссылаться на локальные скрипты или файлы проекта, например `${CLAUDE_PROJECT_DIR}/.claude/hooks/helper.sh`, независимо от того, где установлен скилл. |
+| `${CLAUDE_PLUGIN_ROOT}` | Каталог установки плагина. Подставляется только в скиллах плагинов. Используйте, чтобы ссылаться на скрипты или файлы, поставляемые в любом месте плагина, включая ресурсы, общие для скиллов плагина. См. [переменные окружения плагина](https://code.claude.com/docs/ru/plugins/manifest-reference.md#environment-variables). |
+| `${CLAUDE_PLUGIN_DATA}` | [Каталог постоянных данных](https://code.claude.com/docs/ru/plugins/components.md#path-variables-and-persistent-data) плагина, который сохраняется при обновлениях плагина. Подставляется только в скиллах плагинов. Используйте, чтобы ссылаться на установленные зависимости, сгенерированные файлы или кэши, которые должны пережить обновление. |
+
+Claude Code подставляет `${CLAUDE_SKILL_DIR}` и `${CLAUDE_PROJECT_DIR}` в двух местах: в markdown-содержимом скилла и в правилах Bash в поле [`allowed-tools`](#frontmatter-reference) frontmatter. В скилле плагина Claude Code подставляет `${CLAUDE_PLUGIN_ROOT}` и `${CLAUDE_PLUGIN_DATA}` в тех же двух местах. Использование одной и той же переменной в обоих местах позволяет скиллу запускать поставляемый с ним скрипт без запроса разрешения. Следующий скилл демонстрирует этот паттерн:
+</code></pre>
+<hr>
+<p>name: render-chart
+description: Render a chart from a CSV file
+allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/render.sh *)</p>
+<hr>
+<p>Run <code>${CLAUDE_SKILL_DIR}/scripts/render.sh &lt;csv-file&gt;</code> to render the chart.</p>
+<pre><code>
+Если этот скилл установлен в `~/.claude/skills/render-chart/`, оба вхождения `${CLAUDE_SKILL_DIR}` раскрываются в этот каталог. Тогда правило `allowed-tools` совпадает в точности с командой, которую тело скилла велит Claude выполнить, и скрипт запускается без запроса.
+
+Индексированные аргументы используют кавычки в стиле оболочки, поэтому заключайте значения из нескольких слов в кавычки, чтобы передать их как один аргумент. Например, `/my-skill &quot;hello world&quot; second` приводит к тому, что `$0` раскрывается в `hello world`, а `$1` — в `second`. Плейсхолдер `$ARGUMENTS` всегда раскрывается в полную строку аргументов в том виде, в каком она введена.
+
+Индексированный плейсхолдер без соответствующего аргумента, например `$2`, когда передан только один аргумент, остаётся в содержимом без изменений. Именованный плейсхолдер из [`arguments`](#frontmatter-reference) во frontmatter без соответствующего аргумента раскрывается в пустую строку.
+
+Если вы передаёте значение аргумента, которое само содержит текст вроде `$1` или `$ARGUMENTS`, Claude Code вставляет его как буквальный текст и не раскрывает. Например, если тело скилла содержит `Summarize $0`, а вы выполняете `/summarize &quot;$ARGUMENTS from yesterday&quot;`, Claude получает `Summarize $ARGUMENTS from yesterday`. Переменные `${CLAUDE_*}`, например `${CLAUDE_SKILL_DIR}`, Claude Code по-прежнему заменяет после вставки аргументов.
+
+Чтобы вставить буквальный `$` перед цифрой, `ARGUMENTS` или объявленным именем аргумента, например `$1.00` в тексте, экранируйте его обратной косой чертой: `\$1.00`. Обратная косая черта перед любым другим `$` остаётся без изменений. Экранирует токен только одна обратная косая черта непосредственно перед ним. Двойная обратная косая черта, например `\\$1`, оставляет обе обратные косые черты на месте, и `$1` по-прежнему раскрывается в значение аргумента. Экранирование обратной косой чертой распространяется только на эти плейсхолдеры аргументов. Обратная косая черта не предотвращает подстановку переменной `${CLAUDE_*}` там, где эта переменная применяется.
+
+**Пример с подстановками:**
+</code></pre>
+<hr>
+<p>name: session-logger
+description: Log activity for this session</p>
+<hr>
+<p>Log the following to logs/${CLAUDE_SESSION_ID}.log:</p>
+<p>$ARGUMENTS</p>
+<pre><code>
+### Добавление вспомогательных файлов
+
+Скиллы могут включать несколько файлов в своём каталоге. Это позволяет сосредоточить в `SKILL.md` самое важное, давая Claude доступ к подробным справочным материалам только при необходимости. Большие справочные документы, спецификации API или коллекции примеров не нужно загружать в контекст при каждом запуске скилла.
+</code></pre>
+<p>my-skill/
+├── SKILL.md (required - overview and navigation)
+├── reference.md (detailed API docs - loaded when needed)
+├── examples.md (usage examples - loaded when needed)
+└── scripts/
+    └── helper.py (utility script - executed, not loaded)</p>
+<pre><code>
+Ссылайтесь на вспомогательные файлы из `SKILL.md`, чтобы Claude знал, что содержит каждый файл и когда его загружать:
+</code></pre>
+<h3 id="additional-resources">Additional resources <a class="h-anchor" href="#additional-resources" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>For complete API details, see <a href="reference.md">reference.md</a></li>
+<li>For usage examples, see <a href="examples.md">examples.md</a></li>
+</ul>
+<pre><code>
+&gt; [!TIP]
+&gt;
+&gt; Держите `SKILL.md` в пределах 500 строк. Переносите подробные справочные материалы в отдельные файлы.
+
+### Управление тем, кто вызывает скилл
+
+По умолчанию любой скилл можете вызвать как вы, так и Claude. Вы можете ввести `/skill-name`, чтобы вызвать его напрямую, а Claude может загрузить его автоматически, когда он относится к вашему диалогу. Два поля frontmatter позволяют это ограничить:
+
+* **`disable-model-invocation: true`**: Claude не может вызвать скилл самостоятельно. Используйте для рабочих процессов с побочными эффектами или тех, время запуска которых вы хотите контролировать, например `/commit`, `/deploy` или `/send-slack-message`. Вы ведь не хотите, чтобы Claude решил выполнить развёртывание только потому, что ваш код выглядит готовым.
+
+* **`user-invocable: false`**: вызвать скилл может только Claude. Используйте для фоновых знаний, которые не имеют смысла как команда. Скилл `legacy-system-context` объясняет, как работает старая система. Claude должен знать это, когда это актуально, но `/legacy-system-context` не является осмысленным действием для пользователей.
+
+В этом примере создаётся скилл развёртывания. Если задать `disable-model-invocation: true`, Claude не сможет запустить скилл автоматически:
+</code></pre>
+<hr>
+<p>name: deploy
+description: Deploy the application to production
+disable-model-invocation: true</p>
+<hr>
+<p>Deploy $ARGUMENTS to production:</p>
+<ol>
+<li>Run the test suite</li>
+<li>Build the application</li>
+<li>Push to the deployment target</li>
+<li>Verify the deployment succeeded</li>
+</ol>
+<pre><code>
+Если Claude попытается вызвать скилл, когда ваше сообщение не содержит `/deploy` [отдельным словом без примыкающих знаков препинания](#where-you-write-the-skills-name), Claude Code заблокирует вызов. Ожидайте, что Claude предложит вам запустить `/deploy` самостоятельно.
+
+Вот как эти два поля влияют на вызов и загрузку в контекст:
+
+| Frontmatter | Вы можете вызвать | Claude может вызвать | Когда загружается в контекст |
+| :- | :- | :- | :- |
+| (по умолчанию) | Да | Да | Описание в контексте, полный скилл загружается при вызове |
+| `disable-model-invocation: true` | Да | Не самостоятельно | Описание не в контексте, полный скилл загружается при вызове |
+| `user-invocable: false` | Нет | Да | Описание в контексте, полный скилл загружается при вызове |
+
+&gt; [!NOTE]
+&gt;
+&gt; В обычной сессии описания скиллов загружаются в контекст, чтобы Claude знал, что доступно, но полное содержимое скилла загружается только при вызове. [Субагенты с предварительно загруженными скиллами](https://code.claude.com/docs/ru/sub-agents.md#preload-skills-into-subagents) работают иначе: полное содержимое скилла внедряется при запуске.
+
+#### Где писать имя скилла
+
+Чтобы запустить скилл напрямую, поставьте его имя в начало сообщения. После обычного текста имя даёт Claude разрешение запустить скилл, но не запускает его:
+
+| Где | Пример | Что происходит |
+| :- | :- | :- |
+| В начале сообщения | `/deploy staging` | Claude Code запускает скилл напрямую |
+| После обычного текста, отдельным словом без примыкающих знаков препинания | `go ahead and /deploy to staging` | Ничего не запускается напрямую. Имя считается вашим разрешением для этого сообщения: Claude может запустить скилл при ответе и по формулировке определяет, просили ли вы его об этом |
+
+Чтобы упомянуть скилл, не разрешая его запуск, не ставьте косую черту.
+
+### Жизненный цикл содержимого скилла
+
+Когда вы или Claude вызываете скилл, отрисованное содержимое `SKILL.md` попадает в диалог как одно сообщение и остаётся там на протяжении последующих ходов. Это сохранение распространяется на инструкции скилла, но не на его разрешения: разрешение [`allowed-tools`](#pre-approve-tools-for-a-skill) сбрасывается, когда вы отправляете следующее сообщение. Claude Code не перечитывает файл скилла на последующих ходах, поэтому указания, которые должны действовать на протяжении всей задачи, пишите как постоянные инструкции, а не как одноразовые шаги.
+
+Когда Claude повторно вызывает скилл, отрисованное содержимое которого идентично копии, уже находящейся в контексте, Claude Code добавляет короткое примечание о том, что скилл уже загружен, а не вторую копию содержимого. Если отрисованное содержимое отличается — потому что изменились аргументы или команда [динамического контекста](#inject-dynamic-context) выдала новый вывод, — Claude Code снова добавляет полное содержимое.
+
+[Автосжатие](https://code.claude.com/docs/ru/how-claude-code-works.md#when-context-fills-up) переносит вызванные скиллы дальше в пределах бюджета токенов. Когда диалог суммируется для освобождения контекста, Claude Code повторно прикрепляет после сводки последний вызов каждого скилла, сохраняя первые 5 000 токенов каждого. Повторно прикреплённые скиллы делят общий бюджет в 25 000 токенов. Claude Code заполняет этот бюджет, начиная с последнего вызванного скилла, поэтому если вы вызвали много скиллов в одной сессии, более старые могут быть полностью отброшены после сжатия контекста.
+
+Если Claude перестаёт следовать скиллу посреди сессии, см. [Claude перестаёт следовать скиллу](#claude-stops-following-a-skill).
+
+### Предварительное разрешение инструментов для скилла
+
+Поле `allowed-tools` предоставляет разрешение на использование перечисленных инструментов в течение хода, в котором вызван скилл, поэтому Claude может использовать их, не запрашивая у вас подтверждения. Разрешение сбрасывается, когда вы отправляете следующее сообщение, хотя содержимое скилла [остаётся в контексте](#skill-content-lifecycle); повторный вызов скилла снова применяет его для этого хода. Поле не ограничивает набор доступных инструментов: все инструменты остаются доступными для вызова, а инструменты, не указанные в списке, по-прежнему регулируются вашими [настройками разрешений](https://code.claude.com/docs/ru/permissions.md). Чтобы предварительно разрешить инструменты на всю сессию, а не на один ход, добавьте вместо этого правила разрешения в эти настройки разрешений.
+
+Claude Code применяет `allowed-tools` проектного скилла даже при запуске с `-p` в папке, которой вы никогда не доверяли. Скилл может предоставить себе широкий доступ к инструментам, поэтому проверяйте `allowed-tools` скиллов, добавленных в репозиторий, прежде чем запускать там Claude Code. Чтобы во всей организации это поле не применялось к скиллам из репозиториев, см. [Когда применяются только управляемые правила разрешений](#when-only-managed-permission-rules-apply).
+
+Этот скилл позволяет Claude выполнять команды git без подтверждения каждого использования всякий раз, когда вы его вызываете:
+</code></pre>
+<hr>
+<p>name: commit
+description: Stage and commit the current changes
+disable-model-invocation: true
+allowed-tools: Bash(git add <em>) Bash(git commit </em>) Bash(git status *)</p>
+<hr>
+<pre><code>
+Чтобы удалить инструменты из доступного Claude набора, пока скилл активен, перечислите их в `disallowed-tools` во frontmatter скилла. Ограничение снимается, когда вы отправляете следующее сообщение. Как и правила запрета, это поле не может удалить [`EndConversation`](https://code.claude.com/docs/ru/tools-reference#endconversation-tool-behavior), пока остаётся хотя бы один другой инструмент. Чтобы заблокировать инструменты для всех скиллов и промптов, добавьте правила запрета в свои [настройки разрешений](https://code.claude.com/docs/ru/permissions.md).
+
+#### Когда управляемые настройки ограничивают хуки плагинами
+
+Когда управляемые настройки вашей организации указывают `hooks` в `strictPluginOnlyCustomization`, личный или проектный скилл, frontmatter которого объявляет `hooks`, теряет предварительное разрешение `allowed-tools`, за исключением [скиллов, которые его сохраняют](https://code.claude.com/docs/ru/settings-reference.md#strictpluginonlycustomization-hooks).
+
+* **Проверка**: введите `/status` в сессии Claude Code. Если `/status` показывает [`Enterprise managed settings`](https://code.claude.com/docs/ru/settings#check-what-your-organization-enforces), спросите у администратора, указан ли `hooks` в `strictPluginOnlyCustomization`.
+* **Исправление**: удалите `hooks` из frontmatter скилла, поскольку при этой настройке его хуки не выполняются. Чтобы сохранить их, [перенесите скилл в плагин](https://code.claude.com/docs/ru/hooks.md#limits-on-skill-hooks), который вы устанавливаете из маркетплейса.
+
+#### Когда применяются только управляемые правила разрешений
+
+Когда ваша организация задаёт `allowManagedPermissionRulesOnly` в управляемых настройках, Claude Code игнорирует `allowed-tools` в проектных и личных скиллах, а также в [других источниках, перечисленных в описании этой настройки](https://code.claude.com/docs/ru/settings-reference.md#allowmanagedpermissionrulesonly). Для этого требуется Claude Code v2.1.282 или новее.
+
+Вместо этого инструменты, перечисленные в затронутом скилле, проходят через управляемые правила вашей организации и обычный запрос разрешения. Выполните `/status`, чтобы увидеть список всех скиллов, чьи `allowed-tools` Claude Code к этому моменту проигнорировал в сессии. Внедрённая в скилл команда, которую не разрешает ни одно управляемое правило, обрабатывается согласно разделу [Проверки разрешений для внедрённых команд](#permission-checks-on-injected-commands).
+
+### Передача аргументов скиллам
+
+И вы, и Claude можете передавать аргументы при вызове скилла. Аргументы доступны через плейсхолдер `$ARGUMENTS`.
+
+Этот скилл исправляет GitHub issue по номеру. Плейсхолдер `$ARGUMENTS` заменяется тем, что следует за именем скилла:
+</code></pre>
+<hr>
+<p>name: fix-issue
+description: Fix a GitHub issue
+disable-model-invocation: true</p>
+<hr>
+<p>Fix GitHub issue $ARGUMENTS following our coding standards.</p>
+<ol>
+<li>Read the issue description</li>
+<li>Understand the requirements</li>
+<li>Implement the fix</li>
+<li>Write tests</li>
+<li>Create a commit</li>
+</ol>
+<pre><code>
+Когда вы выполняете `/fix-issue 123`, Claude получает «Fix GitHub issue 123 following our coding standards...»
+
+Если вы вызываете скилл с аргументами, но ни один плейсхолдер в содержимом скилла их не получает, Claude Code добавляет `ARGUMENTS: &lt;your input&gt;` в конец содержимого скилла, чтобы Claude всё равно увидел, что вы ввели. Плейсхолдер — это `$ARGUMENTS`, индексированная форма, например `$1`, или именованный аргумент. Индексированный плейсхолдер, для позиции которого нет аргумента, остаётся буквальным текстом и не считается получившим аргумент. Именованный плейсхолдер считается получившим аргумент, даже если для его позиции аргумента нет, поскольку он раскрывается в пустую строку.
+
+Чтобы обратиться к отдельным аргументам по позиции, используйте `$ARGUMENTS[N]` или более короткое `$N`:
+</code></pre>
+<hr>
+<p>name: migrate-component
+description: Migrate a component from one language to another</p>
+<hr>
+<p>Migrate the $ARGUMENTS[0] component from $ARGUMENTS[1] to $ARGUMENTS[2].
+Preserve all existing behavior and tests.</p>
+<pre><code>
+Выполнение `/migrate-component SearchBar JavaScript TypeScript` заменяет `$ARGUMENTS[0]` на `SearchBar`, `$ARGUMENTS[1]` на `JavaScript`, а `$ARGUMENTS[2]` на `TypeScript`. Тот же скилл с сокращением `$N`:
+</code></pre>
+<hr>
+<p>name: migrate-component
+description: Migrate a component from one language to another</p>
+<hr>
+<p>Migrate the $0 component from $1 to $2.
+Preserve all existing behavior and tests.</p>
+<pre><code>
+#### Объединение нескольких скиллов в одном сообщении
+
+Когда вы вводите текст в промпт Claude Code в терминале, вы можете поставить несколько скиллов подряд в начале одного сообщения. Через Agent SDK или `claude -p` Claude Code загружает только первый скилл, а остаток строки использует как его аргументы. В промпте терминала ввод `/write-tests /fix-issue 123` загружает оба скилла и передаёт завершающий текст `123` каждому из них как `$ARGUMENTS`.
+
+Claude Code раскрывает первый скилл и до пяти следующих за ним. Раскрытие останавливается на первом токене, который не является скиллом, вызываемым пользователем и выполняемым в текущем диалоге. Если вы добавите скилл, который выполняется как [ответвлённый субагент](#run-skills-in-a-subagent), например [`/code-review`](https://code.claude.com/docs/ru/code-review-local), или скилл, аргументы которого могут начинаться с другой команды, например `/loop`, раскрытие на нём заканчивается. Этот токен и всё, что следует за ним, становятся текстом аргументов для каждого раскрытого скилла.
+
+## Продвинутые приёмы
+
+### Внедрение динамического контекста
+
+Синтаксис `` !`&lt;command&gt;` `` выполняет shell-команды до того, как содержимое скилла будет отправлено Claude. Вывод команды заменяет заполнитель, поэтому Claude получает реальные данные, а не саму команду. О скилле, синхронизированном из вашей учётной записи claude.ai, см. раздел [Как Claude Code обрабатывает тело синхронизированного скилла](#how-claude-code-handles-the-body-of-a-synced-skill).
+
+Этот скилл кратко описывает pull request, получая актуальные данные PR с помощью GitHub CLI. Команда `` !`gh pr diff` `` и другие команды выполняются первыми, и их вывод вставляется в промпт:
+</code></pre>
+<hr>
+<p>name: pr-summary
+description: Summarize changes in a pull request
+context: fork
+agent: Explore
+allowed-tools: Bash(gh *)</p>
+<hr>
+<h3 id="pull-request-context">Pull request context <a class="h-anchor" href="#pull-request-context" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>PR diff: !<code>gh pr diff</code></li>
+<li>PR comments: !<code>gh pr view --comments</code></li>
+<li>Changed files: !<code>gh pr diff --name-only</code></li>
+</ul>
+<h3 id="your-task">Your task <a class="h-anchor" href="#your-task" aria-label="Ссылка на раздел">#</a></h3>
+<p>Summarize this pull request...</p>
+<pre><code>
+Подстановка выполняется один раз по исходному файлу. Вывод команды вставляется как обычный текст и повторно не сканируется на наличие других заполнителей `` !`&lt;command&gt;` ``, поэтому команда не может вывести заполнитель, который раскрылся бы при последующем проходе.
+
+Встроенная форма распознаётся, только если `!` стоит в начале строки или сразу после пробельного символа. Если `!` следует за другим символом, как в `` KEY=!`cmd` ``, заполнитель остаётся буквальным текстом, и команда не выполняется.
+
+Для многострочных команд используйте вместо встроенной формы блок кода, открытый с помощью ` ```! `:
+</code></pre>
+<h3 id="environment">Environment <a class="h-anchor" href="#environment" aria-label="Ссылка на раздел">#</a></h3>
+<p>```!
+node --version
+git status --short</p>
+<pre><code></code></pre>
+<p>Чтобы отключить это поведение для скиллов и пользовательских команд из пользовательских, проектных, плагинных источников или источников <a href="#skills-from-additional-directories">дополнительных каталогов</a>, задайте <code>&quot;disableSkillShellExecution&quot;: true</code> в <a href="https://code.claude.com/docs/ru/settings.md">настройках</a>. Вместо выполнения каждая команда заменяется на <code>[shell command execution disabled by policy]</code>. На встроенные и управляемые скиллы это не влияет. Эта настройка наиболее полезна в <a href="https://code.claude.com/docs/ru/managed-settings.md">управляемых настройках</a>, где пользователи не могут её переопределить.</p>
+<p>В сессии в терминале или VS Code Claude Code не выполняет эти команды в скиллах, <a href="#how-synced-skills-behave">синхронизированных из вашей учётной записи claude.ai</a>, независимо от этой настройки. Это ограничение требует Claude Code v2.1.228 или новее.</p>
+<blockquote>
+<p>[!TIP]</p>
+<p>Чтобы запросить более глубокие рассуждения при запуске скилла, включите <code>ultrathink</code> в любом месте содержимого скилла. См. <a href="https://code.claude.com/docs/ru/model-config.md#use-ultrathink-for-one-off-deep-reasoning">Использование ultrathink для разового глубокого рассуждения</a>.</p>
+</blockquote>
+<h5 id="h-4">Как выполняются внедрённые команды <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h5>
+<p>Claude Code выбирает инструмент для выполнения внедрённых команд скилла на основе ключа <code>shell</code> во frontmatter скилла и вашего окружения. При любой комбинации команды выполняются через инструмент Bash или инструмент PowerShell, кроме одной, при которой вызов сразу завершается ошибкой:</p>
+<ul>
+<li><code>shell: powershell</code> при включённом <a href="https://code.claude.com/docs/ru/tools-reference.md#powershell-tool">инструменте PowerShell</a>: команды выполняются через инструмент PowerShell.</li>
+<li><code>shell: bash</code>, когда bash недоступен: вызов завершается ошибкой до выполнения какой-либо команды. Так происходит в Windows без Git Bash. Claude Code показывает `<code>Skill &lt;name&gt; requires bash (</code>shell: bash<code> in frontmatter) but Git Bash was not found</code>`.</li>
+<li>Любая другая комбинация: команды выполняются через инструмент Bash, если bash доступен. Если нет — через инструмент PowerShell.</li>
+</ul>
+<p>Любой из инструментов выполняет команды так же, как собственные shell-команды Claude. У них общий рабочий каталог, таймаут и обработка вывода:</p>
+<ul>
+<li><strong>Рабочий каталог</strong>: Claude Code выполняет каждую команду в текущем рабочем каталоге оболочки сессии. Этот каталог меняется, когда Claude выполняет <code>cd</code>. Используйте <a href="#available-string-substitutions"><code>${CLAUDE_SKILL_DIR}</code> или <code>${CLAUDE_PROJECT_DIR}</code></a> в путях, которые должны каждый раз разрешаться одинаково.</li>
+<li><strong>stderr</strong>: при оболочке <code>bash</code> по умолчанию Claude Code объединяет stderr со stdout. Всё, что команда пишет в stderr, появляется во внедрённом тексте.</li>
+<li><strong>Таймаут</strong>: каждая команда выполняется с <a href="https://code.claude.com/docs/ru/tools-reference.md#timeout-and-output-limits">таймаутом</a> инструмента Bash по умолчанию — 2 минуты. Когда инструмент Bash <a href="https://code.claude.com/docs/ru/tools-reference.md#foreground-commands-that-move-to-the-background">переводит команду с истёкшим таймаутом в фон</a>, скилл всё равно отображается. Внедрённый текст сообщает о переводе в фон и называет фоновую задачу и файл, в который собирается вывод команды. Если это команда, которую инструмент Bash никогда не переводит в фон автоматически, Claude Code завершает её по таймауту. Такой сбой <a href="#when-an-injected-command-fails">прерывает вызов</a>.</li>
+<li><strong>Размер вывода</strong>: вывод, превышающий встроенный предел инструмента Bash, поступает в виде пути к файлу и короткого предпросмотра, а не усечённого текста. В разделе <a href="https://code.claude.com/docs/ru/tools-reference.md#output-limits">Ограничения вывода</a> описан этот предел и то, как настроить каждую границу.</li>
+</ul>
+<p>Инструмент PowerShell применяет то же поведение таймаута, перевода в фон и предела вывода к выполняемым им командам. Подробности см. в разделе <a href="https://code.claude.com/docs/ru/tools-reference.md#powershell-tool">Инструмент PowerShell</a>.</p>
+<h5 id="h-5">Когда внедрённая команда завершается ошибкой <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h5>
+<p>Неудачная команда прерывает весь вызов скилла, а не только собственный заполнитель. Claude так и не видит содержимое скилла для этого вызова. При прерывании отображается <code>Shell command failed for pattern &quot;...&quot;</code>. Сообщение об ошибке включает вывод команды.</p>
+<p>При оболочке <code>bash</code> по умолчанию любой ненулевой код выхода считается ошибкой. Есть одно исключение: Claude Code считает код выхода 1 от <a href="https://code.claude.com/docs/ru/tools-reference.md#output-limits">команд поиска и сравнения</a> обычным результатом и внедряет их вывод. Коды выхода 2 и выше приводят к ошибке даже для этих команд.</p>
+<p>На какие команды распространяется исключение, зависит от оболочки:</p>
+<ul>
+<li>Оболочка <code>bash</code> по умолчанию: команды, перечисленные в разделе <a href="https://code.claude.com/docs/ru/tools-reference.md#output-limits">Ограничения вывода</a></li>
+<li><code>shell: powershell</code> при включённом инструменте PowerShell: <a href="https://code.claude.com/docs/ru/tools-reference.md#exit-code-1-from-searches-and-git-diff-in-powershell">другой набор</a>, который включает <code>grep</code> и <code>git diff</code>, но не <code>find</code> или <code>diff</code></li>
+</ul>
+<p>При оболочке <code>bash</code> по умолчанию добавляйте <code>|| true</code> к любой другой команде, которая, как вы ожидаете, завершится с ненулевым кодом. Пример — скрипт проверки, который завершается с кодом 1, если находит проблемы.</p>
+<h5 id="когда-ни-одна-shell-команда-не-была-выполнена">Когда ни одна shell-команда не была выполнена <a class="h-anchor" href="#когда-ни-одна-shell-команда-не-была-выполнена" aria-label="Ссылка на раздел">#</a></h5>
+<p><code>No shell command in &lt;name&gt; was run</code> означает, что одна из его shell-команд содержит символ, который инструмент не принимает. Чтобы найти и удалить этот символ, см. <a href="https://code.claude.com/docs/ru/errors.md#no-shell-command-was-run">справочник по ошибкам</a>.</p>
+<h5 id="h-6">Проверка разрешений для внедрённых команд <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h5>
+<p>Внедрённые команды никогда не запрашивают разрешение во время отображения скилла. Claude Code сначала проверяет каждую из них по вашим <a href="https://code.claude.com/docs/ru/permissions.md">правилам разрешений</a>. Команда, соответствующая правилу запрета, прерывает вызов с ошибкой <code>Shell command permission check failed for pattern &quot;...&quot;</code>.</p>
+<p>Вне <a href="https://code.claude.com/docs/ru/permission-modes.md#eliminate-prompts-with-auto-mode">авторежима</a>, если проверка разрешений команды возвращает что-либо, кроме разрешения, Claude Code прерывает вызов. Чтобы несовпадающая команда не прерывала вызов, заранее разрешите её с помощью <a href="#pre-approve-tools-for-a-skill"><code>allowed-tools</code></a> с учётом следующих ограничений:</p>
+<ul>
+<li><strong>Правила запрета и запроса</strong>: команда, соответствующая одному из них, всё равно прерывает вызов. Чтобы найти это правило, см. <a href="https://code.claude.com/docs/ru/permissions.md#manage-permissions">Управление разрешениями</a>.</li>
+<li><strong>Только управляемые правила</strong>: если <code>/status</code> в сессии показывает скилл в разделе <code>allowed-tools ignored this session</code>, см. <a href="#when-only-managed-permission-rules-apply">Когда применяются только управляемые правила разрешений</a>.</li>
+<li><strong>Папки bare-репозиториев</strong>: папка выглядит как bare, если в ней файл <code>HEAD</code> находится непосредственно рядом с <code>refs</code> или <code>commondir</code>. Если ближайший репозиторий в рабочем каталоге или выше него выглядит как bare, Claude Code игнорирует <code>allowed-tools</code> для команды Bash, которая содержит <code>git</code> или которую Claude Code не может разобрать. Если вы доверяете этой папке, разрешите команду с помощью <a href="https://code.claude.com/docs/ru/permissions#manage-permissions"><code>/permissions</code></a> в сессии.</li>
+</ul>
+<p>В авторежиме команда, которой в противном случае потребовалось бы ваше подтверждение, не прерывает вызов. Скилл загружается с инструкцией, предписывающей Claude сначала выполнить команду, и собственный вызов Claude затем проходит <a href="https://code.claude.com/docs/ru/permission-modes.md#how-the-classifier-evaluates-actions">обычные проверки авторежима</a>. Вызов всё же прерывается в <a href="#run-skills-in-a-subagent">ответвлённом скилле</a>, который задаёт <code>agent</code>, а также в сессии, где у Claude нет <a href="#how-injected-commands-run">инструмента оболочки, выполняющего внедрённые команды</a>.</p>
+<h4 id="h-7">Запуск скиллов в субагенте <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<p>Добавьте <code>context: fork</code> во frontmatter, если хотите, чтобы скилл выполнялся изолированно. Claude Code запускает новый субагент типа, заданного в поле <code>agent</code>, и передаёт ему содержимое скилла в качестве промпта. Субагент не видит историю вашего диалога, поэтому инструкции скилла должны быть самодостаточными.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Несмотря на название, скилл с <code>context: fork</code> не выполняется в <a href="https://code.claude.com/docs/ru/sub-agents.md#fork-the-current-conversation">ответвлении текущего диалога</a>, которое передало бы субагенту всё, что вы успели обсудить. Если задача зависит от этой истории, ответвите диалог вместо использования <code>context: fork</code>.</p>
+</blockquote>
+<p>Ответвлённый субагент выполняется в <a href="https://code.claude.com/docs/ru/sub-agents.md#run-subagents-in-foreground-or-background">фоне</a>: вы продолжаете работать, пока он выполняется, а его результат появляется в вашем диалоге по завершении. Задайте <code>background: false</code> во frontmatter, чтобы вместо этого ждать результата в том ходе, который вызвал скилл.</p>
+<p>Claude Code также ждёт результата, даже если скилл не задаёт <code>background: false</code>, в таких случаях:</p>
+<ul>
+<li>В неинтерактивном режиме, с флагом <code>-p</code> или в Agent SDK</li>
+<li>Когда вы задаёте <a href="https://code.claude.com/docs/ru/env-vars"><code>CLAUDE_CODE_DISABLE_BACKGROUND_TASKS</code></a> равным <code>1</code>, что также отключает другие функции фоновых задач</li>
+<li>Когда вы вызываете ответвлённый скилл, пока предыдущий вызов того же скилла ещё выполняется</li>
+<li>Когда срабатывает <a href="https://code.claude.com/docs/ru/scheduled-tasks.md">запланированная задача уровня сессии</a> со скиллом в качестве промпта</li>
+</ul>
+<p>Когда агент в <a href="https://code.claude.com/docs/ru/workflows.md">динамическом рабочем процессе</a> вызывает ответвлённый скилл, этот агент ждёт результата и получает его, даже если скилл не задаёт <code>background: false</code>. До v2.1.295, если скилл выполнялся в фоне, этот агент его не ждал. Результат скилла тогда появлялся в вашем основном диалоге, а не доходил до агента.</p>
+<p>Ответвление, выполняемое в фоне, также работает с <a href="https://code.claude.com/docs/ru/sub-agents.md#run-subagents-in-foreground-or-background">более узким набором инструментов, который применяется к фоновым субагентам</a>: субагент скилла — это обычный тип агента, поэтому на него не распространяется исключение для субагентов, ответвляющих диалог. Если шаги вашего скилла зависят от инструмента вне этого набора, задайте <code>background: false</code>, чтобы сохранить полный набор инструментов.</p>
+<p>Ответвлённый скилл, выполняемый в фоне, применяет свои правки вне <a href="https://code.claude.com/docs/ru/checkpointing.md#subagent-edits-not-restored">чекпоинтов</a> вашей сессии. После его выполнения <code>/rewind</code> восстанавливает только те файлы, которые Claude уже редактировал в вашем диалоге. Правки скилла в других файлах остаются, поэтому для их отката используйте git.</p>
+<blockquote>
+<p>[!WARNING]</p>
+<p><code>context: fork</code> имеет смысл только для скиллов с явными инструкциями. Если ваш скилл содержит рекомендации вроде «используйте эти соглашения API» без задачи, субагент получает рекомендации, но не получает промпта, на основе которого можно действовать, и возвращается без значимого результата.</p>
+</blockquote>
+<p>Скиллы и <a href="https://code.claude.com/docs/ru/sub-agents.md">субагенты</a> взаимодействуют в двух направлениях:</p>
+<p>| Подход | Системный промпт | Задача | Также загружается |
+| :- | :- | :- | :- |
+| Скилл с <code>context: fork</code> | Из типа агента | Содержимое SKILL.md | CLAUDE.md в соответствии с <a href="https://code.claude.com/docs/ru/sub-agents.md#what-loads-at-startup">контекстом запуска</a> агента |
+| Субагент с полем <code>skills</code> | Тело markdown субагента | Сообщение Claude о делегировании | Предзагруженные скиллы + CLAUDE.md в соответствии с <a href="https://code.claude.com/docs/ru/sub-agents.md#what-loads-at-startup">контекстом запуска</a> субагента |</p>
+<p>С <code>context: fork</code> вы пишете задачу в скилле и выбираете тип агента для её выполнения. Встроенные агенты Explore и Plan <a href="https://code.claude.com/docs/ru/sub-agents.md#what-loads-at-startup">запускаются без CLAUDE.md и git status</a>, чтобы их контекст оставался небольшим. Поместите в SKILL.md всё, что нужно для задачи. Ответвлённый скилл с <code>agent: Explore</code> начинает работу с этим содержимым и собственным системным промптом агента, без каких-либо ваших файлов CLAUDE.md.</p>
+<p>Для обратного случая, когда вы определяете пользовательский субагент, использующий скиллы как справочный материал, см. <a href="https://code.claude.com/docs/ru/sub-agents.md#preload-skills-into-subagents">Субагенты</a>.</p>
+<h5 id="пример-исследовательский-скилл-с-агентом-explore">Пример: исследовательский скилл с агентом Explore <a class="h-anchor" href="#пример-исследовательский-скилл-с-агентом-explore" aria-label="Ссылка на раздел">#</a></h5>
+<p>Этот скилл выполняет исследование в ответвлённом агенте Explore. Содержимое скилла становится задачей, а агент предоставляет инструменты только для чтения, оптимизированные для изучения кодовой базы:</p>
+<p>```yaml theme={null}</p>
+<hr>
+<p>name: deep-research
+description: Research a topic thoroughly
+context: fork
+agent: Explore</p>
+<hr>
+<p>Research $ARGUMENTS thoroughly:</p>
+<ol>
+<li>Find relevant files using Glob and Grep</li>
+<li>Read and analyze the code</li>
+<li>Summarize findings with specific file references</li>
+</ol>
+<pre><code>
+Когда этот скилл запускается:
+
+1. Создаётся новый изолированный контекст
+2. Субагент получает содержимое скилла в качестве промпта (инструкции «Research \$ARGUMENTS thoroughly»)
+3. Поле `agent` определяет среду выполнения (модель, инструменты и разрешения)
+4. Субагент обобщает свои результаты и возвращает их в ваш основной диалог по завершении
+
+Поле `agent` указывает, какую конфигурацию субагента использовать. Варианты включают встроенных агентов (`Explore`, `Plan`, `general-purpose`) или любой пользовательский субагент из `.claude/agents/`. Если поле не указано, используется `general-purpose`.
+
+### Ограничение доступа Claude к скиллам
+
+По умолчанию Claude может вызывать любой скилл, у которого не задано `disable-model-invocation: true`. Скиллы, определяющие [`allowed-tools`](#pre-approve-tools-for-a-skill), предоставляют Claude доступ к этим инструментам без подтверждения каждого использования в течение хода, вызвавшего скилл; это разрешение снимается, когда вы отправляете следующее сообщение. Ваши [настройки разрешений](https://code.claude.com/docs/ru/permissions.md) по-прежнему определяют базовое поведение подтверждения для всех остальных инструментов. Несколько встроенных команд также доступны через инструмент Skill, включая `/init` и `/security-review`. Другие встроенные команды, такие как `/compact`, — нет.
+
+Три способа управлять тем, какие скиллы может вызывать Claude:
+
+**Отключите все скиллы**, запретив инструмент Skill в `/permissions`:
+</code></pre>
+<h1 id="add-to-deny-rules">Add to deny rules: <a class="h-anchor" href="#add-to-deny-rules" aria-label="Ссылка на раздел">#</a></h1>
+<p>Skill</p>
+<pre><code>
+**Разрешите или запретите конкретные скиллы** с помощью [правил разрешений](https://code.claude.com/docs/ru/permissions.md). Когда вы добавляете правила разрешения, Claude не ограничивается только названными в них скиллами.
+</code></pre>
+<h1 id="allow-rules-skip-the-prompt">Allow rules: skip the prompt <a class="h-anchor" href="#allow-rules-skip-the-prompt" aria-label="Ссылка на раздел">#</a></h1>
+<p>Skill(commit)
+Skill(review-pr *)</p>
+<h1 id="deny-specific-skills">Deny specific skills <a class="h-anchor" href="#deny-specific-skills" aria-label="Ссылка на раздел">#</a></h1>
+<p>Skill(deploy *)</p>
+<pre><code>
+Синтаксис разрешений: `Skill(name)` для точного совпадения, `Skill(name *)` для совпадения по префиксу с любыми аргументами.
+
+В таблице показано, что блокирует правило `deny` помимо указанного вами имени, в зависимости от вида имени в правиле.
+
+| Ваше правило `deny` называет | Пример правила | Claude Code также блокирует |
+| :- | :- | :- |
+| Псевдоним | `Skill(review)` | Встроенный `/code-review` через его псевдоним `/review` |
+| Неквалифицированное имя | `Skill(deploy)` | [Вложенный скилл](#where-skills-live), указанный как `apps/web:deploy` |
+| [Скилл, синхронизированный из claude.ai](#how-synced-skills-behave) | `Skill(anthropic-skills:deploy)` | Этот скилл, когда Claude Desktop доставляет его в сессию как плагин |
+| Плагинная форма синхронизированного скилла | `Skill(deploy:deploy)` | Синхронизированный скилл |
+| Скилл в [форме с параметром](https://code.claude.com/docs/ru/permissions.md#match-by-input-parameter) | `Skill(skill:deploy)` | Скилл, под каким бы из его имён Claude его ни вызывал, включая псевдоним и отображаемое имя |
+
+До v2.1.260 Claude Code не блокировал вложенный скилл, указанный под квалифицированным именем, если правило запрета называло только неквалифицированное имя.
+
+Claude Code сопоставляет правило `allow` только с собственным именем скилла и именем в вызове Claude. Чтобы разрешить [синхронизированный скилл](#how-synced-skills-behave) без запроса, укажите его внутри его [зарезервированного пространства имён](#names-reserved-for-synced-skills):
+
+* `Skill(anthropic-skills:pdf)` разрешает синхронизированный скилл `pdf`
+* `Skill(anthropic-skills *)` разрешает все синхронизированные скиллы
+* `Skill(anthropic *)` не охватывает `anthropic-skills:pdf`, потому что префикс вне пространства имён не совпадает с именами внутри него
+
+**Скройте отдельные скиллы**, добавив `disable-model-invocation: true` в их frontmatter. Это полностью удаляет скилл из контекста Claude.
+
+&gt; [!NOTE]
+&gt;
+&gt; С `user-invocable: false` вы не можете вызвать скилл, но Claude по-прежнему может. Чтобы Claude не вызывал его через инструмент Skill, задайте `disable-model-invocation: true`.
+
+### Переопределение видимости скиллов из настроек
+
+Настройка `skillOverrides` управляет видимостью скиллов из ваших [настроек](https://code.claude.com/docs/ru/settings.md), а не из frontmatter самого скилла. Используйте её для скиллов, SKILL.md которых вы не хотите редактировать, например для тех, что хранятся в общем репозитории проекта. Меню `/skills` записывает её за вас: выделите скилл и нажимайте `Space` для переключения состояний, затем `Esc`, чтобы сохранить в `.claude/settings.local.json`.
+
+Каждый ключ — это имя скилла, а каждое значение — одно из четырёх состояний:
+
+| Значение | Показывается Claude | В меню `/` |
+| :- | :- | :- |
+| `&quot;on&quot;` | Имя и описание | Да |
+| `&quot;name-only&quot;` | Только имя | Да |
+| `&quot;user-invocable-only&quot;` | Скрыт | Да |
+| `&quot;off&quot;` | Скрыт | Скрыт |
+
+В меню `/skills` состояние `&quot;user-invocable-only&quot;` обозначено как `user-only`.
+
+`&quot;off&quot;` также скрывает скилл из списков команд, предоставляемых клиентам [Remote Control](https://code.claude.com/docs/ru/remote-control.md) и вызывающим сторонам [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/skills.md#discover-available-commands), помимо меню `/` в терминале. Вызов скрытого скилла по его полному имени возвращает ошибку `skillOverrides` вместо его выполнения.
+
+Скилл, отсутствующий в `skillOverrides`, считается `&quot;on&quot;`. В примере ниже один скилл сворачивается до имени, а другой полностью отключается:
+</code></pre>
+<p>{
+  &quot;skillOverrides&quot;: {
+    &quot;legacy-context&quot;: &quot;name-only&quot;,
+    &quot;deploy&quot;: &quot;off&quot;
+  }
+}</p>
+<pre><code>
+У некоторых встроенных скиллов есть псевдонимы, например `checkup` для `/doctor`. Если вы задаёте запись `skillOverrides` под псевдонимом в [управляемых настройках](https://code.claude.com/docs/ru/managed-settings.md) или в файле, передаваемом с флагом `--settings`, Claude Code применяет её к скиллу, стоящему за псевдонимом. Через псевдоним скилл можно только дополнительно ограничить, но никогда не сделать более видимым, а если вы также задаёте запись под собственным именем скилла в управляемых настройках, эта запись имеет приоритет. До v2.1.260 Claude Code ни в одном источнике настроек не применял запись под псевдонимом к скиллу.
+
+В пользовательских, проектных и локальных настройках Claude Code сопоставляет записи только с именами скиллов. Если вы задаёте там запись для `review`, она применяется к скиллу с именем `review`, а не к встроенному `/code-review` через его псевдоним `/review`.
+
+`skillOverrides` не влияет на скиллы плагинов. Управляйте ими через `/plugin`.
+
+### Поиск неиспользуемых скиллов
+
+Каждый скилл в [списке скиллов](#skill-descriptions-are-cut-short) увеличивает ваш контекст на каждом ходе, независимо от того, использует ли его Claude. Выполните `/skill-doctor`, чтобы увидеть, во что обходится каждый из ваших скиллов и как часто он используется, и решить, какие из них отключить. В интерактивной сессии отчёт открывается на вкладке **Stats** менеджера `/plugin`. В [неинтерактивном режиме](https://code.claude.com/docs/ru/headless.md) с `-p` Claude Code выводит его как текст.
+
+Отчёт охватывает скиллы в вашей сессии, кроме встроенных и корпоративных скиллов. Он помечает скиллы в списке, которые ни разу не вызывались, и сообщает, где их отключить. Среди скиллов, для которых указано, где их отключить, начните с тех, у которых наибольшая стоимость контекста. В отчёте также перечислены плагины, которые вы давно не использовали.
+
+`/skill-doctor` требует Claude Code v2.1.252 или новее и недоступен в сессиях, пропускающих [получение флагов функций](https://code.claude.com/docs/ru/env-vars.md#features-that-need-feature-flag-fetching). Если вы выполняете `/skill-doctor` через [Remote Control](https://code.claude.com/docs/ru/remote-control.md) с телефона или в браузере, Claude Code вместо этого отвечает [`Skill usage reports are not available on this connection.`](https://code.claude.com/docs/ru/errors#skill-usage-reports-are-not-available-on-this-connection). Выполняйте `/skill-doctor` в терминале на компьютере, где запущена сессия.
+
+## Оценка и итерация навыка
+
+Видение срабатывания навыка говорит вам, что Claude его нашел, но не то, что он сделал то, что вы намеревались. Чтобы узнать, работает ли навык, измерьте две вещи отдельно: вызывает ли Claude его на подсказках, которые он должен, и соответствует ли результат тому, что вы ожидаете, когда он это делает.
+
+Проверка обоих — это сравнение базовых показателей. Соберите несколько реалистичных подсказок, запустите каждую в свежем сеансе с доступным навыком и снова с ним отключенным, и сравните результаты. Свежий сеанс важен, потому что оставшийся контекст от создания навыка скроет пробелы в написанных инструкциях.
+
+Способ отключения навыка для второго запуска зависит от того, откуда он поступает:
+
+* **Личный или проектный навык**: установите его на `&quot;off&quot;` в [`skillOverrides`](#override-skill-visibility-from-settings).
+* **Навык, который предоставляет плагин**: `skillOverrides` не применяется к навыкам плагина. Используйте [`claude plugin eval`](https://code.claude.com/docs/ru/plugin-evals#the-no-plugin-baseline) вместо этого, который повторяет каждый запуск без загруженного плагина.
+
+Два инструмента автоматизируют сравнение базовых показателей. Для навыка, который поставляется в [плагине](https://code.claude.com/docs/ru/plugins/overview.md), [`claude plugin eval`](https://code.claude.com/docs/ru/plugin-evals) запускает каждую подсказку в изолированном сеансе с плагином и без него, оценивает его с помощью оценщиков, которые вы определяете или которые он пишет для вас, и выходит с ненулевым кодом ниже порога, чтобы вы могли заблокировать CI на нем. Для итерации над одним навыком внутри разговора Claude Code плагин skill-creator ниже запускает аналогичный цикл с собственным форматом `evals/evals.json`. Эти два формата не взаимозаменяемы.
+
+### Запуск оценок с skill-creator
+
+[Плагин `skill-creator`](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/skill-creator) автоматизирует цикл сравнения внутри Claude Code. В расширении VS Code или десктопном приложении установите его из официального маркетплейса, следуя инструкциям в разделе [Установка плагина](https://code.claude.com/docs/ru/plugins/install.md#install-a-plugin). В терминале запустите Claude Code командой `claude`, затем введите в его строке ввода следующее:
+</code></pre>
+<p>/plugin install skill-creator@claude-plugins-official</p>
+<pre><code>
+Если установка не удалась, сопоставьте сообщение, которое сообщает Claude Code:
+
+* `Marketplace &quot;claude-plugins-official&quot; not found`: добавьте marketplace с помощью `/plugin marketplace add anthropics/claude-plugins-official`, затем повторите попытку установки.
+* `Plugin &quot;&lt;name&gt;&quot; not found in marketplace &quot;claude-plugins-official&quot;`: ваша локальная копия каталога маркетплейса может быть устаревшей. Обновите ее с помощью `/plugin marketplace update claude-plugins-official`, затем повторите попытку установки. Если повторная попытка выводит то же сообщение, см. [Плагин не найден в маркетплейсе](https://code.claude.com/docs/ru/plugins/troubleshooting.md#plugin-not-found-in-marketplace).
+
+Если сводка установки сообщает `Run /reload-plugins to apply.`, Claude Code затем сам выполняет эту перезагрузку. Если при перезагрузке появляется предупреждение о том, что ваше следующее сообщение повторно прочитает диалог, выполните `/reload-plugins --force`, чтобы сделать скиллы плагина доступными в текущей сессии. Затем попросите Claude оценить существующий скилл, например `evaluate my summarize-changes skill with skill-creator`. Плагин проведет вас через написание тестовых случаев и запустит цикл:
+
+* **Тестовые случаи**: сохраняет подсказки, входные файлы и ожидаемое поведение в `evals/evals.json` внутри каталога навыка
+* **Изолированные запуски**: порождает [подагента](https://code.claude.com/docs/ru/sub-agents.md) для каждого тестового случая, чтобы каждый запуск начинался с чистого контекста, и записывает количество токенов и продолжительность
+* **Оценка**: проверяет каждое утверждение против результата и записывает успех или неудачу с доказательствами в `grading.json`
+* **Эталон**: агрегирует процент успеха, время и токены для с навыком и без навыка в `benchmark.json`, чтобы вы могли сравнить улучшение процента успеха с накладными расходами на токены и время
+* **Сравнение версий**: запускает слепое A/B между двумя версиями навыка, чтобы вы могли подтвердить, что редактирование является улучшением перед его фиксацией
+* **Настройка описания**: генерирует подсказки should-trigger и should-not-trigger, измеряет процент попаданий и предлагает редактирование описания, когда навык активируется на неправильных запросах
+* **Средство просмотра отзывов**: открывает отчет HTML, где вы проверяете каждый результат и записываете качественный отзыв, который следующая итерация читает
+
+Для формата файла оценки и полного рабочего процесса итерации см. [Evaluating skill output quality](https://agentskills.io/skill-creation/evaluating-skills) на agentskills.io. Для справки о режимах эталона и сравнения см. [объявление skill-creator](https://claude.com/blog/improving-skill-creator-test-measure-and-refine-agent-skills).
+
+## Совместное использование skills
+
+Skills можно распространять на разных уровнях в зависимости от вашей аудитории:
+
+* **Project skills**: Зафиксируйте `.claude/skills/` в системе контроля версий
+* **Plugins**: Создайте директорию `skills/` в вашем [plugin](https://code.claude.com/docs/ru/plugins/overview.md)
+* **Managed**: Разверните на уровне организации через [managed settings](https://code.claude.com/docs/ru/managed-settings.md)
+
+### Генерация визуального вывода
+
+Skills могут объединять и запускать скрипты на любом языке, предоставляя Claude возможности, которые невозможны в одном запросе. Один из паттернов — генерация визуального вывода: интерактивные HTML-файлы, которые открываются в вашем браузере для исследования данных, отладки или создания отчётов.
+
+Этот пример создаёт обозреватель кодовой базы: интерактивное древовидное представление, где вы можете разворачивать и сворачивать директории, видеть размеры файлов с первого взгляда и определять типы файлов по цвету.
+
+Создайте директорию Skill:
+</code></pre>
+<p>mkdir -p ~/.claude/skills/codebase-visualizer/scripts</p>
+<pre><code>
+Сохраните это в `~/.claude/skills/codebase-visualizer/SKILL.md`. Описание сообщает Claude, когда активировать этот Skill, а инструкции указывают Claude запустить встроенный скрипт. Путь к скрипту использует [`${CLAUDE_SKILL_DIR}`](#available-string-substitutions), поэтому он правильно разрешается независимо от того, установлен ли skill на личном, проектном или уровне plugin:
+</code></pre>
+<hr>
+<p>name: codebase-visualizer
+description: Generate an interactive collapsible tree visualization of your codebase. Use when exploring a new repo, understanding project structure, or identifying large files.
+allowed-tools: Bash(python3 *)</p>
+<hr>
+<h1 id="codebase-visualizer">Codebase Visualizer <a class="h-anchor" href="#codebase-visualizer" aria-label="Ссылка на раздел">#</a></h1>
+<p>Generate an interactive HTML tree view that shows your project&#x27;s file structure with collapsible directories.</p>
+<h3 id="usage">Usage <a class="h-anchor" href="#usage" aria-label="Ссылка на раздел">#</a></h3>
+<p>Run the visualization script from your project root:</p>
+<pre><code class="language-bash">python3 ${CLAUDE_SKILL_DIR}/scripts/visualize.py .</code></pre>
+<p>This creates <code>codebase-map.html</code> in the current directory and opens it in your default browser.</p>
+<h3 id="what-the-visualization-shows">What the visualization shows <a class="h-anchor" href="#what-the-visualization-shows" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong>Collapsible directories</strong>: Click folders to expand/collapse</li>
+<li><strong>File sizes</strong>: Displayed next to each file</li>
+<li><strong>Colors</strong>: Different colors for different file types</li>
+<li><strong>Directory totals</strong>: Shows aggregate size of each folder</li>
+</ul>
+<p>````</p>
+<p>Сохраните это в <code>~/.claude/skills/codebase-visualizer/scripts/visualize.py</code>. Этот скрипт сканирует дерево директорий и генерирует самодостаточный HTML-файл с:</p>
+<ul>
+<li><strong>Боковой панелью сводки</strong>, показывающей количество файлов, количество директорий, общий размер и количество типов файлов</li>
+<li><strong>Столбчатой диаграммой</strong>, разбивающей кодовую базу по типам файлов (топ 8 по размеру)</li>
+<li><strong>Сворачиваемым деревом</strong>, где вы можете разворачивать и сворачивать директории, с цветовыми индикаторами типов файлов</li>
+</ul>
+<p>Скрипт требует Python 3, но использует только встроенные библиотеки, поэтому нет пакетов для установки:</p>
+<p>```python expandable theme={null}
+#!/usr/bin/env python3
+&quot;&quot;&quot;Generate an interactive collapsible tree visualization of a codebase.&quot;&quot;&quot;</p>
+<p>import json
+import sys
+import webbrowser
+from html import escape
+from pathlib import Path
+from collections import Counter</p>
+<p>IGNORE = {&#x27;.git&#x27;, &#x27;node_modules&#x27;, &#x27;__pycache__&#x27;, &#x27;.venv&#x27;, &#x27;venv&#x27;, &#x27;dist&#x27;, &#x27;build&#x27;}</p>
+<p>def scan(path: Path, stats: dict) -&gt; dict:
+    result = {&quot;name&quot;: path.name, &quot;children&quot;: [], &quot;size&quot;: 0}
+    try:
+        for item in sorted(path.iterdir()):
+            if item.name in IGNORE or item.name.startswith(&#x27;.&#x27;):
+                continue
+            if item.is_file():
+                size = item.stat().st_size
+                ext = item.suffix.lower() or &#x27;(no ext)&#x27;
+                result[&quot;children&quot;].append({&quot;name&quot;: item.name, &quot;size&quot;: size, &quot;ext&quot;: ext})
+                result[&quot;size&quot;] += size
+                stats[&quot;files&quot;] += 1
+                stats[&quot;extensions&quot;][ext] += 1
+                stats[&quot;ext_sizes&quot;][ext] += size
+            elif item.is_dir():
+                stats[&quot;dirs&quot;] += 1
+                child = scan(item, stats)
+                if child[&quot;children&quot;]:
+                    result[&quot;children&quot;].append(child)
+                    result[&quot;size&quot;] += child[&quot;size&quot;]
+    except PermissionError:
+        pass
+    return result</p>
+<p>def generate_html(data: dict, stats: dict, output: Path) -&gt; None:
+    ext_sizes = stats[&quot;ext_sizes&quot;]
+    total_size = sum(ext_sizes.values()) or 1
+    sorted_exts = sorted(ext_sizes.items(), key=lambda x: -x[1])[:8]
+    colors = {
+        &#x27;.js&#x27;: &#x27;#f7df1e&#x27;, &#x27;.ts&#x27;: &#x27;#3178c6&#x27;, &#x27;.py&#x27;: &#x27;#3776ab&#x27;, &#x27;.go&#x27;: &#x27;#00add8&#x27;,
+        &#x27;.rs&#x27;: &#x27;#dea584&#x27;, &#x27;.rb&#x27;: &#x27;#cc342d&#x27;, &#x27;.css&#x27;: &#x27;#264de4&#x27;, &#x27;.html&#x27;: &#x27;#e34c26&#x27;,
+        &#x27;.json&#x27;: &#x27;#6b7280&#x27;, &#x27;.md&#x27;: &#x27;#083fa1&#x27;, &#x27;.yaml&#x27;: &#x27;#cb171e&#x27;, &#x27;.yml&#x27;: &#x27;#cb171e&#x27;,
+        &#x27;.mdx&#x27;: &#x27;#083fa1&#x27;, &#x27;.tsx&#x27;: &#x27;#3178c6&#x27;, &#x27;.jsx&#x27;: &#x27;#61dafb&#x27;, &#x27;.sh&#x27;: &#x27;#4eaa25&#x27;,
+    }
+    lang_bars = &quot;&quot;.join(
+        f&#x27;&lt;div class=&quot;bar-row&quot;&gt;&lt;span class=&quot;bar-label&quot;&gt;{ext}&lt;/span&gt;&#x27;
+        f&#x27;&lt;div class=&quot;bar&quot; style=&quot;width:{(size/total_size)*100}%;background:{colors.get(ext,&quot;#6b7280&quot;)}&quot;&gt;&lt;/div&gt;&#x27;
+        f&#x27;&lt;span class=&quot;bar-pct&quot;&gt;{(size/total_size)*100:.1f}%&lt;/span&gt;&lt;/div&gt;&#x27;
+        for ext, size in sorted_exts
+    )
+    def fmt(b):
+        if b &lt; 1024: return f&quot;{b} B&quot;
+        if b &lt; 1048576: return f&quot;{b/1024:.1f} KB&quot;
+        return f&quot;{b/1048576:.1f} MB&quot;</p>
+<p>html = f&#x27;&#x27;&#x27;&lt;!DOCTYPE html&gt;
+&lt;html&gt;&lt;head&gt;
+  &lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Codebase Explorer&lt;/title&gt;
+  &lt;style&gt;
+    body {{ font: 14px/1.5 system-ui, sans-serif; margin: 0; background: #1a1a2e; color: #eee; }}
+    .container {{ display: flex; height: 100vh; }}
+    .sidebar {{ width: 280px; background: #252542; padding: 20px; border-right: 1px solid #3d3d5c; overflow-y: auto; flex-shrink: 0; }}
+    .main {{ flex: 1; padding: 20px; overflow-y: auto; }}
+    h1 {{ margin: 0 0 10px 0; font-size: 18px; }}
+    h2 {{ margin: 20px 0 10px 0; font-size: 14px; color: #888; text-transform: uppercase; }}
+    .stat {{ display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #3d3d5c; }}
+    .stat-value {{ font-weight: bold; }}
+    .bar-row {{ display: flex; align-items: center; margin: 6px 0; }}
+    .bar-label {{ width: 55px; font-size: 12px; color: #aaa; }}
+    .bar {{ height: 18px; border-radius: 3px; }}
+    .bar-pct {{ margin-left: 8px; font-size: 12px; color: #666; }}
+    .tree {{ list-style: none; padding-left: 20px; }}
+    details {{ cursor: pointer; }}
+    summary {{ padding: 4px 8px; border-radius: 4px; }}
+    summary:hover {{ background: #2d2d44; }}
+    .folder {{ color: #ffd700; }}
+    .file {{ display: flex; align-items: center; padding: 4px 8px; border-radius: 4px; }}
+    .file:hover {{ background: #2d2d44; }}
+    .size {{ color: #888; margin-left: auto; font-size: 12px; }}
+    .dot {{ width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; }}
+  &lt;/style&gt;
+&lt;/head&gt;&lt;body&gt;
+  &lt;div class=&quot;container&quot;&gt;
+    &lt;div class=&quot;sidebar&quot;&gt;
+      &lt;h1&gt;📊 Summary&lt;/h1&gt;
+      &lt;div class=&quot;stat&quot;&gt;&lt;span&gt;Files&lt;/span&gt;&lt;span class=&quot;stat-value&quot;&gt;{stats[&quot;files&quot;]:,}&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;stat&quot;&gt;&lt;span&gt;Directories&lt;/span&gt;&lt;span class=&quot;stat-value&quot;&gt;{stats[&quot;dirs&quot;]:,}&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;stat&quot;&gt;&lt;span&gt;Total size&lt;/span&gt;&lt;span class=&quot;stat-value&quot;&gt;{fmt(data[&quot;size&quot;])}&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;stat&quot;&gt;&lt;span&gt;File types&lt;/span&gt;&lt;span class=&quot;stat-value&quot;&gt;{len(stats[&quot;extensions&quot;])}&lt;/span&gt;&lt;/div&gt;
+      &lt;h2&gt;By file type&lt;/h2&gt;
+      {lang_bars}
+    &lt;/div&gt;
+    &lt;div class=&quot;main&quot;&gt;
+      &lt;h1&gt;📁 {escape(data[&quot;name&quot;])}&lt;/h1&gt;
+      &lt;ul class=&quot;tree&quot; id=&quot;root&quot;&gt;&lt;/ul&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;script&gt;
+    const data = {json.dumps(data)};
+    const colors = {json.dumps(colors)};
+    function fmt(b) {{ if (b &lt; 1024) return b + &#x27; B&#x27;; if (b &lt; 1048576) return (b/1024).toFixed(1) + &#x27; KB&#x27;; return (b/1048576).toFixed(1) + &#x27; MB&#x27;; }}
+    function esc(s) {{ return s.replace(/[&amp;&lt;&gt;&quot;&#x27;]/g, c =&gt; ({{&quot;&amp;&quot;:&quot;&amp;amp;&quot;,&quot;&lt;&quot;:&quot;&amp;lt;&quot;,&quot;&gt;&quot;:&quot;&amp;gt;&quot;,&#x27;&quot;&#x27;:&quot;&amp;quot;&quot;,&quot;&#x27;&quot;:&quot;&amp;#39;&quot;}}[c])); }}
+    function render(node, parent) {{
+      if (node.children) {{
+        const det = document.createElement(&#x27;details&#x27;);
+        det.open = parent === document.getElementById(&#x27;root&#x27;);
+        det.innerHTML = <code>&lt;summary&gt;&lt;span class=&quot;folder&quot;&gt;📁 ${{esc(node.name)}}&lt;/span&gt;&lt;span class=&quot;size&quot;&gt;${{fmt(node.size)}}&lt;/span&gt;&lt;/summary&gt;</code>;
+        const ul = document.createElement(&#x27;ul&#x27;); ul.className = &#x27;tree&#x27;;
+        node.children.sort((a,b) =&gt; (b.children?1:0)-(a.children?1:0) || a.name.localeCompare(b.name));
+        node.children.forEach(c =&gt; render(c, ul));
+        det.appendChild(ul);
+        const li = document.createElement(&#x27;li&#x27;); li.appendChild(det); parent.appendChild(li);
+      }} else {{
+        const li = document.createElement(&#x27;li&#x27;); li.className = &#x27;file&#x27;;
+        li.innerHTML = <code>&lt;span class=&quot;dot&quot; style=&quot;background:${{colors[node.ext]||&#x27;#6b7280&#x27;}}&quot;&gt;&lt;/span&gt;${{esc(node.name)}}&lt;span class=&quot;size&quot;&gt;${{fmt(node.size)}}&lt;/span&gt;</code>;
+        parent.appendChild(li);
+      }}
+    }}
+    data.children.forEach(c =&gt; render(c, document.getElementById(&#x27;root&#x27;)));
+  &lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;&#x27;&#x27;&#x27;
+    output.write_text(html)</p>
+<p>if __name__ == &#x27;__main__&#x27;:
+    target = Path(sys.argv[1] if len(sys.argv) &gt; 1 else &#x27;.&#x27;).resolve()
+    stats = {&quot;files&quot;: 0, &quot;dirs&quot;: 0, &quot;extensions&quot;: Counter(), &quot;ext_sizes&quot;: Counter()}
+    data = scan(target, stats)
+    out = Path(&#x27;codebase-map.html&#x27;)
+    generate_html(data, stats, out)
+    print(f&#x27;Generated {out.absolute()}&#x27;)
+    webbrowser.open(f&#x27;file://{out.absolute()}&#x27;)</p>
+<pre><code>
+Для тестирования откройте Claude Code в любом проекте и попросите &quot;Visualize this codebase.&quot; Claude запускает скрипт, который выводит путь к созданному файлу, например `Generated /path/to/codebase-map.html`, и открывает его в вашем браузере. Если вы работаете в среде без графического интерфейса, где браузер не открывается, выведенный путь подтверждает, что скрипт выполнен успешно.
+
+Этот паттерн работает для любого визуального вывода: графики зависимостей, отчёты о покрытии тестами, документация API или визуализация схемы базы данных. Встроенный скрипт выполняет работу, а Claude управляет оркестрацией.
+
+## Устранение неполадок
+
+### Скилл не срабатывает
+
+Если Claude не использует ваш skill, когда это ожидается:
+
+1. Проверьте, что описание включает ключевые слова, которые пользователи естественно произносят
+2. Убедитесь, что skill появляется в `What skills are available?`
+3. Попробуйте переформулировать ваш запрос, чтобы он лучше соответствовал описанию
+4. Вызовите его напрямую с помощью `/skill-name`, если skill можно вызывать пользователю
+5. Если `/skill-name` тоже не распознаётся, проверьте, не [отклонил ли Claude Code имя skill](#characters-a-skill-name-cant-hold)
+6. Если skill задаёт `paths`, проверьте, что файлы, которые Claude читает, редактирует или записывает, находятся внутри текущего рабочего каталога Claude. Skill не активируется для файлов за его пределами, например для файлов в соседнем git worktree, даже если вы добавили его с помощью `/add-dir`. Чтобы skill активировался для этих файлов, запустите Claude Code в этом worktree или [переместите сессию туда с помощью `/cd`](https://code.claude.com/docs/ru/permissions#move-the-session-to-another-directory).
+
+Если frontmatter YAML неправильно сформирован, Claude Code загружает тело skill с пустыми метаданными, поэтому `/skill-name` все еще работает, но Claude не может сопоставить с вашим `description`. Запустите с `--debug`, чтобы увидеть ошибку парсинга.
+
+Если skill поставляется в плагине, вы можете измерить, как часто он срабатывает на реалистичных запросах, вместо того чтобы проверять по одному: напишите eval case с [`tool_used: Skill` grader](https://code.claude.com/docs/ru/plugin-evals#create-your-first-eval-suite) и запустите его с `claude plugin eval` после каждого изменения описания.
+
+Чтобы найти файлы `SKILL.md`, frontmatter которых не парсится, запустите [`claude plugin validate`](https://code.claude.com/docs/ru/plugins/cli-reference#validate-a-directory) в директории skills, например `claude plugin validate .claude/skills` для skills проекта или `claude plugin validate ~/.claude/skills` для личных skills. Требуется Claude Code v2.1.233 или позже.
+
+### Скилл срабатывает слишком часто
+
+Если Claude использует ваш skill, когда вы этого не хотите:
+
+1. Сделайте описание более специфичным
+2. Добавьте `disable-model-invocation: true`, если вы хотите только ручной вызов
+
+### Claude перестаёт следовать скиллу
+
+Если Claude следует skill в своем первом ответе и перестает следовать ему позже, начните с того случая, который соответствует вашей ситуации:
+
+* **Claude пропустил правило, которое должно соблюдаться каждый раз**: переместите правило в [hook](https://code.claude.com/docs/ru/hooks-guide.md). Claude Code запускает hook каждый раз, когда происходит его событие, например перед каждым редактированием файла, независимо от того, следует ли Claude skill или нет. Чтобы сохранить правило вместе со skill, определите hook в [`hooks` frontmatter](https://code.claude.com/docs/ru/hooks#hooks-in-skills-and-agents) skill. Этот hook применяется с момента вызова skill до конца сеанса.
+* **Claude пропустил руководство, которое он должен применять с суждением**: сформулируйте руководство так, чтобы оно применялось ко всей задаче, например &quot;Запустите тесты после каждого редактирования&quot; вместо &quot;Запустите тесты&quot;. Claude Code добавляет содержимое skill в разговор при вызове skill и [не перечитывает файл](#skill-content-lifecycle) на более поздних ходах.
+* **Разговор был сжат**: вызовите skill снова, чтобы восстановить его полное содержимое. После [сжатия](https://code.claude.com/docs/ru/how-claude-code-works.md#when-context-fills-up), Claude Code [может сохранить только начало вызванного skill](#skill-content-lifecycle), поэтому поместите наиболее важные инструкции в начало `SKILL.md`.
+
+### Описания скиллов обрезаются
+
+Claude Code загружает список имен skills и описаний в контекст, чтобы Claude знал, что доступно. Список всегда содержит каждое имя skill, но если у вас много skills, Claude Code сокращает описания, чтобы они поместились в бюджет символов списка, что может удалить ключевые слова, необходимые Claude для сопоставления вашего запроса. Бюджет масштабируется на 1% от окна контекста модели. Когда список переполняется, Claude Code удаляет описания, начиная с skills, которые вы вызываете реже всего, поэтому skills, которые вы используете чаще всего, сохраняют полный текст.
+
+Запустите `/doctor` для оценки стоимости контекста списка и его основных участников. Чтобы найти skills, стоящие отключения, запустите [`/skill-doctor`](#find-unused-skills). Когда список превышает свой бюджет, Claude Code также записывает предупреждение в журнал отладки, видимый с [`--debug`](https://code.claude.com/docs/ru/cli-reference#cli-flags).
+
+Строка Skills в `/context` сообщает размер списка после применения бюджета, поэтому он соответствует тому, что получает модель. До v2.1.196 строка считала полный текст каждого описания и могла показать значение в несколько раз больше, чем настроенный бюджет.
+
+Чтобы увеличить бюджет, установите параметр [`skillListingBudgetFraction`](https://code.claude.com/docs/ru/settings-reference#skilllistingbudgetfraction) (например `0.02` = 2%) или переменную окружения `SLASH_COMMAND_TOOL_CHAR_BUDGET` на фиксированное количество символов. Чтобы освободить бюджет для других skills, установите записи с низким приоритетом на `&quot;name-only&quot;` в [`skillOverrides`](#override-skill-visibility-from-settings), чтобы они отображались без описания. Вы также можете сократить текст `description` и `when_to_use` в источнике: поместите основной вариант использования в первую очередь, так как объединённый текст каждой записи ограничен 1536 символами независимо от бюджета. Ограничение настраивается с помощью [`skillListingMaxDescChars`](https://code.claude.com/docs/ru/settings-reference#skilllistingmaxdescchars).
+
+### Угловые скобки в описании скилла отображаются как `&amp;lt;` и `&amp;gt;`
+
+Claude Code отображает `&lt;` и `&gt;` в полях `description` и `when_to_use` как `&amp;lt;` и `&amp;gt;`. Чтобы показать заполнитель, например `&lt;branch&gt;`, используйте квадратные скобки или [`argument-hint`](#frontmatter-reference):
+
+* **Квадратные скобки**: замените `&lt;branch&gt;` на `[branch]`, что отображается так, как введено
+* **`argument-hint`**: перенесите заполнитель в новую строку `argument-hint: &lt;branch&gt;`. Он отображается после имени команды. Если вы также загружаете skill в claude.ai или Skills API, сначала [проверьте, принимается ли там `argument-hint`](#using-skill-frontmatter-outside-claude-code).
+
+### Личные скиллы исчезли
+
+Если папки skills, которые вы создали в `~/.claude/skills/`, исчезли, посмотрите в `~/.claude/skills/.trash/`. Когда Claude Code [синхронизирует skills из claude.ai](#how-synced-skills-behave), он загружает их в отдельную подпапку `synced` и не перемещает и не удаляет папки, которые вы создаёте.
+
+До v2.1.280 файл с именем `manifest.json` в `~/.claude/skills/` заставлял Claude Code перемещать папки skills, которые этот файл указывал, в папку с временной меткой под `~/.claude/skills/.trash/`, и эти skills перестали загружаться.
+
+Чтобы восстановить skill, переместите его папку из папки с временной меткой обратно в `~/.claude/skills/`. Сделайте это до того, как [очистка хранилища](https://code.claude.com/docs/ru/claude-directory.md#cleaned-up-automatically) удалит записи из корзины, по умолчанию через 30 дней после их перемещения в корзину.
+
+## Связанные ресурсы
+
+* **[Отладка вашей конфигурации](https://code.claude.com/docs/ru/debug-your-config.md)**: диагностируйте, почему skill не появляется или не срабатывает
+* **[Evaluating skill output quality](https://agentskills.io/skill-creation/evaluating-skills)**: формат файла eval и рабочий процесс итерации на agentskills.io
+* **[Skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices)**: рекомендации по написанию, которые применяются во всех продуктах Claude
+* **[Subagents](https://code.claude.com/docs/ru/sub-agents.md)**: делегируйте задачи специализированным агентам
+* **[Plugins](https://code.claude.com/docs/ru/plugins/overview.md)**: упакуйте и распространяйте skills с другими расширениями
+* **[Hooks](https://code.claude.com/docs/ru/hooks.md)**: автоматизируйте рабочие процессы вокруг событий инструментов
+* **[Memory](https://code.claude.com/docs/ru/memory.md)**: управляйте файлами CLAUDE.md для постоянного контекста
+* **[Commands](https://code.claude.com/docs/ru/commands.md)**: справочник для встроенных команд и встроенных skills
+* **[Permissions](https://code.claude.com/docs/ru/permissions.md)**: управляйте доступом к инструментам и skills
+* **[Claude Tag skills](https://claude.com/docs/claude-tag/admins/skills-repo)**: skills проекта, зафиксированные в репозитории, также загружаются при использовании этого репозитория в канале Claude Tag
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

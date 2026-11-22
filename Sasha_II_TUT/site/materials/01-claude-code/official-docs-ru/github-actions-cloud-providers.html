@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Использование Claude Code GitHub Actions с облачными провайдерами</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="использование-claude-code-github-actions-с-облачными-провайдерами">Использование Claude Code GitHub Actions с облачными провайдерами <a class="h-anchor" href="#использование-claude-code-github-actions-с-облачными-провайдерами" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Запускайте Claude Code GitHub Actions через Amazon Bedrock, Google Cloud&#x27;s Agent Platform или Microsoft Foundry вместо Claude API</p>
+</blockquote>
+<p><a href="https://code.claude.com/docs/ru/github-actions.md">Claude Code GitHub Actions</a> по умолчанию вызывает Claude API. Чтобы маршрутизировать вывод через собственный облачный аккаунт, установите входной параметр провайдера Claude Code GitHub Action и настройте облако на доверие токену OpenID Connect (OIDC) рабочего процесса. Рабочий процесс аутентифицируется с помощью этого токена, поэтому вы не сохраняете долгоживущие облачные учетные данные в своем репозитории.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Эта страница основана на <a href="https://code.claude.com/docs/ru/github-actions.md#setup">настройке GitHub Actions</a>. Предполагается, что вы уже знакомы с файлом рабочего процесса и шагом <code>anthropics/claude-code-action</code>, и здесь рассматривается только то, что меняется для облачного провайдера.</p>
+</blockquote>
+<h3 id="h">Выберите своего провайдера <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code GitHub Action поддерживает трех провайдеров, и шаги настройки ниже отличаются только конфигурацией на стороне облака. Используйте того, у которого ваша организация уже имеет доступ к моделям Claude. Вы указываете Claude Code GitHub Action, какого провайдера использовать, с помощью одного входного параметра в блоке <code>with:</code> шага <code>anthropics/claude-code-action</code>:</p>
+<ul>
+<li><strong>Amazon Bedrock</strong>: <code>use_bedrock: &quot;true&quot;</code></li>
+<li><strong>Google Cloud&#x27;s Agent Platform</strong>: <code>use_vertex: &quot;true&quot;</code></li>
+<li><strong>Microsoft Foundry</strong>: <code>use_foundry: &quot;true&quot;</code></li>
+</ul>
+<p>Полные примеры рабочих процессов в разделе <a href="#set-up-the-integration">Настройка интеграции</a> уже включают входной параметр для каждого провайдера.</p>
+<h3 id="h-2">Предварительные требования <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Перед началом вам потребуется:</p>
+<ul>
+<li>Доступ администратора к репозиторию, где работает Claude Code GitHub Action, для установки GitHub App и добавления секретов</li>
+<li>Разрешение на создание ресурсов идентификации в вашем облачном аккаунте: роли IAM и поставщики идентификации OIDC на AWS, ресурсы Workload Identity Federation и сервисные аккаунты на Google Cloud, или приложения Microsoft Entra на Azure</li>
+<li>Доступ к моделям Claude на вашем провайдере:</li>
+<li><strong>Amazon Bedrock</strong>: доступ предоставлен моделям Claude. Профили кросс-региональной инференции, такие как идентификаторы моделей <code>us.</code> в примерах на этой странице, требуют доступа, предоставленного в каждом регионе их группы регионов. См. <a href="https://code.claude.com/docs/ru/amazon-bedrock.md">Claude Code на Amazon Bedrock</a></li>
+<li><strong>Google Cloud&#x27;s Agent Platform</strong>: проект с включенным Agent Platform API и доступом к моделям Claude. См. <a href="https://code.claude.com/docs/ru/google-vertex-ai.md">Claude Code на Google Cloud&#x27;s Agent Platform</a></li>
+<li><strong>Microsoft Foundry</strong>: ресурс Foundry с развертыванием модели Claude. См. <a href="https://code.claude.com/docs/ru/microsoft-foundry.md">Claude Code на Microsoft Foundry</a></li>
+</ul>
+<h3 id="h-3">Настройка интеграции <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Помимо предварительных требований, вы создаете идентификацию GitHub для Claude Code GitHub Action, конфигурацию доверия на стороне облака, секреты репозитория и файл рабочего процесса. Шаги ниже проходят через каждый из них.</p>
+<p><strong>1. Выберите идентификацию GitHub</strong></p>
+<p>Claude Code GitHub Action отправляет коммиты и публикует комментарии через идентификацию GitHub. <a href="https://code.claude.com/docs/ru/github-actions.md#quick-setup">Быстрая настройка</a> устанавливает официальное приложение Claude GitHub App для этого. С облачным провайдером вы выбираете идентификацию сами:</p>
+<ul>
+<li><strong>Официальное <a href="https://github.com/apps/claude">приложение Claude GitHub App</a></strong>: установите его на репозиторий, или пропустите на следующий шаг, если оно уже установлено</li>
+<li><strong>Пользовательское приложение GitHub</strong>: создайте свое собственное приложение, когда вам нужны только три разрешения, которые использует Claude Code GitHub Action, а не <a href="https://code.claude.com/docs/ru/github-actions.md#github-app-permissions">полный набор официального приложения</a></li>
+<li><strong>Автоматический <code>GITHUB_TOKEN</code> GitHub</strong>: нет приложения для создания или установки, но GitHub не запускает ваши CI рабочие процессы на коммитах, сделанных с его помощью</li>
+</ul>
+<p>Примеры рабочих процессов на четвертом шаге аутентифицируются с помощью пользовательского приложения. Этот шаг также указывает, что изменить для двух других вариантов.</p>
+<p>Чтобы создать пользовательское приложение, <a href="https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/registering-a-github-app">зарегистрируйте новое приложение GitHub</a> с отключенными вебхуками, так как эта интеграция их не использует. Предоставьте ему три разрешения репозитория:</p>
+<ul>
+<li><strong>Contents</strong>: чтение и запись</li>
+<li><strong>Issues</strong>: чтение и запись</li>
+<li><strong>Pull requests</strong>: чтение и запись</li>
+</ul>
+<p>После регистрации приложения создайте приватный ключ и сохраните загруженный файл <code>.pem</code>, запишите ID приложения со страницы настроек приложения и <a href="https://docs.github.com/en/apps/using-github-apps/installing-your-own-github-app">установите приложение</a> на репозиторий, где работает Claude Code GitHub Action. Вы добавляете ключ и ID как секреты на третьем шаге.</p>
+<p><strong>2. Настройте облачную аутентификацию</strong></p>
+<p>Настройте облако на доверие токену OIDC, который GitHub выдает рабочему процессу, чтобы каждый запуск рабочего процесса получал краткосрочные облачные учетные данные. Маркеры в каждой вкладке суммируют то, что нужно создать, и каждая вкладка ссылается на собственное руководство облачного провайдера для шагов на уровне консоли.</p>
+<blockquote>
+<p>[tab] Amazon Bedrock</p>
+<p>Создайте конфигурацию доверия в вашем аккаунте AWS, следуя <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html">руководству AWS по созданию поставщиков идентификации OIDC</a>:</p>
+<ul>
+<li>Добавьте поставщика идентификации GitHub OIDC с URL провайдера <code>https://token.actions.githubusercontent.com</code> и аудиторией <code>sts.amazonaws.com</code></li>
+<li>Создайте роль IAM, которой доверяет этот провайдер как веб-идентификация, и присоедините политику ограниченного вызова из <a href="https://code.claude.com/docs/ru/amazon-bedrock.md#iam-configuration">конфигурации IAM</a>, которая предоставляет <code>bedrock:InvokeModel</code>, <code>bedrock:InvokeModelWithResponseStream</code>, <code>bedrock:ListInferenceProfiles</code> и <code>bedrock:GetInferenceProfile</code>, а также два действия подписки <code>aws-marketplace</code></li>
+<li>Ограничьте политику доверия роли вашим репозиторием с условием субъекта, таким как <code>repo:your-org/your-repo:*</code>. См. <a href="https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect">руководство GitHub по усилению безопасности OIDC</a> для формата утверждения</li>
+</ul>
+<p>Запишите ARN роли. Вы добавляете его как секрет на следующем шаге.</p>
+</blockquote>
+<blockquote>
+<p>[tab] Google Cloud&#x27;s Agent Platform</p>
+<p>Создайте ресурсы федерации в вашем проекте Google Cloud, следуя <a href="https://cloud.google.com/iam/docs/workload-identity-federation">документации Workload Identity Federation</a>:</p>
+<ul>
+<li>Включите три API: IAM Credentials, Security Token Service (STS) и Agent Platform API, имя сервиса которого <code>aiplatform.googleapis.com</code></li>
+<li>Создайте пул Workload Identity с поставщиком GitHub OIDC, издатель которого <code>https://token.actions.githubusercontent.com</code>, и добавьте условие атрибута, которое ограничивает пул вашим репозиторием</li>
+<li>Создайте выделенный сервисный аккаунт только с ролью <code>Vertex AI User</code>, которая является <code>roles/aiplatform.user</code>, и разрешите пулу его олицетворять</li>
+</ul>
+<p>Запишите полное имя ресурса провайдера и адрес электронной почты сервисного аккаунта. Вы добавляете их как секреты на следующем шаге.</p>
+</blockquote>
+<blockquote>
+<p>[tab] Microsoft Foundry</p>
+<p>Создайте приложение Microsoft Entra с федеративным учетным данием для вашего репозитория, следуя <a href="https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure-openid-connect">руководству Microsoft по аутентификации из GitHub Actions</a>:</p>
+<ul>
+<li>Зарегистрируйте приложение Microsoft Entra и добавьте федеративные учётные данные идентификации, которые доверяют токенам, выданным GitHub вашему репозиторию. Управляемое удостоверение, назначенное пользователем, работает вместо приложения. Оба имеют ID клиента, который вы запишите ниже</li>
+<li>Назначьте приложению роль <code>Foundry User</code> на вашем ресурсе Foundry. См. <a href="https://code.claude.com/docs/ru/microsoft-foundry.md#azure-rbac-configuration">конфигурацию Azure RBAC</a> для другой встроенной роли и пользовательских ролей</li>
+</ul>
+<p>Запишите ID клиента приложения, ID вашего тенанта и ID вашей подписки. Вы добавляете их как секреты на следующем шаге.</p>
+</blockquote>
+<p><strong>3. Добавьте секреты репозитория</strong></p>
+<p>В репозитории, где работает Claude Code GitHub Action, добавьте секреты для вашего провайдера, плюс два секрета приложения, если вы создали пользовательское приложение GitHub на первом шаге. См. руководство GitHub по <a href="https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions">использованию секретов в GitHub Actions</a>.</p>
+<p>| Секрет | Требуется для | Значение |
+| - | - | - |
+| <code>AWS_ROLE_TO_ASSUME</code> | Amazon Bedrock | ARN роли IAM |
+| <code>GCP_WORKLOAD_IDENTITY_PROVIDER</code> | Google Cloud&#x27;s Agent Platform | Полное имя ресурса провайдера |
+| <code>GCP_SERVICE_ACCOUNT</code> | Google Cloud&#x27;s Agent Platform | Адрес электронной почты сервисного аккаунта |
+| <code>AZURE_CLIENT_ID</code> | Microsoft Foundry | ID клиента приложения Entra |
+| <code>AZURE_TENANT_ID</code> | Microsoft Foundry | ID вашего тенанта Microsoft Entra |
+| <code>AZURE_SUBSCRIPTION_ID</code> | Microsoft Foundry | ID вашей подписки Azure |
+| <code>APP_ID</code> | Пользовательское приложение GitHub | ID приложения GitHub |
+| <code>APP_PRIVATE_KEY</code> | Пользовательское приложение GitHub | Содержимое файла приватного ключа <code>.pem</code> |</p>
+<p><strong>4. Создайте файл рабочего процесса</strong></p>
+<p>Создайте файл рабочего процесса для вашего провайдера, такой как <code>.github/workflows/claude.yml</code>. Каждый пример отвечает на упоминания <code>@claude</code>, аутентифицируется на GitHub с помощью пользовательского приложения и включает разрешение <code>id-token: write</code>, которое GitHub требует для выдачи токена OIDC, который ваш облачный провайдер обменивает на учетные данные.</p>
+<p>Если вы выбрали другую идентификацию GitHub на первом шаге, отрегулируйте пример:</p>
+<ul>
+<li><strong>Официальное приложение Claude GitHub App</strong>: удалите шаг Generate GitHub App token и строку <code>github_token</code></li>
+<li><strong>Автоматический токен GitHub</strong>: удалите шаг генерации токена и измените строку <code>github_token</code> на <code>github_token: ${{ secrets.GITHUB_TOKEN }}</code></li>
+</ul>
+<blockquote>
+<p>[!WARNING]</p>
+<p>В публичных репозиториях комментарий, содержащий фразу триггера от любого пользователя, запускает этот рабочий процесс. Шаги учетных данных выполняются до того, как Claude Code GitHub Action проверит доступ на запись комментатора, поэтому действие отклоняет неавторизованных пользователей только после того, как рабочий процесс создал токен приложения и вошел в ваш облачный провайдер, что оставляет записи в журнале аудита и потребляет минуты Actions. Чтобы избежать таких запусков, добавьте шаг, который проверяет доступ на запись комментатора перед шагами учетных данных.</p>
+</blockquote>
+<blockquote>
+<p>[tab] Amazon Bedrock</p>
+<p>Замените значение <code>aws-region</code> на свое собственное. Шаг учетных данных экспортирует его как <code>AWS_REGION</code> для остальной части задания.</p>
+<p>```yaml theme={null}
+name: Claude PR Action</p>
+<p>permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write</p>
+<p>on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    types: [opened]</p>
+<p>jobs:
+  claude-pr:
+    if: |
+      (github.event_name == &#x27;issue_comment&#x27; &amp;&amp; contains(github.event.comment.body, &#x27;@claude&#x27;)) ||
+      (github.event_name == &#x27;pull_request_review_comment&#x27; &amp;&amp; contains(github.event.comment.body, &#x27;@claude&#x27;)) ||
+      (github.event_name == &#x27;issues&#x27; &amp;&amp; (contains(github.event.issue.body, &#x27;@claude&#x27;) || contains(github.event.issue.title, &#x27;@claude&#x27;)))
+    runs-on: ubuntu-latest
+    steps:</p>
+<ul>
+<li>name: Checkout repository uses: actions/checkout@v6</li>
+</ul>
+<ul>
+<li>name: Generate GitHub App token id: app-token uses: actions/create-github-app-token@v2 with: app-id: ${{ secrets.APP_ID }} private-key: ${{ secrets.APP_PRIVATE_KEY }}</li>
+</ul>
+<ul>
+<li>name: Configure AWS Credentials (OIDC) uses: aws-actions/configure-aws-credentials@v4 with: role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }} aws-region: us-west-2</li>
+</ul>
+<ul>
+<li>uses: anthropics/claude-code-action@v1 with: github_token: ${{ steps.app-token.outputs.token }} use_bedrock: &quot;true&quot; claude_args: &#x27;--model us.anthropic.claude-sonnet-4-6&#x27;</li>
+</ul>
+<pre><code>
+&gt; [!TIP]
+&gt;
+&gt; Идентификаторы моделей Bedrock включают префикс профиля кросс-региональной инференции, такой как `us.`. Используйте префикс для группы регионов, где вы предоставили доступ к модели.</code></pre>
+</blockquote>
+<blockquote>
+<p>[tab] Google Cloud&#x27;s Agent Platform</p>
+<p>Замените значение <code>CLOUD_ML_REGION</code> на свое собственное. Вам не нужно жестко кодировать ID проекта, потому что рабочий процесс читает его из выходных данных шага <code>auth</code>.</p>
+<p>```yaml theme={null}
+name: Claude PR Action</p>
+<p>permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write</p>
+<p>on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    types: [opened]</p>
+<p>jobs:
+  claude-pr:
+    if: |
+      (github.event_name == &#x27;issue_comment&#x27; &amp;&amp; contains(github.event.comment.body, &#x27;@claude&#x27;)) ||
+      (github.event_name == &#x27;pull_request_review_comment&#x27; &amp;&amp; contains(github.event.comment.body, &#x27;@claude&#x27;)) ||
+      (github.event_name == &#x27;issues&#x27; &amp;&amp; (contains(github.event.issue.body, &#x27;@claude&#x27;) || contains(github.event.issue.title, &#x27;@claude&#x27;)))
+    runs-on: ubuntu-latest
+    steps:</p>
+<ul>
+<li>name: Checkout repository uses: actions/checkout@v6</li>
+</ul>
+<ul>
+<li>name: Generate GitHub App token id: app-token uses: actions/create-github-app-token@v2 with: app-id: ${{ secrets.APP_ID }} private-key: ${{ secrets.APP_PRIVATE_KEY }}</li>
+</ul>
+<ul>
+<li>name: Authenticate to Google Cloud id: auth uses: google-github-actions/auth@v2 with: workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }} service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}</li>
+</ul>
+<ul>
+<li>uses: anthropics/claude-code-action@v1 with: github_token: ${{ steps.app-token.outputs.token }} use_vertex: &quot;true&quot; claude_args: &#x27;--model claude-sonnet-5&#x27; env: ANTHROPIC_VERTEX_PROJECT_ID: ${{ steps.auth.outputs.project_id }} CLOUD_ML_REGION: us-east5</li>
+</ul>
+<pre><code></code></pre>
+</blockquote>
+<blockquote>
+<p>[tab] Microsoft Foundry</p>
+<p>Замените <code>your-resource-name</code> на имя вашего ресурса Foundry. Claude Code строит URL конечной точки из него. Шаг <code>azure/login</code> входит с помощью токена OIDC рабочего процесса, и Claude Code подхватывает учетные данные через цепь <a href="https://learn.microsoft.com/en-us/azure/developer/javascript/sdk/authentication/credential-chains#defaultazurecredential-overview">учетных данных по умолчанию</a> Azure.</p>
+<p>```yaml theme={null}
+name: Claude PR Action</p>
+<p>permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write</p>
+<p>on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    types: [opened]</p>
+<p>jobs:
+  claude-pr:
+    if: |
+      (github.event_name == &#x27;issue_comment&#x27; &amp;&amp; contains(github.event.comment.body, &#x27;@claude&#x27;)) ||
+      (github.event_name == &#x27;pull_request_review_comment&#x27; &amp;&amp; contains(github.event.comment.body, &#x27;@claude&#x27;)) ||
+      (github.event_name == &#x27;issues&#x27; &amp;&amp; (contains(github.event.issue.body, &#x27;@claude&#x27;) || contains(github.event.issue.title, &#x27;@claude&#x27;)))
+    runs-on: ubuntu-latest
+    steps:</p>
+<ul>
+<li>name: Checkout repository uses: actions/checkout@v6</li>
+</ul>
+<ul>
+<li>name: Generate GitHub App token id: app-token uses: actions/create-github-app-token@v2 with: app-id: ${{ secrets.APP_ID }} private-key: ${{ secrets.APP_PRIVATE_KEY }}</li>
+</ul>
+<ul>
+<li>name: Authenticate to Azure uses: azure/login@v2 with: client-id: ${{ secrets.AZURE_CLIENT_ID }} tenant-id: ${{ secrets.AZURE_TENANT_ID }} subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}</li>
+</ul>
+<ul>
+<li>uses: anthropics/claude-code-action@v1 with: github_token: ${{ steps.app-token.outputs.token }} use_foundry: &quot;true&quot; claude_args: &#x27;--model claude-sonnet-5&#x27; env: ANTHROPIC_FOUNDRY_RESOURCE: your-resource-name</li>
+</ul>
+<pre><code>
+&gt; [!TIP]
+&gt;
+&gt; Используйте ID модели, который соответствует развертыванию Claude в вашем ресурсе Foundry. См. [Claude Code на Microsoft Foundry](https://code.claude.com/docs/ru/microsoft-foundry.md) для конфигурации модели и закрепления версии.</code></pre>
+</blockquote>
+<p>С любым провайдером вы можете ограничить длину запуска и стоимость, добавив <code>--max-turns</code> к <code>claude_args</code>. См. <a href="https://code.claude.com/docs/ru/github-actions.md#manage-costs">Управление затратами</a>.</p>
+<p><strong>5. Протестируйте настройку</strong></p>
+<p>Упомяните <code>@claude</code> в комментарии проблемы или PR, затем смотрите запуск на вкладке Actions репозитория. Claude отвечает в комментарии на той же проблеме или PR.</p>
+<h3 id="troubleshooting">Troubleshooting <a class="h-anchor" href="#troubleshooting" aria-label="Ссылка на раздел">#</a></h3>
+<p>Неудачный запуск обычно разбивается в одном из двух мест:</p>
+<ul>
+<li><strong>Ошибки аутентификации</strong>: обычно неправильная конфигурация OIDC. Проверьте, что рабочий процесс включает разрешение <code>id-token: write</code>, что условие репозитория конфигурации доверия точно соответствует вашему репозиторию и что имена секретов в вашем рабочем процессе совпадают с добавленными вами</li>
+<li><strong>Проблемы триггера и CI</strong>: они ведут себя так же, как когда Claude Code GitHub Action вызывает Claude API. См. <a href="https://code.claude.com/docs/ru/github-actions.md#troubleshooting">раздел troubleshooting</a> главной страницы и <a href="https://github.com/anthropics/claude-code-action/blob/main/docs/faq.md">FAQ</a> Claude Code GitHub Action</li>
+</ul>
+<h3 id="h-4">Что дальше <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/github-actions.md">Claude Code GitHub Actions</a> для примеров, параметров и лучших практик</li>
+<li><a href="https://code.claude.com/docs/ru/amazon-bedrock.md">Claude Code на Amazon Bedrock</a> для идентификаторов и регионов моделей Bedrock</li>
+<li><a href="https://code.claude.com/docs/ru/google-vertex-ai.md">Claude Code на Google Cloud&#x27;s Agent Platform</a> для идентификаторов и регионов моделей Agent Platform</li>
+<li><a href="https://code.claude.com/docs/ru/microsoft-foundry.md">Claude Code на Microsoft Foundry</a> для конфигурации модели и конечной точки Foundry</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Pull Request Preparation Checklist</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/01-slash-commands/index.html">01-slash-commands</a></nav>
+<hr>
+<p>description: Clean up code, stage changes, and prepare a pull request
+allowed-tools: Bash(git add:<em>), Bash(git status:</em>), Bash(git diff:<em>), Bash(npm test:</em>), Bash(npm run lint:*)</p>
+<hr>
+<h1 id="pull-request-preparation-checklist">Pull Request Preparation Checklist <a class="h-anchor" href="#pull-request-preparation-checklist" aria-label="Ссылка на раздел">#</a></h1>
+<p>Before creating a PR, execute these steps:</p>
+<ol>
+<li>Run linting: <code>prettier --write .</code></li>
+<li>Run tests: <code>npm test</code></li>
+<li>Review git diff: <code>git diff HEAD</code></li>
+<li>Stage changes: <code>git add .</code></li>
+<li>Create commit message following conventional commits:</li>
+<li><code>fix:</code> for bug fixes</li>
+<li><code>feat:</code> for new features</li>
+<li><code>docs:</code> for documentation</li>
+<li><code>refactor:</code> for code restructuring</li>
+<li><code>test:</code> for test additions</li>
+<li><code>chore:</code> for maintenance</li>
+</ol>
+<ol>
+<li>Generate PR summary including:</li>
+<li>What changed</li>
+<li>Why it changed</li>
+<li>Testing performed</li>
+<li>Potential impacts</li>
+</ol>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

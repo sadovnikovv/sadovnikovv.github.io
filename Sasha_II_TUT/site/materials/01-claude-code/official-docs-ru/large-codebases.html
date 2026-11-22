@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Настройка Claude Code в монорепозитории или большой кодовой базе</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="настройка-claude-code-в-монорепозитории-или-большой-кодовой-базе">Настройка Claude Code в монорепозитории или большой кодовой базе <a class="h-anchor" href="#настройка-claude-code-в-монорепозитории-или-большой-кодовой-базе" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Настройте Claude Code для монорепозиториев и больших однодеревных кодовых баз с вложенными файлами CLAUDE.md, разреженными worktrees, интеллектом кода и навыками для каждого пакета, чтобы Claude оставался сосредоточенным на коде, над которым вы работаете.</p>
+</blockquote>
+<p>Большая кодовая база может быть одним репозиторием с миллионами строк или монорепозиторием со множеством пакетов. Claude Code работает при любом размере, но по мере роста кодовой базы параметры по умолчанию, настроенные для меньших проектов, могут заполнить контекстное окно инструкциями и чтениями файлов, не связанными с задачей, что стоит токены и снижает производительность Claude.</p>
+<p>Это руководство показывает отдельным разработчикам и командам инженеров, как ограничить Claude той частью кодовой базы, которую затрагивает задача. Каждый раздел отмечает, является ли параметр личным для вашей машины или зафиксирован в репозитории.</p>
+<h3 id="h">Что охватывает это руководство <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p><a href="#settings-on-this-page">Таблица ниже</a> перечисляет каждый параметр и то, что он достигает. <a href="#the-example-monorepo">Дерево файлов после неё</a> — это пример монорепозитория, на который ссылаются все примеры кода на этой странице.</p>
+<h4 id="h-2">Параметры на этой странице <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<p>Каждый параметр ниже независим. Они накладываются друг на друга, а не заменяют друг друга, поэтому применяйте те, которые подходят вашему репозиторию. <a href="#choose-where-to-start-claude">Выберите, где запустить Claude</a> определяет, где находятся ваши файлы параметров, поэтому прочитайте это в первую очередь. <a href="#put-it-together">Соберите всё вместе</a> показывает все их в сочетании.</p>
+<p>| Я хочу | Использовать |
+| :- | :- |
+| Загружать только соглашения для кода, который вы трогаете, вместо одного корневого файла, охватывающего каждую подсистему | Per-directory <a href="#layer-claude-md-files-by-directory">CLAUDE.md файлы</a> |
+| Исключить CLAUDE.md файлы для пакетов, в которых вы никогда не работаете | <a href="#exclude-irrelevant-claude-md-files"><code>claudeMdExcludes</code></a> |
+| Заблокировать Claude от открытия выходных данных сборки, сгенерированного кода и зависимостей поставщика | <a href="#block-reads-of-generated-and-vendored-code"><code>Read</code> deny правила</a> в <code>permissions.deny</code> |
+| Найти определение символа или вызывающих через языковой сервер вместо сканирования файлов | A <a href="#reduce-file-reads-with-code-intelligence">code intelligence plugin</a> |
+| Проверить только каталоги, которые нужны задаче, когда Claude создаёт worktree | <a href="#check-out-only-the-directories-you-need"><code>worktree.sparsePaths</code></a> |
+| Читать и редактировать соседний пакет или другой репозиторий из одного сеанса | <a href="#grant-access-across-packages-or-repositories"><code>--add-dir</code></a> или <code>additionalDirectories</code> |
+| Дать Claude процедуры, специфичные для одной области, которые загружаются только при необходимости | Per-directory <a href="#add-per-directory-skills">skills</a> |
+| Заменить множество per-directory CLAUDE.md файлов одним набором соглашений, который все устанавливают | A <a href="#centralize-conventions-when-layering-stops-scaling">plugin</a> во внутреннем маркетплейсе |</p>
+<blockquote>
+<p>[!TIP]</p>
+<p>Методы рабочего процесса, которые позволяют держать контекст небольшим в любом репозитории, описаны в <a href="https://code.claude.com/docs/ru/best-practices.md">Best practices for Claude Code</a>. Один из примеров — <a href="https://code.claude.com/docs/ru/best-practices.md#know-what-subagents-cost">запуск исследования в субагенте</a>, чтобы чтения файлов оставались вне основного диалога. Чтобы развернуть базовую конфигурацию для каждого разработчика в вашей организации, см. <a href="https://code.claude.com/docs/ru/admin-setup.md">Set up Claude Code for your organization</a>.</p>
+</blockquote>
+<h4 id="h-3">Пример монорепозитория <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Примеры на этой странице ссылаются на монорепозиторий с тремя пакетами. Те же паттерны работают в большой однодеревной кодовой базе: где пример использует <code>packages/api/</code>, подставьте свой собственный каталог подсистемы, такой как <code>src/backend/</code> или <code>lib/core/</code>.</p>
+<p>```text theme={null}
+monorepo/
+  CLAUDE.md                     # root instructions
+  packages/
+    api/
+      CLAUDE.md                 # API-specific instructions
+      .claude/skills/
+      src/
+    web/
+      CLAUDE.md                 # frontend-specific instructions
+      .claude/skills/
+      src/
+    shared/
+      CLAUDE.md                 # shared library instructions
+      src/</p>
+<pre><code>
+## Выберите, где запустить Claude
+
+Где вы запускаете `claude`, определяет, какие файлы Claude может читать и редактировать без дополнительного разрешения, какие CLAUDE.md файлы загружаются в контекст при запуске и какие параметры проекта применяются.
+
+| Запуск из | Доступ к файлам | CLAUDE.md загружается при запуске | Использовать когда |
+| :- | :- | :- | :- |
+| Корень репозитория | Каждый файл | Только корневой; файлы подкаталогов загружаются по требованию | Задачи охватывают несколько пакетов или подсистем |
+| Подкаталог | Только это поддерево, пока вы не предоставите больше | Этот каталог плюс каждый предок | Работа ограничена одним пакетом или подсистемой |
+
+Параметры проекта в `.claude/settings.json` не наследуются от родительских каталогов так, как это происходит с CLAUDE.md файлами. Для того, чтобы узнать, какой каталог `.claude/settings.json` читает сеанс, см. [где Claude Code ищет каждый файл](https://code.claude.com/docs/ru/settings.md#where-claude-code-looks-for-each-file).
+
+Каждый раздел ниже указывает, находится ли его файл параметров в корне репозитория или в подкаталоге, из которого вы запускаетесь, и зафиксирован ли он или хранится локально.
+
+## Слоистые CLAUDE.md файлы по каталогам
+
+В большой кодовой базе один CLAUDE.md в корне репозитория имеет тенденцию либо расширяться, чтобы охватить соглашения каждой подсистемы, стоя контекста на инструкциях, не связанных с текущей задачей, либо оставаться слишком общим, чтобы быть полезным. Разделение инструкций между per-directory файлами означает, что Claude загружает правила на уровне репозитория плюс только соглашения для кода, над которым вы работаете.
+
+Claude Code загружает каждый [CLAUDE.md](https://code.claude.com/docs/ru/memory.md) файл из вашего рабочего каталога и каждого родительского каталога при запуске, затем загружает файл каждого подкаталога [по требованию](https://code.claude.com/docs/ru/memory.md#how-claude-md-files-load). Корневой файл устанавливает правила на уровне репозитория, и каждый подкаталог добавляет свой собственный.
+
+Общее разделение — два уровня:
+
+* **Root `CLAUDE.md`**: инструкции, которые применяются везде, такие как стандарты кодирования и соглашения о коммитах
+* **Per-subdirectory `CLAUDE.md`**: соглашения, специфичные для стека этой области. В монорепозитории это один на пакет. В большом однодеревном это один на подсистему, такую как `src/db/` или `src/api/`
+
+Зафиксируйте эти файлы в репозитории, чтобы товарищи по команде их унаследовали. Владелец каждого каталога обычно поддерживает его файл.
+
+Чтобы обрезать файл, который уже зафиксирован, запустите [проверку `/doctor`](https://code.claude.com/docs/ru/memory#my-claude-md-is-too-large). Корневой `CLAUDE.md` содержит правила, которые применяются в каждом пакете:
+</code></pre>
+<p>Run package scripts from the package directory, not the monorepo root.
+Prefix commit subjects with the package name, for example <code>api: add rate limiting</code>.
+Never edit files under packages/*/generated/. Run <code>npm run codegen</code> in the package instead.</p>
+<pre><code>
+`CLAUDE.md` каждого подкаталога, здесь `packages/api/CLAUDE.md`, добавляет соглашения, специфичные для этой области:
+</code></pre>
+<p>Copy <code>.env.example</code> to <code>.env</code> before running anything. Tests and the dev server fail without it.
+Write database queries with the Knex query builder. Never put raw SQL strings in route handlers.
+Never edit a migration after it has merged. Add a new migration instead.</p>
+<pre><code>
+Когда вы запускаете Claude из `packages/api/`, он загружает как `packages/api/CLAUDE.md`, так и корневой `CLAUDE.md`. Claude видит локальные инструкции наряду с правилами на уровне репозитория, без инструкций из `packages/web/` в контексте. То же самое относится к любому подкаталогу в non-monorepo дереве. Чтобы подтвердить, какие файлы загружены, запустите [`/context all`](https://code.claude.com/docs/ru/commands#all-commands) и проверьте список под **Memory files**.
+
+Несколько способов держать файлы в актуальном состоянии по мере изменения кодовой базы и моделей:
+
+* **Проверка в pull requests**: рассматривайте редактирование CLAUDE.md как любое другое изменение документации, чтобы соглашения отслеживали код
+* **Пересмотр после крупных выпусков моделей**: инструкции, которые обходили ограничение старой модели, могут стать накладными, как только новая модель справляется с этим случаем самостоятельно. Например, правило, которое заставляет рефакторинг одного файла, можно удалить, как только ограничение исчезнет
+* **Добавьте Stop hook, который предлагает обновления**: [`Stop` hook](https://code.claude.com/docs/ru/hooks#stop) получает путь к транскрипту сеанса, когда Claude заканчивает ответ, поэтому скрипт может проверить сеанс и предложить обновления CLAUDE.md, пока разрыв, который он обнаружил, свежий
+
+Для получения дополнительной информации о том, как загружаются и взаимодействуют CLAUDE.md файлы, см. [Memory and project instructions](https://code.claude.com/docs/ru/memory.md).
+
+### Выберите между per-directory CLAUDE.md и path-scoped правилами
+
+Per-directory `CLAUDE.md` файлы и [path-scoped правила](https://code.claude.com/docs/ru/memory.md#path-specific-rules) под `.claude/rules/` оба позволяют вам нацелить инструкции на часть дерева. Они отличаются тем, где находится файл и когда он загружается.
+
+| Подход | Расположение файла | Загружается когда | Использовать когда |
+| :- | :- | :- | :- |
+| Per-directory `CLAUDE.md` | Внутри каталога, рядом с его кодом | При запуске из этого каталога или по требованию | Владельцы каталогов поддерживают свои собственные соглашения; инструкции версионируются с кодом |
+| Path-scoped правило в `.claude/rules/` | Центральный `.claude/` в корне репо | Когда Claude работает с файлом, соответствующим glob `paths:` правила | Вы хотите все соглашения в одном месте, или одно и то же правило применяется ко многим разбросанным путям |
+
+Для сравнения, которое также охватывает skills, см. [Compare similar features](https://code.claude.com/docs/ru/features-overview.md#compare-similar-features).
+
+### Исключите неуместные CLAUDE.md файлы
+
+Когда вы запускаете Claude из корня репозитория, CLAUDE.md каждого подкаталога может [загружаться по требованию](https://code.claude.com/docs/ru/memory.md#how-claude-md-files-load) в течение сессии. Параметр `claudeMdExcludes` пропускает определённые файлы по пути или glob паттерну, чтобы они никогда не загружались.
+
+Используйте это для каталогов, в которых вы никогда не работаете, таких как пакеты других команд, устаревший код или vendored поддеревья. Список исключений статичен, а не переключатель для каждой задачи. Чтобы сосредоточиться на одном пакете сегодня и другом завтра, [запустите Claude из каталога этого пакета](#choose-where-to-start-claude) вместо редактирования исключений.
+
+Если вы хотите эти исключения только для себя, поместите параметр в `.claude/settings.local.json`. Claude Code добавляет этот файл в ваш глобальный gitignore, когда сохраняет параметр там. Поскольку вы создаёте его вручную здесь, добавьте его в ваш gitignore самостоятельно. Паттерны используют синтаксис glob, сопоставленный с абсолютными путями файлов, поэтому начните паттерны в стиле relative с `**/`, чтобы совпадать в любом месте дерева. Пример ниже исключает пакет, принадлежащий другой команде:
+</code></pre>
+<p>{
+  &quot;claudeMdExcludes&quot;: [
+    &quot;<strong>/packages/web/</strong>&quot;
+  ]
+}</p>
+<pre><code>
+Это пропускает каждый CLAUDE.md и файл правил под этим пакетом. Корневой CLAUDE.md и пакеты, в которых вы работаете, загружаются нормально.
+
+Эти паттерны охватывают другие распространённые случаи:
+
+* `&quot;**/packages/*/CLAUDE.md&quot;`: исключает CLAUDE.md каждого пакета, сохраняя корневой
+* `&quot;**/packages/legacy-*/**&quot;`: исключает каждый пакет, имя которого соответствует glob, включая правила
+* `&quot;/home/user/monorepo/legacy/CLAUDE.md&quot;`: исключает один конкретный файл по абсолютному пути
+
+Вы можете задать `claudeMdExcludes` в любой [области действия настроек](https://code.claude.com/docs/ru/settings.md#where-settings-live): пользователь, проект, локальная или управляемая. Массивы объединяются между областями действия, поэтому команда может задать значения по умолчанию на уровне проекта, а отдельные участники — добавить локальные переопределения. Если ваша организация развёртывает [управляемый файл CLAUDE.md](https://code.claude.com/docs/ru/memory.md#deploy-organization-wide-claude-md), паттерн, который ему соответствует, не пропускает его, независимо от того, в какой области действия задан паттерн.
+
+Для полной документации исключения см. [Exclude specific CLAUDE.md files](https://code.claude.com/docs/ru/memory.md#exclude-specific-claude-md-files).
+
+## Уменьшите то, что читает Claude
+
+Инструкции — это только часть того, что попадает в контекст Claude. Чтения файлов — это ещё одна стоимость, которая растёт с кодовой базой. Параметры ниже блокируют чтения неуместных путей и заменяют исчерпывающие сканирования файлов поиском на языковом сервере.
+
+### Блокируйте чтения сгенерированного и зависимостей поставщика кода
+
+Поиск контента Claude уважает `.gitignore` по умолчанию, поэтому пути, уже указанные там, такие как `node_modules/`, `dist/` и `build/`, остаются вне результатов поиска без дополнительной конфигурации.
+
+Для путей, которые зафиксированы, таких как зависимость поставщика SDK или зафиксированный сгенерированный код, добавьте `Read` deny правила в `permissions.deny`, чтобы заблокировать Claude от открытия этих файлов.
+
+Deny правила могут охватывать всех, работающих в репозитории, только вас или каждый сеанс на машине, в зависимости от того, в какой файл параметров вы их поместите:
+
+* **Все, работающие в репозитории**: зафиксируйте правила в `.claude/settings.json`, в корне репозитория, если вы запускаете Claude там, или в каждом `.claude/` пакета, если вы запускаете из подкаталогов. Как и другие параметры проекта на этой странице, этот файл не наследуется из родительских каталогов.
+* **Только вы**: используйте `.claude/settings.local.json` в корне репозитория. Он загружается в каждой сессии CLI внутри репозитория независимо от начального каталога, кроме случаев, когда Claude Code [не использует корень репозитория](https://code.claude.com/docs/ru/settings.md#where-claude-code-looks-for-each-file), например в Windows.
+
+  Относительные паттерны, такие как `Read(./**/vendor/**/*)` в примере, всё ещё [привязаны к текущему рабочему каталогу сессии](https://code.claude.com/docs/ru/permissions.md#read-and-edit), а не к корню репозитория. Если вы запускаете сессии из подкаталогов, напишите правила в этом файле как `//`-абсолютные пути, такие как `Read(//absolute/path/to/repo/**/vendor/**/*)`.
+* **Все, принудительно в каждом сеансе**: установите правила в [управляемых параметрах](https://code.claude.com/docs/ru/managed-settings.md), которые параметры пользователя и проекта не могут переопределить.
+
+Пример ниже блокирует артефакты сборки и зависимость поставщика SDK. Его паттерны каталогов заканчиваются на `/**/*` а не на `/**`, чтобы каждое правило охватывало всё внутри каталога, но не сам каталог. Claude может затем всё ещё перечислять эти каталоги или переходить в них, например с помощью `ls dist` или `cd build`.
+</code></pre>
+<p>{
+  &quot;permissions&quot;: {
+    &quot;deny&quot;: [
+      &quot;Read(./<strong>/dist/</strong>/*)&quot;,
+      &quot;Read(./<strong>/build/</strong>/*)&quot;,
+      &quot;Read(./**/<em>.generated.</em>)&quot;,
+      &quot;Read(./<strong>/vendor/</strong>/*)&quot;
+    ]
+  }
+}</p>
+<pre><code>
+Deny правила охватывают встроенные инструменты файлов Claude. В Bash они охватывают команды файлов, которые Claude Code распознаёт, такие как `cat`, `head`, `grep` и `find`, когда запрещённый путь появляется как аргумент, и цель [перенаправления](https://code.claude.com/docs/ru/permissions.md#redirections) такая как `&lt; file`. Claude Code также делает попытку наилучшего усилия оставить запрещённые пути вне результатов встроенных инструментов Grep и Glob. Поиск Bash, такой как `grep -r` или `find` по каталогу, который содержит запрещённые файлы, всё ещё включает их в свой вывод.
+
+Deny правила не охватывают подпроцессы, которые открывают файлы сами. Для полного синтаксиса паттерна см. [Read and Edit permission rules](https://code.claude.com/docs/ru/permissions.md#read-and-edit).
+
+### Уменьшите чтения файлов с помощью code intelligence
+
+В большой кодовой базе поиск того, где определён или используется символ, может стоить много чтений файлов и вызовов grep. [Code intelligence plugins](https://code.claude.com/docs/ru/plugins/code-intelligence.md) подключают Claude к языковому серверу, чтобы он мог переходить к определениям, находить ссылки и выявлять ошибки типов напрямую вместо сканирования дерева.
+
+Официальный маркетплейс имеет плагины для TypeScript, Python, Go, Rust и других распространённых языков. В расширении VS Code или в настольном приложении установите плагин, следуя инструкциям в разделе [Установка плагина](https://code.claude.com/docs/ru/plugins/install.md#install-a-plugin). В терминале запустите Claude Code, выполнив `claude`, затем введите это в его промпт, чтобы установить плагин TypeScript:
+</code></pre>
+<p>/plugin install typescript-lsp@claude-plugins-official</p>
+<pre><code>
+Если установка не удаётся, сопоставьте сообщение, которое сообщает Claude Code:
+
+* `Marketplace &quot;claude-plugins-official&quot; not found`: добавьте маркетплейс с помощью `/plugin marketplace add anthropics/claude-plugins-official`, затем повторите попытку установки.
+* `Plugin &quot;&lt;name&gt;&quot; not found in marketplace &quot;claude-plugins-official&quot;`: ваша локальная копия каталога маркетплейса может быть устаревшей. Обновите её с помощью `/plugin marketplace update claude-plugins-official`, затем повторите попытку установки. Если повторная попытка выводит то же сообщение, см. [Plugin not found in marketplace](https://code.claude.com/docs/ru/plugins/troubleshooting.md#plugin-not-found-in-marketplace).
+
+Чтобы включить плагин для всех в репозитории, добавьте его в [настройку проекта `enabledPlugins`](https://code.claude.com/docs/ru/settings-reference#plugin-settings). Каждому участнику всё равно нужно [установить его](https://code.claude.com/docs/ru/plugins/loading.md#enabled-in-project-settings-but-not-installed).
+
+Code intelligence plugins требуют двоичного файла языкового сервера языка на машине каждого разработчика. См. [какой двоичный файл требует каждый язык](https://code.claude.com/docs/ru/plugins/code-intelligence.md). Установка из официального маркетплейса требует доступа в сеть к GitHub, где размещается маркетплейс. На ограниченной сети [добавьте маркетплейс с внутреннего хоста Git или локального пути](https://code.claude.com/docs/ru/plugins/install.md#add-a-marketplace) вместо этого.
+
+Это хорошо сочетается с `claudeMdExcludes` и `Read` deny правилами выше. Они держат неуместный контент вне контекста, а code intelligence держит Claude от чтения через то, что остаётся, чтобы найти определение.
+
+## Область worktrees и доступ к файлам
+
+Эти параметры контролируют, что находится на диске в worktrees и какие каталоги Claude может читать и писать за пределами вашей начальной точки.
+
+### Проверьте только каталоги, которые вам нужны
+
+Флаг `--worktree` запускает сеанс в новом git worktree, чтобы изменения оставались изолированными от вашего основного checkout. По умолчанию он проверяет весь репозиторий. В большом репозитории параметр `worktree.sparsePaths` использует git sparse-checkout для записи только перечисленных каталогов плюс файлы на уровне корня на диск, поэтому worktrees запускаются быстрее и используют меньше места.
+
+Если все, работающие в этом каталоге, нуждаются в одних и тех же путях, зафиксируйте параметр в `.claude/settings.json`. Чтобы добавить пути для себя, используйте `.claude/settings.local.json`: списки объединяются в областях, поэтому локальный файл может добавить пути к зафиксированному списку, но не удалить их.
+
+Примеры JSON на этой странице показывают один параметр за раз. Если ваш `.claude/settings.json` уже содержит другие ключи, такие как правила `permissions.deny` выше, добавьте ключ `worktree` рядом с ними, а не заменяйте файл. [Объедините это](#put-it-together) показывает объединённый результат.
+
+Пример ниже показывает зафиксированный файл:
+</code></pre>
+<p>{
+  &quot;worktree&quot;: {
+    &quot;sparsePaths&quot;: [
+      &quot;.claude&quot;,
+      &quot;packages/api&quot;,
+      &quot;packages/shared&quot;
+    ]
+  }
+}</p>
+<pre><code>
+Когда Claude создаёт worktree, он проверяет только `.claude/`, `packages/api/` и `packages/shared/` вместо полного дерева. Пути в `sparsePaths` относительны к корню репозитория, независимо от того, из какого подкаталога вы запускаете Claude. Здесь работают любые пути каталогов, не только корни пакетов.
+
+Это особенно полезно для [изоляции worktree подагента](https://code.claude.com/docs/ru/worktrees.md#isolate-subagents-with-worktrees). Подагенты — это параллельные экземпляры Claude, порождённые для подзадач, и каждый, который работает в worktree, получает лёгкий checkout вместо полного дерева. Все worktrees в сеансе используют одни и те же `sparsePaths`, поэтому если один подагент нуждается в `packages/api/` и другой нуждается в `packages/web/`, перечислите оба.
+
+Перечислите каталоги в `sparsePaths`, а не отдельные файлы. Файлы на уровне корня, такие как `package.json`, `tsconfig.base.json` и файлы блокировки, всегда проверяются наряду с каталогами, которые вы перечисляете. Каталоги на уровне корня нет, поэтому включите `.claude` в список, если вы хотите, чтобы `.claude/settings.json` или `.claude/rules/` корня репозитория были доступны внутри worktree. Для project skills, agents и commands см. [What worktrees share with the main checkout](https://code.claude.com/docs/ru/worktrees.md#what-worktrees-share-with-the-main-checkout).
+
+&gt; [!NOTE]
+&gt;
+&gt; Разреженный checkout требует, чтобы git включил `extensions.worktreeConfig` в общем файле `.git/config` репозитория, пока существует разреженный worktree. Claude Code удаляет эту запись после удаления последнего worktree, но только если Claude Code её добавил.
+
+Чтобы избежать дублирования больших каталогов, таких как `node_modules`, в worktrees, объедините `sparsePaths` с `symlinkDirectories` в одном `.claude/settings.json`:
+</code></pre>
+<p>{
+  &quot;worktree&quot;: {
+    &quot;sparsePaths&quot;: [
+      &quot;.claude&quot;,
+      &quot;packages/api&quot;,
+      &quot;packages/shared&quot;
+    ],
+    &quot;symlinkDirectories&quot;: [
+      &quot;node_modules&quot;
+    ]
+  }
+}</p>
+<pre><code>
+Это создаёт символическую ссылку из `node_modules/` каждого worktree обратно на копию основного репозитория вместо дублирования её на диск.
+
+&gt; [!NOTE]
+&gt;
+&gt; Параметры `sparsePaths` и `symlinkDirectories` читаются из вашего начального каталога перед созданием worktree. После создания рабочий каталог сеанса — это корень worktree, а не подкаталог, из которого вы запустили. Параметры проекта внутри worktree поэтому загружаются из `.claude/settings.json` корня worktree, зафиксированной копии файла корня репозитория. Поместите любые другие параметры, которые вам нужны внутри worktrees, такие как правила разрешений или hooks, в `.claude/settings.json` корня репозитория.
+
+Для полного справочника параметров worktree см. [Worktree settings](https://code.claude.com/docs/ru/settings-reference.md#worktree).
+
+### Предоставьте доступ в пакеты или репозитории
+
+Этот раздел применяется, когда вы запускаете Claude из подкаталога или когда задача охватывает несколько checkouts. Если вы запускаете из корня репозитория в одном большом дереве, Claude уже имеет доступ к каждому файлу и вы можете пропустить это.
+
+Когда вы запускаете Claude из `packages/api/`, он может читать и записывать файлы в этом каталоге. Если задача требует изменений в нескольких пакетах, например обновления общего типа, который импортируют и `api`, и `web`, вам нужно предоставить доступ к соседнему каталогу. Тот же механизм предоставляет доступ к отдельно извлечённому репозиторию.
+
+Параметр `additionalDirectories` в `.claude/settings.json` даёт Claude доступ к каталогам вне рабочего каталога. Пример ниже предоставляет доступ к двум соседним пакетам:
+</code></pre>
+<p>{
+  &quot;permissions&quot;: {
+    &quot;additionalDirectories&quot;: [
+      &quot;../shared&quot;,
+      &quot;../web&quot;
+    ]
+  }
+}</p>
+<pre><code>
+Относительные пути разрешаются относительно каталога, из которого вы запускаете Claude. С этой конфигурацией Claude может читать и редактировать файлы в `packages/shared/` и `packages/web/` при работе из `packages/api/`.
+
+Вы также можете предоставить доступ во время выполнения без редактирования параметров, передав `--add-dir` при запуске Claude:
+</code></pre>
+<p>claude --add-dir ../shared</p>
+<pre><code>
+Как бы вы ни добавили каталог, Claude может читать и редактировать файлы в нём. Загружаются ли также CLAUDE.md, файлы `.claude/rules/` и скиллы этого каталога, зависит от того, как вы его добавили:
+
+| Добавлено с | Загружает CLAUDE.md и правила | Загружает skills |
+| :- | :- | :- |
+| Параметр `additionalDirectories` | Никогда | Никогда |
+| Флаг `--add-dir` или команда `/add-dir` | Только с переменной окружения ниже | Да |
+
+Чтобы загружать CLAUDE.md и файлы правил из каталога, добавленного с `--add-dir` или `/add-dir`, установите переменную окружения `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD`:
+</code></pre>
+<p>CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1 claude --add-dir ../shared</p>
+<pre><code>
+Переменная окружения не влияет на каталоги, перечисленные в параметре `additionalDirectories`. См. [Load from additional directories](https://code.claude.com/docs/ru/memory.md#load-from-additional-directories) для деталей.
+
+Для соседних каталогов, которые нужны всем в этой области, зафиксируйте `additionalDirectories` в `.claude/settings.json`. Для личного выбора или одноразового доступа используйте `.claude/settings.local.json` или передайте `--add-dir` при запуске.
+
+## Добавление skills для каждого каталога
+
+Любой подкаталог может определить [skills](https://code.claude.com/docs/ru/skills.md), ограниченные собственным стеком. Skill загружается по требованию, когда Claude определит, что он релевантен.
+
+Skills находятся в `.claude/skills/` внутри каталога. Коммитьте их вместе с кодом этой области, чтобы каждый, кто клонирует репозиторий, получил их. В монорепозитории это может быть один набор skills на пакет. В большой кодовой базе с единой структурой это один набор на подсистему, например `src/db/.claude/skills/`.
+
+Создайте каталог skill внутри подкаталога:
+</code></pre>
+<p>mkdir -p packages/api/.claude/skills/api-testing</p>
+<pre><code>
+Затем напишите `SKILL.md` внутри этого каталога, в данном случае `packages/api/.claude/skills/api-testing/SKILL.md`. Этот пример учит Claude паттернам тестирования пакета API:
+</code></pre>
+<hr>
+<p>name: api-testing
+description: Testing patterns for the API package. Use when writing or modifying tests in packages/api/.</p>
+<hr>
+<h3 id="test-structure">Test structure <a class="h-anchor" href="#test-structure" aria-label="Ссылка на раздел">#</a></h3>
+<p>Tests are in <code>src/__tests__/</code> mirroring the <code>src/</code> directory structure.
+Each route file has a corresponding <code>.test.ts</code> file.</p>
+<h3 id="running-tests">Running tests <a class="h-anchor" href="#running-tests" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>All tests: <code>npm test</code></li>
+<li>Single file: <code>npm test -- src/__tests__/routes/users.test.ts</code></li>
+<li>Watch mode: <code>npm test -- --watch</code></li>
+</ul>
+<h3 id="test-utilities">Test utilities <a class="h-anchor" href="#test-utilities" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><code>src/__tests__/helpers/db.ts</code>: provides <code>setupTestDb()</code> and <code>teardownTestDb()</code> for database tests</li>
+<li><code>src/__tests__/helpers/auth.ts</code>: provides <code>createTestUser()</code> and <code>getAuthToken()</code> for authenticated endpoints</li>
+</ul>
+<h3 id="patterns">Patterns <a class="h-anchor" href="#patterns" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Use <code>supertest</code> for HTTP assertions, not raw fetch</li>
+<li>Always wrap database tests in a transaction that rolls back</li>
+<li>Mock external services in <code>src/__tests__/mocks/</code></li>
+</ul>
+<pre><code>
+Другой подкаталог содержит различные skills таким же образом: `packages/web/.claude/skills/component-patterns/` описывает соглашения компонентов фронтенда вместо тестирования. Когда Claude работает с файлом в `packages/api/`, он загружает skill api-testing. Когда он работает в `packages/web/`, он загружает component-patterns.
+
+Вы также можете ограничить skill по паттерну файла вместо размещения. Поле frontmatter [`paths`](https://code.claude.com/docs/ru/skills#frontmatter-reference) принимает glob-паттерны, и Claude автоматически загружает skill только при работе с совпадающими файлами. Используйте это для skill, который находится в `.claude/skills/` корня репозитория, но применяется только к определённым файлам, например skill для миграции базы данных, ограниченный `**/migrations/**`.
+
+Дополнительную информацию о создании и организации skills см. в разделе [Skills](https://code.claude.com/docs/ru/skills.md).
+
+### Сохраняйте skills обнаруживаемыми
+
+Когда skills распределены по многим каталогам, список, из которого Claude выбирает, может стать большим. Claude выбирает skill, прочитав имя и описание каждого обнаруженного skill, и только полное содержимое выбранного skill загружается в контекст. В этом разделе рассказывается, как сохранить этот список небольшим.
+
+Какие skills находятся в области видимости, зависит от того, откуда вы запустили Claude:
+
+* **Из подкаталога, такого как `packages/api/`**: skills из этого каталога, каждый родительский каталог вплоть до корня репозитория, а также уровни пользователя и предприятия
+* **Из корня репозитория**: root skills, плюс skills из каждого подкаталога, который Claude касается во время сеанса, что может накопиться в сотни
+* **После добавления соседнего каталога с помощью [`--add-dir`](#grant-access-across-packages-or-repositories)**: skills этого соседнего каталога также загружаются. Параметр `additionalDirectories` предоставляет доступ только к файлам и не загружает skills
+
+Имена всегда загружаются, но [когда их много, некоторые skills теряют свои описания полностью](https://code.claude.com/docs/ru/skills.md#skill-descriptions-are-cut-short), что может удалить ключевые слова, которые Claude использует для определения применимости skill. Сохраняйте описания краткими и начинайте со слов, которые содержал бы запрос, например &quot;writing or modifying tests in `packages/api/`&quot;.
+
+Для skills, которые используют многие каталоги, такие как соглашения PR или контрольный список развёртывания, поместите их в `.claude/skills/` корня репозитория, чтобы они загружались из любого начального каталога. Когда общие skills нуждаются в собственной истории версий или должны работать в нескольких репозиториях, упакуйте их как [plugin](https://code.claude.com/docs/ru/plugins/overview.md) вместо этого. Plugin skills используют пространство имён `plugin-name:skill-name`, поэтому они никогда не конфликтуют с per-directory skills. Команда платформы может версионировать и обновлять их в одном месте.
+
+Чтобы найти, какие skills не используются, включите OpenTelemetry [logs exporter](https://code.claude.com/docs/ru/monitoring-usage.md) и установите `OTEL_LOG_TOOL_DETAILS=1`, чтобы имена skills записывались дословно вместо редактирования. Событие [`skill_activated`](https://code.claude.com/docs/ru/monitoring-usage#skill-activated-event) записывает каждый вызов в его атрибут `skill.name`, а `invocation_trigger` записывает, был ли вызов командой, Claude или вложенным skill, что говорит вам, что консолидировать или снять с учёта.
+
+## Централизуйте соглашения, когда слоистость перестаёт масштабироваться
+
+Per-directory CLAUDE.md файлы могут стать трудными для управления по мере роста кодовой базы. Соглашения дрейфуют, файлы устаревают, и никто не владеет корневым. Решение этого обычно падает на команду, которая поддерживает настройку Claude Code репозитория, а не на каждого разработчика, работающего в своей собственной области.
+
+Переместите соглашения и справочный контент из всегда загружаемого CLAUDE.md в механизмы, которые загружаются по требованию:
+
+* [Skills](https://code.claude.com/docs/ru/skills.md): справочный материал, который Claude загружает только когда релевантно задаче
+* [Плагины](https://code.claude.com/docs/ru/plugins/overview.md): версионированные пакеты скиллов, хуков и команд, которыми централизованно владеет команда платформы и которые она может [установить для всех через управляемые настройки](https://code.claude.com/docs/ru/plugins/org.md#pre-install-and-require-plugins)
+* [MCP servers](https://code.claude.com/docs/ru/mcp.md): если ваша организация уже запускает поиск кода или RAG индекс над репозиторием, выставьте его как инструмент MCP, чтобы Claude запрашивал его вместо чтения файлов напрямую
+
+См. [server-managed или endpoint-managed параметры](https://code.claude.com/docs/ru/server-managed-settings.md#choose-between-server-managed-and-endpoint-managed-settings) для того, как команды платформы могут применять это централизованно.
+
+### Рекомендуйте правильный plugin при запуске сеанса
+
+Как только соглашения живут в plugins, товарищ по команде, запускающий Claude в незнакомой части дерева, не имеет сигнала о том, какой plugin поддерживает владельцы этой области. [`SessionStart` hook](https://code.claude.com/docs/ru/hooks#sessionstart) может закрыть этот разрыв, так как Claude Code добавляет простой текст, который hook печатает в stdout, в контекст Claude перед первым запросом.
+
+Например, вы можете написать скрипт, который читает каталог запуска из [входных данных hook](https://code.claude.com/docs/ru/hooks.md#common-input-fields), ищет его в карте path-to-plugin, зафиксированной в репозитории, и печатает рекомендацию для Claude, чтобы передать в его первом ответе. См. [Automate actions with hooks](https://code.claude.com/docs/ru/hooks-guide.md) для написания и регистрации hook.
+
+## Соберите всё вместе
+
+Объединённая конфигурация ниже использует макет монорепозитория. Те же файлы работают для любого подкаталога в большом однодеревном. Каждый подкаталог `.claude/settings.json` должен быть самодостаточным, а не слоистым на корневом файле.
+
+Пример фиксирует `worktree`, `additionalDirectories` и `Read` deny правила в `.claude/settings.json`, чтобы каждый разработчик в `packages/api/` получил одинаковый доступ к соседям, разреженные пути и исключения. Файл ниже — это зафиксированные параметры для каждой области для `packages/api/`:
+</code></pre>
+<p>{
+  &quot;worktree&quot;: {
+    &quot;sparsePaths&quot;: [
+      &quot;.claude&quot;,
+      &quot;packages/api&quot;,
+      &quot;packages/shared&quot;
+    ],
+    &quot;symlinkDirectories&quot;: [
+      &quot;node_modules&quot;
+    ]
+  },
+  &quot;permissions&quot;: {
+    &quot;additionalDirectories&quot;: [
+      &quot;../shared&quot;
+    ],
+    &quot;deny&quot;: [
+      &quot;Read(./<strong>/dist/</strong>/*)&quot;,
+      &quot;Read(./<strong>/build/</strong>/*)&quot;
+    ]
+  }
+}</p>
+<pre><code>
+Потому что этот сеанс запускается из `packages/api/`, CLAUDE.md файлы соседних пакетов уже вне области, поэтому `claudeMdExcludes` не нужен здесь. Добавьте его в `.claude/settings.local.json` корня репозитория вместо этого, если вы также запускаете сеансы из корня.
+
+Запись `additionalDirectories` применяется, когда вы запускаете Claude из `packages/api/` напрямую. Внутри worktree, созданного из этого сеанса, рабочий каталог — это корень worktree, поэтому этот файл параметров не загружается. Соседние пакеты уже достижимы внутри worktree без него, но deny правила нуждаются во второй копии в `.claude/settings.json` корня репозитория, чтобы сеансы worktree их подхватили, как описывает [примечание параметров worktree](#check-out-only-the-directories-you-need):
+</code></pre>
+<p>{
+  &quot;permissions&quot;: {
+    &quot;deny&quot;: [
+      &quot;Read(./<strong>/dist/</strong>/*)&quot;,
+      &quot;Read(./<strong>/build/</strong>/*)&quot;
+    ]
+  }
+}</p>
+<pre><code>
+После настройки репозиторий имеет этот макет:
+</code></pre>
+<p>monorepo/
+  CLAUDE.md
+  .claude/settings.json                           # deny rules for worktree sessions
+  packages/
+    api/
+      CLAUDE.md
+      .claude/settings.json                       # worktree, additionalDirectories, deny rules
+      .claude/skills/api-testing/SKILL.md
+    web/
+      CLAUDE.md
+      .claude/skills/component-patterns/SKILL.md
+    shared/
+      CLAUDE.md</p>
+<pre><code>
+С этой настройкой, запуская Claude из `packages/api/`:
+
+* Загружает корневой CLAUDE.md и `packages/api/CLAUDE.md`, пропускает `packages/web/CLAUDE.md`
+* Может читать и редактировать файлы в `packages/api/` и `packages/shared/`
+* Пропускает чтения выходных данных сборки под `dist/` и `build/` в `packages/api/`
+* Имеет skill api-testing доступным по требованию
+* Создаёт worktrees, содержащие `.claude/`, `packages/api/`, `packages/shared/` и файлы на уровне корня, с deny правилами, применёнными в worktree из файла параметров корня
+
+## Область и план изменений, которые охватывают пакеты
+
+Конфигурация выше контролирует, что видит Claude. Когда одно изменение трогает несколько пакетов, такие как обновление общего типа наряду с каждым местом вызова, которое его использует, как вы ограничиваете и последовательно выполняете задачу, также влияет на результат.
+
+Два метода помогают держать кросс-пакетное изменение согласованным:
+
+* **Дайте Claude всё изменение в одном сеансе**: передача общего редактирования и его мест вызова вместе держит решения за каждым редактированием согласованными, а не переопределяя их на пакет
+* **Планируйте перед редактированием**: сначала составьте план в [режиме планирования](https://code.claude.com/docs/ru/permission-modes.md#analyze-before-you-edit-with-plan-mode), и Claude запишет план в файл. В длинной сессии, охватывающей несколько пакетов, по ходу работы выполняется [сжатие контекста](https://code.claude.com/docs/ru/context-window.md#what-survives-compaction). Claude Code повторно внедряет файл плана после каждого сжатия контекста, поэтому план сохраняется там, где история диалога может не сохраниться
+
+## Следующие шаги
+
+Как только эта конфигурация на месте, вы можете её уточнить:
+
+* Используйте [hooks](https://code.claude.com/docs/ru/hooks-guide.md) для запуска per-directory linters или type-checkers после редактирования Claude файлов
+* Проверьте [Управление затратами эффективно](https://code.claude.com/docs/ru/costs.md) для понимания того, как размер кодовой базы влияет на использование токенов и как установить лимиты расходов перед более широким развёртыванием
+* Прочитайте [How Claude Code works in large codebases](https://claude.com/blog/how-claude-code-works-in-large-codebases-best-practices-and-where-to-start) в блоге Claude для паттернов развёртывания организации и моделей владения, которые находятся выше per-repository конфигурации на этой странице
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

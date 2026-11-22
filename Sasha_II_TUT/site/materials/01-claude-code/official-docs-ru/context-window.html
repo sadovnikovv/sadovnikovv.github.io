@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Изучите контекстное окно</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Изучите контекстное окно <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Интерактивная симуляция того, как контекстное окно Claude Code заполняется во время сеанса. Посмотрите, что загружается автоматически, какую стоимость имеет каждое чтение файла и когда срабатывают правила и hooks.</p>
+</blockquote>
+<p>Контекстное окно Claude Code содержит всё, что Claude знает о вашем сеансе: ваши инструкции, файлы, которые он читает, его собственные ответы и содержимое, которое никогда не появляется в вашем терминале. Временная шкала ниже показывает полный сеанс от запуска до компактирования: что загружается перед тем, как вы что-либо введёте, что добавляет каждое чтение файла, правило и hook по мере работы Claude, и как subagent держит большие чтения вне вашего контекста. Смотрите <a href="#what-the-timeline-shows">письменное описание</a> для того же содержимого в виде списка.</p>
+<h3 id="h-2">Что показывает временная шкала <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong>Перед тем, как вы что-либо введёте</strong>: CLAUDE.md, автоматическая память, имена инструментов MCP и описания скиллов загружаются в контекст. <a href="https://code.claude.com/docs/ru/memory.md#agents-md">Файлы AGENTS.md</a> могут загружаться вместо CLAUDE.md. Ваша собственная настройка может добавить больше здесь, например <a href="https://code.claude.com/docs/ru/output-styles.md">стиль вывода</a> или текст из <a href="https://code.claude.com/docs/ru/cli-reference"><code>--append-system-prompt</code></a>.</li>
+<li><strong>Во время работы Claude</strong>: каждое чтение файла добавляется в контекст, <a href="https://code.claude.com/docs/ru/memory.md#path-specific-rules">правила с областью действия пути</a> загружаются автоматически вместе с соответствующими файлами, и <a href="https://code.claude.com/docs/ru/hooks-guide.md">hook PostToolUse</a> срабатывает после каждого редактирования.</li>
+<li><strong>Последующий prompt</strong>: <a href="https://code.claude.com/docs/ru/sub-agents.md">subagent</a> обрабатывает исследование в своём собственном отдельном контекстном окне, поэтому большие чтения файлов остаются вне вашего. Только резюме и небольшой трейлер метаданных возвращаются.</li>
+<li><strong>В конце сессии</strong>: вы запускаете <code>/compact</code>, который заменяет диалог структурированным резюме. Большая часть содержимого, загружаемого при запуске, перезагружается автоматически. Что перезагружается и что сводится в резюме, смотрите в разделе <a href="#what-survives-compaction">что сохраняется после сжатия контекста</a>.</li>
+</ul>
+<blockquote>
+<p>[accordion] Количество токенов для каждого шага</p>
+<p>Сравните, сколько токенов добавляет каждый шаг в примере сессии на временной шкале. Значения приведены для иллюстрации и зависят от размера вашего CLAUDE.md, MCP-серверов и длины файлов. Чтобы получить реальные цифры, <a href="#check-your-own-session">проверьте собственную сессию</a>.</p>
+<p>| Этап | Что попадает в контекст | Пример токенов |
+| :- | :- | -: |
+| Перед вводом | Системный промпт | 4,200 |
+| Перед вводом | Автоматическая память (<code>MEMORY.md</code>) | 680 |
+| Перед вводом | Информация об окружении | 280 |
+| Перед вводом | Имена инструментов MCP | 120 |
+| Перед вводом | Описания скиллов | 450 |
+| Перед вводом | <code>~/.claude/CLAUDE.md</code> | 320 |
+| Перед вводом | CLAUDE.md проекта | 1,800 |
+| Первый промпт | Ваш промпт | 45 |
+| Во время работы Claude | Чтение <code>src/api/auth.ts</code> | 2,400 |
+| Во время работы Claude | Чтение <code>src/lib/tokens.ts</code> | 1,100 |
+| Во время работы Claude | Правило <code>api-conventions.md</code> | 380 |
+| Во время работы Claude | Чтение <code>middleware.ts</code> | 1,800 |
+| Во время работы Claude | Чтение <code>auth.test.ts</code> | 1,600 |
+| Во время работы Claude | Правило <code>testing.md</code> | 290 |
+| Во время работы Claude | Поиск <code>refreshToken</code> | 600 |
+| Во время работы Claude | Анализ Claude | 800 |
+| Во время работы Claude | Редактирование <code>auth.ts</code> | 400 |
+| Во время работы Claude | Вывод хука Prettier | 120 |
+| Во время работы Claude | Редактирование <code>auth.test.ts</code> | 600 |
+| Во время работы Claude | Вывод хука Prettier | 100 |
+| Во время работы Claude | Вывод <code>npm test</code> | 1,200 |
+| Во время работы Claude | Резюме изменений от Claude | 400 |
+| Последующий промпт | Ваш последующий промпт | 40 |
+| Последующий промпт | Вызов субагента со стороны Claude | 80 |
+| Последующий промпт | Резюме субагента | 420 |
+| Последующий промпт | Ответ Claude | 1,200 |
+| Конец сессии | <code>!git status</code> и его вывод | 180 |
+| Конец сессии | Тело скилла <code>/commit-push</code> | 620 |</p>
+<p>До <code>/compact</code> используется 22,225 токенов. Субагент использует ещё 9,890 токенов в своём собственном контекстном окне.</p>
+<p>После <code>/compact</code> используется 17,095 токенов: строки «Перед вводом», резюме диалога размером 1,725 токенов, четыре файла, прочитанные на этапе «Во время работы Claude», и тело скилла <code>/commit-push</code>.</p>
+</blockquote>
+<h3 id="h-3">Что сохраняется при сжатии контекста <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Когда длительная сессия сжимается, Claude Code суммирует историю диалога, чтобы она поместилась в контекстное окно.</p>
+<p>| Механизм | После сжатия контекста |
+| :- | :- |
+| Системный промпт и стиль вывода | Оба по-прежнему применяются |
+| CLAUDE.md в корне проекта и правила без области действия | Повторно внедряются с диска |
+| Автоматическая память | Повторно внедряется с диска |
+| Описания скиллов | Перестраиваются на основе ваших текущих <a href="https://code.claude.com/docs/ru/skills.md">скиллов</a> и повторно внедряются. Требуется Claude Code версии 2.1.304 или новее |
+| <a href="https://code.claude.com/docs/ru/settings-reference.md#includegitinstructions">Снимок Git status</a> | Если сессия началась со снимком, Claude Code читает свежий снимок из вашего репозитория |
+| План, который Claude написал в <a href="https://code.claude.com/docs/ru/permission-modes.md#analyze-before-you-edit-with-plan-mode">режиме планирования</a> | Повторно внедряется с диска |
+| Правила с frontmatter <code>paths:</code> | Claude Code перезагружает их <a href="https://code.claude.com/docs/ru/memory.md#path-specific-rules">по требованию</a> |
+| Вложенные CLAUDE.md в подкаталогах | Claude Code перезагружает их <a href="https://code.claude.com/docs/ru/memory.md#how-claude-md-files-load">по требованию</a> |
+| Файлы, которые Claude прочитал или отредактировал | Claude Code повторно читает до пяти, начиная с самых недавно изменённых |
+| Тела вызванных скиллов | Повторно внедряются, с ограничением 5000 токенов на скилл и 25 000 токенов всего; самые старые удаляются первыми |
+| <a href="https://code.claude.com/docs/ru/interactive-mode.md#background-bash-commands">Фоновые команды</a> и фоновые <a href="https://code.claude.com/docs/ru/sub-agents.md#run-subagents-in-foreground-or-background">субагенты</a> | Продолжают работать. Claude Code напоминает Claude, какие из них всё ещё работают, чтобы он не запустил дубликат |
+| Контекст, который хуки добавили ранее | Суммируется вместе с остальной частью диалога |
+| <a href="https://code.claude.com/docs/ru/hooks-guide.md#re-inject-context-after-compaction">Хуки SessionStart</a>, которые соответствуют источнику <code>compact</code> | Claude Code запускает их и добавляет их вывод в сжатый контекст |</p>
+<p>Сразу после сжатия контекста Claude Code повторно читает до пяти файлов, которые Claude прочитал или отредактировал в сессии, выбирая те, которые были изменены совсем недавно. Файл размером более 5000 токенов возвращается как ссылка на путь без его содержимого, отображаемая как <code>Referenced file</code> вместо <code>Read</code>.</p>
+<p>Правила с областью действия по пути и вложенные файлы CLAUDE.md загружаются в историю сообщений, когда Claude читает, записывает или редактирует их триггерный файл, поэтому при сжатии контекста они суммируются вместе со всем остальным. Если правило должно сохраняться после сжатия контекста, удалите frontmatter <code>paths:</code> или переместите его в CLAUDE.md в корне проекта.</p>
+<p>Тела скиллов повторно внедряются после сжатия контекста, но большие скиллы усекаются, чтобы уложиться в лимит на скилл, а самые старые вызванные скиллы удаляются после превышения общего бюджета. Усечение сохраняет начало файла, поэтому размещайте наиболее важные инструкции в начале <code>SKILL.md</code>.</p>
+<h3 id="h-4">Когда ваш контекст заполняется <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code автоматически сжимает контекст по мере приближения к лимиту, поэтому заполненное контекстное окно не завершает вашу сессию. Автоматический проход работает так же, как шаг <code>/compact</code> на временной шкале. Смотрите <a href="https://code.claude.com/docs/ru/how-claude-code-works.md#when-context-fills-up">Когда контекст заполняется</a>, чтобы узнать, что он сохраняет. О том, когда Claude Code также сжимает диалог, оставленный без активности, смотрите <a href="https://code.claude.com/docs/ru/settings-reference.md#idlecompaction">сжатие контекста при простое</a>.</p>
+<p>Вы также можете действовать перед автоматическим проходом:</p>
+<ul>
+<li><strong>Компактируйте с фокусом</strong>: запустите <code>/compact</code> с инструкциями, например <code>/compact focus on the auth bug fix</code>, перед началом длительной новой задачи. Резюме сохраняет то, что вы выбираете, вместо того, что автоматический проход предполагает как важное.</li>
+<li><strong>Компактируйте часть разговора</strong>: запустите <code>/rewind</code>, выберите сообщение и выберите <strong>Summarize from here</strong> или <strong>Summarize up to here</strong>. Смотрите <a href="https://code.claude.com/docs/ru/checkpointing.md#rewind-and-summarize">Rewind and summarize</a> для того, что каждый вариант сохраняет и как направить резюме.</li>
+<li><strong>Компактируйте раньше</strong>: запустите <a href="https://code.claude.com/docs/ru/commands#all-commands"><code>/autocompact</code></a> с количеством токенов, например <code>/autocompact 500k</code>, чтобы установить, насколько полным становится контекстное окно перед автоматическим проходом. Смотрите <a href="https://code.claude.com/docs/ru/model-config.md#set-the-auto-compact-window">Set the auto-compact window</a> для принятых значений и переопределений.</li>
+<li><strong>Очищайте между задачами</strong>: запустите <code>/clear</code> при переходе на несвязанную работу. Старый разговор вытесняет файлы, которые вам нужны дальше, и стоит токены на каждом сообщении.</li>
+<li><strong>Делегируйте большие чтения</strong>: отправьте исследование <a href="https://code.claude.com/docs/ru/sub-agents.md">subagent</a>, чтобы содержимое файла оставалось в его контекстном окне, а не в вашем.</li>
+</ul>
+<p>Если вам нужно большее окно, а не более короткий диалог, модели Fable, Sonnet 5 и более поздние версии, Haiku 5.5, Opus 4.6 и более поздние версии, а также Sonnet 4.6 поддерживают контекстное окно в 1 миллион токенов. Смотрите <a href="https://code.claude.com/docs/ru/model-config.md#extended-context">Extended context</a>, чтобы узнать о доступности в зависимости от плана и о том, как выбрать вариант модели <code>[1m]</code>. Сжатие контекста работает так же и при большем лимите.</p>
+<p>Точка, в которой запускается автоматическое компактирование, зависит от вашей модели и конфигурации. Смотрите <a href="https://code.claude.com/docs/ru/model-config.md#default-auto-compact-thresholds">Default auto-compact thresholds</a> для границ по модели и <a href="https://code.claude.com/docs/ru/model-config.md#correct-the-window-for-a-gateway-or-custom-model-id">Correct the window for a gateway or custom model ID</a>, если Claude Code предполагает неправильное окно для вашего ID модели, например <a href="https://code.claude.com/docs/ru/llm-gateway">LLM gateway</a> псевдоним.</p>
+<h3 id="h-5">Проверьте свой собственный сеанс <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<p>Визуализация использует репрезентативные числа. Чтобы увидеть фактическое использование контекста в любой момент, запустите <code>/context</code> для живого разбора по категориям с предложениями по оптимизации, включая информацию о том, какие файлы CLAUDE.md и файлы автоматической памяти загружены. Запустите <code>/memory</code> для открытия и редактирования этих файлов.</p>
+<h3 id="h-6">Связанные ресурсы <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<p>Для более глубокого охвата функций, показанных на временной шкале, смотрите эти страницы:</p>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/features-overview.md">Расширьте Claude Code</a>: когда использовать CLAUDE.md против skills против правил против hooks против MCP</li>
+<li><a href="https://code.claude.com/docs/ru/memory.md">Сохраняйте инструкции и воспоминания</a>: иерархия CLAUDE.md и автоматическая память</li>
+<li><a href="https://code.claude.com/docs/ru/sub-agents.md">Subagents</a>: делегируйте исследование отдельному контекстному окну</li>
+<li><a href="https://code.claude.com/docs/ru/best-practices.md#keep-cost-and-context-down">Лучшие практики</a>: поддерживайте сессии сфокусированными, а затраты — низкими</li>
+<li><a href="https://code.claude.com/docs/ru/prompt-caching.md">Prompt caching</a>: какие действия инвалидируют кэшированный префикс</li>
+<li><a href="https://code.claude.com/docs/ru/costs.md#reduce-token-usage">Снизьте использование токенов</a>: стратегии для поддержания низкого использования контекста</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

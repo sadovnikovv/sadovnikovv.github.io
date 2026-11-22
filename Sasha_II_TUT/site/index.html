@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru" data-book-src="book.html">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Claude Code для инженера</title>
+<meta name="description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
+<link rel="canonical" href="https://sadovnikovv.github.io/">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:site_name" content="Claude Code для инженера">
+<meta property="og:title" content="Claude Code для инженера">
+<meta property="og:description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
+<meta property="og:url" content="https://sadovnikovv.github.io/">
+<meta property="og:image" content="https://sadovnikovv.github.io/assets/favicon.svg">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="assets/fonts/serif-regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/sans-regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/fonts/fonts.css">
+<link rel="stylesheet" href="assets/style.css">
+<meta name="page-index" content="0">
+<link rel="alternate" type="text/html" href="book.html">
+</head>
+<body>
+<a class="skip-link" href="#book">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="index.html">Claude Code для инженера</a></strong>
+    <a href="materials/index.html">Материалы</a>
+    <a href="about.html">О книге</a>
+    <a href="download/Книга-Claude-Code.epub" download>EPUB</a>
+  </div>
+</header>
+<div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+<main class="wrap" id="book">
+
+<a id="top"></a>
+
+<header class="cover">
+  <p class="eyebrow">Практическое пособие · редакция 2.3 · расширенное издание</p>
+  <h1>Claude Code для инженера</h1>
+  <p class="subtitle">От первого запуска до схемы, платы и прошивки. С OmniRoute и DeepSeek — и без интернета.</p>
+  <p class="lead">Эта книга написана для инженера с большим практическим стажем, которому привычны чертежи, допуски, осциллограммы и протоколы испытаний. Она объясняет современные инструменты искусственного интеллекта на языке инженерии: что это, как устроено, где ошибается и как встроить в реальную работу — от расчёта схемы до трассировки платы и программирования контроллера.</p>
+  <p class="lead">Расширенная редакция добавляет историю нейросетей, устройство трансформера, веса и биты, ландшафт моделей 2026 года, локальный запуск, экономику токенов, агентов и открытую хрестоматию с книгами и статьями для чтения без интернета.</p>
+  <div class="cover-meta">
+    <div><b>Редакция</b>2.3 · 18 ноября 2026</div>
+    <div><b>Среда</b>Windows 10/11, PowerShell</div>
+    <div><b>Связка</b>Claude Code → OmniRoute → DeepSeek</div>
+    <div><b>Доступ</b><span class="badge">офлайн</span></div>
+  </div>
+</header>
+
+<div class="callout quote">
+  <span class="label">Главная мысль книги</span>
+  <p>ИИ-агент — это не волшебный проектировщик и не замена инженеру. Это очень быстрый и очень начитанный подмастерье, который выполняет поручения, но не несёт ответственности. Отвечает за результат по-прежнему инженер: проверил расчёт, сверил с даташитом, прогнал симуляцию, измерил на стенде.</p>
+</div>
+
+<div class="toc-inline" aria-label="Быстрый переход">
+  <a href="pages/history.html">0. История этой книги</a>
+  <a href="pages/stand.html">2. Ваш стенд</a>
+  <a href="pages/what-is-ai.html">3. Что такое ИИ</a>
+  <a href="pages/install.html">7. Установка</a>
+  <a href="pages/circuit.html">14. Схемотехника</a>
+  <a href="pages/pcb.html">15. Платы</a>
+  <a href="pages/mcu.html">16. Контроллеры</a>
+  <a href="pages/labs.html">21. Практикум</a>
+  <a href="pages/literature.html">29. Литература</a>
+  <a href="pages/plan.html">30. План</a>
+</div>
+
+<!-- ============================================================
+     ЧАСТЬ I. ВВЕДЕНИЕ
+     ============================================================ -->
+
+
+<div class="toc-wrap"><h2 id="oglavlenie">Оглавление</h2><p class="toc-note">Каждая глава открывается отдельно. <a href="book.html">Открыть всю книгу одним файлом</a>.</p><div class="toc-grid"><ol><li><a href="pages/history.html">Глава 0 История этой книги</a></li><li><a href="pages/how-to-read.html">Глава 1 Как читать эту книгу</a></li><li><a href="pages/stand.html">Глава 2 Ваш стенд: Claude Code → OmniRoute → DeepSeek</a></li><li><a href="pages/what-is-ai.html">Глава 3 Что такое ИИ</a></li><li><a href="pages/how-llm-works.html">Глава 4 Как работает языковая модель</a></li><li><a href="pages/prompt.html">Глава 5 Промпт как техническое задание</a></li><li><a href="pages/agent.html">Глава 6 Что такое агент</a></li><li><a href="pages/history-nn.html">Глава 6A История нейронных сетей</a></li><li><a href="pages/transformer-anatomy.html">Глава 6B Анатомия трансформера</a></li><li><a href="pages/weights-bits.html">Глава 6C Веса, биты и точность</a></li><li><a href="pages/model-landscape.html">Глава 6D Ландшафт моделей 2026</a></li><li><a href="pages/local-models.html">Глава 6E Локальные модели</a></li><li><a href="pages/tokens-compression.html">Глава 6F Токены, контекст и сжатие</a></li><li><a href="pages/hardware.html">Глава 6G Железо и вычислительность</a></li><li><a href="pages/agents-ecosystem.html">Глава 6H Агенты и их экосистема</a></li><li><a href="pages/optimization-posts.html">Глава 6I Оптимизация: что пишут на Хабре и Пикабу</a></li><li><a href="pages/faq.html">Глава 6J Вопросы и ответы</a></li><li><a href="pages/deepseek-billing.html">Глава 6K (не публикуется)</a></li><li><a href="pages/install.html">Глава 7 Установка и первый запуск</a></li><li><a href="pages/migration.html">Глава 7A (не публикуется)</a></li><li><a href="pages/new-pc.html">Глава 7B (не публикуется)</a></li><li><a href="pages/interface.html">Глава 8 Интерфейс и команды</a></li><li><a href="pages/memory.html">Глава 9 Память и CLAUDE.md</a></li><li><a href="pages/memory-training.html">Глава 9A Память, обучение и превращение в скилл</a></li><li><a href="pages/permissions.html">Глава 10 Разрешения и безопасность</a></li><li><a href="pages/context-cost.html">Глава 11 Контекст, стоимость, сессии</a></li><li><a href="pages/extensions.html">Глава 12 Расширения: skills, субагенты, hooks, MCP</a></li><li><a href="pages/integration-principle.html">Глава 13 Принцип интеграции</a></li><li><a href="pages/circuit.html">Глава 14 Схемотехника и симуляция</a></li><li><a href="pages/pcb.html">Глава 15 EDA и трассировка плат</a></li><li><a href="pages/mcu.html">Глава 16 Микроконтроллеры</a></li><li><a href="pages/debug.html">Глава 17 Отладка и измерения</a></li><li><a href="pages/cad.html">Глава 18 Машиностроение и CAD</a></li><li><a href="pages/docs.html">Глава 19 Документация и traceability</a></li><li><a href="pages/integration-map.html">Глава 20 Карта связок</a></li><li><a href="pages/labs.html">Глава 21 Десять заданий</a></li><li><a href="pages/capstone.html">Глава 22 Итоговый проект: термостат лабораторной печи</a></li><li><a href="pages/verify.html">Глава 23 Как проверять ИИ</a></li><li><a href="pages/commands.html">Глава 24 Команды и флаги</a></li><li><a href="pages/files-settings.html">Глава 25 Переменные, файлы, настройки</a></li><li><a href="pages/prompt-templates.html">Глава 26 Шаблоны промптов</a></li><li><a href="pages/troubleshooting.html">Глава 27 Диагностика</a></li><li><a href="pages/library.html">Глава 28 Файлы и папки</a></li><li><a href="pages/literature.html">Глава 29 Литература</a></li><li><a href="pages/open-books.html">Глава 29A Открытая хрестоматия</a></li><li><a href="pages/plan.html">Глава 30 План на восемь недель</a></li><li><a href="pages/glossary.html">Глава 31 Словарь</a></li><li><a href="pages/sources.html">Глава 32 Источники</a></li></ol></div></div>
+<section class="downloads"><h2 id="formats">Другие форматы</h2><ul><li><a href="download/Книга-Claude-Code.epub" download>EPUB</a> — для читалки, крупный масштабируемый шрифт.</li><li><a href="book.html">HTML одним файлом</a> — сохранить и читать без сети.</li><li><a href="materials/index.html">Папка с материалами</a> — документация, гайды, открытые книги.</li></ul></section><a id="history"></a><a id="how-to-read"></a><a id="stand"></a><a id="what-is-ai"></a><a id="how-llm-works"></a><a id="prompt"></a><a id="agent"></a><a id="history-nn"></a><a id="transformer-anatomy"></a><a id="weights-bits"></a><a id="model-landscape"></a><a id="local-models"></a><a id="tokens-compression"></a><a id="hardware"></a><a id="agents-ecosystem"></a><a id="optimization-posts"></a><a id="faq"></a><a id="deepseek-billing"></a><a id="install"></a><a id="migration"></a><a id="new-pc"></a><a id="interface"></a><a id="memory"></a><a id="memory-training"></a><a id="permissions"></a><a id="context-cost"></a><a id="extensions"></a><a id="integration-principle"></a><a id="circuit"></a><a id="pcb"></a><a id="mcu"></a><a id="debug"></a><a id="cad"></a><a id="docs"></a><a id="integration-map"></a><a id="labs"></a><a id="capstone"></a><a id="verify"></a><a id="commands"></a><a id="files-settings"></a><a id="prompt-templates"></a><a id="troubleshooting"></a><a id="library"></a><a id="literature"></a><a id="open-books"></a><a id="plan"></a><a id="glossary"></a><a id="sources"></a>
+</main>
+<footer class="site-footer">
+  <nav class="chapter-nav" aria-label="Навигация по главам">
+    <span></span>
+    <a data-rel="toc" href="index.html">Оглавление</a>
+    <span></span>
+  </nav>
+  <p>Источник — <a href="book.html">книга одним файлом</a>,
+  <a href="download/Книга-Claude-Code.epub">EPUB</a>.</p>
+</footer>
+<script type="application/json" id="page-list">[{"title":"Глава 0 История этой книги","short":"Глава 0","url":"pages/history.html"},{"title":"Глава 1 Как читать эту книгу","short":"Глава 1","url":"pages/how-to-read.html"},{"title":"Глава 2 Ваш стенд: Claude Code → OmniRoute → DeepSeek","short":"Глава 2","url":"pages/stand.html"},{"title":"Глава 3 Что такое ИИ","short":"Глава 3","url":"pages/what-is-ai.html"},{"title":"Глава 4 Как работает языковая модель","short":"Глава 4","url":"pages/how-llm-works.html"},{"title":"Глава 5 Промпт как техническое задание","short":"Глава 5","url":"pages/prompt.html"},{"title":"Глава 6 Что такое агент","short":"Глава 6","url":"pages/agent.html"},{"title":"Глава 6A История нейронных сетей","short":"Глава 6A","url":"pages/history-nn.html"},{"title":"Глава 6B Анатомия трансформера","short":"Глава 6B","url":"pages/transformer-anatomy.html"},{"title":"Глава 6C Веса, биты и точность","short":"Глава 6C","url":"pages/weights-bits.html"},{"title":"Глава 6D Ландшафт моделей 2026","short":"Глава 6D","url":"pages/model-landscape.html"},{"title":"Глава 6E Локальные модели","short":"Глава 6E","url":"pages/local-models.html"},{"title":"Глава 6F Токены, контекст и сжатие","short":"Глава 6F","url":"pages/tokens-compression.html"},{"title":"Глава 6G Железо и вычислительность","short":"Глава 6G","url":"pages/hardware.html"},{"title":"Глава 6H Агенты и их экосистема","short":"Глава 6H","url":"pages/agents-ecosystem.html"},{"title":"Глава 6I Оптимизация: что пишут на Хабре и Пикабу","short":"Глава 6I","url":"pages/optimization-posts.html"},{"title":"Глава 6J Вопросы и ответы","short":"Глава 6J","url":"pages/faq.html"},{"title":"Глава 6K (не публикуется)","short":"Глава 6K (не публикуется)","url":"pages/deepseek-billing.html"},{"title":"Глава 7 Установка и первый запуск","short":"Глава 7","url":"pages/install.html"},{"title":"Глава 7A (не публикуется)","short":"Глава 7A (не публикуется)","url":"pages/migration.html"},{"title":"Глава 7B (не публикуется)","short":"Глава 7B (не публикуется)","url":"pages/new-pc.html"},{"title":"Глава 8 Интерфейс и команды","short":"Глава 8","url":"pages/interface.html"},{"title":"Глава 9 Память и CLAUDE.md","short":"Глава 9","url":"pages/memory.html"},{"title":"Глава 9A Память, обучение и превращение в скилл","short":"Глава 9A","url":"pages/memory-training.html"},{"title":"Глава 10 Разрешения и безопасность","short":"Глава 10","url":"pages/permissions.html"},{"title":"Глава 11 Контекст, стоимость, сессии","short":"Глава 11","url":"pages/context-cost.html"},{"title":"Глава 12 Расширения: skills, субагенты, hooks, MCP","short":"Глава 12","url":"pages/extensions.html"},{"title":"Глава 13 Принцип интеграции","short":"Глава 13","url":"pages/integration-principle.html"},{"title":"Глава 14 Схемотехника и симуляция","short":"Глава 14","url":"pages/circuit.html"},{"title":"Глава 15 EDA и трассировка плат","short":"Глава 15","url":"pages/pcb.html"},{"title":"Глава 16 Микроконтроллеры","short":"Глава 16","url":"pages/mcu.html"},{"title":"Глава 17 Отладка и измерения","short":"Глава 17","url":"pages/debug.html"},{"title":"Глава 18 Машиностроение и CAD","short":"Глава 18","url":"pages/cad.html"},{"title":"Глава 19 Документация и traceability","short":"Глава 19","url":"pages/docs.html"},{"title":"Глава 20 Карта связок","short":"Глава 20","url":"pages/integration-map.html"},{"title":"Глава 21 Десять заданий","short":"Глава 21","url":"pages/labs.html"},{"title":"Глава 22 Итоговый проект: термостат лабораторной печи","short":"Глава 22","url":"pages/capstone.html"},{"title":"Глава 23 Как проверять ИИ","short":"Глава 23","url":"pages/verify.html"},{"title":"Глава 24 Команды и флаги","short":"Глава 24","url":"pages/commands.html"},{"title":"Глава 25 Переменные, файлы, настройки","short":"Глава 25","url":"pages/files-settings.html"},{"title":"Глава 26 Шаблоны промптов","short":"Глава 26","url":"pages/prompt-templates.html"},{"title":"Глава 27 Диагностика","short":"Глава 27","url":"pages/troubleshooting.html"},{"title":"Глава 28 Файлы и папки","short":"Глава 28","url":"pages/library.html"},{"title":"Глава 29 Литература","short":"Глава 29","url":"pages/literature.html"},{"title":"Глава 29A Открытая хрестоматия","short":"Глава 29A","url":"pages/open-books.html"},{"title":"Глава 30 План на восемь недель","short":"Глава 30","url":"pages/plan.html"},{"title":"Глава 31 Словарь","short":"Глава 31","url":"pages/glossary.html"},{"title":"Глава 32 Источники","short":"Глава 32","url":"pages/sources.html"}]</script>
+<script src="assets/app.js" defer></script>
+</body>
+</html>

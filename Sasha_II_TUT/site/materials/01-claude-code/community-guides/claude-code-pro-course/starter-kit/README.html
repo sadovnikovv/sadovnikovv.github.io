@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Starter kit</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/index.html">claude-code-pro-course</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/starter-kit/index.html">starter-kit</a></nav>
+<h1 id="starter-kit">Starter kit <a class="h-anchor" href="#starter-kit" aria-label="Ссылка на раздел">#</a></h1>
+<p>Готовая конфигурация Claude Code для копирования в проект.</p>
+<h3 id="h">Установка <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-bash"># в проект (существующие файлы не перезаписываются)
+bash install.sh /path/to/your-project
+
+# личные skills/агенты/стили — для всех проектов (~/.claude)
+bash install.sh --user</code></pre>
+<p>Или вручную: <code>cp -r starter-kit/.claude starter-kit/CLAUDE.md starter-kit/.mcp.json your-project/</code>.</p>
+<blockquote>
+<p>Для hooks и statusline нужен <code>jq</code>.</p>
+</blockquote>
+<h3 id="h-2">Состав <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Путь</th><th>Что это</th><th>Модуль</th></tr></thead><tbody><tr><td><code>CLAUDE.md</code></td><td>Шаблон памяти проекта — <strong>отредактируйте!</strong></td><td><a href="../course/02-claude-md.md">02</a></td></tr><tr><td><code>CLAUDE.local.md.example</code></td><td>Личные предпочтения</td><td><a href="../course/02-claude-md.md">02</a></td></tr><tr><td><code>.claude/rules/</code></td><td>Правила по путям: <code>testing</code>, <code>api</code>, <code>frontend</code></td><td><a href="../course/02-claude-md.md">02</a></td></tr><tr><td><code>.claude/settings.json</code></td><td>Разрешения, hooks, statusline</td><td><a href="../course/03-settings-permissions.md">03</a></td></tr><tr><td><code>.claude/skills/</code></td><td>8 skills (см. ниже)</td><td><a href="../course/05-skills.md">05</a></td></tr><tr><td><code>.claude/agents/</code></td><td>5 субагентов (см. ниже)</td><td><a href="../course/06-subagents.md">06</a></td></tr><tr><td><code>.claude/hooks/</code></td><td>4 hook-скрипта (см. ниже)</td><td><a href="../course/07-hooks.md">07</a></td></tr><tr><td><code>.claude/output-styles/mentor.md</code></td><td>Режим наставника (<code>/output-style</code>)</td><td><a href="../course/11-pro-tips.md">11</a></td></tr><tr><td><code>.claude/statusline.sh</code></td><td>Модель, ветка, стоимость в статусной строке</td><td><a href="../course/11-pro-tips.md">11</a></td></tr><tr><td><code>.mcp.json</code></td><td>GitHub + Playwright MCP</td><td><a href="../course/08-mcp.md">08</a></td></tr></tbody></table></div>
+<h4 id="skills">Skills <a class="h-anchor" href="#skills" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Skill</th><th>Вызов</th><th>Что делает</th></tr></thead><tbody><tr><td>code-review</td><td><code>/code-review</code></td><td>Ревью ветки по чек-листу 🔴🟡🟢</td></tr><tr><td>commit</td><td><code>/commit</code></td><td>Conventional commit по изменениям</td></tr><tr><td>write-tests</td><td><code>/write-tests &lt;файл&gt;</code></td><td>Тесты в стиле проекта</td></tr><tr><td>fix-issue</td><td><code>/fix-issue &lt;номер&gt;</code></td><td>Issue → тест → фикс → коммит (только ручной вызов)</td></tr><tr><td>refactor</td><td><code>/refactor &lt;модуль&gt;</code></td><td>Рефакторинг маленькими шагами под защитой тестов</td></tr><tr><td>pr-description</td><td><code>/pr-description</code></td><td>Описание PR по шаблону</td></tr><tr><td>release-notes</td><td><code>/release-notes [v1.0 v1.1]</code></td><td>Release notes из истории коммитов</td></tr><tr><td>onboard</td><td><code>/onboard</code></td><td>Онбординг новичка в проект</td></tr></tbody></table></div>
+<h4 id="h-3">Субагенты <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Агент</th><th>Модель</th><th>Права</th><th>Для чего</th></tr></thead><tbody><tr><td>architect</td><td>opus</td><td>только чтение</td><td>Варианты решения и план до кода</td></tr><tr><td>code-reviewer</td><td>sonnet</td><td>только чтение</td><td>Ревью после изменений</td></tr><tr><td>test-runner</td><td>haiku</td><td>чтение + bash</td><td>Прогон тестов и разбор падений</td></tr><tr><td>debugger</td><td>inherit</td><td>полные</td><td>Методичная отладка</td></tr><tr><td>docs-writer</td><td>sonnet</td><td>чтение + правка</td><td>Актуализация документации</td></tr></tbody></table></div>
+<h4 id="hooks">Hooks <a class="h-anchor" href="#hooks" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Скрипт</th><th>Событие</th><th>Действие</th></tr></thead><tbody><tr><td>protect-files.sh</td><td>PreToolUse (Edit|Write)</td><td>Блокирует правку <code>.env</code>, lock-файлов, миграций</td></tr><tr><td>format-on-edit.sh</td><td>PostToolUse (Edit|Write)</td><td>prettier / ruff / gofmt / rustfmt</td></tr><tr><td>notify.sh</td><td>Notification</td><td>Системное уведомление, когда Claude ждёт</td></tr><tr><td>session-context.sh</td><td>SessionStart</td><td>Ветка, изменения, последние коммиты, активный план</td></tr></tbody></table></div>
+<p>После установки проверьте: <code>/context</code>, <code>/agents</code>, <code>/hooks</code>, <code>/mcp</code>.</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

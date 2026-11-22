@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ru" data-book-src="../book.html">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Глава 28 — Claude Code для инженера</title>
+<meta name="description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
+<link rel="canonical" href="https://sadovnikovv.github.io/pages/">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:site_name" content="Claude Code для инженера">
+<meta property="og:title" content="Глава 28 — Claude Code для инженера">
+<meta property="og:description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
+<meta property="og:url" content="https://sadovnikovv.github.io/pages/">
+<meta property="og:image" content="https://sadovnikovv.github.io/assets/favicon.svg">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="../assets/fonts/serif-regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/sans-regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="alternate" type="text/html" href="../book.html#library">
+<meta name="page-index" content="43">
+</head>
+<body>
+<a class="skip-link" href="#book">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../index.html">Claude Code для инженера</a></strong>
+    <a href="../materials/index.html">Материалы</a>
+    <a href="../about.html">О книге</a>
+    <a href="../download/Книга-Claude-Code.epub" download>EPUB</a>
+  </div>
+</header>
+<div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+<main class="wrap" id="book">
+<section class="chapter"><h2 id="library"><span class="chapter">Глава 28</span>Файлы и папки</h2>
+
+<p class="lead-in">Всё, что было собрано, лежит в папке <code>ru-materials</code> рядом с этой книгой. Ниже — карта с прямыми ссылками.</p>
+
+<div class="callout">
+  <span class="label">Как открывать файлы</span>
+  <p>HTML-книга открывается двойным щелчком в браузере. Файлы <code>.md</code> — это Markdown; браузер покажет их как обычный текст. Для удобного чтения откройте папку в VS Code и нажмите <code>Ctrl+Shift+V</code> (предпросмотр). Файл <code>claude-code-konspekt/index.html</code> — готовый HTML-конспект, открывается в браузере.</p>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <h4><a href="/materials/index.html">Вся папка материалов</a></h4>
+    <p>Корневой каталог <code>ru-materials</code>. Браузер покажет список файлов.</p>
+  </div>
+  <div class="card">
+    <h4><a href="/materials/01-claude-code/index.html">Claude Code</a></h4>
+    <p>Официальная документация и community-гайды.</p>
+  </div>
+  <div class="card">
+    <h4><a href="/materials/02-omniroute/index.html">OmniRoute</a></h4>
+    <p>Русская документация шлюза и разбор связки.</p>
+  </div>
+  <div class="card">
+    <h4><a href="/materials/03-ai-basics/index.html">Основы ИИ</a></h4>
+    <p>Ликбез, курсы, статьи и книги.</p>
+  </div>
+</div>
+
+<h3>28.1. Верхний уровень</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Файл</th><th>Что внутри</th></tr></thead>
+  <tbody>
+    <tr><td><a href="/materials/%D0%98%D0%9D%D0%94%D0%95%D0%9A%D0%A1.html">ru-materials/ИНДЕКС.md</a></td><td>Общий индекс комплекта: маршруты, структура, оговорки</td></tr>
+    <tr><td><a href="/materials/03-ai-basics/%D0%98%D0%98-%D0%B4%D0%BB%D1%8F-%D1%87%D0%B0%D0%B9%D0%BD%D0%B8%D0%BA%D0%BE%D0%B2.html">03-ai-basics/ИИ-для-чайников.md</a></td><td>Ликбез по ИИ: понятия, механика, ошибки, словарь</td></tr>
+    <tr><td><a href="/materials/03-ai-basics/%D0%9A%D1%83%D1%80%D1%81%D1%8B-%D0%BA%D0%BD%D0%B8%D0%B3%D0%B8-%D1%81%D1%82%D0%B0%D1%82%D1%8C%D0%B8.html">03-ai-basics/Курсы-книги-статьи.md</a></td><td>Курсы Stepik, статьи Хабра, книги, маршрут на неделю</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>28.2. Claude Code</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Файл или папка</th><th>Что внутри</th></tr></thead>
+  <tbody>
+    <tr><td><a href="/materials/01-claude-code/%D0%A7%D0%A2%D0%9E-%D0%A1%D0%9A%D0%90%D0%A7%D0%90%D0%9D%D0%9E.html">01-claude-code/ЧТО-СКАЧАНО.md</a></td><td>Опись раздела и рекомендации по выбору</td></tr>
+    <tr><td><a href="/materials/01-claude-code/official-docs-ru/%D0%9E%D0%93%D0%9B%D0%90%D0%92%D0%9B%D0%95%D0%9D%D0%98%D0%95.html">official-docs-ru/ОГЛАВЛЕНИЕ.md</a></td><td>Оглавление 205 страниц официальной документации</td></tr>
+    <tr><td><a href="/materials/01-claude-code/official-docs-ru/overview.html">official-docs-ru/overview.md</a></td><td>Обзор Claude Code</td></tr>
+    <tr><td><a href="/materials/01-claude-code/official-docs-ru/quickstart.html">official-docs-ru/quickstart.md</a></td><td>Быстрый старт</td></tr>
+    <tr><td><a href="/materials/01-claude-code/official-docs-ru/setup.html">official-docs-ru/setup.md</a></td><td>Установка и настройка</td></tr>
+    <tr><td><a href="/materials/01-claude-code/official-docs-ru/how-claude-code-works.html">official-docs-ru/how-claude-code-works.md</a></td><td>Как работает агент</td></tr>
+    <tr><td><a href="/materials/01-claude-code/official-docs-ru/memory.html">official-docs-ru/memory.md</a></td><td>Память и <code>CLAUDE.md</code></td></tr>
+    <tr><td><a href="/materials/01-claude-code/official-docs-ru/settings.html">official-docs-ru/settings.md</a></td><td>Настройки и приоритеты</td></tr>
+    <tr><td><a href="/materials/01-claude-code/official-docs-ru/permissions.html">official-docs-ru/permissions.md</a></td><td>Разрешения</td></tr>
+    <tr><td><a href="/materials/01-claude-code/official-docs-ru/commands.html">official-docs-ru/commands.md</a></td><td>Полный список команд</td></tr>
+    <tr><td><a href="/materials/01-claude-code/official-docs-ru/cli-reference.html">official-docs-ru/cli-reference.md</a></td><td>CLI и флаги</td></tr>
+    <tr><td><a href="/materials/01-claude-code/official-docs-ru/hooks.html">official-docs-ru/hooks.md</a></td><td>Hooks</td></tr>
+    <tr><td><a href="/materials/01-claude-code/official-docs-ru/skills.html">official-docs-ru/skills.md</a></td><td>Skills</td></tr>
+    <tr><td><a href="/materials/01-claude-code/official-docs-ru/sub-agents.html">official-docs-ru/sub-agents.md</a></td><td>Субагенты</td></tr>
+    <tr><td><a href="/materials/01-claude-code/official-docs-ru/mcp.html">official-docs-ru/mcp.md</a></td><td>MCP</td></tr>
+    <tr><td><a href="/materials/01-claude-code/official-docs-ru/troubleshooting.html">official-docs-ru/troubleshooting.md</a></td><td>Диагностика</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>28.3. Community-гайды</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Материал</th><th>Что внутри</th></tr></thead>
+  <tbody>
+    <tr><td><a href="/materials/01-claude-code/community-guides/claude-code-pro-course/README.html">claude-code-pro-course</a></td><td>12 модулей, 8 лабораторных, starter kit, промпты</td></tr>
+    <tr><td><a href="/materials/01-claude-code/community-guides/claude-code-konspekt/index.html">claude-code-konspekt</a></td><td>Конспект четырёх курсов Anthropic Academy (HTML)</td></tr>
+    <tr><td><a href="/materials/01-claude-code/community-guides/claude-howto-ru/INDEX.html">claude-howto-ru</a></td><td>Визуальные уроки со схемами</td></tr>
+    <tr><td><a href="/materials/01-claude-code/community-guides/edgelab-claude-md/README.html">edgelab-claude-md</a></td><td>Полное руководство по <code>CLAUDE.md</code></td></tr>
+    <tr><td><a href="/materials/01-claude-code/community-guides/state-of-ai/README.html">state-of-ai</a></td><td>Агентная разработка, компактный гайд</td></tr>
+    <tr><td><a href="/materials/01-claude-code/community-guides/claude-starter-kit/README.html">claude-starter-kit</a></td><td>8 готовых команд на русском</td></tr>
+    <tr><td><a href="/materials/01-claude-code/community-guides/claude-skill-help-ru/README.html">claude-skill-help-ru</a></td><td>Скилл <code>/help-ru</code></td></tr>
+    <tr><td><a href="/materials/01-claude-code/community-guides/awesome-ai-devtools-ru/README.html">awesome-ai-devtools-ru</a></td><td>Каталог 281 инструмента</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><em>Примечание.</em> Ещё один скачанный репозиторий — <code>claude-code-guide-dly-blondinok</code> — содержит только README без материалов. В описи он указан, но практической ценности пока не имеет.</p>
+
+<h3>28.4. OmniRoute</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Файл</th><th>Что внутри</th></tr></thead>
+  <tbody>
+    <tr><td><a href="/materials/02-omniroute/%D0%9A%D0%90%D0%9A-%D0%A1%D0%92%D0%AF%D0%97%D0%90%D0%A2%D0%AC-%D0%A1-CLAUDE-CODE.html">КАК-СВЯЗАТЬ-С-CLAUDE-CODE.md</a></td><td>Практический разбор связки и <code>cc.txt</code></td></tr>
+    <tr><td><a href="/materials/02-omniroute/%D0%A7%D0%A2%D0%9E-%D0%A1%D0%9A%D0%90%D0%A7%D0%90%D0%9D%D0%9E.html">ЧТО-СКАЧАНО.md</a></td><td>Опись документации</td></tr>
+    <tr><td><a href="/materials/02-omniroute/docs-ru/README.html">docs-ru/README.md</a></td><td>Главный README OmniRoute на русском</td></tr>
+    <tr><td><a href="/materials/02-omniroute/docs-ru/docs/getting-started/QUICK-START.html">QUICK-START.md</a></td><td>Установка за 3 минуты</td></tr>
+    <tr><td><a href="/materials/02-omniroute/docs-ru/docs/guides/CLAUDE-CODE-CONFIGURATION.html">CLAUDE-CODE-CONFIGURATION.md</a></td><td>Официальная настройка Claude Code</td></tr>
+    <tr><td><a href="/materials/02-omniroute/docs-ru/docs/guides/USER_GUIDE.html">USER_GUIDE.md</a></td><td>Пользовательское руководство</td></tr>
+    <tr><td><a href="/materials/02-omniroute/docs-ru/docs/guides/TROUBLESHOOTING.html">TROUBLESHOOTING.md</a></td><td>Диагностика</td></tr>
+    <tr><td><a href="/materials/02-omniroute/docs-ru/docs/guides/COST_TRACKING.html">COST_TRACKING.md</a></td><td>Учёт расходов</td></tr>
+    <tr><td><a href="/materials/02-omniroute/docs-ru/docs/frameworks/MCP-SERVER.html">MCP-SERVER.md</a></td><td>MCP-сервер OmniRoute</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============================================================ -->
+
+<h3>28.5. Открытая хрестоматия</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Файл</th><th>Что внутри</th></tr></thead>
+  <tbody>
+    <tr><td><a href="/materials/04-open-books/%D0%A5%D0%A0%D0%95%D0%A1%D0%A2%D0%9E%D0%9C%D0%90%D0%A2%D0%98%D0%AF.html">04-open-books/ХРЕСТОМАТИЯ.md</a></td><td>Опись открытых книг, лицензий и статей</td></tr>
+    <tr><td><a href="/materials/04-open-books/little-book-deep-learning.pdf.html">little-book-deep-learning.pdf</a></td><td>Краткое введение в глубокое обучение (CC BY-NC-SA)</td></tr>
+    <tr><td><a href="/materials/04-open-books/mathematics-for-machine-learning.pdf.html">mathematics-for-machine-learning.pdf</a></td><td>Математическая база ML (CC BY-NC-ND)</td></tr>
+    <tr><td><a href="/materials/04-open-books/dive-into-deep-learning.pdf.html">dive-into-deep-learning.pdf</a></td><td>Практический учебник с кодом (CC BY-SA)</td></tr>
+    <tr><td><a href="/materials/04-open-books/papers/attention-is-all-you-need.pdf">papers/attention-is-all-you-need.pdf</a></td><td>Первоисточник трансформера</td></tr>
+    <tr><td><a href="/materials/04-open-books/papers/deepseek-v3.pdf">papers/deepseek-v3.pdf</a></td><td>Архитектура DeepSeek-V3</td></tr>
+    <tr><td><a href="/materials/04-open-books/papers/deepseek-r1.pdf.html">papers/deepseek-r1.pdf</a></td><td>Reasoning-модель DeepSeek-R1</td></tr>
+    <tr><td><a href="/materials/04-open-books/papers/vllm-paged-attention.pdf">papers/vllm-paged-attention.pdf</a></td><td>Эффективный инференс и KV-кэш</td></tr>
+  </tbody>
+</table>
+</div>
+
+</section>
+</main>
+<footer class="site-footer">
+  <nav class="chapter-nav" aria-label="Навигация по главам">
+    <span><a data-rel="prev" href="../pages/troubleshooting.html">← Глава 27</a></span>
+    <a data-rel="toc" href="../index.html">Оглавление</a>
+    <span><a data-rel="next" href="../pages/literature.html">Глава 29 →</a></span>
+  </nav>
+  <p>Источник — <a href="../book.html">книга одним файлом</a>,
+  <a href="../download/Книга-Claude-Code.epub">EPUB</a>.</p>
+</footer>
+<script type="application/json" id="page-list">[{"title":"Глава 0 История этой книги","short":"Глава 0","url":"pages/history.html"},{"title":"Глава 1 Как читать эту книгу","short":"Глава 1","url":"pages/how-to-read.html"},{"title":"Глава 2 Ваш стенд: Claude Code → OmniRoute → DeepSeek","short":"Глава 2","url":"pages/stand.html"},{"title":"Глава 3 Что такое ИИ","short":"Глава 3","url":"pages/what-is-ai.html"},{"title":"Глава 4 Как работает языковая модель","short":"Глава 4","url":"pages/how-llm-works.html"},{"title":"Глава 5 Промпт как техническое задание","short":"Глава 5","url":"pages/prompt.html"},{"title":"Глава 6 Что такое агент","short":"Глава 6","url":"pages/agent.html"},{"title":"Глава 6A История нейронных сетей","short":"Глава 6A","url":"pages/history-nn.html"},{"title":"Глава 6B Анатомия трансформера","short":"Глава 6B","url":"pages/transformer-anatomy.html"},{"title":"Глава 6C Веса, биты и точность","short":"Глава 6C","url":"pages/weights-bits.html"},{"title":"Глава 6D Ландшафт моделей 2026","short":"Глава 6D","url":"pages/model-landscape.html"},{"title":"Глава 6E Локальные модели","short":"Глава 6E","url":"pages/local-models.html"},{"title":"Глава 6F Токены, контекст и сжатие","short":"Глава 6F","url":"pages/tokens-compression.html"},{"title":"Глава 6G Железо и вычислительность","short":"Глава 6G","url":"pages/hardware.html"},{"title":"Глава 6H Агенты и их экосистема","short":"Глава 6H","url":"pages/agents-ecosystem.html"},{"title":"Глава 6I Оптимизация: что пишут на Хабре и Пикабу","short":"Глава 6I","url":"pages/optimization-posts.html"},{"title":"Глава 6J Вопросы и ответы","short":"Глава 6J","url":"pages/faq.html"},{"title":"Глава 6K (не публикуется)","short":"Глава 6K (не публикуется)","url":"pages/deepseek-billing.html"},{"title":"Глава 7 Установка и первый запуск","short":"Глава 7","url":"pages/install.html"},{"title":"Глава 7A (не публикуется)","short":"Глава 7A (не публикуется)","url":"pages/migration.html"},{"title":"Глава 7B (не публикуется)","short":"Глава 7B (не публикуется)","url":"pages/new-pc.html"},{"title":"Глава 8 Интерфейс и команды","short":"Глава 8","url":"pages/interface.html"},{"title":"Глава 9 Память и CLAUDE.md","short":"Глава 9","url":"pages/memory.html"},{"title":"Глава 9A Память, обучение и превращение в скилл","short":"Глава 9A","url":"pages/memory-training.html"},{"title":"Глава 10 Разрешения и безопасность","short":"Глава 10","url":"pages/permissions.html"},{"title":"Глава 11 Контекст, стоимость, сессии","short":"Глава 11","url":"pages/context-cost.html"},{"title":"Глава 12 Расширения: skills, субагенты, hooks, MCP","short":"Глава 12","url":"pages/extensions.html"},{"title":"Глава 13 Принцип интеграции","short":"Глава 13","url":"pages/integration-principle.html"},{"title":"Глава 14 Схемотехника и симуляция","short":"Глава 14","url":"pages/circuit.html"},{"title":"Глава 15 EDA и трассировка плат","short":"Глава 15","url":"pages/pcb.html"},{"title":"Глава 16 Микроконтроллеры","short":"Глава 16","url":"pages/mcu.html"},{"title":"Глава 17 Отладка и измерения","short":"Глава 17","url":"pages/debug.html"},{"title":"Глава 18 Машиностроение и CAD","short":"Глава 18","url":"pages/cad.html"},{"title":"Глава 19 Документация и traceability","short":"Глава 19","url":"pages/docs.html"},{"title":"Глава 20 Карта связок","short":"Глава 20","url":"pages/integration-map.html"},{"title":"Глава 21 Десять заданий","short":"Глава 21","url":"pages/labs.html"},{"title":"Глава 22 Итоговый проект: термостат лабораторной печи","short":"Глава 22","url":"pages/capstone.html"},{"title":"Глава 23 Как проверять ИИ","short":"Глава 23","url":"pages/verify.html"},{"title":"Глава 24 Команды и флаги","short":"Глава 24","url":"pages/commands.html"},{"title":"Глава 25 Переменные, файлы, настройки","short":"Глава 25","url":"pages/files-settings.html"},{"title":"Глава 26 Шаблоны промптов","short":"Глава 26","url":"pages/prompt-templates.html"},{"title":"Глава 27 Диагностика","short":"Глава 27","url":"pages/troubleshooting.html"},{"title":"Глава 28 Файлы и папки","short":"Глава 28","url":"pages/library.html"},{"title":"Глава 29 Литература","short":"Глава 29","url":"pages/literature.html"},{"title":"Глава 29A Открытая хрестоматия","short":"Глава 29A","url":"pages/open-books.html"},{"title":"Глава 30 План на восемь недель","short":"Глава 30","url":"pages/plan.html"},{"title":"Глава 31 Словарь","short":"Глава 31","url":"pages/glossary.html"},{"title":"Глава 32 Источники","short":"Глава 32","url":"pages/sources.html"}]</script>
+<script src="../assets/app.js" defer></script>
+</body>
+</html>

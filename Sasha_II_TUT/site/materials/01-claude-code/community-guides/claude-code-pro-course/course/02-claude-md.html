@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Модуль 02. CLAUDE.md — память проекта</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/index.html">claude-code-pro-course</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/course/index.html">course</a></nav>
+<h1 id="модуль-02-claude-md-память-проекта">Модуль 02. CLAUDE.md — память проекта <a class="h-anchor" href="#модуль-02-claude-md-память-проекта" aria-label="Ссылка на раздел">#</a></h1>
+<p><code>CLAUDE.md</code> — файл, который Claude автоматически читает в начале каждой сессии. Это «инструкция для нового сотрудника»: команды, стиль, архитектура, запреты.</p>
+<h3 id="h">Иерархия файлов памяти <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Уровень</th><th>Путь</th><th>Кому</th><th>В git?</th></tr></thead><tbody><tr><td>Организация (managed)</td><td><code>/etc/claude-code/CLAUDE.md</code> (Linux), <code>/Library/Application Support/ClaudeCode/CLAUDE.md</code> (macOS)</td><td>Всем в компании</td><td>—</td></tr><tr><td>Пользователь</td><td><code>~/.claude/CLAUDE.md</code></td><td>Вам во всех проектах</td><td>нет</td></tr><tr><td>Проект</td><td><code>./CLAUDE.md</code> или <code>./.claude/CLAUDE.md</code></td><td>Всей команде</td><td><strong>да</strong></td></tr><tr><td>Локальный</td><td><code>./CLAUDE.local.md</code></td><td>Вам в этом проекте</td><td>нет (в .gitignore)</td></tr><tr><td>Подпапки</td><td><code>./packages/api/CLAUDE.md</code></td><td>Подгружается, когда Claude работает в этой папке</td><td>да</td></tr></tbody></table></div>
+<p>Все уровни объединяются; более специфичный дополняет более общий.</p>
+<h3 id="h-2">Быстрый старт <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>/init        # Claude проанализирует проект и создаст CLAUDE.md
+/memory      # открыть файлы памяти в редакторе
+# всегда используй pnpm, не npm     ← строка с # сохраняется в память</code></pre>
+<h3 id="h-3">Импорты <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Не раздувайте файл — ссылайтесь:</p>
+<pre><code class="language-markdown">См. @README.md для обзора и @package.json для команд.
+
+# Подробные правила
+- Git workflow: @docs/git-workflow.md
+- Личные настройки: @~/.claude/my-preferences.md</code></pre>
+<h3 id="модульные-правила-claude-rules">Модульные правила: <code>.claude/rules/</code> <a class="h-anchor" href="#модульные-правила-claude-rules" aria-label="Ссылка на раздел">#</a></h3>
+<p>Для больших проектов разбейте правила по темам и привяжите к путям:</p>
+<pre><code class="language-markdown">---
+paths:
+  - &quot;src/api/**/*.ts&quot;
+---
+# Правила API
+- Все эндпоинты валидируют вход через zod
+- Ошибки — только через ApiError</code></pre>
+<p>Такое правило подгружается, только когда Claude работает с подходящими файлами — экономия контекста.</p>
+<h3 id="что-писать-в-claude-md">Что писать в CLAUDE.md <a class="h-anchor" href="#что-писать-в-claude-md" aria-label="Ссылка на раздел">#</a></h3>
+<p>✅ Пишите:</p>
+<ul>
+<li>Команды: сборка, тесты (включая запуск <strong>одного</strong> теста), линт, типы.</li>
+<li>Стиль кода, который не ловит линтер.</li>
+<li>Архитектурные решения и «где что лежит».</li>
+<li>Git-правила: ветки, формат коммитов.</li>
+<li>Особенности окружения, грабли, «никогда не делай X».</li>
+</ul>
+<p>❌ Не пишите:</p>
+<ul>
+<li>То, что Claude и так поймёт из кода.</li>
+<li>Длинные туториалы (вынесите в docs и импортируйте).</li>
+<li>Секреты и токены.</li>
+<li>Устаревшую информацию — она вреднее отсутствия.</li>
+</ul>
+<h3 id="правила-хорошего-claude-md">Правила хорошего CLAUDE.md <a class="h-anchor" href="#правила-хорошего-claude-md" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li><strong>Коротко.</strong> Цель — до ~200 строк. Каждая строка тратит контекст в каждой сессии.</li>
+<li><strong>Конкретно.</strong> «Используй 2 пробела» лучше, чем «форматируй аккуратно».</li>
+<li><strong>Акценты.</strong> Для критичных правил: <code>ВАЖНО:</code> / <code>НИКОГДА</code>. Но не злоупотребляйте.</li>
+<li><strong>Итерируйте.</strong> Claude ошибся одинаково дважды → добавьте правило. Правило не работает → переформулируйте или удалите.</li>
+<li><strong>Проверяйте.</strong> <code>/context</code> покажет, какие файлы памяти загружены и сколько весят.</li>
+<li><strong>Ревьюйте как код.</strong> CLAUDE.md в git, изменения — через PR.</li>
+</ol>
+<h3 id="h-4">Шаблон <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Готовый пример: <a href="../starter-kit/CLAUDE.md"><code>starter-kit/CLAUDE.md</code></a></p>
+<pre><code class="language-markdown"># Проект: Acme API
+
+## Команды
+- `pnpm dev` — dev-сервер
+- `pnpm test` — все тесты; `pnpm test path/to/file` — один файл
+- `pnpm lint &amp;&amp; pnpm typecheck` — обязательно перед коммитом
+
+## Стиль
+- TypeScript strict, без `any`
+- Именованные экспорты, без default export
+
+## Архитектура
+- src/routes → src/services → src/repositories (слои не перепрыгивать)
+
+## Workflow
+- Сначала тест, потом код
+- Коммиты: Conventional Commits
+
+## Никогда
+- Не редактируй миграции, которые уже в main
+- Не коммить .env</code></pre>
+<h3 id="agents-md">AGENTS.md <a class="h-anchor" href="#agents-md" aria-label="Ссылка на раздел">#</a></h3>
+<p>Если в проекте уже есть <code>AGENTS.md</code> (общий стандарт для AI-агентов), Claude Code может его читать. Поведение настраивается в <code>/config</code>. Простой способ поддерживать оба — в <code>CLAUDE.md</code> написать <code>@AGENTS.md</code>.</p>
+<h3 id="h-5">Практика <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li>Выполните <code>/init</code>, прочитайте результат и <strong>сократите на треть</strong>.</li>
+<li>Добавьте команду запуска одного теста.</li>
+<li>Через <code>#</code> добавьте одно правило и найдите, куда оно записалось.</li>
+<li>Создайте <code>CLAUDE.local.md</code> с личными предпочтениями.</li>
+</ol>
+<p>🧪 Закрепите на практике: <a href="../labs/lab-01-onboarding.md">лабораторная работа</a></p>
+<p>➡️ Далее: <a href="03-settings-permissions.md">03. Настройки и разрешения</a></p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

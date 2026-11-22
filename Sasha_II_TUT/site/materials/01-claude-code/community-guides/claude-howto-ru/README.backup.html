@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Claude How To</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a></nav>
+<p>&lt;picture&gt;
+  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;resources/logos/claude-howto-logo-dark.svg&quot;&gt;
+  &lt;img alt=&quot;Claude How To&quot; src=&quot;resources/logos/claude-howto-logo.svg&quot;&gt;
+&lt;/picture&gt;</p>
+<h1 id="claude-how-to">Claude How To <a class="h-anchor" href="#claude-how-to" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>A visual, example-driven guide to Claude Code — from basic concepts to advanced agents, with copy-paste templates that bring immediate value.</p>
+</blockquote>
+<h3 id="why-this-guide">Why This Guide? <a class="h-anchor" href="#why-this-guide" aria-label="Ссылка на раздел">#</a></h3>
+<p>This project complements <a href="https://code.claude.com/docs/en/overview">Anthropic&#x27;s official documentation</a> with a different approach:</p>
+<div class="table-wrap"><table><thead><tr><th></th><th>Official Docs</th><th>This Guide</th></tr></thead><tbody><tr><td><strong>Format</strong></td><td>Reference documentation</td><td>Visual tutorials with diagrams</td></tr><tr><td><strong>Depth</strong></td><td>Feature descriptions</td><td>How it works under the hood</td></tr><tr><td><strong>Examples</strong></td><td>Basic snippets</td><td>Production-ready templates you can use immediately</td></tr><tr><td><strong>Structure</strong></td><td>Feature-organized</td><td>Progressive learning path (beginner → advanced)</td></tr><tr><td><strong>Onboarding</strong></td><td>Self-directed</td><td>Guided roadmap with time estimates</td></tr><tr><td><strong>Self-Assessment</strong></td><td>None</td><td>Interactive quizzes to identify skill gaps and build a personalized learning path</td></tr></tbody></table></div>
+<p><strong>What you&#x27;ll find here:</strong></p>
+<ul>
+<li>Mermaid diagrams explaining how each feature works</li>
+<li>Ready-to-use configurations you can copy into your project</li>
+<li>Real-world examples with context and best practices</li>
+<li>Clear progression from <code>/help</code> to building custom agents</li>
+<li>Troubleshooting guides based on common issues</li>
+</ul>
+<hr>
+<h3 id="table-of-contents">Table of Contents <a class="h-anchor" href="#table-of-contents" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="#why-this-guide">Why This Guide?</a></li>
+<li><a href="#-feature-catalog">Feature Catalog</a></li>
+<li><a href="#quick-navigation">Quick Navigation</a></li>
+<li><a href="#-learning-path">Learning Path</a></li>
+<li><a href="#-quick-reference-choose-your-features">Quick Reference</a></li>
+<li><a href="#-getting-started">Getting Started</a></li>
+<li><strong>Features</strong></li>
+<li><a href="#01-slash-commands">01. Slash Commands</a></li>
+<li><a href="#02-memory">02. Memory</a></li>
+<li><a href="#03-skills">03. Skills</a></li>
+<li><a href="#04-subagents">04. Subagents</a></li>
+<li><a href="#05-mcp-protocol">05. MCP Protocol</a></li>
+<li><a href="#06-hooks">06. Hooks</a></li>
+<li><a href="#07-plugins">07. Plugins</a></li>
+<li><a href="#08-checkpoints-and-rewind">08. Checkpoints</a></li>
+<li><a href="#09-advanced-features">09. Advanced Features</a></li>
+<li><a href="#10-cli-reference">10. CLI Reference</a></li>
+<li><a href="#directory-structure">Directory Structure</a></li>
+<li><a href="#installation-quick-reference">Installation Quick Reference</a></li>
+<li><a href="#example-workflows">Example Workflows</a></li>
+<li><a href="#best-practices">Best Practices</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+<li><a href="#testing">Testing</a></li>
+<li><a href="#additional-resources">Additional Resources</a></li>
+<li><a href="#contributing">Contributing</a></li>
+<li><a href="#epub-generation">EPUB Generation</a></li>
+<li><a href="#contributors">Contributors</a></li>
+<li><a href="#star-history">Star History</a></li>
+</ul>
+<hr>
+<h3 id="feature-catalog">Feature Catalog <a class="h-anchor" href="#feature-catalog" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Looking for a quick reference?</strong> Check out our comprehensive <strong><a href="CATALOG.md">Feature Catalog</a></strong> for:</p>
+<ul>
+<li>All slash commands (built-in and custom) with descriptions</li>
+<li>Sub-agents and their capabilities</li>
+<li>Skills with auto-invocation triggers</li>
+<li>Plugins with components and installation commands</li>
+<li>MCP servers for external integrations</li>
+<li>Hooks for event-driven automation</li>
+<li>One-command installation for each feature</li>
+</ul>
+<p><strong><a href="CATALOG.md">View Full Catalog</a></strong></p>
+<hr>
+<h3 id="quick-navigation">Quick Navigation <a class="h-anchor" href="#quick-navigation" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Feature</th><th>Description</th><th>Folder</th></tr></thead><tbody><tr><td><strong>Feature Catalog</strong></td><td>Complete reference with installation commands</td><td><a href="CATALOG.md">CATALOG.md</a></td></tr><tr><td><strong>Slash Commands</strong></td><td>User-invoked shortcuts</td><td><a href="01-slash-commands/">01-slash-commands/</a></td></tr><tr><td><strong>Memory</strong></td><td>Persistent context</td><td><a href="02-memory/">02-memory/</a></td></tr><tr><td><strong>Skills</strong></td><td>Reusable capabilities</td><td><a href="03-skills/">03-skills/</a></td></tr><tr><td><strong>Subagents</strong></td><td>Specialized AI assistants</td><td><a href="04-subagents/">04-subagents/</a></td></tr><tr><td><strong>MCP Protocol</strong></td><td>External tool access</td><td><a href="05-mcp/">05-mcp/</a></td></tr><tr><td><strong>Hooks</strong></td><td>Event-driven automation</td><td><a href="06-hooks/">06-hooks/</a></td></tr><tr><td><strong>Plugins</strong></td><td>Bundled features</td><td><a href="07-plugins/">07-plugins/</a></td></tr><tr><td><strong>Checkpoints</strong></td><td>Session snapshots &amp; rewind</td><td><a href="08-checkpoints/">08-checkpoints/</a></td></tr><tr><td><strong>Advanced Features</strong></td><td>Planning, thinking, background tasks</td><td><a href="09-advanced-features/">09-advanced-features/</a></td></tr><tr><td><strong>CLI Reference</strong></td><td>Commands, flags, and options</td><td><a href="10-cli/">10-cli/</a></td></tr><tr><td><strong>Blog Posts</strong></td><td>Real-world usage examples</td><td><a href="https://medium.com/@luongnv89">Blog Posts</a></td></tr></tbody></table></div>
+<hr>
+<h3 id="learning-path">📚 Learning Path <a class="h-anchor" href="#learning-path" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Not sure where to start?</strong> Take the <a href="LEARNING-ROADMAP.md#-find-your-level">Self-Assessment Quiz</a> to find your recommended path, or run <code>/self-assessment</code> in Claude Code for an interactive version.</p>
+<blockquote>
+<p><strong>Built-in skills</strong>: This repo includes two interactive skills you can use directly in Claude Code:</p>
+<ul>
+<li><code>/self-assessment</code> — Evaluate your overall Claude Code proficiency and get a personalized learning path</li>
+<li><code>/lesson-quiz [lesson]</code> — Test your understanding of any specific lesson (e.g., <code>/lesson-quiz hooks</code>)</li>
+</ul>
+</blockquote>
+<div class="table-wrap"><table><thead><tr><th>Order</th><th>Feature</th><th>Level</th><th>Time</th><th>Recommended For</th></tr></thead><tbody><tr><td><strong>1</strong></td><td><a href="01-slash-commands/">Slash Commands</a></td><td>⭐ Beginner</td><td>30 min</td><td>Level 1 start</td></tr><tr><td><strong>2</strong></td><td><a href="02-memory/">Memory</a></td><td>⭐⭐ Beginner+</td><td>45 min</td><td>Level 1</td></tr><tr><td><strong>3</strong></td><td><a href="08-checkpoints/">Checkpoints</a></td><td>⭐⭐ Intermediate</td><td>45 min</td><td>Level 1</td></tr><tr><td><strong>4</strong></td><td><a href="10-cli/">CLI Basics</a></td><td>⭐⭐ Beginner+</td><td>30 min</td><td>Level 1</td></tr><tr><td><strong>5</strong></td><td><a href="03-skills/">Skills</a></td><td>⭐⭐ Intermediate</td><td>1 hour</td><td>Level 2 start</td></tr><tr><td><strong>6</strong></td><td><a href="06-hooks/">Hooks</a></td><td>⭐⭐ Intermediate</td><td>1 hour</td><td>Level 2</td></tr><tr><td><strong>7</strong></td><td><a href="05-mcp/">MCP</a></td><td>⭐⭐⭐ Intermediate+</td><td>1 hour</td><td>Level 2</td></tr><tr><td><strong>8</strong></td><td><a href="04-subagents/">Subagents</a></td><td>⭐⭐⭐ Intermediate+</td><td>1.5 hours</td><td>Level 2</td></tr><tr><td><strong>9</strong></td><td><a href="09-advanced-features/">Advanced</a></td><td>⭐⭐⭐⭐⭐ Advanced</td><td>2-3 hours</td><td>Level 3 start</td></tr><tr><td><strong>10</strong></td><td><a href="07-plugins/">Plugins</a></td><td>⭐⭐⭐⭐ Advanced</td><td>2 hours</td><td>Level 3</td></tr><tr><td><strong>11</strong></td><td><a href="10-cli/">CLI Mastery</a></td><td>⭐⭐⭐ Advanced</td><td>1 hour</td><td>Level 3</td></tr></tbody></table></div>
+<p><strong>Total</strong>: ~11-13 hours | 📖 <strong><a href="LEARNING-ROADMAP.md">Complete Learning Roadmap →</a></strong></p>
+<hr>
+<h3 id="quick-reference-choose-your-features">🎯 Quick Reference: Choose Your Features <a class="h-anchor" href="#quick-reference-choose-your-features" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="feature-comparison">Feature Comparison <a class="h-anchor" href="#feature-comparison" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Feature</th><th>Invocation</th><th>Persistence</th><th>Best For</th></tr></thead><tbody><tr><td><strong>Slash Commands</strong></td><td>Manual (<code>/cmd</code>)</td><td>Session only</td><td>Quick shortcuts</td></tr><tr><td><strong>Memory</strong></td><td>Auto-loaded</td><td>Cross-session</td><td>Long-term learning</td></tr><tr><td><strong>Skills</strong></td><td>Auto-invoked</td><td>Filesystem</td><td>Automated workflows</td></tr><tr><td><strong>Subagents</strong></td><td>Auto-delegated</td><td>Isolated context</td><td>Task distribution</td></tr><tr><td><strong>MCP Protocol</strong></td><td>Auto-queried</td><td>Real-time</td><td>Live data access</td></tr><tr><td><strong>Hooks</strong></td><td>Event-triggered</td><td>Configured</td><td>Automation &amp; validation</td></tr><tr><td><strong>Plugins</strong></td><td>One command</td><td>All features</td><td>Complete solutions</td></tr><tr><td><strong>Checkpoints</strong></td><td>Manual/Auto</td><td>Session-based</td><td>Safe experimentation</td></tr><tr><td><strong>Planning Mode</strong></td><td>Manual/Auto</td><td>Plan phase</td><td>Complex implementations</td></tr><tr><td><strong>Background Tasks</strong></td><td>Manual</td><td>Task duration</td><td>Long-running operations</td></tr><tr><td><strong>CLI Reference</strong></td><td>Terminal commands</td><td>Session/Script</td><td>Automation &amp; scripting</td></tr></tbody></table></div>
+<h4 id="use-case-matrix">Use Case Matrix <a class="h-anchor" href="#use-case-matrix" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Use Case</th><th>Recommended Features</th></tr></thead><tbody><tr><td><strong>Team Onboarding</strong></td><td>Memory + Slash Commands + Plugins</td></tr><tr><td><strong>Code Quality</strong></td><td>Subagents + Skills + Memory + Hooks</td></tr><tr><td><strong>Documentation</strong></td><td>Skills + Subagents + Plugins</td></tr><tr><td><strong>DevOps</strong></td><td>Plugins + MCP + Hooks + Background Tasks</td></tr><tr><td><strong>Security Review</strong></td><td>Subagents + Skills + Hooks (read-only mode)</td></tr><tr><td><strong>API Integration</strong></td><td>MCP + Memory</td></tr><tr><td><strong>Quick Tasks</strong></td><td>Slash Commands</td></tr><tr><td><strong>Complex Projects</strong></td><td>All Features + Planning Mode</td></tr><tr><td><strong>Refactoring</strong></td><td>Checkpoints + Planning Mode + Hooks</td></tr><tr><td><strong>Learning/Experimentation</strong></td><td>Checkpoints + Extended Thinking + Permission Mode</td></tr><tr><td><strong>CI/CD Automation</strong></td><td>CLI Reference + Hooks + Background Tasks</td></tr><tr><td><strong>Performance Optimization</strong></td><td>Planning Mode + Checkpoints + Background Tasks</td></tr><tr><td><strong>Script Automation</strong></td><td>CLI Reference + Hooks + MCP</td></tr><tr><td><strong>Batch Processing</strong></td><td>CLI Reference + Background Tasks</td></tr></tbody></table></div>
+<hr>
+<h3 id="getting-started">⚡ Getting Started <a class="h-anchor" href="#getting-started" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="15-minutes-first-steps">15 Minutes - First Steps <a class="h-anchor" href="#15-minutes-first-steps" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Copy your first slash command
+cp 01-slash-commands/optimize.md .claude/commands/
+
+# Try it!
+# In Claude Code: /optimize</code></pre>
+<h4 id="1-hour-essential-setup">1 Hour - Essential Setup <a class="h-anchor" href="#1-hour-essential-setup" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># 1. Slash commands (15 min)
+cp 01-slash-commands/*.md .claude/commands/
+
+# 2. Project memory (15 min)
+cp 02-memory/project-CLAUDE.md ./CLAUDE.md
+
+# 3. Install a skill (15 min)
+cp -r 03-skills/code-review ~/.claude/skills/
+
+# 4. Try them together (15 min)
+# See how they work in harmony!</code></pre>
+<h4 id="weekend-full-setup">Weekend - Full Setup <a class="h-anchor" href="#weekend-full-setup" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Day 1</strong>: Slash Commands, Memory, Skills, Hooks</li>
+<li><strong>Day 2</strong>: Subagents, MCP integration, Plugins</li>
+<li><strong>Result</strong>: Complete Claude Code power user setup</li>
+</ul>
+<p>📖 <strong><a href="LEARNING-ROADMAP.md">Detailed milestones and exercises →</a></strong></p>
+<hr>
+<h3 id="01-slash-commands">01. Slash Commands <a class="h-anchor" href="#01-slash-commands" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Location</strong>: <a href="01-slash-commands/">01-slash-commands/</a></p>
+<p><strong>What</strong>: User-invoked shortcuts stored as Markdown files</p>
+<p><strong>Examples</strong>:</p>
+<ul>
+<li><code>optimize.md</code> - Code optimization analysis</li>
+<li><code>pr.md</code> - Pull request preparation</li>
+<li><code>generate-api-docs.md</code> - API documentation generator</li>
+</ul>
+<p><strong>Installation</strong>:</p>
+<pre><code class="language-bash">cp 01-slash-commands/*.md /path/to/project/.claude/commands/</code></pre>
+<p><strong>Usage</strong>:</p>
+<pre><code>/optimize
+/pr
+/generate-api-docs</code></pre>
+<p><strong>Learn More</strong>: <a href="https://medium.com/@luongnv89/discovering-claude-code-slash-commands-cdc17f0dfb29">Discovering Claude Code Slash Commands</a></p>
+<hr>
+<h3 id="02-memory">02. Memory <a class="h-anchor" href="#02-memory" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Location</strong>: <a href="02-memory/">02-memory/</a></p>
+<p><strong>What</strong>: Persistent context across sessions</p>
+<p><strong>Examples</strong>:</p>
+<ul>
+<li><code>project-CLAUDE.md</code> - Team-wide project standards</li>
+<li><code>directory-api-CLAUDE.md</code> - Directory-specific rules</li>
+<li><code>personal-CLAUDE.md</code> - Personal preferences</li>
+</ul>
+<p><strong>Installation</strong>:</p>
+<pre><code class="language-bash"># Project memory
+cp 02-memory/project-CLAUDE.md /path/to/project/CLAUDE.md
+
+# Directory memory
+cp 02-memory/directory-api-CLAUDE.md /path/to/project/src/api/CLAUDE.md
+
+# Personal memory
+cp 02-memory/personal-CLAUDE.md ~/.claude/CLAUDE.md</code></pre>
+<p><strong>Usage</strong>: Automatically loaded by Claude</p>
+<hr>
+<h3 id="03-skills">03. Skills <a class="h-anchor" href="#03-skills" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Location</strong>: <a href="03-skills/">03-skills/</a></p>
+<p><strong>What</strong>: Reusable, auto-invoked capabilities with instructions and scripts</p>
+<p><strong>Examples</strong>:</p>
+<ul>
+<li><code>code-review/</code> - Comprehensive code review with scripts</li>
+<li><code>brand-voice/</code> - Brand voice consistency checker</li>
+<li><code>doc-generator/</code> - API documentation generator</li>
+</ul>
+<p><strong>Installation</strong>:</p>
+<pre><code class="language-bash"># Personal skills
+cp -r 03-skills/code-review ~/.claude/skills/
+
+# Project skills
+cp -r 03-skills/code-review /path/to/project/.claude/skills/</code></pre>
+<p><strong>Usage</strong>: Automatically invoked when relevant</p>
+<hr>
+<h3 id="04-subagents">04. Subagents <a class="h-anchor" href="#04-subagents" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Location</strong>: <a href="04-subagents/">04-subagents/</a></p>
+<p><strong>What</strong>: Specialized AI assistants with isolated contexts and custom prompts</p>
+<p><strong>Examples</strong>:</p>
+<ul>
+<li><code>code-reviewer.md</code> - Comprehensive code quality analysis</li>
+<li><code>test-engineer.md</code> - Test strategy and coverage</li>
+<li><code>documentation-writer.md</code> - Technical documentation</li>
+<li><code>secure-reviewer.md</code> - Security-focused review (read-only)</li>
+<li><code>implementation-agent.md</code> - Full feature implementation</li>
+</ul>
+<p><strong>Installation</strong>:</p>
+<pre><code class="language-bash">cp 04-subagents/*.md /path/to/project/.claude/agents/</code></pre>
+<p><strong>Usage</strong>: Automatically delegated by main agent</p>
+<hr>
+<h3 id="05-mcp-protocol">05. MCP Protocol <a class="h-anchor" href="#05-mcp-protocol" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Location</strong>: <a href="05-mcp/">05-mcp/</a></p>
+<p><strong>What</strong>: Model Context Protocol for accessing external tools and APIs</p>
+<p><strong>Examples</strong>:</p>
+<ul>
+<li><code>github-mcp.json</code> - GitHub integration</li>
+<li><code>database-mcp.json</code> - Database queries</li>
+<li><code>filesystem-mcp.json</code> - File operations</li>
+<li><code>multi-mcp.json</code> - Multiple MCP servers</li>
+</ul>
+<p><strong>Installation</strong>:</p>
+<pre><code class="language-bash"># Set environment variables
+export GITHUB_TOKEN=&quot;your_token&quot;
+export DATABASE_URL=&quot;postgresql://...&quot;
+
+# Add MCP server via CLI
+claude mcp add github -- npx -y @modelcontextprotocol/server-github
+
+# Or add to project .mcp.json manually (see 05-mcp/ for examples)</code></pre>
+<p><strong>Usage</strong>: MCP tools are automatically available to Claude once configured</p>
+<hr>
+<h3 id="06-hooks">06. Hooks <a class="h-anchor" href="#06-hooks" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Location</strong>: <a href="06-hooks/">06-hooks/</a></p>
+<p><strong>What</strong>: Event-driven shell commands that execute automatically in response to Claude Code events</p>
+<p><strong>Examples</strong>:</p>
+<ul>
+<li><code>format-code.sh</code> - Auto-format code before writing</li>
+<li><code>pre-commit.sh</code> - Run tests before commits</li>
+<li><code>security-scan.sh</code> - Scan for security issues</li>
+<li><code>log-bash.sh</code> - Log all bash commands</li>
+<li><code>validate-prompt.sh</code> - Validate user prompts</li>
+<li><code>notify-team.sh</code> - Send notifications on events</li>
+</ul>
+<p><strong>Installation</strong>:</p>
+<pre><code class="language-bash">mkdir -p ~/.claude/hooks
+cp 06-hooks/*.sh ~/.claude/hooks/
+chmod +x ~/.claude/hooks/*.sh</code></pre>
+<p>Configure hooks in <code>~/.claude/settings.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [{
+      &quot;matcher&quot;: &quot;Write&quot;,
+      &quot;hooks&quot;: [&quot;~/.claude/hooks/format-code.sh&quot;]
+    }],
+    &quot;PostToolUse&quot;: [{
+      &quot;matcher&quot;: &quot;Write&quot;,
+      &quot;hooks&quot;: [&quot;~/.claude/hooks/security-scan.sh&quot;]
+    }]
+  }
+}</code></pre>
+<p><strong>Usage</strong>: Hooks execute automatically on events</p>
+<p><strong>Hook Types</strong>:</p>
+<ul>
+<li><strong>Tool Hooks</strong>: <code>PreToolUse:*</code>, <code>PostToolUse:*</code></li>
+<li><strong>Session Hooks</strong>: <code>Stop</code>, <code>SubagentStop</code>, <code>SubagentStart</code></li>
+<li><strong>Lifecycle Hooks</strong>: <code>Notification</code>, <code>ConfigChange</code>, <code>WorktreeCreate</code>, <code>WorktreeRemove</code></li>
+</ul>
+<hr>
+<h3 id="07-plugins">07. Plugins <a class="h-anchor" href="#07-plugins" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Location</strong>: <a href="07-plugins/">07-plugins/</a></p>
+<p><strong>What</strong>: Bundled collections of commands, agents, MCP, and hooks</p>
+<p><strong>Examples</strong>:</p>
+<ul>
+<li><code>pr-review/</code> - Complete PR review workflow</li>
+<li><code>devops-automation/</code> - Deployment and monitoring</li>
+<li><code>documentation/</code> - Documentation generation</li>
+</ul>
+<p><strong>Installation</strong>:</p>
+<pre><code class="language-bash">/plugin install pr-review
+/plugin install devops-automation
+/plugin install documentation</code></pre>
+<p><strong>Usage</strong>: Use bundled slash commands and features</p>
+<hr>
+<h3 id="08-checkpoints-and-rewind">08. Checkpoints and Rewind <a class="h-anchor" href="#08-checkpoints-and-rewind" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Location</strong>: <a href="08-checkpoints/">08-checkpoints/</a></p>
+<p><strong>What</strong>: Save conversation state and rewind to previous points to explore different approaches</p>
+<p><strong>Key Concepts</strong>:</p>
+<ul>
+<li><strong>Checkpoint</strong>: Snapshot of conversation state</li>
+<li><strong>Rewind</strong>: Return to previous checkpoint</li>
+<li><strong>Branch Point</strong>: Explore multiple approaches from same checkpoint</li>
+</ul>
+<p><strong>Usage</strong>:</p>
+<pre><code># Checkpoints are created automatically with every user prompt
+# To rewind, press Esc twice or use:
+/rewind
+
+# Then choose from five options:
+# 1. Restore code and conversation
+# 2. Restore conversation
+# 3. Restore code
+# 4. Summarize from here
+# 5. Never mind</code></pre>
+<p><strong>Use Cases</strong>:</p>
+<ul>
+<li>Try different implementation approaches</li>
+<li>Recover from mistakes</li>
+<li>Safe experimentation</li>
+<li>Compare alternative solutions</li>
+<li>A/B testing different designs</li>
+</ul>
+<p><strong>Example Workflow</strong>:</p>
+<pre><code>1. Work normally (checkpoints are created automatically)
+2. Try experimental approach
+3. If it works: Continue
+4. If it fails: Press Esc+Esc or /rewind to go back</code></pre>
+<hr>
+<h3 id="09-advanced-features">09. Advanced Features <a class="h-anchor" href="#09-advanced-features" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Location</strong>: <a href="09-advanced-features/">09-advanced-features/</a></p>
+<p><strong>What</strong>: Advanced capabilities for complex workflows and automation</p>
+<h4 id="planning-mode">Planning Mode <a class="h-anchor" href="#planning-mode" aria-label="Ссылка на раздел">#</a></h4>
+<p>Create detailed implementation plans before coding:</p>
+<pre><code>User: /plan Implement user authentication system
+
+Claude: [Creates comprehensive step-by-step plan]
+
+User: Approve and proceed</code></pre>
+<p><strong>Benefits</strong>: Clear roadmap, time estimates, risk assessment</p>
+<h4 id="extended-thinking">Extended Thinking <a class="h-anchor" href="#extended-thinking" aria-label="Ссылка на раздел">#</a></h4>
+<p>Deep reasoning for complex problems. Toggle with <code>Alt+T</code> / <code>Option+T</code>, or set <code>MAX_THINKING_TOKENS</code> environment variable:</p>
+<pre><code class="language-bash"># Toggle in-session: press Alt+T (Option+T on macOS)
+
+# Or set via environment variable
+MAX_THINKING_TOKENS=10000 claude
+
+# Then ask complex questions
+User: Should we use microservices or monolith?
+Claude: [Analyzes trade-offs systematically with extended reasoning]</code></pre>
+<p><strong>Benefits</strong>: Better architectural decisions, thorough analysis</p>
+<h4 id="background-tasks">Background Tasks <a class="h-anchor" href="#background-tasks" aria-label="Ссылка на раздел">#</a></h4>
+<p>Run long operations without blocking:</p>
+<pre><code>User: Run tests in background
+
+Claude: Started bg-1234, you can continue working
+
+[Later] Test results: 245 passed, 3 failed</code></pre>
+<p><strong>Benefits</strong>: Parallel development, no waiting</p>
+<h4 id="permission-modes">Permission Modes <a class="h-anchor" href="#permission-modes" aria-label="Ссылка на раздел">#</a></h4>
+<p>Control what Claude can do:</p>
+<ul>
+<li><strong><code>default</code></strong>: Standard permissions with confirmation prompts</li>
+<li><strong><code>acceptEdits</code></strong>: Auto-accept file edits, confirm other actions</li>
+<li><strong><code>plan</code></strong>: Analysis and planning only, no modifications</li>
+<li><strong><code>dontAsk</code></strong>: Accept all actions without confirmation</li>
+<li><strong><code>bypassPermissions</code></strong>: Skip all permission checks (dangerous)</li>
+</ul>
+<pre><code class="language-bash">claude --permission-mode plan          # Code review mode
+claude --permission-mode acceptEdits   # Learning mode
+claude --permission-mode default       # Standard mode</code></pre>
+<h4 id="headless-mode">Headless Mode <a class="h-anchor" href="#headless-mode" aria-label="Ссылка на раздел">#</a></h4>
+<p>Run Claude Code in CI/CD and automation:</p>
+<pre><code class="language-bash">claude -p &quot;Run tests and generate report&quot;</code></pre>
+<p><strong>Use Cases</strong>: CI/CD, automated reviews, batch processing</p>
+<h4 id="session-management">Session Management <a class="h-anchor" href="#session-management" aria-label="Ссылка на раздел">#</a></h4>
+<p>Manage multiple work sessions:</p>
+<pre><code class="language-bash">/resume                          # Resume a previous session interactively
+/rename                          # Rename the current session
+/fork                            # Fork the current session
+claude -c                        # Continue the most recent session
+claude -r &quot;session&quot;              # Resume a session matching the query</code></pre>
+<h4 id="interactive-features">Interactive Features <a class="h-anchor" href="#interactive-features" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Keyboard Shortcuts</strong>: Ctrl+R (search), Tab (complete), ↑/↓ (history)</p>
+<p><strong>Command History</strong>: Access previous commands</p>
+<p><strong>Multi-line Input</strong>: Complex prompts across multiple lines</p>
+<h4 id="configuration">Configuration <a class="h-anchor" href="#configuration" aria-label="Ссылка на раздел">#</a></h4>
+<p>Customize Claude Code behavior in <code>~/.claude/settings.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;permissions&quot;: {
+    &quot;allow&quot;: [&quot;Read&quot;, &quot;Glob&quot;, &quot;Grep&quot;, &quot;Bash(git *)&quot;],
+    &quot;deny&quot;: [&quot;Bash(rm -rf *)&quot;]
+  },
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [{
+      &quot;matcher&quot;: &quot;Write&quot;,
+      &quot;hooks&quot;: [&quot;~/.claude/hooks/format-code.sh&quot;]
+    }]
+  },
+  &quot;env&quot;: {
+    &quot;MAX_THINKING_TOKENS&quot;: &quot;10000&quot;
+  }
+}</code></pre>
+<p>See <a href="09-advanced-features/config-examples.json">config-examples.json</a> for complete configurations.</p>
+<hr>
+<h3 id="10-cli-reference">10. CLI Reference <a class="h-anchor" href="#10-cli-reference" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Location</strong>: <a href="10-cli/">10-cli/</a></p>
+<p><strong>What</strong>: Complete command-line interface reference for Claude Code</p>
+<p><strong>Key Areas</strong>:</p>
+<ul>
+<li>CLI commands (<code>claude</code>, <code>claude -p</code>, <code>claude -c</code>, <code>claude -r</code>)</li>
+<li>Core flags (print mode, continue, resume, version)</li>
+<li>Model &amp; configuration (<code>--model</code>, <code>--agents</code>)</li>
+<li>System prompt customization</li>
+<li>Tool &amp; permission management</li>
+<li>Output formats (text, JSON, stream-JSON)</li>
+<li>MCP configuration</li>
+<li>Session management</li>
+</ul>
+<p><strong>Quick Examples</strong>:</p>
+<pre><code class="language-bash"># Interactive mode
+claude &quot;explain this project&quot;
+
+# Print mode (non-interactive)
+claude -p &quot;review this code&quot;
+
+# Process file content
+cat error.log | claude -p &quot;explain this error&quot;
+
+# JSON output for scripts
+claude -p --output-format json &quot;list functions&quot;
+
+# Resume session
+claude -r &quot;feature-auth&quot; &quot;continue implementation&quot;</code></pre>
+<p><strong>Use Cases</strong>:</p>
+<ul>
+<li>CI/CD pipeline integration</li>
+<li>Script automation and piping</li>
+<li>Batch processing</li>
+<li>Multi-session workflows</li>
+<li>Custom agent configurations</li>
+</ul>
+<hr>
+<h3 id="directory-structure">Directory Structure <a class="h-anchor" href="#directory-structure" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>
+├── 01-slash-commands/
+│   ├── optimize.md
+│   ├── pr.md
+│   ├── generate-api-docs.md
+│   └── README.md
+├── 02-memory/
+│   ├── project-CLAUDE.md
+│   ├── directory-api-CLAUDE.md
+│   ├── personal-CLAUDE.md
+│   └── README.md
+├── 03-skills/
+│   ├── code-review/
+│   │   ├── SKILL.md
+│   │   ├── scripts/
+│   │   └── templates/
+│   ├── brand-voice/
+│   │   ├── SKILL.md
+│   │   └── templates/
+│   ├── doc-generator/
+│   │   ├── SKILL.md
+│   │   └── generate-docs.py
+│   └── README.md
+├── 04-subagents/
+│   ├── code-reviewer.md
+│   ├── test-engineer.md
+│   ├── documentation-writer.md
+│   ├── secure-reviewer.md
+│   ├── implementation-agent.md
+│   └── README.md
+├── 05-mcp/
+│   ├── github-mcp.json
+│   ├── database-mcp.json
+│   ├── filesystem-mcp.json
+│   ├── multi-mcp.json
+│   └── README.md
+├── 06-hooks/
+│   ├── format-code.sh
+│   ├── pre-commit.sh
+│   ├── security-scan.sh
+│   ├── log-bash.sh
+│   ├── validate-prompt.sh
+│   ├── notify-team.sh
+│   └── README.md
+├── 07-plugins/
+│   ├── pr-review/
+│   ├── devops-automation/
+│   ├── documentation/
+│   └── README.md
+├── 08-checkpoints/
+│   ├── checkpoint-examples.md
+│   └── README.md
+├── 09-advanced-features/
+│   ├── config-examples.json
+│   ├── planning-mode-examples.md
+│   └── README.md
+├── 10-cli/
+│   └── README.md
+└── README.md (this file)</code></pre>
+<hr>
+<h3 id="installation-quick-reference">Installation Quick Reference <a class="h-anchor" href="#installation-quick-reference" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-bash"># Slash Commands
+cp 01-slash-commands/*.md .claude/commands/
+
+# Memory
+cp 02-memory/project-CLAUDE.md ./CLAUDE.md
+
+# Skills
+cp -r 03-skills/code-review ~/.claude/skills/
+
+# Subagents
+cp 04-subagents/*.md .claude/agents/
+
+# MCP
+export GITHUB_TOKEN=&quot;token&quot;
+claude mcp add github -- npx -y @modelcontextprotocol/server-github
+
+# Hooks
+mkdir -p ~/.claude/hooks
+cp 06-hooks/*.sh ~/.claude/hooks/
+chmod +x ~/.claude/hooks/*.sh
+
+# Plugins
+/plugin install pr-review
+
+# Checkpoints (auto-enabled, configure in settings)
+# See 08-checkpoints/README.md
+
+# Advanced Features (configure in settings)
+# See 09-advanced-features/config-examples.json
+
+# CLI Reference (no installation needed)
+# See 10-cli/README.md for usage examples</code></pre>
+<hr>
+<h3 id="example-workflows">Example Workflows <a class="h-anchor" href="#example-workflows" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="1-complete-code-review-workflow">1. Complete Code Review Workflow <a class="h-anchor" href="#1-complete-code-review-workflow" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-markdown"># Uses: Slash Commands + Subagents + Memory + MCP
+
+User: /review-pr
+
+Claude:
+1. Loads project memory (coding standards)
+2. Fetches PR via GitHub MCP
+3. Delegates to code-reviewer subagent
+4. Delegates to test-engineer subagent
+5. Synthesizes findings
+6. Provides comprehensive review</code></pre>
+<h4 id="2-automated-documentation">2. Automated Documentation <a class="h-anchor" href="#2-automated-documentation" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-markdown"># Uses: Skills + Subagents + Memory
+
+User: &quot;Generate API documentation for the auth module&quot;
+
+Claude:
+1. Loads project memory (doc standards)
+2. Detects doc generation request
+3. Auto-invokes doc-generator skill
+4. Delegates to api-documenter subagent
+5. Creates comprehensive docs with examples</code></pre>
+<h4 id="3-devops-deployment">3. DevOps Deployment <a class="h-anchor" href="#3-devops-deployment" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-markdown"># Uses: Plugins + MCP + Hooks
+
+User: /deploy production
+
+Claude:
+1. Runs pre-deploy hook (validates environment)
+2. Delegates to deployment-specialist subagent
+3. Executes deployment via Kubernetes MCP
+4. Monitors progress
+5. Runs post-deploy hook (health checks)
+6. Reports status</code></pre>
+<hr>
+<h3 id="best-practices">Best Practices <a class="h-anchor" href="#best-practices" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="do-s">Do&#x27;s ✅ <a class="h-anchor" href="#do-s" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Start simple with slash commands</li>
+<li>Add features incrementally</li>
+<li>Use memory for team standards</li>
+<li>Test configurations locally first</li>
+<li>Document custom implementations</li>
+<li>Version control project configurations</li>
+<li>Share plugins with team</li>
+</ul>
+<h4 id="don-ts">Don&#x27;ts ❌ <a class="h-anchor" href="#don-ts" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Don&#x27;t create redundant features</li>
+<li>Don&#x27;t hardcode credentials</li>
+<li>Don&#x27;t skip documentation</li>
+<li>Don&#x27;t over-complicate simple tasks</li>
+<li>Don&#x27;t ignore security best practices</li>
+<li>Don&#x27;t commit sensitive data</li>
+</ul>
+<hr>
+<h3 id="troubleshooting">Troubleshooting <a class="h-anchor" href="#troubleshooting" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="feature-not-loading">Feature Not Loading <a class="h-anchor" href="#feature-not-loading" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Check file location and naming</li>
+<li>Verify YAML frontmatter syntax</li>
+<li>Check file permissions</li>
+<li>Review Claude Code version compatibility</li>
+</ol>
+<h4 id="mcp-connection-failed">MCP Connection Failed <a class="h-anchor" href="#mcp-connection-failed" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Verify environment variables</li>
+<li>Check MCP server installation</li>
+<li>Test credentials</li>
+<li>Review network connectivity</li>
+</ol>
+<h4 id="subagent-not-delegating">Subagent Not Delegating <a class="h-anchor" href="#subagent-not-delegating" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Check tool permissions</li>
+<li>Verify agent description clarity</li>
+<li>Review task complexity</li>
+<li>Test agent independently</li>
+</ol>
+<hr>
+<h3 id="testing">Testing <a class="h-anchor" href="#testing" aria-label="Ссылка на раздел">#</a></h3>
+<p>This project includes comprehensive automated testing to ensure code quality and reliability.</p>
+<h4 id="testing-overview">Testing Overview <a class="h-anchor" href="#testing-overview" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Unit Tests</strong>: Python tests using pytest (Python 3.10, 3.11, 3.12)</li>
+<li><strong>Code Quality</strong>: Linting and formatting with Ruff</li>
+<li><strong>Security</strong>: Vulnerability scanning with Bandit</li>
+<li><strong>Type Checking</strong>: Static type analysis with mypy</li>
+<li><strong>Build Verification</strong>: EPUB generation testing</li>
+<li><strong>Coverage Tracking</strong>: Codecov integration</li>
+</ul>
+<h4 id="running-tests-locally">Running Tests Locally <a class="h-anchor" href="#running-tests-locally" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Install development dependencies
+uv pip install -r requirements-dev.txt
+
+# Run all unit tests
+pytest scripts/tests/ -v
+
+# Run tests with coverage report
+pytest scripts/tests/ -v --cov=scripts --cov-report=html
+
+# Run code quality checks
+ruff check scripts/
+ruff format --check scripts/
+
+# Run security scan
+bandit -c pyproject.toml -r scripts/ --exclude scripts/tests/
+
+# Run type checking
+mypy scripts/ --ignore-missing-imports</code></pre>
+<h4 id="automated-testing-on-github">Automated Testing on GitHub <a class="h-anchor" href="#automated-testing-on-github" aria-label="Ссылка на раздел">#</a></h4>
+<p>Tests run automatically on:</p>
+<ul>
+<li>Every push to <code>main</code> or <code>develop</code> branches</li>
+<li>Every pull request to <code>main</code></li>
+</ul>
+<p>View test results in the GitHub Actions tab or check the <a href=".github/TESTING.md">TESTING.md</a> guide for detailed information.</p>
+<h4 id="writing-tests">Writing Tests <a class="h-anchor" href="#writing-tests" aria-label="Ссылка на раздел">#</a></h4>
+<p>When contributing, please include tests for new functionality:</p>
+<ol>
+<li><strong>Write tests</strong> in <code>scripts/tests/test_*.py</code></li>
+<li><strong>Run tests locally</strong> to verify they pass</li>
+<li><strong>Check coverage</strong> with <code>pytest --cov=scripts</code></li>
+<li><strong>Submit with PR</strong> - tests are required for all contributions</li>
+</ol>
+<p>For detailed testing guidelines, see <a href=".github/TESTING.md">TESTING.md</a>.</p>
+<hr>
+<h3 id="additional-resources">Additional Resources <a class="h-anchor" href="#additional-resources" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/en/overview">Claude Code Documentation</a></li>
+<li><a href="https://modelcontextprotocol.io">MCP Protocol Specification</a></li>
+<li><a href="https://github.com/luongnv89/skills">Skills Repository</a> - Collection of ready-to-use skills</li>
+<li><a href="https://github.com/anthropics/anthropic-cookbook">Anthropic Cookbook</a></li>
+<li><a href="https://x.com/bcherny/status/2007179832300581177">Boris Cherny&#x27;s Claude Code Workflow</a> - The creator of Claude Code shares his systematized workflow: parallel agents, shared CLAUDE.md, Plan mode, slash commands, subagents, and verification hooks for autonomous long-running sessions. Key insights include turning recurring workflows into reusable commands and wiring Claude into team tools (GitHub, Slack, BigQuery, Sentry) for end-to-end work with feedback loops.</li>
+</ul>
+<hr>
+<h3 id="contributing">Contributing <a class="h-anchor" href="#contributing" aria-label="Ссылка на раздел">#</a></h3>
+<p>Found an issue or want to contribute an example? We&#x27;d love your help!</p>
+<p><strong>Please read <a href="CONTRIBUTING.md">CONTRIBUTING.md</a> for detailed guidelines on:</strong></p>
+<ul>
+<li>Types of contributions (examples, docs, features, bugs, feedback)</li>
+<li>How to set up your development environment</li>
+<li>Directory structure and how to add content</li>
+<li>Writing guidelines and best practices</li>
+<li>Commit and PR process</li>
+</ul>
+<p><strong>Our Community Standards:</strong></p>
+<ul>
+<li><a href="CODE_OF_CONDUCT.md">CODE_OF_CONDUCT.md</a> - How we treat each other</li>
+<li><a href="SECURITY.md">SECURITY.md</a> - Security policy and vulnerability reporting</li>
+</ul>
+<h4 id="reporting-security-issues">Reporting Security Issues <a class="h-anchor" href="#reporting-security-issues" aria-label="Ссылка на раздел">#</a></h4>
+<p>If you discover a security vulnerability, please report it responsibly:</p>
+<ol>
+<li><strong>Use GitHub Private Vulnerability Reporting</strong>: https://github.com/luongnv89/claude-howto/security/advisories</li>
+<li><strong>Or read</strong> <a href=".github/SECURITY_REPORTING.md">.github/SECURITY_REPORTING.md</a> for detailed instructions</li>
+<li><strong>Do NOT</strong> open a public issue for security vulnerabilities</li>
+</ol>
+<p>Security issues are taken seriously and will be addressed promptly. See <a href="SECURITY.md">SECURITY.md</a> for our full security policy.</p>
+<p>Quick start:</p>
+<ol>
+<li>Fork and clone the repository</li>
+<li>Create a descriptive branch (<code>add/feature-name</code>, <code>fix/bug</code>, <code>docs/improvement</code>)</li>
+<li>Make your changes following the guidelines</li>
+<li>Submit a pull request with a clear description</li>
+</ol>
+<p><strong>Need help?</strong> Open an issue or discussion, and we&#x27;ll guide you through the process.</p>
+<hr>
+<h3 id="license">License <a class="h-anchor" href="#license" aria-label="Ссылка на раздел">#</a></h3>
+<p>This project is licensed under the MIT License - see <a href="LICENSE">LICENSE</a> file for details.</p>
+<p>You are free to:</p>
+<ul>
+<li>Use this guide and examples in your projects</li>
+<li>Modify and adapt the content</li>
+<li>Share and distribute</li>
+<li>Use for commercial purposes</li>
+</ul>
+<p>The only requirement is to include a copy of the license and copyright notice.</p>
+<hr>
+<h3 id="epub-generation">EPUB Generation <a class="h-anchor" href="#epub-generation" aria-label="Ссылка на раздел">#</a></h3>
+<p>Want to read this guide offline? Generate an EPUB ebook:</p>
+<pre><code class="language-bash">uv run scripts/build_epub.py</code></pre>
+<p>This creates <code>claude-howto-guide.epub</code> with all content, including rendered Mermaid diagrams.</p>
+<p>See <a href="scripts/README.md">scripts/README.md</a> for more options.</p>
+<hr>
+<h3 id="contributors">Contributors <a class="h-anchor" href="#contributors" aria-label="Ссылка на раздел">#</a></h3>
+<p>Thanks to everyone who has contributed to this project!</p>
+<div class="table-wrap"><table><thead><tr><th>Contributor</th><th>PRs</th></tr></thead><tbody><tr><td><a href="https://github.com/wjhrdy">wjhrdy</a></td><td><a href="https://github.com/luongnv89/claude-howto/pull/1">#1 - add a tool to create an epub</a></td></tr><tr><td><a href="https://github.com/VikalpP">VikalpP</a></td><td><a href="https://github.com/luongnv89/claude-howto/pull/7">#7 - fix(docs): Use tilde fences for nested code blocks in concepts guide</a></td></tr></tbody></table></div>
+<hr>
+<h3 id="star-history">Star History <a class="h-anchor" href="#star-history" aria-label="Ссылка на раздел">#</a></h3>
+<p><a href="https://api.star-history.com/svg?repos=luongnv89/claude-howto&amp;type=Date">![Star History Chart</a>](https://star-history.com/#luongnv89/claude-howto&amp;Date)</p>
+<hr>
+<p><strong>Last Updated</strong>: March 2026
+<strong>Claude Code Version</strong>: 2.1+
+<strong>Compatible Models</strong>: Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

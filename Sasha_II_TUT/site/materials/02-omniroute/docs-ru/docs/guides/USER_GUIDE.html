@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>User Guide (Русский)</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/02-omniroute/index.html">02-omniroute</a> / <a href="../../../../../materials/02-omniroute/docs-ru/index.html">docs-ru</a> / <a href="../../../../../materials/02-omniroute/docs-ru/docs/index.html">docs</a> / <a href="../../../../../materials/02-omniroute/docs-ru/docs/guides/index.html">guides</a></nav>
+<h1 id="user-guide-русский">User Guide (Русский) <a class="h-anchor" href="#user-guide-русский" aria-label="Ссылка на раздел">#</a></h1>
+<p>🌐 <strong>Languages:</strong> 🇺🇸 <a href="../../../../guides/USER_GUIDE.md">English</a> · 🇪🇹 <a href="../../../am/docs/guides/USER_GUIDE.md">am</a> · 🇸🇦 <a href="../../../ar/docs/guides/USER_GUIDE.md">ar</a> · 🇦🇿 <a href="../../../az/docs/guides/USER_GUIDE.md">az</a> · 🇧🇬 <a href="../../../bg/docs/guides/USER_GUIDE.md">bg</a> · 🇧🇩 <a href="../../../bn/docs/guides/USER_GUIDE.md">bn</a> · 🇧🇦 <a href="../../../bs/docs/guides/USER_GUIDE.md">bs</a> · 🇨🇿 <a href="../../../cs/docs/guides/USER_GUIDE.md">cs</a> · 🇩🇰 <a href="../../../da/docs/guides/USER_GUIDE.md">da</a> · 🇩🇪 <a href="../../../de/docs/guides/USER_GUIDE.md">de</a> · 🇬🇷 <a href="../../../el/docs/guides/USER_GUIDE.md">el</a> · 🇪🇸 <a href="../../../es/docs/guides/USER_GUIDE.md">es</a> · 🇪🇪 <a href="../../../et/docs/guides/USER_GUIDE.md">et</a> · 🇮🇷 <a href="../../../fa/docs/guides/USER_GUIDE.md">fa</a> · 🇫🇮 <a href="../../../fi/docs/guides/USER_GUIDE.md">fi</a> · 🇫🇷 <a href="../../../fr/docs/guides/USER_GUIDE.md">fr</a> · 🇮🇪 <a href="../../../ga/docs/guides/USER_GUIDE.md">ga</a> · 🇮🇳 <a href="../../../gu/docs/guides/USER_GUIDE.md">gu</a> · 🇳🇬 <a href="../../../ha/docs/guides/USER_GUIDE.md">ha</a> · 🇮🇱 <a href="../../../he/docs/guides/USER_GUIDE.md">he</a> · 🇮🇳 <a href="../../../hi/docs/guides/USER_GUIDE.md">hi</a> · 🇭🇷 <a href="../../../hr/docs/guides/USER_GUIDE.md">hr</a> · 🇭🇺 <a href="../../../hu/docs/guides/USER_GUIDE.md">hu</a> · 🇦🇲 <a href="../../../hy/docs/guides/USER_GUIDE.md">hy</a> · 🇮🇩 <a href="../../../id/docs/guides/USER_GUIDE.md">id</a> · 🇳🇬 <a href="../../../ig/docs/guides/USER_GUIDE.md">ig</a> · 🇮🇹 <a href="../../../it/docs/guides/USER_GUIDE.md">it</a> · 🇯🇵 <a href="../../../ja/docs/guides/USER_GUIDE.md">ja</a> · 🇬🇪 <a href="../../../ka/docs/guides/USER_GUIDE.md">ka</a> · 🇰🇭 <a href="../../../km/docs/guides/USER_GUIDE.md">km</a> · 🇮🇳 <a href="../../../kn/docs/guides/USER_GUIDE.md">kn</a> · 🇰🇷 <a href="../../../ko/docs/guides/USER_GUIDE.md">ko</a> · 🇱🇹 <a href="../../../lt/docs/guides/USER_GUIDE.md">lt</a> · 🇱🇻 <a href="../../../lv/docs/guides/USER_GUIDE.md">lv</a> · 🇮🇳 <a href="../../../ml/docs/guides/USER_GUIDE.md">ml</a> · 🇮🇳 <a href="../../../mr/docs/guides/USER_GUIDE.md">mr</a> · 🇲🇾 <a href="../../../ms/docs/guides/USER_GUIDE.md">ms</a> · 🇲🇹 <a href="../../../mt/docs/guides/USER_GUIDE.md">mt</a> · 🇲🇲 <a href="../../../my/docs/guides/USER_GUIDE.md">my</a> · 🇳🇵 <a href="../../../ne/docs/guides/USER_GUIDE.md">ne</a> · 🇳🇱 <a href="../../../nl/docs/guides/USER_GUIDE.md">nl</a> · 🇳🇴 <a href="../../../no/docs/guides/USER_GUIDE.md">no</a> · 🇮🇳 <a href="../../../or/docs/guides/USER_GUIDE.md">or</a> · 🇮🇳 <a href="../../../pa/docs/guides/USER_GUIDE.md">pa</a> · 🇵🇭 <a href="../../../phi/docs/guides/USER_GUIDE.md">phi</a> · 🇵🇱 <a href="../../../pl/docs/guides/USER_GUIDE.md">pl</a> · 🇵🇹 <a href="../../../pt/docs/guides/USER_GUIDE.md">pt</a> · 🇧🇷 <a href="../../../pt-BR/docs/guides/USER_GUIDE.md">pt-BR</a> · 🇷🇴 <a href="../../../ro/docs/guides/USER_GUIDE.md">ro</a> · 🇱🇰 <a href="../../../si/docs/guides/USER_GUIDE.md">si</a> · 🇸🇰 <a href="../../../sk/docs/guides/USER_GUIDE.md">sk</a> · 🇸🇮 <a href="../../../sl/docs/guides/USER_GUIDE.md">sl</a> · 🇷🇸 <a href="../../../sr/docs/guides/USER_GUIDE.md">sr</a> · 🇸🇪 <a href="../../../sv/docs/guides/USER_GUIDE.md">sv</a> · 🇰🇪 <a href="../../../sw/docs/guides/USER_GUIDE.md">sw</a> · 🇮🇳 <a href="../../../ta/docs/guides/USER_GUIDE.md">ta</a> · 🇮🇳 <a href="../../../te/docs/guides/USER_GUIDE.md">te</a> · 🇹🇭 <a href="../../../th/docs/guides/USER_GUIDE.md">th</a> · 🇹🇷 <a href="../../../tr/docs/guides/USER_GUIDE.md">tr</a> · 🇺🇦 <a href="../../../uk-UA/docs/guides/USER_GUIDE.md">uk-UA</a> · 🇵🇰 <a href="../../../ur/docs/guides/USER_GUIDE.md">ur</a> · 🇺🇿 <a href="../../../uz/docs/guides/USER_GUIDE.md">uz</a> · 🇻🇳 <a href="../../../vi/docs/guides/USER_GUIDE.md">vi</a> · 🇳🇬 <a href="../../../yo/docs/guides/USER_GUIDE.md">yo</a> · 🇨🇳 <a href="../../../zh-CN/docs/guides/USER_GUIDE.md">zh-CN</a> · 🇹🇼 <a href="../../../zh-TW/docs/guides/USER_GUIDE.md">zh-TW</a></p>
+<hr>
+<p>🌐 <strong>Languages:</strong> 🇺🇸 <a href="../../../../guides/USER_GUIDE.md">English</a> · 🇪🇹 <a href="../../../am/docs/guides/USER_GUIDE.md">am</a> · 🇸🇦 <a href="../../../ar/docs/guides/USER_GUIDE.md">ar</a> · 🇦🇿 <a href="../../../az/docs/guides/USER_GUIDE.md">az</a> · 🇧🇬 <a href="../../../bg/docs/guides/USER_GUIDE.md">bg</a> · 🇧🇩 <a href="../../../bn/docs/guides/USER_GUIDE.md">bn</a> · 🇧🇦 <a href="../../../bs/docs/guides/USER_GUIDE.md">bs</a> · 🇨🇿 <a href="../../../cs/docs/guides/USER_GUIDE.md">cs</a> · 🇩🇰 <a href="../../../da/docs/guides/USER_GUIDE.md">da</a> · 🇩🇪 <a href="../../../de/docs/guides/USER_GUIDE.md">de</a> · 🇬🇷 <a href="../../../el/docs/guides/USER_GUIDE.md">el</a> · 🇪🇸 <a href="../../../es/docs/guides/USER_GUIDE.md">es</a> · 🇪🇪 <a href="../../../et/docs/guides/USER_GUIDE.md">et</a> · 🇮🇷 <a href="../../../fa/docs/guides/USER_GUIDE.md">fa</a> · 🇫🇮 <a href="../../../fi/docs/guides/USER_GUIDE.md">fi</a> · 🇫🇷 <a href="../../../fr/docs/guides/USER_GUIDE.md">fr</a> · 🇮🇪 <a href="../../../ga/docs/guides/USER_GUIDE.md">ga</a> · 🇮🇳 <a href="../../../gu/docs/guides/USER_GUIDE.md">gu</a> · 🇳🇬 <a href="../../../ha/docs/guides/USER_GUIDE.md">ha</a> · 🇮🇱 <a href="../../../he/docs/guides/USER_GUIDE.md">he</a> · 🇮🇳 <a href="../../../hi/docs/guides/USER_GUIDE.md">hi</a> · 🇭🇷 <a href="../../../hr/docs/guides/USER_GUIDE.md">hr</a> · 🇭🇺 <a href="../../../hu/docs/guides/USER_GUIDE.md">hu</a> · 🇦🇲 <a href="../../../hy/docs/guides/USER_GUIDE.md">hy</a> · 🇮🇩 <a href="../../../id/docs/guides/USER_GUIDE.md">id</a> · 🇳🇬 <a href="../../../ig/docs/guides/USER_GUIDE.md">ig</a> · 🇮🇹 <a href="../../../it/docs/guides/USER_GUIDE.md">it</a> · 🇯🇵 <a href="../../../ja/docs/guides/USER_GUIDE.md">ja</a> · 🇬🇪 <a href="../../../ka/docs/guides/USER_GUIDE.md">ka</a> · 🇰🇭 <a href="../../../km/docs/guides/USER_GUIDE.md">km</a> · 🇮🇳 <a href="../../../kn/docs/guides/USER_GUIDE.md">kn</a> · 🇰🇷 <a href="../../../ko/docs/guides/USER_GUIDE.md">ko</a> · 🇱🇹 <a href="../../../lt/docs/guides/USER_GUIDE.md">lt</a> · 🇱🇻 <a href="../../../lv/docs/guides/USER_GUIDE.md">lv</a> · 🇮🇳 <a href="../../../ml/docs/guides/USER_GUIDE.md">ml</a> · 🇮🇳 <a href="../../../mr/docs/guides/USER_GUIDE.md">mr</a> · 🇲🇾 <a href="../../../ms/docs/guides/USER_GUIDE.md">ms</a> · 🇲🇹 <a href="../../../mt/docs/guides/USER_GUIDE.md">mt</a> · 🇲🇲 <a href="../../../my/docs/guides/USER_GUIDE.md">my</a> · 🇳🇵 <a href="../../../ne/docs/guides/USER_GUIDE.md">ne</a> · 🇳🇱 <a href="../../../nl/docs/guides/USER_GUIDE.md">nl</a> · 🇳🇴 <a href="../../../no/docs/guides/USER_GUIDE.md">no</a> · 🇮🇳 <a href="../../../or/docs/guides/USER_GUIDE.md">or</a> · 🇮🇳 <a href="../../../pa/docs/guides/USER_GUIDE.md">pa</a> · 🇵🇭 <a href="../../../phi/docs/guides/USER_GUIDE.md">phi</a> · 🇵🇱 <a href="../../../pl/docs/guides/USER_GUIDE.md">pl</a> · 🇵🇹 <a href="../../../pt/docs/guides/USER_GUIDE.md">pt</a> · 🇧🇷 <a href="../../../pt-BR/docs/guides/USER_GUIDE.md">pt-BR</a> · 🇷🇴 <a href="../../../ro/docs/guides/USER_GUIDE.md">ro</a> · 🇱🇰 <a href="../../../si/docs/guides/USER_GUIDE.md">si</a> · 🇸🇰 <a href="../../../sk/docs/guides/USER_GUIDE.md">sk</a> · 🇸🇮 <a href="../../../sl/docs/guides/USER_GUIDE.md">sl</a> · 🇷🇸 <a href="../../../sr/docs/guides/USER_GUIDE.md">sr</a> · 🇸🇪 <a href="../../../sv/docs/guides/USER_GUIDE.md">sv</a> · 🇰🇪 <a href="../../../sw/docs/guides/USER_GUIDE.md">sw</a> · 🇮🇳 <a href="../../../ta/docs/guides/USER_GUIDE.md">ta</a> · 🇮🇳 <a href="../../../te/docs/guides/USER_GUIDE.md">te</a> · 🇹🇭 <a href="../../../th/docs/guides/USER_GUIDE.md">th</a> · 🇹🇷 <a href="../../../tr/docs/guides/USER_GUIDE.md">tr</a> · 🇺🇦 <a href="../../../uk-UA/docs/guides/USER_GUIDE.md">uk-UA</a> · 🇵🇰 <a href="../../../ur/docs/guides/USER_GUIDE.md">ur</a> · 🇺🇿 <a href="../../../uz/docs/guides/USER_GUIDE.md">uz</a> · 🇻🇳 <a href="../../../vi/docs/guides/USER_GUIDE.md">vi</a> · 🇳🇬 <a href="../../../yo/docs/guides/USER_GUIDE.md">yo</a> · 🇨🇳 <a href="../../../zh-CN/docs/guides/USER_GUIDE.md">zh-CN</a> · 🇹🇼 <a href="../../../zh-TW/docs/guides/USER_GUIDE.md">zh-TW</a></p>
+<p>Полное руководство по настройке провайдеров, созданию комбинаций, интеграции инструментов CLI и развертыванию OmniRoute.</p>
+<hr>
+<h3 id="h">Содержание <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="#-pricing-at-a-glance">Краткий обзор цен</a></li>
+<li><a href="#-use-cases">Сценарии использования</a></li>
+<li><a href="#-provider-setup">Настройка провайдера</a></li>
+<li><a href="#-cli-integration">Интеграция с CLI</a></li>
+<li><a href="#-deployment">Развертывание</a></li>
+<li><a href="#-available-models">Доступные модели</a></li>
+<li><a href="#-advanced-features">Расширенные возможности</a></li>
+<li><a href="#-auto-routing-zero-config">Автоматическая маршрутизация (без настройки)</a></li>
+<li><a href="#-mcp--a2a-integration">Интеграция MCP и A2A</a></li>
+<li><a href="#-skills-system">Система навыков</a></li>
+<li><a href="#-memory-system">Система памяти</a></li>
+<li><a href="#-webhooks">Вебхуки</a></li>
+<li><a href="#-cloud-agents">Облачные агенты</a></li>
+<li><a href="#-programmatic-management">Программное управление</a></li>
+<li><a href="#-internal-cli">Внутренний CLI</a></li>
+<li><a href="#-desktop-application-electron">Настольное приложение (Electron)</a></li>
+</ul>
+<hr>
+<h3 id="h-2">💰 Краткий обзор цен <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Уровень</th><th>Провайдер</th><th>Стоимость</th><th>Сброс квоты</th><th>Лучше всего подходит для</th></tr></thead><tbody><tr><td><strong>💳 ПОДПИСКА</strong></td><td>Claude Code (Pro)</td><td>$20/мес.</td><td>Каждые 5 ч + еженедельно</td><td>Тех, у кого уже есть подписка</td></tr><tr><td></td><td>Codex (Plus/Pro)</td><td>$20–200/мес.</td><td>Каждые 5 ч + еженедельно</td><td>Пользователей OpenAI</td></tr><tr><td></td><td>GitHub Copilot</td><td>$10–19/мес.</td><td>Ежемесячно</td><td>Пользователей GitHub</td></tr><tr><td><strong>🔑 API-КЛЮЧ</strong></td><td>DeepSeek</td><td>Оплата по факту</td><td>Нет</td><td>Недорогих рассуждений</td></tr><tr><td></td><td>Groq</td><td>Оплата по факту</td><td>Нет</td><td>Сверхбыстрого инференса</td></tr><tr><td></td><td>xAI (Grok)</td><td>Оплата по факту</td><td>Нет</td><td>Рассуждений с Grok 4</td></tr><tr><td></td><td>Mistral</td><td>Оплата по факту</td><td>Нет</td><td>Моделей, размещенных в ЕС</td></tr><tr><td></td><td>Perplexity</td><td>Оплата по факту</td><td>Нет</td><td>Расширения возможностей поиском</td></tr><tr><td></td><td>Together AI</td><td>Оплата по факту</td><td>Нет</td><td>Моделей с открытым исходным кодом</td></tr><tr><td></td><td>Fireworks AI</td><td>Оплата по факту</td><td>Нет</td><td>Быстрой генерации изображений FLUX</td></tr><tr><td></td><td>Cerebras</td><td>Оплата по факту</td><td>Нет</td><td>Скорости на уровне целой пластины</td></tr><tr><td></td><td>Cohere</td><td>Оплата по факту</td><td>Нет</td><td>RAG с Command R+</td></tr><tr><td></td><td>NVIDIA NIM</td><td>Оплата по факту</td><td>Нет</td><td>Корпоративных моделей</td></tr><tr><td></td><td>Baidu Qianfan</td><td>Оплата по факту</td><td>Нет</td><td>Моделей ERNIE</td></tr><tr><td><strong>💰 НЕДОРОГО</strong></td><td>GLM-4.7</td><td>$0.6/1M</td><td>Ежедневно в 10:00</td><td>Бюджетного резервного варианта</td></tr><tr><td></td><td>MiniMax M2.1</td><td>$0.2/1M</td><td>Скользящий период 5 часов</td><td>Самого дешевого варианта</td></tr><tr><td></td><td>Kimi K2</td><td>Фиксированно $9/мес.</td><td>10M токенов/мес.</td><td>Предсказуемых расходов</td></tr><tr><td><strong>🆓 БЕСПЛАТНО</strong></td><td>Qoder</td><td>$0</td><td>Действуют лимиты провайдера</td><td>Требуется проверить текущий каталог</td></tr><tr><td></td><td>Kiro</td><td>$0</td><td>~50 кредитов/мес.</td><td>Бесплатного доступа к Claude</td></tr></tbody></table></div>
+<hr>
+<h3 id="h-3">🎯 Сценарии использования <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="сценарий-1-у-меня-есть-подписка-claude-pro">Сценарий 1: «У меня есть подписка Claude Pro» <a class="h-anchor" href="#сценарий-1-у-меня-есть-подписка-claude-pro" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Проблема:</strong> квота сгорает неиспользованной, а при интенсивной разработке срабатывают ограничения частоты запросов</p>
+<pre><code>Комбинация: &quot;maximize-claude&quot;
+  1. cc/claude-opus-4-7        (использовать подписку полностью)
+  2. glm/glm-4.7               (недорогой резерв при исчерпании квоты)
+  3. if/qwen3.8-max-preview    (бесплатный аварийный резерв)
+
+Стоимость в месяц: $20 (подписка) + ~$5 (резерв) = итого $25
+вместо $20 + постоянных ограничений = разочарование</code></pre>
+<h4 id="сценарий-2-я-не-хочу-ничего-платить">Сценарий 2: «Я не хочу ничего платить» <a class="h-anchor" href="#сценарий-2-я-не-хочу-ничего-платить" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Проблема:</strong> нет возможности оплачивать подписки, но нужен надежный ИИ для программирования</p>
+<pre><code>Комбинация: &quot;zero-cost&quot;
+  1. if/kimi-k2.7-code          (указан бесплатный доступ; могут действовать ограничения частоты запросов)
+  2. kr/qwen3-coder-next        (бесплатный резерв Kiro)
+
+Стоимость в месяц: $0
+Качество: проверьте модель, ограничения, конфиденциальность и SLA применительно к вашей рабочей нагрузке</code></pre>
+<h4 id="сценарий-3-мне-нужно-программировать-круглосуточно-и-без-перерывов">Сценарий 3: «Мне нужно программировать круглосуточно и без перерывов» <a class="h-anchor" href="#сценарий-3-мне-нужно-программировать-круглосуточно-и-без-перерывов" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Проблема:</strong> жесткие сроки, простои недопустимы</p>
+<pre><code>Комбинация: &quot;always-on&quot;
+  1. cc/claude-opus-4-7        (лучшее качество)
+  2. cx/gpt-5.5                (вторая подписка)
+  3. glm/glm-4.7               (недорогой вариант, ежедневный сброс)
+  4. minimax/MiniMax-M2.1      (самый дешевый вариант, сброс каждые 5 ч)
+  5. if/deepseek-v4-flash      (указан бесплатный доступ; могут действовать ограничения частоты запросов)
+
+Результат: 5 уровней резервирования повышают отказоустойчивость; доступность вышестоящих сервисов не гарантируется
+Стоимость в месяц: $20–200 (подписки) + $10–20 (резерв)</code></pre>
+<h4 id="сценарий-4-мне-нужен-бесплатный-ии-в-openclaw">Сценарий 4: «Мне нужен БЕСПЛАТНЫЙ ИИ в OpenClaw» <a class="h-anchor" href="#сценарий-4-мне-нужен-бесплатный-ии-в-openclaw" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Проблема:</strong> нужен полностью бесплатный ИИ-помощник в приложениях для обмена сообщениями</p>
+<pre><code>Комбинация: &quot;openclaw-free&quot;
+  1. if/qwen3.8-max-preview     (указан бесплатный доступ; могут действовать ограничения частоты запросов)
+  2. if/deepseek-v4-flash      (указан бесплатный доступ; могут действовать ограничения частоты запросов)
+  3. if/kimi-k2.7-code         (указан бесплатный доступ; могут действовать ограничения частоты запросов)
+
+Стоимость в месяц: $0
+Доступ через: WhatsApp, Telegram, Slack, Discord, iMessage, Signal...</code></pre>
+<hr>
+<h3 id="h-4">📖 Настройка провайдеров <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Чтобы массово добавить подключения с API-ключами из файла CSV или JSON, используйте <strong>Dashboard → Providers → Import from file</strong>. Столбцы являются позиционными (<code>provider,name,apiKey,baseUrl,priority</code>); <code>provider</code> уже должен существовать как управляемый провайдер или совместимый узел. См. <a href="../providers/CSV-IMPORT.md">Импорт провайдеров из файла CSV или JSON</a>.</p>
+<h4 id="h-5">🔐 Провайдеры подписки <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<h5 id="claude-code-pro-max">Claude Code (Pro/Max) <a class="h-anchor" href="#claude-code-pro-max" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-bash">Dashboard → Providers → Connect Claude Code
+→ Вход через OAuth → Автоматическое обновление токена
+→ Отслеживание 5-часовой и недельной квоты
+
+Models:
+  cc/claude-opus-4-7
+  cc/claude-sonnet-4-6
+  cc/claude-haiku-4-5-20251001</code></pre>
+<p><strong>Совет:</strong> используйте Opus для сложных задач, а Sonnet — для скорости. OmniRoute отслеживает квоту для каждой модели!</p>
+<p>Нет браузера на хосте OmniRoute? Запустите <code>claude setup-token</code> в любом месте, где выполнен вход в Claude Code, и вставьте годовой токен во вкладку <strong>Setup Token</strong>. См. <a href="../providers/CLAUDE_CODE_SETUP_TOKEN.md">Claude Code с токеном настройки</a>.</p>
+<p>Маршруты, совместимые с Claude и Claude Code, сохраняют максимальный уровень усилий
+<code>max</code> для моделей Opus и Sonnet. Модели Haiku не принимают уровень усилий <code>max</code>, поэтому
+OmniRoute понижает этот запрос до высокого бюджета рассуждений перед отправкой на upstream.</p>
+<h5 id="openai-codex-plus-pro">OpenAI Codex (Plus/Pro) <a class="h-anchor" href="#openai-codex-plus-pro" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-bash">Dashboard → Providers → Connect Codex
+→ Вход через OAuth (порт 1455)
+→ Сброс каждые 5 часов + еженедельный сброс
+
+Models:
+  cx/gpt-5.5
+  cx/gpt-5.4
+  cx/gpt-5.3-codex
+  cx/gpt-5.3-codex-spark</code></pre>
+<h5 id="github-copilot">GitHub Copilot <a class="h-anchor" href="#github-copilot" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-bash">Dashboard → Providers → Connect GitHub
+→ OAuth через GitHub
+→ Ежемесячный сброс (1-го числа месяца)
+
+Models:
+  gh/gpt-5.5
+  gh/gpt-5.4
+  gh/claude-sonnet-4.6
+  gh/claude-opus-4.7
+  gh/gemini-3.1-pro-preview</code></pre>
+<p><strong>Кредиты AI (тарификация на основе токенов).</strong> Когда GitHub сообщает <code>credits_used</code> для
+учётной записи, карточка лимитов провайдера показывает строку <strong>Кредиты AI</strong> с количеством
+кредитов, использованных в текущем расчётном периоде, в том числе для безлимитных тарифов организаций.</p>
+<p><strong>Локальный лимит кредитов AI.</strong> Измените подключение GitHub и задайте параметр <strong>Лимит кредитов AI на
+расчётный период</strong> (<code>providerSpecificData.githubCreditLimit</code>). Пустое значение отключает лимит; <code>0</code>
+всегда пропускает подключение. Когда последнее значение использования равно лимиту или превышает его,
+при выборе учётной записи это подключение пропускается, а маршрутизация переключается на другие
+подключения — так же, как при срабатывании ограничения политики квоты. Проверка использует данные об
+использовании, которые уже собираются периодическим обновлением квоты: GitHub никогда не вызывается
+непосредственно во время обработки запроса. Проверка работает по принципу fail-open: отсутствующее или
+устаревшее значение (старше 15 минут либо полученное в расчётном периоде, который уже завершился) не
+блокирует подключение. Это локальная мера предосторожности, <strong>а не гарантированный потолок расходов</strong>:
+задержки в отчётности GitHub, интервал обновления, выполняющиеся запросы и использование за пределами
+OmniRoute могут привести к превышению лимита. Для жёсткого ограничения используйте собственные средства
+контроля расходов GitHub.</p>
+<h4 id="h-6">💰 Недорогие провайдеры <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<h5 id="glm-4-7-ежедневный-сброс-0-6-1m">GLM-4.7 (ежедневный сброс, $0.6/1M) <a class="h-anchor" href="#glm-4-7-ежедневный-сброс-0-6-1m" aria-label="Ссылка на раздел">#</a></h5>
+<ol>
+<li>Зарегистрируйтесь: <a href="https://open.bigmodel.cn">Zhipu AI</a></li>
+<li>Получите API-ключ в Coding Plan</li>
+<li>Dashboard → Add API Key: Provider: <code>glm</code>, API Key: <code>your-key</code></li>
+</ol>
+<p><strong>Использование:</strong> <code>glm/glm-4.7</code> — <strong>Совет:</strong> Coding Plan предоставляет квоту в 3 раза больше при стоимости в 7 раз ниже! Ежедневный сброс в 10:00.</p>
+<h5 id="minimax-m2-1-сброс-через-5-часов-0-20-1m">MiniMax M2.1 (сброс через 5 часов, $0.20/1M) <a class="h-anchor" href="#minimax-m2-1-сброс-через-5-часов-0-20-1m" aria-label="Ссылка на раздел">#</a></h5>
+<ol>
+<li>Зарегистрируйтесь: <a href="https://www.minimax.io">MiniMax</a></li>
+<li>Получите API-ключ → Dashboard → Add API Key</li>
+</ol>
+<p><strong>Использование:</strong> <code>minimax/MiniMax-M2.1</code> — <strong>Совет:</strong> самый дешёвый вариант для длинного контекста (1M токенов)!</p>
+<h5 id="kimi-k2-9-месяц-без-ограничений">Kimi K2 ($9/месяц без ограничений) <a class="h-anchor" href="#kimi-k2-9-месяц-без-ограничений" aria-label="Ссылка на раздел">#</a></h5>
+<ol>
+<li>Оформите подписку: <a href="https://platform.kimi.ai?aff=omniroute">Moonshot AI</a></li>
+<li>Получите API-ключ → Dashboard → Add API Key</li>
+</ol>
+<p><strong>Использование:</strong> <code>kimi/kimi-k2.5</code> — <strong>Совет:</strong> фиксированная стоимость $9/месяц за 10M токенов = эффективная стоимость $0.90/1M!</p>
+<h5 id="baidu-qianfan-ernie">Baidu Qianfan / ERNIE <a class="h-anchor" href="#baidu-qianfan-ernie" aria-label="Ссылка на раздел">#</a></h5>
+<ol>
+<li>Зарегистрируйтесь: <a href="https://cloud.baidu.com/product/wenxinworkshop">Baidu AI Cloud Qianfan</a></li>
+<li>Создайте API-ключ Qianfan → Dashboard → Add API Key: Provider: <code>qianfan</code></li>
+</ol>
+<p><strong>Использование:</strong> <code>qianfan/ernie-5.1</code>, <code>qianfan/ernie-x1.1</code> или другой совместимый с OpenAI идентификатор модели Qianfan.</p>
+<h4 id="h-7">🆓 БЕСПЛАТНЫЕ провайдеры <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<p>У бесплатных провайдеров без аутентификации рядом с пунктом <strong>Аутентификация не требуется</strong> на странице провайдера есть переключатель.
+Его отключение деактивирует провайдер, удаляет его из представлений «Настроенные провайдеры» и компактного представления,
+а также удаляет его модели из <code>/v1/models</code>.</p>
+<h5 id="qoder-9-бесплатных-моделей">Qoder (9 БЕСПЛАТНЫХ моделей) <a class="h-anchor" href="#qoder-9-бесплатных-моделей" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-bash">Dashboard → Connect Qoder → Вход через OAuth → Доступ зависит от текущих ограничений провайдера
+
+Models: if/qwen3.8-max-preview, if/qwen3.7-max, if/qwen3.7-plus, if/kimi-k3, if/kimi-k2.7-code, if/glm-5.2, if/deepseek-v4-pro, if/deepseek-v4-flash, if/minimax-m3</code></pre>
+<h5 id="kiro-бесплатный-claude">Kiro (БЕСПЛАТНЫЙ Claude) <a class="h-anchor" href="#kiro-бесплатный-claude" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-bash">Dashboard → Connect Kiro → AWS Builder ID или Google/GitHub → ~50 кредитов/месяц
+
+Models: kr/claude-sonnet-4.5, kr/claude-haiku-4.5</code></pre>
+<hr>
+<h3 id="h-8">🎨 Комбо <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h3>
+<p>Вы можете менять порядок карточек комбо непосредственно в разделе <strong>Панель управления → Комбо</strong>, перетаскивая каждую карточку за маркер. Порядок сохраняется в SQLite и восстанавливается после перезагрузки.</p>
+<h4 id="пример-1-максимум-от-подписки-дешевый-резервный-вариант">Пример 1: максимум от подписки → дешёвый резервный вариант <a class="h-anchor" href="#пример-1-максимум-от-подписки-дешевый-резервный-вариант" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>Панель управления → Комбо → Создать
+
+Название: premium-coding
+Модели:
+  1. cc/claude-opus-4-7 (Основная по подписке)
+  2. glm/glm-4.7 (Дешёвый резервный вариант, $0.6/1M)
+  3. minimax/MiniMax-M2.7 (Самый дешёвый запасной вариант, $0.3/1M)
+
+Использование в CLI: premium-coding</code></pre>
+<h4 id="пример-2-только-бесплатные-модели-нулевая-стоимость">Пример 2: только бесплатные модели (нулевая стоимость) <a class="h-anchor" href="#пример-2-только-бесплатные-модели-нулевая-стоимость" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>Название: free-combo
+Модели:
+  1. if/kimi-k2.7-code (указан бесплатный доступ; могут действовать ограничения провайдера)
+  2. kr/qwen3-coder-next (бесплатный резервный вариант Kiro)
+
+Стоимость: сейчас указана как $0; условия и доступность могут измениться</code></pre>
+<hr>
+<h3 id="интеграция-с-cli">🔧 Интеграция с CLI <a class="h-anchor" href="#интеграция-с-cli" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="cursor-ide">Cursor IDE <a class="h-anchor" href="#cursor-ide" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Использование Cursor в качестве клиента OmniRoute</strong> (маршрутизация чата Cursor через OmniRoute):</p>
+<pre><code>Настройки → Модели → Дополнительно:
+  Базовый URL OpenAI API: http://localhost:20128/v1
+  Ключ OpenAI API: [из панели управления omniroute]
+  Модель: cc/claude-opus-4-7</code></pre>
+<p><strong>Использование OmniRoute с Cursor в качестве провайдера</strong> (OmniRoute обращается к Cursor как к вышестоящему сервису): рекомендуется
+<strong>Панель управления → Провайдеры → Cursor → Войти через Cursor</strong>. Для Docker см.
+<a href="../providers/CURSOR-DOCKER.md"><code>docs/providers/CURSOR-DOCKER.md</code></a>.</p>
+<h4 id="claude-code">Claude Code <a class="h-anchor" href="#claude-code" aria-label="Ссылка на раздел">#</a></h4>
+<p>Отредактируйте <code>~/.claude/settings.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;env&quot;: {
+    &quot;ANTHROPIC_BASE_URL&quot;: &quot;http://localhost:20128&quot;,
+    &quot;ANTHROPIC_AUTH_TOKEN&quot;: &quot;your-omniroute-api-key&quot;
+  }
+}</code></pre>
+<p>Здесь используйте корневую конечную точку, совместимую с Claude. Не добавляйте <code>/v1</code> к <code>ANTHROPIC_BASE_URL</code>.</p>
+<h4 id="codex-cli">Codex CLI <a class="h-anchor" href="#codex-cli" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">export OPENAI_BASE_URL=&quot;http://localhost:20128&quot;
+export OPENAI_API_KEY=&quot;your-omniroute-api-key&quot;
+codex &quot;your prompt&quot;</code></pre>
+<h4 id="openclaw">OpenClaw <a class="h-anchor" href="#openclaw" aria-label="Ссылка на раздел">#</a></h4>
+<p>Отредактируйте <code>~/.openclaw/openclaw.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;agents&quot;: {
+    &quot;defaults&quot;: {
+      &quot;model&quot;: { &quot;primary&quot;: &quot;omniroute/if/kimi-k2.7-code&quot; }
+    }
+  },
+  &quot;models&quot;: {
+    &quot;providers&quot;: {
+      &quot;omniroute&quot;: {
+        &quot;baseUrl&quot;: &quot;http://localhost:20128/v1&quot;,
+        &quot;apiKey&quot;: &quot;your-omniroute-api-key&quot;,
+        &quot;api&quot;: &quot;openai-completions&quot;,
+        &quot;models&quot;: [{ &quot;id&quot;: &quot;if/kimi-k2.7-code&quot;, &quot;name&quot;: &quot;Kimi K2.7 Code&quot; }]
+      }
+    }
+  }
+}</code></pre>
+<p><strong>Или используйте панель управления:</strong> Инструменты CLI → OpenClaw → Автоматическая настройка</p>
+<h4 id="cline-continue-roocode">Cline / Continue / RooCode <a class="h-anchor" href="#cline-continue-roocode" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>Провайдер: совместимый с OpenAI
+Базовый URL: http://localhost:20128/v1
+Ключ API: [из панели управления]
+Модель: cc/claude-opus-4-7</code></pre>
+<hr>
+<h3 id="h-9">Развертывание 🚀 <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="глобальная-установка-npm-рекомендуется">Глобальная установка npm (рекомендуется) <a class="h-anchor" href="#глобальная-установка-npm-рекомендуется" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">npm install -g omniroute
+
+# Create config directory
+mkdir -p ~/.omniroute
+
+# Create .env file (see .env.example)
+cp .env.example ~/.omniroute/.env
+
+# Start server
+omniroute
+# Or with custom port:
+omniroute --port 3000</code></pre>
+<p>CLI автоматически загружает <code>.env</code> из <code>~/.omniroute/.env</code> или <code>./.env</code>. <code>./.env</code> в рабочем каталоге может устанавливать только короткий список разрешенных ключей (<code>REQUIRE_API_KEY</code>, локаль, часовой пояс и настройки цвета, но не порты); все остальное поместите в <code>~/.omniroute/.env</code>. См. <a href="CLI-LAUNCH-CONTRACTS.md#working-directory-env">контракты на запуск CLI</a>.</p>
+<h4 id="h-10">Режим лотка <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h4>
+<p>Запустите OmniRoute в системном трее:</p>
+<pre><code class="language-bash">omniroute serve --tray</code></pre>
+<p>Команда возвращается после того, как сервер и лоток будут готовы.</p>
+<p>Сервер продолжает работу без терминала.</p>
+<p>Режим лотка поддерживает сеансы macOS, Windows и графический Linux. В режиме лотка панель мониторинга не открывается автоматически.</p>
+<p>Используйте меню панели задач для следующих действий:</p>
+<ul>
+<li>Откройте панель управления.</li>
+<li>Откройте <code>/dashboard/logs</code>.</li>
+<li>Изменить автозапуск.</li>
+<li>Стоп OmniRoute.</li>
+</ul>
+<p>Не комбинируйте <code>--tray</code> со следующими опциями:</p>
+<ul>
+<li><code>--daemon</code></li>
+<li><code>--log</code></li>
+<li><code>--no-recovery</code></li>
+</ul>
+<p>Эти режимы требуют разных владельцев процессов.</p>
+<p>Включите запуск при следующем входе в систему:</p>
+<pre><code class="language-bash">omniroute autostart enable</code></pre>
+<p>При автозапуске используется режим лотка в сеансах macOS, Windows и графическом Linux. Headless Linux использует существующую пользовательскую службу systemd.</p>
+<p>Отключить запуск при входе в систему:</p>
+<pre><code class="language-bash">omniroute autostart disable</code></pre>
+<h4 id="h-11">Удаление <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h4>
+<p>Если OmniRoute вам больше не нужен, мы предоставляем два быстрых сценария для чистого удаления:</p>
+<div class="table-wrap"><table><thead><tr><th>Команда</th><th>Действие</th></tr></thead><tbody><tr><td><code>npm run uninstall</code></td><td>Удаляет системное приложение, но<strong> сохраняет ваш DB и конфигурации</strong> в <code>~/.omniroute</code>.</td></tr><tr><td><code>npm run uninstall:full</code></td><td>Удаляет приложение AND навсегда<strong> стирает все конфигурации, ключи и базы данных</strong> .</td></tr></tbody></table></div>
+<blockquote>
+<p>Примечание. Чтобы запустить эти команды, перейдите в папку проекта OmniRoute (если вы ее клонировали) и запустите их. В качестве альтернативы, если он установлен глобально, вы можете просто запустить <code>npm uninstall -g omniroute</code>.</p>
+</blockquote>
+<h4 id="развертывание-vps">Развертывание VPS <a class="h-anchor" href="#развертывание-vps" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">git clone https://github.com/diegosouzapw/OmniRoute.git
+cd OmniRoute &amp;&amp; npm install &amp;&amp; npm run build
+
+export JWT_SECRET=&quot;your-secure-secret-change-this&quot;
+export INITIAL_PASSWORD=&quot;your-password&quot;
+export DATA_DIR=&quot;/var/lib/omniroute&quot;
+export PORT=&quot;20128&quot;
+export HOSTNAME=&quot;0.0.0.0&quot;
+export NODE_ENV=&quot;production&quot;
+export NEXT_PUBLIC_BASE_URL=&quot;http://localhost:20128&quot;
+export API_KEY_SECRET=&quot;endpoint-proxy-api-key-secret&quot;
+
+npm run start
+# Or: pm2 start npm --name omniroute -- start</code></pre>
+<h4 id="развертывание-pm2-недостаток-памяти">Развертывание PM2 (недостаток памяти) <a class="h-anchor" href="#развертывание-pm2-недостаток-памяти" aria-label="Ссылка на раздел">#</a></h4>
+<p>Для серверов с ограниченным RAM используйте опцию ограничения памяти:</p>
+<pre><code class="language-bash"># With 512MB limit (default)
+pm2 start npm --name omniroute -- start
+
+# Or with custom memory limit
+OMNIROUTE_MEMORY_MB=512 pm2 start npm --name omniroute -- start
+
+# Or using ecosystem.config.js
+pm2 start ecosystem.config.js</code></pre>
+<p>Создать <code>ecosystem.config.js</code>:</p>
+<pre><code class="language-javascript">module.exports = {
+  apps: [
+    {
+      name: &quot;omniroute&quot;,
+      script: &quot;npm&quot;,
+      args: &quot;start&quot;,
+      env: {
+        NODE_ENV: &quot;production&quot;,
+        OMNIROUTE_MEMORY_MB: &quot;512&quot;,
+        JWT_SECRET: &quot;your-secret&quot;,
+        INITIAL_PASSWORD: &quot;your-password&quot;,
+      },
+      node_args: &quot;--max-old-space-size=512&quot;,
+      max_memory_restart: &quot;300M&quot;,
+    },
+  ],
+};</code></pre>
+<h4 id="docker">Docker <a class="h-anchor" href="#docker" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Build image (default = runner-cli with codex/claude/droid preinstalled)
+docker build -t omniroute:cli .
+
+# Portable mode (recommended)
+docker run -d --name omniroute -p 20128:20128 --env-file ./.env -v omniroute-data:/app/data omniroute:cli</code></pre>
+<p>Для режима интеграции с хостом с двоичными файлами CLI см. раздел Docker в основной документации.</p>
+<h4 id="пустота-linux-xbps-src">Пустота Linux (xbps-src) <a class="h-anchor" href="#пустота-linux-xbps-src" aria-label="Ссылка на раздел">#</a></h4>
+<p>Пользователи Void Linux могут упаковать и установить OmniRoute используя среду кросс-компиляции <code>xbps-src</code>. Это автоматизирует автономную сборку Node.js вместе с необходимыми собственными привязками <code>better-sqlite3</code>.</p>
+<details><summary>Посмотреть шаблон xbps-src</summary>
+<pre><code class="language-bash"># Template file for &#x27;omniroute&#x27;
+pkgname=omniroute
+version=3.8.0
+revision=1
+hostmakedepends=&quot;nodejs python3 make&quot;
+depends=&quot;openssl&quot;
+short_desc=&quot;Universal AI gateway with smart routing for multiple LLM providers&quot;
+maintainer=&quot;zenobit &lt;zenobit@disroot.org&gt;&quot;
+license=&quot;MIT&quot;
+homepage=&quot;https://github.com/diegosouzapw/OmniRoute&quot;
+distfiles=&quot;https://github.com/diegosouzapw/OmniRoute/archive/refs/tags/v${version}.tar.gz&quot;
+checksum=009400afee90a9f32599d8fe734145cfd84098140b7287990183dde45ae2245b
+system_accounts=&quot;_omniroute&quot;
+omniroute_homedir=&quot;/var/lib/omniroute&quot;
+export NODE_ENV=production
+export npm_config_engine_strict=false
+export npm_config_loglevel=error
+export npm_config_fund=false
+export npm_config_audit=false
+
+do_build() {
+	# Determine target CPU arch for node-gyp
+	local _gyp_arch
+	case &quot;$XBPS_TARGET_MACHINE&quot; in
+		aarch64*) _gyp_arch=arm64 ;;
+		armv7*|armv6*) _gyp_arch=arm ;;
+		i686*) _gyp_arch=ia32 ;;
+		*) _gyp_arch=x64 ;;
+	esac
+
+	# 1) Install all deps – skip scripts
+	NODE_ENV=development npm ci --ignore-scripts
+
+	# 2) Build the Next.js standalone bundle
+	npm run build
+
+	# 3) Copy static assets into standalone
+	cp -r .next/static .next/standalone/.next/static
+	[ -d public ] &amp;&amp; cp -r public .next/standalone/public || true
+
+	# 4) Compile better-sqlite3 native binding
+	local _node_gyp=/usr/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js
+	(cd node_modules/better-sqlite3 &amp;&amp; node &quot;$_node_gyp&quot; rebuild --arch=&quot;$_gyp_arch&quot;)
+
+	# 5) Place the compiled binding into the standalone bundle
+	local _bs3_release=.next/standalone/node_modules/better-sqlite3/build/Release
+	mkdir -p &quot;$_bs3_release&quot;
+	cp node_modules/better-sqlite3/build/Release/better_sqlite3.node &quot;$_bs3_release/&quot;
+
+	# 6) Remove arch-specific sharp bundles
+	rm -rf .next/standalone/node_modules/@img
+
+	# 7) Copy pino runtime deps omitted by Next.js static analysis:
+	for _mod in pino-abstract-transport split2 process-warning; do
+		cp -r &quot;node_modules/$_mod&quot; .next/standalone/node_modules/
+	done
+}
+
+do_check() {
+	npm run test:unit
+}
+
+do_install() {
+	vmkdir usr/lib/omniroute/.next
+	vcopy .next/standalone/. usr/lib/omniroute/.next/standalone
+
+	# Prevent removal of empty Next.js app router dirs by the post-install hook
+	for _d in \
+		.next/standalone/.next/server/app/dashboard \
+		.next/standalone/.next/server/app/dashboard/settings \
+		.next/standalone/.next/server/app/dashboard/providers; do
+		touch &quot;${DESTDIR}/usr/lib/omniroute/${_d}/.keep&quot;
+	done
+
+	cat &gt; &quot;${WRKDIR}/omniroute&quot; &lt;&lt;&#x27;EOF&#x27;
+#!/bin/sh
+export PORT=&quot;${PORT:-20128}&quot;
+export DATA_DIR=&quot;${DATA_DIR:-${XDG_DATA_HOME:-${HOME}/.local/share}/omniroute}&quot;
+export APP_LOG_TO_FILE=&quot;${APP_LOG_TO_FILE:-false}&quot;
+mkdir -p &quot;${DATA_DIR}&quot;
+exec node /usr/lib/omniroute/.next/standalone/server.js &quot;$@&quot;
+EOF
+	vbin &quot;${WRKDIR}/omniroute&quot;
+}
+
+post_install() {
+	vlicense LICENSE
+}</code></pre>
+</details>
+<h4 id="h-12">Переменные среды <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Переменная</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>JWT_SECRET</code></td><td>_(создается автоматически)_</td><td>Секрет подписи JWT — автоматически генерируется при первом запуске и сохраняется в <code>server.env</code>; установите его явно, если каталог данных является эфемерным</td></tr><tr><td><code>INITIAL_PASSWORD</code></td><td>_(не установлено)_</td><td>Первый пароль для входа. Установка npm/source начинается с <code>CHANGEME</code>: замените его. Не установлено: мастер регистрации</td></tr><tr><td><code>DATA_DIR</code></td><td><code>~/.omniroute</code></td><td>Каталог данных (база данных, использование, журналы)</td></tr><tr><td><code>PORT</code></td><td>фреймворк по умолчанию</td><td>Сервисный порт (<code>20128</code> в примерах)</td></tr><tr><td><code>HOSTNAME</code></td><td>фреймворк по умолчанию</td><td>Привязать хост (по умолчанию Docker — <code>0.0.0.0</code>)</td></tr><tr><td><code>NODE_ENV</code></td><td>по умолчанию во время выполнения</td><td>Установите <code>production</code> для развертывания</td></tr><tr><td><code>NEXT_PUBLIC_BASE_URL</code></td><td><code>http://localhost:20128</code></td><td>Публичная база URL отображается на панели управления и доступна серверу (заменяет устаревший <code>BASE_URL</code>).</td></tr><tr><td><code>NEXT_PUBLIC_CLOUD_URL</code></td><td><code>https://omniroute.dev</code></td><td>База конечных точек облачной синхронизации URL (заменяет устаревший <code>CLOUD_URL</code>)</td></tr><tr><td><code>API_KEY_SECRET</code></td><td>_(создается автоматически)_</td><td>Секрет HMAC для сгенерированных ключей API — автоматически генерируется при первом запуске и сохраняется в <code>server.env</code></td></tr><tr><td><code>REQUIRE_API_KEY</code></td><td><code>false</code></td><td>Принудительное использование ключа API на предъявителя на <code>/v1/*</code></td></tr><tr><td><code>ALLOW_API_KEY_REVEAL</code></td><td><code>false</code></td><td>Разрешить пользователям, прошедшим проверку подлинности, по требованию раскрывать полностью сохраненные значения ключей API</td></tr><tr><td><code>PROVIDER_LIMITS_SYNC_INTERVAL_MINUTES</code></td><td><code>70</code></td><td>Частота обновления на стороне сервера кэшированных данных о лимитах поставщика; Кнопки обновления UI по-прежнему запускают ручную синхронизацию</td></tr><tr><td><code>DISABLE_SQLITE_AUTO_BACKUP</code></td><td><code>false</code></td><td>Отключить автоматическое создание снимков SQLite перед writes/import/restore; резервное копирование вручную все еще работает</td></tr><tr><td><code>APP_LOG_TO_FILE</code></td><td><code>true</code></td><td>Позволяет выводить журналы приложений и аудита на диск.</td></tr><tr><td><code>AUTH_COOKIE_SECURE</code></td><td><code>false</code></td><td>Принудительно использовать файл cookie аутентификации <code>Secure</code> (за обратным прокси-сервером HTTPS )</td></tr><tr><td><code>CLOUDFLARED_BIN</code></td><td>не установлен</td><td>Используйте существующий двоичный файл <code>cloudflared</code> вместо управляемой загрузки.</td></tr><tr><td><code>CLOUDFLARED_PROTOCOL</code></td><td><code>http2</code></td><td>Транспорт для управляемых быстрых туннелей (<code>http2</code>, <code>quic</code> или <code>auto</code>)</td></tr><tr><td><code>OMNIROUTE_MEMORY_MB</code></td><td><code>512</code></td><td>Ограничение кучи Node.js в MB</td></tr><tr><td><code>PROMPT_CACHE_MAX_SIZE</code></td><td><code>50</code></td><td>Максимальное количество записей в кэше подсказок</td></tr><tr><td><code>SEMANTIC_CACHE_MAX_SIZE</code></td><td><code>100</code></td><td>Максимальное количество записей семантического кэша</td></tr></tbody></table></div>
+<p>Полную ссылку на переменную среды см. в файле <a href="../README.md">README</a>.</p>
+<hr>
+<h3 id="h-13">📊 Доступные модели <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h3>
+<details><summary>Просмотреть все доступные модели</summary>
+<blockquote>
+<p>Приведённый ниже список составлен на основе <code>open-sse/config/providerRegistry.ts</code> для v3.8.0. Облачные каталоги (Gemini, OpenRouter и т. д.) синхронизируются динамически — чтобы просмотреть полный актуальный каталог, откройте <strong>Панель управления → Провайдеры → [провайдер] → Доступные модели</strong> или вызовите <code>GET /api/models/catalog</code>.</p>
+<p>Если встроенный список провайдера устарел, используйте <strong>Импортировать из /models</strong> на этой странице (или включите <strong>Автосинхронизацию</strong>), чтобы загрузить актуальный каталог вышестоящего сервиса. Это было проверено в v3.8.50 для LLM7.io (<code>gemini-3.1-flash-lite</code>) и UncloseAI (<code>solidrust/Hermes-3-Llama-3.1-8B-AWQ</code>); анонимный доступ Pollinations оставался ограниченным вышестоящим сервисом в ходе той же серии тестов.</p>
+</blockquote>
+<p><strong>Claude Code (<code>cc/</code>)</strong> — OAuth Pro/Max: <code>cc/claude-opus-4-8</code>, <code>cc/claude-opus-4-7</code>, <code>cc/claude-opus-4-6</code>, <code>cc/claude-opus-4-5-20251101</code>, <code>cc/claude-sonnet-4-6</code>, <code>cc/claude-sonnet-4-5-20250929</code>, <code>cc/claude-haiku-4-5-20251001</code></p>
+<p><strong>Codex (<code>cx/</code>)</strong> — OAuth Plus/Pro: <code>cx/gpt-5.5</code> (+ уровни интенсивности: <code>gpt-5.5-xhigh</code>, <code>gpt-5.5-high</code>, <code>gpt-5.5-medium</code>, <code>gpt-5.5-low</code>), <code>cx/gpt-5.4</code>, <code>cx/gpt-5.4-mini</code>, <code>cx/gpt-5.3-codex</code>, <code>cx/gpt-5.3-codex-spark</code></p>
+<p><strong>GitHub Copilot (<code>gh/</code>)</strong> — OAuth: <code>gh/gpt-5.5</code>, <code>gh/gpt-5.4</code>, <code>gh/gpt-5.4-mini</code>, <code>gh/gpt-5-mini</code>, <code>gh/gpt-5.3-codex</code>, <code>gh/claude-opus-4.7</code>, <code>gh/claude-opus-4.6</code>, <code>gh/claude-opus-4-5-20251101</code>, <code>gh/claude-sonnet-4.6</code>, <code>gh/claude-sonnet-4.5</code>, <code>gh/claude-haiku-4.5</code>, <code>gh/gemini-3.1-pro-preview</code>, <code>gh/gemini-3-flash-preview</code>, <code>gh/oswe-vscode-prime</code></p>
+<p><strong>Kiro (<code>kr/</code>)</strong> — БЕСПЛАТНЫЙ OAuth: используйте актуальный каталог, отображаемый в разделе <strong>Панель управления → Провайдеры → Kiro → Доступные модели</strong>. Доступность зависит от учётной записи и тарифного плана.</p>
+<p><strong>Qoder (<code>if/</code>)</strong> — БЕСПЛАТНЫЙ OAuth: <code>if/qwen3.8-max-preview</code>, <code>if/qwen3.7-max</code>, <code>if/qwen3.7-plus</code>, <code>if/kimi-k3</code>, <code>if/kimi-k2.7-code</code>, <code>if/glm-5.2</code>, <code>if/deepseek-v4-pro</code>, <code>if/deepseek-v4-flash</code>, <code>if/minimax-m3</code></p>
+<p><strong>GLM (<code>glm/</code>, <code>glm-cn/</code>, <code>zai/</code>, <code>glmt/</code>)</strong> — $0.2–0.6/1M: <code>glm/glm-5.1</code>, <code>glm/glm-5</code>, <code>glm/glm-5-turbo</code>, <code>glm/glm-4.7</code>, <code>glm/glm-4.7-flash</code>, <code>glm/glm-4.6</code>, <code>glm/glm-4.6v</code>, <code>glm/glm-4.5</code>, <code>glm/glm-4.5v</code>, <code>glm/glm-4.5-air</code></p>
+<p><strong>MiniMax (<code>minimax/</code>, <code>minimax-cn/</code>)</strong> — $0.2/1M: <code>minimax/MiniMax-M2.7</code>, <code>minimax/MiniMax-M2.7-highspeed</code>, <code>minimax/MiniMax-M2.5</code>, <code>minimax/MiniMax-M2.5-highspeed</code></p>
+<p><strong>Kimi (<code>kimi/</code>, <code>kimi-coding/</code>, <code>kimi-coding-apikey/</code>)</strong> — фиксированная плата $9/мес. или оплата за использование: <code>kimi/kimi-k2.6</code>, <code>kimi/kimi-k2.5</code></p>
+<p><strong>DeepSeek (<code>ds/</code>)</strong> — ключ API: <code>ds/deepseek-v4-pro</code>, <code>ds/deepseek-v4-flash</code></p>
+<p><strong>Groq (<code>groq/</code>)</strong> — сверхбыстрый: <code>groq/llama-3.3-70b-versatile</code>, <code>groq/meta-llama/llama-4-maverick-17b-128e-instruct</code>, <code>groq/qwen/qwen3-32b</code>, <code>groq/openai/gpt-oss-120b</code></p>
+<p><strong>xAI (<code>xai/</code>)</strong> — нативный Grok: <code>xai/grok-4.3</code>, <code>xai/grok-4.20-multi-agent-0309</code>, <code>xai/grok-4.20-0309-reasoning</code>, <code>xai/grok-4.20-0309-non-reasoning</code></p>
+<p><strong>Mistral (<code>mistral/</code>)</strong> — размещённый в ЕС: <code>mistral/mistral-large-latest</code>, <code>mistral/mistral-medium-3-5</code>, <code>mistral/mistral-small-latest</code>, <code>mistral/codestral-latest</code></p>
+<p><strong>Perplexity (<code>pplx/</code>)</strong> — с дополнением поиском: <code>pplx/sonar-deep-research</code>, <code>pplx/sonar-reasoning-pro</code>, <code>pplx/sonar-pro</code>, <code>pplx/sonar</code></p>
+<p><strong>Together AI (<code>together/</code>)</strong> — с открытым исходным кодом: <code>together/meta-llama/Llama-3.3-70B-Instruct-Turbo-Free</code> (бесплатная), <code>together/meta-llama/Llama-Vision-Free</code>, <code>together/deepseek-ai/DeepSeek-R1-Distill-Llama-70B-Free</code>, <code>together/deepseek-ai/DeepSeek-R1</code>, <code>together/Qwen/Qwen3-235B-A22B</code>, <code>together/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8</code></p>
+<p><strong>Fireworks AI (<code>fireworks/</code>)</strong> — быстрый инференс: <code>fireworks/accounts/fireworks/models/kimi-k2p6</code>, <code>fireworks/accounts/fireworks/models/minimax-m2p7</code>, <code>fireworks/accounts/fireworks/models/qwen3p6-plus</code>, <code>fireworks/accounts/fireworks/models/glm-5p1</code>, <code>fireworks/accounts/fireworks/models/deepseek-v4-pro</code></p>
+<p><strong>Cerebras (<code>cerebras/</code>)</strong> — вафельного масштаба: <code>cerebras/zai-glm-4.7</code>, <code>cerebras/gpt-oss-120b</code></p>
+<p><strong>Cohere (<code>cohere/</code>)</strong> — ориентированный на RAG: <code>cohere/command-a-reasoning-08-2025</code>, <code>cohere/command-a-vision-07-2025</code>, <code>cohere/command-a-03-2025</code>, <code>cohere/command-r-08-2024</code></p>
+<p><strong>NVIDIA NIM (<code>nvidia/</code>)</strong> — корпоративный: <code>nvidia/google/gemma-4-31b-it</code>, <code>nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b</code>, <code>nvidia/nvidia/nemotron-3-ultra-550b-a55b</code>, <code>nvidia/nvidia/nemotron-3.5-lightning-30b-a3b</code></p>
+<p><strong>Baidu Qianfan (<code>qianfan/</code>)</strong> — ERNIE: <code>qianfan/ernie-5.1</code>, <code>qianfan/ernie-5.0-thinking-latest</code>, <code>qianfan/ernie-x1.1</code></p>
+<p><strong>Ollama Cloud (<code>ollama-cloud/</code>)</strong>: <code>ollama-cloud/deepseek-v4-pro</code>, <code>ollama-cloud/deepseek-v4-flash</code>, <code>ollama-cloud/kimi-k2.6</code>, <code>ollama-cloud/glm-5.1</code>, <code>ollama-cloud/minimax-m2.7</code>, <code>ollama-cloud/gemma4:31b</code>, <code>ollama-cloud/qwen3.5:397b</code></p>
+<p><strong>Gemini (Google Cloud <code>gemini/</code>)</strong>: синхронизируется в реальном времени по ключу API из Google — статического списка нет. Подключите ключ в разделе <strong>Панель управления → Провайдеры</strong>, затем используйте <strong>Доступные модели</strong>, чтобы импортировать текущий каталог (например, <code>gemini/gemini-3-pro</code>, <code>gemini/gemini-3-flash</code>).</p>
+<p><strong>Другие совместимые провайдеры</strong> (выбранные): <code>cohere</code>, <code>databricks</code>, <code>snowflake</code>, <code>together</code>, <code>vertex</code>, <code>alibaba</code>, <code>alibaba-cn</code>, <code>bedrock</code> (через <code>aws-bedrock</code>), <code>azure-ai</code>, <code>openrouter</code> (каталог с прямой передачей), <code>siliconflow</code>, <code>hyperbolic</code>, <code>huggingface</code>, <code>featherless-ai</code>, <code>cloudflare-ai</code>, <code>scaleway</code>, <code>deepinfra</code>, <code>vercel-ai-gateway</code>, <code>bazaarlink</code>, <code>friendliai</code>, <code>nous-research</code>, <code>reka</code>, <code>volcengine</code>, <code>ai21</code>, <code>gigachat</code>. Каждый поддерживает собственный список моделей в <code>providerRegistry.ts</code>; его можно синхронизировать автоматически, если провайдер предоставляет конечную точку <code>/models</code>.</p>
+<p><strong>Примечание об идентификаторах моделей:</strong> OmniRoute использует нативные идентификаторы провайдеров (<code>claude-opus-4-8</code>, <code>gpt-5.5</code>, <code>glm-5.1</code>, <code>MiniMax-M2.7</code>, <code>kimi-k2.5</code>, <code>grok-4.20-0309-reasoning</code>). Некоторые идентификаторы содержат версии с точками, поскольку именно в таком виде их ожидает вышестоящий API. Если модели нет в списке выше, выполните <code>omniroute models --search &lt;term&gt;</code> или обратитесь к <code>GET /api/models/catalog</code>, чтобы подтвердить её доступность.</p>
+</details>
+<hr>
+<h3 id="h-14">Расширенные возможности 🧩 <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-15">Пользовательские модели <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h4>
+<p>Добавьте любую модель ID к любому провайдеру, не дожидаясь обновления приложения:</p>
+<pre><code class="language-bash"># Via API
+curl -X POST http://localhost:20128/api/provider-models \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &#x27;{&quot;provider&quot;: &quot;openai&quot;, &quot;modelId&quot;: &quot;gpt-5.2&quot;, &quot;modelName&quot;: &quot;GPT-5.2&quot;}&#x27;
+
+# List: curl http://localhost:20128/api/provider-models?provider=openai
+# Remove: curl -X DELETE &quot;http://localhost:20128/api/provider-models?provider=openai&amp;model=gpt-5.2&quot;</code></pre>
+<p>Или используйте панель управления:<strong> Поставщики → [Поставщик] → Пользовательские модели</strong> .</p>
+<p>Примечания:</p>
+<ul>
+<li>Поставщики OpenRouter и OpenAI/Anthropic-compatible управляются из<strong> Доступные модели</strong> только. Добавление, импорт и автоматическая синхронизация вручную попадают в один и тот же список доступных моделей, поэтому для этих поставщиков нет отдельного раздела «Пользовательские модели».</li>
+<li><strong>Пользовательские модели</strong> Раздел предназначен для поставщиков, которые не предоставляют управляемый импорт доступных моделей.</li>
+</ul>
+<h4 id="пользовательские-поставщики-совместимые-с-openai">Пользовательские поставщики, совместимые с OpenAI <a class="h-anchor" href="#пользовательские-поставщики-совместимые-с-openai" aria-label="Ссылка на раздел">#</a></h4>
+<p>Любой шлюз, поддерживающий OpenAI API (автономный прокси-сервер, vLLM, сторонний агрегатор), можно добавить в качестве собственного узла провайдера:</p>
+<ol>
+<li><strong>Поставщики → Добавить OpenAI Совместимость</strong> .</li>
+<li><strong>Имя</strong> : отображаемая метка узла.</li>
+<li><strong>Префикс</strong> : имя маршрутизации. Клиенты называют модели <code>&lt;prefix&gt;/&lt;model&gt;</code>, поэтому узел с префиксом <code>mygw</code> обслуживает <code>mygw/gpt-4o-mini</code>. Необходимый; ограничений по количеству символов нет.</li>
+<li><strong>тип API</strong> : семейство конечных точек, которые обслуживает шлюз (завершения чата, ответы, встраивания, аудио, изображения).</li>
+<li><strong>База URL</strong> : корень API, вплоть до <code>/v1</code> (например <code>https://gateway.example.com/v1</code>), а не полный путь <code>/chat/completions</code>. Шлюзы с нестандартными путями устанавливают их под<strong> Расширенные настройки</strong> (путь чата, путь моделей).</li>
+<li><strong>Ключ API (для проверки)</strong> поле только проверяет соединение. После создания узла откройте его и используйте<strong> Добавить соединение</strong> для хранения ключа, который будут использовать запросы.</li>
+</ol>
+<p>Узел получает внутренний идентификатор в форме <code>openai-compatible-&lt;apiType&gt;-&lt;uuid&gt;</code>; вам не нужно его вводить, префикс — это общедоступное имя.</p>
+<h5 id="h-16">Зарезервированные префиксы <a class="h-anchor" href="#h-16" aria-label="Ссылка на раздел">#</a></h5>
+<p>Префикс не может быть идентификатором или псевдонимом встроенного поставщика (например, <code>openai</code>, <code>cf</code>), а также идентификатором устаревшего поставщика. Распознаватель модели проверяет встроенные идентификаторы и псевдонимы перед пользовательскими узлами, поэтому узел, использующий один из этих префиксов, никогда не получит трафик: вместо этого <code>&lt;prefix&gt;/model</code> перейдет к встроенному поставщику или закроется с ошибкой, если этот поставщик будет удален. Создание или редактирование узла с таким префиксом отклоняется с помощью:</p>
+<pre><code class="language-text">prefix: &quot;&lt;prefix&gt;&quot; is a reserved provider prefix — choose a different prefix (reserved ids/aliases cannot be used for custom nodes because requests like &lt;prefix&gt;/model route to a built-in provider or fail closed when retired)</code></pre>
+<p>Выберите отдельный префикс (<code>mygw</code>, <code>acme-proxy</code>). Если запросы к пользовательскому узлу завершаются с ошибкой, в которой указывается встроенный поставщик или его учетные данные, проверьте, зарезервирован ли префикс узла: узлы, сохраненные до существования этого правила, все еще сохраняются, но их префикс направляется к встроенному поставщику. Отредактируйте узел и присвойте ему новый префикс.</p>
+<h5 id="h-17">Параметры шлюза для каждого соединения <a class="h-anchor" href="#h-17" aria-label="Ссылка на раздел">#</a></h5>
+<p>Эти ключи входят в <code>providerSpecificData</code> соединения (например, через <code>PUT /api/providers/{id}</code>):</p>
+<ul>
+<li><code>toolNameMaxLength</code> (целое число, 1–1024) — для соединений, совместимых с форматом чата OpenAI, шлюз которых отклоняет длинные имена инструментов. Более длинные имена передаются как короткие псевдонимы и восстанавливаются в ответе. OpenAI, Azure OpenAI, Azure AI Foundry, Mistral, NVIDIA, OpenCode Zen/Go и Muse Code уже используют псевдонимы имен длиной более 64 символов без каких-либо настроек. Значение соединения заменяет значение по умолчанию Azure OpenAI /Azur AI Foundry (подключение Azure за более строгим шлюзом) и устанавливает ограничение для настраиваемого совместимого узла; OpenAI, Mistral, NVIDIA, OpenCode Zen/Go и Muse Code сохраняют ограничение реестра и игнорируют его.</li>
+<li><code>quotaEndpoint</code> — конечная точка quota/credits шлюза, чтение полосы квот панели мониторинга и маршрутизации с учетом квот. Работает как с OpenAI, так и с Anthropic-совместимыми соединениями; полная форма документирована в <code>open-sse/services/usage/openaiCompatible.ts</code>.</li>
+</ul>
+<pre><code class="language-json">{
+  &quot;toolNameMaxLength&quot;: 64,
+  &quot;quotaEndpoint&quot;: {
+    &quot;url&quot;: &quot;https://gateway.example.com/key/info&quot;,
+    &quot;auth&quot;: &quot;bearer&quot;,
+    &quot;quotas&quot;: {
+      &quot;budget&quot;: { &quot;used&quot;: &quot;$.info.spend&quot;, &quot;total&quot;: &quot;$.info.max_budget&quot;, &quot;currency&quot;: &quot;USD&quot; }
+    }
+  }
+}</code></pre>
+<h4 id="объединение-пиров-omniroute-в-цепочку">Объединение пиров OmniRoute в цепочку <a class="h-anchor" href="#объединение-пиров-omniroute-в-цепочку" aria-label="Ссылка на раздел">#</a></h4>
+<p>Еще один шлюз OmniRoute можно добавить в качестве<strong> Пользовательский OpenAI-совместимый</strong> провайдер. Используйте базовый <code>/v1</code> URL узла и выделенный ключ API с наименьшими привилегиями, выданный этим узлом.</p>
+<p>Для взаимных или многопрыжковых цепочек включите защиту от петель на каждом шлюзе:</p>
+<pre><code class="language-bash"># gateway-a
+OMNIROUTE_INSTANCE_ID=gateway-a
+OMNIROUTE_PEER_URLS=http://gateway-b:20128/v1
+OMNIROUTE_PEER_MAX_HOPS=4</code></pre>
+<pre><code class="language-bash"># gateway-b
+OMNIROUTE_INSTANCE_ID=gateway-b
+OMNIROUTE_PEER_URLS=http://gateway-a:20128/v1
+OMNIROUTE_PEER_MAX_HOPS=4</code></pre>
+<p>Заголовок <code>X-OmniRoute-Peer-Trace</code> получают только запросы, отправленные узлу URL явно включенному в разрешенный список. Шлюз отклоняет повторный экземпляр ID или исчерпанный бюджет переходов с помощью HTTP <code>508 Loop Detected</code>; обычные вышестоящие поставщики не получают метаданных одноранговых узлов.</p>
+<p>Цепочка одноранговых узлов не является репликацией базы данных или переключением хоста при сбое. Каждый шлюз сохраняет независимое состояние SQLite, кэши, счетчики скорости и сеансы. Используйте обратный прокси-сервер с проверкой работоспособности или аварийное переключение клиента для доступности active/passive или active/active и никогда не монтируйте одну базу данных SQLite в несколько работающих экземпляров OmniRoute.</p>
+<h4 id="h-18">Выделенные маршруты провайдера <a class="h-anchor" href="#h-18" aria-label="Ссылка на раздел">#</a></h4>
+<p>Направляйте запросы непосредственно к конкретному поставщику с проверкой модели:</p>
+<pre><code class="language-bash">POST http://localhost:20128/v1/providers/openai/chat/completions
+POST http://localhost:20128/v1/providers/openai/embeddings
+POST http://localhost:20128/v1/providers/fireworks/images/generations</code></pre>
+<p>Префикс провайдера добавляется автоматически, если он отсутствует. Несовпадающие модели возвращают <code>400</code>.</p>
+<h4 id="h-19">Конфигурация сетевого прокси <a class="h-anchor" href="#h-19" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Set global proxy
+curl -X PUT http://localhost:20128/api/settings/proxy \
+  -d &#x27;{&quot;global&quot;: {&quot;type&quot;:&quot;http&quot;,&quot;host&quot;:&quot;proxy.example.com&quot;,&quot;port&quot;:&quot;8080&quot;}}&#x27;
+
+# Per-provider proxy
+curl -X PUT http://localhost:20128/api/settings/proxy \
+  -d &#x27;{&quot;providers&quot;: {&quot;openai&quot;: {&quot;type&quot;:&quot;socks5&quot;,&quot;host&quot;:&quot;proxy.example.com&quot;,&quot;port&quot;:&quot;1080&quot;}}}&#x27;
+
+# Test proxy
+curl -X POST http://localhost:20128/api/settings/proxy/test \
+  -d &#x27;{&quot;proxy&quot;:{&quot;type&quot;:&quot;socks5&quot;,&quot;host&quot;:&quot;proxy.example.com&quot;,&quot;port&quot;:&quot;1080&quot;}}&#x27;</code></pre>
+<p><strong>Precedence:</strong> Key-specific → Combo-specific → Provider-specific → Global → Environment.</p>
+<h4 id="каталог-моделей-api">Каталог моделей API <a class="h-anchor" href="#каталог-моделей-api" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">curl http://localhost:20128/api/models/catalog</code></pre>
+<p>Возвращает модели, сгруппированные по поставщикам с типами (<code>chat</code>, <code>embedding</code>, <code>image</code>).</p>
+<h4 id="h-20">Облачная синхронизация <a class="h-anchor" href="#h-20" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Синхронизируйте поставщиков, комбинации и настройки между устройствами.</li>
+<li>Автоматическая фоновая синхронизация с тайм-аутом + Fail-Fast</li>
+<li>Предпочитайте серверную <code>NEXT_PUBLIC_BASE_URL</code>/<code>NEXT_PUBLIC_CLOUD_URL</code> в рабочей среде.</li>
+</ul>
+<h4 id="cloudflare-быстрый-туннель">Cloudflare Быстрый туннель <a class="h-anchor" href="#cloudflare-быстрый-туннель" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Доступно в<strong> Панель управления → Конечные точки</strong> для Docker и других локальных развертываний</li>
+<li>Создает временный <code>https://*.trycloudflare.com</code> URL, который перенаправляет вашу текущую конечную точку <code>/v1</code>, совместимую с OpenAI.</li>
+<li>При первом включении <code>cloudflared</code> устанавливается только при необходимости; последующие перезапуски повторно используют тот же управляемый двоичный файл</li>
+<li>Быстрые туннели не восстанавливаются автоматически после перезапуска OmniRoute или контейнера; при необходимости повторно включите их с панели управления</li>
+<li>Туннельные URLs эфемерны и меняются каждый раз, когда вы stop/start туннеля.</li>
+<li>Управляемые быстрые туннели по умолчанию используют транспорт HTTP/2, чтобы избежать шумных предупреждений буфера QUIC UDP в ограниченных контейнерах.</li>
+<li>Установите <code>CLOUDFLARED_PROTOCOL=quic</code> или <code>auto</code> если вы хотите переопределить выбор управляемого транспорта.</li>
+<li>Установите <code>CLOUDFLARED_BIN</code> если вы предпочитаете использовать предустановленный двоичный файл <code>cloudflared</code> вместо управляемой загрузки.</li>
+<li>Панели Cloudflare Quick Tunnel, Tailscale Funnel и ngrok Tunnel можно отображать или скрывать в<strong> Настройки → Внешний вид</strong> . Скрытие панели не останавливает работающий туннель.</li>
+</ul>
+<h4 id="llm-gateway-intelligence-этап-9">LLM Gateway Intelligence (этап 9) <a class="h-anchor" href="#llm-gateway-intelligence-этап-9" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Семантический кэш</strong> — Автоматическое кэширование непотокового режима, температура ответов = 0 (обход с помощью <code>X-OmniRoute-No-Cache: true</code>)</li>
+<li><strong>Запросить идемпотентность</strong> — Дедупликация запросов в течение 5 секунд через заголовок <code>Idempotency-Key</code> или <code>X-Request-Id</code></li>
+<li><strong>Отслеживание прогресса</strong> — Согласие на участие в событиях SSE <code>event: progress</code> через заголовок <code>X-OmniRoute-Progress: true</code></li>
+</ul>
+<hr>
+<h4 id="h-21">Площадка для переводчиков <a class="h-anchor" href="#h-21" aria-label="Ссылка на раздел">#</a></h4>
+<p>Доступ через<strong> Панель управления → Переводчик</strong> . Выполняйте отладку и визуализируйте, как OmniRoute преобразует запросы API между поставщиками.</p>
+<div class="table-wrap"><table><thead><tr><th>Режим</th><th>Цель</th></tr></thead><tbody><tr><td><strong>Детская площадка</strong></td><td>Выберите форматы source/target, вставьте запрос и мгновенно просмотрите переведенный результат.</td></tr><tr><td><strong>Тестер чата</strong></td><td>Отправляйте сообщения в чате через прокси и проверяйте полный цикл request/response</td></tr><tr><td><strong>Испытательный стенд</strong></td><td>Запускайте пакетные тесты для нескольких комбинаций форматов, чтобы проверить правильность перевода.</td></tr><tr><td><strong>Живой монитор</strong></td><td>Наблюдайте за переводами в реальном времени по мере прохождения запросов через прокси.</td></tr></tbody></table></div>
+<p><strong>Варианты использования:</strong></p>
+<ul>
+<li>Отладка причины сбоя конкретной комбинации client/provider</li>
+<li>Убедитесь, что теги мышления, вызовы инструментов и системные подсказки переводятся правильно.</li>
+<li>Сравните различия в форматах OpenAI, Claude, Gemini и ответов API</li>
+</ul>
+<hr>
+<h4 id="h-22">Стратегии маршрутизации <a class="h-anchor" href="#h-22" aria-label="Ссылка на раздел">#</a></h4>
+<p>Настроить через<strong> Панель мониторинга Настройки → Маршрутизация →</strong> . На информационной панели представлены шесть наиболее часто используемых стратегий; комбинации и автоматическая трассировка поддерживают более широкий набор.</p>
+<p><strong>Стратегии, видимые на информационной панели (маршрутизация на уровне учетной записи):</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Стратегия</th><th>Описание</th></tr></thead><tbody><tr><td><strong>Сначала заполните</strong></td><td>Использует учетные записи в порядке приоритета. Основная учетная запись — обрабатывает все запросы, пока они не станут недоступны.</td></tr><tr><td><strong>Круговая система</strong></td><td>Циклическое переключение всех учетных записей с настраиваемым фиксированным лимитом (по умолчанию: 3 вызова на учетную запись).</td></tr><tr><td><strong>P2C (Сила двух вариантов)</strong></td><td>Выбирает 2 случайных аккаунта и направляет к более здоровому. — балансирует нагрузку с осознанием здоровья.</td></tr><tr><td><strong>Случайный</strong></td><td>Случайным образом выбирает учетную запись для каждого запроса, используя перемешивание Фишера-Йейтса.</td></tr><tr><td><strong>Наименее используемый</strong></td><td>Маршруты к аккаунту с самой старой отметкой времени <code>lastUsedAt</code>, распределение трафика равномерно.</td></tr><tr><td><strong>Оптимизированная стоимость</strong></td><td>Маршруты к учетной записи с наименьшим значением приоритета, оптимизация для поставщиков с наименьшими затратами.</td></tr></tbody></table></div>
+<p><strong>Продвинутые комбо и автоматические стратегии</strong> (настраивается для каждой комбинации или с помощью префиксов <code>auto/*</code> — см. <a href="../routing/AUTO-COMBO.md">AUTO-COMBO.md</a> ):</p>
+<ul>
+<li><code>priority</code> — строгий порядок, никогда не циклический порядок</li>
+<li><code>weighted</code> — пропорциональное разделение трафика по весам для каждой модели</li>
+<li><code>fill-first</code> — сливает первую модель, пока не достигнут предел</li>
+<li><code>round-robin</code> / <code>strict-random</code> / <code>random</code></li>
+<li><code>p2c</code> (Сила двух вариантов)</li>
+<li><code>least-used</code> и <code>cost-optimized</code></li>
+<li><code>auto</code> — на основе оценок всех кандидатов</li>
+<li><code>lkgp</code> (последний удачный поставщик) — связывается с последним успешным поставщиком, а затем возвращается к правилам</li>
+<li><code>context-optimized</code> — выбирает модель с самым большим окном свободного контекста</li>
+<li><code>context-relay</code> — объединяет модели с длинным контекстом для последующих ходов</li>
+</ul>
+<h5 id="h-23">Внешний заголовок закрепленного сеанса <a class="h-anchor" href="#h-23" aria-label="Ссылка на раздел">#</a></h5>
+<p>Для привязки внешнего сеанса (например, агентов Claude Code/Codex за обратными прокси-серверами) отправьте:</p>
+<pre><code class="language-http">X-Session-Id: your-session-key</code></pre>
+<p>OmniRoute также принимает <code>x_session_id</code> и возвращает эффективный сеансовый ключ в <code>X-OmniRoute-Session-Id</code>.</p>
+<p>Если вы используете Nginx и отправляете заголовки формы подчеркивания, включите:</p>
+<pre><code class="language-nginx">underscores_in_headers on;</code></pre>
+<h5 id="h-24">Псевдонимы модели с подстановочными знаками <a class="h-anchor" href="#h-24" aria-label="Ссылка на раздел">#</a></h5>
+<p>Создайте шаблоны подстановочных знаков для переназначения имен моделей:</p>
+<pre><code>Pattern: claude-sonnet-*     →  Target: cc/claude-sonnet-4-6
+Pattern: gpt-*               →  Target: gh/gpt-5.3-codex</code></pre>
+<p>Подстановочные знаки поддерживают <code>*</code> (любые символы) и <code>?</code> (один символ).</p>
+<h5 id="h-25">Резервные цепочки <a class="h-anchor" href="#h-25" aria-label="Ссылка на раздел">#</a></h5>
+<p>Определите глобальные резервные цепочки, которые применяются ко всем запросам:</p>
+<pre><code>Chain: production-fallback
+  1. cc/claude-opus-4-7
+  2. gh/gpt-5.3-codex
+  3. glm/glm-4.7</code></pre>
+<hr>
+<h4 id="h-26">Общие комбинации поставщиков и шаблоны маршрутизации <a class="h-anchor" href="#h-26" aria-label="Ссылка на раздел">#</a></h4>
+<p>Вот примеры шаблонов для объединения нескольких провайдеров и маршрутизации между ними в OmniRoute:</p>
+<h5 id="1-комбинированный-агент-для-кодирования-высококлассное-рассуждение-с-резервным-вариантом-cost-speed">1. Комбинированный агент для кодирования: высококлассное рассуждение с резервным вариантом Cost/Speed <a class="h-anchor" href="#1-комбинированный-агент-для-кодирования-высококлассное-рассуждение-с-резервным-вариантом-cost-speed" aria-label="Ссылка на раздел">#</a></h5>
+<p>Идеально подходит для агентов кодирования (OpenCode, Claude Code, Cursor, Cline). Первоначально направляется к пограничным моделям рассуждения, возвращаясь к моделям быстрого кодирования в случае исчерпания квоты или ошибок.</p>
+<ul>
+<li><strong>Панель управления</strong> : Комбо → Новое комбо → Название: <code>agent-coding</code> → Стратегия: <code>Priority</code></li>
+<li><strong>Модели</strong> :</li>
+<li><code>claude/claude-sonnet-4-6</code> (первичный кодирующий агент)</li>
+<li><code>openai/gpt-4o</code> (вторичный резервный вариант высокой емкости)</li>
+<li><code>deepseek/deepseek-v4-flash</code> (Высокоэффективный и экономичный резервный вариант)</li>
+</ul>
+<pre><code class="language-bash"># Example via API
+curl -X POST http://localhost:20128/api/combos \
+  -H &quot;Authorization: Bearer $OMNIROUTE_MANAGE_KEY&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &#x27;{
+    &quot;name&quot;: &quot;agent-coding&quot;,
+    &quot;strategy&quot;: &quot;priority&quot;,
+    &quot;models&quot;: [
+      { &quot;model&quot;: &quot;claude/claude-sonnet-4-6&quot; },
+      { &quot;model&quot;: &quot;openai/gpt-4o&quot; },
+      { &quot;model&quot;: &quot;deepseek/deepseek-v4-flash&quot; }
+    ]
+  }&#x27;</code></pre>
+<h5 id="2-комбинация-автоматического-аварийного-переключения-на-бесплатном-уровне">2. Комбинация автоматического аварийного переключения на бесплатном уровне <a class="h-anchor" href="#2-комбинация-автоматического-аварийного-переключения-на-бесплатном-уровне" aria-label="Ссылка на раздел">#</a></h5>
+<p>Объединяет несколько поставщиков бесплатного уровня и бесключевого доступа, чтобы максимально увеличить время безотказной работы без затрат API.</p>
+<ul>
+<li><strong>Стратегия</strong> : <code>Least Used</code> или <code>Round Robin</code> (распределяет нагрузку по квотам)</li>
+<li><strong>Модели</strong> :</li>
+<li><code>groq/llama-3.3-70b-versatile</code></li>
+<li><code>gemini/gemini-2.5-flash</code></li>
+<li><code>cerebras/gpt-oss-120b</code></li>
+</ul>
+<pre><code class="language-bash"># Example via CLI
+omniroute combo create free-stack \
+  --models &quot;groq/llama-3.3-70b-versatile,gemini/gemini-2.5-flash,cerebras/gpt-oss-120b&quot; \
+  --strategy round-robin</code></pre>
+<h5 id="3-мультимодальный-визуальный-и-текстовый-конвейер">3. Мультимодальный / визуальный и текстовый конвейер <a class="h-anchor" href="#3-мультимодальный-визуальный-и-текстовый-конвейер" aria-label="Ссылка на раздел">#</a></h5>
+<p>Сочетание специализированных моделей машинного зрения с высокоскоростной генерацией текста для рабочих процессов, включающих понимание изображений и генерацию кода.</p>
+<ul>
+<li><strong>Шаблон</strong> : комбинация <code>Priority</code>, в которой сначала перечисляются модели с поддержкой машинного зрения, а затем — модель text/code с высокой пропускной способностью.</li>
+<li><strong>Модели</strong> :</li>
+<li><code>gemini/gemini-2.5-pro</code> (глубокое понимание image/multimodal )</li>
+<li><code>openai/gpt-4o</code> (сбалансированное видение и использование инструментов)</li>
+<li><code>deepseek/deepseek-v4-flash</code> (генерация Text/code )</li>
+</ul>
+<hr>
+<h4 id="h-27">Устойчивость и автоматические выключатели <a class="h-anchor" href="#h-27" aria-label="Ссылка на раздел">#</a></h4>
+<p>Настроить через<strong> Панель мониторинга Настройки → Устойчивость →</strong> .</p>
+<p>OmniRoute реализует устойчивость на уровне поставщика с помощью пяти компонентов:</p>
+<ol>
+<li><strong>Очередь запросов и скорость выполнения</strong> — Формирование запросов на уровне системы:</li>
+<li><strong>Запросов в минуту (RPM)</strong> — Максимальное количество запросов в минуту на аккаунт</li>
+<li><strong>Минимальное время между запросами</strong> — Минимальный промежуток в миллисекундах между запросами</li>
+<li><strong>Максимальное количество одновременных запросов</strong> — Максимальное количество одновременных запросов на одну учетную запись</li>
+</ol>
+<ol>
+<li><strong>Время восстановления соединения</strong> — Конфигурация по типу аутентификации для одного соединения после повторных сбоев:</li>
+<li><strong>Базовое время восстановления</strong> — Окно восстановления по умолчанию для повторных сбоев восходящего потока</li>
+<li><strong>Используйте подсказки для повторных попыток восходящего потока</strong> — Уважает авторитетные подсказки <code>Retry-After</code> или сброса, если они предоставлены.</li>
+<li><strong>Максимальное количество шагов отсрочки</strong> — Максимальный уровень экспоненциальной задержки для повторяющихся сбоев</li>
+</ol>
+<ol>
+<li><strong>Автоматический выключатель поставщика</strong> — Отслеживает сквозные сбои поставщика, отмечает, что производительность провайдера снизилась при достижении настроенного порога предупреждения, и включает прерыватель при достижении настроенного порога отказа:</li>
+<li><strong>Порог деградации</strong> — Последовательные сбои поставщика перед входом <code>DEGRADED</code></li>
+<li><strong>Порог отказа</strong> — Последовательные сбои поставщика перед входом <code>OPEN</code></li>
+<li><strong>Сбросить тайм-аут</strong> — Временной интервал перед повторным тестированием поставщика</li>
+<li><strong>CLOSED</strong> (Работно) Запросы — выполняются нормально</li>
+<li><strong>DEGRADED</strong> Запросы — продолжают обрабатываться, а сбои с повышенными правами отслеживаются.</li>
+<li><strong>OPEN</strong> Поставщик — временно заблокирован после неоднократных сбоев</li>
+<li><strong>HALF_OPEN</strong> — Тестирование, восстановился ли провайдер</li>
+</ol>
+<p>Ограничения скорости <code>429</code> на уровне соединения остаются в силе<strong> Время восстановления соединения</strong> и не засчитывайте в счет прерывателя провайдера.</p>
+<p>Состояние выполнения прерывателя поставщика показано на<strong> Панель управления → Health</strong> только.</p>
+<ol>
+<li><strong>Подождите перезарядки</strong> — Если каждое потенциальное соединение уже остывает, OmniRoute может дождаться самого раннего остывания и автоматически повторить тот же клиентский запрос.</li>
+</ol>
+<ol>
+<li><strong>Автоматическое определение ограничения скорости</strong> — Когда вышестоящие поставщики возвращают явные окна ожидания, эти подсказки переопределяют время восстановления локального соединения, если этот параметр включен.</li>
+</ol>
+<p><strong>Совет для профессионалов:</strong> Используйте<strong> Здоровье</strong> страница для проверки и сброса автоматических выключателей действующего поставщика после сбоя. Страница «Устойчивость» меняет только конфигурацию.</p>
+<hr>
+<h4 id="h-28">Экспорт/импорт базы данных <a class="h-anchor" href="#h-28" aria-label="Ссылка на раздел">#</a></h4>
+<p>Управляйте резервными копиями баз данных в<strong> Панель управления Настройки → Система и хранилище →</strong> .</p>
+<div class="table-wrap"><table><thead><tr><th>Действие</th><th>Описание</th></tr></thead><tbody><tr><td><strong>Экспорт базы данных</strong></td><td>Загружает текущую базу данных SQLite в виде файла <code>.sqlite</code></td></tr><tr><td><strong>Экспортировать все (.tar.gz)</strong></td><td>Загружает полный архив резервных копий, включая: базу данных, настройки, комбинации, подключения к провайдеру (без учетных данных), метаданные ключа API</td></tr><tr><td><strong>Импортировать базу данных</strong></td><td>Загрузите файл <code>.sqlite</code>, чтобы заменить текущую базу данных. Резервная копия перед импортом создается автоматически, если <code>DISABLE_SQLITE_AUTO_BACKUP=true</code></td></tr></tbody></table></div>
+<pre><code class="language-bash"># API: Export database
+curl -o backup.sqlite http://localhost:20128/api/db-backups/export
+
+# API: Export all (full archive)
+curl -o backup.tar.gz http://localhost:20128/api/db-backups/exportAll
+
+# API: Import database
+curl -X POST http://localhost:20128/api/db-backups/import \
+  -F &quot;file=@backup.sqlite&quot;</code></pre>
+<p><strong>Проверка импорта:</strong> Импортированный файл проверяется на целостность (проверка прагмы SQLite ), необходимые таблицы (<code>provider_connections</code>, <code>provider_nodes</code>, <code>combos</code>, <code>api_keys</code>) и размер (максимум 100 МБ).</p>
+<p><strong>Варианты использования:</strong></p>
+<ul>
+<li>Миграция OmniRoute между машинами</li>
+<li>Создание внешних резервных копий для аварийного восстановления.</li>
+<li>Совместное использование конфигураций между членами команды (экспорт всего общего архива → )</li>
+</ul>
+<hr>
+<h4 id="h-29">Панель настроек <a class="h-anchor" href="#h-29" aria-label="Ссылка на раздел">#</a></h4>
+<p>Страница настроек организована в<strong> 7 вкладок</strong> для удобной навигации:</p>
+<div class="table-wrap"><table><thead><tr><th>Вкладка</th><th>Содержание</th></tr></thead><tbody><tr><td><strong>Общий</strong></td><td>Инструменты системного хранения, поведение по умолчанию, видимость туннеля конечной точки</td></tr><tr><td><strong>Появление</strong></td><td>Элементы управления темой (light/dark/system), видимость боковой панели, переключатели панелей для карточек туннеля Cloudflare/Tailscale/ngrok</td></tr><tr><td><strong>AI</strong></td><td>Обдумывающий бюджет (сквозной/автоматическое удаление/пользовательский/адаптивный —, см. <a href="./THINKING_BUDGET.md">THINKING_BUDGET.md</a> ), глобальная системная подсказка, подсказка статистики кэша</td></tr><tr><td><strong>Безопасность</strong></td><td>настройки Login/Password, контроль доступа IP, аутентификация API для <code>/models</code>, блокировка провайдера, защита от быстрого внедрения</td></tr><tr><td><strong>Маршрутизация</strong></td><td>Глобальная стратегия маршрутизации (Fill First / Round Robin / P2C / Random / Least Used / Cost Optimized), псевдонимы моделей с подстановочными знаками, резервные цепочки, комбинированные значения по умолчанию.</td></tr><tr><td><strong>Устойчивость</strong></td><td>Очередь запросов, время восстановления соединения, конфигурация прерывателя поставщика и поведение ожидания восстановления</td></tr><tr><td><strong>Передовой</strong></td><td>Глобальная конфигурация прокси (HTTP/SOCKS5), переопределение прокси для каждого провайдера</td></tr></tbody></table></div>
+<p>Общие больше не дублируют записи журналов и кэша, доступные только для чтения. Параметры хранения и оптимизации базы данных сохраняются через <code>/api/settings/database</code>; ручная очистка кэша использует <code>DELETE /api/cache</code>. Ограничения строк журнала запросов и прокси-серверов контролируются <code>CALL_LOGS_TABLE_MAX_ROWS</code> и <code>PROXY_LOGS_TABLE_MAX_ROWS</code>.</p>
+<hr>
+<h4 id="h-30">Управление затратами и бюджетом <a class="h-anchor" href="#h-30" aria-label="Ссылка на раздел">#</a></h4>
+<p>Доступ через<strong> Расходы на панель мониторинга →</strong> .</p>
+<div class="table-wrap"><table><thead><tr><th>Вкладка</th><th>Цель</th></tr></thead><tbody><tr><td><strong>Бюджет</strong></td><td>Установите лимиты расходов для каждого ключа API с помощью бюджетов daily/weekly/monthly и отслеживания в реальном времени.</td></tr><tr><td><strong>Цены</strong></td><td>Просмотр и редактирование записей о ценах модели Стоимость — за 1 тыс. токенов input/output для каждого поставщика</td></tr></tbody></table></div>
+<pre><code class="language-bash"># API: Set a budget
+curl -X POST http://localhost:20128/api/usage/budget \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &#x27;{&quot;keyId&quot;: &quot;key-123&quot;, &quot;limit&quot;: 50.00, &quot;period&quot;: &quot;monthly&quot;}&#x27;
+
+# API: Get current budget status
+curl http://localhost:20128/api/usage/budget</code></pre>
+<p><strong>Отслеживание затрат:</strong> Каждый запрос регистрирует использование токенов и рассчитывает стоимость с использованием таблицы цен. Посмотреть разбивку в<strong> Использование → в информационной панели</strong> по поставщику, модели и ключу API.</p>
+<hr>
+<h4 id="h-31">Аудио транскрипция <a class="h-anchor" href="#h-31" aria-label="Ссылка на раздел">#</a></h4>
+<p>OmniRoute поддерживает транскрипцию звука через конечную точку, совместимую с OpenAI:</p>
+<pre><code class="language-bash">POST /v1/audio/transcriptions
+Authorization: Bearer your-api-key
+Content-Type: multipart/form-data
+
+# Example with curl
+curl -X POST http://localhost:20128/v1/audio/transcriptions \
+  -H &quot;Authorization: Bearer your-api-key&quot; \
+  -F &quot;file=@audio.mp3&quot; \
+  -F &quot;model=openai/whisper-1&quot;</code></pre>
+<p><code>deepgram/nova-3</code> — это собственный маршрут Deepgram, и для него требуется ключ Deepgram API. Если настроен только OpenRouter, используйте <code>openrouter/deepgram/nova-3</code>.</p>
+<p><strong>Преобразование речи в текст (транскрипция)</strong> провайдеры:</p>
+<ul>
+<li><code>openai/</code> (совместимый с шепотом)</li>
+<li><code>groq/</code> (Groq Whisper Turbo)</li>
+<li><code>deepgram/</code> (семья Нова)</li>
+<li><code>assemblyai/</code></li>
+<li><code>nvidia/</code> (попугай, канарейка)</li>
+<li><code>huggingface/</code> (варианты шепота)</li>
+<li><code>qwen/</code></li>
+</ul>
+<p><strong>Преобразование текста в речь (<code>POST /v1/audio/speech</code>)</strong> провайдеры:</p>
+<ul>
+<li><code>openai/</code> (tts-1, tts-1-hd)</li>
+<li><code>hyperbolic/</code></li>
+<li><code>deepgram/</code> (Аура)</li>
+<li><code>nvidia/</code> (Сорока TTS)</li>
+<li><code>elevenlabs/</code></li>
+<li><code>huggingface/</code></li>
+<li><code>inworld/</code></li>
+<li><code>cartesia/</code></li>
+<li><code>playht/</code></li>
+<li><code>kie/</code></li>
+<li><code>aws-polly/</code></li>
+<li><code>xiaomi-mimo/</code></li>
+<li><code>coqui/</code>, <code>tortoise/</code></li>
+<li><code>qwen/</code></li>
+</ul>
+<p>Поддерживаемые аудиоформаты для транскрипции: <code>mp3</code>, <code>wav</code>, <code>m4a</code>, <code>flac</code>, <code>ogg</code>, <code>webm</code>. Форматы вывода TTS зависят от провайдера (mp3, wav, opus, pcm, mulaw).</p>
+<hr>
+<h4 id="h-32">Стратегии балансировки комбо <a class="h-anchor" href="#h-32" aria-label="Ссылка на раздел">#</a></h4>
+<p>Настройте балансировку для каждой комбинации в<strong> Панель управления → Combos → Create/Edit → Стратегия</strong> .</p>
+<div class="table-wrap"><table><thead><tr><th>Стратегия</th><th>Описание</th></tr></thead><tbody><tr><td><strong>Круговой турнир</strong></td><td>Последовательное переключение моделей</td></tr><tr><td><strong>Приоритет</strong></td><td>Всегда пробует первую модель; откатывается только в случае ошибки</td></tr><tr><td><strong>Случайный</strong></td><td>Выбирает случайную модель из комбинации для каждого запроса.</td></tr><tr><td><strong>Взвешенный</strong></td><td>Маршруты пропорциональны на основе присвоенного веса каждой модели.</td></tr><tr><td><strong>Наименее используемый</strong></td><td>Маршруты к модели с наименьшим количеством недавних запросов (использует комбинированные метрики)</td></tr><tr><td><strong>Оптимизированный по затратам</strong></td><td>Маршруты к самой дешевой доступной модели (используется таблица цен)</td></tr></tbody></table></div>
+<p>Глобальные настройки комбо по умолчанию можно установить в<strong> Панель мониторинга Настройки → Маршрутизация → Комбинированные настройки → по умолчанию</strong> . Целевые тайм-ауты комбо по умолчанию наследуют текущий тайм-аут запроса. Использовать<strong> Целевой тайм-аут (секунды)</strong> по умолчанию для комбо или отдельного комбо только в том случае, если более короткий лимит для каждой цели должен вызвать более быстрый откат.</p>
+<p>Комбинированная оптимизация с нулевой задержкой включена по желанию. Оставлять<strong> Оптимизация с нулевой задержкой</strong> отключено, чтобы предотвратить использование этих функций задержки в гонке за резервными целями, пропуске целей на основе истории TTFT или сжатии резервных запросов; его включение позволяет настраивать хеджирование, прогнозировать пропуски TTFT и упреждающее резервное сжатие, чтобы заменить точность routing/request на меньшую задержку хвоста.</p>
+<p>Запрещать<strong> Буфер токена рассуждения</strong> когда вышестоящие провайдеры требуют строгих ограничений <code>max_tokens</code> / <code>maxOutputTokens</code>. Если эта функция включена, комбинированная маршрутизация добавляет запас для модели рассуждения только для моделей с известным ограничением вывода и оставляет предел клиентского токена неизменным, когда безопасное буферизованное значение превысит это ограничение. Если лимит клиента уже превышает известный предел, OmniRoute ограничивает его до этого предела перед отправкой восходящего запроса.</p>
+<hr>
+<h4 id="h-33">Панель управления здоровьем <a class="h-anchor" href="#h-33" aria-label="Ссылка на раздел">#</a></h4>
+<p>Доступ через<strong> Панель управления → Health</strong> . Обзор состояния системы в реальном времени с 6 картами:</p>
+<div class="table-wrap"><table><thead><tr><th>Карта</th><th>Что это показывает</th></tr></thead><tbody><tr><td><strong>Статус системы</strong></td><td>Время работы, версия, использование памяти, каталог данных</td></tr><tr><td><strong>Здоровье поставщика</strong></td><td>Состояние выполнения автоматического выключателя глобального поставщика</td></tr><tr><td><strong>Ограничения ставок</strong></td><td>Время восстановления активных подключений для каждой учетной записи с указанием оставшегося времени</td></tr><tr><td><strong>Активные блокировки</strong></td><td>Активные блокировки и временные исключения на уровне модели.</td></tr><tr><td><strong>Кэш подписей</strong></td><td>Статистика кэша дедупликации (активные ключи, частота попаданий)</td></tr><tr><td><strong>Телеметрия с задержкой</strong></td><td>Агрегация задержки p50/p95/p99 для каждого провайдера</td></tr></tbody></table></div>
+<p><strong>Совет для профессионалов:</strong> Страница «Здоровье» автоматически обновляется каждые 10 секунд. Используйте карту автоматического выключателя, чтобы определить, у каких поставщиков возникли проблемы.</p>
+<hr>
+<h3 id="h-34">🤖 Автоматическая маршрутизация (без настройки) <a class="h-anchor" href="#h-34" aria-label="Ссылка на раздел">#</a></h3>
+<p>OmniRoute поставляется с <strong>автоматическим маршрутизатором на основе оценок</strong>, который выбирает лучшую модель для каждого запроса среди всех подключённых провайдеров — не нужно вручную поддерживать комбинации. Просто отправьте запрос с одним из префиксов <code>auto/*</code>, и OmniRoute динамически соберёт виртуальную комбинацию, оценивая кандидатов по задержке, стоимости, доле успешных запросов, соответствию контексту, пригодности модели для задачи, недавним сбоям, квоте и состоянию автоматического выключателя.</p>
+<div class="table-wrap"><table><thead><tr><th>Префикс</th><th>Критерий оптимизации</th></tr></thead><tbody><tr><td><code>auto</code></td><td>Сбалансированный режим по умолчанию (задержка × стоимость × доля успешных запросов)</td></tr><tr><td><code>auto/coding</code></td><td>Задачи программирования: предпочтение Claude, GPT-5, GLM, Kimi, Qwen Coder и моделям DeepSeek для написания кода</td></tr><tr><td><code>auto/cheap</code></td><td>Минимальная стоимость за токен, допускается более высокая задержка</td></tr><tr><td><code>auto/fast</code></td><td>Минимальная задержка без учёта стоимости</td></tr><tr><td><code>auto/offline</code></td><td>Только локальные провайдеры (Ollama, vLLM, llama.cpp) — полезно для изолированных сред</td></tr><tr><td><code>auto/smart</code></td><td>Приоритет качества рассуждений (Opus, GPT-5 xhigh, R1, GLM 5.1 reasoning)</td></tr><tr><td><code>auto/lkgp</code></td><td>«Последний заведомо исправный провайдер» — закрепляет последний успешный провайдер, а затем использует правила резервного переключения</td></tr></tbody></table></div>
+<p>Пример:</p>
+<pre><code class="language-bash">curl -X POST http://localhost:20128/v1/chat/completions \
+  -H &quot;Authorization: Bearer $OMNIROUTE_KEY&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &#x27;{
+    &quot;model&quot;: &quot;auto/coding&quot;,
+    &quot;messages&quot;: [{ &quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Refactor this Python function&quot; }],
+    &quot;stream&quot;: true
+  }&#x27;</code></pre>
+<p>Полное описание автоматического маршрутизатора приведено в <a href="../routing/AUTO-COMBO.md">AUTO-COMBO.md</a>, включая настройку весов оценивания, добавление провайдеров в чёрный список и просмотр решений маршрутизации в разделе <strong>Панель управления → Автоматическая комбинация</strong>.</p>
+<hr>
+<h3 id="интеграция-с-mcp-и-a2a">🔌 Интеграция с MCP и A2A <a class="h-anchor" href="#интеграция-с-mcp-и-a2a" aria-label="Ссылка на раздел">#</a></h3>
+<p>OmniRoute одновременно является <strong>сервером MCP</strong> (Model Context Protocol) и <strong>сервером A2A</strong> (Agent-to-Agent JSON-RPC 2.0). Любая IDE или среда размещения агентов, совместимая с MCP, может напрямую вызывать инструменты OmniRoute — дополнительная обёртка не требуется.</p>
+<h4 id="транспорты-mcp">Транспорты MCP <a class="h-anchor" href="#транспорты-mcp" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>SSE</strong>: <code>http://localhost:20128/api/mcp/sse</code></li>
+<li><strong>Потоковый HTTP</strong>: <code>http://localhost:20128/api/mcp/stream</code></li>
+<li><strong>stdio</strong>: <code>omniroute --mcp</code> (для плагинов IDE, предпочитающих stdio)</li>
+</ul>
+<h4 id="подключение-claude-desktop">Подключение Claude Desktop <a class="h-anchor" href="#подключение-claude-desktop" aria-label="Ссылка на раздел">#</a></h4>
+<p>Отредактируйте <code>~/Library/Application Support/Claude/claude_desktop_config.json</code> (macOS) или аналогичный файл в Windows/Linux:</p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;omniroute&quot;: {
+      &quot;command&quot;: &quot;omniroute&quot;,
+      &quot;args&quot;: [&quot;--mcp&quot;]
+    }
+  }
+}</code></pre>
+<h4 id="подключение-cursor-continue-vs-code-mcp">Подключение Cursor / Continue / VS Code MCP <a class="h-anchor" href="#подключение-cursor-continue-vs-code-mcp" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте URL-адрес SSE <code>http://localhost:20128/api/mcp/sse</code> и API-ключ Bearer, созданный в разделе <strong>Панель управления → API-ключи</strong>.</p>
+<h4 id="h-35">Области доступа <a class="h-anchor" href="#h-35" aria-label="Ссылка на раздел">#</a></h4>
+<p>В настоящее время MCP определяет 32 именованные области доступа. Каждый ключ Bearer можно ограничить определёнными областями доступа — полный перечень областей и инструментов приведён в <a href="../frameworks/MCP-SERVER.md">MCP-SERVER.md</a>, а схема JSON-RPC — в <a href="../frameworks/A2A-SERVER.md">A2A-SERVER.md</a>.</p>
+<hr>
+<h3 id="h-36">🧠 Система навыков <a class="h-anchor" href="#h-36" aria-label="Ссылка на раздел">#</a></h3>
+<p>OmniRoute предоставляет расширяемый <strong>фреймворк навыков</strong> (<code>src/lib/skills/</code>), позволяющий агентам и конечной точке A2A запускать специализированные процедуры (например, <code>code-review</code>, <code>summarize</code>, <code>extract-facts</code>, <code>web-research</code>).</p>
+<ul>
+<li><strong>Интерфейс каталога</strong> — Просматривайте и устанавливайте навыки через <strong>Панель управления → Навыки</strong></li>
+<li><strong>Области действия для отдельных ключей</strong> — Ограничивайте навыки, которые могут вызывать конкретные API-ключи</li>
+<li><strong>Пользовательские навыки</strong> — Поместите TypeScript-файл в <code>src/lib/a2a/skills/</code>, зарегистрируйте его, и он сразу станет доступен для вызова через A2A</li>
+</ul>
+<p>Полная документация: <a href="../frameworks/SKILLS.md">SKILLS.md</a>.</p>
+<hr>
+<h3 id="h-37">💾 Система памяти <a class="h-anchor" href="#h-37" aria-label="Ссылка на раздел">#</a></h3>
+<p>OmniRoute обеспечивает постоянное хранение <strong>долговременной памяти диалогов</strong> с гибридным поиском:</p>
+<ul>
+<li><strong>SQLite FTS5</strong> для поиска по ключевым словам в предыдущих репликах</li>
+<li><strong>Векторное хранилище Qdrant</strong> (необязательно) для семантического поиска</li>
+<li><strong>Автоматическое извлечение фактов</strong> — сущности, предпочтения и решения обобщаются после каждого сеанса и сохраняются в таблице <code>memory_facts</code></li>
+<li>Область видимости воспоминаний ограничивается API-ключом и сеансом</li>
+</ul>
+<p>Управляйте воспоминаниями в разделе <strong>Панель управления → Память</strong> (поиск, редактирование, экспорт, удаление). HTTP-интерфейс (<code>/api/memory/*</code>) позволяет агентам программно добавлять и запрашивать факты — см. <a href="../frameworks/MEMORY.md">MEMORY.md</a>.</p>
+<hr>
+<h3 id="h-38">🔔 Вебхуки <a class="h-anchor" href="#h-38" aria-label="Ссылка на раздел">#</a></h3>
+<p>Подписывайтесь на события OmniRoute для мониторинга и автоматизации в реальном времени.</p>
+<ul>
+<li>Создайте вебхук в разделе <strong>Панель управления → Вебхуки</strong>, указав целевой URL и секретный ключ для HMAC-подписи</li>
+<li>Доступные события: <code>request.completed</code>, <code>request.failed</code>, <code>provider.unavailable</code>, <code>budget.exceeded</code>, <code>combo.switched</code>, <code>circuit_breaker.opened</code>, <code>circuit_breaker.closed</code></li>
+<li>Каждая полезная нагрузка содержит <code>X-OmniRoute-Signature</code> (HMAC-SHA256) для проверки</li>
+<li>Повторные попытки: 3 попытки с экспоненциальной задержкой, после чего сообщение помещается в очередь необработанных сообщений</li>
+</ul>
+<p>Полная схема приведена в <a href="../frameworks/WEBHOOKS.md">WEBHOOKS.md</a>.</p>
+<hr>
+<h3 id="h-39">☁️ Облачные агенты <a class="h-anchor" href="#h-39" aria-label="Ссылка на раздел">#</a></h3>
+<p>OmniRoute интегрируется с облачными агентами для разработки (<strong>OpenAI Codex Cloud</strong>, <strong>Devin</strong>, <strong>Jules</strong>, <strong>Antigravity</strong>), позволяя запускать длительные задачи из той же панели управления, которая используется для локальной маршрутизации.</p>
+<ul>
+<li>Создавайте задачи в разделе <strong>Панель управления → Облачные агенты</strong> или через <code>POST /api/v1/agents/tasks</code></li>
+<li>Отслеживайте состояние, журналы и артефакты каждой задачи</li>
+<li>Используйте собственный API-ключ для каждого провайдера — учётные данные никогда не покидают экземпляр OmniRoute</li>
+</ul>
+<p>Полная документация: <a href="../frameworks/CLOUD_AGENT.md">CLOUD_AGENT.md</a>.</p>
+<hr>
+<h3 id="h-40">🛠️ Программное управление <a class="h-anchor" href="#h-40" aria-label="Ссылка на раздел">#</a></h3>
+<p>Вы можете управлять всеми ресурсами OmniRoute (провайдерами, комбинациями, ключами и настройками) через HTTP, используя <strong>Bearer-ключ с областью действия <code>manage</code></strong>.</p>
+<p>Создайте ключ в разделе <strong>Панель управления → API-ключи → Новый ключ → Область действия: manage</strong>, затем выполните:</p>
+<pre><code class="language-bash"># Получить список провайдеров
+curl http://localhost:20128/api/providers \
+  -H &quot;Authorization: Bearer $OMNIROUTE_MANAGE_KEY&quot;
+
+# Добавить подключение к провайдеру
+curl -X POST http://localhost:20128/api/providers \
+  -H &quot;Authorization: Bearer $OMNIROUTE_MANAGE_KEY&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &#x27;{ &quot;provider&quot;: &quot;openai&quot;, &quot;apiKey&quot;: &quot;sk-...&quot;, &quot;name&quot;: &quot;main&quot; }&#x27;
+
+# Создать комбинацию
+curl -X POST http://localhost:20128/api/combos \
+  -H &quot;Authorization: Bearer $OMNIROUTE_MANAGE_KEY&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &#x27;{ &quot;name&quot;: &quot;premium&quot;, &quot;strategy&quot;: &quot;priority&quot;, &quot;models&quot;: [{ &quot;model&quot;: &quot;cc/claude-opus-4-7&quot; }, { &quot;model&quot;: &quot;glm/glm-5.1&quot; }] }&#x27;
+
+# Получить список API-ключей или создать новый
+curl http://localhost:20128/api/keys -H &quot;Authorization: Bearer $OMNIROUTE_MANAGE_KEY&quot;
+curl -X POST http://localhost:20128/api/keys -H &quot;Authorization: Bearer $OMNIROUTE_MANAGE_KEY&quot; \
+  -d &#x27;{ &quot;name&quot;: &quot;ci-bot&quot;, &quot;scopes&quot;: [&quot;chat&quot;] }&#x27;</code></pre>
+<p>Полный каталог конечных точек и схемы запросов/ответов см. в <a href="../reference/API_REFERENCE.md">API_REFERENCE.md</a>.</p>
+<hr>
+<h3 id="внутренний-cli">💻 Внутренний CLI <a class="h-anchor" href="#внутренний-cli" aria-label="Ссылка на раздел">#</a></h3>
+<p>OmniRoute поставляется с внутренним CLI (<code>omniroute …</code>) для настройки, диагностики и управления во время выполнения. Он <strong>отличается от страницы «Инструменты CLI» в панели управления</strong>, где настраиваются сторонние CLI (Claude Code, Cursor, Codex, Cline, …), чтобы они могли взаимодействовать с OmniRoute.</p>
+<pre><code class="language-bash">omniroute setup                    # Интерактивный мастер (пароль, провайдеры, комбинации)
+omniroute setup --non-interactive  # Подходит для CI
+omniroute doctor                   # Диагностика состояния (каталог данных, БД, провайдеры, порты)
+omniroute providers available      # Вывести список поддерживаемых провайдеров
+omniroute providers list           # Вывести список настроенных подключений
+omniroute providers test &lt;id&gt;      # Проверить подключение к провайдеру в реальном времени
+omniroute combos list              # Вывести список комбинаций
+omniroute combos switch &lt;name&gt;     # Установить комбинацию по умолчанию
+omniroute models                   # Вывести список доступных моделей (--json, --search)
+omniroute keys add | list | remove # Управлять ключами API из терминала
+omniroute backup                   # Создать снимок конфигурации и БД
+omniroute restore [&lt;timestamp&gt;]    # Восстановить данные из снимка
+omniroute health                   # Подробное состояние (предохранители, кеш, память)
+omniroute quota                    # Использование квот провайдеров
+omniroute mcp status               # Состояние сервера MCP
+omniroute a2a status               # Состояние сервера A2A
+omniroute tunnel list|create|stop  # Туннели Cloudflare/Tailscale/ngrok
+omniroute reset-password           # Сбросить пароль администратора
+omniroute --mcp                    # Запустить сервер MCP через stdio
+omniroute --port 3000              # Запустить сервер на пользовательском порту</code></pre>
+<p>Совет: используйте <code>omniroute doctor --json</code> вместе со своим инструментом мониторинга, чтобы получать оповещения о неработоспособных подключениях к провайдерам.</p>
+<hr>
+<h3 id="настольное-приложение-electron">🖥️ Настольное приложение (Electron) <a class="h-anchor" href="#настольное-приложение-electron" aria-label="Ссылка на раздел">#</a></h3>
+<p>OmniRoute доступен в виде нативного настольного приложения для Windows, macOS и Linux.</p>
+<h4 id="h-41">Установка <a class="h-anchor" href="#h-41" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Из каталога electron:
+cd electron
+npm install
+
+# Режим разработки (подключение к запущенному серверу разработки Next.js):
+npm run dev
+
+# Рабочий режим (использует автономную сборку):
+npm start</code></pre>
+<h4 id="h-42">Сборка установщиков <a class="h-anchor" href="#h-42" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash">cd electron
+npm run build          # Текущая платформа
+npm run build:win      # Windows (.exe NSIS)
+npm run build:mac      # macOS (.dmg universal)
+npm run build:linux    # Linux (.AppImage)</code></pre>
+<p>Результат → <code>electron/dist-electron/</code></p>
+<h4 id="h-43">Ключевые возможности <a class="h-anchor" href="#h-43" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Возможность</th><th>Описание</th></tr></thead><tbody><tr><td><strong>Готовность сервера</strong></td><td>Опрос сервера перед отображением окна (без пустого экрана)</td></tr><tr><td><strong>Системный трей</strong></td><td>Сворачивание в трей, изменение порта и выход через меню трея</td></tr><tr><td><strong>Управление портом</strong></td><td>Изменение порта сервера из трея (сервер перезапускается автоматически)</td></tr><tr><td><strong>Политика безопасности содержимого</strong></td><td>Строгая CSP через заголовки сеанса</td></tr><tr><td><strong>Один экземпляр</strong></td><td>Одновременно может работать только один экземпляр приложения</td></tr><tr><td><strong>Автономный режим</strong></td><td>Встроенный сервер Next.js работает без интернета</td></tr></tbody></table></div>
+<h4 id="h-44">Переменные среды <a class="h-anchor" href="#h-44" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Переменная</th><th>По умолчанию</th><th>Описание</th></tr></thead><tbody><tr><td><code>OMNIROUTE_PORT</code></td><td><code>20128</code></td><td>Порт сервера</td></tr><tr><td><code>OMNIROUTE_MEMORY_MB</code></td><td><code>512</code></td><td>Ограничение кучи Node.js (64–16384 МБ)</td></tr></tbody></table></div>
+<p>📖 Полная документация: <a href="../../electron/README.md"><code>electron/README.md</code></a></p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

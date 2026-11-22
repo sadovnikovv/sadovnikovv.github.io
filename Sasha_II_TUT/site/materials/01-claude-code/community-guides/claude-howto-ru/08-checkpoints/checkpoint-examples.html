@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Примеры checkpoint</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-howto-ru/08-checkpoints/index.html">08-checkpoints</a></nav>
+<h1 id="примеры-checkpoint">Примеры checkpoint <a class="h-anchor" href="#примеры-checkpoint" aria-label="Ссылка на раздел">#</a></h1>
+<p>Практические примеры эффективного использования checkpoints в Claude Code.</p>
+<p>Примечание: checkpoints создаются автоматически при каждом запросе пользователя. Вам не нужно сохранять их вручную. Чтобы откатиться, нажмите <code>Esc</code> дважды (<code>Esc+Esc</code>) или используйте <code>/rewind</code>, чтобы открыть браузер checkpoints.</p>
+<h3 id="example-1-database-migration">Example 1: Database Migration <a class="h-anchor" href="#example-1-database-migration" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h">Сценарий <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h4>
+<p>Вам нужно мигрировать с MySQL на PostgreSQL, но вы хотите сравнить прямую миграцию и постепенный подход с двойной записью.</p>
+<h4 id="h-2">Рабочий процесс <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>User: Let&#x27;s implement a direct migration from MySQL to PostgreSQL
+      [Checkpoint A created automatically]
+
+Claude: I&#x27;ll implement the direct migration...
+[Changes database driver, updates queries, modifies schema]
+
+User: Run the tests
+      [Checkpoint B created automatically]
+
+Claude: Running tests...
+❌ 15 tests failing - connection pool issues
+
+User: This approach has issues. Let&#x27;s try the dual-write pattern instead.
+[User presses Esc+Esc, selects Checkpoint A, chooses &quot;Restore code and conversation&quot;]
+
+User: Now implement a dual-write pattern where we write to both databases
+
+Claude: I&#x27;ll implement dual-write migration...
+[Implements dual-write layer, gradual migration strategy]
+
+User: Run the tests
+
+Claude: Running tests...
+✅ All tests passing
+
+User: The dual-write approach is clearly safer. Let&#x27;s commit this.</code></pre>
+<h3 id="example-2-performance-optimization">Example 2: Performance Optimization <a class="h-anchor" href="#example-2-performance-optimization" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-3">Сценарий <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Есть несколько стратегий оптимизации производительности, которые стоит попробовать.</p>
+<h4 id="h-4">Рабочий процесс <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>User: Let&#x27;s optimize the API response time. Current: 450ms
+      [Checkpoint &quot;Baseline&quot; created automatically]
+
+Claude: I&#x27;ll add database query caching...
+[Implements Redis caching]
+
+User: Run performance tests
+
+Claude: Results: 280ms average response time (38% improvement)
+
+User: Let me try a different approach.
+[User presses Esc+Esc, selects &quot;Baseline&quot; checkpoint, chooses &quot;Restore code and conversation&quot;]
+
+User: Try database query optimization instead
+
+Claude: I&#x27;ll optimize database queries...
+[Adds indexes, optimizes N+1 queries]
+
+User: Run performance tests
+
+Claude: Results: 180ms average response time (60% improvement)
+
+User: Let me also try a third approach.
+[User presses Esc+Esc, selects &quot;Baseline&quot; checkpoint, chooses &quot;Restore code and conversation&quot;]
+
+User: Try response compression and CDN
+
+Claude: I&#x27;ll add compression and CDN...
+[Implements gzip, sets up CDN]
+
+User: Run performance tests
+
+Claude: Results: 320ms average response time (29% improvement)
+
+User: Query optimization was the best. Let me go back and combine it with caching.
+[User presses Esc+Esc, selects the checkpoint after query optimization, chooses &quot;Restore code and conversation&quot;]
+
+User: Now add Redis caching on top of these optimized queries
+
+Claude: [Adds Redis caching on top of optimized queries]
+
+User: Run performance tests
+
+Claude: Results: 95ms average response time (79% improvement) 🎉
+
+User: Perfect! This is the winner. Let&#x27;s commit this.</code></pre>
+<h3 id="example-3-ui-ux-iteration">Example 3: UI/UX Iteration <a class="h-anchor" href="#example-3-ui-ux-iteration" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-5">Сценарий <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<p>Вы пробуете разные макеты для панели управления.</p>
+<h4 id="h-6">Рабочий процесс <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>User: Let&#x27;s redesign the dashboard with a sidebar layout
+      [Checkpoint &quot;Start&quot; created automatically]
+
+Claude: [Implements sidebar layout]
+
+User: Show me a screenshot
+
+Claude: [Shows screenshot]
+
+User: The sidebar feels cramped. Let&#x27;s try a top navigation instead.
+[User presses Esc+Esc, selects &quot;Start&quot; checkpoint, chooses &quot;Restore code and conversation&quot;]
+
+User: Try a top navigation layout
+
+Claude: [Implements top navigation]
+
+User: Show me a screenshot
+
+Claude: [Shows screenshot]
+
+User: Better, but let&#x27;s try a card-based grid layout
+[User presses Esc+Esc, selects &quot;Start&quot; checkpoint, chooses &quot;Restore code and conversation&quot;]
+
+User: Try a card-based grid layout
+
+Claude: [Implements card grid]
+
+User: Show me a screenshot
+
+Claude: [Shows screenshot]
+
+User: This is great! But can we combine the top nav with the card grid?
+[User presses Esc+Esc, selects the checkpoint after the card grid, chooses &quot;Restore code and conversation&quot;]
+
+User: Add top navigation to the card grid layout
+
+Claude: [Adds top navigation to card grid]
+
+User: Perfect! This is the final design.</code></pre>
+<h3 id="example-4-debugging-session">Example 4: Debugging Session <a class="h-anchor" href="#example-4-debugging-session" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-7">Сценарий <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<p>Поиск сложной ошибки с несколькими гипотезами.</p>
+<h4 id="h-8">Рабочий процесс <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>User: There&#x27;s a memory leak in the application
+      [Checkpoint &quot;Before debugging&quot; created automatically]
+
+Claude: Let me investigate...
+[Analyzes code]
+
+User: I think it&#x27;s in the event listeners. Let&#x27;s fix those.
+
+Claude: [Fixes event listener cleanup]
+
+User: Run memory profiler
+
+Claude: Still leaking memory - event listeners weren&#x27;t the issue
+
+User: Let me go back and try a different hypothesis.
+[User presses Esc+Esc, selects &quot;Before debugging&quot; checkpoint, chooses &quot;Restore code and conversation&quot;]
+
+User: Maybe it&#x27;s the database connections?
+
+Claude: [Implements connection pooling fixes]
+
+User: Run memory profiler
+
+Claude: Still leaking - not the connections either
+
+User: Let me go back and try another angle.
+[User presses Esc+Esc, selects &quot;Before debugging&quot; checkpoint, chooses &quot;Restore code and conversation&quot;]
+
+User: Let&#x27;s check for circular references
+
+Claude: [Finds and fixes circular references in cache]
+
+User: Run memory profiler
+
+Claude: ✅ Memory leak fixed! The circular references in the caching layer were the culprit.
+
+User: Excellent! Let&#x27;s commit this fix.</code></pre>
+<h3 id="example-5-api-design-evolution">Example 5: API Design Evolution <a class="h-anchor" href="#example-5-api-design-evolution" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-9">Сценарий <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<p>Проектирование REST API с несколькими итерациями.</p>
+<h4 id="h-10">Рабочий процесс <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>User: Create a REST API for our blog platform
+      [Checkpoint &quot;Before API design&quot; created automatically]
+
+Claude: [Creates basic CRUD API]
+
+User: This is too simple. Let&#x27;s add pagination and filtering
+
+Claude: [Adds pagination and filtering]
+
+User: We need better resource relationships
+
+Claude: [Implements HATEOAS links]
+
+User: Actually, let&#x27;s try GraphQL instead of REST
+[User presses Esc+Esc, selects &quot;Before API design&quot; checkpoint, chooses &quot;Restore code and conversation&quot;]
+
+User: Implement a GraphQL API for our blog platform instead
+
+Claude: [Implements GraphQL API]
+
+User: I think REST is better for our use case.
+[User presses Esc+Esc, selects the checkpoint after HATEOAS, chooses &quot;Restore code and conversation&quot;]
+
+User: Let&#x27;s finalize the REST approach.</code></pre>
+<h3 id="example-6-configuration-management">Example 6: Configuration Management <a class="h-anchor" href="#example-6-configuration-management" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="scenario">Scenario <a class="h-anchor" href="#scenario" aria-label="Ссылка на раздел">#</a></h4>
+<p>Testing different configuration approaches.</p>
+<h4 id="workflow">Workflow <a class="h-anchor" href="#workflow" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>User: Move configuration to environment variables
+      [Checkpoint &quot;Original config&quot; created automatically]
+
+Claude: [Implements env var configuration]
+
+User: Test in development
+
+Claude: Works locally but deployment issues in production
+
+User: Let me try a different approach.
+[User presses Esc+Esc, selects &quot;Original config&quot; checkpoint, chooses &quot;Restore code and conversation&quot;]
+
+User: Try a config file approach with validation
+
+Claude: [Implements YAML config with JSON schema validation]
+
+User: Test in development
+
+Claude: ✅ Works well, good validation errors
+
+User: Can we also support env vars for sensitive values?
+
+Claude: [Adds env var override for secrets]
+
+User: Test deployment
+
+Claude: ✅ All environments working correctly
+
+User: Perfect! This is production-ready.</code></pre>
+<h3 id="example-7-test-strategy">Example 7: Test Strategy <a class="h-anchor" href="#example-7-test-strategy" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="scenario-2">Scenario <a class="h-anchor" href="#scenario-2" aria-label="Ссылка на раздел">#</a></h4>
+<p>Implementing comprehensive testing.</p>
+<h4 id="workflow-2">Workflow <a class="h-anchor" href="#workflow-2" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>User: Add unit tests for the auth module
+      [Checkpoint created automatically]
+
+Claude: [Adds Jest unit tests]
+
+User: Run tests
+
+Claude: 45 tests passing, 78% coverage
+
+User: Add integration tests too
+
+Claude: [Adds integration tests]
+
+User: Run tests
+
+Claude: 89 tests passing, 92% coverage, but tests are slow (3 minutes)
+
+User: The tests are too slow. Let&#x27;s optimize.
+
+Claude: [Optimizes test setup, adds parallel execution]
+
+User: Run tests
+
+Claude: 89 tests passing, 92% coverage, 35 seconds ✅
+
+User: Great! Now add E2E tests for critical paths
+
+Claude: [Adds Playwright E2E tests]
+
+User: Run all tests
+
+Claude: 112 tests passing, 94% coverage, 2 minutes
+
+User: Perfect balance of coverage and speed!</code></pre>
+<h3 id="example-8-using-summarize-from-checkpoint">Example 8: Using Summarize from Checkpoint <a class="h-anchor" href="#example-8-using-summarize-from-checkpoint" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="scenario-3">Scenario <a class="h-anchor" href="#scenario-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>After a long debugging session, you want to condense the conversation while preserving context.</p>
+<h4 id="workflow-3">Workflow <a class="h-anchor" href="#workflow-3" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>User: [After 20+ messages of debugging and exploration]
+
+[User presses Esc+Esc, selects an early checkpoint, chooses &quot;Summarize from here&quot;]
+[Optionally provides instructions: &quot;Focus on what we tried and what worked&quot;]
+
+Claude: [Generates a summary of the conversation from that point forward]
+[Original messages are preserved in the transcript]
+[The summary replaces the visible conversation, reducing context window usage]
+
+User: Now let&#x27;s continue with the approach that worked.</code></pre>
+<h3 id="key-takeaways">Key Takeaways <a class="h-anchor" href="#key-takeaways" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li><strong>Checkpoints are automatic</strong>: Every user prompt creates a checkpoint -- no manual saving needed</li>
+<li><strong>Use Esc+Esc or /rewind</strong>: These are the two ways to access the checkpoint browser</li>
+<li><strong>Choose the right restore option</strong>: Restore code, conversation, both, or summarize depending on your needs</li>
+<li><strong>Don&#x27;t fear experimentation</strong>: Checkpoints make it safe to try radical changes</li>
+<li><strong>Combine with git</strong>: Use checkpoints for exploration, git for finalized work</li>
+<li><strong>Summarize long sessions</strong>: Use &quot;Summarize from here&quot; to keep conversations manageable</li>
+</ol>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

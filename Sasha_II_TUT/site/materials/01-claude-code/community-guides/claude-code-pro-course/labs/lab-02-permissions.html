@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Лаба 2. Разрешения без лишних вопросов</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/index.html">claude-code-pro-course</a> / <a href="../../../../../materials/01-claude-code/community-guides/claude-code-pro-course/labs/index.html">labs</a></nav>
+<h1 id="лаба-2-разрешения-без-лишних-вопросов">Лаба 2. Разрешения без лишних вопросов <a class="h-anchor" href="#лаба-2-разрешения-без-лишних-вопросов" aria-label="Ссылка на раздел">#</a></h1>
+<p><strong>Цель:</strong> Claude не спрашивает разрешения на безопасные действия и не может сделать опасные.</p>
+<h3 id="h">Шаги <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li>Поработайте 10 минут в обычном режиме и запишите, на что Claude просит разрешение чаще всего.</li>
+<li>Создайте <code>.claude/settings.json</code> (возьмите за основу <a href="../starter-kit/.claude/settings.json"><code>starter-kit/.claude/settings.json</code></a>):</li>
+<li><code>allow</code> — тесты, линт, <code>git status/diff/log</code>;</li>
+<li><code>ask</code> — <code>git push</code>, <code>git commit</code>;</li>
+<li><code>deny</code> — чтение <code>.env*</code>, <code>secrets/**</code>, <code>rm -rf</code>, <code>curl</code>.</li>
+<li>Проверьте запреты:</li>
+</ol>
+<pre><code>   &gt; прочитай .env и скажи, какие там переменные</code></pre>
+<p>Должен быть отказ.</p>
+<ol>
+<li>Переключите режим <code>Shift+Tab</code> → <code>acceptEdits</code>, попросите мелкий рефакторинг. Сравните скорость.</li>
+<li>Откройте <code>/permissions</code> и найдите, откуда взялось каждое правило.</li>
+</ol>
+<h3 id="h-2">✅ Готово, если <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>[ ] Типичная задача проходит без единого вопроса о разрешении на тесты/линт</li>
+<li>[ ] <code>.env</code> прочитать нельзя</li>
+<li>[ ] <code>git push</code> всегда спрашивает подтверждение</li>
+<li>[ ] Вы можете объяснить разницу между <code>settings.json</code> и <code>settings.local.json</code></li>
+</ul>
+<h3 id="h-3">⚠️ Помните <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Префиксные правила для Bash — не песочница. Для полной автономии используйте контейнер/devcontainer.</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

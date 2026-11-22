@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Project Name</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../../materials/index.html">Материалы</a> / <a href="../../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/03-skills/index.html">03-skills</a> / <a href="../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/03-skills/claude-md/index.html">claude-md</a></nav>
+<hr>
+<p>name: claude-md
+description: Create or update CLAUDE.md files following best practices for optimal AI agent onboarding</p>
+<hr>
+<h3 id="user-input">User Input <a class="h-anchor" href="#user-input" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-text">$ARGUMENTS</code></pre>
+<p>Вы <strong>обязаны</strong> учитывать ввод пользователя перед продолжением, если он не пустой. Пользователь может указать:</p>
+<ul>
+<li><code>create</code> - создать новый <code>CLAUDE.md</code> с нуля</li>
+<li><code>update</code> - улучшить существующий <code>CLAUDE.md</code></li>
+<li><code>audit</code> - проанализировать и описать качество текущего <code>CLAUDE.md</code></li>
+<li>конкретный путь для создания/обновления (например, <code>src/api/CLAUDE.md</code> для инструкций на уровне каталога)</li>
+</ul>
+<h3 id="h">Основные принципы <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>LLM stateless</strong>: <code>CLAUDE.md</code> — это единственный файл, который автоматически включается в каждую беседу. Он служит основным документом онбординга для AI-агентов в кодовую базу.</p>
+<h4 id="h-2">Золотые правила <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li><strong>Меньше — лучше</strong>: современные LLM справляются примерно с 150-200 инструкциями. Системный промпт Claude Code уже использует около 50. Делайте <code>CLAUDE.md</code> кратким и сфокусированным.</li>
+</ol>
+<ol>
+<li><strong>Универсальность</strong>: включайте только информацию, которая нужна в КАЖДОЙ сессии. Задачно-специфичные инструкции должны лежать в отдельных файлах.</li>
+</ol>
+<ol>
+<li><strong>Не используйте Claude как линтер</strong>: правила стиля раздувают контекст и ухудшают следование инструкциям. Используйте детерминированные инструменты (prettier, eslint и т. п.).</li>
+</ol>
+<ol>
+<li><strong>Никогда не генерируйте автоматически</strong>: <code>CLAUDE.md</code> — это самая ценная точка входа в AI-harness. Создавайте его вручную и обдуманно.</li>
+</ol>
+<h3 id="h-3">Поток выполнения <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="1-анализ-проекта">1. Анализ проекта <a class="h-anchor" href="#1-анализ-проекта" aria-label="Ссылка на раздел">#</a></h4>
+<p>Сначала проанализируйте текущее состояние проекта:</p>
+<ol>
+<li>Проверьте наличие существующих <code>CLAUDE.md</code>:</li>
+<li>На уровне корня: <code>./CLAUDE.md</code> или <code>.claude/CLAUDE.md</code></li>
+<li>На уровне каталога: <code>**/CLAUDE.md</code></li>
+<li>Глобальная пользовательская конфигурация: <code>~/.claude/CLAUDE.md</code></li>
+</ol>
+<ol>
+<li>Определите структуру проекта:</li>
+<li>Технологический стек (языки, фреймворки)</li>
+<li>Тип проекта (monorepo, одно приложение, библиотека)</li>
+<li>Инструменты разработки (package manager, build system, test runner)</li>
+</ol>
+<ol>
+<li>Изучите существующую документацию:</li>
+<li><code>README.md</code></li>
+<li><code>CONTRIBUTING.md</code></li>
+<li><code>package.json</code>, <code>pyproject.toml</code>, <code>Cargo.toml</code> и т. п.</li>
+</ol>
+<h4 id="2-стратегия-контента-what-why-how">2. Стратегия контента (WHAT, WHY, HOW) <a class="h-anchor" href="#2-стратегия-контента-what-why-how" aria-label="Ссылка на раздел">#</a></h4>
+<p>Структурируйте <code>CLAUDE.md</code> вокруг трёх измерений:</p>
+<h5 id="what-технология-и-структура">WHAT - технология и структура <a class="h-anchor" href="#what-технология-и-структура" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li>Обзор технологического стека</li>
+<li>Организация проекта (особенно важно для monorepo)</li>
+<li>Ключевые каталоги и их назначение</li>
+</ul>
+<h5 id="why-цель-и-контекст">WHY - цель и контекст <a class="h-anchor" href="#why-цель-и-контекст" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li>Что делает проект</li>
+<li>Почему были приняты те или иные архитектурные решения</li>
+<li>За что отвечает каждый крупный компонент</li>
+</ul>
+<h5 id="how-рабочий-процесс-и-соглашения">HOW - рабочий процесс и соглашения <a class="h-anchor" href="#how-рабочий-процесс-и-соглашения" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li>Workflow разработки (bun vs node, pip vs uv и т. д.)</li>
+<li>Процедуры тестирования и команды</li>
+<li>Способы проверки и сборки</li>
+<li>Критические &quot;подводные камни&quot; или неочевидные требования</li>
+</ul>
+<h4 id="3-стратегия-постепенного-раскрытия">3. Стратегия постепенного раскрытия <a class="h-anchor" href="#3-стратегия-постепенного-раскрытия" aria-label="Ссылка на раздел">#</a></h4>
+<p>Для крупных проектов рекомендуйте создать папку <code>agent_docs/</code>:</p>
+<pre><code>agent_docs/
+  |- building_the_project.md
+  |- running_tests.md
+  |- code_conventions.md
+  |- architecture_decisions.md</code></pre>
+<p>В <code>CLAUDE.md</code> ссылайтесь на эти файлы так:</p>
+<pre><code class="language-markdown">For detailed build instructions, refer to `agent_docs/building_the_project.md`</code></pre>
+<p><strong>Важно</strong>: используйте ссылки вида <code>file:line</code> вместо фрагментов кода, чтобы не тащить устаревший контекст.</p>
+<h4 id="4-ограничения-качества">4. Ограничения качества <a class="h-anchor" href="#4-ограничения-качества" aria-label="Ссылка на раздел">#</a></h4>
+<p>При создании или обновлении <code>CLAUDE.md</code>:</p>
+<ol>
+<li><strong>Целевая длина</strong>: меньше 300 строк, в идеале меньше 100</li>
+<li><strong>Без правил стиля</strong>: убирайте указания по lint/format</li>
+<li><strong>Без задачных инструкций</strong>: переносите их в отдельные файлы</li>
+<li><strong>Без примеров кода</strong>: используйте ссылки на файлы</li>
+<li><strong>Без дублирования</strong>: не повторяйте то, что уже есть в <code>package.json</code> или <code>README</code></li>
+</ol>
+<h4 id="5-обязательные-разделы">5. Обязательные разделы <a class="h-anchor" href="#5-обязательные-разделы" aria-label="Ссылка на раздел">#</a></h4>
+<p>Хорошо структурированный <code>CLAUDE.md</code> должен содержать:</p>
+<pre><code class="language-markdown"># Project Name
+
+Краткое описание в одну строку.
+
+## Tech Stack
+- Основной язык и версия
+- Ключевые фреймворки/библиотеки
+- База данных/хранилище, если есть
+
+## Project Structure
+[Только для monorepo или сложных структур]
+- `apps/` - точки входа приложения
+- `packages/` - общие библиотеки
+
+## Development Commands
+- Install: `command`
+- Test: `command`
+- Build: `command`
+
+## Critical Conventions
+[Только неочевидные, но важные соглашения]
+- Convention 1 с кратким пояснением
+- Convention 2 с кратким пояснением
+
+## Known Issues / Gotchas
+[То, что регулярно сбивает разработчиков]
+- Issue 1
+- Issue 2</code></pre>
+<h4 id="6-антипаттерны">6. Антипаттерны <a class="h-anchor" href="#6-антипаттерны" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>НЕ включайте:</strong></p>
+<ul>
+<li>Правила кодстайла (для этого есть линтеры)</li>
+<li>Документацию о том, как использовать Claude</li>
+<li>Длинные объяснения очевидных паттернов</li>
+<li>Скопированный код</li>
+<li>Общие советы вида &quot;пишите чистый код&quot;</li>
+<li>Инструкции для отдельных задач</li>
+<li>Сгенерированный автоматически контент</li>
+<li>Обширные списки TODO</li>
+</ul>
+<h4 id="7-чеклист-проверки">7. Чеклист проверки <a class="h-anchor" href="#7-чеклист-проверки" aria-label="Ссылка на раздел">#</a></h4>
+<p>Перед финализацией проверьте:</p>
+<ul>
+<li>[ ] Меньше 300 строк, лучше меньше 100</li>
+<li>[ ] Каждая строка применима ко ВСЕМ сессиям</li>
+<li>[ ] Нет правил форматирования</li>
+<li>[ ] Нет фрагментов кода (используйте ссылки на файлы)</li>
+<li>[ ] Команды действительно работают</li>
+<li>[ ] Для сложных проектов используется progressive disclosure</li>
+<li>[ ] Документированы критические подводные камни</li>
+<li>[ ] Нет дублирования с <code>README.md</code></li>
+</ul>
+<h3 id="h-4">Формат результата <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="для-create-или-по-умолчанию">Для <code>create</code> или по умолчанию: <a class="h-anchor" href="#для-create-или-по-умолчанию" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Проанализировать проект</li>
+<li>Подготовить черновик <code>CLAUDE.md</code> по структуре выше</li>
+<li>Показать черновик на ревью</li>
+<li>Записать файл в нужное место после утверждения</li>
+</ol>
+<h4 id="для-update">Для <code>update</code>: <a class="h-anchor" href="#для-update" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Прочитать существующий <code>CLAUDE.md</code></li>
+<li>Провести аудит по best practices</li>
+<li>Определить:</li>
+<li>Что удалить (стиль, код, задачные инструкции)</li>
+<li>Что сократить</li>
+<li>Чего не хватает</li>
+<li>Показать изменения на ревью</li>
+<li>Применить изменения после утверждения</li>
+</ol>
+<h4 id="для-audit">Для <code>audit</code>: <a class="h-anchor" href="#для-audit" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li>Прочитать существующий <code>CLAUDE.md</code></li>
+<li>Сформировать отчёт с:</li>
+<li>Текущим количеством строк и целевым значением</li>
+<li>Процентом универсально применимого контента</li>
+<li>Списком найденных антипаттернов</li>
+<li>Рекомендациями по улучшению</li>
+<li><strong>Не изменять</strong> файл, только вернуть отчёт</li>
+</ol>
+<h3 id="работа-с-agents-md">Работа с AGENTS.md <a class="h-anchor" href="#работа-с-agents-md" aria-label="Ссылка на раздел">#</a></h3>
+<p>Если пользователь просит создать или обновить <code>AGENTS.md</code>:</p>
+<p><code>AGENTS.md</code> используется для определения специализированного поведения агентов. В отличие от <code>CLAUDE.md</code> (который хранит контекст проекта), <code>AGENTS.md</code> задаёт:</p>
+<ul>
+<li>Роли и возможности агентов</li>
+<li>Инструкции и ограничения для конкретного агента</li>
+<li>Определение workflow для многоагентных сценариев</li>
+</ul>
+<p>Применяйте похожие принципы:</p>
+<ul>
+<li>Делайте файл сфокусированным и кратким</li>
+<li>Используйте progressive disclosure</li>
+<li>Ссылайтесь на внешние документы, а не вставляйте их содержимое</li>
+</ul>
+<h3 id="h-5">Примечания <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Всегда проверяйте, что команды работают, прежде чем включать их</li>
+<li>Если есть сомнения, лучше не добавлять</li>
+<li>Системное напоминание сообщает Claude, что <code>CLAUDE.md</code> &quot;может быть или не быть релевантным&quot; — чем больше шума, тем ниже шанс, что он будет полезен</li>
+<li>Monorepo особенно выигрывают от ясной структуры WHAT/WHY/HOW</li>
+<li><code>CLAUDE.md</code> на уровне каталога должен быть ещё более сфокусированным</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

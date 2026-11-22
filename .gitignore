@@ -1,0 +1,16 @@
+# Служебное Windows
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# Личные данные — НЕ публиковать
+Sasha_II_TUT/_selenium_out/
+Sasha_II_TUT/_tools/
+Sasha_II_TUT/cc.ps1
+
+# Резервные копии книги (огромные html), если сделаны patch_book.py
+Sasha_II_TUT/*.before-site.html

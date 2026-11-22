@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Code Review Finding Template</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../../../materials/index.html">Материалы</a> / <a href="../../../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/03-skills/index.html">03-skills</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/03-skills/code-review/index.html">code-review</a> / <a href="../../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/03-skills/code-review/templates/index.html">templates</a></nav>
+<h1 id="code-review-finding-template">Code Review Finding Template <a class="h-anchor" href="#code-review-finding-template" aria-label="Ссылка на раздел">#</a></h1>
+<p>Use this template when documenting each issue found during code review.</p>
+<hr>
+<h3 id="issue-title">Issue: [TITLE] <a class="h-anchor" href="#issue-title" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="severity">Severity <a class="h-anchor" href="#severity" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>[ ] Critical (blocks deployment)</li>
+<li>[ ] High (should fix before merge)</li>
+<li>[ ] Medium (should fix soon)</li>
+<li>[ ] Low (nice to have)</li>
+</ul>
+<h4 id="category">Category <a class="h-anchor" href="#category" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>[ ] Security</li>
+<li>[ ] Performance</li>
+<li>[ ] Code Quality</li>
+<li>[ ] Maintainability</li>
+<li>[ ] Testing</li>
+<li>[ ] Design Pattern</li>
+<li>[ ] Documentation</li>
+</ul>
+<h4 id="location">Location <a class="h-anchor" href="#location" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>File:</strong> <code>src/components/UserCard.tsx</code></p>
+<p><strong>Lines:</strong> 45-52</p>
+<p><strong>Function/Method:</strong> <code>renderUserDetails()</code></p>
+<h4 id="issue-description">Issue Description <a class="h-anchor" href="#issue-description" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>What:</strong> Describe what the issue is.</p>
+<p><strong>Why it matters:</strong> Explain the impact and why this needs to be fixed.</p>
+<p><strong>Current behavior:</strong> Show the problematic code or behavior.</p>
+<p><strong>Expected behavior:</strong> Describe what should happen instead.</p>
+<h4 id="code-example">Code Example <a class="h-anchor" href="#code-example" aria-label="Ссылка на раздел">#</a></h4>
+<h5 id="current-problematic">Current (Problematic) <a class="h-anchor" href="#current-problematic" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-typescript">// Shows the N+1 query problem
+const users = fetchUsers();
+users.forEach(user =&gt; {
+  const posts = fetchUserPosts(user.id); // Query per user!
+  renderUserPosts(posts);
+});</code></pre>
+<h5 id="suggested-fix">Suggested Fix <a class="h-anchor" href="#suggested-fix" aria-label="Ссылка на раздел">#</a></h5>
+<pre><code class="language-typescript">// Optimized with JOIN query
+const usersWithPosts = fetchUsersWithPosts();
+usersWithPosts.forEach(({ user, posts }) =&gt; {
+  renderUserPosts(posts);
+});</code></pre>
+<h4 id="impact-analysis">Impact Analysis <a class="h-anchor" href="#impact-analysis" aria-label="Ссылка на раздел">#</a></h4>
+<div class="table-wrap"><table><thead><tr><th>Aspect</th><th>Impact</th><th>Severity</th></tr></thead><tbody><tr><td>Performance</td><td>100+ queries for 20 users</td><td>High</td></tr><tr><td>User Experience</td><td>Slow page load</td><td>High</td></tr><tr><td>Scalability</td><td>Breaks at scale</td><td>Critical</td></tr><tr><td>Maintainability</td><td>Hard to debug</td><td>Medium</td></tr></tbody></table></div>
+<h4 id="related-issues">Related Issues <a class="h-anchor" href="#related-issues" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Similar issue in <code>AdminUserList.tsx</code> line 120</li>
+<li>Related PR: #456</li>
+<li>Related issue: #789</li>
+</ul>
+<h4 id="additional-resources">Additional Resources <a class="h-anchor" href="#additional-resources" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/N%2B1_problem">N+1 Query Problem</a></li>
+<li><a href="https://docs.example.com/joins">Database Join Documentation</a></li>
+<li><a href="./docs/performance.md">Performance Optimization Guide</a></li>
+</ul>
+<h4 id="reviewer-notes">Reviewer Notes <a class="h-anchor" href="#reviewer-notes" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>This is a common pattern in this codebase</li>
+<li>Consider adding this to the code style guide</li>
+<li>Might be worth creating a helper function</li>
+</ul>
+<h4 id="author-response-for-feedback">Author Response (for feedback) <a class="h-anchor" href="#author-response-for-feedback" aria-label="Ссылка на раздел">#</a></h4>
+<p><em>To be filled by the code author:</em></p>
+<ul>
+<li>[ ] Fix implemented in commit: <code>abc123</code></li>
+<li>[ ] Fix status: Complete / In Progress / Needs Discussion</li>
+<li>[ ] Questions or concerns: (describe)</li>
+</ul>
+<hr>
+<h3 id="finding-statistics-for-reviewer">Finding Statistics (for Reviewer) <a class="h-anchor" href="#finding-statistics-for-reviewer" aria-label="Ссылка на раздел">#</a></h3>
+<p>When reviewing multiple findings, track:</p>
+<ul>
+<li><strong>Total Issues Found:</strong> X</li>
+<li><strong>Critical:</strong> X</li>
+<li><strong>High:</strong> X</li>
+<li><strong>Medium:</strong> X</li>
+<li><strong>Low:</strong> X</li>
+</ul>
+<p><strong>Recommendation:</strong> ✅ Approve / ⚠️ Request Changes / 🔄 Needs Discussion</p>
+<p><strong>Overall Code Quality:</strong> 1-5 stars</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

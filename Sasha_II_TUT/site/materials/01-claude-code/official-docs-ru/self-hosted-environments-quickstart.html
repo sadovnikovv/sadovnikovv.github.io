@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Быстрый старт для самостоятельно размещаемых окружений</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Быстрый старт для самостоятельно размещаемых окружений <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Настройте своё первое самостоятельно размещаемое окружение: установите Claude Code, создайте окружение, запустите runner и маршрутизируйте сеанс на него.</p>
+</blockquote>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Самостоятельно размещаемые окружения находятся в публичной бета-версии на планах Team и Enterprise; <a href="https://code.claude.com/docs/ru/self-hosted-environments#availability-and-limitations">Доступность и ограничения</a> охватывает путь включения. На этой странице вы запустите свой первый сеанс; см. <a href="https://code.claude.com/docs/ru/self-hosted-environments">Самостоятельно размещаемые окружения</a> для понимания того, что это такое, и <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md">Развёртывание в production</a> для укрепления и рецептов флота.</p>
+</blockquote>
+<p><a href="https://code.claude.com/docs/ru/self-hosted-environments">Самостоятельно размещаемое окружение</a> запускает <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">облачные сеансы</a> Claude Code на инфраструктуре, которой управляет ваша организация, выполняемые процессами runner, которые вы развёртываете. Этот быстрый старт настраивает ваше первое окружение, самое маленькое из работающих: один runner на одном хосте, запускающий один тестовый сеанс. Есть два шага: <a href="#set-up-an-environment-and-runner">создайте окружение, запустите runner и маршрутизируйте сеанс на него</a>, затем <a href="#send-a-follow-up-message-to-a-running-session">отправьте сообщение этому сеансу из вашего терминала</a>. Вы будете переключаться между двумя интерфейсами: claude.ai для создания окружения, проверки его статуса и маршрутизации сеанса, и терминалом на хосте для всего, что делает runner.</p>
+<p>К концу у вас будет окружение на <a href="https://claude.ai/admin-settings/cloud-environments">странице администратора <strong>Cloud environments</strong></a>, runner, опрашивающий работу, и сеанс, работающий на вашем хосте. Прежде чем подключать реальные репозитории или внутренние системы, пройдите <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md">Развёртывание в production</a>, которое охватывает позицию безопасности, контроль исходящего трафика, учётные данные git и оркестрацию.</p>
+<h3 id="h-2">Предварительные требования <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-3">Организация и роли <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Для claude.ai требуется:</p>
+<ul>
+<li><strong>Allow self-hosted environments</strong> включено <a href="https://code.claude.com/docs/ru/cloud-environments.md#organization-shared-environments">Владельцем</a> на <a href="https://claude.ai/admin-settings/cloud-environments">странице администратора <strong>Cloud environments</strong></a>; кнопка <strong>New</strong> не появляется, пока это не будет сделано. Если у вас нет этой роли, кто-то, кто её имеет, может создать окружение и передать вам его секрет; шаги runner и terminal на этой странице не требуют роли claude.ai, и там, где шаг проверяет статус в интерфейсе администратора, собственные строки логов runner дают вам тот же сигнал.</li>
+<li><a href="https://claude.ai/admin-settings/connectors">Коннектор GitHub</a>, включённый пользователем с ролью Owner, и собственное <a href="https://code.claude.com/docs/ru/web-quickstart.md#connect-github">подключение GitHub</a> каждого разработчика, чтобы они могли выбирать репозитории github.com при запуске сессий.</li>
+</ul>
+<h4 id="h-4">Хост и сеть <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<p>Хост runner требует:</p>
+<ul>
+<li>Хост или контейнер Linux или macOS с исходящим HTTPS к <code>api.anthropic.com</code>, к <code>claude.ai</code> и хостам загрузки, на которые он перенаправляет для шага установки ниже, и к вашему git-хосту для клонирования; <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#network-requirements">таблица требований к сети</a> содержит полный список. Windows не поддерживается в качестве хоста runner; запустите runner в контейнере Linux вместо этого. Рабочие станции разработчиков не затронуты, так как сеансы запускаются из claude.ai в браузере.</li>
+<li>Репозиторий для тестовой сессии: публичный или такой, который этот хост уже может клонировать по его HTTPS URL без запроса учётных данных. Одного SSH-ключа недостаточно, поскольку runner клонирует <code>https://</code> URL репозитория. Чтобы вместо этого клонировать по SSH, см. <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#rewrite-git-urls-for-private-networks">Rewrite git URLs for private networks</a>.</li>
+<li>Часы, синхронизированные с реальным временем, например с помощью NTP.</li>
+</ul>
+<h4 id="программное-обеспечение-на-хосте-runner">Программное обеспечение на хосте runner <a class="h-anchor" href="#программное-обеспечение-на-хосте-runner" aria-label="Ссылка на раздел">#</a></h4>
+<p>Установите на хост перед началом:</p>
+<ul>
+<li><strong>Claude Code v2.1.224 или позже</strong>, с любым из <a href="https://code.claude.com/docs/ru/setup.md">стандартных методов установки</a>. Runner является частью стандартного бинарного файла <code>claude</code>, и более ранние версии не распознают подкоманду <code>self-hosted-runner</code>. Runner, обслуживающему сессии Claude Tag, требуется v2.1.229 или позже и <code>python3</code> в его <code>PATH</code>, поскольку <a href="https://code.claude.com/docs/ru/self-hosted-environments-configuration.md#how-each-session’s-config-is-assembled">хуки, предоставляемые control plane</a> для этих сессий, запускают <code>python3</code>.</li>
+</ul>
+<p>Чтобы зафиксировать точную версию, которую запускает ваш парк, см. <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#pin-the-version">Pin the version</a>. Для образов контейнеров см. Dockerfile в <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#build-the-runner-image">Deploy to production</a>.</p>
+<ul>
+<li><strong>Git 2.24 или новее</strong>. Некоторые опции git на странице развёртывания требуют более новых версий; <a href="https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#configure-git">Configure git</a> указывает каждый минимум.</li>
+</ul>
+<p>Подтвердите, что хост готов:</p>
+<p>```bash theme={null}
+claude self-hosted-runner --help</p>
+<pre><code>
+Готовый хост выводит текст использования runner, перечисляя флаги такие как `--environment-secret-file`. На версиях старше 2.1.224 команда выводит вместо этого общий вывод `claude --help`. Если вы видите этот вывод, [обновите Claude Code](https://code.claude.com/docs/ru/setup.md#update-claude-code). Если вы запускаете `claude` из образа контейнера, [пересоберите образ](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#build-the-runner-image) с версией 2.1.224 или новее.
+
+## Настройка окружения и runner
+
+Используйте либо [пошаговую настройку](#run-the-guided-setup), либо [ручные шаги](#set-up-manually). Пошаговая настройка — это одна команда, которая запускает интерактивную сессию Claude Code и проводит вас через остальные действия. Используйте вместо неё ручные шаги на хосте, где интерактивная сессия невозможна. Также используйте их, если окружение создал пользователь с ролью Owner и передал вам его секрет, поскольку для пошаговой настройки требуется вход с ролью Owner.
+
+### Запуск пошаговой настройки
+
+Пошаговая настройка проводит вас через создание окружения в админ-интерфейсе, запускает локальный runner с файлом секрета, который вы сохраняете, подтверждает, что runner регистрируется, и записывает шпаргалку в `./runner-setup/CHEAT-SHEET.md`. Перед запуском проверьте вход и версию:
+
+* **Вход**: запускайте её на машине, где вы вошли с помощью `claude auth login`, используя учётную запись с ролью Owner. Если используется только API-ключ или сторонний поставщик моделей, сессия запустится, но проверки организации завершатся неудачей.
+* **Версия**: убедитесь, что [проверка версии](#software-on-the-runner-host) пройдена. На версиях старше 2.1.224 команда setup запускает сессию Claude с этими словами в качестве промпта вместо пошаговой настройки.
+
+Чтобы запустить пошаговую настройку, выполните подкоманду setup в оболочке и следуйте инструкциям:
+</code></pre>
+<p>claude self-hosted-runner setup</p>
+<pre><code>
+Пошаговая настройка сама не запускает тестовую сессию: она предлагает вам запустить её на claude.ai/code. Последний шаг настройки останавливает запущенный ею runner. Если вы выйдете из настройки до этого шага, runner продолжит работать. Чтобы продолжить после последнего шага, снова запустите runner в оболочке с помощью команды из `./runner-setup/CHEAT-SHEET.md`, затем [направьте сессию в окружение](#route-a-session).
+
+### Ручная настройка
+
+Создайте окружение на claude.ai, запустите runner из терминала на хосте, затем вернитесь на claude.ai, чтобы убедиться, что runner появился, и направить на него сессию. Если пользователь с ролью Owner уже создал окружение и передал вам его секрет, начните с шага 2.
+
+**1. Создайте окружение**
+
+Перейдите на [страницу **Cloud environments**](https://claude.ai/admin-settings/cloud-environments) в параметрах администратора. В разделе **Self-hosted environments** выберите **New**, назовите окружение и выберите **Create**. На втором шаге мастера выберите **Copy environment key**, чтобы скопировать секрет окружения, который админ-интерфейс обозначает как ключ окружения. claude.ai показывает секрет один раз, и вы не можете получить его позже; он истекает через 365 дней после создания. ID окружения `ccpool_...` остаётся видимым в его диалоговом окне деталей; вам понадобится он для проверки `aud` в [проверке токена](https://code.claude.com/docs/ru/self-hosted-environments-identity.md) и для отправки [тестовых сеансов из CI](https://code.claude.com/docs/ru/self-hosted-environments-testing.md#run-the-test-loop).
+
+Если секрет мог утечь, следуйте [шагам на странице развёртывания на случай подозрения на компрометацию](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#after-a-suspected-compromise), а не описанной ниже ротации.
+
+Если вы потеряли секрет или планируете его ротировать, создайте новый секрет на вкладке **Configuration** окружения. Разверните новый секрет на ваших runners, затем отзовите старый. Runners с отозванным секретом не пройдут следующий аутентифицированный опрос и завершатся, записав в лог `poll auth failed`, а ваш оркестратор перезапустит их с новым секретом.
+
+**2. Запустите runner**
+
+Создайте директорию для секрета. Эта и следующая команды используют `/etc/claude`, что требует root, а создаваемый ими файл секрета доступен для чтения только пользователю, который их выполнил. Если runner будет работать от имени другого пользователя, он завершится с ошибкой `error: Failed to read environment secret file &lt;path&gt; (EACCES: permission denied, open &#x27;&lt;path&gt;&#x27;)`. В этом случае выполните обе команды от имени пользователя runner, указав вместо `/etc/claude` директорию, в которую этот пользователь может записывать, и передайте тот же путь в `--environment-secret-file`. Подойдёт любой путь, который процесс runner может читать.
+</code></pre>
+<p>mkdir -p /etc/claude</p>
+<pre><code>
+Запишите секрет окружения в файл. Команда ниже читает из вашего терминала, поэтому секрет остаётся вне истории shell: вставьте значение, которое вы скопировали, нажмите Enter, затем Ctrl-D, и `umask` подоболочки делает файл читаемым только его владельцем.
+</code></pre>
+<p>(umask 077 &amp;&amp; cat &gt; /etc/claude/environment-secret)</p>
+<pre><code>
+Выберите базовую директорию, заменив `&lt;writable-dir&gt;` в команде runner ниже абсолютным путём, который runner может писать или создавать. Runner создаёт директорию при запуске, затем извлекает репозитории и создаёт директории для каждого сеанса под ней. Без `--base-dir` он использует `/workspace`, что работает только если эта директория уже существует и доступна для записи или вы запускаете runner как root.
+
+&gt; [!WARNING]
+&gt;
+&gt; Используйте каталог, выделенный для runner, а не ваш домашний каталог или каталог с вашими собственными клонами. Runner считает всё, что находит в `&lt;writable-dir&gt;/&lt;repo-owner&gt;/&lt;repo&gt;`, своим клоном и может сбросить его, а также перезаписать или удалить в нём файлы.
+
+Если runner не может создать базовый каталог или записывать в него, он завершается при запуске с ошибкой, в которой указан этот каталог, вместо регистрации. См. [Устранение неполадок](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#troubleshooting).
+
+Затем запустите runner с `--environment-secret-file` и `--base-dir`:
+</code></pre>
+<p>claude self-hosted-runner --environment-secret-file &#x27;/etc/claude/environment-secret&#x27; --base-dir &#x27;&lt;writable-dir&gt;&#x27;</p>
+<pre><code>
+После регистрации в вашем окружении runner записывает в лог `Registered: runner_id=&lt;runner-id&gt;`, а затем начинает опрашивать наличие работы. Запущенный этой командой, он по задумке завершается после обслуживания одной сессии, а не после каждого хода. Чтобы обслуживать больше сессий, запускайте runner снова каждый раз, когда он завершается. О том, когда это происходит и что runner записывает в лог, см. [Если runner завершился](#if-the-runner-exits).
+
+**3. Проверьте, что runner появился**
+
+Вернитесь на [страницу **Cloud environments**](https://claude.ai/admin-settings/cloud-environments). Статус вашего окружения изменится с **No runners deployed** на **Healthy** в течение нескольких секунд после запуска runner; откройте окружение и выберите **Activity**, чтобы увидеть сам runner. Если у вас нет доступа к странице администратора, тот же сигнал даёт строка `Registered: runner_id=&lt;runner-id&gt;` в логе runner из предыдущего шага.
+
+**4. Направьте сессию в окружение**
+
+Запустите сессию на claude.ai/code и выберите ваше окружение в средстве выбора окружения, где самостоятельно размещаемые окружения отображаются рядом с размещаемыми Anthropic. В качестве репозитория выберите указанный в [предварительных требованиях](#host-and-network): публичный репозиторий или тот, который этот хост уже может клонировать по его HTTPS URL без запроса учётных данных.
+
+Следующий доступный runner подхватывает поставленную в очередь сессию и записывает в лог `Picked up session &lt;session-id&gt;` вместе с числом активных сессий и ёмкостью, поэтому по собственному выводу runner можно определить, какой хост взял сессию. Наблюдайте за работой сессии и читайте ответы Claude на [claude.ai/code](https://claude.ai/code).
+
+Если сессия не начинает работу, сопоставьте то, что вы видите:
+
+* **Сессия остаётся в очереди**: см. [Устранение неполадок](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#troubleshooting).
+* **Сессия не запускается из-за ошибки git**: если ошибка содержит `could not read Username for` из git, за которым следует URL вашего git-хоста, у runner не было учётных данных HTTPS для этого хоста.
+  * **Предоставьте учётные данные HTTPS**: см. [Настройка git](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#configure-git)
+  * **Клонируйте через SSH**: если на хосте runner уже есть SSH-ключ, см. [Перезапись git URL для частных сетей](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#rewrite-git-urls-for-private-networks)
+  * **После любого из этих исправлений**: снова запустите runner и следите за неудавшейся сессией, а не запускайте новую. Если она уже завершилась неудачей несколько раз, подождите несколько минут, пока runner не запишет в лог `Picked up session`.
+  * **Чтобы вместо этого использовать другой репозиторий**: [архивируйте](https://code.claude.com/docs/ru/claude-code-on-the-web.md#archive-sessions) или [удалите](https://code.claude.com/docs/ru/claude-code-on-the-web.md#delete-sessions) неудавшуюся сессию, затем снова запустите runner и начните новую сессию. Иначе runner может подхватить неудавшуюся сессию вместо новой.
+
+### Если runner завершился
+
+Если runner завершится во время этого быстрого старта, запустите его снова. Runner может завершиться самостоятельно:
+
+* **Ничего не выполняется**: в логе отображается `[runner:exit] account workload drained — exiting`. Runner [по задумке завершается](https://code.claude.com/docs/ru/self-hosted-environments#runner-lifecycle), как только перестаёт выполнять какую-либо сессию, например:
+  * **Вы архивировали или удалили сессию**: запустите runner снова
+  * **Сессия не запустилась**: [устраните причину](#session-doesnt-start), затем запустите runner снова
+* **Потеряна связь**: в логе отображается строка `[runner:fatal]` с `runner record gone server-side` или с `poll auth failed`. Если runner на некоторое время теряет связь с Anthropic, например потому что хост перешёл в спящий режим, он может завершиться при следующем обращении к Anthropic.
+
+Завершённый ход не завершает вашу тестовую сессию. После первого хода сессия остаётся подключённой, а runner продолжает работать, поэтому вы можете [отправить сессии следующее сообщение](#send-a-follow-up-message-to-a-running-session), не перезапуская runner.
+
+Для production развёртывайте runner под оркестратором, который перезапускает его при завершении и увеличивает паузу между перезапусками, если runner продолжает завершаться сразу после запуска. См. [Deploy to production](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md) и [When the runner exits](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md#when-the-runner-exits).
+
+## Отправьте follow-up сообщение работающему сеансу
+
+Когда сеанс работает на вашем окружении, отправьте ему follow-up из CLI `claude` на любой машине, где вы вошли с помощью `claude auth login`; команда не должна запускаться с машины, которая запустила сеанс. Команда отправляет одно сообщение:
+</code></pre>
+<p>claude -p &quot;your message&quot; --cloud &lt;session-id&gt;</p>
+<pre><code>
+Для `&lt;session-id&gt;` передайте голый ID `session_...` или `cse_...` или URL сессии claude.ai/code. Успешная отправка выводит `Sent to cloud session.` с ID сессии и ссылкой для просмотра. Допустимые формы ID, вывод JSON, а также требования к учётной записи и политикам описаны в разделе [Отправка follow-up сообщений из CLI](https://code.claude.com/docs/ru/claude-code-on-the-web.md#send-follow-ups-from-the-cli), так как команда работает одинаково и с сессиями, размещёнными Anthropic.
+
+## Что дальше
+
+* [Развёртывание в production](https://code.claude.com/docs/ru/self-hosted-environments-deploy.md): укрепите развёртывание, контролируйте исходящий трафик, настройте учётные данные git и запустите флот под Kubernetes или Compose
+* [Customize sessions](https://code.claude.com/docs/ru/self-hosted-environments-configuration.md): скрипты-обёртки, хуки жизненного цикла, runners по требованию, MCP серверы и разрешения
+* [Test end to end](https://code.claude.com/docs/ru/self-hosted-environments-testing.md): CI smoke тест, который отправляет сеанс и читает ответы Claude
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

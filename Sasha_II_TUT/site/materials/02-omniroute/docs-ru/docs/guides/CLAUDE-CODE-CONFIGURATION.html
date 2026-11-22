@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Claude Code CLI — Configuration with OmniRoute (Русский)</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/02-omniroute/index.html">02-omniroute</a> / <a href="../../../../../materials/02-omniroute/docs-ru/index.html">docs-ru</a> / <a href="../../../../../materials/02-omniroute/docs-ru/docs/index.html">docs</a> / <a href="../../../../../materials/02-omniroute/docs-ru/docs/guides/index.html">guides</a></nav>
+<h1 id="claude-code-cli-configuration-with-omniroute-русский">Claude Code CLI — Configuration with OmniRoute (Русский) <a class="h-anchor" href="#claude-code-cli-configuration-with-omniroute-русский" aria-label="Ссылка на раздел">#</a></h1>
+<p>🌐 <strong>Languages:</strong> 🇺🇸 <a href="../../../../guides/CLAUDE-CODE-CONFIGURATION.md">English</a> · 🇪🇹 <a href="../../../am/docs/guides/CLAUDE-CODE-CONFIGURATION.md">am</a> · 🇸🇦 <a href="../../../ar/docs/guides/CLAUDE-CODE-CONFIGURATION.md">ar</a> · 🇦🇿 <a href="../../../az/docs/guides/CLAUDE-CODE-CONFIGURATION.md">az</a> · 🇧🇬 <a href="../../../bg/docs/guides/CLAUDE-CODE-CONFIGURATION.md">bg</a> · 🇧🇩 <a href="../../../bn/docs/guides/CLAUDE-CODE-CONFIGURATION.md">bn</a> · 🇧🇦 <a href="../../../bs/docs/guides/CLAUDE-CODE-CONFIGURATION.md">bs</a> · 🇨🇿 <a href="../../../cs/docs/guides/CLAUDE-CODE-CONFIGURATION.md">cs</a> · 🇩🇰 <a href="../../../da/docs/guides/CLAUDE-CODE-CONFIGURATION.md">da</a> · 🇩🇪 <a href="../../../de/docs/guides/CLAUDE-CODE-CONFIGURATION.md">de</a> · 🇬🇷 <a href="../../../el/docs/guides/CLAUDE-CODE-CONFIGURATION.md">el</a> · 🇪🇸 <a href="../../../es/docs/guides/CLAUDE-CODE-CONFIGURATION.md">es</a> · 🇪🇪 <a href="../../../et/docs/guides/CLAUDE-CODE-CONFIGURATION.md">et</a> · 🇮🇷 <a href="../../../fa/docs/guides/CLAUDE-CODE-CONFIGURATION.md">fa</a> · 🇫🇮 <a href="../../../fi/docs/guides/CLAUDE-CODE-CONFIGURATION.md">fi</a> · 🇫🇷 <a href="../../../fr/docs/guides/CLAUDE-CODE-CONFIGURATION.md">fr</a> · 🇮🇪 <a href="../../../ga/docs/guides/CLAUDE-CODE-CONFIGURATION.md">ga</a> · 🇮🇳 <a href="../../../gu/docs/guides/CLAUDE-CODE-CONFIGURATION.md">gu</a> · 🇳🇬 <a href="../../../ha/docs/guides/CLAUDE-CODE-CONFIGURATION.md">ha</a> · 🇮🇱 <a href="../../../he/docs/guides/CLAUDE-CODE-CONFIGURATION.md">he</a> · 🇮🇳 <a href="../../../hi/docs/guides/CLAUDE-CODE-CONFIGURATION.md">hi</a> · 🇭🇷 <a href="../../../hr/docs/guides/CLAUDE-CODE-CONFIGURATION.md">hr</a> · 🇭🇺 <a href="../../../hu/docs/guides/CLAUDE-CODE-CONFIGURATION.md">hu</a> · 🇦🇲 <a href="../../../hy/docs/guides/CLAUDE-CODE-CONFIGURATION.md">hy</a> · 🇮🇩 <a href="../../../id/docs/guides/CLAUDE-CODE-CONFIGURATION.md">id</a> · 🇳🇬 <a href="../../../ig/docs/guides/CLAUDE-CODE-CONFIGURATION.md">ig</a> · 🇮🇹 <a href="../../../it/docs/guides/CLAUDE-CODE-CONFIGURATION.md">it</a> · 🇯🇵 <a href="../../../ja/docs/guides/CLAUDE-CODE-CONFIGURATION.md">ja</a> · 🇬🇪 <a href="../../../ka/docs/guides/CLAUDE-CODE-CONFIGURATION.md">ka</a> · 🇰🇭 <a href="../../../km/docs/guides/CLAUDE-CODE-CONFIGURATION.md">km</a> · 🇮🇳 <a href="../../../kn/docs/guides/CLAUDE-CODE-CONFIGURATION.md">kn</a> · 🇰🇷 <a href="../../../ko/docs/guides/CLAUDE-CODE-CONFIGURATION.md">ko</a> · 🇱🇹 <a href="../../../lt/docs/guides/CLAUDE-CODE-CONFIGURATION.md">lt</a> · 🇱🇻 <a href="../../../lv/docs/guides/CLAUDE-CODE-CONFIGURATION.md">lv</a> · 🇮🇳 <a href="../../../ml/docs/guides/CLAUDE-CODE-CONFIGURATION.md">ml</a> · 🇮🇳 <a href="../../../mr/docs/guides/CLAUDE-CODE-CONFIGURATION.md">mr</a> · 🇲🇾 <a href="../../../ms/docs/guides/CLAUDE-CODE-CONFIGURATION.md">ms</a> · 🇲🇹 <a href="../../../mt/docs/guides/CLAUDE-CODE-CONFIGURATION.md">mt</a> · 🇲🇲 <a href="../../../my/docs/guides/CLAUDE-CODE-CONFIGURATION.md">my</a> · 🇳🇵 <a href="../../../ne/docs/guides/CLAUDE-CODE-CONFIGURATION.md">ne</a> · 🇳🇱 <a href="../../../nl/docs/guides/CLAUDE-CODE-CONFIGURATION.md">nl</a> · 🇳🇴 <a href="../../../no/docs/guides/CLAUDE-CODE-CONFIGURATION.md">no</a> · 🇮🇳 <a href="../../../or/docs/guides/CLAUDE-CODE-CONFIGURATION.md">or</a> · 🇮🇳 <a href="../../../pa/docs/guides/CLAUDE-CODE-CONFIGURATION.md">pa</a> · 🇵🇭 <a href="../../../phi/docs/guides/CLAUDE-CODE-CONFIGURATION.md">phi</a> · 🇵🇱 <a href="../../../pl/docs/guides/CLAUDE-CODE-CONFIGURATION.md">pl</a> · 🇵🇹 <a href="../../../pt/docs/guides/CLAUDE-CODE-CONFIGURATION.md">pt</a> · 🇧🇷 <a href="../../../pt-BR/docs/guides/CLAUDE-CODE-CONFIGURATION.md">pt-BR</a> · 🇷🇴 <a href="../../../ro/docs/guides/CLAUDE-CODE-CONFIGURATION.md">ro</a> · 🇱🇰 <a href="../../../si/docs/guides/CLAUDE-CODE-CONFIGURATION.md">si</a> · 🇸🇰 <a href="../../../sk/docs/guides/CLAUDE-CODE-CONFIGURATION.md">sk</a> · 🇸🇮 <a href="../../../sl/docs/guides/CLAUDE-CODE-CONFIGURATION.md">sl</a> · 🇷🇸 <a href="../../../sr/docs/guides/CLAUDE-CODE-CONFIGURATION.md">sr</a> · 🇸🇪 <a href="../../../sv/docs/guides/CLAUDE-CODE-CONFIGURATION.md">sv</a> · 🇰🇪 <a href="../../../sw/docs/guides/CLAUDE-CODE-CONFIGURATION.md">sw</a> · 🇮🇳 <a href="../../../ta/docs/guides/CLAUDE-CODE-CONFIGURATION.md">ta</a> · 🇮🇳 <a href="../../../te/docs/guides/CLAUDE-CODE-CONFIGURATION.md">te</a> · 🇹🇭 <a href="../../../th/docs/guides/CLAUDE-CODE-CONFIGURATION.md">th</a> · 🇹🇷 <a href="../../../tr/docs/guides/CLAUDE-CODE-CONFIGURATION.md">tr</a> · 🇺🇦 <a href="../../../uk-UA/docs/guides/CLAUDE-CODE-CONFIGURATION.md">uk-UA</a> · 🇵🇰 <a href="../../../ur/docs/guides/CLAUDE-CODE-CONFIGURATION.md">ur</a> · 🇺🇿 <a href="../../../uz/docs/guides/CLAUDE-CODE-CONFIGURATION.md">uz</a> · 🇻🇳 <a href="../../../vi/docs/guides/CLAUDE-CODE-CONFIGURATION.md">vi</a> · 🇳🇬 <a href="../../../yo/docs/guides/CLAUDE-CODE-CONFIGURATION.md">yo</a> · 🇨🇳 <a href="../../../zh-CN/docs/guides/CLAUDE-CODE-CONFIGURATION.md">zh-CN</a> · 🇹🇼 <a href="../../../zh-TW/docs/guides/CLAUDE-CODE-CONFIGURATION.md">zh-TW</a></p>
+<hr>
+<p>Настройте CLI <strong>Claude Code</strong> (<code>claude</code>) для работы с OmniRoute — локально или на удалённом VPS —
+с отдельными профилями для каждой модели, аналогично настройке Codex.</p>
+<hr>
+<h3 id="h">Быстрый старт <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-bash"># Запустить Claude Code с локальным OmniRoute (активный контекст определяется автоматически)
+omniroute launch
+
+# С удалённым OmniRoute (после `omniroute connect &lt;host&gt;` подключение выполняется автоматически)
+omniroute launch --remote http://192.168.0.15:20128 --api-key oma_live_xxx
+
+# Создать профили для каждой модели, а затем запустить один из них
+omniroute setup-claude            # записывает ~/.claude/profiles/&lt;name&gt;/settings.json
+omniroute launch --profile glm52  # Claude Code использует glm/glm-5.2 через OmniRoute</code></pre>
+<hr>
+<h3 id="как-claude-code-подключается-к-шлюзу">Как Claude Code подключается к шлюзу <a class="h-anchor" href="#как-claude-code-подключается-к-шлюзу" aria-label="Ссылка на раздел">#</a></h3>
+<p>Код Claude рассказывает о<strong> APIAnthropic</strong> и указывает на пользовательскую конечную точку с переменными среды (у нее нет флага <code>--base-url</code> ):</p>
+<div class="table-wrap"><table><thead><tr><th>Переменная</th><th>Цель</th></tr></thead><tbody><tr><td><code>ANTHROPIC_BASE_URL</code></td><td>Корень шлюза URL (код Claude добавляет <code>/v1/messages</code>).<strong> Нет суффикса <code>/v1</code>.</strong></td></tr><tr><td><code>ANTHROPIC_AUTH_TOKEN</code></td><td>Отправлено как <code>Authorization: Bearer …</code> — используйте свой токен доступа OmniRoute /ключ API</td></tr><tr><td><code>ANTHROPIC_API_KEY</code></td><td>Альтернатива: отправить как <code>x-api-key</code>. Если оба сета, <code>ANTHROPIC_AUTH_TOKEN</code> выигрывает.</td></tr><tr><td><code>ANTHROPIC_MODEL</code></td><td>Принудительно использовать конкретную модель (переопределяет значение по умолчанию для средства выбора <code>/model</code> )</td></tr><tr><td><code>CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY</code></td><td><code>1</code> → встроенное средство выбора <code>/model</code> перечисляет модели <code>claude*</code>/<code>anthropic*</code> из <code>/v1/models</code></td></tr><tr><td><code>CLAUDE_CODE_MAX_OUTPUT_TOKENS</code></td><td>Ограничить количество выходных токенов на ответ (например <code>65536</code>).</td></tr><tr><td><code>CLAUDE_CODE_AUTO_COMPACT_WINDOW</code></td><td>Порог токена для автоматического сжатия</td></tr></tbody></table></div>
+<blockquote>
+<p>Переменные Env читаются<strong> один раз при запуске</strong> — перезапустите код Claude после их изменения.</p>
+</blockquote>
+<p>Чтобы учетные данные менялись, а не были фиксированной строкой, задайте для <code>apiKeyHelper</code> в <code>~/.claude/settings.json</code> команду, которая выводит текущие учетные данные на стандартный вывод. Код Claude по умолчанию кэширует выходные данные в течение пяти минут (<code>CLAUDE_CODE_API_KEY_HELPER_TTL_MS</code> переопределяет это) и отправляет значение как в <code>Authorization: Bearer</code> так и <code>x-api-key</code>. Сценарий должен печатать учетные данные и ничего больше. — баннер рядом с ним не помогает помощнику в v2.1.227 +.</p>
+<p>Вот как работает Entra ID SSO : <code>scripts/cli/omniroute-sso.mjs token</code> печатает недолговечный токен доступа Entra, который проверяет OmniRoute вместо ключа API. См. <a href="../security/ENTRA_SSO.md"><code>docs/security/ENTRA_SSO.md</code></a>.</p>
+<p><code>omniroute launch</code> устанавливает все это за вас: он разрешает базовый токен URL + из активного контекста (так что <code>omniroute connect &lt;vps&gt;</code> а затем <code>omniroute launch</code> просто работает), проверяет работоспособность сервера и запускает <code>claude</code>.</p>
+<hr>
+<h3 id="h-2">Атрибуция использования: сеансы и проекты <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>OmniRoute группирует запросы каждого ключа API в<strong> сеансы агента</strong> и записи, которые<strong> проект</strong> каждый рабочий сеанс (таблица <code>agent_sessions</code> ), поэтому можно указать использование и стоимость для каждого члена команды, для каждого проекта и для каждого сеанса.</p>
+<p>Что записывается без какой-либо настройки клиента:</p>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Источник</th></tr></thead><tbody><tr><td>Сессия</td><td>заголовок <code>x-claude-code-session-id</code> (то же значение, что и <code>metadata.user_id.session_id</code>), стабильный для каждого сеанса</td></tr><tr><td>Проект</td><td>Строка <code>Primary working directory:</code> Код Claude отправляет сообщение своей среды; папки рабочего дерева в <code>.claude/worktrees/</code> преобразуются в имя репозитория</td></tr><tr><td>Ветвь</td><td><code>Current branch:</code> из статуса git Код Claude отправляется с первым сообщением</td></tr><tr><td>Клиент</td><td><code>user-agent</code> (<code>claude-cli/&lt;version&gt;</code>)</td></tr></tbody></table></div>
+<p>Codex (<code>&lt;environment_context&gt;&lt;cwd&gt;</code>) и OpenCode (<code>x-opencode-session</code>) распознаются одинаково. Ключи с<strong> без журнала</strong> включено сохранение только идентификатора сеанса и полей проекта, предоставленных заголовком; ничего, прочитанное из приглашения (путь, ветка), не сохраняется.</p>
+<h4 id="h-3">Явное название проекта (рекомендуется) <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<p>Рабочий каталог на разных машинах различается, поэтому один и тот же репозиторий может отображаться по разным путям. Вместо этого отправьте проект явно: Claude Code добавляет любые заголовки, перечисленные в <code>ANTHROPIC_CUSTOM_HEADERS</code> к каждому запросу модели, а OmniRoute считывает два из них:</p>
+<div class="table-wrap"><table><thead><tr><th>Заголовок</th><th>Ценить</th></tr></thead><tbody><tr><td><code>x-omniroute-project</code></td><td>Название проекта, например <code>omniroute</code></td></tr><tr><td><code>x-omniroute-project-repo</code></td><td>Нормализованный пульт, например <code>github.com/diegosouzapw/OmniRoute</code></td></tr></tbody></table></div>
+<p>Оба читаются только для указания авторства; они никогда не пересылаются вышестоящему провайдеру.</p>
+<p><code>ANTHROPIC_CUSTOM_HEADERS</code> считывается один раз при запуске, а файлы настроек хранят литеральные значения, поэтому вычисляйте их при запуске кода Claude. Добавьте это в <code>~/.zshrc</code> или <code>~/.bashrc</code> и продолжайте запускать <code>claude</code> из папки проекта:</p>
+<pre><code class="language-bash">claude() {
+  local common name repo
+  if common=$(git rev-parse --path-format=absolute --git-common-dir 2&gt;/dev/null); then
+    case $common in
+      */.git) name=$(basename &quot;$(dirname &quot;$common&quot;)&quot;) ;;  # repository name, also in worktrees
+      *) name=$(basename &quot;$common&quot; .git) ;;                # bare repository (/srv/foo.git)
+    esac
+    repo=$(git remote get-url origin 2&gt;/dev/null \
+      | sed -E &#x27;s#^[a-zA-Z][a-zA-Z0-9+.-]*://([^@/]*@)?##; s#^[^@/]+@([^:]+):#\1/#; s|[?#].*$||; s#\.git$##&#x27;)
+  else
+    name=$(basename &quot;$PWD&quot;)                                # not a git repository: folder name
+  fi
+  ANTHROPIC_CUSTOM_HEADERS=&quot;${ANTHROPIC_CUSTOM_HEADERS:+${ANTHROPIC_CUSTOM_HEADERS}
+}x-omniroute-project: ${name}${repo:+
+x-omniroute-project-repo: ${repo}}&quot; command claude &quot;$@&quot;
+}</code></pre>
+<p>Выражение <code>sed</code> удаляет все учетные данные, строку запроса и фрагмент, встроенные в удаленный URL, а заголовки, уже находящиеся в <code>ANTHROPIC_CUSTOM_HEADERS</code> сохраняются. Расширения IDE запускают Claude Code без вашей оболочки, поэтому их сеансы возвращаются в рабочий каталог.</p>
+<hr>
+<h3 id="алиасы-обнаружения-отображение-моделей-не-claude-в-селекторе-model">Алиасы обнаружения — отображение моделей не-Claude в селекторе <code>/model</code> <a class="h-anchor" href="#алиасы-обнаружения-отображение-моделей-не-claude-в-селекторе-model" aria-label="Ссылка на раздел">#</a></h3>
+<p>Обнаружение моделей шлюза в Claude Code выводит только идентификаторы, начинающиеся с <code>claude</code> или <code>anthropic</code>, поэтому при <code>CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1</code> встроенный селектор <code>/model</code> обычно показывает <strong>только</strong> модели Claude/Anthropic из OmniRoute — <code>kimi/kimi-k2.6</code> или <code>glm/glm-5.2</code> никогда не появляются, хотя маршрутизация для них работает нормально.</p>
+<p>OmniRoute может зеркалировать любую включённую модель (и комбо) под идентификатором <code>claude/…</code>, чтобы она проходила этот фильтр и отображалась в селекторе:</p>
+<pre><code>kimi/kimi-k2.6            →  claude/kimi/kimi-k2.6      &quot;Kimi K2.6 (OmniRoute)&quot;
+glm/glm-5.2              →  claude/glm/glm-5.2         &quot;GLM 5.2 (OmniRoute)&quot;
+&lt;combo &quot;custo-otimizado&quot;&gt; →  claude/combo/custo-otimizado</code></pre>
+<p>Когда вы выбираете один из них в Claude Code, OmniRoute снимает обёртку <code>claude/</code>, восстанавливая реальный идентификатор перед маршрутизацией, — подлинный идентификатор <code>claude/&lt;real-claude-model&gt;</code> (фактический провайдер Claude OAuth) всегда остаётся нетронутым.</p>
+<p>По умолчанию зеркалируются только базовые идентификаторы. При включённом опциональном флаге <code>CATALOG_MIRROR_REFINEMENTS_ENABLED</code> варианты с уровнями reasoning-effort, уже присутствующие в каталоге (например, <code>codex/gpt-6-sol-high</code>), зеркалируются как любые другие идентификаторы, так что Claude Code может выбрать явный уровень усилий, а встроенные идентификаторы <code>auto/*</code>, которые путь запроса не может материализовать, не зеркалируются. То, выводятся ли варианты уровней усилий вообще, по-прежнему определяется <code>OMNIROUTE_DISABLE_THINKING_LEVEL_VARIANTS</code> — зеркало никогда не добавляет вариант, которого нет в базовом каталоге.</p>
+<p><strong>По умолчанию это отключено</strong> и управляется трёхуровневым переключателем (приоритет у более конкретного уровня), так что обычный OmniRoute никогда не удваивает свой каталог для клиентов, не использующих Claude Code:</p>
+<div class="table-wrap"><table><thead><tr><th>Уровень</th><th>Где</th></tr></thead><tbody><tr><td>Модель</td><td>Страница сведений о провайдере → переключатель «Отображать в Claude Code» для каждой модели</td></tr><tr><td>Провайдер</td><td>Страница сведений о провайдере → переключатель на уровне провайдера (охватывает все его модели)</td></tr><tr><td>Глобальный</td><td>Настройки → Флаги функций → <code>EXPOSE_CC_DISCOVERY_ALIASES</code> (по умолчанию выключено)</td></tr></tbody></table></div>
+<p>Переменная окружения <code>EXPOSE_CC_DISCOVERY_ALIASES</code> принудительно включает глобальный уровень и имеет приоритет над переопределением в панели управления (при этом на экране флагов функций отображается пометка «активно через переменную окружения»). Переключатели на уровне провайдера и модели уточняют настройку дальше — например, глобально выключено + провайдер Kimi включён открывает только модели Kimi.</p>
+<blockquote>
+<p>⚠️ <strong>Несоответствие окна контекста у моделей, отличных от Claude.</strong> Claude Code предполагает окно контекста 200K для любого идентификатора, который не распознаёт (он не может прочитать реальное окно из <code>/v1/models</code>). Для модели с большим окном (например, 256K у Kimi K2) установите <code>CLAUDE_CODE_AUTO_COMPACT_WINDOW</code> в значение ниже реального окна модели, чтобы автосжатие не срабатывало преждевременно. Сгенерированные выше профили уже делают это для каждой модели.</p>
+</blockquote>
+<hr>
+<h3 id="h-4">Блок первоначальной настройки на панели управления <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Карточка инструмента Claude (<strong>Панель управления → CLI Code</strong>) отображает точный фрагмент <code>settings.json</code>
+для этого экземпляра рядом с кнопкой информации о псевдониме обнаружения, а также кнопку копирования:</p>
+<pre><code class="language-jsonc">{
+  &quot;env&quot;: {
+    &quot;ANTHROPIC_BASE_URL&quot;: &quot;http://&lt;адрес вашего OmniRoute&gt;:20128&quot;,
+    &quot;ANTHROPIC_AUTH_TOKEN&quot;: &quot;&lt;ваш API-ключ OmniRoute&gt;&quot;,
+    &quot;CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY&quot;: &quot;1&quot;,
+  },
+}</code></pre>
+<p>Базовый URL — это адрес, определённый карточкой (включая введённое вами пользовательское переопределение) и уже
+нормализованный: без суффикса <code>/v1</code> и завершающей косой черты. <strong>Ключ никогда не отображается</strong>: блок содержит
+заполнитель, поэтому ключ не может утечь через снимок экрана или вставленный фрагмент. Замените заполнитель своим ключом.</p>
+<p>Добавьте <code>CLAUDE_CODE_AUTO_COMPACT_WINDOW</code> в тот же блок <code>env</code> для любой модели, реальное
+контекстное окно которой не равно 200K: Claude Code предполагает размер 200K для каждого нераспознанного
+идентификатора, поэтому в противном случае автоматическое сжатие срабатывает в неверный момент (см. предупреждение в предыдущем разделе).
+Конструктор фрагмента также принимает это значение, поэтому вызывающая сторона, которой известен размер окна целевой модели,
+может указать его напрямую.</p>
+<p>Источник: <code>src/shared/services/claudeCliConfig.ts::buildClaudeDiscoverySettingsSnippet</code> (чистый
+конструктор, покрытый модульными тестами), отображаемый компонентом <code>ClaudeGatewayOnboardingBlock</code>.</p>
+<h4 id="h-5">Закрепление одной учётной записи (необязательно) <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<p>Чтобы направлять каждый запрос Claude Code через одну конкретную учётную запись провайдера, добавьте
+заголовок <code>x-omniroute-connection</code> посредством <code>ANTHROPIC_CUSTOM_HEADERS</code> в тот же блок <code>env</code>:</p>
+<pre><code class="language-jsonc">&quot;ANTHROPIC_CUSTOM_HEADERS&quot;: &quot;x-omniroute-connection: &lt;connection id&gt;&quot;</code></pre>
+<p>Скопируйте идентификатор из элемента <code>xxxxxxxx…</code> в строке подключения на странице провайдера. Закрепление
+применяется только к идентификаторам отдельных моделей (<code>provider/model</code>), но не к комбинациям. Точное
+поведение при откате описано в разделе <a href="../reference/API_REFERENCE.md#account-pinning-per-request">Закрепление учётной записи для каждого запроса</a>.</p>
+<hr>
+<h3 id="профили-claude_config_dir">Профили (<code>CLAUDE_CONFIG_DIR</code>) <a class="h-anchor" href="#профили-claude_config_dir" aria-label="Ссылка на раздел">#</a></h3>
+<p>В Claude Code <strong>нет встроенных файлов профилей</strong> (в отличие от <code>~/.codex/&lt;name&gt;.config.toml</code> в Codex).
+Стандартным механизмом является <code>CLAUDE_CONFIG_DIR</code> — отдельный каталог конфигурации для каждого
+профиля, каждый из которых содержит собственные <code>settings.json</code>, учётные данные, историю и кеш.</p>
+<p><code>omniroute setup-claude</code> получает актуальный каталог <code>/v1/models</code> и создаёт по одному
+профилю для каждой модели в <code>~/.claude/profiles/&lt;name&gt;/settings.json</code>, используя
+<strong>те же имена, что и <code>setup-codex</code></strong> (<code>glm52</code>, <code>kimi-k27</code>, <code>deepseek-pro</code>, …):</p>
+<pre><code class="language-jsonc">// ~/.claude/profiles/glm52/settings.json
+{
+  &quot;$schema&quot;: &quot;https://json.schemastore.org/claude-code-settings.json&quot;,
+  &quot;model&quot;: &quot;glm/glm-5.2&quot;,
+  &quot;effortLevel&quot;: &quot;xhigh&quot;,
+  &quot;env&quot;: {
+    &quot;ANTHROPIC_BASE_URL&quot;: &quot;http://192.168.0.15:20128&quot;,
+    &quot;ANTHROPIC_MODEL&quot;: &quot;glm/glm-5.2&quot;,
+    &quot;CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY&quot;: &quot;1&quot;,
+    &quot;CLAUDE_CODE_AUTO_COMPACT_WINDOW&quot;: &quot;190000&quot;,
+  },
+}</code></pre>
+<blockquote>
+<p><strong>Токен аутентификации никогда не записывается в профиль.</strong> Запускайте с помощью
+<code>omniroute launch --profile &lt;name&gt;</code> (команда подставляет <code>ANTHROPIC_AUTH_TOKEN</code> из
+активного контекста) либо самостоятельно экспортируйте <code>ANTHROPIC_AUTH_TOKEN</code> и выполните
+<code>CLAUDE_CONFIG_DIR=~/.claude/profiles/&lt;name&gt; claude</code>.</p>
+</blockquote>
+<p><strong>Автосинхронизация после обнаружения моделей (по желанию).</strong> OmniRoute может автоматически повторно создавать те же
+файлы <code>~/.claude/profiles/&lt;name&gt;/settings.json</code> всякий раз, когда синхронизация моделей провайдера
+изменяет актуальный каталог, — таким образом, новые или переименованные модели получают профили без повторного запуска
+команды. По умолчанию эта функция <strong>отключена</strong>: включите её на <strong>панели CLI Code</strong> («Автосинхронизация профилей
+CLI» → Claude Code) или задайте <code>OMNIROUTE_AUTO_SYNC_CLAUDE_PROFILES=true</code> (также учитывается
+<code>CLI_ALLOW_CONFIG_WRITES</code>, включённая по умолчанию). Когда функция включена, она записывает только файлы профилей и никогда
+не изменяет активную конфигурацию Claude или конфигурацию Claude по умолчанию, данные аутентификации либо <code>~/.claude/settings.json</code>.</p>
+<h4 id="h-6">Создание и использование профилей <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code class="language-bash"># Локальный OmniRoute
+omniroute setup-claude
+
+# Удалённый VPS (URL-адрес VPS записывается в каждый профиль)
+omniroute setup-claude --remote http://192.168.0.15:20128 --api-key oma_live_xxx
+
+# Только некоторые провайдеры
+omniroute setup-claude --only glm,kimi
+
+# Также создавать профили для провайдеров локальных CLI (zcode, auggie, devin-cli-agentic,
+# codex-app-server), не обнаруженных на этом хосте (по умолчанию пропускаются для локальной цели)
+omniroute setup-claude --include-local
+
+# Предварительный просмотр без записи
+omniroute setup-claude --dry-run
+
+# Запуск профиля
+omniroute launch --profile kimi-k27</code></pre>
+<hr>
+<h3 id="h-7">Уровни моделей (необязательно) <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude Code распределяет запросы по уровням возможностей. При необходимости сопоставьте каждый уровень с моделью OmniRoute через переменные окружения /
+настройки, чтобы использовать разных провайдеров для разных уровней:</p>
+<pre><code class="language-bash">export ANTHROPIC_DEFAULT_OPUS_MODEL=&quot;glm/glm-5.2&quot;
+export ANTHROPIC_DEFAULT_SONNET_MODEL=&quot;kmc/kimi-k2.6&quot;
+export ANTHROPIC_DEFAULT_HAIKU_MODEL=&quot;glm/glm-4.7-flash&quot;</code></pre>
+<p>В противном случае для всех запросов используется одна модель из <code>ANTHROPIC_MODEL</code> (её задают профили).</p>
+<hr>
+<h3 id="h-8">Удалённый режим <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h3>
+<p>После выполнения <code>omniroute connect &lt;host&gt;</code> (см.
+<a href="./REMOTE-MODE.md">Удалённый режим</a>) команды <code>omniroute launch</code> и <code>omniroute setup-claude</code>
+автоматически обращаются к этому удалённому серверу и используют связанный с ним токен доступа — дополнительные
+флаги не требуются. Переопределить настройки для отдельного вызова можно с помощью <code>--remote</code> / <code>--api-key</code>.</p>
+<hr>
+<h3 id="h-9">Устранение неполадок <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h3>
+<p><strong>Claude Code игнорирует шлюз</strong> — убедитесь, что <code>ANTHROPIC_BASE_URL</code> <strong>не содержит
+<code>/v1</code></strong>, и перезапустите <code>claude</code> (переменные окружения считываются один раз при запуске). <code>omniroute launch</code>
+сделает это за вас.</p>
+<p><strong>Средство выбора <code>/model</code> пусто / модели шлюза отсутствуют</strong> — требуется Claude Code
+v2.1.219+ и <code>CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1</code>. В средстве выбора отображаются только идентификаторы моделей <code>claude*</code> /
+<code>anthropic*</code>; чтобы принудительно использовать любую другую модель, задайте
+<code>ANTHROPIC_MODEL=&lt;id&gt;</code> (именно это делают профили).</p>
+<p><strong><code>400 Ambiguous model &#x27;claude-…&#x27;</code></strong> — Claude Code всегда отправляет <strong>идентификаторы моделей без префикса</strong>
+(например, <code>claude-opus-4-8</code>), поэтому, когда одновременно подключены провайдеры Claude Code (<code>cc/…</code>) и
+Claude (<code>claude/…</code>), идентификатор без префикса соответствует двум маршрутам, и
+OmniRoute отказывается выбирать автоматически. Исправить это можно одним из двух способов: явно укажите идентификатор с префиксом через
+<code>ANTHROPIC_MODEL=cc/claude-opus-4-8</code> или включите параметр <strong>Предпочитать Claude Code для
+моделей Claude без префикса</strong> — с помощью переключателя на странице провайдера Claude или
+<code>OMNIROUTE_PREFER_CLAUDE_CODE_FOR_UNPREFIXED_CLAUDE_MODELS=true</code> (по умолчанию отключено;
+см. <a href="../reference/ENVIRONMENT.md">Переменные окружения</a>) — тогда идентификаторы <code>claude-*</code>
+без префикса будут направляться в Claude Code. Явные префиксы провайдеров всегда имеют приоритет.</p>
+<p><strong>Ошибки аутентификации</strong> — профиль не содержит токен. Используйте <code>omniroute launch --profile</code>
+(эта команда внедряет токен) или экспортируйте <code>ANTHROPIC_AUTH_TOKEN</code>.</p>
+<p><strong>Профили не изолированы</strong> — каждый профиль использует отдельный <code>CLAUDE_CONFIG_DIR</code>;
+убедитесь, что внутри сеанса команда <code>echo $CLAUDE_CONFIG_DIR</code> указывает на
+<code>~/.claude/profiles/&lt;name&gt;</code>.</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

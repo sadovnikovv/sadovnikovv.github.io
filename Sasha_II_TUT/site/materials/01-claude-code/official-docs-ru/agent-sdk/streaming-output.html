@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Потоковая передача ответов в реальном времени</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/agent-sdk/index.html">agent-sdk</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Потоковая передача ответов в реальном времени <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Получайте ответы в реальном времени от Agent SDK по мере поступления текста и вызовов инструментов</p>
+</blockquote>
+<p>По умолчанию Agent SDK выдает полное сообщение <code>AssistantMessage</code> для каждого непустого блока содержимого, такого как текстовый блок или вызов инструмента, после того как Claude завершит генерацию этого блока. Чтобы получать добавочные обновления по мере генерации текста и вызовов инструментов, включите потоковую передачу частичных сообщений.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Эти случаи рассматриваются на других страницах:</p>
+<ul>
+<li><strong>Отправка сообщений в запущенную сессию</strong>: см. <a href="https://code.claude.com/docs/ru/agent-sdk/streaming-vs-single-mode.md">Отправка сообщений запущенному агенту</a></li>
+<li><strong>Потоковая передача ответов из CLI</strong>: см. <a href="https://code.claude.com/docs/ru/headless.md">потоковая передача ответов с помощью Agent SDK через CLI</a></li>
+</ul>
+</blockquote>
+<h3 id="h-2">Включение потоковой передачи выходных данных <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Чтобы включить потоковую передачу, установите <code>include_partial_messages</code> (Python) или <code>includePartialMessages</code> (TypeScript) в значение <code>true</code> в ваших параметрах. Это заставляет SDK выдавать сообщения <code>StreamEvent</code>, содержащие необработанные события API по мере их поступления, в дополнение к обычным <code>AssistantMessage</code> и <code>ResultMessage</code>.</p>
+<p>Ваш код затем должен:</p>
+<ol>
+<li>Проверить тип каждого сообщения, чтобы отличить <code>StreamEvent</code> от других типов сообщений</li>
+<li>Для <code>StreamEvent</code> извлечь поле <code>event</code> и проверить его <code>type</code></li>
+<li>Искать события <code>content_block_delta</code>, где <code>delta.type</code> — это <code>text_delta</code>, которые содержат фактические текстовые фрагменты</li>
+</ol>
+<p>Пример ниже включает потоковую передачу и выводит текстовые фрагменты по мере их поступления. Обратите внимание на вложенные проверки типов: сначала для <code>StreamEvent</code>, затем для <code>content_block_delta</code>, затем для <code>text_delta</code>:</p>
+<p>```python Python theme={null}
+from claude_agent_sdk import query, ClaudeAgentOptions
+from claude_agent_sdk.types import StreamEvent
+import asyncio</p>
+<p>async def stream_response():
+    options = ClaudeAgentOptions(
+        include_partial_messages=True,
+        allowed_tools=[&quot;Bash&quot;, &quot;Read&quot;],
+    )</p>
+<p>async for message in query(prompt=&quot;List the files in my project&quot;, options=options):
+        if isinstance(message, StreamEvent):
+            event = message.event
+            if event.get(&quot;type&quot;) == &quot;content_block_delta&quot;:
+                delta = event.get(&quot;delta&quot;, {})
+                if delta.get(&quot;type&quot;) == &quot;text_delta&quot;:
+                    print(delta.get(&quot;text&quot;, &quot;&quot;), end=&quot;&quot;, flush=True)</p>
+<p>asyncio.run(stream_response())</p>
+<pre><code></code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>for await (const message of query({
+  prompt: &quot;List the files in my project&quot;,
+  options: {
+    includePartialMessages: true,
+    allowedTools: [&quot;Bash&quot;, &quot;Read&quot;]
+  }
+})) {
+  if (message.type === &quot;stream_event&quot;) {
+    const event = message.event;
+    if (event.type === &quot;content_block_delta&quot;) {
+      if (event.delta.type === &quot;text_delta&quot;) {
+        process.stdout.write(event.delta.text);
+      }
+    }
+  }
+}</p>
+<pre><code>
+## Справочник StreamEvent
+
+Когда включены частичные сообщения, вы получаете необработанные события потоковой передачи Claude API, обёрнутые в объект. Тип имеет разные названия в каждом SDK:
+
+* **Python**: [`StreamEvent`](https://code.claude.com/docs/ru/agent-sdk/python#streamevent) (импортируется из `claude_agent_sdk.types`)
+* **TypeScript**: [`SDKPartialAssistantMessage`](https://code.claude.com/docs/ru/agent-sdk/typescript#sdkpartialassistantmessage) с `type: &#x27;stream_event&#x27;`
+
+Оба содержат необработанные события Claude API, а не накопленный текст. Вам нужно самостоятельно извлекать и накапливать дельты текста.
+
+Поле `parent_tool_use_id` всегда имеет значение `None` в Python и `null` в TypeScript. События потока генерируются только для основной сессии; дельты на уровне токенов от подагентов не пересылаются. Чтобы атрибутировать вывод подагенту, используйте полные сообщения, которые содержат `parent_tool_use_id`. См. [Обнаружение вызова подагента](https://code.claude.com/docs/ru/agent-sdk/subagents.md#detect-subagent-invocation).
+
+Claude Code устанавливает `user_message_uuid` на первом событии потока без ping в ходе хода, и снова, когда изменяется сообщение, на которое отвечает ход, в соответствии с условиями в [`user_message_uuid`](https://code.claude.com/docs/ru/agent-sdk/typescript#user_message_uuid). Python `StreamEvent` не предоставляет это поле.
+
+Поле `event` содержит необработанное событие потока из [Claude API](https://platform.claude.com/docs/en/build-with-claude/streaming#event-types). Распространённые типы событий включают:
+
+| Тип события | Описание |
+| :- | :- |
+| `message_start` | Начало нового сообщения |
+| `content_block_start` | Начало нового блока содержимого (текст или использование инструмента) |
+| `content_block_delta` | Дополнительное обновление содержимого |
+| `content_block_stop` | Конец блока содержимого |
+| `message_delta` | Обновления на уровне сообщения (причина остановки, использование) |
+| `message_stop` | Конец сообщения |
+
+## Поток сообщений
+
+Claude Code выдает `AssistantMessage` по мере завершения каждого непустого блока содержимого, поэтому ответ с текстовым блоком и вызовом инструмента дает два объекта `AssistantMessage`. Каждый из них содержит только свой собственный блок содержимого, и оба имеют одинаковый ID сообщения, который вы читаете как `message.message.id` в TypeScript и `message.message_id` в Python. При включенных частичных сообщениях каждое `AssistantMessage` поступает до события `content_block_stop` этого блока, и вы получаете сообщения в таком порядке:
+</code></pre>
+<p>StreamEvent (message_start)
+StreamEvent (content_block_start) - text block
+StreamEvent (content_block_delta) - text chunks...
+AssistantMessage - complete text block
+StreamEvent (content_block_stop)
+StreamEvent (content_block_start) - tool_use block
+StreamEvent (content_block_delta) - tool input chunks...
+AssistantMessage - complete tool_use block
+StreamEvent (content_block_stop)
+StreamEvent (message_delta)
+StreamEvent (message_stop)
+... tool executes ...
+... more streaming events for next turn ...
+ResultMessage - final result</p>
+<pre><code>
+Без включенных частичных сообщений вы получаете все типы сообщений, кроме `StreamEvent`. Распространенные типы включают `SystemMessage` (инициализация сеанса), `AssistantMessage` (полные блоки содержимого), `ResultMessage` (финальный результат) и компактное граничное сообщение, указывающее на то, когда история разговора была сжата (`SDKCompactBoundaryMessage` в TypeScript; `SystemMessage` с подтипом `&quot;compact_boundary&quot;` в Python).
+
+### Обработка оборванного потока
+
+Если поток обрывается посреди сообщения, вы всё равно получаете `message_stop` этого сообщения до завершения хода. Причинами обрыва потока могут быть прерванный ход, разрыв соединения и переключение на непотоковый запрос как резервный вариант. Перед этим `message_stop` могут отсутствовать `content_block_stop` и `message_delta`:
+
+* **`content_block_stop`**: поступает для блока, который был открыт, если только этот блок не является вызовом инструмента. Если `message_stop` поступает, пока блок вызова инструмента ещё открыт, считайте входные данные этого вызова неполными.
+* **`message_delta`**: поступает, когда вы прерываете ход, и может отсутствовать после разрыва соединения или переключения на непотоковый режим, поэтому не ждите его для оборванного сообщения.
+
+До Claude Code v2.1.290 оборванный поток мог завершить ход без `message_stop`, поэтому ответ, который вы отображаете на основе событий потока, мог оставаться показанным как выполняющийся. TypeScript Agent SDK включает Claude Code v2.1.290 или новее начиная с v0.3.290, а Python Agent SDK — начиная с v0.2.164. Если ответ остается показанным как выполняющийся после завершения хода, обновите SDK.
+
+## Потоковая передача вызовов инструментов
+
+Вызовы инструментов также передаются потоком добавочно. Вы можете отследить, когда инструменты начинают работу, получить их входные данные по мере их генерации и увидеть, когда они завершаются. Пример ниже отслеживает текущий вызываемый инструмент и накапливает входные данные JSON по мере их поступления. Он использует три типа событий:
+
+* `content_block_start`: инструмент начинает работу
+* `content_block_delta` с `input_json_delta`: поступают фрагменты входных данных
+* `content_block_stop`: вызов инструмента завершен
+</code></pre>
+<p>from claude_agent_sdk import query, ClaudeAgentOptions
+from claude_agent_sdk.types import StreamEvent
+import asyncio</p>
+<p>async def stream_tool_calls():
+    options = ClaudeAgentOptions(
+        include_partial_messages=True,
+        allowed_tools=[&quot;Read&quot;, &quot;Bash&quot;],
+    )</p>
+<p># Track the current tool and accumulate its input JSON
+    current_tool = None
+    tool_input = &quot;&quot;</p>
+<p>async for message in query(prompt=&quot;Read the README.md file&quot;, options=options):
+        if isinstance(message, StreamEvent):
+            event = message.event
+            event_type = event.get(&quot;type&quot;)</p>
+<p>if event_type == &quot;content_block_start&quot;:
+                # New tool call is starting
+                content_block = event.get(&quot;content_block&quot;, {})
+                if content_block.get(&quot;type&quot;) == &quot;tool_use&quot;:
+                    current_tool = content_block.get(&quot;name&quot;)
+                    tool_input = &quot;&quot;
+                    print(f&quot;Starting tool: {current_tool}&quot;)</p>
+<p>elif event_type == &quot;content_block_delta&quot;:
+                delta = event.get(&quot;delta&quot;, {})
+                if delta.get(&quot;type&quot;) == &quot;input_json_delta&quot;:
+                    # Accumulate JSON input as it streams in
+                    chunk = delta.get(&quot;partial_json&quot;, &quot;&quot;)
+                    tool_input += chunk
+                    print(f&quot;  Input chunk: {chunk}&quot;)</p>
+<p>elif event_type == &quot;content_block_stop&quot;:
+                # Tool call complete - show final input
+                if current_tool:
+                    print(f&quot;Tool {current_tool} called with: {tool_input}&quot;)
+                    current_tool = None</p>
+<p>asyncio.run(stream_tool_calls())</p>
+<pre><code></code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>// Track the current tool and accumulate its input JSON
+let currentTool: string | null = null;
+let toolInput = &quot;&quot;;</p>
+<p>for await (const message of query({
+  prompt: &quot;Read the README.md file&quot;,
+  options: {
+    includePartialMessages: true,
+    allowedTools: [&quot;Read&quot;, &quot;Bash&quot;]
+  }
+})) {
+  if (message.type === &quot;stream_event&quot;) {
+    const event = message.event;</p>
+<p>if (event.type === &quot;content_block_start&quot;) {
+      // New tool call is starting
+      if (event.content_block.type === &quot;tool_use&quot;) {
+        currentTool = event.content_block.name;
+        toolInput = &quot;&quot;;
+        console.log(<code>Starting tool: ${currentTool}</code>);
+      }
+    } else if (event.type === &quot;content_block_delta&quot;) {
+      if (event.delta.type === &quot;input_json_delta&quot;) {
+        // Accumulate JSON input as it streams in
+        const chunk = event.delta.partial_json;
+        toolInput += chunk;
+        console.log(<code>  Input chunk: ${chunk}</code>);
+      }
+    } else if (event.type === &quot;content_block_stop&quot;) {
+      // Tool call complete - show final input
+      if (currentTool) {
+        console.log(<code>Tool ${currentTool} called with: ${toolInput}</code>);
+        currentTool = null;
+      }
+    }
+  }
+}</p>
+<pre><code>
+## Создание пользовательского интерфейса потоковой передачи
+
+Этот пример объединяет потоковую передачу текста и инструментов в единый пользовательский интерфейс. Он отслеживает, выполняет ли агент в настоящее время инструмент (используя флаг `in_tool`), чтобы показать индикаторы состояния, такие как `[Using Read...]`, пока работают инструменты. Текст передается потоком нормально, когда инструмент не используется, а завершение инструмента вызывает сообщение &quot;done&quot;. Этот паттерн полезен для интерфейсов чата, которым нужно показывать прогресс во время многошаговых задач агента.
+</code></pre>
+<p>from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
+from claude_agent_sdk.types import StreamEvent
+import asyncio
+import sys</p>
+<p>async def streaming_ui():
+    options = ClaudeAgentOptions(
+        include_partial_messages=True,
+        allowed_tools=[&quot;Read&quot;, &quot;Bash&quot;, &quot;Grep&quot;],
+    )</p>
+<p># Track whether we&#x27;re currently in a tool call
+    in_tool = False</p>
+<p>async for message in query(
+        prompt=&quot;Find all TODO comments in the codebase&quot;, options=options
+    ):
+        if isinstance(message, StreamEvent):
+            event = message.event
+            event_type = event.get(&quot;type&quot;)</p>
+<p>if event_type == &quot;content_block_start&quot;:
+                content_block = event.get(&quot;content_block&quot;, {})
+                if content_block.get(&quot;type&quot;) == &quot;tool_use&quot;:
+                    # Tool call is starting - show status indicator
+                    tool_name = content_block.get(&quot;name&quot;)
+                    print(f&quot;\n[Using {tool_name}...]&quot;, end=&quot;&quot;, flush=True)
+                    in_tool = True</p>
+<p>elif event_type == &quot;content_block_delta&quot;:
+                delta = event.get(&quot;delta&quot;, {})
+                # Only stream text when not executing a tool
+                if delta.get(&quot;type&quot;) == &quot;text_delta&quot; and not in_tool:
+                    sys.stdout.write(delta.get(&quot;text&quot;, &quot;&quot;))
+                    sys.stdout.flush()</p>
+<p>elif event_type == &quot;content_block_stop&quot;:
+                if in_tool:
+                    # Tool call finished
+                    print(&quot; done&quot;, flush=True)
+                    in_tool = False</p>
+<p>elif isinstance(message, ResultMessage):
+            # Agent finished all work
+            print(f&quot;\n\n--- Complete ---&quot;)</p>
+<p>asyncio.run(streaming_ui())</p>
+<pre><code></code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>// Track whether we&#x27;re currently in a tool call
+let inTool = false;</p>
+<p>for await (const message of query({
+  prompt: &quot;Find all TODO comments in the codebase&quot;,
+  options: {
+    includePartialMessages: true,
+    allowedTools: [&quot;Read&quot;, &quot;Bash&quot;, &quot;Grep&quot;]
+  }
+})) {
+  if (message.type === &quot;stream_event&quot;) {
+    const event = message.event;</p>
+<p>if (event.type === &quot;content_block_start&quot;) {
+      if (event.content_block.type === &quot;tool_use&quot;) {
+        // Tool call is starting - show status indicator
+        process.stdout.write(<code>\n[Using ${event.content_block.name}...]</code>);
+        inTool = true;
+      }
+    } else if (event.type === &quot;content_block_delta&quot;) {
+      // Only stream text when not executing a tool
+      if (event.delta.type === &quot;text_delta&quot; &amp;&amp; !inTool) {
+        process.stdout.write(event.delta.text);
+      }
+    } else if (event.type === &quot;content_block_stop&quot;) {
+      if (inTool) {
+        // Tool call finished
+        console.log(&quot; done&quot;);
+        inTool = false;
+      }
+    }
+  } else if (message.type === &quot;result&quot;) {
+    // Agent finished all work
+    console.log(&quot;\n\n--- Complete ---&quot;);
+  }
+}</p>
+<pre><code>
+## Известные ограничения
+
+* **Structured output**: при включённых частичных сообщениях JSON передаётся потоком как невалидированные фрагменты `input_json_delta` вызова инструмента, и только валидированный результат попадает в финальный `ResultMessage.structured_output`. В разделе [Распознавание вызова инструмента StructuredOutput](https://code.claude.com/docs/ru/agent-sdk/structured-outputs.md#recognize-the-structuredoutput-tool-call) описано, как этот вызов выглядит в вашем потоке.
+
+## Следующие шаги
+
+Теперь, когда вы можете передавать текст и вызовы инструментов потоком в реальном времени, изучите эти связанные темы:
+
+* [Отправка сообщений работающему агенту](https://code.claude.com/docs/ru/agent-sdk/streaming-vs-single-mode.md): прервите ответ Claude или прикрепите изображение к сообщению
+* [Структурированные выходные данные](https://code.claude.com/docs/ru/agent-sdk/structured-outputs.md): получайте типизированные ответы JSON от агента
+* [Разрешения](https://code.claude.com/docs/ru/agent-sdk/permissions.md): контролируйте, какие инструменты может использовать агент
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

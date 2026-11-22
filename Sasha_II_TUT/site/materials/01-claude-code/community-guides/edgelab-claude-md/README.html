@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>CLAUDE.md -- полное руководство по настройке AI-агентов</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../materials/01-claude-code/community-guides/edgelab-claude-md/index.html">edgelab-claude-md</a></nav>
+<h1 id="claude-md-полное-руководство-по-настройке-ai-агентов">CLAUDE.md -- полное руководство по настройке AI-агентов <a class="h-anchor" href="#claude-md-полное-руководство-по-настройке-ai-агентов" aria-label="Ссылка на раздел">#</a></h1>
+<p>Руководство по заполнению CLAUDE.md для Claude Code агентов.
+Основано на боевом опыте настройки мультиагентной системы из 6 агентов в продакшене.</p>
+<h3 id="что-такое-claude-md">Что такое CLAUDE.md <a class="h-anchor" href="#что-такое-claude-md" aria-label="Ссылка на раздел">#</a></h3>
+<p>CLAUDE.md -- главный конфигурационный файл Claude Code агента.
+Это не просто инструкция. Это <strong>конституция</strong>, по которой агент принимает решения,
+расставляет приоритеты и определяет границы дозволенного.</p>
+<p>Без CLAUDE.md агент -- болванка. С CLAUDE.md -- полноценный сотрудник.</p>
+<h3 id="h">Два уровня <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>~/
+├── .claude/
+│   ├── CLAUDE.md              &lt;- ГЛОБАЛЬНЫЙ (для всех агентов)
+│   └── rules/
+│       ├── python.md
+│       ├── typescript.md
+│       └── bash.md
+│
+└── .claude-lab/
+    └── agent-1/
+        └── .claude/
+            ├── CLAUDE.md      &lt;- РАБОЧИЙ (для конкретного агента)
+            ├── core/
+            │   ├── USER.md
+            │   ├── rules.md
+            │   ├── warm/decisions.md
+            │   └── hot/handoff.md
+            └── tools/TOOLS.md</code></pre>
+<h4 id="глобальный-claude-claude-md">Глобальный (<code>~/.claude/CLAUDE.md</code>) <a class="h-anchor" href="#глобальный-claude-claude-md" aria-label="Ссылка на раздел">#</a></h4>
+<p>Конституция. Применяется ко ВСЕМ агентам на машине.
+Содержит: языковые правила, стиль кода, git-правила, принципы безопасности, 9 принципов работы.</p>
+<h4 id="рабочий-claude-claude-md">Рабочий (<code>.claude/CLAUDE.md</code>) <a class="h-anchor" href="#рабочий-claude-claude-md" aria-label="Ссылка на раздел">#</a></h4>
+<p>Должностная инструкция конкретного агента.
+Содержит: роль, характер, стиль общения, память, координация с другими агентами.</p>
+<h3 id="h-2">Гайды <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Файл</th><th>Содержание</th></tr></thead><tbody><tr><td><a href="GLOBAL.md">GLOBAL.md</a></td><td>Как заполнить глобальный CLAUDE.md</td></tr><tr><td><a href="WORKSPACE.md">WORKSPACE.md</a></td><td>Как заполнить рабочий CLAUDE.md</td></tr></tbody></table></div>
+<h3 id="h-3">Шаблоны <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Готовые шаблоны с <code>{{ПЛЕЙСХОЛДЕРАМИ}}</code> -- копируй и заполняй:</p>
+<div class="table-wrap"><table><thead><tr><th>Файл</th><th>Назначение</th></tr></thead><tbody><tr><td><a href="templates/global-claude.md">templates/global-claude.md</a></td><td>Глобальный CLAUDE.md</td></tr><tr><td><a href="templates/workspace-claude.md">templates/workspace-claude.md</a></td><td>Рабочий CLAUDE.md</td></tr><tr><td><a href="templates/rules.md">templates/rules.md</a></td><td>Операционные правила</td></tr><tr><td><a href="templates/user.md">templates/user.md</a></td><td>Профиль оператора</td></tr></tbody></table></div>
+<h3 id="h-4">Примеры <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Заполненные файлы для вымышленного разработчика Алекса с двумя агентами:</p>
+<div class="table-wrap"><table><thead><tr><th>Файл</th><th>Описание</th></tr></thead><tbody><tr><td><a href="examples/global-claude-filled.md">examples/global-claude-filled.md</a></td><td>Глобальный -- два агента на VPS</td></tr><tr><td><a href="examples/workspace-claude-filled.md">examples/workspace-claude-filled.md</a></td><td>Рабочий -- агент-координатор</td></tr></tbody></table></div>
+<h3 id="h-5">Скиллы <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<p>Готовые навыки для агентов -- устанавливай и используй:</p>
+<div class="table-wrap"><table><thead><tr><th>Скилл</th><th>Описание</th></tr></thead><tbody><tr><td><a href="skills/present/">skills/present</a></td><td>HTML-визуализация в стиле Notion (light/dark тема, zero dependencies)</td></tr><tr><td><a href="skills/onboarding/">skills/onboarding</a></td><td>Пост-установочный онбординг: агент знакомится с пользователем и заполняет CLAUDE.md через диалог</td></tr><tr><td><a href="skills/self-compiler/">skills/self-compiler</a></td><td>Компилятор знаний: переводит разговор в структурированные файлы (profile, goals, stack, rules)</td></tr></tbody></table></div>
+<h3 id="h-6">Ключевые паттерны <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li><strong>Приоритет правил:</strong> Безопасность &gt; Указание оператора &gt; Проверка фактов &gt; Границы &gt; Стиль</li>
+<li><strong>Тишина = баг.</strong> Оператор всегда должен видеть, что делает агент</li>
+<li><strong>Обучение -&gt; система.</strong> Ошибка должна становиться системным изменением, а не записью в памяти</li>
+<li><strong>Agent Native.</strong> Бэкенд -- для агентов (API). Фронтенд -- для людей</li>
+<li><strong>Доверяй, но проверяй.</strong> База данных &gt; реальные проверки &gt; локальная память</li>
+<li><strong>Экономия токенов.</strong> Внутренние файлы на английском (2--3x меньше токенов), максимум 4 @includes, авто-компакт 400K</li>
+</ol>
+<h3 id="h-7">Связанные проекты <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://guides.edgelab.su">guides.edgelab.su</a> -- гайды по AI-агентам</li>
+<li><a href="https://edgelab.su">EdgeLab</a> -- платформа для запуска AI-агентов</li>
+</ul>
+<h3 id="h-8">Авторы <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h3>
+<p>Сообщество EdgeLab. Основано на опыте построения мультиагентной системы Orgrimmar.</p>
+<h3 id="h-9">Лицензия <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h3>
+<p>MIT</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

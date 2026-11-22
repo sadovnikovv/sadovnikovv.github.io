@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Урок 01. Как выбрать ИИ-инструмент для разработки</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../materials/01-claude-code/community-guides/awesome-ai-devtools-ru/index.html">awesome-ai-devtools-ru</a> / <a href="../../../../../materials/01-claude-code/community-guides/awesome-ai-devtools-ru/docs/index.html">docs</a></nav>
+<h1 id="урок-01-как-выбрать-ии-инструмент-для-разработки">Урок 01. Как выбрать ИИ-инструмент для разработки <a class="h-anchor" href="#урок-01-как-выбрать-ии-инструмент-для-разработки" aria-label="Ссылка на раздел">#</a></h1>
+<p><a href="../README.md">← К оглавлению</a></p>
+<h3 id="шаг-1-определи-где-ты-работаешь">Шаг 1. Определи, где ты работаешь <a class="h-anchor" href="#шаг-1-определи-где-ты-работаешь" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Твоя среда</th><th>Что смотреть в первую очередь</th></tr></thead><tbody><tr><td>VS Code</td><td>Cursor или Windsurf (форки VS Code), GitHub Copilot, Cline, Continue, Kilo Code</td></tr><tr><td>JetBrains (IntelliJ, PyCharm, WebStorm…)</td><td>JetBrains AI, GitHub Copilot, Sweep, Continue</td></tr><tr><td>Vim / Neovim / Emacs</td><td>Агенты в терминале (Claude Code, Codex CLI, Aider, Gemini CLI), Copilot для Vim</td></tr><tr><td>Терминал и SSH-серверы</td><td>Claude Code, Codex CLI, Gemini CLI, Aider, Goose, pi</td></tr><tr><td>Браузер, нет локальной среды</td><td>Replit, Bolt.new, Lovable, v0, Codex в ChatGPT, Jules</td></tr><tr><td>Xcode / Android Studio</td><td>Встроенные ассистенты IDE + агент в терминале рядом</td></tr></tbody></table></div>
+<h3 id="шаг-2-реши-вопрос-приватности">Шаг 2. Реши вопрос приватности <a class="h-anchor" href="#шаг-2-реши-вопрос-приватности" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Уровень</th><th>Подход</th><th>Инструменты</th></tr></thead><tbody><tr><td>Код можно отправлять в облако</td><td>Любые коммерческие сервисы</td><td>Cursor, Copilot, Claude Code, Codex</td></tr><tr><td>Можно в облако, но без обучения на данных</td><td>Корпоративные тарифы, zero data retention</td><td>Enterprise-тарифы крупных сервисов</td></tr><tr><td>Только свой контур</td><td>Self-hosted + модели в своём облаке/сервере</td><td>Tabby, OpenHands, Continue/Cline + vLLM</td></tr><tr><td>Ничего не покидает ноутбук</td><td>Локальные модели</td><td>Aider/Cline/Continue/Codex CLI + Ollama</td></tr></tbody></table></div>
+<h3 id="шаг-3-подбери-по-типу-задач">Шаг 3. Подбери по типу задач <a class="h-anchor" href="#шаг-3-подбери-по-типу-задач" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Задача</th><th>Лучший тип инструмента</th></tr></thead><tbody><tr><td>Писать код быстрее в течение дня</td><td>Автодополнение + чат в IDE</td></tr><tr><td>Реализовать фичу или исправить баг «под ключ»</td><td>Агент в IDE или терминале</td></tr><tr><td>Разобраться в чужом большом проекте</td><td>Инструменты понимания кодовой базы (Cody, Unblocked), агент в режиме «только чтение»</td></tr><tr><td>Разгрести бэклог мелких тикетов</td><td>Облачные агенты (Jules, Codex, Devin, Factory)</td></tr><tr><td>Собрать прототип за вечер</td><td>Конструкторы (Bolt, Lovable, v0)</td></tr><tr><td>Повысить качество ревью</td><td>Боты для PR (CodeRabbit, Qodo PR Agent, Greptile)</td></tr><tr><td>Покрыть код тестами</td><td>Qodo, Diffblue (Java), Checksum, Meticulous</td></tr><tr><td>Запускать много задач параллельно</td><td>Оркестраторы (Conductor, Vibe Kanban, Superset, Parallel Code)</td></tr></tbody></table></div>
+<h3 id="шаг-4-посчитай-бюджет">Шаг 4. Посчитай бюджет <a class="h-anchor" href="#шаг-4-посчитай-бюджет" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong>Подписка</strong> — фиксированная цена и лимиты запросов. Удобно для предсказуемого бюджета.</li>
+<li><strong>Оплата за токены (BYOK)</strong> — платишь провайдеру модели напрямую. Выгодно при нерегулярной нагрузке, но агентские сессии могут стоить дорого.</li>
+<li><strong>Локально</strong> — бесплатно, но нужно железо: для комфортной работы агента — видеокарта от 16–24 ГБ или Mac с 32+ ГБ памяти.</li>
+</ul>
+<p>Для контроля расходов используй трекеры из раздела «<a href="../README.md#-учёт-токенов-и-расходов">Учёт токенов и расходов</a>».</p>
+<h3 id="шаг-5-проведи-честный-тест">Шаг 5. Проведи честный тест <a class="h-anchor" href="#шаг-5-проведи-честный-тест" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li>Возьми <strong>3 реальные задачи</strong> из своего проекта: простую, среднюю и сложную.</li>
+<li>Дай каждую 2–3 инструментам с одинаковой формулировкой.</li>
+<li>Оцени: правильность, сколько правок пришлось делать, время, стоимость, удобство ревью.</li>
+<li>Перед тестом добавь в репозиторий <code>AGENTS.md</code> — без контекста любой агент работает хуже.</li>
+</ol>
+<h3 id="h">Частые ошибки <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Ошибка</th><th>Как правильно</th></tr></thead><tbody><tr><td>Давать агенту размытую задачу «сделай красиво»</td><td>Описывать цель, ограничения и критерий готовности</td></tr><tr><td>Принимать изменения без ревью</td><td>Всегда смотреть дифф и запускать тесты</td></tr><tr><td>Держать один гигантский чат</td><td>Новая задача — новая сессия; длинный контекст ухудшает качество</td></tr><tr><td>Не настраивать правила проекта</td><td>Написать <code>AGENTS.md</code> с командами и соглашениями</td></tr><tr><td>Давать полный доступ на рабочей машине</td><td>Песочницы, worktree, allow-list команд</td></tr></tbody></table></div>
+<p><a href="../README.md">← К оглавлению</a> · <a href="02-lokalnye-modeli.md">Урок 02 →</a></p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

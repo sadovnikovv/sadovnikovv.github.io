@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Маркетплейсы Anthropic</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/plugins/index.html">plugins</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="маркетплейсы-anthropic">Маркетплейсы Anthropic <a class="h-anchor" href="#маркетплейсы-anthropic" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Официальный и общественный маркетплейсы плагинов Anthropic для Claude Code: их названия, репозитории, способы добавления каждого и где просматривать их плагины.</p>
+</blockquote>
+<p>Anthropic публикует два маркетплейса плагинов общего назначения для Claude Code: <a href="https://github.com/anthropics/claude-plugins-official">официальный</a> и <a href="https://github.com/anthropics/claude-plugins-community">общественный</a>. Каждый из них представляет собой каталог плагинов в собственном репозитории GitHub. Когда вы устанавливаете плагин из одного из них в сессии Claude Code, вы вводите название маркетплейса после <code>@</code>, например <code>/plugin install commit-commands@claude-plugins-official</code>.</p>
+<p>Используйте эту страницу, чтобы различать два маркетплейса и узнать, где проверить, есть ли нужный плагин в официальном маркетплейсе.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Эти случаи рассматриваются на других страницах:</p>
+<ul>
+<li><strong>Как установить плагин</strong>: см. <a href="https://code.claude.com/docs/ru/plugins/install.md">Установка плагинов</a></li>
+<li><strong>Неудачная установка</strong>: см. <a href="https://code.claude.com/docs/ru/plugins/troubleshooting.md">Устранение неполадок с плагинами</a></li>
+</ul>
+</blockquote>
+<p>Перейдите к нужной части страницы:</p>
+<ul>
+<li>Чтобы различать два маркетплейса по репозиторию, названию маркетплейса и способу получения каждого, см. <a href="#anthropic’s-marketplaces">Маркетплейсы Anthropic</a>.</li>
+<li>Чтобы найти плагин в официальном маркетплейсе, см. <a href="#find-plugins-in-the-official-marketplace">Поиск плагинов в официальном маркетплейсе</a>.</li>
+</ul>
+<h3 id="маркетплейсы-anthropic-2">Маркетплейсы Anthropic <a class="h-anchor" href="#маркетплейсы-anthropic-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Маркетплейс — это каталог плагинов, который репозиторий определяет в своём файле <code>.claude-plugin/marketplace.json</code>. Официальный и общественный маркетплейсы берутся каждый из своего репозитория GitHub. Anthropic также публикует тематические маркетплейсы, такие как <code>anthropics/skills</code> и <code>anthropics/knowledge-work-plugins</code>, которые вы добавляете в сессии Claude Code с помощью <code>/plugin marketplace add &lt;owner&gt;/&lt;repo&gt;</code>.</p>
+<p>В этой таблице указаны репозиторий и название каждого маркетплейса — именно название вы вводите после <code>@</code>, когда устанавливаете плагин из этого маркетплейса. Название общественного маркетплейса — <code>claude-community</code>, а не название его репозитория.</p>
+<p>| | Официальный | Общественный |
+| :- | :- | :- |
+| Репозиторий | <a href="https://github.com/anthropics/claude-plugins-official"><code>anthropics/claude-plugins-official</code></a> | <a href="https://github.com/anthropics/claude-plugins-community"><code>anthropics/claude-plugins-community</code></a> |
+| Название маркетплейса | <code>claude-plugins-official</code> | <code>claude-community</code> |
+| Что в нём | Плагины, которые поддерживает Anthropic, а также плагины от партнёров и других авторов | Сторонние плагины, которые их авторы отправили в Anthropic |
+| Как его получить | Claude Code добавляет его при первом запуске интерактивной сессии в терминале, если это не заблокировано <a href="https://code.claude.com/docs/ru/plugins/org.md#allow-the-official-marketplace-and-your-own">управляемой политикой</a> или <code>CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL</code>. Если он отсутствует, см. <a href="https://code.claude.com/docs/ru/plugins/troubleshooting#marketplace-claude-plugins-official-not-found">Маркетплейс <code>claude-plugins-official</code> не найден</a> | Вы добавляете его в сессии Claude Code с помощью <code>/plugin marketplace add anthropics/claude-plugins-community</code> |</p>
+<p>Если вы написали плагин и хотите, чтобы другие могли его установить, см. <a href="https://code.claude.com/docs/ru/plugins/publish.md">Публикация плагина</a> — там рассказывается о собственном маркетплейсе и отправке в каталог Anthropic.</p>
+<h4 id="устаревший-маркетплейс-claude-code-plugins">Устаревший маркетплейс <code>claude-code-plugins</code> <a class="h-anchor" href="#устаревший-маркетплейс-claude-code-plugins" aria-label="Ссылка на раздел">#</a></h4>
+<blockquote>
+<p>[!WARNING]</p>
+<p>Маркетплейс <code>claude-code-plugins</code> в <code>anthropics/claude-code</code> объявлен устаревшим. Чтобы добавить плагин, выполните <code>claude plugin install &lt;plugin&gt;@claude-plugins-official</code> в своей оболочке и пропустите любой шаг руководства, в котором выполняется <code>/plugin marketplace add anthropics/claude-code</code>.</p>
+</blockquote>
+<p>Если у вас не установлен один из двух плагинов ниже, вы можете оставить свои плагины из <code>claude-code-plugins</code> и сам маркетплейс как есть. Они обновляются из репозитория <code>claude-plugins-official</code>.</p>
+<ul>
+<li><strong><code>ralph-wiggum</code></strong>: этот плагин теперь называется <code>ralph-loop</code>, и его команды начинаются с <code>/ralph-loop:</code>. Если эти команды недоступны, выполните <code>claude plugin install ralph-loop@claude-plugins-official</code> в своей оболочке.</li>
+<li><strong><code>claude-opus-4-5-migration</code></strong>: этот плагин выведен из эксплуатации, поэтому удалите его, выполнив <code>claude plugin uninstall claude-opus-4-5-migration@claude-code-plugins</code> в своей оболочке.</li>
+</ul>
+<p>Если какой-либо другой плагин перестал работать, см. <a href="https://code.claude.com/docs/ru/plugins/troubleshooting.md#plugin-installed-but-not-working">Плагин установлен, но не работает</a>.</p>
+<h3 id="h">Поиск плагинов в официальном маркетплейсе <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>По умолчанию Claude Code сам добавляет официальный маркетплейс <code>claude-plugins-official</code>. Большая часть того, что в нём представлено, поступает от партнёров и других авторов, а не от Anthropic: поставщики инструментов публикуют плагины, подключающие Claude Code к их сервисам, а Anthropic поддерживает меньший набор собственных плагинов, таких как <code>commit-commands</code>, <code>code-review</code>, <code>feature-dev</code> и <a href="https://code.claude.com/docs/ru/plugins/code-intelligence.md">плагины языковых серверов</a>. Каталог часто меняется, поэтому на этой странице он не приводится.</p>
+<p>Чтобы узнать, что в нём есть, используйте вкладку <strong>Discover</strong> в <code>/plugin</code> в сессии Claude Code, где доступен поиск, или просмотрите <a href="https://claude.com/marketplace/plugins">Claude Marketplace</a> в интернете.</p>
+<h3 id="просмотр-и-установка-из-маркетплейсов-anthropic">Просмотр и установка из маркетплейсов Anthropic <a class="h-anchor" href="#просмотр-и-установка-из-маркетплейсов-anthropic" aria-label="Ссылка на раздел">#</a></h3>
+<p>Искать плагин в маркетплейсах Anthropic можно в Claude Code, в интернете или на GitHub:</p>
+<ul>
+<li><strong>В Claude Code, просматривая список</strong>: выполните <code>/plugin</code> в интерактивной сессии. Вкладка <strong>Discover</strong> показывает плагины из ваших маркетплейсов.</li>
+<li><strong>В Claude Code, по названию</strong>: выполните <code>/plugin install &lt;name&gt;</code> в сессии — команда ищет это название в ваших маркетплейсах. Если плагин есть в одном из них, его сведения открываются на панели <code>/plugin</code>, и ничего не устанавливается, пока вы не выберете там <a href="https://code.claude.com/docs/ru/plugins/install.md#install-a-plugin">область действия установки</a> и не подтвердите её. Если его нет, вы увидите <code>Plugin &quot;&lt;name&gt;&quot; not found in any marketplace</code>.</li>
+<li><strong>В интернете</strong>: ищите по полному каталогу на <a href="https://claude.com/marketplace/plugins">Claude Marketplace</a>, где показано количество установок, а некоторые плагины отмечены как <strong>Anthropic verified</strong>.</li>
+<li><strong>На GitHub</strong>: откройте <code>.claude-plugin/marketplace.json</code> в репозитории маркетплейса, например <a href="https://github.com/anthropics/claude-plugins-official"><code>anthropics/claude-plugins-official</code></a>. Этот файл и есть сам каталог.</li>
+</ul>
+<p>Каталог Anthropic существует отдельно от этих маркетплейсов. Каталог — это перечень на claude.ai. Плагин, добавленный из каталога на claude.ai, попадает в Claude Code через <a href="https://code.claude.com/docs/ru/plugins/loading.md#synced-plugins">синхронизацию аккаунта</a>. Чтобы разместить там собственный плагин, см. <a href="https://code.claude.com/docs/ru/plugins/publish.md#submit-to-anthropics-directory">Отправка в каталог Anthropic</a>.</p>
+<p>Чтобы установить плагин из настольного приложения или из скрипта либо узнать, что загружает облачная сессия, см. <a href="https://code.claude.com/docs/ru/plugins/install.md">Установка плагинов</a>.</p>
+<h4 id="h-2">Добавление общественного маркетплейса <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<p>Общественный маркетплейс не зарегистрирован, пока вы не добавите его. В сессии Claude Code выполните <code>/plugin marketplace add anthropics/claude-plugins-community</code>, затем устанавливайте с суффиксом <code>@claude-community</code>.</p>
+<p>Если <code>claude-plugins-official</code> отсутствует на вкладке <strong>Marketplaces</strong> в <code>/plugin</code>, добавьте его тем же способом с помощью <code>/plugin marketplace add anthropics/claude-plugins-official</code>.</p>
+<p>Об ошибках <code>not found</code> и маркетплейсах, которые не удаётся добавить, см. <a href="https://code.claude.com/docs/ru/plugins/troubleshooting.md#install-a-plugin">Устранение неполадок с плагинами</a>.</p>
+<h3 id="h-3">Сторонние маркетплейсы <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Многих популярных плагинов нет ни в одном маркетплейсе Anthropic. Они находятся в собственных маркетплейсах их авторов — обычно это репозиторий GitHub с файлом <code>.claude-plugin/marketplace.json</code> в корне.</p>
+<p>Anthropic не проверяет сторонние маркетплейсы, поэтому перед добавлением такого маркетплейса прочитайте <a href="https://code.claude.com/docs/ru/plugins/security.md">Безопасность и доверие к плагинам</a>.</p>
+<p>Чтобы использовать сторонний маркетплейс, добавьте его репозиторий в сессии Claude Code с помощью <code>/plugin marketplace add &lt;owner&gt;/&lt;repo&gt;</code>, затем устанавливайте с помощью <code>/plugin install &lt;plugin&gt;@&lt;marketplace-name&gt;</code>. Название маркетплейса — это поле <code>name</code> в этом <code>marketplace.json</code>, и Claude Code выводит его после добавления маркетплейса.</p>
+<p>О других способах добавления маркетплейса см. <a href="https://code.claude.com/docs/ru/plugins/install.md#add-a-marketplace">Добавление маркетплейса</a>.</p>
+<h3 id="h-4">Дальнейшие шаги <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/plugins/install.md">Установка плагинов и управление ими</a>: установите плагин из одного из этих маркетплейсов и выберите область действия</li>
+<li><a href="https://code.claude.com/docs/ru/plugins/security.md">Безопасность и доверие к плагинам</a>: что плагин может делать на вашем компьютере и как проверить его перед установкой</li>
+<li><a href="https://code.claude.com/docs/ru/plugins/code-intelligence.md">Плагины анализа кода</a>: установите один из плагинов языковых серверов из официального маркетплейса</li>
+<li><a href="https://code.claude.com/docs/ru/plugins/create-marketplace.md">Создание маркетплейса</a>: запустите собственный маркетплейс наряду с маркетплейсами Anthropic</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

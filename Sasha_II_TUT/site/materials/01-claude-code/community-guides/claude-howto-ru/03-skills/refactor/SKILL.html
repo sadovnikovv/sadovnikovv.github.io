@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Навык code refactoring</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../../materials/index.html">Материалы</a> / <a href="../../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/03-skills/index.html">03-skills</a> / <a href="../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/03-skills/refactor/index.html">refactor</a></nav>
+<hr>
+<p>name: code-refactor
+description: Systematic code refactoring based on Martin Fowler&#x27;s methodology. Use when users ask to refactor code, improve code structure, reduce technical debt, clean up legacy code, eliminate code smells, or improve code maintainability. This skill guides through a phased approach with research, planning, and safe incremental implementation.</p>
+<hr>
+<h1 id="навык-code-refactoring">Навык code refactoring <a class="h-anchor" href="#навык-code-refactoring" aria-label="Ссылка на раздел">#</a></h1>
+<p>Системный подход к рефакторингу кода на основе <em>Refactoring: Improving the Design of Existing Code</em> Мартина Фаулера (2-е издание). Навык делает упор на безопасные, небольшие изменения, подтверждённые тестами.</p>
+<blockquote>
+<p>&quot;Рефакторинг — это процесс изменения программной системы таким образом, чтобы внешнее поведение кода не менялось, а внутренняя структура улучшалась.&quot; — Martin Fowler</p>
+</blockquote>
+<h3 id="h">Основные принципы <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<ol>
+<li><strong>Сохранение поведения</strong>: внешнее поведение не должно меняться</li>
+<li><strong>Маленькие шаги</strong>: только небольшие и проверяемые изменения</li>
+<li><strong>Тесты прежде всего</strong>: тесты — это страховка</li>
+<li><strong>Непрерывность</strong>: рефакторинг — это постоянная практика, а не разовая акция</li>
+<li><strong>Совместная работа</strong>: на каждом этапе нужно согласование с пользователем</li>
+</ol>
+<h3 id="h-2">Обзор рабочего процесса <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>Phase 1: Research &amp; Analysis
+    ↓
+Phase 2: Test Coverage Assessment
+    ↓
+Phase 3: Code Smell Identification
+    ↓
+Phase 4: Refactoring Plan Creation
+    ↓
+Phase 5: Incremental Implementation
+    ↓
+Phase 6: Review &amp; Iteration</code></pre>
+<hr>
+<h3 id="phase-1-research-analysis">Phase 1: Research &amp; Analysis <a class="h-anchor" href="#phase-1-research-analysis" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-3">Цели <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Понять структуру и назначение кодовой базы</li>
+<li>Определить границы рефакторинга</li>
+<li>Собрать контекст о бизнес-требованиях</li>
+</ul>
+<h4 id="h-4">Вопросы пользователю <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<p>Перед началом уточните:</p>
+<ol>
+<li><strong>Объём</strong>: какие файлы, модули или функции нужно рефакторить?</li>
+<li><strong>Цели</strong>: какую проблему нужно решить? (читаемость, производительность, поддерживаемость)</li>
+<li><strong>Ограничения</strong>: есть ли области, которые трогать нельзя?</li>
+<li><strong>Срочность</strong>: мешает ли это другой работе?</li>
+<li><strong>Тесты</strong>: существуют ли тесты и проходят ли они?</li>
+</ol>
+<h4 id="h-5">Действия <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>[ ] Изучить целевой код</li>
+<li>[ ] Определить зависимости и интеграции</li>
+<li>[ ] Зафиксировать текущую архитектуру</li>
+<li>[ ] Отметить технический долг (TODO, FIXME и т. п.)</li>
+</ul>
+<h4 id="h-6">Результат <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<p>Покажите пользователю:</p>
+<ul>
+<li>Сводку структуры кода</li>
+<li>Выявленные проблемные области</li>
+<li>Первичные рекомендации</li>
+<li><strong>Запросите разрешение продолжить</strong></li>
+</ul>
+<hr>
+<h3 id="phase-2-test-coverage-assessment">Phase 2: Test Coverage Assessment <a class="h-anchor" href="#phase-2-test-coverage-assessment" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-7">Зачем нужны тесты <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<blockquote>
+<p>&quot;Рефакторинг без тестов — это как вождение без ремня безопасности.&quot; — Martin Fowler</p>
+</blockquote>
+<p>Тесты — это <strong>ключевой фактор</strong>, который делает безопасный рефакторинг возможным. Без них легко внести баги.</p>
+<h4 id="h-8">Шаги оценки <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li><strong>Проверить наличие тестов</strong></li>
+</ol>
+<pre><code class="language-bash">   # Search for test files
+   find . -name &quot;*test*&quot; -o -name &quot;*spec*&quot; | head -20</code></pre>
+<ol>
+<li><strong>Запустить существующие тесты</strong></li>
+</ol>
+<pre><code class="language-bash">   # JavaScript/TypeScript
+   npm test
+
+   # Python
+   pytest -v
+
+   # Java
+   mvn test</code></pre>
+<ol>
+<li><strong>Проверить покрытие (если доступно)</strong></li>
+</ol>
+<pre><code class="language-bash">   # JavaScript
+   npm run test:coverage
+
+   # Python
+   pytest --cov=.</code></pre>
+<h4 id="h-9">Точка принятия решения <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Если тесты есть и они проходят:</strong></p>
+<ul>
+<li>Переходите к Phase 3</li>
+</ul>
+<p><strong>Если тестов нет или их мало:</strong>
+Предложите варианты:</p>
+<ol>
+<li>Написать тесты сначала (рекомендуется)</li>
+<li>Добавлять тесты постепенно во время рефакторинга</li>
+<li>Продолжить без тестов (рискованно, требует согласия пользователя)</li>
+</ol>
+<p><strong>Если тесты падают:</strong></p>
+<ul>
+<li>Остановитесь. Сначала исправьте падающие тесты</li>
+<li>Спросите пользователя: исправляем тесты сначала?</li>
+</ul>
+<h4 id="h-10">Если нужно писать тесты <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h4>
+<p>Для каждой рефакторимой функции убедитесь, что тесты покрывают:</p>
+<ul>
+<li>Happy path</li>
+<li>Edge cases (пустые значения, null, границы)</li>
+<li>Сценарии ошибок (невалидный ввод, исключения)</li>
+</ul>
+<p>Используйте цикл red-green-refactor:</p>
+<ol>
+<li>Написать падающий тест (red)</li>
+<li>Добиться его прохождения (green)</li>
+<li>Рефакторить</li>
+</ol>
+<hr>
+<h3 id="phase-3-code-smell-identification">Phase 3: Code Smell Identification <a class="h-anchor" href="#phase-3-code-smell-identification" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="что-такое-code-smells">Что такое code smells? <a class="h-anchor" href="#что-такое-code-smells" aria-label="Ссылка на раздел">#</a></h4>
+<p>Это симптомы более глубоких проблем в коде. Это не баги, но признаки того, что код можно улучшить.</p>
+<h4 id="h-11">Что проверять <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h4>
+<p>См. <a href="references/code-smells.md">references/code-smells.md</a> для полного каталога.</p>
+<h5 id="h-12">Краткая памятка <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h5>
+<div class="table-wrap"><table><thead><tr><th>Code smell</th><th>Признаки</th><th>Влияние</th></tr></thead><tbody><tr><td><strong>Long Method</strong></td><td>Методы &gt; 30-50 строк</td><td>Сложно понимать, тестировать и сопровождать</td></tr><tr><td><strong>Duplicated Code</strong></td><td>Одинаковая логика в нескольких местах</td><td>Исправления нужно вносить в нескольких местах</td></tr><tr><td><strong>Large Class</strong></td><td>Класс с большим количеством обязанностей</td><td>Нарушает Single Responsibility</td></tr><tr><td><strong>Feature Envy</strong></td><td>Метод чаще использует данные другого класса</td><td>Слабая инкапсуляция</td></tr><tr><td><strong>Primitive Obsession</strong></td><td>Слишком много примитивов вместо объектов</td><td>Потеря доменных концепций</td></tr><tr><td><strong>Long Parameter List</strong></td><td>Методы с 4+ параметрами</td><td>Сложно вызывать правильно</td></tr><tr><td><strong>Data Clumps</strong></td><td>Одни и те же наборы данных встречаются вместе</td><td>Не хватает абстракции</td></tr><tr><td><strong>Switch Statements</strong></td><td>Сложные switch/if-else цепочки</td><td>Трудно расширять</td></tr><tr><td><strong>Speculative Generality</strong></td><td>Код &quot;на всякий случай&quot;</td><td>Лишняя сложность</td></tr><tr><td><strong>Dead Code</strong></td><td>Неиспользуемый код</td><td>Путаница и издержки на поддержку</td></tr></tbody></table></div>
+<h4 id="h-13">Шаги анализа <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h4>
+<ol>
+<li><strong>Автоматический анализ</strong> (если есть скрипты)</li>
+</ol>
+<pre><code class="language-bash">   python scripts/detect-smells.py &lt;file&gt;</code></pre>
+<ol>
+<li><strong>Ручная проверка</strong></li>
+<li>Последовательно пройти по коду</li>
+<li>Зафиксировать каждый smell с местом и серьёзностью</li>
+<li>Классифицировать по влиянию (Critical/High/Medium/Low)</li>
+</ol>
+<ol>
+<li><strong>Приоритизация</strong> Сосредоточьтесь на smells, которые:</li>
+<li>Блокируют текущую разработку</li>
+<li>Вызывают баги или путаницу</li>
+<li>Затрагивают наиболее часто меняемые участки</li>
+</ol>
+<h4 id="результат-отчет-о-smells">Результат: отчёт о smells <a class="h-anchor" href="#результат-отчет-о-smells" aria-label="Ссылка на раздел">#</a></h4>
+<p>Покажите пользователю:</p>
+<ul>
+<li>Список обнаруженных smells с местами</li>
+<li>Оценку серьёзности для каждого</li>
+<li>Рекомендуемый порядок приоритетов</li>
+<li><strong>Запросите согласование приоритетов</strong></li>
+</ul>
+<hr>
+<h3 id="phase-4-refactoring-plan-creation">Phase 4: Refactoring Plan Creation <a class="h-anchor" href="#phase-4-refactoring-plan-creation" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="h-14">Выбор рефакторинга <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h4>
+<p>Для каждого smell выберите подходящий рефакторинг из каталога.</p>
+<p>См. <a href="references/refactoring-catalog.md">references/refactoring-catalog.md</a> для полного списка.</p>
+<h5 id="соответствие-smell-refactoring">Соответствие smell -&gt; refactoring <a class="h-anchor" href="#соответствие-smell-refactoring" aria-label="Ссылка на раздел">#</a></h5>
+<div class="table-wrap"><table><thead><tr><th>Code Smell</th><th>Recommended Refactoring(s)</th></tr></thead><tbody><tr><td>Long Method</td><td>Extract Method, Replace Temp with Query</td></tr><tr><td>Duplicated Code</td><td>Extract Method, Pull Up Method, Form Template Method</td></tr><tr><td>Large Class</td><td>Extract Class, Extract Subclass</td></tr><tr><td>Feature Envy</td><td>Move Method, Move Field</td></tr><tr><td>Primitive Obsession</td><td>Replace Primitive with Object, Replace Type Code with Class</td></tr><tr><td>Long Parameter List</td><td>Introduce Parameter Object, Preserve Whole Object</td></tr><tr><td>Data Clumps</td><td>Extract Class, Introduce Parameter Object</td></tr><tr><td>Switch Statements</td><td>Replace Conditional with Polymorphism</td></tr><tr><td>Speculative Generality</td><td>Collapse Hierarchy, Inline Class, Remove Dead Code</td></tr><tr><td>Dead Code</td><td>Remove Dead Code</td></tr></tbody></table></div>
+<h4 id="h-15">Структура плана <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте шаблон из <a href="templates/refactoring-plan.md">templates/refactoring-plan.md</a>.</p>
+<p>Для каждого рефакторинга укажите:</p>
+<ol>
+<li><strong>Цель</strong>: какой код меняется</li>
+<li><strong>Smell</strong>: какую проблему он решает</li>
+<li><strong>Refactoring</strong>: какой приём применяется</li>
+<li><strong>Шаги</strong>: подробные микро-шаги</li>
+<li><strong>Риски</strong>: что может пойти не так</li>
+<li><strong>Rollback</strong>: как откатить изменения при необходимости</li>
+</ol>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

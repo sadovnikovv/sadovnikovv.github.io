@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Другие LLM gateways</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="другие-llm-gateways">Другие LLM gateways <a class="h-anchor" href="#другие-llm-gateways" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Маршрутизируйте Claude Code через LLM gateway, который уже запускает ваша организация. Охватывает подключение Claude Code к шлюзу, развертывание шлюза для вашей организации и то, что Claude Code отправляет на шлюз.</p>
+</blockquote>
+<p>В этом разделе рассматривается использование продукта шлюза, который уже запускает ваша организация, а не <a href="https://code.claude.com/docs/ru/claude-apps-gateway">Claude apps gateway</a>. Для получения информации о том, что такое шлюз, как он находится между Claude Code и вашим поставщиком, и как выбрать между Claude apps gateway и другим продуктом, см. <a href="https://code.claude.com/docs/ru/gateways.md">обзор шлюза</a>.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<ul>
+<li>Если вы разработчик, подключающийся к существующему шлюзу: <a href="https://code.claude.com/docs/ru/llm-gateway-connect.md">подключите Claude Code к вашему шлюзу</a></li>
+<li>Если вы администратор, развертывающий шлюз для вашей организации: <a href="https://code.claude.com/docs/ru/llm-gateway-rollout.md">разверните и распределите шлюз</a></li>
+<li>Если вы настраиваете продукт шлюза: <a href="https://code.claude.com/docs/ru/llm-gateway-protocol.md">справочник протокола шлюза</a></li>
+</ul>
+</blockquote>
+<p>Любой шлюз, который предоставляет <a href="https://code.claude.com/docs/ru/llm-gateway-protocol.md#api-formats">поддерживаемый формат API</a>, работает. Anthropic не одобряет, не поддерживает и не проверяет продукты шлюзов третьих сторон, и не поддерживает маршрутизацию Claude Code на модели, отличные от Claude, через какой-либо шлюз. Разверните шлюз, следуя его собственной документации, затем завершите сторону Claude Code с помощью <a href="#roll-out-a-gateway">этапов развертывания ниже</a>.</p>
+<h3 id="h">Что предоставляет шлюз <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Шлюз дает вашей организации одно место для управления:</p>
+<ul>
+<li><strong>Учетные данные</strong>: ключ поставщика остается на стороне сервера; разработчики вместо этого используют учетные данные шлюза</li>
+<li><strong>Отслеживание использования</strong>: атрибутируйте использование по разработчику или команде, независимо от того, какой поставщик обслуживает запрос</li>
+<li><strong>Контроль затрат</strong>: применяйте бюджеты и ограничения скорости в одном месте</li>
+<li><strong>Логирование аудита</strong>: логируйте каждый запрос модели для соответствия требованиям</li>
+<li><strong>Переключение поставщика</strong>: измените поставщика в конфигурации шлюза, не трогая машины разработчиков</li>
+</ul>
+<p>Все эти функции, кроме переключения поставщика, применяются независимо от того, является ли upstream API Anthropic или <a href="https://code.claude.com/docs/ru/third-party-integrations.md">облачный поставщик</a>. Переключение поставщика без переконфигурации машин разработчиков также зависит от того, предоставляет ли шлюз одну <a href="https://code.claude.com/docs/ru/llm-gateway-protocol.md#api-formats">конечную точку в формате Anthropic</a> независимо от upstream. Шлюз, который предоставляет собственный формат поставщика, привязывает конфигурацию клиента к этому поставщику и изменяет <a href="https://code.claude.com/docs/ru/llm-gateway-protocol.md#how-the-connection-method-changes-client-behavior">то, что отправляет Claude Code и какие значения по умолчанию он применяет</a>.</p>
+<p>Компромисс заключается в том, что шлюз становится инфраструктурой, которую управляет ваша организация. Claude Code добавляет возможности с каждым выпуском, и шлюз, который не перенаправляет их, нарушает соответствующие функции, поэтому продукт шлюза должен быть обновлен по мере развития Claude Code. <a href="https://code.claude.com/docs/ru/llm-gateway-protocol.md">Справочник протокола шлюза</a> охватывает то, что нужно перенаправлять.</p>
+<h3 id="h-2">Развертывание шлюза <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Когда вы готовы развернуть LLM gateway для вашей организации, последовательность одинакова независимо от того, какой продукт шлюза вы выберете:</p>
+<ol>
+<li>Разверните шлюз и дайте ему учетные данные вашего поставщика, чтобы он мог аутентифицировать запросы, которые он перенаправляет.</li>
+<li>Выдайте каждому разработчику учетные данные шлюза, чтобы использование было отнесено разработчику и отключение отзывает одно учетное данные.</li>
+<li>Распределите конфигурацию через <a href="https://code.claude.com/docs/ru/managed-settings.md#delivery-mechanisms">управляемый файл параметров</a> и ваши инструменты управления секретами, чтобы каждая машина получила базовый URL и учетные данные. Когда оба распределены, разработчики ничего не настраивают. Если у вас нет распределения параметров, разработчики следуют <a href="https://code.claude.com/docs/ru/llm-gateway-connect.md">странице подключения</a> для установки переменных самостоятельно.</li>
+<li>Попросите каждого разработчика <a href="https://code.claude.com/docs/ru/llm-gateway-connect.md#check-for-an-existing-configuration">проверить конфигурацию в Claude Code</a>, чтобы проблемы распределения выявились до того, как они будут зависеть от шлюза.</li>
+</ol>
+<p><a href="https://code.claude.com/docs/ru/llm-gateway-rollout.md">Развертывание LLM gateway для вашей организации</a> проходит каждый шаг и показывает файлы конфигурации для распределения на каждом. Шлюз — это одна часть организационной настройки; для применения политики, видимости использования и решений по обработке данных см. <a href="https://code.claude.com/docs/ru/admin-setup.md">Настройка Claude Code для вашей организации</a>.</p>
+<p>Чтобы сделать шлюз, доступный через <code>ANTHROPIC_BASE_URL</code>, единственным пунктом назначения, который может использовать управляемая машина, установите <a href="https://code.claude.com/docs/ru/settings-reference#allowedproviders"><code>allowedProviders</code></a> на <code>[&quot;customEndpoint&quot;]</code> в том же управляемом файле параметров и поместите <code>ANTHROPIC_BASE_URL</code> шлюза в блок <code>env</code> этого файла. Claude Code затем отказывает в сеансе, направленном куда-либо еще, включая непосредственно в Anthropic или на собственный прокси разработчика, и принимает <code>ANTHROPIC_BASE_URL</code> только со значением, которое вы там установили. Для шлюза, доступного через переменную конечной точки, специфичную для поставщика, такую как <code>ANTHROPIC_BEDROCK_BASE_URL</code>, запись <code>allowedProviders</code> указывает, какую переменную закрепить. Требуется Claude Code v2.1.285 или более поздняя версия.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Когда в Desktop выполнен вход в claude.ai, сессия Cowork на машине пользователя считается <a href="https://code.claude.com/docs/ru/settings-reference#allowedproviders"><code>&quot;anthropic&quot;</code></a>. Если вы не включите это значение в данный список в политике MDM или файле управляемых настроек, такая сессия будет отклонена. Если же включите, то сессии, отправляемые непосредственно в Anthropic, также пройдут проверку по этому списку.</p>
+</blockquote>
+<h3 id="h-3">Подписки и шлюзы <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Пока активна <a href="https://code.claude.com/docs/ru/llm-gateway-connect.md#set-the-credential-variable">переменная учетных данных шлюза</a> или <code>apiKeyHelper</code>, запросы несут эти учетные данные вместо входа подписки claude.ai разработчика, и ограничения использования подписки не применяются к ним. Claude Code сохраняет вход claude.ai на машине, но не отправляет его с этими запросами. Этот трафик выставляется счетом за токен тому, кто владеет учетными данными, которые перенаправляет шлюз, например вашей учетной записи Anthropic Console организации, или вашей учетной записи Amazon Bedrock, Google Cloud&#x27;s Agent Platform или Microsoft Foundry, когда шлюз маршрутизирует туда.</p>
+<p><a href="https://code.claude.com/docs/ru/llm-gateway-connect#set-the-base-url-and-credential"><code>ANTHROPIC_BASE_URL</code></a> — это переменная, которая указывает Claude Code на шлюз. Если задать только эту переменную без учётных данных шлюза, подписка не заменяется. Запросы по-прежнему маршрутизируются через шлюз, но сохранённый вход claude.ai остаётся активными учётными данными, поэтому применяются его лимиты использования и биллинг. Шлюзы, которые передают этот трафик в Anthropic, должны перенаправлять <code>Authorization</code> и возможность OAuth в <code>anthropic-beta</code>; см. <a href="https://code.claude.com/docs/ru/llm-gateway-protocol.md#request-headers">справочник заголовков запроса</a>.</p>
+<h3 id="h-4">Связанные страницы <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/gateways.md">Обзор шлюза</a>: как работает шлюз и как выбрать между Claude apps gateway и другим продуктом</li>
+<li><a href="https://code.claude.com/docs/ru/claude-apps-gateway">Claude apps gateway</a>: самостоятельно размещаемый шлюз Anthropic с входом SSO и телеметрией OTLP</li>
+<li><a href="https://code.claude.com/docs/ru/llm-gateway-connect.md">Подключение Claude Code к LLM gateway</a>: установите базовый URL и учетные данные на вашей собственной машине, с конфигурацией для каждой поверхности и таблицей устранения неполадок</li>
+<li><a href="https://code.claude.com/docs/ru/llm-gateway-rollout.md">Развертывание LLM gateway для вашей организации</a>: контрольный список администратора для развертывания шлюза, выдачи учетных данных разработчика и распределения управляемых параметров</li>
+<li><a href="https://code.claude.com/docs/ru/llm-gateway-protocol.md">Справочник протокола шлюза</a>: что Claude Code отправляет на шлюз, для операторов, настраивающих его, охватывающий конечные точки, заголовки для перенаправления и передачу функций</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

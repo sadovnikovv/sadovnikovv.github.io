@@ -1,0 +1,33 @@
+/* Локальные кириллические подмножества Noto. См. README.md. */
+@font-face {
+  font-family: 'Noto Sans Book';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(sans-regular.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Noto Sans Book';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(sans-700.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Noto Serif Book';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(serif-regular.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Noto Sans Mono Book';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(mono-regular.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}

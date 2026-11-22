@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Справочник команд плагинов</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/plugins/index.html">plugins</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Справочник команд плагинов <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Справочник по командам оболочки claude plugin, /plugin и /reload-plugins в сессии, а также флагам, которые загружают плагин на одну сессию.</p>
+</blockquote>
+<p>Вы запускаете команды плагинов либо как <code>claude plugin</code> из вашей оболочки или скрипта, либо как <code>/plugin</code> и <code>/reload-plugins</code> внутри сеанса Claude Code. Этот справочник содержит флаги каждой команды, значения по умолчанию, выходные данные и коды выхода, а также два флага, которые загружают плагин на один сеанс.</p>
+<p>В таблицах ниже перечислены часто используемые параметры каждой подкоманды, а не все параметры. Запустите <code>claude plugin --help</code> в вашей оболочке, чтобы увидеть, какие подкоманды есть в вашей версии, и <code>claude plugin &lt;subcommand&gt; --help</code>, чтобы получить полный список параметров подкоманды.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Эти случаи рассматриваются на других страницах:</p>
+<ul>
+<li><strong>Установка и управление шагами, и где запускается <code>/plugin</code></strong>: см. <a href="https://code.claude.com/docs/ru/plugins/install.md">Установка и управление плагинами</a></li>
+<li><strong>Что команда изменяет на диске и какой приоритет области действия</strong>: см. <a href="https://code.claude.com/docs/ru/plugins/loading.md">Справочник загрузки плагинов</a></li>
+<li><strong>Что означает сообщение об ошибке</strong>: см. <a href="https://code.claude.com/docs/ru/plugins/troubleshooting.md">Устранение неполадок плагинов</a></li>
+</ul>
+</blockquote>
+<h3 id="команды-claude-plugin">Команды claude plugin <a class="h-anchor" href="#команды-claude-plugin" aria-label="Ссылка на раздел">#</a></h3>
+<p>Запустите <code>claude plugin &lt;subcommand&gt;</code> из вашей оболочки или скрипта, вне сессии Claude Code. Эти подкоманды устанавливают и управляют плагинами без открытия панели <a href="#plugin-in-a-session"><code>/plugin</code></a>.</p>
+<p><code>claude plugins</code> — это псевдоним для <code>claude plugin</code>.</p>
+<p>Каждая подкоманда имеет эти коды выхода, аргументы плагина и значения области действия:</p>
+<ul>
+<li><strong>Коды выхода</strong>: <code>0</code> при успехе и <code>1</code> при ошибке. <code>validate</code> добавляет выход <code>2</code> для неожиданной ошибки, а <code>eval</code> добавляет коды, указанные в <a href="#plugin-eval">его разделе</a>.</li>
+<li><strong>Аргументы плагина</strong>: аргумент <code>&lt;plugin&gt;</code> — это <code>name</code> плагина или <code>name@marketplace</code>. Когда два маркетплейса предлагают одно и то же имя, используйте квалифицированную форму. <code>configure</code> принимает только квалифицированную форму.</li>
+<li><strong>Области действия</strong>: <code>--scope</code> принимает <code>user</code>, <code>project</code> или <code>local</code>, и называет файл настроек, в который команда записывает. <code>update</code> также принимает <code>managed</code>.</li>
+</ul>
+<h4 id="plugin-init">plugin init <a class="h-anchor" href="#plugin-init" aria-label="Ссылка на раздел">#</a></h4>
+<p>Создайте каркас нового плагина в <code>~/.claude/skills/&lt;name&gt;/</code>. Если ваш администратор не <a href="https://code.claude.com/docs/ru/plugins/loading.md#skills-directory-plugins-blocked-by-managed-settings">заблокировал плагины из каталога skills</a>, он загружается в вашей следующей сессии как <code>&lt;name&gt;@skills-dir</code> без шага установки.</p>
+<p><code>new</code> — это псевдоним для <code>init</code>.</p>
+<p>Для рабочего процесса создания, тестирования и редактирования, который начинается с этой команды, см. <a href="https://code.claude.com/docs/ru/plugins/create.md">Создание плагина</a>.</p>
+<p>```bash theme={null}
+claude plugin init &lt;name&gt; [options]</p>
+<pre><code>
+`&lt;name&gt;` становится именем каталога под `~/.claude/skills/` и `name` плагина в его манифесте.
+
+Команда не имеет флага для другого местоположения. Чтобы создать каркас внутри проекта, см. [Создание плагина](https://code.claude.com/docs/ru/plugins/create.md).
+
+| Флаг | Описание |
+| :- | :- |
+| `--description &lt;text&gt;` | Описание манифеста |
+| `--author &lt;name&gt;` | Имя автора. По умолчанию `git config user.name` |
+| `--author-email &lt;email&gt;` | Email автора. По умолчанию `git config user.email` |
+| `--with &lt;components...&gt;` | Также создайте файлы-заготовки для `skills`, `agents`, `hooks`, `mcp`, `lsp`, `output-style` или `channel` |
+| `-f, --force` | Перезапишите существующий `.claude-plugin/` в целевом месте |
+
+Создайте плагин с файлами-заготовками скилла и хука:
+</code></pre>
+<p>claude plugin init my-helper --with skills hooks</p>
+<pre><code>
+Claude Code проверяет то, что он написал, и выводит `Created plugin &quot;my-helper&quot; at ~/.claude/skills/my-helper`, за которым следует идентификатор, под которым он загружается, и команда `claude plugin disable`, которая его отключает.
+
+Claude Code выходит с кодом `1` без записи, когда не может безопасно создать каркас, и сообщение называет причину. Это распространённые причины:
+
+* Неизвестное значение `--with`
+* Существующий каркас в целевом месте без `--force`
+* Список разрешённых маркетплейсов в управляемых настройках без источника `skills-dir` или список запрещённых, в котором он указан. Сообщение: [`Plugins from ~/.claude/skills/ are blocked by your organization&#x27;s managed settings`](https://code.claude.com/docs/ru/plugins/troubleshooting#plugins-from-claude-skills-are-blocked-by-your-organizations-managed-s).
+
+### plugin install
+
+Установите плагин из одного из ваших маркетплейсов. `i` — это псевдоним для `install`.
+</code></pre>
+<p>claude plugin install &lt;plugin&gt; [options]</p>
+<pre><code>
+Большинство плагинов устанавливаются без запроса. Для плагина, запись маркетплейса которого [запускает команду для его установки](https://code.claude.com/docs/ru/plugins/host-marketplace.md) или [устанавливает `headersHelper` для его загрузки](https://code.claude.com/docs/ru/plugins/host-marketplace#how-users-accept-a-headershelper-command), Claude Code сначала выводит команду и спрашивает `Run this command now? [y/N]`.
+
+| Флаг | Описание |
+| :- | :- |
+| `-s, --scope &lt;scope&gt;` | Область действия установки: `user`, `project` или `local`. По умолчанию `user` |
+| `--config &lt;key=value&gt;` | Установите опцию [`userConfig`](https://code.claude.com/docs/ru/plugins/manifest-reference), которую объявляет манифест плагина. Повторите флаг для каждой опции. Ключ, написанный как `&lt;server&gt;.&lt;key&gt;`, устанавливает вместо этого настройку, которую [упакованный MCP-сервер](https://code.claude.com/docs/ru/plugins/components.md#include-a-packaged-mcpb-server) объявляет в своём собственном `user_config`, для файла пакета, поставляемого внутри плагина. Форма `&lt;server&gt;.&lt;key&gt;` требует Claude Code v2.1.285 или позже |
+| `-y, --yes` | Примите отображаемую команду установки без запроса `Run this command now?`. Игнорируется, когда команда запускается внутри сессии Claude Code, например из инструмента Bash или хука |
+| `--accept-command &lt;sha256&gt;` | Примите отображаемую команду установки, чей `sha256` предыдущий запуск [`--json`](#plugin-json-result) сообщил в `shownCommand`, вместо `-y`. Не может быть объединён с `-y`. См. [Принять отображаемую команду установки](#accept-a-displayed-install-command). Требует Claude Code v2.1.271 или позже |
+| `--json` | Выведите результат как один JSON объект на последней строке stdout вместо читаемого сообщения для использования в скриптах. См. [Формат результата JSON](#plugin-json-result). Требует Claude Code v2.1.268 или позже |
+| `--marketplace &lt;source&gt;` | Установите `&lt;plugin&gt;`, указанный по его простому имени, из маркетплейса по адресу `&lt;source&gt;`, предварительно добавив маркетплейс, если вы ещё не добавили его. См. [Добавление маркетплейса и установка одной командой](https://code.claude.com/docs/ru/plugins/install.md#add-a-marketplace-and-install-in-one-command). Требует Claude Code v2.1.292 или позже |
+
+Запустите `claude plugin install --help` в вашей оболочке, чтобы увидеть каждую опцию, которую поддерживает ваша версия.
+
+Передайте `-y` из вашего собственного терминала, чтобы принять отображаемую команду без запроса. Вот что происходит без TTY и когда Claude запускает команду:
+
+* **stdin или stdout не является TTY, и вы не передаёте ни `-y`, ни `--accept-command`**: установка отклоняется. Выходные данные говорят, что команда была только отображена, и код выхода — `1`
+* **Claude запускает команду через свой инструмент Bash**: `-y` игнорируется. Запустите команду из вашего собственного терминала вместо этого
+
+Чтобы поделиться плагином со всеми, кто клонирует проект, запустите `claude plugin install` с `--scope project` и сделайте коммит `.claude/settings.json`. Затем попросите каждого участника [добавить маркетплейс](https://code.claude.com/docs/ru/plugins/install.md#add-a-marketplace) и [запустить ту же команду](https://code.claude.com/docs/ru/plugins/loading.md#enabled-in-project-settings-but-not-installed) в своём клоне:
+</code></pre>
+<p>claude plugin install formatter@my-marketplace --scope project</p>
+<pre><code>
+Claude Code выводит `Successfully installed plugin: formatter@my-marketplace (scope: project)`. Когда ничего нового не устанавливается, выходные данные объясняют почему:
+
+* **Уже установлено в этой области действия**: выходные данные — `Plugin &quot;formatter@my-marketplace&quot; is already installed (scope: project)` и код выхода — `0`
+* **Вы отклоняете запрос источника команды**: выходные данные — `Aborted.` и код выхода — `1`
+* **Вы отклоняете запрос `headersHelper`, или его нельзя подтвердить без TTY**: выходные данные — `Aborted — the command was not run.` и код выхода — `1`
+
+#### Формат результата JSON
+
+Когда вы передаёте `--json` в `plugin install`, последняя строка stdout — это один JSON объект. Разбирайте только эту строку, потому что Claude Code выводит любую команду, которую объявляет маркетплейс, перед ней.
+
+Три поля всегда присутствуют:
+
+* `command`: подкоманда, которая запустилась, например `install`
+* `outcome`: `ok` или `failed`
+* `message`: читаемое описание результата
+
+Другие поля, такие как `pluginId`, `scope` и `failureCode`, появляются только когда они применяются.
+
+Опция `--json` в `plugin uninstall`, `plugin update`, `plugin enable` и `plugin disable` выводит тот же объект с собственными полями соответствующей подкоманды.
+
+Ошибка использования, такая как неверный `--scope`, не выводит строку результата и выходит с кодом `1` с причиной на stderr.
+
+#### JSON-результат для команд маркетплейса
+
+Для `plugin marketplace add`, `plugin marketplace remove` и `plugin marketplace update` флаг `--json` выводит один JSON объект на последней строке stdout с полями `command`, `outcome` и `message`. Ниже приведён результат `claude plugin marketplace remove your-marketplace --json`:
+</code></pre>
+<p>{&quot;command&quot;:&quot;marketplace-remove&quot;,&quot;outcome&quot;:&quot;ok&quot;,&quot;marketplace&quot;:&quot;your-marketplace&quot;,&quot;message&quot;:&quot;Successfully removed marketplace: your-marketplace&quot;}</p>
+<pre><code>
+Значение `command` — это `marketplace-add`, `marketplace-remove` или `marketplace-update`. Поля ниже появляются только когда они применяются:
+
+* `marketplace`: имя маркетплейса, с которым работала команда
+* `failureCode`: код причины, по которой команда не выполнилась, например `invalid_source`
+
+`plugin marketplace add` и `plugin marketplace remove` могут не выводить строку результата, когда аргумент — это [зарезервированное имя](https://code.claude.com/docs/ru/plugins/marketplace-reference.md#reserved-names) `anthropic-plugin-directory`, поэтому для этого имени проверяйте код выхода.
+
+#### Принять отображаемую команду установки
+
+Когда запуск `--json` отображает команду, объявленную маркетплейсом, и не запускает её, результат `failed` также содержит объект `shownCommand`. Его поля включают команду в том виде, в котором она отображается, плагин, к которому она принадлежит, и `sha256` команды.
+
+Чтобы принять именно эту команду, повторно запустите с этим `sha256` как `--accept-command` из вашего собственного терминала, потому что флаг не имеет эффекта внутри сессии Claude Code. Требует Claude Code v2.1.271 или позже.
+
+`sha256` считается принятием именно этой команды, плагина и каталога маркетплейса. Если любой из них изменился с момента отображения команды, Claude Code не принимает `sha256` и показывает команду снова. Изменение, которое получает собственное обновление маркетплейса в рамках запуска, также считается таким изменением.
+
+Если `shownCommand.acceptCommandMatched` — это `false`, `sha256`, который вы передали, не совпадает с командой, которая сейчас отображается. Проверьте эту команду перед повторным запуском с её `sha256`.
+
+### plugin uninstall
+
+Удалите установленный плагин из одной области действия. `remove` и `rm` — это псевдонимы для `uninstall`.
+</code></pre>
+<p>claude plugin uninstall &lt;plugin&gt; [options]</p>
+<pre><code>
+| Флаг | Описание |
+| :- | :- |
+| `-s, --scope &lt;scope&gt;` | Удалить из области действия: `user`, `project` или `local`. По умолчанию `user` |
+| `--keep-data` | Сохраните каталог постоянных данных плагина, `~/.claude/plugins/data/&lt;id&gt;/` |
+| `--prune` | Также удалите автоустановленные [зависимости](https://code.claude.com/docs/ru/plugins/dependencies.md), которые больше не нужны ни одному оставшемуся плагину |
+| `-y, --yes` | Пропустите запрос подтверждения `--prune`. Требуется с `--prune`, когда stdin или stdout не является TTY |
+| `--json` | Выведите результат как один JSON объект на последней строке stdout в [том же формате, что и `plugin install --json`](#plugin-json-result). Не может быть объединён с `--prune`. Требует Claude Code v2.1.268 или позже |
+
+Удалите плагин из области действия проекта:
+</code></pre>
+<p>claude plugin uninstall formatter@my-marketplace --scope project</p>
+<pre><code>
+Claude Code выводит `Successfully uninstalled plugin: formatter (scope: project)`. Когда плагин не установлен в этой области действия, команда выводит строку, которая начинается с `Failed to uninstall plugin &quot;formatter@my-marketplace&quot;:` и выходит с кодом `1`.
+
+Если строка ошибки продолжается с `&quot;formatter&quot; was not uninstalled:` и называет файл настроек, Claude Code не смог подтвердить, что настройки области действия больше не включают плагин, поэтому плагин остаётся установленным со всем, что он сохранил. С `--json` результат содержит `failureCode: &quot;settings_still_on&quot;`. Эта проверка настроек требует Claude Code v2.1.282 или позже.
+
+#### Что удаляет и сохраняет удаление
+
+Когда вы удаляете плагин из последней области действия, в которой он установлен, Claude Code также удаляет сохранённые [опции и секреты](https://code.claude.com/docs/ru/plugins/manifest-reference.md#user-configuration) плагина и его каталог данных, `~/.claude/plugins/data/&lt;id&gt;/`. Некоторые из них или все они могут остаться, например в следующих случаях:
+
+* С `--keep-data` каталог данных остаётся
+* Когда другой установленный плагин использует ту же папку, например тот, чей ID отличается от этого только регистром букв, каталог данных остаётся
+* Когда Claude Code не может прочитать список установленных плагинов обратно после удаления плагина из этой области действия, опции, секреты и каталог данных все остаются, потому что плагин может быть установлен в другой области действия. Удаление всё ещё успешно. Сообщение выводит список того, что осталось и как его удалить, и с `--json` результат содержит `savedKept: &quot;install_records_unreadable&quot;`
+
+С `--json` `keptData` сообщает, остался ли каталог, и `/plugin` показывает `· data preserved`, когда он остался. Для каталога, который остаётся без `--keep-data`, это сообщение требует Claude Code v2.1.281 или позже. Поле `savedKept` требует Claude Code v2.1.282 или позже.
+
+Когда Claude Code удаляет опции и секреты, он также удаляет файлы, которые v2.1.326 или более поздняя версия извлекла в `~/.claude/plugins/mcpb/` из [пакетов MCP](https://code.claude.com/docs/ru/plugins/components.md#include-a-packaged-mcpb-server) плагина. Он сохраняет их, пока другой плагин использует идентичный пакет. Все извлечённые файлы, которые вы всё ещё там найдёте, [удаляются автоматически](https://code.claude.com/docs/ru/claude-directory.md#cleaned-up-automatically), как только ни одна сессия не использовала их в течение периода `cleanupPeriodDays`.
+
+### plugin enable
+
+Включите отключённый плагин. Для [плагина, синхронизированного с claude.ai](https://code.claude.com/docs/ru/plugins/loading.md#synced-plugins), передайте `&lt;name&gt;@synced` как плагин.
+</code></pre>
+<p>claude plugin enable &lt;plugin&gt; [options]</p>
+<pre><code>
+| Флаг | Описание |
+| :- | :- |
+| `-s, --scope &lt;scope&gt;` | Область действия для включения: `user`, `project` или `local`. Автоопределяется при пропуске |
+| `--json` | Выведите результат как один JSON объект на последней строке stdout в [том же формате, что и `plugin install --json`](#plugin-json-result). Требует Claude Code v2.1.268 или позже |
+
+Без `--scope` команда проверяет ваши файлы настроек в порядке local, project, user и использует первую область действия, которая упоминает плагин.
+
+Если вы передаёте `--scope`, где плагин не объявлен, команда либо записывает переопределение, либо не выполняется:
+
+* **Область действия, которая [имеет приоритет](https://code.claude.com/docs/ru/plugins/loading.md) над объявляющей**: Claude Code записывает переопределение в переданную область действия. Например, `claude plugin disable formatter --scope local` отключает плагин, включённый на уровне проекта, только для вас
+* **Любая другая область действия**: команда не выполняется с `Plugin &quot;formatter&quot; is installed at project scope, not user. Use --scope project or omit --scope to auto-detect.`
+
+Если плагин уже включён в разрешённой области действия, команда выводит `Plugin &quot;formatter&quot; is already enabled` и выходит с кодом `1`. С `--json` результат имеет `&quot;failureCode&quot;: &quot;already_in_goal_state&quot;` и `&quot;alreadyInGoalState&quot;: true`, поэтому скрипт может рассматривать этот случай как успех.
+
+Когда плагин объявляет [зависимости](https://code.claude.com/docs/ru/plugins/dependencies.md), Claude Code также включает их. Команда не выполняется в этих случаях:
+
+* **Зависимость не установлена**: включение не выполняется и выводит команду `claude plugin install` для каждой отсутствующей зависимости
+* **Зависимость заблокирована политикой плагинов вашей организации**: включение не выполняется и называет заблокированную зависимость
+* **Зависимость установлена на `false` в области действия с более высоким приоритетом, чем целевая область действия**: включение не выполняется. Включите зависимость в этой области действия или передайте `--scope` для записи там
+
+Повторно включите плагин везде, где он объявлен:
+</code></pre>
+<p>claude plugin enable formatter</p>
+<pre><code>
+Claude Code выводит `Successfully enabled plugin: formatter (scope: project)`, называя обнаруженную область действия.
+
+### plugin disable
+
+Отключите плагин без его удаления. Для [плагина, синхронизированного с claude.ai](https://code.claude.com/docs/ru/plugins/loading.md#synced-plugins), передайте `&lt;name&gt;@synced` как плагин.
+</code></pre>
+<p>claude plugin disable [plugin] [options]</p>
+<pre><code>
+| Флаг | Описание |
+| :- | :- |
+| `-a, --all` | Отключите каждый включённый плагин. Не может быть объединён с именем плагина или `--scope` |
+| `-s, --scope &lt;scope&gt;` | Область действия для отключения: `user`, `project` или `local`. Автоопределяется при пропуске |
+| `--json` | Выведите результат как один JSON объект на последней строке stdout в [том же формате, что и `plugin install --json`](#plugin-json-result). Требует Claude Code v2.1.268 или позже |
+
+Без `--scope` область действия автоопределяется в том же порядке local, project, user, что и [`plugin enable`](#plugin-enable).
+
+Если вы не передаёте ни имя плагина, ни `--all`, Claude Code выводит `Please specify a plugin name or use --all to disable all plugins` и выходит с кодом `1`. Отключение плагина, который уже отключён, выводит `Plugin &quot;formatter&quot; is already disabled` и выходит с кодом `1`, как [`plugin enable`](#plugin-enable) делает для уже включённого плагина.
+
+Команда не выполняется для плагина, который всё ещё требуется:
+
+* **Другой включённый плагин [зависит от](https://code.claude.com/docs/ru/plugins/dependencies.md) него**: команда не выполняется и называет зависимые плагины для отключения в первую очередь
+* **Ваша организация требует его как синхронизированный плагин**: команда не выполняется и ничего не сохраняет
+
+Отключите один плагин:
+</code></pre>
+<p>claude plugin disable formatter</p>
+<pre><code>
+Claude Code выводит `Successfully disabled plugin: formatter (scope: project)`.
+
+### plugin update
+
+Обновите плагин до последней версии, которую предлагает его маркетплейс. Новая версия загружается в вашей следующей сессии или после запуска `/reload-plugins` в работающей.
+</code></pre>
+<p>claude plugin update &lt;plugin&gt; [options]</p>
+<pre><code>
+| Флаг | Описание |
+| :- | :- |
+| `-s, --scope &lt;scope&gt;` | Область действия для обновления: `user`, `project`, `local` или `managed`. Автоопределяется при пропуске |
+| `-y, --yes` | Примите изменённую команду установки из плагина [command-source](https://code.claude.com/docs/ru/plugins/host-marketplace.md) без запроса. Требуется, когда stdin или stdout не является TTY, если вы не передаёте `--accept-command` |
+| `--accept-command &lt;sha256&gt;` | Примите команду, объявленную маркетплейсом, чей `sha256` предыдущий запуск [`--json`](#plugin-json-result) сообщил в `shownCommand`, вместо `-y`. Не может быть объединён с `-y`. Требует Claude Code v2.1.271 или позже |
+| `--json` | Выведите результат как один JSON объект на последней строке stdout в [том же формате, что и `plugin install --json`](#plugin-json-result). Требует Claude Code v2.1.268 или позже |
+
+Обновите плагин:
+</code></pre>
+<p>claude plugin update formatter@my-marketplace</p>
+<pre><code>
+Claude Code выводит `Checking for updates for plugin &quot;formatter@my-marketplace&quot;…`, затем результат. Когда ничего не новее, он выводит `formatter is already at the latest version (1.0.0).` и выходит с кодом `0`, если только он не [повторяет попытку установки зависимостей плагина](#retry-an-unfinished-dependency-install) и эта установка не завершается ошибкой.
+
+#### Какую область действия обновляет команда
+
+Если вы опустите `--scope`, команда обновляет плагин в наиболее специфичной области действия, в которой он установлен для вашего текущего проекта, проверяя local, project, user, затем managed.
+
+До v2.1.281 команда использовала `user`, когда вы опускали `--scope`, поэтому обновление плагина, установленного только в области действия project или local, не выполнялось с `Plugin &quot;&lt;name&gt;&quot; is not installed at scope user`. На этих версиях передайте `--scope`.
+
+`managed` — это единственная область действия, которую вы можете обновить, но не установить. Для плагинов, установленных администратором, см. [Управление плагинами для вашей организации](https://code.claude.com/docs/ru/plugins/org.md).
+
+#### Обновление по простому имени
+
+Вы можете передать простое имя плагина, которое команда сопоставляет с установленными плагинами. Когда установленные плагины из разных маркетплейсов имеют одно и то же имя, команда отклоняет обновление и выводит квалифицированные команды `plugin-name@marketplace-name` для запуска вместо этого. Обновление по простому имени требует Claude Code v2.1.246 или позже.
+
+#### Повторная попытка незавершённой установки зависимостей
+
+Когда плагин уже находится на последней версии, команда также может повторить попытку незавершённой установки зависимостей в его кэшированной копии. О случаях, когда эта повторная попытка выполняется или пропускается, см. [Перечисленные пакеты не установлены](https://code.claude.com/docs/ru/plugins/troubleshooting.md#the-packages-it-lists-are-not-installed). Если повторная попытка не удаётся, выходные данные — `Failed to update plugin &quot;formatter@my-marketplace&quot;` с причиной, и код выхода — `1`. До v2.1.287 команда сообщала, что плагин находится на последней версии, не повторяя попытку установки.
+
+### plugin list
+
+Выведите список установленных плагинов с их версией, областью действия и статусом.
+</code></pre>
+<p>claude plugin list [options]</p>
+<pre><code>
+| Флаг | Описание |
+| :- | :- |
+| `--json` | Выведите список как JSON |
+| `--available` | Также выведите плагины, которые предлагают ваши маркетплейсы, но которые вы не установили. Не имеет эффекта без `--json` |
+| `--data-size [plugin]` | Измерьте [каталог сохранённых данных](#what-an-uninstall-deletes-and-keeps) каждого установленного плагина или только названного плагина, указанного как `name@marketplace`. Не имеет эффекта без `--json`. Если имя не имеет записи об установке, команда выводит `--data-size names a plugin that is not installed` и выходит с кодом `1` вместо вывода списка. Требует Claude Code v2.1.285 или позже |
+
+Claude Code группирует читаемый выход по тому, как загружается каждый плагин:
+
+* **`Installed plugins:`**: плагины, которые вы установили из маркетплейса
+* **`Session-only plugins (--plugin-dir / --plugin-url):`**: плагины, загруженные этими флагами в той же команде, как в `claude --plugin-dir ./my-plugin plugin list`
+* **`Skills-directory plugins (.claude/skills/*):`**: плагины, которые Claude Code нашёл в каталоге skills
+* **`Synced from claude.ai`**: [плагины, синхронизированные с вашей учётной записью claude.ai](https://code.claude.com/docs/ru/plugins/loading.md#synced-plugins)
+
+Когда в любой группе ничего нет, Claude Code выводит ``No plugins installed. Use `claude plugin install` to install a plugin.``
+
+#### JSON выход
+
+С `--json` Claude Code выводит массив с одним объектом на установку. Каждый объект содержит поля ниже. `id`, `version`, `scope`, `enabled` и `installPath` всегда присутствуют, а остальные появляются только когда они применяются.
+
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `id` | string | `name@marketplace` для установок, `name@inline` для плагинов только для сессии, `name@skills-dir` для плагинов из каталога skills, `name@synced` для плагинов, синхронизированных с claude.ai |
+| `version` | string | Для установки маркетплейса, [версия, которую вычислил Claude Code](https://code.claude.com/docs/ru/plugins/loading.md#versions-and-updates) при установке. Для плагина только для сессии, из каталога skills или синхронизированного, `version` из манифеста или `unknown`, когда он не объявляет |
+| `scope` | string | `user`, `project`, `local` или `managed` для установок; `user` или `project` для плагинов из каталога skills; `session` для плагинов только для сессии; `synced` для плагинов, синхронизированных с claude.ai |
+| `enabled` | boolean | Включён ли плагин в ваших объединённых настройках |
+| `installPath` | string | Каталог, из которого загружается плагин, за исключением плагина, который сессии [загружают на месте](https://code.claude.com/docs/ru/plugins/loading.md#in-place-and-copied-plugins) из папки его маркетплейса |
+| `readFromFolder` | string | Для плагина, который сессии [загружают на месте](https://code.claude.com/docs/ru/plugins/loading.md#in-place-and-copied-plugins) из папки его маркетплейса, исходный каталог плагина внутри этой папки. Требует Claude Code v2.1.289 или позже |
+| `folderVersion` | string | С `readFromFolder`, `version` плагина в том виде, в котором Claude Code загрузил его из этой папки; может отличаться от поля `version` выше. Отсутствует, когда плагин не загрузился или не объявляет версию. Требует Claude Code v2.1.289 или позже |
+| `installedAt` | string | ISO временная метка установки. Только установки маркетплейса |
+| `lastUpdated` | string | ISO временная метка последнего обновления. Только установки маркетплейса |
+| `projectPath` | string | Проект, к которому принадлежит установка. Только области действия `project` и `local` |
+| `mcpServers` | object | Определения MCP-серверов плагина, когда установленный из маркетплейса плагин имеет какие-либо |
+| `errors` | array of strings | Ошибки загрузки, когда плагин не загрузился |
+| `notes` | array of strings | Предупреждения, которые не являются ошибками загрузки, например проблемы авторства или [неустановленные пакеты](https://code.claude.com/docs/ru/plugins/loading.md#when-the-dependency-install-fails-or-is-skipped) |
+| `errorDetails` | array of objects | Один объект на запись `errors`, дающий его диагностический `type` и имена, на которые он ссылается, такие как плагин, маркетплейс, сервер или файл. Требует Claude Code v2.1.268 или позже |
+| `noteDetails` | array of objects | Те же объекты деталей для каждой записи `notes`. Требует Claude Code v2.1.268 или позже |
+| `hasUserConfig` | boolean | Присутствует и `true`, когда плагин загрузился и его манифест объявляет [опции `userConfig`](https://code.claude.com/docs/ru/plugins/manifest-reference#user-configuration). Отсутствует для плагина, который не загрузился, независимо от того, что объявляет его манифест. Требует Claude Code v2.1.285 или позже |
+| `projectEnabled` | boolean | Включает ли общий файл `.claude/settings.json` проекта плагин. Только установки маркетплейса. Требует Claude Code v2.1.285 или позже |
+| `dataDirSize` | object | С `--data-size`, размер [каталога сохранённых данных](#what-an-uninstall-deletes-and-keeps) плагина как `bytes` и `human`; отсутствует, когда каталог отсутствует или пуст. Только установки маркетплейса. Требует Claude Code v2.1.285 или позже |
+| `dataDirUnreadable` | boolean | С `--data-size`, `true`, когда каталог сохранённых данных существует, но не мог быть измерен. Только установки маркетплейса. Требует Claude Code v2.1.285 или позже |
+
+С `--json --available` Claude Code выводит один объект вместо массива. Его поле `installed` содержит массив объектов установленных плагинов, а его поле `available` содержит один объект на неустановленный плагин маркетплейса с полями ниже.
+
+| Поле | Тип | Описание |
+| :- | :- | :- |
+| `pluginId` | string | `name@marketplace` |
+| `name` | string | Имя плагина в маркетплейсе |
+| `marketplaceName` | string | Маркетплейс, который его предлагает |
+| `source` | string or object | [Источник](https://code.claude.com/docs/ru/plugins/marketplace-reference.md) записи маркетплейса: строка для относительного пути, объект в противном случае |
+| `description` | string | Описание записи, когда оно есть |
+| `version` | string | Версия записи, когда она объявляет |
+| `installCount` | number | Количество установок, когда Claude Code имеет его для плагина |
+
+### plugin details
+
+Покажите инвентарь компонентов плагина и его прогнозируемую стоимость в токенах.
+
+Плагин должен быть загружен: установлен, найден в каталоге skills или передан с `--plugin-dir` или `--plugin-url` в той же команде. `&lt;name&gt;` — это `name` плагина или `name@marketplace`.
+</code></pre>
+<p>claude plugin details &lt;name&gt;</p>
+<pre><code>
+Команда не принимает флаги кроме `--help`.
+
+Покажите, что вносит установленный плагин:
+</code></pre>
+<p>claude plugin details formatter</p>
+<pre><code>
+Claude Code выводит имя плагина, версию, описание и источник, затем эти разделы:
+
+* **`Component inventory`**: скиллы, агенты, хуки, MCP-серверы и LSP серверы плагина
+* **`Projected token cost`**: всегда включённые токены, которые плагин добавляет в каждую сессию
+* **`Per-component (rounded)`**: оценки всегда включённых и при вызове для каждого скилла, агента и команды. Пропускается, когда плагин не имеет ни одного
+
+Для того, что означают две цифры стоимости, см. [Измерение стоимости и использования плагина](https://code.claude.com/docs/ru/plugins/measure.md).
+
+Для плагина, который не загружен, Claude Code выводит это сообщение и выходит с кодом `1`:
+</code></pre>
+<p>Plugin &quot;formatter&quot; not found. Run <code>claude plugin list</code> to see installed plugins, or pass --plugin-dir &lt;path&gt; to load one from disk.</p>
+<pre><code>
+ID, который заканчивается на `@builtin`, называет один из [плагинов, встроенных в Claude Code](https://code.claude.com/docs/ru/plugins/mods/overview.md#mods-built-into-claude-code). Если вы передаёте такой ID и Claude Code не находит этот плагин, сообщение будет таким:
+</code></pre>
+<p>Plugin &quot;&lt;name&gt;@builtin&quot; not found. Built-in plugins don&#x27;t appear in <code>claude plugin list</code>. To see the ones available in a session, run /plugin in Claude Code and open the Installed tab.</p>
+<pre><code>
+### plugin configure
+
+Покажите опции [`userConfig`](https://code.claude.com/docs/ru/plugins/manifest-reference#user-configuration) установленного плагина и какие из них установлены, или сохраните значения, переданные на stdin. Требует Claude Code v2.1.285 или позже.
+</code></pre>
+<p>claude plugin configure &lt;plugin&gt;</p>
+<pre><code>
+| Флаг | Описание |
+| :- | :- |
+| `--values-stdin` | Прочитайте значения опций из stdin как JSON объект однострочных строк и сохраните их. Опции, которые вы не указываете, сохраняют свои сохранённые значения |
+| `--json` | Выведите результат как один JSON объект на stdout. Без `--values-stdin` объект содержит `schema` и `choices` опций, их начальные `inputs` и имена `configured` и `unconfigured` опций. С `--values-stdin` он содержит имена `saved` опций и, когда они могут быть прочитаны обратно, имена `unconfigured` |
+
+Без флагов команда выводит список каждой опции с до трёх ярлыков: `required` или `optional`, затем `sensitive` для опции, которую манифест объявляет чувствительной, затем `set` или `not set`. Она не выводит сохранённые значения. С `--json` выходные данные включают сохранённые значения опций, которые не чувствительны, и никогда текст чувствительной.
+
+Чтобы сохранить значения, запишите их в файл как JSON объект, который отображает ключи опций на строковые значения, затем передайте файл на stdin. Замените `formatter@my-marketplace` на id вашего собственного плагина, как показывает `claude plugin list`. Этот пример устанавливает одну опцию с именем `api_url` из файла `values.json`, который содержит `{&quot;api_url&quot;: &quot;https://example.com&quot;}`:
+</code></pre>
+<p>claude plugin configure formatter@my-marketplace --values-stdin &lt; values.json</p>
+<pre><code>
+Claude Code проверяет каждое значение против объявленного типа опции и выводит `Configuration saved. Restart Claude Code to apply it.` Если вы передаёте ключ, который манифест не объявляет, или значение, которое не проходит проверку, команда ничего не сохраняет, выводит `Failed to save configuration:` с причиной и выходит с кодом `1`. С `--json` отклонённое значение также выводит объект на stdout, чьё поле `refused` содержит `message` и, когда одна опция виновата, её ключ `option`.
+
+Передайте полный id плагина `name@marketplace`, как показывает `claude plugin list`. `configure` не принимает простое `name`. Когда ни один загруженный плагин не имеет этот id, команда выводит `No installed plugin has the id &quot;&lt;plugin&gt;&quot;.` и выходит с кодом `1`.
+
+Для настроек упакованного MCP-сервера см. [`plugin install --config`](#plugin-install) или элемент **Configure** в `/plugin`.
+
+### plugin prune
+
+Удалите автоустановленные [зависимости](https://code.claude.com/docs/ru/plugins/dependencies.md), которые больше не нужны ни одному установленному плагину. Команда никогда не удаляет плагин, который вы установили сами. `autoremove` — это псевдоним для `prune`.
+</code></pre>
+<p>claude plugin prune [options]</p>
+<pre><code>
+| Флаг | Описание |
+| :- | :- |
+| `-s, --scope &lt;scope&gt;` | Очистить в области действия: `user`, `project` или `local`. По умолчанию `user` |
+| `--dry-run` | Выведите список того, что было бы удалено, без удаления |
+| `-y, --yes` | Пропустите запрос подтверждения. Требуется, когда stdin или stdout не является TTY |
+
+Предпросмотрите то, что удалила бы очистка:
+</code></pre>
+<p>claude plugin prune --dry-run</p>
+<pre><code>
+Claude Code выводит список сиротских зависимостей и заканчивается с `(dry run — nothing removed)`. Когда нечего удалять, он выводит строку, которая начинается с `Nothing to prune`.
+
+Без `--dry-run` команда удаляет сиротские зависимости только после того, как вы подтвердите в запросе или передадите `-y`.
+
+Код выхода — `0` независимо от вашего ответа в запросе.
+
+То, что делает `prune`, зависит от того, подключен ли терминал и передаёте ли вы `-y`:
+
+| Терминал и флаги | Что происходит |
+| :- | :- |
+| Интерактивный терминал, без `-y` | Выводит список сиротских зависимостей и спрашивает `Remove? [y/N]` |
+| Любой терминал, `-y` | Удаляет их и выводит `Removed N auto-installed plugins: &lt;names&gt;` |
+| Non-TTY stdin или stdout, без `-y` | Выводит список и ``Not a TTY — run `claude plugin prune -y` to remove.``, ничего не удаляя |
+
+### plugin eval
+
+Запустите [eval случаи](https://code.claude.com/docs/ru/plugin-evals.md) плагина и сообщите оценённые результаты. Требует Claude Code v2.1.269 или позже.
+
+Каждый случай — это промпт плюс оценщики. Claude Code запускает его несколько раз в изолированной сессии только с загруженным целевым плагином, и по умолчанию также без плагина, чтобы отчёт показал разницу.
+
+См. [Тестирование плагинов с помощью evals](https://code.claude.com/docs/ru/plugin-evals.md) для формата случая, оценщиков, результатов и использования CI.
+</code></pre>
+<p>claude plugin eval [target] [options]</p>
+<pre><code>
+Необязательный `target` по умолчанию — текущий каталог и принимает любую из этих форм:
+
+* Каталог плагина
+* Один файл `prompt.md` или `case.yaml`
+* Установленный плагин как `name` или `name@marketplace`
+* `name@skills-dir`
+
+Поместите target перед `--tag`, `--allow-tools` и `--json`. Каждая из этих опций принимает слова, которые следуют за ней, как её значение, поэтому target, написанный после одной из них, читается как тег, имя инструмента или путь выходного JSON вместо target.
+
+Эта таблица выводит опции, которые используют большинство запусков. Запустите `claude plugin eval --help` для полного набора, включая `--case`, `--tag`, `--output-dir`, `--report`, `--allow-real-servers`, `--keep-temp` и `--verbose`.
+
+| Опция | Описание | По умолчанию |
+| :- | :- | :- |
+| `--runs &lt;n&gt;` | Запусков на случай в каждом [arm](https://code.claude.com/docs/ru/plugin-evals.md#compare-against-a-no-plugin-baseline) | `runs` каждого случая, иначе 3 |
+| `-j, --concurrency &lt;n&gt;` | Сессии агента для запуска одновременно, от 1 до 8. Они делят ваше ограничение частоты запросов | `1` |
+| `--model &lt;model&gt;` | Модель для тестируемого агента | `model` каждого случая, иначе `ANTHROPIC_MODEL`, если установлено, иначе по умолчанию Claude Code |
+| `--judge-model &lt;model&gt;` | Модель для оценщиков `llm` и `baseline` | Модель для [фоновых задач](https://code.claude.com/docs/ru/plugin-evals.md#grade-the-result) |
+| `--ablation &lt;mode&gt;` | `none` или `with-without`. См. [Сравнение с базовым уровнем без плагина](https://code.claude.com/docs/ru/plugin-evals.md#compare-against-a-no-plugin-baseline) | Решено для каждого случая, как описано в этом разделе |
+| `--threshold &lt;0..1&gt;` | Выход 1, если какой-либо случай оценивается ниже этого | `1.0` |
+| `--max-cost-usd &lt;usd&gt;` | Остановитесь перед следующим запуском, когда расходы достигнут этого, выход 2 и сообщите частичные результаты | Без ограничений |
+| `--allow-tools &lt;tools...&gt;` | Предоставьте инструменты помимо набора только для чтения, такие как `Bash`, `Write`, `Edit` или `&quot;mcp__plugin_&lt;plugin&gt;_&lt;server&gt;__*&quot;`. См. [Предоставление инструментов](https://code.claude.com/docs/ru/plugin-evals.md#grant-tools) | |
+| `--scaffold` | Запустите [`scaffold_script`](https://code.claude.com/docs/ru/plugin-evals#add-setup-or-history-with-case-yaml) каждого случая | Выключено |
+| `--trust-plugin` | Пропустите первый запрос доверия, для CI. См. [Что может получить доступ запуск](https://code.claude.com/docs/ru/plugin-evals.md#security) | Выключено |
+| `--mocks &lt;mode&gt;` | `record` или `off`. См. [Mock MCP-серверы](https://code.claude.com/docs/ru/plugin-evals.md#mock-mcp-servers) | `record` |
+| `--eval-dir &lt;dir&gt;` | Каталог ниже плагина, который содержит случаи | `experimental.evals` манифеста, иначе `evals` |
+| `--json [path]` | Выведите [документ результата](https://code.claude.com/docs/ru/plugin-evals.md#json-result) на stdout или запишите его в путь `.json` | |
+| `--no-publish` | Держите HTML отчёт локально | |
+
+Код выхода сообщает, как закончился запуск. Чтобы действовать на нём в конвейере, см. [Запуск evals в CI](https://code.claude.com/docs/ru/plugin-evals.md#run-evals-in-ci).
+
+| Код выхода | Значение |
+| :- | :- |
+| `0` | Набор пройден: каждый случай соответствует порогу, и ничто другое не привело к провалу запуска |
+| `1` | Неудачный случай, ошибка загрузки, недоверенный каталог плагина, запуск, который [завершился ошибкой API](https://code.claude.com/docs/ru/plugin-evals.md#runs-ended-on-an-api-error), или другая причина, перечисленная в разделе [Запуск evals в CI](https://code.claude.com/docs/ru/plugin-evals.md#run-evals-in-ci) |
+| `2` | Частичный запуск |
+| `130` | Прервано |
+| `143` | Завершено |
+
+### plugin eval init
+
+Создайте набор eval для плагина в текущем каталоге. Требует Claude Code v2.1.269 или позже. См. [Создание вашего первого набора eval](https://code.claude.com/docs/ru/plugin-evals.md#create-your-first-eval-suite).
+</code></pre>
+<p>claude plugin eval init [name] [options]</p>
+<pre><code>
+Запустите команду из корневой папки плагина, каталога, который содержит `.claude-plugin/plugin.json` или `SKILL.md` скилла. Чтобы создать каркас набора в другом каталоге специально, передайте `--eval-dir`.
+
+В терминале команда открывает интерактивную сессию Claude Code для интервью авторства. В интервью Claude делает следующее:
+
+1. Читает плагин
+2. Спрашивает вас, что он должен делать хорошо
+3. Предлагает случаи и оценщиков
+4. Записывает файлы случаев
+5. Запускает случаи и проверяет оценки с вами, чтобы убедиться, что оценщики оценивают так, как вы бы оценили
+
+С `--bare` или без терминала команда записывает пустой шаблон одного случая вместо этого. Когда Claude запускает команду изнутри сессии Claude Code, команда выводит инструкции интервью, которым должна следовать эта сессия, а не записывает шаблон.
+
+Необязательный `name` — это имя случая. Это требуется с `--bare` или без терминала, потому что команда записывает пустой шаблон для этого случая. Имя случая начинается с буквы или цифры и содержит только буквы, цифры, `.`, `_` и `-`. На каждой платформе команда также отклоняет имена, которые Windows не может хранить, такие как `con` или имя, заканчивающееся на `.`.
+
+Команда принимает эти опции:
+
+| Опция | Описание | По умолчанию |
+| :- | :- | :- |
+| `--bare` | Запишите пустой `prompt.md` и `graders/criteria.md` для `&lt;name&gt;` вместо запуска интервью | |
+| `-i, --interactive` | Требуйте интервью. Не выполняется без терминала вместо записи шаблона | |
+| `--eval-dir &lt;dir&gt;` | Каталог ниже текущего каталога для записи случаев в | `experimental.evals` манифеста, иначе `evals` |
+
+### plugin tag
+
+Создайте аннотированный git тег с именем `&lt;name&gt;--v&lt;version&gt;` для выпуска плагина. Перед тегированием команда проверяет, что `plugin.json` плагина и любая запись маркетплейса, которая его выводит, согласны по версии.
+
+Для того, когда тегировать выпуск, см. [Публикация плагина](https://code.claude.com/docs/ru/plugins/publish.md).
+</code></pre>
+<p>claude plugin tag [path] [options]</p>
+<pre><code>
+`[path]` — это каталог плагина, по умолчанию текущий каталог. Команда находит запись маркетплейса, поднимаясь от этого каталога к `.claude-plugin/marketplace.json`, который выводит плагин.
+
+| Флаг | Описание |
+| :- | :- |
+| `--push` | Отправьте тег в `--remote` после создания |
+| `--dry-run` | Выведите то, что было бы тегировано, без создания тега |
+| `-f, --force` | Пропустите проверки грязного рабочего дерева и существующего тега |
+| `-m, --message &lt;msg&gt;` | Сообщение аннотации тега. `%s` обозначает версию. По умолчанию `&lt;name&gt; &lt;version&gt;` |
+| `--remote &lt;name&gt;` | Удалённый для отправки с `--push`. По умолчанию `origin` |
+
+Предпросмотрите тег для плагина в проверке маркетплейса:
+</code></pre>
+<p>claude plugin tag plugins/formatter --dry-run</p>
+<pre><code>
+Claude Code выводит план:
+
+* Имя плагина
+* Версию и из какого файла она взята
+* Соответствующую запись маркетплейса, когда она есть
+* Имя тега
+* Команды `git tag` и `git push`, которые он запустил бы
+
+Без `--dry-run` Claude Code выводит `Created tag formatter--v1.0.0` и либо `Pushed to origin`, либо команду push для запуска самостоятельно. Если push не выполняется, тег всё ещё создаётся локально и команда выходит с ошибкой.
+
+Команда выходит с кодом `1` и выводит причину, когда не может безопасно тегировать. Распространённые причины:
+
+* Нет `version` в `plugin.json` или записи маркетплейса
+* Тег уже существует
+* Рабочее дерево грязное
+
+### plugin test
+
+Запустите тесты для [мода](https://code.claude.com/docs/ru/plugins/mods/overview.md) — плагина, код которого регистрирует обработчики событий. Команде не нужны сессия, вход в систему или сеть. О том, как написать тест, см. [Тестирование мода](https://code.claude.com/docs/ru/plugins/mods/test.md).
+</code></pre>
+<p>claude plugin test [directory]</p>
+<pre><code>
+`[directory]` — это каталог мода, по умолчанию текущий каталог. Команда запускает каждый файл в нём, имя которого заканчивается на `.test.ts` или `.test.tsx`, и выходит с кодом 1, когда тест не проходит.
+
+Запустите тесты для мода в `./first-mod`:
+</code></pre>
+<p>claude plugin test ./first-mod</p>
+<pre><code>
+### plugin validate
+
+Проверьте манифест плагина, манифест маркетплейса или скиллы, агентов и команды в каталоге, и выходите с кодом, на который может действовать задача CI. Для рабочего процесса создания, тестирования и редактирования см. [Создание плагина](https://code.claude.com/docs/ru/plugins/create.md). Для того, что проверяет валидатор в каждом манифесте, см. [справочник манифеста плагина](https://code.claude.com/docs/ru/plugins/manifest-reference.md) и [справочник маркетплейса](https://code.claude.com/docs/ru/plugins/marketplace-reference.md).
+</code></pre>
+<p>claude plugin validate &lt;path&gt; [options]</p>
+<pre><code>
+| Флаг | Описание |
+| :- | :- |
+| `--strict` | Рассматривайте предупреждения как ошибки, поэтому нераспознанные поля и отсутствующие метаданные, которые среда выполнения допускает, приводят к провалу запуска |
+| `--json` | Выведите отчёт о проверке как один JSON объект с теми же кодами выхода. Требует Claude Code v2.1.259 или позже |
+
+Проверьте плагин перед фиксацией:
+</code></pre>
+<p>claude plugin validate ./my-plugin --strict</p>
+<pre><code>
+#### Проверка каталога
+
+`&lt;path&gt;` — это [файл манифеста](#validate-a-manifest-file) или каталог. Учитывая каталог, Claude Code выбирает то, что проверять, по тому, что он там находит:
+
+* `.claude-plugin/marketplace.json`, когда он существует
+* Иначе `.claude-plugin/plugin.json`
+* Иначе файлы компонентов, выбранные по имени каталога:
+  * Каталог с именем `skills`, `agents` или `commands`: файлы внутри него
+  * Каталог с именем `.claude`: каталоги `skills`, `agents` и `commands` внутри него
+  * Любой другой каталог: эти три каталога под его `.claude`
+
+Когда каталог содержит и `.claude-plugin/marketplace.json`, и `.claude-plugin/plugin.json`, Claude Code проверяет маркетплейс, а также манифест и файлы компонентов плагина. Это требует Claude Code v2.1.289 или позже.
+
+Claude Code не следует символическим ссылкам внутри названного вами каталога. То, что он делает, зависит от того, где находится ссылка:
+
+* **Связанный каталог `skills`, `agents` или `commands` под корнем плагина или `.claude`**: Claude Code предупреждает, что ничего в нём не было прочитано.
+* **Связанная запись внутри каталога `skills`, `agents` или `commands`**: Claude Code пропускает её и предупреждает, по каталогу, сколько пропущенных записей загрузила бы сессия.
+* **Каталог `skills`, `agents` или `commands`, который вы называете, сам является символической ссылкой, или его родительский каталог `.claude` является**: Claude Code сообщает об ошибке и ничего в нём не проверяет. Назовите реальный каталог вместо этого.
+
+Несколько файлов не читаются запуском проверки:
+
+* **`SKILL.md` в корне плагина**: когда вы запускаете `claude plugin validate` против каталога плагина, Claude Code не проверяет `SKILL.md` в корне плагина
+* **`CLAUDE.md` в корне плагина**: в запуске плагина Claude Code также предупреждает о `CLAUDE.md` в корне плагина
+* **Файлы плагина в запуске маркетплейса**: из каталога маркетплейса Claude Code не открывает файлы скиллов, агентов, команд или хуков плагинов, которые маркетплейс перечисляет в других каталогах, или файлы MCP-серверов, которые они включают. Чтобы найти ошибки в этих файлах, проверьте каждый каталог плагина
+
+#### Проверка файла манифеста
+
+Когда файл не называется `plugin.json` или `marketplace.json` и не находится в каталоге `.claude-plugin`, Claude Code определяет, что это за файл, по его полям. Он проверяет файл как маркетплейс в следующих случаях, а в остальных — как манифест плагина:
+
+* `plugins` является массивом
+* Присутствуют и `plugins`, и `owner`
+* В файле есть поле, которое определяет только `marketplace.json`, например `owner`, и нет ни одного поля, которое определяет только `plugin.json`, например `author`
+
+Чтобы самостоятельно выбрать проверки, назовите файл `plugin.json` или `marketplace.json`. Любой другой файл в каталоге `.claude-plugin` Claude Code проверяет как манифест плагина.
+
+#### Выход и коды выхода
+
+Claude Code выводит файл, который он проверил, любые ошибки и предупреждения с их путями, и строку вердикта. Код выхода следует вердикту:
+
+| Код выхода | Строка вердикта | Значение |
+| :- | :- | :- |
+| `0` | `Validation passed` или `Validation passed with warnings` | Манифест загружается. С `--strict` также нет предупреждений |
+| `1` | `Validation failed` или `Validation failed (--strict treats warnings as errors)` | Ошибка или предупреждение под `--strict`. [Рекомендации](#advice-on-the-readme) не учитываются, с `--strict` или без него |
+| `2` | `Unexpected error during validation: &lt;reason&gt;` | Сам валидатор не выполнился, например на нечитаемом пути |
+
+С `--json` Claude Code записывает отчёт на stdout как один JSON объект с этими полями верхнего уровня:
+
+* `success`: тот же вердикт, который даёт код выхода
+* `strict`: рассматривал ли запуск предупреждения как ошибки
+* `target`: разрешённый путь, который Claude Code проверил
+* `manifest`: собственный результат манифеста или `null` для запуска без манифеста
+* `contents`: результаты для каждого файла, каждый называет свой `file` и содержит массивы `errors`, `warnings` и `notes`. Файлы без ошибок, предупреждений или заметок не получают записи, поэтому `contents` пуст, когда сообщать не о чем. Для [каталога с `marketplace.json` и `plugin.json`](#validate-a-directory) `manifest` — это результат `marketplace.json`, а результаты `plugin.json` попадают в `contents`
+  * `gatingHooks`: есть ли у каждого хука [мода](https://code.claude.com/docs/ru/plugins/mods/overview.md), который может отклонить действие, например хука `tool.call`, [обработчик `.catch`](https://code.claude.com/docs/ru/plugins/mods/events#handle-a-hook-that-fails). Каждый элемент содержит `module`, `pattern`, `hook` и `hasCatch`. Требует Claude Code v2.1.290 или позже
+* `advice`: [рекомендации](#advice-on-the-readme) запуска; каждая запись называет README как `file` и содержит `message` и `installLine` для вставки. Пусто, когда рекомендаций нет. Требует Claude Code v2.1.295 или позже
+
+При выходе `2` команда ничего не записывает на stdout. Сообщение об ошибке идёт на stderr.
+
+#### Рекомендации по README
+
+Блок `Advice` в выводе `claude plugin validate` означает, что в README плагина нет строки, которая устанавливает плагин из маркетплейса, и предлагает вам строку для добавления. Рекомендация не является ни ошибкой, ни предупреждением. Она не меняет строку вердикта или код выхода, с `--strict` или без него. Требует Claude Code v2.1.295 или позже.
+
+Например, проверка каталога маркетплейса `acme-tools` выводит такую рекомендацию для его плагина `deploy-helper`:
+</code></pre>
+<p>Validating marketplace manifest: /path/to/acme-tools/.claude-plugin/marketplace.json</p>
+<p>ℹ Advice (does not change the verdict):</p>
+<p>❯ /path/to/acme-tools/plugins/deploy-helper/README.md: This README has no line that installs &quot;deploy-helper&quot; from a marketplace. Add the install line, which works in one step on Claude Code 2.1.275 or later.
+      /plugin install deploy-helper --marketplace acme/tools</p>
+<p>✔ Validation passed</p>
+<pre><code>
+Чтобы убрать рекомендацию, вставьте предложенную строку в указанный README, затем снова запустите `claude plugin validate` в вашей оболочке. Блок `Advice` исчезнет.
+
+Если предложенная строка содержит заполнитель `&lt;owner&gt;/&lt;repo&gt;`, вставка её без изменений не уберёт рекомендацию. Сначала получите реальный источник:
+
+* **Вы проверили собственный каталог плагина**: когда маркетплейс перечисляет плагин из каталога внутри своего собственного, проверьте вместо этого этот каталог. Когда он перечисляет плагин из другого места, например из репозитория GitHub, заполните `&lt;owner&gt;/&lt;repo&gt;` самостоятельно
+* **Вы проверили каталог маркетплейса**: Claude Code заполняет источник из удалённого репозитория `origin` каталога `.git` на верхнем уровне этого каталога. Когда он не может использовать этот удалённый репозиторий, например когда его нет, замените `&lt;owner&gt;/&lt;repo&gt;` источником вашего маркетплейса самостоятельно
+
+Строка установки, которую вы уже написали, учитывается, когда за `plugin install` или его краткой формой `plugin i` на той же строке следует одно из следующего. Учитываются оба написания — `/plugin` и `claude plugin`:
+
+* `&lt;plugin&gt;@&lt;marketplace&gt;`, например `/plugin install deploy-helper@acme-tools`
+* Имя плагина и `--marketplace &lt;source&gt;`, например `/plugin install deploy-helper --marketplace acme/tools`
+
+## Команды claude plugin marketplace
+
+Запустите `claude plugin marketplace &lt;subcommand&gt;` из вашей оболочки, чтобы добавить, вывести, обновить и удалить маркетплейсы, из которых вы устанавливаете плагины.
+
+* **Коды выхода**: эти подкоманды следуют [соглашению кода выхода](#claude-plugin-commands) команд плагина
+* **Области действия**: их флаг `--scope` не имеет короткой формы `-s`
+
+Чтобы узнать, что такое маркетплейс и как Claude Code его кэширует, см. [Справочник загрузки плагинов](https://code.claude.com/docs/ru/plugins/loading.md).
+
+### plugin marketplace add
+
+Добавьте маркетплейс из репозитория GitHub, URL git, размещённого `marketplace.json` или локального пути и объявите его в файле настроек.
+
+После добавления Claude Code устанавливает любые [зависимости](https://code.claude.com/docs/ru/plugins/dependencies.md), которые отсутствовали у ваших установленных плагинов.
+</code></pre>
+<p>claude plugin marketplace add &lt;source&gt; [options]</p>
+<pre><code>
+| Флаг | Описание |
+| :- | :- |
+| `--scope &lt;scope&gt;` | Файл настроек, в котором объявляется маркетплейс: `user`, `project` или `local`. По умолчанию `user` |
+| `--sparse &lt;paths...&gt;` | Ограничить checkout git этими каталогами, для монорепозиториев. Только источники `github` и `git` |
+| `--claudeai` | Интерпретировать аргумент как имя [маркетплейса, размещённого на claude.ai](https://code.claude.com/docs/ru/plugins/install.md#add-from-claude-ai), а не как источник. Требует Claude Code v2.1.273 или позже |
+| `--json` | Вывести, успешно ли выполнена команда, и её сообщение в виде одного объекта JSON в последней строке stdout в [формате результата JSON](#plugin-json-result). Не действует вместе с `--claudeai`. Требует Claude Code v2.1.287 или позже |
+
+`&lt;source&gt;` принимает любую из форм в таблице ниже, и его форма определяет тип источника и то, как Claude Code получает маркетплейс. Для результирующего объекта источника см. [справочник маркетплейса](https://code.claude.com/docs/ru/plugins/marketplace-reference.md).
+
+| Вы вводите | Тип источника | Как Claude Code его получает |
+| :- | :- | :- |
+| `owner/repo`, `owner/repo#ref` или `owner/repo@ref` | `github` | Клонирует репозиторий GitHub, закреплённый на `ref`, если он указан. Владелец и репозиторий должны следовать правилам именования GitHub |
+| `user@host:path[.git][#ref]` | `git` | Клонирует по SSH |
+| URL `http://` или `https://`, заканчивающийся на `.git[#ref]` или содержащий `/_git/`, например `https://example.com/repo.git` | `git` | Клонирует URL, включая URL Azure DevOps |
+| `https://github.com/owner/repo` или `https://gitlab.com/namespace/project`, или то же самое по `http://` | `git` | Клонирует URL после добавления `.git` |
+| Любой другой URL `http://` или `https://`, включая самостоятельно размещённый git-хост без `.git` | `url` | Получает URL как `marketplace.json`. Чтобы вместо этого клонировать там репозиторий, добавьте `.git` |
+| `./path`, `../path`, `/path` или `~/path` к каталогу | `directory` | Читает каталог на месте. В Windows также работают формы `.\`, `..\` и `C:\` |
+| Те же формы пути к файлу `.json` | `file` | Читает файл на месте |
+
+Для хоста, чьи URL клонирования не содержат суффикс `.git`, например AWS CodeCommit, добавьте маркетплейс как запись git в [`extraKnownMarketplaces`](https://code.claude.com/docs/ru/settings-reference#extraknownmarketplaces). Claude Code клонирует запись git независимо от того, заканчивается ли её URL на `.git`.
+
+Claude Code также клонирует URL `gitlab.com` с вложенными подгруппами, например `https://gitlab.com/group/subgroup/project`.
+
+Добавьте маркетплейс и поделитесь им с проектом:
+</code></pre>
+<p>claude plugin marketplace add your-org/your-marketplace --scope project</p>
+<pre><code>
+Claude Code выводит `Successfully added marketplace: your-marketplace (declared in project settings)`, используя `name` из собственного манифеста маркетплейса. Повторное добавление или неверный источник вместо этого выводит один из следующих результатов:
+
+* **Маркетплейс уже на диске**: выходные данные — `Marketplace &#x27;your-marketplace&#x27; already on disk — declared in project settings`, код выхода — `0`
+* **Нераспознанный источник**: выходные данные — `Invalid marketplace source format. Try: owner/repo, https://..., or ./path`, код выхода — `1`
+* **Простой хост, например `gitlab.example.com/team/plugins`**: добавление завершается ошибкой как неверное сокращение `owner/repo`, и сообщение предлагает добавить `https://` или использовать локальный путь
+
+Добавьте [маркетплейс, размещённый на claude.ai](https://code.claude.com/docs/ru/plugins/install.md#add-from-claude-ai), по имени, выведенному в разделе `From claude.ai:` команды `claude plugin marketplace list`:
+</code></pre>
+<p>claude plugin marketplace add --claudeai claudeai-organization-library</p>
+<pre><code>
+С `--claudeai` команда отклоняет `--scope` и `--sparse`. Маркетплейс размещён для вашей учётной записи, а не объявлен в файле настроек, поэтому вы не можете поделиться им через `.claude/settings.json` проекта.
+
+### plugin marketplace list
+
+Выведите список всех добавленных вами маркетплейсов с их источниками.
+</code></pre>
+<p>claude plugin marketplace list [options]</p>
+<pre><code>
+| Флаг | Описание |
+| :- | :- |
+| `--json` | Вывести список в формате JSON |
+
+Claude Code выводит `Configured marketplaces:` и по одной строке `Source:` на маркетплейс, или `No marketplaces configured`.
+
+С `--json` Claude Code выводит массив с одним объектом на маркетплейс, содержащим поля ниже. Каждое поле — строка.
+
+| Поле | Описание |
+| :- | :- |
+| `name` | Имя маркетплейса |
+| `source` | `github`, `git`, `url`, `directory`, `file` или `claudeai` |
+| `repo` | `owner/repo`. Только источники `github` |
+| `url` | URL клонирования или получения. Только источники `git` и `url` |
+| `path` | Локальный путь. Только источники `directory` и `file` |
+| `ref` | Закреплённая ветка, тег или SHA коммита. Источники `github` и `git`, только если закреплено |
+| `installLocation` | Где Claude Code кэшировал маркетплейс |
+
+Добавленный [маркетплейс claude.ai](https://code.claude.com/docs/ru/plugins/install.md#add-from-claude-ai) не имеет локального клона, поэтому его запись вместо `installLocation` содержит его идентификаторы claude.ai — `marketplaceId` и `organizationUuid`. Она также содержит `scope`, если он записан, и `status`.
+
+Если ваши сессии терминала [синхронизируют плагины с вашей учётной записью claude.ai](https://code.claude.com/docs/ru/plugins/loading.md#synced-plugins), текстовый список заканчивается разделом `From claude.ai:`. В этом разделе перечислены маркетплейсы, которые claude.ai указывает для вашей учётной записи, но которые вы не добавили, — как основанные на git, так и размещённые. Для этого требуется Claude Code v2.1.273 или позже.
+
+Чтобы добавить маркетплейс из этого раздела, см. [Добавление маркетплейса с claude.ai](https://code.claude.com/docs/ru/plugins/install.md#add-from-claude-ai).
+
+Вывод `--json` охватывает только настроенные маркетплейсы и не включает этот раздел.
+
+### plugin marketplace remove
+
+Удалите объявление маркетплейса из ваших настроек. `rm` — псевдоним для `remove`.
+
+&gt; [!WARNING]
+&gt;
+&gt; Когда вы удаляете маркетплейс из последней области действия, которая его объявляет, Claude Code также удаляет его кэш и удаляет каждый плагин, который вы из него установили. Он также удаляет их сохранённые [параметры и секреты](https://code.claude.com/docs/ru/plugins/manifest-reference.md#user-configuration) и [данные](https://code.claude.com/docs/ru/plugins/components.md#path-variables-and-persistent-data), где это возможно.
+&gt;
+&gt; Чтобы обновить маркетплейс без потери его плагинов, вместо этого запустите `plugin marketplace update`.
+</code></pre>
+<p>claude plugin marketplace remove &lt;name&gt; [options]</p>
+<pre><code>
+`&lt;name&gt;` — это имя маркетплейса, которое показывает `plugin marketplace list`, а не источник, который вы передали в `add`.
+
+| Флаг | Описание |
+| :- | :- |
+| `--scope &lt;scope&gt;` | Удалить объявление из одной области действия настроек: `user`, `project` или `local`. Без него Claude Code удаляет объявление из всех областей действия |
+| `--json` | Вывести, успешно ли выполнена команда, и её сообщение в виде одного объекта JSON в последней строке stdout в [формате результата JSON](#plugin-json-result). Требует Claude Code v2.1.287 или позже |
+
+Удалите маркетплейс из всех областей действия:
+</code></pre>
+<p>claude plugin marketplace remove your-marketplace</p>
+<pre><code>
+Claude Code выводит `Successfully removed marketplace: your-marketplace`. Когда команда удаляет плагины, выходные данные перечисляют их под строкой вроде `Also uninstalled 2 plugins from this marketplace:`. Чтобы снова использовать один из них, добавьте маркетплейс обратно и переустановите плагин.
+
+Если вы ограничите команду файлом настроек, который не объявляет маркетплейс, команда завершится ошибкой `Marketplace &#x27;your-marketplace&#x27; is not declared in project settings. Omit --scope to remove it from all scopes.`
+
+### plugin marketplace update
+
+Обновите один маркетплейс или все маркетплейсы из их источника, чтобы получить новые плагины и версии. Маркетплейс, добавленный с веткой или тегом `ref`, обновляется до последнего коммита этого ref, а не ветки репозитория по умолчанию.
+</code></pre>
+<p>claude plugin marketplace update [name] [options]</p>
+<pre><code>
+| Флаг | Описание |
+| :- | :- |
+| `--json` | Вывести, успешно ли выполнена команда, и её сообщение в виде одного объекта JSON в последней строке stdout в [формате результата JSON](#plugin-json-result). Без имени команда отклоняет `--json` и завершается с кодом `1`. Требует Claude Code v2.1.287 или позже |
+
+Обновите один маркетплейс:
+</code></pre>
+<p>claude plugin marketplace update your-marketplace</p>
+<pre><code>
+Claude Code выводит `Successfully updated marketplace: your-marketplace`. Если вы не указываете имя, он выводит количество, например `Successfully updated 2 marketplaces`.
+
+## /plugin в сеансе
+
+Внутри интерактивного сеанса `/plugin` открывает панель плагина. Каждая подкоманда открывает панель на вкладке, запускает действие там или выводит результат встроенно. `/plugins` и `/marketplace` — это псевдонимы для `/plugin`.
+
+Вы можете запускать эти команды только в интерактивном сеансе терминала. В неинтерактивном запуске, таком как `claude -p`, Claude Code отвечает, что `/plugin` недоступен в этой среде.
+
+Для того, какие поверхности имеют `/plugin`, как установить без него и что показывает каждая вкладка панели, см. [Установка и управление плагинами](https://code.claude.com/docs/ru/plugins/install.md).
+
+`&lt;plugin&gt;` — это `name` плагина или `name@marketplace`.
+
+Таблица ниже выводит каждую форму сессии. Подкоманды оболочки `init`, `update`, `details`, `prune`, `eval`, `eval init` и `test` не имеют формы сессии.
+
+| Команда | Псевдонимы | Что она делает |
+| :- | :- | :- |
+| `/plugin` | | Открывает панель на вкладке **Discover**. Любое нераспознанное первое слово после `/plugin` делает то же самое |
+| `/plugin help` | `/plugin --help`, `/plugin -h` | Показывает список использования подкоманд `/plugin` |
+| `/plugin list [--enabled\|--disabled]` | `ls` | Выводит ваши установленные из маркетплейса плагины встроенно, с версией, областью действия и статусом. Флаг фильтра показывает только это состояние. Плагин, чьё состояние включения ещё не применено, отмечен `— run /reload-plugins to apply` |
+| `/plugin install` | `i` | Открывает вкладку **Discover** |
+| `/plugin install &lt;plugin&gt;` | `i` | Открывает детали плагина на вкладке **Discover**. С `name@marketplace` открывает их в списке этого маркетплейса |
+| `/plugin install &lt;source&gt;` | `i` | Сообщает об ошибке [маркетплейс не найден](https://code.claude.com/docs/ru/plugins/troubleshooting.md#marketplace-not-found) и ничего не устанавливает, когда целью является путь, URL или `owner/repo`, даже источник, который вы уже добавили. Чтобы установить из источника, см. [Добавление маркетплейса и установка в одной команде](https://code.claude.com/docs/ru/plugins/install.md#add-a-marketplace-and-install-in-one-command) |
+| `/plugin install &lt;plugin&gt; --marketplace &lt;source&gt;` | `i` | Добавляет маркетплейс в `&lt;source&gt;`, когда вы его ещё не добавили, спрашивая вас подтвердить сначала, затем открывает детали плагина. См. [Добавление маркетплейса и установка в одной команде](https://code.claude.com/docs/ru/plugins/install.md#add-a-marketplace-and-install-in-one-command). Требует Claude Code v2.1.275 или позже |
+| `/plugin manage` | | Открывает вкладку **Installed** |
+| `/plugin stats` | | Открывает вкладку **Stats** в сеансах, где [`/skill-doctor`](https://code.claude.com/docs/ru/skills#find-unused-skills) доступен. Везде ещё открывает панель на вкладке **Discover** |
+| `/plugin enable &lt;plugin&gt;` | | Открывает вкладку **Installed** на плагине и включает его |
+| `/plugin disable &lt;plugin&gt;` | | Открывает вкладку **Installed** на плагине и отключает его |
+| `/plugin uninstall &lt;plugin&gt;` | | Открывает вкладку **Installed** на плагине и удаляет его |
+| `/plugin configure &lt;plugin&gt;` | `config` | Открывает диалог [`userConfig`](https://code.claude.com/docs/ru/plugins/manifest-reference) плагина или сообщает, что плагин не объявляет ни одного |
+| `/plugin validate &lt;path&gt;` | | Выводит тот же отчёт, что и `claude plugin validate`, встроенно |
+| `/plugin tag [path] [--push] [--dry-run] [--force]` | | Создаёт тег выпуска как `claude plugin tag` делает. Принимает `--push`, `--dry-run` и `--force` или `-f`; с любым другим флагом или дополнительным аргументом Claude Code выводит использование вместо этого |
+| `/plugin marketplace` | `market` | Ничего видимого не делает. Передайте `add`, `list`, `update` или `remove` |
+| `/plugin marketplace add [source]` | `market add` | С источником добавляет его и сообщает результат. Без одного открывает ввод **Add marketplace** |
+| `/plugin marketplace list` | `market list` | Выводит имена ваших маркетплейсов встроенно |
+| `/plugin marketplace update [name]` | `market update` | Открывает вкладку **Marketplaces**. С именем обновляет этот маркетплейс там |
+| `/plugin marketplace remove [name]` | `market remove`, `market rm`, `marketplace rm` | Открывает вкладку **Marketplaces**. С именем удаляет этот маркетплейс там |
+
+Если вы называете плагин, который не установлен в текущем проекте в `/plugin enable`, `disable`, `uninstall` или `configure`, Claude Code выводит `Plugin &quot;&lt;plugin&gt;&quot; is not installed in this project` вместо действия.
+
+## /reload-plugins
+
+Примените ожидающие изменения плагина к работающему сеансу без перезагрузки. Ожидающие изменения — это плагины, которые вы установили, обновили, включили, отключили или отредактировали на диске с момента начала сеанса.
+
+Когда вы закрываете панель `/plugin` с ожидающими изменениями, которые вы сделали в ней, Claude Code запускает `/reload-plugins` для вас. Запустите его самостоятельно после изменений плагина, которые происходят вне панели, такие как команда `claude plugin`, которую вы запустили в другом терминале.
+</code></pre>
+<p>/reload-plugins [--force]</p>
+<pre><code>
+| Флаг | Описание |
+| :- | :- |
+| `--force` | Примените перезагрузку, даже если она инвалидирует кэш подсказок. `force` без дефисов также работает |
+
+### Сводка перезагрузки
+
+Claude Code перезагружает каждый активный плагин и выводит одну строку сводки, `Reloaded: N plugins · N skills · N agents · N hooks · N plugin MCP servers · N plugin LSP servers`, пропуская счёт сервера MCP плагина в сеансе без интерактивного терминала. Когда какой-либо плагин не выполнился, сводка добавляет `N errors during load. Run /plugin for details.`
+
+Счёт skills охватывает каждый skill, который предоставляет плагин, как его записи `commands/`, так и skills `SKILL.md`. Счёт agents — это количество агентов, загруженных в сеансе, включая те, которые не поступают из плагинов.
+
+Когда перезагруженный плагин [зависимости](https://code.claude.com/docs/ru/plugins/dependencies.md) отсутствуют, Claude Code устанавливает их, перезагружает снова и добавляет `(+ N dependencies: &lt;names&gt;) resolved` к сводке.
+
+### Перезагрузки, которые изменяют инструменты MCP
+
+Когда перезагрузка добавляет или удаляет сервер MCP плагина или инструмент `LSP`, и это изменение инвалидирует [кэш подсказок](https://code.claude.com/docs/ru/prompt-caching.md#enabling-or-disabling-a-plugin), Claude Code не применяет перезагрузку. Он выводит строку, такую как `This reload changes MCP tools (&lt;server&gt;) — your next message will re-read the whole conversation instead of using the cache. Run /reload-plugins --force to apply.` Передайте `--force`, чтобы применить её в любом случае.
+
+### Сеансы без интерактивного терминала
+
+`/reload-plugins` также запускается в сеансах без интерактивного терминала, такие как приложение для рабочего стола, Agent SDK и [неинтерактивный режим](https://code.claude.com/docs/ru/headless.md) с `-p`. Требует Claude Code v2.1.260 или позже.
+
+В этих сеансах команда запускается только когда вы вводите её в сеанс самостоятельно, такие как в подсказке `-p` или поле подсказки приложения для рабочего стола. Когда она приходит другим способом, такой как через [Remote Control](https://code.claude.com/docs/ru/remote-control.md) или сообщение, переданное из Slack, команда отвечает `/reload-plugins isn&#x27;t available over a remote connection in this session.` и ничего не перезагружает.
+
+Перезагрузка в этих сеансах не подключает или отключает серверы MCP плагина. Эти изменения вступают в силу в вашем следующем сеансе.
+
+## Флаги, которые загружают плагин на один сеанс
+
+Два флага `claude` загружают плагин на один сеанс только, без установки. Оба повторяемы.
+
+Авторы плагинов используют их для тестирования плагина перед публикацией. Для рабочего процесса загрузки-редактирования-перезагрузки см. [Разработка без маркетплейса](https://code.claude.com/docs/ru/plugins/create.md#develop-without-a-marketplace).
+
+| Флаг | Описание | Пример |
+| :- | :- | :- |
+| `--plugin-dir &lt;path&gt;` | Загрузите плагин из каталога или архива `.zip` одного. Папка плагинов загружает каждую дочернюю папку, которая содержит `.claude-plugin/plugin.json`. Каждый флаг принимает один путь | `claude --plugin-dir ./my-plugin --plugin-dir ./other.zip` |
+| `--plugin-url &lt;url&gt;` | Получите архив плагина `.zip` из URL. Повторите флаг или передайте несколько URL, разделённых пробелом, в одном цитируемом значении | `claude --plugin-url &quot;https://example.com/a.zip https://example.com/b.zip&quot;` |
+
+Плагин, который загружает любой флаг, — это плагин только для сеанса. [`claude plugin list`](#plugin-list) показывает его только когда тот же флаг предшествует подкоманде, как в `claude --plugin-dir ./my-plugin plugin list`. Плагин отображается как `&lt;name&gt;@inline` под заголовком, который начинается с `Session-only plugins`, и `--json` сообщает его `scope` как `session`.
+
+Когда плагин только для сеанса имеет одно и то же имя с установленным плагином, Claude Code загружает копию только для сеанса для этого сеанса и пропускает установленную. Установленная копия загружается вместо этого, если вы отключили копию только для сеанса с `claude plugin disable &lt;name&gt;@inline`, или если управляемые параметры блокируют это имя плагина. Для приоритета см. [Справочник загрузки плагинов](https://code.claude.com/docs/ru/plugins/loading.md).
+
+Администратор может отклонить оба флага и папки, названные в переменной [`CLAUDE_CODE_PLUGIN_DIRS`](https://code.claude.com/docs/ru/env-vars#variables), с управляемым параметром [`disableSideloadFlags`](https://code.claude.com/docs/ru/settings-reference#disablesideloadflags). Claude Code затем выводит, что флаг отключён управляемыми параметрами вашей организации, и выходит с кодом `1` без запуска.
+
+Из Agent SDK опция [`plugins`](https://code.claude.com/docs/ru/agent-sdk/plugins) — это эквивалент `--plugin-dir`.
+
+## Следующие шаги
+
+* [Установка и управление плагинами](https://code.claude.com/docs/ru/plugins/install.md): те же операции, что и шаги, с тем, что вы видите на каждом
+* [Справочник загрузки плагинов](https://code.claude.com/docs/ru/plugins/loading.md): что каждая команда изменяет на диске и какая область действия вступает в силу
+* [Устранение неполадок плагинов](https://code.claude.com/docs/ru/plugins/troubleshooting.md): установка, маркетплейс, загрузка и сообщения об ошибках проверки с их исправлениями
+* [Справочник манифеста плагина](https://code.claude.com/docs/ru/plugins/manifest-reference.md): поля, которые `claude plugin validate` проверяет
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

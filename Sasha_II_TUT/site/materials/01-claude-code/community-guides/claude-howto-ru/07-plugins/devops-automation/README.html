@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>DevOps Automation Plugin</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../../materials/index.html">Материалы</a> / <a href="../../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/07-plugins/index.html">07-plugins</a> / <a href="../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/07-plugins/devops-automation/index.html">devops-automation</a></nav>
+<p>&lt;picture&gt;
+  &lt;source media=&quot;(prefers-color-scheme: dark)&quot; srcset=&quot;../../resources/logos/claude-howto-logo-dark.svg&quot;&gt;
+  &lt;img alt=&quot;Claude How To&quot; src=&quot;../../resources/logos/claude-howto-logo.svg&quot;&gt;
+&lt;/picture&gt;</p>
+<h1 id="devops-automation-plugin">DevOps Automation Plugin <a class="h-anchor" href="#devops-automation-plugin" aria-label="Ссылка на раздел">#</a></h1>
+<p>Complete DevOps automation for deployment, monitoring, and incident response.</p>
+<h3 id="features">Features <a class="h-anchor" href="#features" aria-label="Ссылка на раздел">#</a></h3>
+<p>✅ Automated deployments
+✅ Rollback procedures
+✅ System health monitoring
+✅ Incident response workflows
+✅ Kubernetes integration</p>
+<h3 id="installation">Installation <a class="h-anchor" href="#installation" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code class="language-bash">/plugin install devops-automation</code></pre>
+<h3 id="what-s-included">What&#x27;s Included <a class="h-anchor" href="#what-s-included" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="slash-commands">Slash Commands <a class="h-anchor" href="#slash-commands" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><code>/deploy</code> - Deploy to production or staging</li>
+<li><code>/rollback</code> - Rollback to previous version</li>
+<li><code>/status</code> - Check system health</li>
+<li><code>/incident</code> - Handle production incidents</li>
+</ul>
+<h4 id="subagents">Subagents <a class="h-anchor" href="#subagents" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><code>deployment-specialist</code> - Deployment operations</li>
+<li><code>incident-commander</code> - Incident coordination</li>
+<li><code>alert-analyzer</code> - System health analysis</li>
+</ul>
+<h4 id="mcp-servers">MCP Servers <a class="h-anchor" href="#mcp-servers" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Kubernetes integration</li>
+</ul>
+<h4 id="scripts">Scripts <a class="h-anchor" href="#scripts" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><code>deploy.sh</code> - Deployment automation</li>
+<li><code>rollback.sh</code> - Rollback automation</li>
+<li><code>health-check.sh</code> - Health check utilities</li>
+</ul>
+<h4 id="hooks">Hooks <a class="h-anchor" href="#hooks" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><code>pre-deploy.js</code> - Pre-deployment validation</li>
+<li><code>post-deploy.js</code> - Post-deployment tasks</li>
+</ul>
+<h3 id="usage">Usage <a class="h-anchor" href="#usage" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="deploy-to-staging">Deploy to Staging <a class="h-anchor" href="#deploy-to-staging" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>/deploy staging</code></pre>
+<h4 id="deploy-to-production">Deploy to Production <a class="h-anchor" href="#deploy-to-production" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>/deploy production</code></pre>
+<h4 id="rollback">Rollback <a class="h-anchor" href="#rollback" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>/rollback production</code></pre>
+<h4 id="check-status">Check Status <a class="h-anchor" href="#check-status" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>/status</code></pre>
+<h4 id="handle-incident">Handle Incident <a class="h-anchor" href="#handle-incident" aria-label="Ссылка на раздел">#</a></h4>
+<pre><code>/incident</code></pre>
+<h3 id="requirements">Requirements <a class="h-anchor" href="#requirements" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Claude Code 1.0+</li>
+<li>Kubernetes CLI (kubectl)</li>
+<li>Cluster access configured</li>
+</ul>
+<h3 id="configuration">Configuration <a class="h-anchor" href="#configuration" aria-label="Ссылка на раздел">#</a></h3>
+<p>Set up your Kubernetes config:</p>
+<pre><code class="language-bash">export KUBECONFIG=~/.kube/config</code></pre>
+<h3 id="example-workflow">Example Workflow <a class="h-anchor" href="#example-workflow" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>User: /deploy production
+
+Claude:
+1. Runs pre-deploy hook (validates kubectl, cluster connection)
+2. Delegates to deployment-specialist subagent
+3. Runs deploy.sh script
+4. Monitors deployment progress via Kubernetes MCP
+5. Runs post-deploy hook (waits for pods, smoke tests)
+6. Provides deployment summary
+
+Result:
+✅ Deployment complete
+📦 Version: v2.1.0
+🚀 Pods: 3/3 ready
+⏱️  Time: 2m 34s</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

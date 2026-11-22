@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Справочник по модам</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../materials/index.html">Материалы</a> / <a href="../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../../materials/01-claude-code/official-docs-ru/plugins/index.html">plugins</a> / <a href="../../../../../materials/01-claude-code/official-docs-ru/plugins/mods/index.html">mods</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Справочник по модам <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Полный справочник по модам Claude Code: структура модуля хуков, события, методы API модов, точки отрисовки, элементы по интерфейсам, ограничения и настройки.</p>
+</blockquote>
+<p>Здесь можно найти любое событие, которое может обрабатывать <a href="https://code.claude.com/docs/ru/plugins/mods/overview.md">мод</a>, любой метод API модов, который он может вызвать, и любую точку отрисовки, в которой он может рисовать. Записи охватывают CLI Claude Code и приложение Desktop по состоянию на v2.1.290, а также расширение VS Code по состоянию на v2.1.299. Для каждой записи указаны имя и однострочное описание, а также ссылка на раздел руководства с пояснениями, если такой раздел есть.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Полный справочник — это <a href="https://github.com/anthropics/claude-code/blob/main/mods/types/claude-code.d.ts">TypeScript-декларации Claude Code для модов</a>, в которых описаны все события, методы и элементы с примерами. Копия на GitHub может быть старше установленной у вас версии Claude Code. Если они расходятся, доверяйте <a href="https://code.claude.com/docs/ru/plugins/mods/create.md#get-the-types-for-your-build">копии, которую Claude Code записывает для вашей версии</a>.</p>
+</blockquote>
+<h3 id="h-2">Файлы <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Мод — это каталог плагина со следующими файлами:</p>
+<p>| Файл | Обязателен | Содержимое |
+| :- | :- | :- |
+| <code>.claude-plugin/plugin.json</code> | Да | <a href="https://code.claude.com/docs/ru/plugins/manifest-reference.md">Манифест</a> плагина. Моды не добавляют обязательных полей. |
+| <code>hooks/hooks.json</code> | Да | <code>modules</code>: массив с одним путём к модулю хуков относительно этого файла, например <code>&quot;modules&quot;: [&quot;./register.js&quot;]</code>. Может также содержать <a href="https://code.claude.com/docs/ru/hooks.md">хуки настроек</a> в поле <code>hooks</code>. |
+| Модуль хуков, например <a href="https://code.claude.com/docs/ru/plugins/mods/create#write-a-mod-yourself"><code>hooks/register.js</code></a> | Да | Точка входа мода. Экспортирует <code>register(on, options)</code>. Имеет расширение <code>.js</code>, <code>.mjs</code>, <code>.cjs</code>, <code>.jsx</code>, <code>.ts</code>, <code>.mts</code>, <code>.cts</code> или <code>.tsx</code>. Является ES-модулем. |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#declare-the-values"><code>types/index.d.ts</code></a>, если только поле <code>types</code> в манифесте не указывает другой путь | Когда мод использует <code>$.state</code> или добавляет пространство имён в API модов | Объявляет значения <code>PluginState</code> и любое пространство имён, которое добавляет мод. Чтобы не указывать <code>types</code> в манифесте, требуется версия v2.1.299 или новее. |
+| Файлы, имена которых заканчиваются на <code>.test.ts</code> или <code>.test.tsx</code> | Нет | Тесты, которые запускает <a href="https://code.claude.com/docs/ru/plugins/mods/test#write-a-test"><code>claude plugin test</code></a> |</p>
+<p><code>register</code> получает <code>on</code> и <code>options</code>. <code>options</code> содержит значения полей <a href="https://code.claude.com/docs/ru/plugins/components#user-configuration"><code>userConfig</code></a>, объявленных в манифесте, с подставленными значениями по умолчанию.</p>
+<h3 id="h-3">Функция хука <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Мод регистрирует каждый из своих хуков, то есть обработчиков событий, вызывая <code>on</code> внутри <code>register</code>. <code>on</code> принимает имя события, необязательный <a href="https://code.claude.com/docs/ru/plugins/mods/events.md#filter-which-events-a-hook-handles">matcher</a>, то есть фильтр по полям события, и сам хук, например <code>on(&#x27;tool.call&#x27;, { tool: &#x27;Bash&#x27; }, async ($, e, next) =&gt; next(e))</code>. <code>on</code> возвращает регистрацию с одним методом, <code>.catch(handler)</code>, который задаёт <a href="https://code.claude.com/docs/ru/plugins/mods/events.md#handle-a-hook-that-fails">обработчик ошибок</a> хука.</p>
+<p>| Аргумент | Что это |
+| :- | :- |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/events#how-a-hook-handles-an-event"><code>$</code></a> | API модов: все методы из раздела <a href="#mods-api-methods">Методы API модов</a>. Записывайте каждый вызов полностью, пространство имён и затем метод, например <code>$.fs.read(&#x27;notes.md&#x27;)</code>. |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/events#how-a-hook-handles-an-event"><code>e</code></a> | Входные данные события в виде глубоко замороженных простых данных. Чтобы изменить их, передайте копию в <code>next</code>. |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/events#how-a-hook-handles-an-event"><code>next(e)</code></a> | Следующий обработчик, как в middleware. Запускает хуки, идущие после этого, а затем поведение Claude Code. Разрешается в результат события. |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/api#stop-background-work"><code>next.signal</code></a> | <code>AbortSignal</code>, который прерывается, когда событие отменено |
+| <code>next.origin</code> | <code>{ plugin, tier }</code> того, кто инициировал событие. Сам Claude Code — это <code>{ plugin: &#x27;engine&#x27;, tier: &#x27;core&#x27; }</code>. <code>tier</code> мода — это его группа приоритета в <a href="https://code.claude.com/docs/ru/plugins/mods/events.md#the-order-mods-run-in">порядке запуска модов</a>: <code>prepend</code>, <code>user</code>, <code>append</code> или <code>builtin</code>. |
+| <code>next.budget</code> | Ограничение времени хука в миллисекундах: <code>next.budget.ms</code> — всё ограничение, а <code>next.budget.remainingMs</code> — оставшееся на данный момент время |
+| <code>next.to(e, tier)</code> | Переходит к более позднему уровню: <code>append</code>, <code>builtin</code> или <code>core</code>. <code>next.to(e, &#x27;append&#x27;)</code> пропускает моды, установленные пользователем. Вызвать его может только мод из <code>prependPlugins</code> или <code>appendPlugins</code>. |
+| <code>next.error</code> | Только в обработчике <code>.catch</code>. <code>kind</code> — это <code>throw</code> или <code>timeout</code>, а <code>message</code> — текст ошибки. |
+| <code>next.called</code> | Только в обработчике <code>.catch</code>. <code>true</code>, если хук вызвал <code>next</code>. |</p>
+<h3 id="h-4">События <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>События сгруппированы по тому, к чему они относятся; для каждого указано, когда оно срабатывает и что может вернуть хук на него. Хуки на <code>turn.step</code> и <code>process.spawn</code> — асинхронные генераторы, остальные хуки — асинхронные функции.</p>
+<p>В последнем столбце каждой таблицы используется сокращённая запись. <code>next(e)</code> передаёт событие дальше без изменений. <code>next({ ...e, text })</code> передаёт дальше копию с изменённым указанным полем, например <code>next({ ...e, text: e.text.trim() })</code>. Объект отвечает на событие без вызова <code>next</code>, а слово вроде <code>reason</code> обозначает строку, которую вы пишете, например <code>{ deny: &#x27;Use the file tools.&#x27; }</code>.</p>
+<h4 id="h-5">Инструменты <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<p>События инструментов срабатывают вокруг каждого вызова инструмента, который делает Claude, — от описания, которое читает Claude, до решения о том, будет ли вызов выполнен:</p>
+<p>| Событие | Срабатывает, когда | Хук может вернуть |
+| :- | :- | :- |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/events#guard-or-change-a-tool-call"><code>tool.call</code></a> | Инструмент вот-вот запустится | <code>next(e)</code>, <code>{ deny: reason }</code> или <code>{ result }</code> |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/events#where-settings-hooks-run-in-the-order"><code>tool.check</code></a> | Claude Code решает, может ли вызов инструмента выполниться, после хуков <code>tool.call</code> и <code>PreToolUse</code>. <code>next(e)</code> разрешается в решение, к которому пришли правила, режим разрешений и эти хуки. | <code>next(e)</code> или <code>{ decision }</code>, где <code>decision</code> равно <code>allow</code>, <code>ask</code> или <code>deny</code>, с необязательным <code>reason</code> |
+| <code>tool.describe</code> | Один раз для каждого инструмента, когда его описание впервые отправляется Claude. Второй раз для инструмента MCP, когда Claude загружает его через <a href="https://code.claude.com/docs/ru/mcp.md#scale-with-mcp-tool-search">поиск инструментов</a>; при этом <code>e.description</code> содержит текст, который Claude читает для загруженного инструмента. | <code>{ description }</code>, при необходимости с <code>isDeferred</code>, равным <code>true</code>, чтобы поместить инструмент за поиск инструментов, или <code>false</code>, чтобы загрузить его сразу. Добавьте <a href="#break-prompt-cache"><code>breakPromptCache: true</code></a>, чтобы отправить изменённое описание на следующем ходе. |</p>
+<h5 id="поля-агента-и-организации-в-tool-check">Поля агента и организации в <code>tool.check</code> <a class="h-anchor" href="#поля-агента-и-организации-в-tool-check" aria-label="Ссылка на раздел">#</a></h5>
+<p>В хуке <code>tool.check</code> читайте эти поля, чтобы отличить вызов субагента от вызова основного диалога и узнать, требует ли ваша организация подтверждения для инструмента коннектора:</p>
+<ul>
+<li><strong><code>e.agentId</code></strong>: задано, когда вызов делает <a href="https://code.claude.com/docs/ru/sub-agents.md">субагент</a> или <a href="https://code.claude.com/docs/ru/agent-teams.md#choose-a-display-mode">участник команды, работающий в том же процессе</a>, и отсутствует, когда вызов делает основной диалог</li>
+<li><strong><code>e.ceiling</code></strong>: <code>ask</code> для инструмента коннектора, для которого ваша организация установила <code>ask</code>, в <a href="https://code.claude.com/docs/ru/mcp.md#organization-controls-on-connector-tools">сессиях, где эта настройка доходит до Claude Code</a></li>
+</ul>
+<p>В <code>tool.check</code> поля <code>e.agentId</code> и <code>e.ceiling</code> требуют Claude Code v2.1.290 или новее.</p>
+<h5 id="поле-e-isreadonly-в-tool-check">Поле <code>e.isReadOnly</code> в <code>tool.check</code> <a class="h-anchor" href="#поле-e-isreadonly-в-tool-check" aria-label="Ссылка на раздел">#</a></h5>
+<p>В хуке <code>tool.check</code> поле <code>e.isReadOnly</code> равно <code>true</code>, когда инструмент сообщает, что этот вызов выполняется только для чтения. В противном случае поле отсутствует, а не равно <code>false</code>. Значение — это собственное сообщение инструмента, поэтому прочитайте раздел <a href="https://code.claude.com/docs/ru/plugins/mods/events.md#check-whether-a-tool-call-is-read-only">Проверка того, выполняется ли вызов инструмента только для чтения</a>, прежде чем подтверждать вызов только на основании этого поля.</p>
+<p>В <code>tool.check</code> поле <code>e.isReadOnly</code> требует Claude Code v2.1.304 или новее.</p>
+<h4 id="промпты-и-то-что-читает-claude">Промпты и то, что читает Claude <a class="h-anchor" href="#промпты-и-то-что-читает-claude" aria-label="Ссылка на раздел">#</a></h4>
+<p>События промптов охватывают текст, который вводит пользователь, и текст, который Claude Code отправляет Claude сам, например системный промпт и напоминания:</p>
+<p>| Событие | Срабатывает, когда | Хук может вернуть |
+| :- | :- | :- |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/events#rewrite-or-add-to-a-prompt"><code>prompt.submit</code></a> | Промпт отправлен | <code>next({ ...e, text })</code>, <code>next({ ...e, context })</code> или <code>{ drop: reason }</code> |
+| <code>prompt.fill</code>, <code>prompt.suggest</code> | Текст вот-вот попадёт в поле промпта как черновик или как приглушённая подсказка | <code>next(e)</code> с изменённым текстом |
+| <code>prompt.edit</code> | Пользователь редактирует поле промпта | <code>next(e)</code> |
+| <code>prompt.autocomplete</code> | Пользователь вводит текст в поле промпта, и у курсора заканчивается слово. <code>e.token</code> — это слово. Claude Code не ждёт хук: его собственные строки автодополнения показываются первыми. | <code>{ suggestions }</code> — список строк <code>{ text, label, description }</code>, которые показываются под собственными строками Claude Code. Выбор строки записывает её <code>text</code> поверх слова. |
+| <code>prompt.compose</code> | Claude Code формирует системный промпт | <code>{ sections }</code> — список <code>{ id, text, scope }</code> в порядке отправки |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/events#rewrite-or-add-to-a-prompt"><code>prompt.section</code></a> | Один раз для каждого именованного раздела системного промпта. <code>e.name</code> — это <code>id</code> раздела в <code>prompt.compose</code>. | <code>{ text }</code> или <code>{ text: null }</code>, чтобы пропустить раздел. Добавьте <a href="#break-prompt-cache"><code>breakPromptCache: true</code></a>, чтобы отправить изменённый раздел на следующем ходе. |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/events#rewrite-or-add-to-a-prompt"><code>prompt.context</code></a> | Один раз для каждого диалога, для контекста, отправляемого с первым сообщением | <code>{ blocks }</code> |
+| <code>prompt.attachment</code> | Claude Code добавляет собственное сообщение для Claude, например напоминание. <code>e.type</code> указывает вид, а для видов, объявленных в типах, <code>e.detail</code> содержит факты, на основе которых написан текст. | <code>{ text }</code> или <code>{ text: null }</code>, чтобы пропустить его |
+| <code>prompt.mention</code> | Claude Code вот-вот прочитает файл, упомянутый в промпте через @. Требуется Claude Code v2.1.290 или новее. | <code>next({ ...e, path })</code>, чтобы прочитать другой файл, или <code>{ deny: reason }</code> |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/events#rewrite-or-add-to-a-prompt"><code>skill.prompt</code></a> | Текст скилла раскрывается для Claude | <code>{ text }</code> |
+| <code>attribution.text</code> | Claude Code составляет текст атрибуции для коммита или pull request | <code>{ text }</code> |</p>
+<h5 id="поля-источника-и-frontmatter-в-skill-prompt">Поля источника и frontmatter в <code>skill.prompt</code> <a class="h-anchor" href="#поля-источника-и-frontmatter-в-skill-prompt" aria-label="Ссылка на раздел">#</a></h5>
+<p>В хуке <code>skill.prompt</code> можно читать эти поля наряду с именем скилла в <code>e.skill</code> и текстом, который читает Claude, в <code>e.text</code>:</p>
+<p>| Поле | Тип | Что содержит |
+| :- | :- | :- |
+| <code>e.source</code> | string | Кто предоставляет скилл: <code>policySettings</code>, <code>userSettings</code> или <code>projectSettings</code> для скилла в корпоративном, личном или проектном <a href="https://code.claude.com/docs/ru/skills.md#where-skills-live">расположении</a> соответственно. Другие источники дают слово вроде <code>plugin</code>, <code>mcp</code>, <code>syncedSkills</code> или <code>built-in</code>. |
+| <code>e.pluginName</code> | string | Имя плагина для скилла, у которого <code>e.source</code> равно <code>plugin</code> |
+| <code>e.path</code> | string | Абсолютный путь к файлу <code>SKILL.md</code> скилла или к его файлу <code>.md</code> для скилла, написанного как <a href="https://code.claude.com/docs/ru/skills.md#where-skills-live">файл команды</a>. Отсутствует, если у скилла нет файла на этой машине, как у встроенного скилла. |
+| <code>e.frontmatter</code> | object | Frontmatter файла скилла в виде простых данных |
+| <code>e.frontmatterProblem</code> | string | Причина, по которой в <code>e.frontmatter</code> отсутствует frontmatter файла или один из его ключей, например <code>is a list or a single value, not a table</code>. Отсутствует, если <code>e.frontmatter</code> содержит весь frontmatter или у скилла его нет. |</p>
+<p>Хук может передать изменённые <code>text</code> или <code>frontmatter</code> в <code>next</code>: хуки после него читают оба поля, а Claude читает итоговый <code>text</code>. Хук, который изменяет любое другое поле, <a href="https://code.claude.com/docs/ru/plugins/mods/events.md#handle-a-hook-that-fails">завершается ошибкой</a>.</p>
+<p>В <code>skill.prompt</code> поля <code>e.source</code>, <code>e.pluginName</code>, <code>e.path</code>, <code>e.frontmatter</code> и <code>e.frontmatterProblem</code> требуют Claude Code v2.1.299 или новее.</p>
+<h5 id="отправка-измененного-раздела-системного-промпта-или-описания-инструмента-с-помощью-breakpromptcache">Отправка изменённого раздела системного промпта или описания инструмента с помощью <code>breakPromptCache</code> <a class="h-anchor" href="#отправка-измененного-раздела-системного-промпта-или-описания-инструмента-с-помощью-breakpromptcache" aria-label="Ссылка на раздел">#</a></h5>
+<p>Чтобы изменить раздел или описание инструмента в текущем диалоге, вызовите <code>$.ui.invalidate(&#x27;prompt.section&#x27;)</code> или <code>$.ui.invalidate(&#x27;tool.describe&#x27;)</code>, чтобы ваш хук запустился снова. Верните из него <code>{ text, breakPromptCache: true }</code> или <code>{ description, breakPromptCache: true }</code>. Без этого поля Claude продолжает читать текст, <a href="https://code.claude.com/docs/ru/cli-reference.md#system-prompt-flags-in-resumed-conversations">сохранённый вместе с диалогом</a>, для раздела или инструмента, загруженного сразу, до начала нового диалога или <a href="https://code.claude.com/docs/ru/prompt-caching.md#compacting-the-conversation">сжатия контекста</a>.</p>
+<p>Изменённый текст доходит до Claude на следующем ходе, а <a href="https://code.claude.com/docs/ru/prompt-caching.md">кэш промптов</a> начинается заново, поэтому этот ход выполняется медленнее и обходится дороже. Это поле требует Claude Code v2.1.321 или новее. С v2.1.299 до v2.1.321 текущий диалог получал изменённый текст на следующем ходе.</p>
+<h4 id="h-6">Команды и конфигурация <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<p>| Событие | Срабатывает, когда | Хук может вернуть |
+| :- | :- | :- |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/api#add-a-command"><code>command.run</code></a> | Команда вот-вот запустится | <code>{ text }</code>, <code>{}</code> или <code>next(e)</code> |
+| <code>command.describe</code> | Один раз для каждой команды, для списка команд | <code>{ description, argumentHint, isHidden }</code> |
+| <code>config.set</code> | Строка <code>/config</code> вот-вот изменится | <code>next({ ...e, value })</code> или <code>{ deny: reason }</code> |
+| <code>config.describe</code> | Один раз для каждой строки <code>/config</code> | <code>{ label, description, isHidden }</code> |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/events#settings-read-hook"><code>settings.read</code></a> | Мод вызывает <a href="https://code.claude.com/docs/ru/plugins/mods/api#reach-files-processes-and-the-network"><code>$.settings.read</code></a> или Claude Code формирует объединённые настройки сессии. Для собственного чтения Claude Code и для <code>e.layers</code> требуется Claude Code v2.1.304 или новее | <code>next(e)</code>, <code>{ value }</code> или <code>{ deny: reason }</code> |</p>
+<h5 id="e-layers-и-e-source-в-settings-read"><code>e.layers</code> и <code>e.source</code> в <code>settings.read</code> <a class="h-anchor" href="#e-layers-и-e-source-в-settings-read" aria-label="Ссылка на раздел">#</a></h5>
+<ul>
+<li><strong><code>e.layers</code></strong>: по одному объекту <code>{ source, settings }</code> для каждого используемого источника, содержащего настройки, начиная с самого низкого <a href="https://code.claude.com/docs/ru/settings.md#settings-precedence">приоритета</a>. См. <a href="https://code.claude.com/docs/ru/plugins/mods/events#settings-read-receives">Что получает хук <code>settings.read</code></a>.</li>
+<li><strong><code>e.source</code></strong>: единственный источник, который запросил мод, например <code>$.settings.read({ source: &#x27;policy&#x27; })</code>. Отсутствует при собственном чтении Claude Code и при чтении объединённых настроек</li>
+</ul>
+<h4 id="h-7">Ходы <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<p>События ходов отслеживают один ответ от начала до конца, включая каждый запрос к модели в его рамках:</p>
+<p>| Событие | Срабатывает, когда | Хук может вернуть |
+| :- | :- | :- |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/events#follow-a-turn"><code>turn.start</code></a> | Начинается ход | <code>next(e)</code> |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/events#follow-a-turn"><code>turn.step</code></a> | Один запрос вот-вот отправится модели | <code>yield* next(e)</code> или <code>next({ ...e, model })</code>, <code>next({ ...e, effort })</code> |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/events#follow-a-turn"><code>turn.complete</code></a> | Ход завершился | <code>next(e)</code> или <code>{ text }</code>, чтобы показать строку под ответом |</p>
+<h4 id="h-8">Сессия <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<p>События сессии отмечают запуск, завершение и сжатие сессии, а также обмен сообщениями с другими сессиями:</p>
+<p>| Событие | Срабатывает, когда | Хук может вернуть |
+| :- | :- | :- |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/api#add-a-command-or-a-tool"><code>session.start</code></a> | Один раз для каждого загруженного мода, перед первым промптом, и снова после перезагрузки этого мода. Не срабатывает после <code>/clear</code>, <code>/resume</code> или <code>/branch</code>. | <code>next(e)</code> |
+| <code>session.end</code> | Сессия завершается или выполняется <code>/clear</code>, <code>/resume</code> либо <code>/branch</code>. <code>e.reason</code> — это <code>clear</code>, <code>resume</code>, <code>logout</code>, <code>prompt_input_exit</code> или <code>other</code>. <code>/branch</code> сообщает <code>resume</code>. | <code>next(e)</code> |
+| <code>session.compact</code> | Диалог вот-вот будет сжат | <code>{ skip: reason }</code> |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/api#send-and-receive-messages-between-sessions"><code>session.receive</code></a>, <a href="https://code.claude.com/docs/ru/plugins/mods/api#send-and-receive-messages-between-sessions"><code>session.send</code></a> | Сообщение приходит от другого агента или сессии либо вот-вот будет отправлено другому агенту или сессии. См. <a href="https://code.claude.com/docs/ru/plugins/mods/api.md#send-and-receive-messages-between-sessions">Отправка и получение сообщений между сессиями</a>. | <code>{ consumed: reason }</code> для <code>receive</code>, <code>{ isDelivered: false, reason }</code> для <code>send</code> |
+| <code>session.append</code> | Один раз для каждой строки, которую сохраняет диалог, например промпта, блока ответа, результата инструмента или уведомления, перед её сохранением | <code>next({ ...e, message })</code> с изменённым <code>message.content</code>, чтобы переписать текстовые блоки строки или <code>content</code> блока <code>tool_result</code> в ней |
+| <code>session.attach</code>, <code>session.detach</code> | Другое приложение подключается к сессии или отключается от неё | <code>next(e)</code> |
+| <code>session.measure</code> | После каждого хода, а также когда меняется процент использования лимита тарифа | <code>next(e)</code> |</p>
+<h4 id="h-9">Субагенты <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<p>События субагентов срабатывают, когда тип субагента предлагается Claude и когда субагент или участник команды агентов вот-вот запустится:</p>
+<p>| Событие | Срабатывает, когда | Хук может вернуть |
+| :- | :- | :- |
+| <code>agent.offer</code> | Тип субагента предлагается Claude | <code>{ isOffered: false }</code>, чтобы скрыть его |
+| <code>agent.spawn</code> | Субагент или участник <a href="https://code.claude.com/docs/ru/agent-teams.md">команды агентов</a> вот-вот запустится, либо субагент, который завершил работу или был остановлен, вот-вот снова запустится. Для участника команды <code>e.isTeammate</code> равно <code>true</code>. Для возобновлённого запуска задано <code>e.resume</code>. | <code>next({ ...e, model })</code>, чтобы выбрать модель того, кто запускается, или <code>{ deny: reason }</code> |</p>
+<p>Ваш хук <code>agent.spawn</code> также запускается, когда субагент, который завершил работу или был остановлен, вот-вот снова запустится, например когда Claude отправляет ему сообщение с помощью инструмента <a href="https://code.claude.com/docs/ru/sub-agents#resume-subagents"><code>SendMessage</code></a>. В этом событии <code>e.resume</code> равно <code>{ agentId }</code>. Если ваш хук подсчитывает субагентов, пропускайте события, в которых задано <code>e.resume</code>, чтобы возобновлённый субагент не учитывался повторно.</p>
+<p>Верните <code>{ deny: reason }</code>, чтобы отклонить возобновлённый запуск. Запуск не начинается, и субагент остаётся в прежнем состоянии. Если запуск запросил вызов <code>SendMessage</code>, Claude читает в качестве результата этого вызова <code>a plugin declined the resume:</code>, за которым следует ваша причина. Если для возобновлённого запуска вы передаёте в <code>next</code> изменённое событие, например с другой <code>model</code>, Claude Code игнорирует это изменение.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Событие для возобновлённого запуска требует Claude Code v2.1.299 или новее. До v2.1.299 ваш хук <code>agent.spawn</code> не запускался при возобновлении субагента. В этих версиях, чтобы отклонять вызовы <code>SendMessage</code>, которые возобновляют субагента, сопоставляйте этот инструмент в хуке <a href="https://code.claude.com/docs/ru/plugins/mods/events#guard-or-change-a-tool-call"><code>tool.call</code></a>.</p>
+</blockquote>
+<h4 id="h-10">Интерфейс <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h4>
+<p>События интерфейса срабатывают, когда Claude Code рисует точку отрисовки и когда пользователь использует элемент управления, нарисованный модом. В разделе <a href="https://code.claude.com/docs/ru/plugins/mods/interface.md">Рисование в интерфейсе</a> показано, что возвращает хук <code>ui.render</code>:</p>
+<p>| Событие | Срабатывает, когда |
+| :- | :- |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#pick-where-to-draw"><code>ui.render</code></a> | <a href="#render-sites">Точка отрисовки</a> вот-вот будет нарисована |
+| <code>ui.resolve</code> | Загружаются моды, один раз для каждого приложения, точки отрисовки и мода. Результат — таблица элементов, которую читает <code>$.ui.resolve(e)</code>. |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#respond-to-presses-and-typing"><code>ui.press</code></a>, <a href="https://code.claude.com/docs/ru/plugins/mods/interface#respond-to-presses-and-typing"><code>ui.input</code></a>, <a href="https://code.claude.com/docs/ru/plugins/mods/interface#respond-to-presses-and-typing"><code>ui.select</code></a> | Используется <code>Button</code>, <code>Input</code> или <code>Select</code>, нарисованный модом |
+| <code>ui.focus</code>, <code>ui.scroll</code> | Вот-вот изменится элемент управления в фокусе или позиция прокрутки панели или полосы |
+| <code>ui.close</code> | Панель вот-вот закроется. <code>e.id</code> — это панель, а <code>e.origin.kind</code> — <code>plugin</code>, <code>person</code> или <code>unload</code>. |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#build-a-tree-from-elements"><code>ui.message</code></a> | Элемент <code>Client</code> отправляет данные своему моду |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#redraw-when-something-changes"><code>ui.fault</code></a> | Элемент <code>Client</code>, нарисованный вашим модом, не удалось загрузить, отрисовать или запустить. <code>e.phase</code> — это <code>load</code>, <code>render</code> или <code>run</code>, а <code>e.reason</code> — сообщение об ошибке. Требуется Claude Code v2.1.289 или новее. |</p>
+<h4 id="h-11">Другие моды <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h4>
+<p>Эти события позволяют моду воздействовать на другие моды при их загрузке: отклонить мод или изменить получаемый им API модов:</p>
+<p>| Событие | Срабатывает, когда | Хук может вернуть |
+| :- | :- | :- |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/admin#enforce-a-policy-with-a-mod-of-your-own"><code>plugin.register</code></a> | Модуль хуков вот-вот загрузится. <code>e.uses</code> перечисляет его события, вызовы API модов, переменные окружения и состояние в том виде, в каком их выводит <code>claude plugin validate</code>. Каждый вызов записан без префикса <code>$.</code>, например <code>fs.read</code>. | <code>{ refuse: reason }</code> |
+| <code>engine.create</code> | Для этого мода строится API модов | Изменённый API модов, чтобы добавить пространство имён. Мод вне <a href="#the-hook-function">уровня</a> <code>user</code> также может скрыть его. |</p>
+<p>Когда хук другого мода вызывает метод пространства имён, которое вы добавили в <code>engine.create</code>, вызовы <code>$</code> вашего метода выполняются в контексте этого хука, пока все хуки на этом событии не вернут результат. Например, относительный путь разрешается относительно рабочего каталога этого хука, а <code>$.prompt.submit</code> отклоняется, пока ход ожидает этот хук. Вызовы, которые ваш метод делает после этого, выполняются в собственном контексте вашего мода.</p>
+<h4 id="h-12">Телеметрия <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h4>
+<p>События телеметрии срабатывают для записей об использовании, которые логирует Claude Code:</p>
+<p>| Событие | Срабатывает, когда | Хук может вернуть |
+| :- | :- | :- |
+| <code>telemetry.log</code>, <code>telemetry.mark</code> | Запись телеметрии вот-вот будет записана в лог или отмечено одно использование функции. В устанавливаемом моде задайте хуку телеметрии фильтр <code>{ to: &#x27;collector&#x27; }</code>, например <code>on(&#x27;telemetry.log&#x27;, { to: &#x27;collector&#x27; }, hook)</code>. Без фильтра мод не проходит <code>claude plugin validate</code>. <code>*</code> не соответствует этим событиям. | <code>next(e)</code> или <code>{ deny: reason }</code> |</p>
+<h4 id="h-13">События хуков настроек <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h4>
+<p>Каждое <a href="https://code.claude.com/docs/ru/hooks.md#hook-events">событие хука настроек</a> — это событие с именем <code>classic.&lt;Event&gt;</code>, например <code>classic.Stop</code> или <code>classic.PostToolUse</code>. <code>e</code> — это JSON, который хук получает через stdin.</p>
+<h4 id="вызовы-api-модов">Вызовы API модов <a class="h-anchor" href="#вызовы-api-модов" aria-label="Ссылка на раздел">#</a></h4>
+<p>Каждый <a href="#mods-api-methods">метод API модов</a> также является событием, названным по его пространству имён и методу, например <code>fs.read</code>, <code>model.complete</code> или <code>ui.open</code>. Хук на такое событие может вернуть <code>next(e)</code>, <code>{ deny: reason }</code> или <code>{ value }</code>.</p>
+<p>Некоторые из этих событий срабатывают и для собственных действий Claude Code, поэтому, прежде чем отклонять такое событие, проверьте, равно ли <code>next.origin.plugin</code> значению <code>engine</code>.</p>
+<h5 id="поля-собственных-запросов-http-fetch-claude-code">Поля собственных запросов <code>http.fetch</code> Claude Code <a class="h-anchor" href="#поля-собственных-запросов-http-fetch-claude-code" aria-label="Ссылка на раздел">#</a></h5>
+<p>В хуке <code>http.fetch</code> значение <a href="#the-hook-function"><code>next.origin</code></a>, равное <code>{ plugin: &#x27;engine&#x27;, tier: &#x27;core&#x27; }</code>, отмечает один из собственных запросов Claude Code, например запрос к модели, а не вызов <code>$.http.fetch</code> мода. Там, где загружен <a href="https://code.claude.com/docs/ru/plugins/mods/admin.md#know-what-happens-by-default">встроенный страж</a>, ваш хук не получает эти события, за исключением случаев, когда ваш мод <a href="https://code.claude.com/docs/ru/plugins/mods/admin.md#install-your-organizations-mods">считается модом вашей организации</a>.</p>
+<p>В этих событиях <code>e.init</code> и <code>value</code>, в которое разрешается <code>next(e)</code>, могут содержать, среди прочего, следующие поля:</p>
+<p>| Поле | Что означает |
+| :- | :- |
+| <code>e.init.compress</code> | Задано, когда Claude Code сжимает тело после вашего хука. <code>e.init.body</code> содержит несжатое тело. Чтобы отправить тело без сжатия, вызовите <code>next({ ...e, init: { ...e.init, compress: undefined } })</code>. |
+| <code>value.isStreaming</code> | Равно <code>true</code>, потому что Claude Code сам читает тело ответа, поэтому <code>value.text</code> пусто. Вместо этого читайте <code>value.status</code> и <code>value.headers</code>. Чтобы ответить собственным <code>text</code>, верните <code>value</code> без <code>isStreaming</code>. |</p>
+<p>Эти события и поля требуют Claude Code v2.1.321 или новее.</p>
+<h3 id="методы-api-модов">Методы API модов <a class="h-anchor" href="#методы-api-модов" aria-label="Ссылка на раздел">#</a></h3>
+<p>API модов — это аргумент <code>$</code>, который получает каждый хук. Его методы сгруппированы по пространствам имён, например <code>$.ui</code>. В этой таблице методы каждого пространства имён перечислены по имени, поэтому <code>open</code> в строке <code>$.ui</code> — это вызов <code>$.ui.open(...)</code>. В руководствах показано использование распространённых методов, а в <a href="https://code.claude.com/docs/ru/plugins/mods/create.md#get-the-types-for-your-build">типах для вашей сборки</a> каждый метод документирован с примером.</p>
+<p>| Пространство имён | Методы |
+| :- | :- |
+| <code>$.plugin</code> | <code>name</code>, <code>root</code>: имя и каталог этого плагина |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#pick-where-to-draw"><code>$.ui</code></a> | <code>resolve</code>, <code>invalidate</code>, <code>open</code>, <code>close</code>, <code>panes</code>, <a href="https://code.claude.com/docs/ru/plugins/mods/interface#place-a-row-in-the-transcript"><code>place</code></a>, <code>focus</code>, <code>scroll</code>, <code>toast</code>, <code>notify</code>, <code>status</code>, <code>log</code>, <code>notice</code>, <code>ask</code>, <code>copy</code>, <code>selection</code>, <code>blit</code>, <code>view</code>. <code>view</code> требует Claude Code v2.1.300 или более поздней версии, а <code>place</code> — v2.1.314 или более поздней версии. |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#put-a-backdrop-behind-the-conversation"><code>$.theme</code></a> | <code>set</code>, <code>clear</code>: задать фон, который будет отрисовывать приложение Desktop или мобильное приложение, и убрать этот фон. Требует Claude Code v2.1.319 или более поздней версии. |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/api#add-a-command"><code>$.command</code></a> | <code>register</code>, <code>run</code>, <code>list</code> |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/api#add-a-tool"><code>$.tool</code></a> | <code>register</code>, <code>call</code>, <code>check</code>, <code>list</code>. Когда <code>call</code> требует подтверждения человеком, например если хук или ваша организация отвечает на него <code>ask</code>, он завершается с результатом <code>{ deny: &quot;&lt;tool&gt; wasn&#x27;t run: this call needs a person&#x27;s approval, and a mod&#x27;s own call can&#x27;t ask for it.&quot; }</code>, где <code>&lt;tool&gt;</code> — имя инструмента. |
+| <code>$.agent</code> | <code>register</code>, <code>spawn</code>, <code>list</code>. <code>list()</code> возвращает субагентов и участников команды агентов этой сессии, у каждого из которых есть <code>status</code> со значением <code>pending</code>, <code>running</code>, <code>waiting</code>, <code>idle</code>, <code>completed</code>, <code>failed</code> или <code>killed</code>, причём <code>idle</code> и <code>waiting</code> требуют Claude Code v2.1.289 или более поздней версии. |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/api#call-a-model"><code>$.model</code></a> | <code>complete</code>, <code>fork</code>, <code>classify</code> |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/api#start-a-turn-from-a-background-job"><code>$.prompt</code></a> | <code>submit</code>, <code>read</code>, <code>fill</code>, <code>suggest</code>, <code>compose</code>. Claude читает текст из <code>submit({ text })</code> после предложения, называющего ваш мод отправителем. <code>submit({ text, asUser: true })</code> отправляет текст как собственные слова пользователя, без этого предложения. |
+| <code>$.turn</code> | <code>abort</code> |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/api#send-and-receive-messages-between-sessions"><code>$.session</code></a> | <code>messages</code>, <code>cwd</code>, <code>root</code>, <code>model</code>, <code>turns</code>, <code>id</code>, <code>repo</code>, <code>surfaces</code>, <code>usage</code>, <code>version</code>, <code>compact</code>, <code>send</code>, <code>append</code>, <code>authorize</code>. <code>usage()</code> возвращает <code>{ startedAt, context, rateLimits, cost }</code>: <code>context</code> содержит <code>tokens</code>, <code>window</code> и <code>percent</code>, а <code>rateLimits</code> — это список <code>{ kind, percentUsed, resetsAt }</code>. |
+| <code>$.config</code> | <code>list</code>, <code>set</code> |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/api#reach-files-processes-and-the-network"><code>$.settings</code></a> | <code>read</code> |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/api#reach-files-processes-and-the-network"><code>$.env</code></a> | <code>get</code>, <code>set</code> |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/api#reach-files-processes-and-the-network"><code>$.fs</code></a> | <code>read</code>, <code>write</code>, <code>list</code>, <code>exists</code>, <code>stat</code>, <code>ancestors</code>. <code>write</code> не атомарен: он заменяет содержимое файла на месте, поэтому другой процесс может прочитать частично записанный файл. Храните данные, которые изменяют несколько сессий, в <code>$.store</code>. |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#keep-state"><code>$.store</code></a> | <code>get</code>, <code>set</code>, <code>delete</code>, <code>keys</code>. Хранилище «ключ–значение», общее для всех сессий на машине. См. <a href="https://code.claude.com/docs/ru/plugins/mods/interface.md#save-from-more-than-one-session">Сохранение из нескольких сессий</a>. |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#keep-a-value-in-\$-state"><code>$.state</code></a> | Реактивное состояние: <code>get</code>, <code>set</code>, со вспомогательными функциями <code>atom</code>, <code>read</code>, <code>update</code>, <code>derive</code> и <code>memberOf</code>, импортируемыми из <code>claude-code</code> |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/api#run-work-in-the-background"><code>$.clock</code></a> | <code>now</code>, <code>sleep</code>, <code>after</code>, <code>every</code> |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/api#reach-files-processes-and-the-network"><code>$.http</code></a> | <code>fetch</code> |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/api#reach-files-processes-and-the-network"><code>$.process</code></a> | <code>run</code>, <code>spawn</code> |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/api#reach-files-processes-and-the-network"><code>$.mcp</code></a> | <code>call</code>, <code>connect</code>. <code>connect(server)</code> подключает MCP-сервер, указанный в манифесте вашего собственного плагина. |
+| <code>$.audio</code> | <code>play</code>, <code>speak</code> |
+| <code>$.telemetry</code> | <code>log</code>, <code>mark</code>. Запись отправляется, только если вызов делает Claude Code или встроенный мод. |</p>
+<h3 id="h-14">Точки отрисовки <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h3>
+<p>Точка отрисовки — это точка расширения в интерфейсе Claude Code. Каждая строка — это значение <code>e.component</code> в хуке <code>ui.render</code> с полями <code>e.props</code> и приложениями, которые её отрисовывают. <code>e.surface</code> указывает приложение, которое выполняет отрисовку, например <code>terminal</code>, <code>desktop</code> или <code>vscode</code>. В разделе <a href="https://code.claude.com/docs/ru/plugins/mods/interface.md#change-what-claude-code-already-draws">Изменение того, что уже рисует Claude Code</a> показано, что хук может делать в точке отрисовки, с примером для каждого варианта.</p>
+<p>Для отрисовки в расширении VS Code требуется расширение версии 2.1.299 или новее. Сессии, которая <a href="https://code.claude.com/docs/ru/env-vars.md#features-that-need-feature-flag-fetching">не получает флаги функций</a>, требуется версия 2.1.304 или новее. В разделе <a href="https://code.claude.com/docs/ru/plugins/mods/interface.md#draw-in-the-vs-code-extension">Рисование в расширении VS Code</a> перечислено, что расширение рисует иначе.</p>
+<p>| Точка | <code>e.props</code> | <code>e.requestId</code> | Отрисовывается в |
+| :- | :- | :- | :- |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#pick-where-to-draw"><code>Pane</code></a> | <code>title</code>, <code>isFocused</code>, <code>bodyColumns</code>, <code>placement</code>, <code>scroll</code>, <code>view</code> | <code>id</code> панели | Terminal, Desktop, VS Code |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#pick-where-to-draw"><code>AbovePrompt</code></a> | <code>hasSurvey</code>, <a href="https://code.claude.com/docs/ru/plugins/mods/interface#when-the-user-collapses-the-band"><code>isCollapsed</code></a>, <code>isWorking</code>, <code>maxRows</code>, <code>bodyColumns</code>, <code>scroll</code>, <code>view</code> | Один экземпляр | Terminal, Desktop |
+| <code>AbovePromptList</code>, стопка строк <code>AbovePrompt</code> | <code>rows</code> — список с одним <code>{ plugin, tree }</code> для строки каждого мода, а также пропсы <code>AbovePrompt</code> | Один экземпляр | Terminal, Desktop. Требуется Claude Code v2.1.323 или новее. |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#place-a-row-in-the-transcript"><code>Placed</code></a> | <code>id</code>, <code>plugin</code>, <code>onScreen</code> | <code>requestId</code>, который вернул <code>$.ui.place</code> | Terminal |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#put-a-backdrop-behind-the-conversation"><code>Backdrop</code></a> | <code>scene</code>, <code>plugin</code>, <code>glass</code>, <code>overrideColorScheme</code>. До v2.1.323 <code>scene</code> назывался <code>id</code>, а <code>overrideColorScheme</code> — <code>colorScheme</code>. | <code>backdrop</code> | Интерфейсы <code>desktop</code> и <code>mobile</code>. Ваш хук запускается, когда приложение Desktop или мобильное приложение запрашивает отрисовку фона. |
+| <code>UserMessage</code> | <code>text</code>, <code>origin</code>, <code>isExpanded</code> и <code>task</code> или <code>from</code> в зависимости от источника | id отрисованной строки | Terminal, Desktop, VS Code |
+| <code>AssistantMessage</code> | Текст ответа | id отрисованной строки | Terminal, Desktop, VS Code |
+| <code>ToolUse</code>, <code>ToolResult</code>, <code>ToolGroup</code> | Имя, входные данные и результат инструмента | id вызова инструмента | Terminal, Desktop, VS Code |
+| <code>CommandOutput</code> | <code>command</code>, <code>text</code> | id отрисованной строки | Terminal, Desktop |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#change-what-claude-code-already-draws"><code>AskUserQuestion</code></a> | Вопрос и варианты | id вызова инструмента | Terminal, Desktop, VS Code |
+| <code>ToolProgress</code> | <code>kind</code> | id вызова инструмента | Terminal |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#change-what-claude-code-already-draws"><code>Spinner</code></a> | <code>word</code>, <code>message</code>, <code>suffix</code>, <code>mode</code> | id агента | Terminal, Desktop, VS Code |
+| <code>TurnDuration</code> | <code>word</code>, <code>durationMs</code> | id отрисованной строки | Terminal |
+| <code>InfoNotice</code> | <code>text</code>, <code>command</code> | <code>text</code> уведомления с префиксом <code>notice:</code> | Terminal |
+| <code>SessionMode</code> | <code>modes</code> | Один экземпляр | Terminal, Desktop |
+| <code>PromptHint</code> | <code>isDraft</code>, <code>isWorking</code>, <code>hint</code> | Один экземпляр | Terminal, Desktop |</p>
+<p><code>e.viewport</code> содержит <code>columns</code>, <code>rows</code> и <code>isFullscreen</code>. В терминале и в приложении Desktop он отсутствует, пока приложение не измерило своё окно. Там его <code>rows</code> — это высота всего окна, а не вашей панели. В расширении VS Code он присутствует всегда.</p>
+<p>Чтобы подогнать дерево под точку отрисовки, читайте в хуке следующие пропсы:</p>
+<ul>
+<li><strong>Ширина <code>Pane</code> или полосы</strong>: рисуйте по <code>e.props.bodyColumns</code></li>
+<li><strong>Высота <code>Pane</code> рядом с транскриптом</strong>: когда <code>e.props.placement</code> равно <code>&#x27;dock&#x27;</code>, <code>e.props.scroll.bodyRows</code> — это число строк, которые панель отводит под ваше дерево</li>
+<li><strong>Высота <code>Pane</code> над промптом</strong>: когда <code>e.props.placement</code> равно <code>&#x27;inline&#x27;</code>, панель растёт вместе с вашим деревом до предела, а <code>bodyRows</code> — это этот предел. Чтобы запросить другой предел, см. <a href="https://code.claude.com/docs/ru/plugins/mods/interface#open-a-pane-at-the-right-time">поле <code>rows</code> в <code>$.ui.open</code></a>.</li>
+</ul>
+<p>Дерево, которое выше панели, прокручивается целиком.</p>
+<h3 id="h-15">Элементы <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h3>
+<p>Элементы — это строительные блоки дерева, которое возвращает хук <code>ui.render</code>, и вы получаете их из <code>$.ui.resolve(e)</code>. В разделе <a href="https://code.claude.com/docs/ru/plugins/mods/interface.md#build-a-tree-from-elements">Построение дерева из элементов</a> показаны распространённые элементы и то, как их рисует терминал, а в <a href="https://code.claude.com/docs/ru/plugins/mods/gallery.md">галерее интерфейса</a> есть снимки экрана большинства из них. Галочка означает, что приложение умеет рисовать элемент.</p>
+<p>| Элемент | Основные пропсы | Terminal | Desktop | VS Code |
+| :- | :- | :-: | :-: | :-: |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#build-a-tree-from-elements"><code>Box</code></a> | <code>key</code>, flex-раскладка, <a href="#box-spacing-steps"><code>gap</code>, <code>padding</code>, <code>margin</code></a>, <code>width</code>, <code>height</code>, <code>minWidth</code>, <code>minHeight</code>, <a href="#box-border-styles"><code>borderStyle</code></a>, <code>borderColor</code>, <code>borderDimColor</code>, <code>backgroundColor</code>, <code>position</code>, <code>top</code>, <code>left</code>, <code>right</code>, <code>bottom</code>, <code>overflow</code>, <code>display</code>, <code>hover</code> | ✓ | ✓ | ✓ |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#build-a-tree-from-elements"><code>Text</code></a> | <code>color</code>, <code>backgroundColor</code>, <a href="#text-bold"><code>bold</code></a>, <code>italic</code>, <code>underline</code>, <code>strikethrough</code>, <code>dimColor</code>, <code>inverse</code>, <code>wrap</code>, <a href="#text-typography"><code>size</code>, <code>weight</code>, <code>mono</code>, <code>tabular</code></a>, <code>hover</code> | ✓ | ✓ | ✓ |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#respond-to-presses-and-typing"><code>Button</code></a> | <code>key</code>, <code>label</code>, <code>children</code>, <code>onPress</code>, <code>hotkey</code>, <code>plain</code>, <code>dimColor</code>, <code>autoFocus</code>, <code>action</code>, <code>variant</code>, <code>role</code>, <code>hover</code> | ✓ | ✓ | ✓ |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#link-in-the-desktop-app"><code>Link</code></a> | <code>href</code>, <code>label</code>. См. <a href="#limits">Ограничения</a>. | ✓ | ✓ | ✓ |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/gallery#show-code-and-changes"><code>Code</code></a> | <code>source</code>, <code>language</code>, <code>path</code>, <code>startLine</code>, <code>format</code>, <code>wrap</code> | ✓ | ✓ | ✓ |
+| <code>Markdown</code> | <code>text</code>, <code>key</code>, <code>dimColor</code>, <code>onLinkPress</code>, <code>pressableLinks</code> | ✓ | ✓ | ✓ |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#take-typed-input-and-draw-a-row-for-each-item"><code>Input</code></a> | <code>key</code>, <code>label</code>, <code>placeholder</code>, <code>value</code>, <code>submitLabel</code>, <a href="https://code.claude.com/docs/ru/plugins/mods/gallery#input"><code>rows</code></a>, <code>onSubmit</code>, <code>onInput</code>, <code>autoFocus</code> | ✓ | ✓ | ✓ |
+| <code>Select</code> | <code>key</code>, <code>label</code>, <code>options</code>, <code>value</code>, <code>onSelect</code>, <code>autoFocus</code> | ✓ | ✓ | ✓ |
+| <code>Svg</code> | <code>source</code> с SVG-разметкой до 131 072 символов, текст <code>alt</code>, <code>width</code>, <code>height</code> и <code>isInteractive</code> | | ✓ | ✓ |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#build-a-tree-from-elements"><code>Client</code></a> | <code>module</code>, <code>key</code>, <code>props</code>, <code>width</code>, <code>height</code>, <code>flexGrow</code> | ✓ | ✓ | |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/interface#draw-a-grid-of-colored-cells"><code>Raster</code></a> | <code>key</code>, <code>columns</code> до 512, <code>rows</code> до 256, <code>cells</code>. См. <a href="https://code.claude.com/docs/ru/plugins/mods/interface.md#draw-a-grid-of-colored-cells">Рисование сетки цветных ячеек</a>. | ✓ | | |
+| <code>Image</code> | <code>key</code>, <code>source</code>, например байты PNG или RGBA до 2 МиБ либо путь к файлу, <code>columns</code> и <code>rows</code> до 255, а также текст <code>alt</code>. См. <a href="https://code.claude.com/docs/ru/plugins/mods/gallery.md#image-and-client">какие терминалы его рисуют</a>. | ✓ | | |</p>
+<p>Дополнительные правила для <code>Button</code>:</p>
+<ul>
+<li><strong><code>action</code></strong>: указывает одно из собственных <a href="https://code.claude.com/docs/ru/keybindings.md">действий сочетаний клавиш</a> Claude Code, и сочетание, назначенное пользователем для этого действия, нажимает кнопку, если это аккорд или клавиша с модификатором</li>
+<li><strong>Цифровые горячие клавиши на полосе</strong>: цифровой <code>hotkey</code> на кнопке в полосе также срабатывает, когда пользователь вводит только эту цифру в пустой промпт и делает паузу</li>
+<li><strong>Свёрнутая полоса</strong>: пока полоса <a href="https://code.claude.com/docs/ru/plugins/mods/interface.md#when-the-user-collapses-the-band">свёрнута</a>, ни привязка <code>action</code>, ни горячая клавиша не нажимают кнопку в ней</li>
+<li><strong>Две кнопки с одной горячей клавишей</strong>: если две ваши кнопки в одной отрисовке указывают один и тот же <code>hotkey</code>, он достаётся более поздней. О кнопке другого мода с той же клавишей см. <a href="https://code.claude.com/docs/ru/plugins/mods/troubleshoot.md#hotkeys-do-nothing">Горячие клавиши не работают</a>.</li>
+<li><strong><code>variant</code></strong>: <code>primary</code> или <code>secondary</code>, любое другое значение вызывает исключение. В терминале кнопка <code>primary</code> рисуется акцентным цветом, если она не <code>plain</code>.</li>
+<li><strong><code>role</code></strong>: <code>dismiss</code> помечает кнопку закрытия, любое другое значение вызывает исключение. Само закрытие выполняйте в своём <code>onPress</code>. В полосе, содержащей текст и ряд кнопок, приложение Desktop может нарисовать первую кнопку <code>dismiss</code> в ряду как собственный элемент управления закрытием. Терминал рисует кнопку так же, как без <code>role</code>.</li>
+</ul>
+<p><code>Button</code> может содержать <code>children</code> вместо <code>label</code>:</p>
+<ul>
+<li><strong>Чем могут быть дочерние элементы</strong>: строки и элементы <code>Text</code>, например имя, за которым следует приглушённая деталь, или цветная плашка. Claude Code отклоняет любые другие элементы внутри <code>Button</code>.</li>
+<li><strong>Имя кнопки</strong>: <code>label</code> задаёт имя кнопки и по умолчанию равен тексту её дочерних элементов. Задайте <code>key</code> или <code>label</code> для кнопки, дочерние элементы которой не являются одной строкой.</li>
+<li><strong>В терминале</strong>: дочерние элементы рисуются на месте метки, а нажатие в любом месте на них считается одним нажатием, поэтому каждую строку списка можно сделать одной кнопкой</li>
+<li><strong>В приложении Desktop и расширении VS Code</strong>: кнопка рисует свой <code>label</code></li>
+</ul>
+<blockquote>
+<p>[!NOTE]</p>
+<p><code>Button</code> с дочерними элементами, отличными от одной строки, требует Claude Code v2.1.295 или более поздней версии.</p>
+</blockquote>
+<p><code>autoFocus</code> на любом элементе управления принимает только <code>true</code>, поэтому, чтобы отключить его, опустите этот проп.</p>
+<p>Расширение VS Code игнорирует некоторые пропсы элементов и рисует элемент так, как если бы вы их не указали:</p>
+<ul>
+<li><strong><code>Box</code></strong>: <code>position</code> вместе с его <code>top</code>, <code>left</code>, <code>right</code> и <code>bottom</code>, <code>alignSelf</code>, <code>borderDimColor</code> и <code>hover</code></li>
+<li><strong><code>Text</code></strong>: <code>size</code>, <code>mono</code>, <code>tabular</code> и <code>hover</code></li>
+<li><strong><code>Button</code></strong>: <code>hotkey</code>, <code>plain</code>, <code>autoFocus</code>, <code>action</code> и <code>hover</code>, поэтому там пользователь нажимает кнопку щелчком или клавишей Enter, когда кнопка в фокусе. Расширение также игнорирует <code>variant</code> и <code>role</code>.</li>
+<li><strong><code>Code</code></strong>: <code>language</code>, <code>path</code>, <code>startLine</code>, <code>format</code> и <code>wrap</code>, поэтому код рисуется без цветов и номеров строк, а блок с <code>format: &#x27;diff&#x27;</code> показывает необработанный текст diff</li>
+<li><strong><code>Input</code> и <code>Select</code></strong>: <code>autoFocus</code>, а также <code>rows</code> у <code>Input</code></li>
+<li><strong><code>Svg</code></strong>: <code>isInteractive</code></li>
+</ul>
+<h4 id="стили-рамки-box">Стили рамки <code>Box</code> <a class="h-anchor" href="#стили-рамки-box" aria-label="Ссылка на раздел">#</a></h4>
+<p>Чтобы нарисовать рамку вокруг <code>Box</code>, задайте для его <code>borderStyle</code> одно из этих имён, например <code>borderStyle: &#x27;round&#x27;</code>. В каждой строке указано, что терминал рисует для этого имени, и показан верхний край рамки.</p>
+<p>| <code>borderStyle</code> | Что рисует терминал | Верхний край |
+| :- | :- | :- |
+| <code>&#x27;single&#x27;</code> | Тонкие линии с прямыми углами | <code>┌──┐</code> |
+| <code>&#x27;double&#x27;</code> | Двойные линии | <code>╔══╗</code> |
+| <code>&#x27;round&#x27;</code> | Тонкие линии со скруглёнными углами | <code>╭──╮</code> |
+| <code>&#x27;bold&#x27;</code> | Толстые линии | <code>┏━━┓</code> |
+| <code>&#x27;singleDouble&#x27;</code> | Тонкие линии сверху и снизу, двойные линии по бокам | <code>╓──╖</code> |
+| <code>&#x27;doubleSingle&#x27;</code> | Двойные линии сверху и снизу, тонкие линии по бокам | <code>╒══╕</code> |
+| <code>&#x27;classic&#x27;</code> | ASCII-символы <code>+</code>, <code>-</code> и <code>\|</code> | <code>+--+</code> |
+| <code>&#x27;arrow&#x27;</code> | Стрелки, указывающие внутрь <code>Box</code> | <code>↘↓↓↙</code> |
+| <code>&#x27;dashed&#x27;</code> | Пунктирные линии с пустыми углами | <code>╌╌</code> |
+| <code>&#x27;quote&#x27;</code> | Полоса <code>▎</code> вдоль левой стороны и пустые ячейки на остальных трёх сторонах | Пусто |</p>
+<p><code>Box</code>, у которого <code>borderStyle</code> указывает любое другое имя, например <code>&#x27;rounded&#x27;</code>, рисуется без рамки.</p>
+<h4 id="шаги-отступов-box">Шаги отступов <code>Box</code> <a class="h-anchor" href="#шаги-отступов-box" aria-label="Ссылка на раздел">#</a></h4>
+<p>Пропсы отступов <code>Box</code> — это <code>gap</code>, <code>columnGap</code>, <code>rowGap</code>, <code>padding</code>, <code>margin</code>, а также формы <code>padding</code> и <code>margin</code> для одной стороны и одной оси, например <code>paddingX</code> и <code>marginTop</code>. Каждый из них принимает число ячеек терминала, например <code>gap: 1</code>, или имя шага, например <code>gap: &#x27;md&#x27;</code>. В терминале и расширении VS Code каждый шаг равен следующему числу ячеек:</p>
+<p>| Шаг | Ячеек по горизонтали | Ячеек по вертикали |
+| :- | :- | :- |
+| <code>&#x27;xs&#x27;</code> | 1 | 0 |
+| <code>&#x27;sm&#x27;</code> | 1 | 0 |
+| <code>&#x27;md&#x27;</code> | 2 | 1 |
+| <code>&#x27;lg&#x27;</code> | 3 | 1 |
+| <code>&#x27;xl&#x27;</code> | 4 | 2 |</p>
+<p>Если задать для <code>gap</code>, <code>padding</code> или <code>margin</code> шаг, он применяется сразу и по горизонтали, и по вертикали. Например, в терминале и расширении VS Code <code>padding: &#x27;md&#x27;</code> означает две ячейки с каждой стороны и одну строку сверху и снизу.</p>
+<p>Имена шагов требуют Claude Code v2.1.299 или более поздней версии. В более ранних выпусках дерево, в котором используется имя шага, не рисуется.</p>
+<h4 id="типографские-пропсы-text">Типографские пропсы <code>Text</code> <a class="h-anchor" href="#типографские-пропсы-text" aria-label="Ссылка на раздел">#</a></h4>
+<p>Задайте <code>size</code>, <code>weight</code>, <code>mono</code> или <code>tabular</code> для <code>Text</code>, чтобы запросить у приложения, рисующего ваше дерево, размер текста, насыщенность, моноширинный шрифт или цифры одинаковой ширины. Прежде чем полагаться на проп, проверьте, что делают с ним терминал и расширение VS Code. Если приложение игнорирует заданный вами проп, ваше дерево всё равно рисуется там, а текст выглядит так, как если бы вы этот проп не указали.</p>
+<p>| Проп | Значения | В терминале | В расширении VS Code |
+| :- | :- | :- | :- |
+| <code>size</code> | <code>&#x27;caption&#x27;</code>, <code>&#x27;footnote&#x27;</code>, <code>&#x27;body&#x27;</code>, <code>&#x27;heading&#x27;</code> или <code>&#x27;title&#x27;</code> | Игнорируется: в терминале один размер текста | Игнорируется |
+| <code>weight</code> | <code>&#x27;regular&#x27;</code>, <code>&#x27;medium&#x27;</code>, <code>&#x27;semibold&#x27;</code> или <code>&#x27;bold&#x27;</code> | <code>semibold</code> и <code>bold</code> рисуются полужирным текстом | <code>semibold</code> и <code>bold</code> рисуются полужирным текстом |
+| <code>mono</code> | <code>true</code>, чтобы запросить моноширинный шрифт приложения | Игнорируется: терминал всегда моноширинный | Игнорируется, поэтому текст сохраняет собственный шрифт расширения |
+| <code>tabular</code> | <code>true</code>, чтобы запросить цифры одинаковой ширины, чтобы число, обновляемое на месте, или столбец чисел оставались выровненными | Игнорируется: цифры в терминале и так занимают одну ячейку | Игнорируется |</p>
+<p>Эти четыре пропса требуют Claude Code v2.1.299 или более поздней версии. В более ранних выпусках дерево, в котором задан <code>size</code>, <code>weight</code>, <code>mono</code> или <code>tabular</code>, не рисуется.</p>
+<h5 id="замена-bold-на-weight">Замена <code>bold</code> на <code>weight</code> <a class="h-anchor" href="#замена-bold-на-weight" aria-label="Ссылка на раздел">#</a></h5>
+<p><code>bold</code> для <code>Text</code> объявлен устаревшим в пользу <code>weight</code>, но по-прежнему работает. Чтобы заменить его для <code>Text</code> без <code>weight</code>, измените <code>bold: true</code> на <code>weight: &#x27;semibold&#x27;</code> — в Claude Code v2.1.299 или более поздней версии результат будет тем же.</p>
+<p>В выпусках до v2.1.299 дерево, в котором задан <code>weight</code>, не рисуется. Если задать для <code>Text</code> и <code>bold</code>, и <code>weight</code>, <code>bold</code> не действует.</p>
+<h3 id="h-16">Ограничения <a class="h-anchor" href="#h-16" aria-label="Ссылка на раздел">#</a></h3>
+<p>Хуки и вызовы API модов выполняются с ограничениями по времени и размеру. Claude Code пропускает хук, превысивший ограничение по времени. Дерево, превышающее ограничение по вложенности, числу элементов, ячейкам <code>Raster</code> или байтам <code>Image</code>, <a href="https://code.claude.com/docs/ru/plugins/mods/troubleshoot.md#a-pane-or-band-is-empty">не отрисовывается</a>.</p>
+<p>| Ограничение | Значение |
+| :- | :- |
+| Собственное время выполнения хука для одного события, без учёта времени внутри <code>next</code> или вызова API модов, кроме <code>$.clock.sleep</code> | 10 секунд или 50 миллисекунд для хука <code>prompt.edit</code> |
+| Время выполнения обработчика <code>.catch</code> | 1 секунда |
+| Все хуки <code>session.end</code> вместе | Столько же, сколько <a href="https://code.claude.com/docs/ru/hooks.md#sessionend-input">бюджет хука SessionEnd</a>, — 1,5 секунды, если вы его не измените; отсчёт начинается после завершения хуков <code>SessionEnd</code> из ваших настроек |
+| Таймаут <code>$.process.run</code> | 30 секунд по умолчанию, не более 10 минут |
+| <code>stdout</code> и <code>stderr</code> для <code>$.process.run</code> | По 4 МиБ каждый. <code>isStdoutTruncated</code> или <code>isStderrTruncated</code> имеет значение <code>true</code>, если соответствующий поток был обрезан. |
+| <code>maxTokens</code> для <code>$.model.complete</code> | 1024 по умолчанию, до 64 000 или предела вывода модели |
+| <code>$.fs.read</code> и <code>$.fs.write</code> | 4 МиБ на один файл |
+| Тело запроса <code>$.http.fetch</code> | 4 МиБ, считается в символах. Вызов с более длинным телом отклоняется. |
+| Тело ответа <code>$.http.fetch</code> | 4 МиБ. <code>text</code> содержит первые 4 МиБ, а остальное не считывается. Если заголовок <code>Content-Length</code> объявляет больший размер, вызов вместо этого отклоняется с причиной, оканчивающейся на <code>is over the 4194304-byte limit</code>, за исключением случая, когда последний запрос после всех перенаправлений использует метод <code>HEAD</code>. Исключение для <code>HEAD</code> требует Claude Code v2.1.296 или новее. |
+| Один вызов <code>$.http.fetch</code>, включая перенаправления и тело | 30 секунд |
+| Перенаправления, по которым проходит один вызов <code>$.http.fetch</code> | 5 |
+| Причина <code>drop</code> хука или причина <code>deny</code> для <code>config.set</code> | 4 096 символов. Конец более длинной причины обрезается, а drop или deny всё равно применяется. Обрезка требует Claude Code v2.1.292 или новее; в более ранних версиях хук вместо этого <a href="https://code.claude.com/docs/ru/plugins/mods/events.md#handle-a-hook-that-fails">завершается с ошибкой</a>. |
+| Текст в одном дереве | Отрисовываются первые 100 000 символов |
+| <code>language</code> или <code>path</code> элемента <code>Code</code>, <code>value</code> варианта <code>Select</code> или <code>module</code> элемента <code>Client</code> | 10 000 символов. Если значение длиннее, хук <code>ui.render</code>, вернувший его, <a href="https://code.claude.com/docs/ru/plugins/mods/events.md#handle-a-hook-that-fails">завершается с ошибкой</a>. |
+| <code>href</code> элемента <code>Link</code> | 2 048 символов. Если он длиннее, хук <code>ui.render</code>, вернувший его, <a href="https://code.claude.com/docs/ru/plugins/mods/events.md#handle-a-hook-that-fails">завершается с ошибкой</a>. |
+| Глубина вложенности одного дерева | 32 уровня ниже корневого элемента |
+| Элементы и текстовые дочерние узлы в одном дереве | 20 000 |
+| Ячейки <code>Raster</code> в одном дереве: <code>columns</code> каждого <code>Raster</code>, умноженные на его <code>rows</code> | 262 144 |
+| Строки над промптом, расположенные одна над другой | Элементы, ячейки <code>Raster</code> и байты <code>Image</code> суммируются по всем строкам и сравниваются с ограничениями для одного дерева |
+| Байты PNG или RGBA всех элементов <code>Image</code> в одном дереве | 2 МиБ |
+| <code>$.store</code> | 4 МиБ JSON в сумме |
+| <code>$.session.messages()</code> | Последние 4 096 записей |
+| Перерисовки <code>$.ui.invalidate(&#x27;ui.render&#x27;)</code> | Ограничены 10 в секунду или 30 в терминале для видимой панели, развёрнутой полосы и строки подсказки под промптом. Более частые вызовы объединяются. |
+| <code>$.ui.toast</code> | Показывается 4 секунды, если не передать <code>{ timeoutMs }</code>. В <a href="https://code.claude.com/docs/ru/fullscreen.md#enable-fullscreen-rendering">классическом рендерере</a> более новое всплывающее уведомление мода может <a href="https://code.claude.com/docs/ru/plugins/mods/troubleshoot.md#a-toast-doesn’t-appear">заменить его более старое уведомление</a>, которое отображается или ожидает показа. |
+| Панель, открытая без запроса пользователя | Размещается начиная со 144 столбцов терминала, со 110 — после того как пользователь однажды её открыл |
+| Строки из <code>$.ui.place</code>, которые один мод одновременно имеет в диалоге | 500. При достижении ограничения вызов с новым <code>id</code> разрешается в <code>{ isPlaced: false, reason: &#x27;a plugin holds at most 500 placed rows&#x27; }</code>. |
+| Глубина вложенности аргументов вызова API модов | 28 000 уровней. При превышении вызов отклоняется с сообщением, оканчивающимся на <code>nesting deeper than 28000 levels is not supported</code>. Требуется Claude Code v2.1.299 или новее. |
+| Глубина вложенности изменённого события, переданного в <code>next</code>, за пределами <a href="#events">хуков на основе асинхронных генераторов</a>, например хука на <code>turn.step</code> | 28 000 уровней. При превышении <code>next</code> отклоняется с сообщением, оканчивающимся на <code>nesting deeper than 28000 levels is not supported</code>. Требуется Claude Code v2.1.299 или новее. |
+| Глубина вложенности возвращаемого значения хука, за пределами <code>ui.render</code>, <code>ui.resolve</code> и хуков на основе асинхронных генераторов | 28 000 уровней. При превышении результат хука отклоняется, а <a href="https://code.claude.com/docs/ru/plugins/mods/troubleshoot.md#find-out-why-a-mod-does-nothing">уведомление, сообщающее об этом</a>, содержит <code>nesting deeper than 28000 levels is not supported</code>. Требуется Claude Code v2.1.299 или новее. |
+| Области видимости, такие как функции, блоки и циклы, вложенные друг в друга в одном файле модуля хуков | 2 000 |
+| Имена команд, инструментов, типов субагентов и панелей, <code>id</code> размещённой строки и <code>scene</code> фона | Буквы, цифры, <code>_</code> и <code>-</code>, до 64 символов |
+| Один тест <code>claude plugin test</code> | 5 секунд, если тест не задаёт <code>timeoutMs</code> |</p>
+<h3 id="h-17">Настройки и переменные окружения <a class="h-anchor" href="#h-17" aria-label="Ссылка на раздел">#</a></h3>
+<p>Ниже перечислены настройки и переменные окружения, влияющие на моды. В столбце «Где» указано, из какого файла настроек или окружения читается каждая из них:</p>
+<p>| Имя | Где | Что делает |
+| :- | :- | :- |
+| <code>CLAUDE_CODE_PLUGIN_DIRS</code> | Окружение или <code>env</code> в <code>~/.claude/settings.json</code> | Каталоги плагинов для загрузки так же, как это делает <code>--plugin-dir</code>, — для приложений, которым нельзя передать флаг. Абсолютные пути, разделённые <code>:</code>, или <code>;</code> в Windows. |
+| <code>CLAUDE_CODE_PLUGIN_DIR_WATCH</code> | Окружение | Перезагружаются ли моды при сохранении. Значения по умолчанию и допустимые значения см. в <a href="https://code.claude.com/docs/ru/env-vars.md">справочнике по переменным окружения</a> |
+| <code>prependPlugins</code>, <code>appendPlugins</code> | Управляемые настройки. Пользовательские настройки — только на машине без управляемых настроек и без файла <a href="https://code.claude.com/docs/ru/managed-mcp#deploy-managed-mcp-json"><code>managed-mcp.json</code></a>, в сессии, учётные данные которой получены не через <code>/login</code> Team или Enterprise. | Списки id плагинов, например <code>acme-guard@acme-tools</code>. Моды из <code>prependPlugins</code> выполняются перед каждым модом, установленным пользователем, а моды из <code>appendPlugins</code> — после, в указанном порядке. См. <a href="https://code.claude.com/docs/ru/plugins/mods/events.md#the-order-mods-run-in">Порядок запуска модов</a>. |
+| <code>allowManagedModsOnly</code> | Управляемые настройки, как <a href="https://code.claude.com/docs/ru/plugins/mods/admin.md#set-options-on-the-built-in-guard">опция встроенного стража</a> | Свои хуки запускают только моды, которые <a href="https://code.claude.com/docs/ru/plugins/mods/admin.md#install-your-organizations-mods">считаются модами вашей организации</a>, и моды, встроенные в Claude Code. Хуки настроек пользователей продолжают работать. |
+| <code>allowModsToOverrideDenyRules</code> | Управляемые настройки, как <a href="https://code.claude.com/docs/ru/plugins/mods/admin.md#set-options-on-the-built-in-guard">опция встроенного стража</a> | Позволяет моду, установленному пользователем, одобрить вызов инструмента в обход большинства <a href="https://code.claude.com/docs/ru/permissions.md#precedence-among-rules-hooks-and-mods">исходов, которые по умолчанию остаются в силе</a>, включая правило <code>deny</code> |
+| <code>allowManagedHooksOnly</code> | Управляемые настройки | Блокирует хуки и установленные моды, не принадлежащие вашей организации. См. <a href="https://code.claude.com/docs/ru/settings-reference.md#what-runs-under-allowmanagedhooksonly">что продолжает работать</a>. |
+| <code>disableAllHooks</code> | Любой файл настроек | В управляемых настройках не выполняется ни один мод или хук из установленного плагина. В ваших собственных настройках то, чем управляет ваша организация, продолжает работать. См. <a href="https://code.claude.com/docs/ru/settings-reference#disableallhooks"><code>disableAllHooks</code></a>. |
+| <code>disableSideloadFlags</code> | Управляемые настройки | Отклоняет <code>--plugin-dir</code> и <code>--plugin-url</code> при запуске |
+| <code>pluginConfigs</code> | Пользовательские или управляемые настройки | Содержит значения <code>userConfig</code> для мода с ключом по id плагина, например <code>acme-guard@acme-tools</code>, или по его имени и <code>@inline</code>, например <code>first-mod@inline</code>, для мода, загруженного с <code>--plugin-dir</code> |</p>
+<p><code>sec-default@builtin</code> — это страж, встроенный в Claude Code, который отображается как <code>cc-plugin-sec-default</code> в <code>/plugin</code> и в отладочном логе. <a href="https://code.claude.com/docs/ru/plugins/mods/admin.md#know-what-happens-by-default">Там, где он загружается</a>, он выполняется перед каждым модом, установленным человеком. Если задан управляемый <code>prependPlugins</code>, страж загружается, только если этот список его называет, на указанной позиции.</p>
+<p>Его исходный код находится в <a href="https://github.com/anthropics/claude-code/tree/main/mods/sec-default">каталоге <code>mods/sec-default</code> репозитория Claude Code</a>.</p>
+<h3 id="h-18">Команды <a class="h-anchor" href="#h-18" aria-label="Ссылка на раздел">#</a></h3>
+<p>Эти команды и флаги загружают, проверяют и тестируют мод. Команды <code>claude</code> выполняются в вашей оболочке, а команды <code>/</code> — в промпте Claude Code. В таблице <code>&lt;directory&gt;</code> обозначает путь, который вы вводите, например <code>claude plugin validate ./first-mod</code>. Квадратные скобки обозначают необязательный аргумент.</p>
+<p>| Команда | Что делает |
+| :- | :- |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/overview#see-which-mods-a-session-loaded"><code>/plugin</code></a> | Показывает под своими вкладками строку вида <code>1 mod active · first-mod</code>, когда загружен мод, не являющийся встроенным |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/create#check-what-claude-code-reads-from-your-mod"><code>claude plugin validate &lt;directory&gt;</code></a> | Читает манифест и модуль хуков плагина и сообщает об ошибках, обрабатываемых событиях и вызовах API модов. <code>--strict</code> считает предупреждения ошибками, а <code>--json</code> выводит машиночитаемый отчёт. |
+| [<code>claude plugin test [directory]</code>](https://code.claude.com/docs/ru/plugins/mods/test#write-a-test) | Запускает все файлы в каталоге (или в текущем каталоге, если он не указан), имена которых заканчиваются на <code>.test.ts</code> или <code>.test.tsx</code>. Завершается с кодом 1, если тест не проходит. |
+| <a href="https://code.claude.com/docs/ru/plugins/mods/create#write-a-mod-yourself"><code>claude --plugin-dir &lt;directory&gt;</code></a> | Загружает каталог плагина на одну сессию и перезагружает его модуль хуков при сохранении. Повторите флаг, чтобы загрузить несколько. |
+| <code>/reload-plugins</code> | Перезагружает плагины при запуске |</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

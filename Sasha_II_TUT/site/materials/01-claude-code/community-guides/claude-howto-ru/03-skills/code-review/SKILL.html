@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Навык code review</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../../materials/index.html">Материалы</a> / <a href="../../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/index.html">claude-howto-ru</a> / <a href="../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/03-skills/index.html">03-skills</a> / <a href="../../../../../../materials/01-claude-code/community-guides/claude-howto-ru/03-skills/code-review/index.html">code-review</a></nav>
+<hr>
+<p>name: code-review-specialist
+description: Comprehensive code review with security, performance, and quality analysis. Use when users ask to review code, analyze code quality, evaluate pull requests, or mention code review, security analysis, or performance optimization.</p>
+<hr>
+<h1 id="навык-code-review">Навык code review <a class="h-anchor" href="#навык-code-review" aria-label="Ссылка на раздел">#</a></h1>
+<p>Этот навык даёт полноценные возможности для code review с акцентом на:</p>
+<ol>
+<li><strong>Анализ безопасности</strong></li>
+<li>Ошибки аутентификации и авторизации</li>
+<li>Риски утечки данных</li>
+<li>Уязвимости инъекций</li>
+<li>Слабые места криптографии</li>
+<li>Логирование чувствительных данных</li>
+</ol>
+<ol>
+<li><strong>Проверка производительности</strong></li>
+<li>Эффективность алгоритмов (анализ Big O)</li>
+<li>Оптимизация памяти</li>
+<li>Оптимизация запросов к базе данных</li>
+<li>Возможности кэширования</li>
+<li>Проблемы конкурентности</li>
+</ol>
+<ol>
+<li><strong>Качество кода</strong></li>
+<li>Принципы SOLID</li>
+<li>Паттерны проектирования</li>
+<li>Соглашения об именовании</li>
+<li>Документация</li>
+<li>Покрытие тестами</li>
+</ol>
+<ol>
+<li><strong>Поддерживаемость</strong></li>
+<li>Читаемость кода</li>
+<li>Размер функций (желательно &lt; 50 строк)</li>
+<li>Цикломатическая сложность</li>
+<li>Управление зависимостями</li>
+<li>Безопасность типов</li>
+</ol>
+<h3 id="h">Шаблон ревью <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Для каждого проверенного фрагмента кода указывайте:</p>
+<h4 id="h-2">Сводка <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li>Общая оценка качества (1-5)</li>
+<li>Количество ключевых находок</li>
+<li>Рекомендуемые приоритетные области</li>
+</ul>
+<h4 id="h-3">Критические проблемы (если есть) <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<ul>
+<li><strong>Проблема</strong>: Чёткое описание</li>
+<li><strong>Расположение</strong>: Файл и номер строки</li>
+<li><strong>Влияние</strong>: Почему это важно</li>
+<li><strong>Серьёзность</strong>: Critical/High/Medium</li>
+<li><strong>Исправление</strong>: Пример кода</li>
+</ul>
+<h4 id="h-4">Находки по категориям <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<h5 id="h-5">Безопасность (если есть проблемы) <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h5>
+<p>Перечислите уязвимости безопасности с примерами</p>
+<h5 id="h-6">Производительность (если есть проблемы) <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h5>
+<p>Перечислите проблемы производительности с анализом сложности</p>
+<h5 id="h-7">Качество (если есть проблемы) <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h5>
+<p>Перечислите проблемы качества кода с рекомендациями по рефакторингу</p>
+<h5 id="h-8">Поддерживаемость (если есть проблемы) <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h5>
+<p>Перечислите проблемы поддерживаемости с предложениями по улучшению</p>
+<h3 id="h-9">История версий <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>v1.0.0 (2024-12-10): Первый выпуск с анализом безопасности, производительности, качества и поддерживаемости</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Глоссарий</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Глоссарий <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Определения терминологии Claude Code. Узнайте, что означают agentic loop, compaction, CLAUDE.md, hooks, subagents, MCP и другие основные концепции.</p>
+</blockquote>
+<p>Этот глоссарий определяет терминологию Claude Code. Каждая запись ссылается на страницу, где концепция рассматривается подробно. Для концепций уровня модели, таких как tokens, temperature и RAG, см. <a href="https://platform.claude.com/docs/ru/about-claude/glossary">глоссарий платформы</a>. Для терминов Claude Desktop, таких как desktop extension, MCPB и DXT, см. <a href="https://support.claude.com/">Центр справки Claude</a>.</p>
+<h3 id="a">A <a class="h-anchor" href="#a" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="agents-md">AGENTS.md <a class="h-anchor" href="#agents-md" aria-label="Ссылка на раздел">#</a></h4>
+<p>Файл markdown с инструкциями проекта, которые вы пишете для AI-агентов кодирования. Если в вашем репозитории есть такой файл и нет <a href="#claude-md">CLAUDE.md</a>, Claude читает его как инструкции вашего проекта без необходимости добавлять второй файл. Вы можете изменить параметр <strong>Project instructions</strong> в <code>/config</code>, чтобы Claude читал оба файла или только <code>CLAUDE.md</code>. Прямое чтение <code>AGENTS.md</code> требует Claude Code v2.1.277 или более поздней версии. В некоторых сеансах Claude <a href="https://code.claude.com/docs/ru/memory#when-agents-md-support-is-unavailable">не может читать <code>AGENTS.md</code></a>, поэтому <a href="https://code.claude.com/docs/ru/memory#share-one-file-with-other-coding-tools">импортируйте его из <code>CLAUDE.md</code></a> вместо этого.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/memory.md#agents-md">AGENTS.md</a></p>
+<h4 id="agent-teams">Agent teams <a class="h-anchor" href="#agent-teams" aria-label="Ссылка на раздел">#</a></h4>
+<p>Несколько независимых сеансов Claude Code, координируемых лидером команды, с общим списком задач и обменом сообщениями между участниками. В отличие от <a href="#subagent">subagents</a>, которые работают в одном сеансе и отчитываются только перед родительским агентом, члены команды имеют собственное окно контекста, и вы можете взаимодействовать с любым из них напрямую. Agent teams находятся на экспериментальном этапе и отключены по умолчанию; см. <a href="https://code.claude.com/docs/ru/agent-teams.md#enable-agent-teams">Enable agent teams</a>.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/agent-teams.md">Run agent teams</a></p>
+<h4 id="agentic-coding">Agentic coding <a class="h-anchor" href="#agentic-coding" aria-label="Ссылка на раздел">#</a></h4>
+<p>Рабочий процесс, при котором AI может автономно читать файлы, выполнять команды и вносить изменения, пока вы наблюдаете, перенаправляете или отходите в сторону, в отличие от чат-ассистентов на основе текста, которые только отвечают текстом, который вы должны применить самостоятельно. Claude Code является агентным, потому что он имеет <a href="#tool">tools</a>, которые позволяют ему действовать, а не только давать советы.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/how-claude-code-works.md">How Claude Code works</a></p>
+<h4 id="agentic-harness">Agentic harness <a class="h-anchor" href="#agentic-harness" aria-label="Ссылка на раздел">#</a></h4>
+<p>Инструменты, управление контекстом и среда выполнения, которые превращают языковую модель в способного агента кодирования. Claude Code — это harness; Claude — это модель внутри него. Harness обеспечивает доступ к файлам, выполнение shell-команд, управление разрешениями, загрузку памяти и цикл, который связывает действия вместе.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/how-claude-code-works.md">How Claude Code works</a></p>
+<h4 id="agentic-loop">Agentic loop <a class="h-anchor" href="#agentic-loop" aria-label="Ссылка на раздел">#</a></h4>
+<p>Цикл, через который Claude проходит для каждой задачи: сбор контекста, выполнение действия, проверка результатов и повторение до завершения. Каждое использование инструмента возвращает информацию, которая информирует следующий шаг. Вы можете прервать цикл в любой момент для перенаправления. Большинство точек расширения, включая <a href="#hook">hooks</a>, <a href="#skill">skills</a> и <a href="#mcp-model-context-protocol">MCP</a>, подключаются к определенным фазам этого цикла.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/how-claude-code-works.md#the-agentic-loop">How Claude Code works</a></p>
+<h4 id="artifact">Artifact <a class="h-anchor" href="#artifact" aria-label="Ссылка на раздел">#</a></h4>
+<p>Живая интерактивная веб-страница, которую Claude Code публикует из вашего сеанса на приватный URL на claude.ai, чтобы вы могли видеть результат визуально или поделиться им вместо чтения текста терминала. Страница обновляется на месте, когда сеанс переиздается. Артефакты, которые вы создаете из Claude Code, появляются в той же галерее, что и артефакты, созданные в разговорах claude.ai. Параметры общего доступа зависят от вашего плана: см. <a href="https://code.claude.com/docs/ru/artifacts.md#share-an-artifact">Share an artifact</a>.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/artifacts.md">Share session output as artifacts</a></p>
+<h4 id="auto-memory">Auto memory <a class="h-anchor" href="#auto-memory" aria-label="Ссылка на раздел">#</a></h4>
+<p>Заметки, которые Claude пишет для себя на основе ваших исправлений и предпочтений, хранящиеся в каждом git-репозитории в <code>~/.claude/projects/</code>. Все worktrees одного репозитория используют один каталог auto memory. Первые 200 строк или 25 КБ индекса <code>MEMORY.md</code> загружаются в начале каждого сеанса. Auto memory — это написанный Claude аналог <a href="#claude-md">CLAUDE.md</a>, который пишете вы.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/memory.md#auto-memory">Auto memory</a></p>
+<h4 id="auto-mode">Auto mode <a class="h-anchor" href="#auto-mode" aria-label="Ссылка на раздел">#</a></h4>
+<p><a href="#permission-mode">Режим разрешений</a>, в котором отдельная модель-классификатор проверяет действия вместо вас, поэтому Claude Code выполняет большинство из них, не спрашивая вас. Claude Code по-прежнему спрашивает вас перед действиями, которым соответствуют ваши явные правила ask. Классификатор блокирует расширение области действия, ненадежную инфраструктуру и <a href="#prompt-injection">промпт-инъекции</a>.</p>
+<ul>
+<li><strong>Claude Code v2.1.283 или более поздней версии</strong>: авторежим является <a href="https://code.claude.com/docs/ru/permission-modes.md#which-mode-a-session-starts-in">встроенным начальным режимом разрешений</a> для интерактивных сессий в терминале и VS Code</li>
+<li><strong>Более ранние версии</strong>: авторежим является встроенным начальным режимом разрешений только на планах Pro, Max, Ultra и Team</li>
+</ul>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/permission-modes.md#eliminate-prompts-with-auto-mode">Eliminate prompts with auto mode</a></p>
+<h3 id="b">B <a class="h-anchor" href="#b" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="bare-mode">Bare mode <a class="h-anchor" href="#bare-mode" aria-label="Ссылка на раздел">#</a></h4>
+<p>С флагом <code>--bare</code> Claude Code запускается без загрузки hooks, skills, пользовательских команд, subagents, установленных plugins, MCP servers, auto memory или CLAUDE.md, за исключением skills в директории, которую вы передаёте с помощью <code>--add-dir</code>. Рекомендуется для CI и скриптовых вызовов, где вам нужен одинаковый результат на каждой машине.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/headless.md#start-faster-with-bare-mode">Start faster with bare mode</a></p>
+<h4 id="bundled-skills">Bundled skills <a class="h-anchor" href="#bundled-skills" aria-label="Ссылка на раздел">#</a></h4>
+<p>Основанные на prompt playbooks, включённые в Claude Code, такие как <code>/batch</code>, <code>/code-review</code>, <code>/debug</code> и <code>/loop</code>. В отличие от встроенных команд, которые выполняют фиксированную логику, bundled skills дают Claude подробный prompt и позволяют ему организовать работу, поэтому они могут порождать агентов, читать файлы и адаптироваться к вашей кодовой базе.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/skills.md#bundled-skills">Bundled skills</a></p>
+<h3 id="c">C <a class="h-anchor" href="#c" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="channel">Channel <a class="h-anchor" href="#channel" aria-label="Ссылка на раздел">#</a></h4>
+<p><a href="#mcp-model-context-protocol">MCP server</a>, который отправляет события в ваш работающий сеанс, чтобы Claude мог реагировать на события, происходящие, пока вы отсутствуете в терминале. Channels могут быть двусторонними: Claude читает входящее событие и отвечает через тот же channel. Telegram, Discord и iMessage включены в исследовательский предпросмотр.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/channels.md">Channels</a></p>
+<h4 id="checkpoint">Checkpoint <a class="h-anchor" href="#checkpoint" aria-label="Ссылка на раздел">#</a></h4>
+<p>Точка восстановления, создаваемая при каждом отправляемом вами промпте, который начинает ход. Claude Code создаёт снимки файлов перед каждым редактированием, чтобы чекпоинт мог их восстановить. Нажмите <code>Esc</code> дважды или запустите <code>/rewind</code>, чтобы восстановить код, диалог или и то, и другое до более раннего момента, или чтобы резюмировать часть диалога начиная с выбранного сообщения.</p>
+<p>Чекпоинты сохраняются вместе с диалогом, поэтому возобновлённая сессия всё ещё может вернуться к ним с помощью <code>/rewind</code>. Откат не отменяет изменения, внесённые в файл командой Bash, если только Claude уже не использовал свои инструменты редактирования файлов для этого файла в вашем диалоге.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/checkpointing.md">Checkpointing</a></p>
+<h4 id="claude-directory"><code>.claude</code> directory <a class="h-anchor" href="#claude-directory" aria-label="Ссылка на раздел">#</a></h4>
+<p>Каталог, из которого Claude Code читает конфигурацию, ограниченную проектом: settings, hooks, skills, subagents, rules и auto memory. Проект имеет <code>.claude/</code> в своём корне; ваши пользовательские значения по умолчанию находятся в <code>~/.claude/</code>.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/claude-directory">The <code>.claude</code> directory</a></p>
+<h4 id="claude-md">CLAUDE.md <a class="h-anchor" href="#claude-md" aria-label="Ссылка на раздел">#</a></h4>
+<p>Файл markdown с постоянными инструкциями, которые вы пишете для Claude, загружаемый в начале каждого сеанса как пользовательское сообщение после системного prompt. Поместите сюда соглашения проекта, заметки об архитектуре и правила &quot;всегда делай X&quot;. CLAUDE.md в корне проекта сохраняется при <a href="#compaction">compaction</a> и перечитывается свежим с диска после этого.</p>
+<p>Вы можете разместить CLAUDE.md на уровне проекта в <code>./CLAUDE.md</code> или <code>./.claude/CLAUDE.md</code>, на уровне пользователя в <code>~/.claude/CLAUDE.md</code> или как <a href="#managed-settings">управляемую политику</a> для вашей организации. Все обнаруженные файлы объединяются в контексте, а не переопределяют друг друга, и упорядочиваются от самой широкой области действия к наиболее конкретной. Claude Code также может загружать файлы <a href="#agents-md">AGENTS.md</a> проекта вместо CLAUDE.md.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/memory.md#claude-md-files">CLAUDE.md files</a></p>
+<h4 id="cloud-session">Cloud session <a class="h-anchor" href="#cloud-session" aria-label="Ссылка на раздел">#</a></h4>
+<p>Сессия Claude Code, которая продолжает работать после того, как вы закрыли ноутбук, потому что она выполняется в облачной инфраструктуре, а не на вашем компьютере. По умолчанию этой инфраструктурой управляет Anthropic, либо это может быть <a href="https://code.claude.com/docs/ru/self-hosted-environments">самостоятельно размещённая среда</a>, которой управляет ваша организация. Вы запускаете такую сессию из claude.ai/code, мобильного приложения Claude, приложения Desktop с выбранным режимом <strong>Cloud</strong>, с помощью <code>claude --cloud</code> или <a href="https://code.claude.com/docs/ru/routines.md">облачной запланированной задачи</a>.</p>
+<p>Сессия в вашем терминале, IDE или приложении Desktop с выбранным режимом <strong>Local</strong> — это локальная сессия; чтобы получить доступ к локальной сессии с другого устройства, используйте <a href="#remote-control">Remote Control</a>.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">Use Claude Code in the cloud</a></p>
+<h4 id="command">Command <a class="h-anchor" href="#command" aria-label="Ссылка на раздел">#</a></h4>
+<p>Переиспользуемая инструкция, которую вы вызываете, введя <code>/name</code> в prompt. Встроенные команды, такие как <code>/clear</code>, <code>/model</code> и <code>/compact</code>, управляют сеансом. Вы можете определить свои собственные команды как файлы в <code>.claude/commands/</code> или установить их из <a href="#plugin">plugin</a>. <a href="#skill">Skills</a> — это рекомендуемый способ упаковки многошаговых команд.</p>
+<p>Два других использования этого слова не связаны: подкоманды CLI <code>claude</code>, такие как <code>claude mcp add</code>, перечисленные в <a href="https://code.claude.com/docs/ru/cli-reference.md#cli-commands">справочнике CLI</a>, и поле <code>command</code> записи stdio <a href="#mcp-server">MCP server</a>, которое указывает исполняемый файл, который Claude Code запускает для запуска сервера.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/commands.md">Commands</a> · <a href="https://code.claude.com/docs/ru/skills.md">Skills</a></p>
+<h4 id="compaction">Compaction <a class="h-anchor" href="#compaction" aria-label="Ссылка на раздел">#</a></h4>
+<p>Автоматическое резюмирование вашего диалога, когда <a href="#context-window">контекстное окно</a> приближается к своему пределу. CLAUDE.md в корне проекта и автоматическая память сохраняются при сжатии контекста, но инструкции, данные только в диалоге, могут не сохраниться. Запустите <code>/compact</code> для ручного запуска, опционально с фокусом, например <code>/compact focus on the API changes</code>.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/context-window.md#what-survives-compaction">What survives compaction</a> · <a href="https://code.claude.com/docs/ru/how-claude-code-works.md#when-context-fills-up">When context fills up</a> · <a href="https://code.claude.com/docs/ru/settings-reference.md#idlecompaction">When Claude Code compacts a conversation you leave idle</a></p>
+<h4 id="connector">Connector <a class="h-anchor" href="#connector" aria-label="Ссылка на раздел">#</a></h4>
+<p><a href="#mcp-server">MCP server</a>, добавленный в вашу учётную запись claude.ai, а не настроенный в Claude Code. Когда вы входите в Claude Code с этой учётной записью, ваши connectors появляются в <code>/mcp</code> рядом с серверами, которые вы добавили локально. Организации также могут предоставлять connectors и устанавливать элементы управления для каждого tool на них.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/mcp.md#use-mcp-servers-from-claude-ai">Use MCP servers from claude.ai</a></p>
+<h4 id="context-window">Context window <a class="h-anchor" href="#context-window" aria-label="Ссылка на раздел">#</a></h4>
+<p>Рабочая память для сеанса, содержащая историю разговора, содержимое файлов, выходы команд, CLAUDE.md, auto memory, загруженные skills и системные инструкции. По мере работы контекст заполняется до <a href="#compaction">compaction</a>, который его резюмирует. Запустите <code>/context</code>, чтобы увидеть, что использует пространство. Для базовой концепции модели см. <a href="https://platform.claude.com/docs/ru/about-claude/glossary#context-window">глоссарий платформы</a>.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/context-window.md">Explore the context window</a></p>
+<h3 id="d">D <a class="h-anchor" href="#d" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="dispatch">Dispatch <a class="h-anchor" href="#dispatch" aria-label="Ссылка на раздел">#</a></h4>
+<p>Инициируемый телефоном маршрутизатор задач, который запускает сессию Claude Code в приложении Desktop, когда вы отправляете задачу кодирования из мобильного приложения Claude. Ваш промпт автоматически направляется к нужному инструменту. Доступно на планах Pro, Max и Ultra.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/desktop.md#sessions-from-dispatch">Sessions from Dispatch</a></p>
+<h3 id="e">E <a class="h-anchor" href="#e" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="effort-level">Effort level <a class="h-anchor" href="#effort-level" aria-label="Ссылка на раздел">#</a></h4>
+<p>Параметр, который управляет адаптивным рассуждением, позволяя модели решать, нужно ли и сколько думать на каждом шаге. Более высокий effort означает больше thinking tokens и более глубокое рассуждение; более низкий effort быстрее и дешевле. Effort поддерживается на Fable моделях, на Opus 4.6 и более поздних версиях, на Sonnet 4.6 и более поздних версиях, а также на Haiku 5.5.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/model-config.md#adjust-effort-level">Adjust effort level</a></p>
+<h4 id="extended-thinking">Extended thinking <a class="h-anchor" href="#extended-thinking" aria-label="Ссылка на раздел">#</a></h4>
+<p>Видимое пошаговое рассуждение, которое модель выполняет перед ответом. Вы можете отрегулировать его с помощью <a href="#effort-level">effort level</a>, или ограничить thinking tokens с помощью <code>MAX_THINKING_TOKENS</code> на моделях с фиксированным бюджетом thinking. Thinking появляется серым курсивным текстом в терминале.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/model-config.md#extended-thinking">Use extended thinking</a></p>
+<h3 id="f">F <a class="h-anchor" href="#f" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="frontmatter">Frontmatter <a class="h-anchor" href="#frontmatter" aria-label="Ссылка на раздел">#</a></h4>
+<p>Блок параметров YAML в самом начале файла Markdown, между открывающей строкой <code>---</code> и закрывающей строкой <code>---</code>. Skills, subagents, output styles и rules читают свою конфигурацию из frontmatter, например <code>description</code> skill или <code>tools</code> subagent, и рассматривают всё после закрывающей <code>---</code> как инструкции. Открывающая <code>---</code> должна быть первой строкой файла. Каждый тип файла принимает свой собственный набор полей.</p>
+<p>Узнайте больше: <a href="https://code.claude.com/docs/ru/skills.md#frontmatter-reference">Skill frontmatter</a>, <a href="https://code.claude.com/docs/ru/sub-agents.md#supported-frontmatter-fields">Subagent frontmatter</a>, <a href="https://code.claude.com/docs/ru/output-styles.md#frontmatter">Output style frontmatter</a>, <a href="https://code.claude.com/docs/ru/memory.md#rules-frontmatter-reference">Rule frontmatter</a></p>
+<h3 id="h-2">H <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="hook">Hook <a class="h-anchor" href="#hook" aria-label="Ссылка на раздел">#</a></h4>
+<p>Определённый пользователем обработчик, который выполняется автоматически в определённой точке жизненного цикла Claude Code, например перед запуском tool, после редактирования файла или при запуске сеанса. Обработчики могут быть shell-командой, HTTP endpoint, MCP tool, LLM prompt или subagent. Hooks являются детерминированными: они срабатывают в фиксированных точках жизненного цикла, а не по усмотрению модели.</p>
+<p>Конфигурация hook имеет три уровня:</p>
+<ul>
+<li><strong>Hook event</strong>: точка жизненного цикла</li>
+<li><strong>Matcher</strong>: фильтрует, какие события его срабатывают</li>
+<li><strong>Hook handler</strong>: что запускается</li>
+</ul>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/hooks-guide.md">Get started with hooks</a> · <a href="https://code.claude.com/docs/ru/hooks.md">Hooks reference</a></p>
+<h3 id="m">M <a class="h-anchor" href="#m" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="managed-settings">Managed settings <a class="h-anchor" href="#managed-settings" aria-label="Ссылка на раздел">#</a></h4>
+<p>Параметры, применяемые организацией IT или DevOps, доставляемые с серверов Anthropic через консоль администратора или развёрнутые на устройствах по пути уровня ОС вне <code>~/.claude</code>. Пользователи и параметры проекта не могут переопределять управляемые параметры. Доставка, управляемая сервером, применяется на <a href="https://code.claude.com/docs/ru/server-managed-settings.md#platform-availability">подходящих конфигурациях</a>; см. <a href="https://code.claude.com/docs/ru/server-managed-settings.md#security-considerations">Соображения безопасности</a>. Используйте это для политик безопасности, требований соответствия или стандартизированного инструментария на всём парке.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/server-managed-settings.md">Server-managed settings</a> · <a href="https://code.claude.com/docs/ru/settings.md#where-settings-live">Settings files</a></p>
+<h4 id="mcp-model-context-protocol">MCP (Model Context Protocol) <a class="h-anchor" href="#mcp-model-context-protocol" aria-label="Ссылка на раздел">#</a></h4>
+<p>Открытый стандарт для подключения инструментов ИИ к внешним источникам данных и сервисам. MCP servers дают Claude новые tools для Slack, Jira, баз данных, браузеров и сотен других интеграций. Вы подключаете servers через <code>/mcp</code> или добавляя их в <code>.mcp.json</code>. Для самого протокола см. <a href="https://platform.claude.com/docs/ru/about-claude/glossary#mcp-model-context-protocol">глоссарий платформы</a>.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/mcp.md">Model Context Protocol</a></p>
+<h4 id="mcp-server">MCP server <a class="h-anchor" href="#mcp-server" aria-label="Ссылка на раздел">#</a></h4>
+<p>Программа, которая предоставляет Claude tools, prompts или ресурсы через <a href="#mcp-model-context-protocol">MCP</a>. Вы добавляете servers с помощью <code>claude mcp add</code>, в <code>.mcp.json</code>, через <a href="#plugin">plugin</a> или как claude.ai <a href="#connector">connector</a>. Локальный stdio server запускается как процесс, который Claude Code запускает из полей <code>command</code> и <code>args</code> его конфигурации, которые не имеют ничего общего с <a href="#command">commands</a>, которые вы вводите в prompt.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/mcp.md">Model Context Protocol</a></p>
+<h4 id="mcp-tool-search">MCP Tool Search <a class="h-anchor" href="#mcp-tool-search" aria-label="Ссылка на раздел">#</a></h4>
+<p>Механизм сохранения контекста, который откладывает схемы MCP tool до необходимости. Только имена tool загружаются при запуске; Claude получает полную схему по требованию, когда решает использовать определённый tool. Это предотвращает потребление большого контекста неиспользуемыми MCP servers.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/mcp.md#scale-with-mcp-tool-search">Scale with MCP Tool Search</a></p>
+<h3 id="n">N <a class="h-anchor" href="#n" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="non-interactive-mode">Non-interactive mode <a class="h-anchor" href="#non-interactive-mode" aria-label="Ссылка на раздел">#</a></h4>
+<p>Режим, который выполняет один prompt и выходит без интерактивного сеанса, вызываемый с <code>-p</code> или <code>--print</code>. Используется для CI, скриптов и piping. Запуск по-прежнему сохраняется как возобновляемый сеанс, если вы не передадите <code>--no-session-persistence</code>. <a href="https://code.claude.com/docs/ru/agent-sdk/overview.md">Agent SDK</a> — это эквивалент Python и TypeScript. Ранее называлось headless mode.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/headless.md">Run Claude Code programmatically</a></p>
+<h3 id="o">O <a class="h-anchor" href="#o" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="output-style">Output style <a class="h-anchor" href="#output-style" aria-label="Ссылка на раздел">#</a></h4>
+<p>Конфигурация, которая изменяет инструкции, которые Claude Code дает Claude, для установки поведения ответа, тона или формата. В отличие от <a href="#claude-md">CLAUDE.md</a>, который добавляет контекст проекта наряду с инструкциями Claude Code по умолчанию, пользовательский стиль вывода добавляет собственные инструкции и может исключить инструкции по разработке программного обеспечения по умолчанию.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/output-styles.md">Output styles</a></p>
+<h3 id="p">P <a class="h-anchor" href="#p" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="permission-mode">Permission mode <a class="h-anchor" href="#permission-mode" aria-label="Ссылка на раздел">#</a></h4>
+<p>Базовое поведение одобрения для сеанса. Переключайтесь с <code>Shift+Tab</code> в CLI или используйте селектор режима в VS Code, Desktop и claude.ai. Доступные режимы: <code>default</code>, <code>acceptEdits</code>, <code>plan</code>, <code>auto</code>, <code>dontAsk</code> и <code>bypassPermissions</code>.</p>
+<p>Режим <code>default</code> обозначен как Manual в CLI и в расширениях VS Code и JetBrains, и Claude Code принимает <code>manual</code> как псевдоним для этого значения.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/permission-modes.md">Выберите режим разрешений</a></p>
+<h4 id="permission-rule">Permission rule <a class="h-anchor" href="#permission-rule" aria-label="Ссылка на раздел">#</a></h4>
+<p>Запись settings, которая разрешает, спрашивает или отрицает вызов tool на основе имени tool и шаблона аргумента. Правила оцениваются deny→ask→allow, первое совпадение побеждает. Permission rules — это детальные элементы управления, наложенные на более широкий <a href="#permission-mode">permission mode</a>.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/permissions.md">Настройте разрешения</a></p>
+<h4 id="plan-mode">Plan mode <a class="h-anchor" href="#plan-mode" aria-label="Ссылка на раздел">#</a></h4>
+<p><a href="#permission-mode">permission mode</a>, где Claude исследует и предлагает изменения без редактирования ваших исходных файлов. Он может читать, искать и выполнять команды исследования, затем представляет план для одобрения перед тем, как что-либо трогать. Войдите в plan mode с <code>/plan</code> или нажав <code>Shift+Tab</code>.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/permission-modes.md#analyze-before-you-edit-with-plan-mode">Анализируйте перед редактированием с помощью plan mode</a></p>
+<h4 id="plugin">Plugin <a class="h-anchor" href="#plugin" aria-label="Ссылка на раздел">#</a></h4>
+<p>Пакет skills, hooks, subagents и MCP servers, упакованный как единица установки. Plugin skills имеют пространство имён как <code>plugin-name:skill-name</code>, поэтому несколько plugins сосуществуют. Распределяйте plugins по командам через <a href="https://code.claude.com/docs/ru/plugins/overview.md">marketplace</a>.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/plugins/overview.md">Plugins</a></p>
+<h4 id="project-trust">Project trust <a class="h-anchor" href="#project-trust" aria-label="Ссылка на раздел">#</a></h4>
+<p>Диалог принятия каталога перед загрузкой Claude Code его конфигурации. Принятие сохраняется для каждого каталога проекта, за исключением вашего домашнего каталога, где доверие сохраняется только для текущего сеанса и приглашение появляется снова при каждом запуске. До тех пор, пока вы не доверяете каталогу, Claude Code удерживает некоторое содержимое, которое его репозиторий предоставляет, такое как правила разрешений проекта и marketplaces из <code>.claude/settings.json</code>. <a href="https://code.claude.com/docs/ru/permissions.md#what-runs-before-you-trust-a-folder">Что запускается перед тем, как вы доверяете папке</a> перечисляет каждый вид содержимого, включая то, что запускает сеанс <code>-p</code> без диалога.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/claude-directory">Каталог <code>.claude</code></a></p>
+<h4 id="prompt-injection">Prompt injection <a class="h-anchor" href="#prompt-injection" aria-label="Ссылка на раздел">#</a></h4>
+<p>Враждебные инструкции, встроенные в файл, веб-страницу или результат инструмента, которые пытаются направить Claude к действиям, о которых вы не просили. Защита Claude Code включает систему разрешений, обнаружение инъекций команд и проверку доверия. В <a href="#auto-mode">авторежиме</a> серверная проверка сканирует результаты инструментов на наличие подозрительного содержимого, а классификатор проверяет действия.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/security.md#protect-against-prompt-injection">Защититесь от prompt injection</a></p>
+<h3 id="r">R <a class="h-anchor" href="#r" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="remote-control">Remote Control <a class="h-anchor" href="#remote-control" aria-label="Ссылка на раздел">#</a></h4>
+<p>Способ продолжить локальный сеанс Claude Code с вашего телефона или браузера через claude.ai. Ваш код и файлы остаются на вашей машине; интерфейс является удалённым. Отличается от <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md">облачного сеанса</a>, который работает в облачной песочнице.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/remote-control.md">Remote Control</a></p>
+<h4 id="rules">Rules <a class="h-anchor" href="#rules" aria-label="Ссылка на раздел">#</a></h4>
+<p>Модульные файлы инструкций в <code>.claude/rules/</code>, которые загружаются вместе с CLAUDE.md. Правило может быть ограничено по пути с помощью YAML frontmatter <code>paths:</code>, поэтому оно загружается только тогда, когда Claude читает, записывает или редактирует соответствующий файл, сохраняя контекст компактным до тех пор, пока оно не станет релевантным.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/memory#organize-rules-with-claude/rules/">Organize rules with <code>.claude/rules/</code></a></p>
+<h3 id="s">S <a class="h-anchor" href="#s" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="sandboxing">Sandboxing <a class="h-anchor" href="#sandboxing" aria-label="Ссылка на раздел">#</a></h4>
+<p>Изоляция файловой системы и сети на уровне ОС для инструмента Bash. Команды выполняются внутри границы, которую вы определяете заранее. Изоляция в песочнице — это отдельный уровень, независимый от <a href="#permission-rule">правил разрешений</a>.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/sandboxing.md">Изоляция в песочнице</a></p>
+<h4 id="session">Session <a class="h-anchor" href="#session" aria-label="Ссылка на раздел">#</a></h4>
+<p>Диалог, привязанный к вашему текущему каталогу, с собственным независимым <a href="#context-window">контекстным окном</a>. Сессии можно возобновить с помощью <code>claude -c</code>, разветвить с помощью <code>--fork-session</code>, чтобы сохранить историю под новым ID сессии, или запускать параллельно в разных терминалах. Команда <code>/clear</code> начинает новую сессию; предыдущая остаётся сохранённой и доступна через <code>/resume</code>. Транскрипт каждой сессии хранится в <code>~/.claude/projects/</code>.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/how-claude-code-works.md#work-with-sessions">Работа с сессиями</a></p>
+<h4 id="settings-layers">Settings layers <a class="h-anchor" href="#settings-layers" aria-label="Ссылка на раздел">#</a></h4>
+<p>Иерархия, из которой Claude Code считывает конфигурацию. В порядке приоритета от высшего к низшему уровни таковы: <a href="#managed-settings">управляемая политика</a>, настройки, переданные с флагом <code>--settings</code>, локальные настройки в <code>.claude/settings.local.json</code>, настройки проекта в <code>.claude/settings.json</code> и пользовательские настройки в <code>~/.claude/settings.json</code>. Большинство списков, например <code>permissions.allow</code>, <a href="https://code.claude.com/docs/ru/settings.md#lists-merge-instead-of-overriding">объединяются между файлами</a>. См. <a href="https://code.claude.com/docs/ru/settings.md#settings-precedence">Приоритет настроек</a>.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/settings.md#where-settings-live">Файлы настроек</a></p>
+<h4 id="skill">Skill <a class="h-anchor" href="#skill" aria-label="Ссылка на раздел">#</a></h4>
+<p>Файл <code>SKILL.md</code>, содержащий инструкции, знания или рабочий процесс, который Claude добавляет в свой набор инструментов. Claude загружает скилл автоматически, когда это уместно, или вы вызываете его напрямую с помощью <code>/skill-name</code>. Скиллы следуют открытому стандарту Agent Skills; Claude Code расширяет его управлением вызовом и выполнением в субагентах.</p>
+<p>Скиллы — это рекомендуемая замена пользовательских команд. Файл <code>.claude/commands/deploy.md</code> и файл <code>.claude/skills/deploy/SKILL.md</code> оба создают <code>/deploy</code> и работают одинаково; существующие файлы команд продолжают работать.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/skills.md">Расширение возможностей Claude с помощью скиллов</a></p>
+<h4 id="subagent">Subagent <a class="h-anchor" href="#subagent" aria-label="Ссылка на раздел">#</a></h4>
+<p>Специализированный ИИ-ассистент, который работает в собственном контекстном окне с пользовательским системным промптом, определённым доступом к инструментам и независимыми разрешениями. Он работает над делегированной задачей и возвращает сводку в основной диалог. Используйте субагентов, чтобы крупные исследования не занимали ваш основной контекст, или для параллельных исследований. Субагент остаётся внутри сессии, которая его создала. Чтобы передавать результаты между отдельными сессиями, которые вы запускаете сами, используйте <a href="https://code.claude.com/docs/ru/cross-session-messaging.md">обмен сообщениями между сессиями</a>.</p>
+<p>Встроенные субагенты включают Explore, Plan и general-purpose.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/sub-agents.md">Создание пользовательских субагентов</a></p>
+<h4 id="surface">Surface <a class="h-anchor" href="#surface" aria-label="Ссылка на раздел">#</a></h4>
+<p>Любое место, где вы работаете с Claude Code: CLI, VS Code, JetBrains, Desktop или claude.ai. Все интерфейсы используют один и тот же движок. Сессии на вашем компьютере читают ваш локальный CLAUDE.md, настройки и скиллы; <a href="https://code.claude.com/docs/ru/cloud-environments.md#what-carries-over-from-your-setup">облачные сессии</a> начинаются со свежего клона вашего репозитория и не читают <code>~/.claude/</code> на вашем компьютере. Slack и расширение Chrome — это интеграции, которые подключаются к интерфейсу, а не самостоятельные интерфейсы.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/platforms.md">Платформы и интеграции</a></p>
+<h4 id="system-prompt">System prompt <a class="h-anchor" href="#system-prompt" aria-label="Ссылка на раздел">#</a></h4>
+<p>Инструкции, которые Claude Code отправляет перед вашим диалогом в каждом запросе: они описывают, как Claude использует инструменты, как безопасно себя ведёт и как форматирует свои ответы. Вы можете дополнить системный промпт с помощью <code>--append-system-prompt</code> или заменить его с помощью <code>--system-prompt</code>. Системный промпт — это первый уровень <a href="https://code.claude.com/docs/ru/prompt-caching.md#how-the-cache-is-organized">кэша промптов</a>.</p>
+<p>Ваши файлы <a href="#claude-md">CLAUDE.md</a> и инструкции вашего <a href="#output-style">стиля вывода</a> не входят в системный промпт. Claude Code передаёт их в диалоге как <a href="#system-reminder">системные напоминания</a>.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/cli-reference.md#system-prompt-flags">Флаги системного промпта</a></p>
+<h4 id="system-reminder">System reminder <a class="h-anchor" href="#system-reminder" aria-label="Ссылка на раздел">#</a></h4>
+<p>Сообщение, которое Claude Code как <a href="#agentic-harness">агентная обвязка</a> добавляет в диалог, чтобы дать Claude контекст. Вы не отправляете системные напоминания сами. Claude Code вставляет их по ходу сессии, например при запуске сессии или когда хук возвращает текст. Claude читает их вместе с вашими сообщениями. Всё перечисленное ниже поступает к Claude в виде системных напоминаний:</p>
+<ul>
+<li>Ваши файлы <a href="#claude-md">CLAUDE.md</a></li>
+<li>Инструкции вашего <a href="#output-style">стиля вывода</a></li>
+<li>Текст, который <a href="#hook">хук</a> возвращает как <code>additionalContext</code></li>
+<li>Список доступных <a href="#skill">скиллов</a></li>
+<li>Уведомление о том, что файл, который Claude ранее редактировал, с тех пор изменился на диске</li>
+<li>Строки атрибуции коммитов и pull request</li>
+</ul>
+<p>В залогированном запросе API системное напоминание отображается обёрнутым в теги <code>&lt;system-reminder&gt;</code> внутри пользовательского сообщения, а на некоторых моделях — как отдельное сообщение с ролью <code>system</code>.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/agent-sdk/modifying-system-prompts.md#context-claude-code-adds-outside-the-system-prompt">Контекст, который Claude Code добавляет вне системного промпта</a></p>
+<h3 id="t">T <a class="h-anchor" href="#t" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="teleport">Teleport <a class="h-anchor" href="#teleport" aria-label="Ссылка на раздел">#</a></h4>
+<p>Команда, <code>/teleport</code>, которая вытягивает облачный сеанс Claude Code в ваш локальный терминал. Claude получает ветку, загружает историю разговора и возобновляет с последнего состояния облачного сеанса. Обратное направление — <code>--cloud</code>, которое отправляет локальную задачу для запуска в облаке.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/claude-code-on-the-web.md#from-cloud-to-terminal">Продолжение облачной сессии в терминале</a></p>
+<h4 id="tool">Tool <a class="h-anchor" href="#tool" aria-label="Ссылка на раздел">#</a></h4>
+<p>Действие, которое может предпринять Claude: прочитать файл, отредактировать код, выполнить shell-команду, поискать в веб-сети, порождать subagent. Tools — это то, что делает Claude Code agentic. Без них Claude может только отвечать текстом. Каждое использование tool возвращает результат, который информирует следующее решение Claude в <a href="#agentic-loop">agentic loop</a>.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/tools-reference.md">Tools available to Claude</a></p>
+<h4 id="transcript">Transcript <a class="h-anchor" href="#transcript" aria-label="Ссылка на раздел">#</a></h4>
+<p>Сохранённая запись <a href="#session">session</a>. Разговор — это то, что вы и Claude обмениваете; transcript — это тот же разговор, сохранённый как файл, по умолчанию в <code>~/.claude/projects/&lt;project&gt;/&lt;session-id&gt;.jsonl</code>. Claude Code читает файл обратно, когда вы возобновляете, что позволяет разговору продолжаться после завершения сеанса. Для просмотра того же разговора на экране см. <a href="https://code.claude.com/docs/ru/interactive-mode.md#transcript-viewer">transcript viewer</a>.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/sessions.md#where-transcripts-are-stored">Where transcripts are stored</a></p>
+<h4 id="turn">Turn <a class="h-anchor" href="#turn" aria-label="Ссылка на раздел">#</a></h4>
+<p>Один полный ответ от Claude в рамках <a href="#session">session</a>. Turn начинается, когда вы отправляете сообщение, и заканчивается, когда Claude завершает ответ, с любым количеством вызовов <a href="#tool">tool</a> между ними. <a href="#hook">Stop hooks</a> срабатывают в конце каждого turn. Session состоит из множества turn, и <a href="#agentic-loop">agentic loop</a> описывает, что происходит внутри одного.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/how-claude-code-works.md#the-agentic-loop">How Claude Code works</a></p>
+<h3 id="v">V <a class="h-anchor" href="#v" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="verification-loop">Verification loop <a class="h-anchor" href="#verification-loop" aria-label="Ссылка на раздел">#</a></h4>
+<p>Как сессия узнаёт, что работа действительно выполнена, вместо того чтобы принимать результат, который лишь выглядит правдоподобно. Вы даёте Claude проверку, которую он может запустить, такую как набор тестов, сборка или сравнение скриншотов, и Claude повторяет попытки до тех пор, пока проверка не пройдёт, вместо того чтобы остановиться после одной попытки. Цикл проверки — это предварительное требование для <a href="https://code.claude.com/docs/ru/goal"><code>/goal</code></a>, автоматических запусков и <a href="https://code.claude.com/docs/ru/workflows.md">динамических рабочих процессов</a>: без него единственное, что решает, что агент закончил, — это сам агент.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/best-practices.md#give-claude-a-check-to-run">Дайте Claude проверку, которую он может запустить</a></p>
+<h3 id="w">W <a class="h-anchor" href="#w" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="worktree-isolation">Worktree isolation <a class="h-anchor" href="#worktree-isolation" aria-label="Ссылка на раздел">#</a></h4>
+<p>Режим изоляции, который запускает Claude в отдельном git worktree в <code>.claude/worktrees/</code>, включаемый флагом <code>-w</code> или <code>isolation: worktree</code> в конфигурации субагента. Изменения остаются на отдельной ветке в отдельном каталоге, поэтому каждый из параллельных агентов редактирует собственную копию файлов.</p>
+<p>Подробнее: <a href="https://code.claude.com/docs/ru/worktrees.md">Запуск параллельных сеансов с git worktrees</a></p>
+<hr>
+<h3 id="deprecated-and-renamed-terms">Deprecated and renamed terms <a class="h-anchor" href="#deprecated-and-renamed-terms" aria-label="Ссылка на раздел">#</a></h3>
+<p>Эти термины появляются в старых документах, постах блога и содержимом сообщества. Используйте текущее имя при поиске на этом сайте.</p>
+<p>| Old term | Now called | Notes |
+| - | - | - |
+| Headless mode | <a href="#non-interactive-mode">Non-interactive mode</a> | Same <code>-p</code> flag, same behavior |
+| Web session; &quot;Claude Code on the web&quot; as the name for any cloud session | <a href="#cloud-session">Cloud session</a> | &quot;Claude Code on the web&quot; now names only the browser surface at claude.ai/code |
+| Custom commands | <a href="#skill">Skills</a> | <code>.claude/commands/</code> files still work |
+| Slash commands | Commands | &quot;Slash&quot; dropped from product copy |</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

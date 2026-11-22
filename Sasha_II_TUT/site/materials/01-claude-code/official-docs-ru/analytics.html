@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Отслеживание использования команды с помощью аналитики</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Отслеживание использования команды с помощью аналитики <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Просмотрите метрики использования Claude Code, отслеживайте внедрение и измеряйте скорость разработки на панели аналитики.</p>
+</blockquote>
+<p>Claude Code предоставляет панели аналитики, которые помогают организациям понять закономерности использования разработчиками, отслеживать метрики вклада и измерять, как Claude Code влияет на скорость разработки. Получите доступ к панели для вашего плана:</p>
+<p>| План | URL панели | Включает | Подробнее |
+| - | - | - | - |
+| Claude for Teams / Enterprise | <a href="https://claude.ai/analytics/claude-code">claude.ai/analytics/claude-code</a> | Метрики использования, метрики вклада с интеграцией GitHub, таблица лидеров, экспорт данных | <a href="#access-analytics-for-team-and-enterprise">Подробности</a> |
+| API (Claude Console) | <a href="https://platform.claude.com/claude-code">platform.claude.com/claude-code</a> | Метрики использования, отслеживание расходов, аналитика команды | <a href="#access-analytics-for-api-customers">Подробности</a> |</p>
+<p>У Code Review есть собственная панель. Сведения об активности код-ревью и расходах см. в разделе <a href="https://code.claude.com/docs/ru/code-review-costs.md#view-usage">Просмотр использования</a>.</p>
+<h3 id="доступ-к-аналитике-для-team-и-enterprise">Доступ к аналитике для Team и Enterprise <a class="h-anchor" href="#доступ-к-аналитике-для-team-и-enterprise" aria-label="Ссылка на раздел">#</a></h3>
+<p>Перейдите на <a href="https://claude.ai/analytics/claude-code">claude.ai/analytics/claude-code</a>. Администраторы и владельцы могут просматривать панель.</p>
+<p>Панель Team и Enterprise включает:</p>
+<ul>
+<li><strong>Метрики использования</strong>: принятые строки кода, процент принятия предложений, ежедневные активные пользователи и сеансы</li>
+<li><strong>Метрики вклада</strong>: PR и строки кода, отправленные с помощью Claude Code, с <a href="#enable-contribution-metrics">интеграцией GitHub</a></li>
+<li><strong>Таблица лидеров</strong>: лучшие участники, ранжированные по использованию Claude Code</li>
+<li><strong>Экспорт данных</strong>: загрузите данные о вкладе в формате CSV для пользовательских отчётов</li>
+</ul>
+<p>Для подсчёта токенов на пользователя и оценок затрат настройте <a href="https://code.claude.com/docs/ru/monitoring-usage.md">экспорт OpenTelemetry</a> или экспортируйте <a href="https://support.claude.com/en/articles/12883420-view-usage-analytics-for-team-and-enterprise-plans">отчёт о расходах</a> из параметров аналитики вашей организации, который содержит использование токенов и предполагаемые расходы на кредиты использования на пользователя и на модель.</p>
+<h4 id="h-2">Включение метрик вклада <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h4>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Метрики вклада находятся в открытой бета-версии и доступны в планах Claude for Teams и Claude for Enterprise. Эти метрики охватывают только пользователей в вашей организации claude.ai. Использование через Claude Console API или интеграции третьих сторон не включено.</p>
+</blockquote>
+<p>Данные об использовании и внедрении доступны для всех учётных записей Claude for Teams и Claude for Enterprise. Метрики вклада требуют дополнительной настройки для подключения вашей организации GitHub.</p>
+<p>Вам нужна роль Owner для настройки параметров аналитики. Администратор GitHub должен установить приложение GitHub.</p>
+<blockquote>
+<p>[!WARNING]</p>
+<p>Метрики вклада недоступны для организаций с включённым <a href="https://code.claude.com/docs/ru/zero-data-retention.md">Zero Data Retention</a>. Панель аналитики будет показывать только метрики использования.</p>
+</blockquote>
+<p><strong>1. Установка приложения GitHub</strong></p>
+<p>Администратор GitHub устанавливает приложение Claude GitHub в учётную запись GitHub вашей организации на <a href="https://github.com/apps/claude">github.com/apps/claude</a>.</p>
+<p><strong>2. Включение аналитики Claude Code</strong></p>
+<p>Владелец Claude переходит на <a href="https://claude.ai/admin-settings/claude-code">claude.ai/admin-settings/claude-code</a> и включает функцию аналитики Claude Code.</p>
+<p><strong>3. Включение аналитики GitHub</strong></p>
+<p>На той же странице включите переключатель &quot;GitHub analytics&quot;.</p>
+<p><strong>4. Аутентификация с помощью GitHub</strong></p>
+<p>Завершите процесс аутентификации GitHub и выберите, какие организации GitHub включить в анализ.</p>
+<p>Данные обычно появляются в течение 24 часов после включения, с ежедневными обновлениями. Если данные не появляются, вы можете увидеть одно из этих сообщений:</p>
+<ul>
+<li><strong>&quot;GitHub app required&quot;</strong>: установите приложение GitHub для просмотра метрик вклада</li>
+<li><strong>&quot;Data processing in progress&quot;</strong>: проверьте через несколько дней и подтвердите, что приложение GitHub установлено, если данные не появляются</li>
+</ul>
+<p>Метрики вклада охватывают репозитории, размещённые на github.com. Для репозиториев на <a href="https://code.claude.com/docs/ru/github-enterprise-server.md">GitHub Enterprise Server</a> панель аналитики показывает только метрики использования.</p>
+<h4 id="h-3">Просмотр сводных метрик <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h4>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Эти метрики намеренно консервативны и представляют недооценку фактического влияния Claude Code. Подсчитываются только строки и PR, где есть высокая уверенность в участии Claude Code.</p>
+</blockquote>
+<p>Панель отображает эти сводные метрики:</p>
+<ul>
+<li><strong>PRs with Claude Code</strong>: pull request, прошедшие слияние, которые содержат хотя бы одну строку кода, написанную с помощью Claude Code. Одна карточка показывает их количество, другая — долю от всех PR, прошедших слияние</li>
+<li><strong>LOC with Claude Code</strong>: общее количество строк кода (LOC) во всех PR, прошедших слияние, написанных с помощью Claude Code. Подсчитываются только &quot;эффективные строки&quot;: строки с более чем 3 символами после нормализации.</li>
+<li><strong>Suggestion accept rate</strong>: процент случаев, когда пользователи принимают предложения Claude Code по редактированию кода, включая использование инструментов Edit, Write и NotebookEdit</li>
+<li><strong>Lines of code accepted</strong>: общее количество строк кода, которые инструменты Edit и Write в Claude Code добавили или удалили в принятых правках. Это исключает отклонённые предложения, а строки, удалённые позже, не уменьшают итоговое значение.</li>
+</ul>
+<h4 id="h-4">Изучение диаграмм <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h4>
+<p>Панель включает несколько диаграмм для визуализации тенденций во времени.</p>
+<h5 id="измерение-pr-на-пользователя">Измерение PR на пользователя <a class="h-anchor" href="#измерение-pr-на-пользователя" aria-label="Ссылка на раздел">#</a></h5>
+<p><strong>Total PRs per user</strong> — это количество PR, прошедших слияние за день, разделённое на число ежедневных активных пользователей.</p>
+<p>Используйте это, чтобы понять, как индивидуальная производительность меняется по мере увеличения внедрения Claude Code.</p>
+<h5 id="h-5">Просмотр разбивки запросов на слияние <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h5>
+<p>Диаграмма <strong>PRs with Claude Code</strong> сравнивает ежедневное количество PR с Claude Code, прошедших слияние, с <strong>All PRs</strong>.</p>
+<p>Переключитесь на представление <strong>Lines of code</strong>, чтобы увидеть тот же разбор по строкам кода вместо количества PR.</p>
+<h5 id="h-6">Поиск лучших участников <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h5>
+<p>Таблица лидеров показывает топ-10 пользователей, ранжированных по объёму вклада. Переключайтесь между:</p>
+<ul>
+<li><strong>Pull requests</strong>: показывает PR с Claude Code и все PR для каждого пользователя</li>
+<li><strong>Lines of code</strong>: показывает строки с Claude Code и все строки для каждого пользователя</li>
+</ul>
+<p>Нажмите <strong>Export all users</strong>, чтобы загрузить полные данные о вкладе для всех пользователей в виде файла CSV. Экспорт включает всех пользователей, а не только топ-10, отображаемых на экране.</p>
+<h4 id="атрибуция-pr">Атрибуция PR <a class="h-anchor" href="#атрибуция-pr" aria-label="Ссылка на раздел">#</a></h4>
+<p>Когда метрики вклада включены, Claude Code анализирует объединённые запросы на слияние, чтобы определить, какой код был написан с помощью Claude Code. Это делается путём сопоставления активности сеанса Claude Code с кодом в каждом PR.</p>
+<h5 id="h-7">Процесс атрибуции <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h5>
+<p>Когда запрос на слияние объединяется:</p>
+<ol>
+<li>Добавленные строки извлекаются из diff PR</li>
+<li>Определяются сеансы Claude Code, которые редактировали соответствующие файлы в пределах временного окна</li>
+<li>Строки PR сопоставляются с выходом Claude Code, используя несколько стратегий</li>
+<li>Вычисляются метрики для строк с помощью AI и общего количества строк</li>
+</ol>
+<p>Перед сравнением строки нормализуются: пробелы обрезаются, несколько пробелов объединяются, кавычки стандартизируются и текст преобразуется в нижний регистр.</p>
+<p>Объединённые запросы на слияние, содержащие строки, написанные с помощью Claude Code, помечаются как <code>claude-code-assisted</code> в GitHub.</p>
+<h5 id="h-8">Временное окно <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h5>
+<p>Сеансы с 21 дня до объединения PR и 2 дня после даты объединения PR рассматриваются для сопоставления атрибуции.</p>
+<h5 id="h-9">Исключённые файлы <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h5>
+<p>Определённые файлы автоматически исключаются из анализа, так как они автоматически генерируются:</p>
+<ul>
+<li>Файлы блокировки: package-lock.json, yarn.lock, Cargo.lock и аналогичные</li>
+<li>Сгенерированный код: выходные данные Protobuf, артефакты сборки, минифицированные файлы</li>
+<li>Каталоги сборки: dist/, build/, node\_modules/, target/</li>
+<li>Тестовые приспособления: снимки, кассеты, макетные данные</li>
+<li>Строки более 1000 символов, которые, вероятно, минифицированы или сгенерированы</li>
+</ul>
+<h5 id="h-10">Примечания по атрибуции <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h5>
+<p>Помните об этих дополнительных деталях при интерпретации данных атрибуции:</p>
+<ul>
+<li>Код, существенно переписанный разработчиками с разницей более 20%, не приписывается Claude Code</li>
+<li>Сеансы вне 21-дневного окна не рассматриваются</li>
+<li>Алгоритм не учитывает источник PR или целевую ветвь при выполнении атрибуции</li>
+</ul>
+<h4 id="h-11">Получение максимума от аналитики <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h4>
+<p>Используйте метрики вклада для демонстрации ROI, определения закономерностей внедрения и поиска членов команды, которые могут помочь другим начать работу.</p>
+<h5 id="h-12">Мониторинг внедрения <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h5>
+<p>Отслеживайте диаграммы <strong>Users</strong> и <strong>Sessions</strong>, чтобы определить:</p>
+<ul>
+<li>Активных пользователей, которые могут делиться лучшими практиками</li>
+<li>Общие тенденции внедрения в вашей организации</li>
+<li>Снижение использования, которое может указывать на трения или проблемы</li>
+</ul>
+<h5 id="измерение-roi">Измерение ROI <a class="h-anchor" href="#измерение-roi" aria-label="Ссылка на раздел">#</a></h5>
+<p>Метрики вклада помогают ответить на вопрос &quot;Стоит ли этот инструмент инвестиций?&quot; с данными из вашей собственной кодовой базы:</p>
+<ul>
+<li>Отслеживайте изменения в PR на пользователя во времени по мере увеличения внедрения</li>
+<li>Сравнивайте PR и строки кода, отправленные с Claude Code, со всеми PR и строками кода</li>
+<li>Используйте вместе с <a href="https://dora.dev/">DORA metrics</a>, скоростью спринта или другими KPI инженерии, чтобы понять изменения от внедрения Claude Code</li>
+</ul>
+<h5 id="h-13">Определение опытных пользователей <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h5>
+<p>Таблица лидеров помогает вам найти членов команды с высоким внедрением Claude Code, которые могут:</p>
+<ul>
+<li>Делиться техниками подсказок и рабочими процессами с командой</li>
+<li>Предоставлять обратную связь о том, что работает хорошо</li>
+<li>Помогать подключать новых пользователей</li>
+</ul>
+<h5 id="h-14">Доступ к данным программным способом <a class="h-anchor" href="#h-14" aria-label="Ссылка на раздел">#</a></h5>
+<p>На плане Enterprise <a href="https://platform.claude.com/docs/en/api/admin/analytics">Claude Enterprise Analytics API</a> возвращает отчёты об участии, использовании и затратах на пользователя для вашей организации на всех поверхностях Claude, включая Claude Code. Основной владелец создаёт ключ с областью <code>read:analytics</code> на <a href="https://claude.ai/analytics/api-keys">claude.ai/analytics/api-keys</a>. API недоступен на плане Teams.</p>
+<p>Для запроса этих данных через GitHub ищите PR, помеченные как <code>claude-code-assisted</code>.</p>
+<h3 id="доступ-к-аналитике-для-клиентов-api">Доступ к аналитике для клиентов API <a class="h-anchor" href="#доступ-к-аналитике-для-клиентов-api" aria-label="Ссылка на раздел">#</a></h3>
+<p>Клиенты API, использующие Claude Console, могут получить доступ к аналитике на <a href="https://platform.claude.com/claude-code">platform.claude.com/claude-code</a>. Для доступа к панели вам нужно разрешение UsageView. Это разрешение есть у ролей Developer, Billing, Admin, Owner и Primary Owner. Для получения ежедневных метрик на пользователя программным способом используйте <a href="https://platform.claude.com/docs/en/build-with-claude/claude-code-analytics-api">Claude Code Analytics API</a> с Admin API-ключом.</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Метрики вклада с интеграцией GitHub в настоящее время недоступны для клиентов API. Панель Console показывает только метрики использования и расходов.</p>
+</blockquote>
+<p>Панель Console отображает:</p>
+<ul>
+<li><strong>Lines of code accepted</strong>: общее количество строк кода, добавленных или удалённых инструментами Edit и Write в Claude Code в рамках принятых правок. Это исключает отклонённые предложения, а строки, удалённые позже, не уменьшают итоговое значение.</li>
+<li><strong>Suggestion accept rate</strong>: процент случаев, когда пользователи принимают использование инструмента редактирования кода, включая инструменты Edit, Write и NotebookEdit.</li>
+<li><strong>Active users</strong> и <strong>Sessions</strong>: ежедневное количество активных пользователей и сессий Claude Code.</li>
+<li><strong>Spend</strong>: ежедневные затраты API в долларах.</li>
+</ul>
+<h4 id="h-15">Просмотр аналитики команды <a class="h-anchor" href="#h-15" aria-label="Ссылка на раздел">#</a></h4>
+<p>Таблица аналитики команды показывает следующие столбцы для каждого пользователя за диапазон дат, выбранный в верхней части панели (по умолчанию последние 30 дней):</p>
+<ul>
+<li><strong>Members</strong>: пользователи и API-ключи, для которых зафиксировано использование Claude Code в этом диапазоне. Пользователи API-ключей отображаются по имени ключа, пользователи OAuth — по адресу электронной почты.</li>
+<li><strong>Spend</strong>: общие затраты API для каждого пользователя.</li>
+<li><strong>Lines accepted</strong>: общее количество строк для каждого пользователя, добавленных или удалённых инструментами Edit и Write в рамках принятых правок.</li>
+</ul>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Цифры расходов на панели Console являются оценками в целях аналитики. Для фактических затрат обратитесь к <a href="https://platform.claude.com/cost">странице Cost</a>.</p>
+</blockquote>
+<h3 id="h-16">Связанные ресурсы <a class="h-anchor" href="#h-16" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><a href="https://code.claude.com/docs/ru/monitoring-usage.md">Мониторинг с помощью OpenTelemetry</a>: экспортируйте метрики и события в реальном времени в ваш стек наблюдаемости</li>
+<li><a href="https://code.claude.com/docs/ru/costs.md">Управление затратами эффективно</a>: установите лимиты расходов и оптимизируйте использование токенов</li>
+<li><a href="https://code.claude.com/docs/ru/permissions.md">Разрешения</a>: настройте роли и разрешения</li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

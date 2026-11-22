@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Развертывание управляемых параметров</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../materials/index.html">Материалы</a>
+    <a href="../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../materials/index.html">Материалы</a> / <a href="../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Развертывание управляемых параметров <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Развертывайте управляемые параметры на машину каждого разработчика: механизмы доставки для каждой ОС, как Claude Code объединяет управляемые источники и как проверить применение политики.</p>
+</blockquote>
+<p>Управляемые параметры — это параметры, которые ваша организация развертывает на машину каждого разработчика. Claude Code применяет их выше всех остальных уровней, поэтому никакое значение пользователя, проекта, локального или <code>--settings</code> не переопределяет их, кроме нескольких <a href="https://code.claude.com/docs/ru/settings.md#exceptions-to-managed-settings-precedence">исключений, чувствительных к безопасности</a>, где более строгое значение с более низкого уровня все еще учитывается.</p>
+<p>Эта страница предназначена для администратора, который развертывает управляемые параметры или отлаживает, почему один из них не применяется. Чтобы решить, что применять, начните с таблицы <a href="https://code.claude.com/docs/ru/admin-setup.md#decide-what-to-enforce">Решите, что применять</a>. Для пути консоли claude.ai см. <a href="https://code.claude.com/docs/ru/server-managed-settings.md">Управляемые параметры сервера</a>. Для того, где находятся собственные значения разработчика, см. <a href="https://code.claude.com/docs/ru/settings.md">Параметры</a>.</p>
+<h3 id="h-2">Развертывание файла управляемых параметров <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Это самый быстрый способ применить политику на каждой машине: файл <code>managed-settings.json</code>. Если вы еще не выбрали способ доставки управляемых параметров или ваши устройства находятся под управлением MDM или разработчики запускают облачные сеансы, сначала прочитайте <a href="#choose-a-delivery-mechanism">Выберите механизм доставки</a>.</p>
+<p><strong>1. Напишите managed-settings.json</strong></p>
+<p>Напишите <code>managed-settings.json</code>, который содержит ключи, которые вы решили применять, в той же форме JSON, что и <code>settings.json</code>. Таблица <a href="https://code.claude.com/docs/ru/admin-setup.md#decide-what-to-enforce">Решите, что применять</a> перечисляет ключи за каждым элементом управления, и каждая запись в <a href="https://code.claude.com/docs/ru/settings-reference.md">справочнике параметров</a> указывает, может ли управляемый источник установить его. Этот файл блокирует два чтения файлов, отключает режим обхода и заставляет Claude Code игнорировать правила разрешений из файлов пользователя, проекта и локального, а также из <code>--allowedTools</code>:</p>
+<p>```json managed-settings.json theme={null}
+{
+  &quot;permissions&quot;: {
+    &quot;deny&quot;: [
+      &quot;Read(./.env)&quot;,
+      &quot;Read(./secrets/**)&quot;
+    ],
+    &quot;disableBypassPermissionsMode&quot;: &quot;disable&quot;
+  },
+  &quot;allowManagedPermissionRulesOnly&quot;: true
+}</p>
+<pre><code>
+Для более полного примера, который показывает форму большего количества управляемых ключей, включая метод входа, модели, MCP серверы и маркетплейсы, см. [Управляемые параметры организации](https://code.claude.com/docs/ru/settings-example.md#an-organizations-managed-settings).
+
+**2. Поместите файл на каждую машину**
+
+Сохраните файл как `managed-settings.json` в системном каталоге для операционной системы, используя любые инструменты, которые уже размещают файлы на вашем парке:
+
+* **macOS**: `/Library/Application Support/ClaudeCode/managed-settings.json`
+* **Linux и WSL**: `/etc/claude-code/managed-settings.json`
+* **Windows**: `C:\Program Files\ClaudeCode\managed-settings.json`
+
+**3. Подтвердите применение политики**
+
+На одной машине запустите `/status` внутри Claude Code. Строка `Setting sources` показывает `Enterprise managed settings (file)`. Разверните на остальной парк после этого; [Проверьте, что политика действует](#check-that-a-policy-is-in-force) охватывает, на что смотреть, когда строка отсутствует.
+
+## Выберите механизм доставки
+
+Файл из шагов выше — это один из четырех способов доставить управляемые параметры на машину. Каждый механизм содержит те же ключи политики, что и файл `settings.json`, поэтому [справочник параметров](https://code.claude.com/docs/ru/settings-reference.md) применяется ко всем из них. Несколько ключей привязаны к конкретным источникам, и строка Scope каждой записи указывает, какие:
+
+* **Элементы управления доставкой**: [`policyHelper`](https://code.claude.com/docs/ru/settings-reference#policyhelper), [`wslInheritsWindowsSettings`](https://code.claude.com/docs/ru/settings-reference#wslinheritswindowssettings) и [`managedSourcesBehavior`](https://code.claude.com/docs/ru/settings-reference#managedsourcesbehavior)
+* **Ключи входа Gateway**: [`forceLoginGatewayUrl`](https://code.claude.com/docs/ru/settings-reference#forcelogingatewayurl), [`gatewayInternalNetworks`](https://code.claude.com/docs/ru/settings-reference#gatewayinternalnetworks) и значение `&quot;gateway&quot;` параметра [`forceLoginMethod`](https://code.claude.com/docs/ru/settings-reference#forceloginmethod)
+
+С файлом управляемых настроек или профилем MDM все, кого он охватывает, получают одну политику. Чтобы дать одной группе разработчиков другую политику, разверните другой файл или профиль для этой группы. На плане Enterprise вы также можете [задать каждой группе собственную конфигурацию](https://code.claude.com/docs/ru/server-managed-settings.md#give-groups-different-settings) в server-managed settings. Самостоятельно размещаемый [Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway) доставляет управляемые настройки для каждой группы IdP.
+
+Когда более одного механизма доставляет политику на одну машину, Claude Code по умолчанию использует один и игнорирует остальные. [Как Claude Code объединяет управляемые источники](#how-claude-code-combines-managed-sources) указывает порядок и согласие, которое применяется к каждому источнику.
+
+Строки MDM и файла вместе называются параметрами, управляемыми конечной точкой, потому что политика хранится на устройстве разработчика, в отличие от строки, управляемой сервером, где Claude Code получает её.
+
+Выберите механизм в зависимости от того, как вы уже управляете устройствами, используя таблицу ниже.
+
+| Механизм | Как вы его доставляете | Когда Claude Code его читает | Используйте его, когда |
+| :- | :- | :- | :- |
+| [Server-managed settings](https://code.claude.com/docs/ru/server-managed-settings.md) | В консоли администратора claude.ai или на самостоятельно размещаемом [Claude apps gateway](https://code.claude.com/docs/ru/claude-apps-gateway) | Получается при запуске и опрашивается каждый час; см. [изменения, требующие одобрения](#where-and-when-a-policy-applies) | Вы хотите одно место для изменения политики для организации claude.ai без касания каждой машины |
+| MDM или политика уровня ОС | Как профиль конфигурации macOS или значение реестра Windows `HKLM`, через Jamf, Intune, Group Policy или аналогичный инструмент; см. [где каждый механизм хранит политику](#where-each-mechanism-stores-the-policy) | Читается при запуске и проверяется на наличие изменений каждые 30 минут | Вы уже управляете устройствами с помощью MDM или Group Policy |
+| На основе файла | Как `managed-settings.json` в системном каталоге на каждой машине; см. [где каждый механизм хранит политику](#where-each-mechanism-stores-the-policy) | Читается при запуске и перезагружается при изменении файла | Машины без MDM, хосты Linux или образы, которые вы создаёте сами |
+| HKCU реестр, Windows и WSL | Как значение реестра Windows `HKCU`; см. [где каждый механизм хранит политику](#where-each-mechanism-stores-the-policy) | Читается при запуске и проверяется на наличие изменений каждые 30 минут; Claude Code использует его только когда [ни один документ администратора не присутствует выше](#present-admin-documents) и [параметры, предоставленные хостом](#let-an-embedding-host-add-policy) не предоставляют ограничивающий ключ | Вы не можете записать ключ уровня машины `HKLM` |
+
+Начальные шаблоны для Jamf, Iru, Intune и Group Policy находятся в [репозитории примеров MDM](https://github.com/anthropics/claude-code/tree/main/examples/mdm).
+
+Если в вашей организации применена [конфигурация HIPAA](https://code.claude.com/docs/ru/hipaa-setup.md#deploy-managed-settings), см. `settings-hipaa.json` и `README-hipaa.md` в [репозитории примеров настроек](https://github.com/anthropics/claude-code/tree/main/examples/settings), где приведён более полный `managed-settings.json` с изоляцией в песочнице, списком разрешённых сетевых доменов, защитой учётных данных и локальным хранением данных.
+
+Для управляемых MCP серверов, которые вы развёртываете вместе с любым из этих через `managed-mcp.json` или предоставляете через ключ [`managedMcpServers`](https://code.claude.com/docs/ru/settings-reference#managedmcpservers), см. [Управляемая конфигурация MCP](https://code.claude.com/docs/ru/managed-mcp.md).
+
+### Где и когда применяется политика
+
+Развёрнутая политика достигает сеансов разработчика следующим образом:
+
+* **Поверхности**: на машине разработчика, в терминале, расширениях VS Code и JetBrains, вкладке Code настольного приложения и сеансах [Agent SDK](https://code.claude.com/docs/ru/agent-sdk/typescript.md) читают все эти источники. Сеансы Agent SDK загружают управляемые параметры даже когда `settingSources` исключает пользовательские, проектные и локальные файлы.
+* **Облачные сеансы**: сеанс в среде, размещённой Anthropic, не читает профиль MDM или файл устройства, поэтому политика для него должна поступать из server-managed settings. Сеанс в [самостоятельно размещаемой среде](https://code.claude.com/docs/ru/self-hosted-environments) также читает файл управляемых параметров в образе своего runner, по умолчанию только когда server-managed settings не доставляют ключ политики, кроме [ключей, которые Claude Code читает из каждого источника администратора](#keys-read-from-every-admin-source). [Как Claude Code объединяет управляемые источники](#how-claude-code-combines-managed-sources) охватывает согласие, которое применяется к обоим.
+* **Сеансы Claude Tag**: сеансы [Claude Tag](https://claude.com/docs/claude-tag/overview) работают в облачных средах, но не получают server-managed settings. В [самостоятельно размещаемой среде](https://code.claude.com/docs/ru/self-hosted-environments) они всё ещё читают файл управляемых параметров в образе runner. Настройте сам Claude Tag в [параметрах администратора Claude Tag](https://claude.com/docs/claude-tag/admins/customize).
+* **Сеансы Cowork**: [Cowork](https://claude.com/docs/cowork/overview) в приложении Claude Desktop запускает свои сеансы на Claude Code. В сеансе Cowork Claude Code никогда не получает server-managed settings из консоли администратора claude.ai, даже когда пользователь входит с учётной записью Team или Enterprise, поэтому то, какая политика применяется, зависит от того, где запускается сеанс:
+
+  * **На машине пользователя**: по умолчанию Claude Code в сеансе Cowork читает политику MDM или уровня ОС и файл управляемых параметров на этом устройстве, поэтому разверните политику там.
+  * **В полной песочнице VM**: когда ваша управляемая конфигурация Claude Desktop устанавливает [`requireCoworkFullVmSandbox`](https://claude.com/docs/third-party/claude-desktop/configuration#requirecoworkfullvmsandbox), Claude Code работает внутри виртуальной машины, где политика MDM устройства и файл управляемых параметров отсутствуют.
+  * **Удалённые сеансы Cowork**: они работают на управляемых Anthropic виртуальных машинах, где Claude Code не имеет политики устройства для чтения.
+
+  Где бы ни запускалась сессия, claude.ai сам применяет списки [`strictKnownMarketplaces`](https://code.claude.com/docs/ru/settings-reference#strictknownmarketplaces) и [`blockedMarketplaces`](https://code.claude.com/docs/ru/settings-reference#blockedmarketplaces) консоли администратора, когда кто-либо добавляет маркетплейс из git-репозитория на claude.ai или из **Customize** в Cowork. [Как работают ограничения](https://code.claude.com/docs/ru/plugins/org.md#restrict-what-users-can-install) описывает эту проверку. Таблица [покрытия интерфейсов](https://code.claude.com/docs/ru/model-config.md#surface-coverage) сравнивает Cowork с другими интерфейсами.
+* **Запущенные сеансы**: большинство изменений достигают запущенного сеанса по расписанию в [таблице механизма доставки](#choose-a-delivery-mechanism), без перезагрузки.
+  * Изменения [`forceRemoteSettingsRefresh`](https://code.claude.com/docs/ru/settings-reference#forceremotesettingsrefresh), [`requiredMinimumVersion`](https://code.claude.com/docs/ru/settings-reference#requiredminimumversion) и [некоторых редактируемых пользователем ключей](https://code.claude.com/docs/ru/settings.md#when-edits-take-effect) вступают в силу при следующем запуске сеанса.
+  * Новая или изменённая запись [`policyHelper`](https://code.claude.com/docs/ru/settings-reference#policyhelper) вступает в силу при следующем запуске. Если server-managed settings затеняют помощника при этом запуске, помощник запускается как только fetch сообщает об удалении этих параметров.
+* **Изменения, требующие одобрения**: кроме [обновлений, которые ждут следующего запуска](https://code.claude.com/docs/ru/server-managed-settings.md#fetch-and-caching-behavior), изменение server-managed параметра, которое [требует одобрения](https://code.claude.com/docs/ru/server-managed-settings.md#security-approval-dialogs), такого как hook или переменная `env`, ждёт, пока разработчик примет диалог в интерактивном сеансе, и применяется для текущего запуска в сеансе, который размещает расширение IDE или Agent SDK. Другие изменения server-managed применяются при следующем опросе.
+* **Долгоживущие сеансы**: сеанс, оставленный открытым на недели, всё ещё может отставать от развёртывания. [`requiredMinimumVersion`](https://code.claude.com/docs/ru/settings-reference#requiredminimumversion) блокирует запуск устаревшего двоичного файла и не завершает сеанс, который уже работает.
+
+### Где каждый механизм хранит политику
+
+Ключи одинаковы везде, но каждый механизм хранит их в разном месте и форме:
+
+* **Server-managed**: серверы Anthropic или ваш шлюз содержат политику. Claude Code хранит локальный кэш, который он [может применить при запуске](https://code.claude.com/docs/ru/server-managed-settings.md#fetch-and-caching-behavior) и [заменяет при каждом успешном получении](https://code.claude.com/docs/ru/server-managed-settings.md#security-considerations).
+* **Профиль конфигурации macOS**: домен управляемых предпочтений `com.anthropic.claudecode`. Используйте те же ключи верхнего уровня, что и `managed-settings.json`, с вложенными параметрами как словари и списки как массивы plist.
+* **Реестр Windows HKLM**: JSON как значение `REG_SZ` или `REG_EXPAND_SZ` с именем `Settings` под `HKLM\SOFTWARE\Policies\ClaudeCode`.
+* **На основе файла**: `managed-settings.json`, необязательный каталог `managed-settings.d/` и `managed-mcp.json` в системном каталоге: `/Library/Application Support/ClaudeCode/` на macOS, `/etc/claude-code/` на Linux и WSL, и `C:\Program Files\ClaudeCode\` на Windows. Claude Code не читает устаревший путь Windows `C:\ProgramData\ClaudeCode\managed-settings.json`.
+
+  Любой из этих файлов можно развернуть как символическую ссылку, и Claude Code прочитает файл, на который указывает ссылка. Политика по-прежнему применяется, когда ссылка ведёт за пределы системного каталога или Claude Code не может подтвердить, что она остаётся внутри него. В этом случае в `/status` и `claude doctor` появляется предупреждение с именем файла. Чтобы убрать предупреждение, направьте ссылку на цель внутри системного каталога.
+* **Реестр Windows HKCU**: то же значение `Settings` под `HKCU\SOFTWARE\Policies\ClaudeCode`.
+
+### Разделите политику на основе файла между командами
+
+Если несколько команд владеют частями одной политики, поместите каждую часть в свой собственный файл в `managed-settings.d/`, рядом с `managed-settings.json` в том же системном каталоге, вместо редактирования одного общего файла.
+
+Claude Code объединяет `managed-settings.json` первым, затем каждый файл `*.json` в каталоге в алфавитном порядке. Назовите файлы с числовыми префиксами для управления порядком, такими как `10-telemetry.json` и `20-security.json`. Claude Code игнорирует скрытые файлы и файлы, которые не заканчиваются на `.json`.
+
+Когда два файла устанавливают один и тот же ключ, Claude Code объединяет их по этим правилам:
+
+* **Одиночные значения**, такие как `&quot;model&quot;: &quot;opus&quot;` или `&quot;cleanupPeriodDays&quot;: 7`: значение более позднего файла заменяет более раннее
+* **Списки**, такие как `permissions.deny` или `sandbox.network.allowedDomains`: два списка объединяются, с удалением дубликатов
+* **Вложенные блоки**, такие как `env` или `sandbox`: два блока объединяются ключ за ключом, и каждый ключ внутри следует этим же правилам
+* **`fallbackModel`**: более поздняя цепь полностью заменяет более раннюю
+* **[`extraKnownMarketplaces`](https://code.claude.com/docs/ru/settings-reference#extraknownmarketplaces) и [`managedMcpServers`](https://code.claude.com/docs/ru/settings-reference#managedmcpservers)**: более позднее значение с тем же именем полностью заменяет более раннее
+* **[`modelPicker`](https://code.claude.com/docs/ru/settings-reference#modelpicker)**: более поздний набор полностью заменяет более ранний
+
+## Как Claude Code объединяет управляемые источники
+
+Когда ваша организация доставляет более одного управляемого источника на одну машину, ключ [`managedSourcesBehavior`](https://code.claude.com/docs/ru/settings-reference#managedsourcesbehavior) определяет, что Claude Code делает с остальными:
+
+* **`&quot;first-wins&quot;`, по умолчанию**: Claude Code использует источник с наивысшим рейтингом, который доставляет по крайней мере один ключ политики, и игнорирует остальные, а не объединяет их, за исключением ключей в [Ключи, читаемые из каждого источника администратора](#keys-read-from-every-admin-source). Claude Code не показывает предупреждение для источников, которые он пропускает; `/status` [называет источник, который он использовал, и те, которые он пропустил](#read-the-source-in-/status).
+* **`&quot;merge&quot;`**: Claude Code применяет каждый источник администратора, который доставляет ключ политики, и объединяет их по типу ключа: для большинства ключей применяется значение источника с более высоким рейтингом, списки объединяются, а блокировки принимают наиболее строгое значение. [Составьте каждый управляемый источник](#compose-every-managed-source) указывает, где установить ключ и как объединяется каждый тип ключа. Требует Claude Code v2.1.242 или позже.
+
+Оба параметра ранжируют источники одинаково. Эти термины повторяются в этом разделе:
+
+* **Ключ политики**: любой ключ настроек, кроме двух управляющих ключей, [`wslInheritsWindowsSettings`](https://code.claude.com/docs/ru/settings-reference#wslinheritswindowssettings) и [`managedSourcesBehavior`](https://code.claude.com/docs/ru/settings-reference#managedsourcesbehavior). Файл управляемых настроек или политика MDM, которые содержат только эти ключи, не учитываются, и Claude Code переходит к следующему источнику.
+* **Источник администратора**: один из первых трёх источников ниже. Реестр HKCU доступен для записи пользователем и не является источником администратора.
+
+Claude Code проверяет источники в этом порядке, от наивысшего приоритета к наименьшему:
+
+1. Удалённые настройки, доставленные с claude.ai как [настройки, управляемые сервером](https://code.claude.com/docs/ru/server-managed-settings.md), или через [шлюз приложений Claude](https://code.claude.com/docs/ru/claude-apps-gateway). Claude Code получает этот источник только когда сессия аутентифицируется в API Anthropic напрямую с помощью [подходящих учётных данных](https://code.claude.com/docs/ru/server-managed-settings.md#platform-availability), входит в шлюз с помощью `/login` или работает на вкладке Code в Claude Desktop за шлюзом, который [предоставляет этой сессии настройки](https://code.claude.com/docs/ru/claude-apps-gateway-config.md#apply-code-settings-in-the-code-tab). На других поставщиках или когда `ANTHROPIC_BASE_URL` указывает на что-то другое, чем API Anthropic, он начинает со следующего источника
+2. Политики MDM или уровня ОС: plist macOS или ключ реестра HKLM
+3. Файлы управляемых настроек, `managed-settings.d/*.json` и `managed-settings.json`, объединённые вместе
+4. Реестр HKCU в Windows, а также в WSL после того, как реестр HKLM или файл управляемых настроек Windows включит [`wslInheritsWindowsSettings`](https://code.claude.com/docs/ru/settings-reference#wslinheritswindowssettings) и значение HKCU тоже задаст его. Claude Code читает его, только когда [над ним нет присутствующего документа администратора](#present-admin-documents) и никакие [родительские настройки, предоставленные хостом](#let-an-embedding-host-add-policy), не задают ограничивающий ключ
+
+Эта диаграмма показывает ранжирование с примерами кросс-источниковых ключей, которые Claude Code читает из первых трёх источников при любом параметре:
+
+![Диаграмма, показывающая четыре источника управляемых настроек, ранжированные от удалённых настроек в верхней части через MDM, файлы управляемых настроек и реестр HKCU в нижней части. По умолчанию первый источник с ключом политики предоставляет политику, а остальные пропускаются; с managedSourcesBehavior, установленным на merge, каждый источник администратора с ключом политики вносит вклад, объединённый по типу ключа, и реестр HKCU остаётся в стороне. Боковая панель показывает, что кросс-источниковые ключи, такие как блокировки песочницы, forceRemoteSettingsRefresh и объединение env для каждой переменной, читаются из каждого источника администратора, что исключает реестр HKCU.](https://mintcdn.com/claude-code/zuWID2B-Rxm8DEC8/images/managed-source-precedence.svg?fit=max\&amp;auto=format\&amp;n=zuWID2B-Rxm8DEC8\&amp;q=85\&amp;s=53f6be49f06eff48e01422c8ae1bc2e6)
+
+### Когда документ администратора считается присутствующим
+
+При [ранжировании управляемых источников](#how-claude-code-combines-managed-sources) Claude Code никогда не применяет доступный для записи пользователю реестр HKCU под присутствующим документом администратора. Документ считается присутствующим, когда:
+
+* Он задаёт любому ключу политики значение, отличное от `null`, даже если это значение Claude Code не может прочитать
+* Это значение HKLM, файл управляемых настроек или каталог `managed-settings.d`, который существует, но не может быть прочитан
+
+В WSL каталог `/etc/claude-code` тоже доступен для записи пользователю, а запись [`wslInheritsWindowsSettings`](https://code.claude.com/docs/ru/settings-reference#wslinheritswindowssettings) описывает, когда документы Windows стоят выше него.
+
+### Ключи, читаемые из каждого источника администратора
+
+При параметре по умолчанию `&quot;first-wins&quot;` Claude Code читает большинство ключей только из [источника, который он выбрал](#how-claude-code-combines-managed-sources), и игнорирует значение в источнике с более низким рейтингом, даже когда выбранный источник оставляет этот ключ неустановленным.
+
+Несколько ключей работают иначе. Claude Code читает их из каждого источника администратора, поэтому политика MDM с более низким рейтингом или файл управляемых настроек могут всё ещё установить их, когда выбранный источник этого не делает. Claude Code исключает доступный для записи пользователем реестр HKCU из этого сканирования; когда HKCU является единственным источником и ни один хост не предоставляет родительские настройки, HKCU применяется как любой выбранный источник.
+
+Кросс-источниковые ключи включают:
+
+* `sandbox.network.allowManagedDomainsOnly` и `sandbox.filesystem.allowManagedReadPathsOnly`: `true` в любом источнике администратора включает блокировку. Пока блокировка включена, Claude Code объединяет список разрешённых значений, который она блокирует, `sandbox.network.allowedDomains` вместе с разрешающими правилами `WebFetch(domain:...)` или `sandbox.filesystem.allowRead` из каждого источника администратора. Без блокировки Claude Code обрабатывает список разрешённых значений как любой другой ключ, поэтому при `&quot;first-wins&quot;` список разрешённых значений невыбранного источника администратора игнорируется
+* `allowAllClaudeAiMcps`
+* `allowManagedMcpServersOnly`: `true` в любом источнике администратора включает блокировку списка разрешённых MCP-серверов. Пока блокировка включена, управляемый список `allowedMcpServers` поступает из источника администратора с наивысшим рейтингом, который его устанавливает. Список, управляемый сервером, заменяет список нижнего источника, а не объединяется с ним.
+
+  Если ни один источник администратора не устанавливает список, каждый сервер, который проходит список запрещённых, загружается, если только [родительские настройки](#let-an-embedding-host-add-policy) не предоставляют список.
+
+  Без блокировки Claude Code читает `allowedMcpServers` из управляемого источника, который он применяет, поэтому при `&quot;first-wins&quot;` список невыбранного источника администратора игнорируется. Требует Claude Code v2.1.273 или позже
+* `deniedMcpServers` и [`disableClaudeAiConnectors`](https://code.claude.com/docs/ru/settings-reference#disableclaudeaiconnectors): запись или `true` в любом источнике администратора применяется. Требует Claude Code v2.1.273 или позже
+* Пути двоичных файлов песочницы `sandbox.bwrapPath` и `sandbox.socatPath`
+* Двоичный файл песочницы `ripgrep`, [`sandbox.ripgrep`](https://code.claude.com/docs/ru/settings-reference#sandbox-ripgrep)
+* `sandbox.filesystem.disabled` и `sandbox.network.strictAllowlist`
+* [`useAutoModeDuringPlan`](https://code.claude.com/docs/ru/settings-reference#useautomodeduringplan), [`syncClaudeAiSkills`](https://code.claude.com/docs/ru/settings-reference#syncclaudeaiskills) и [`syncClaudeAiPlugins`](https://code.claude.com/docs/ru/settings-reference#syncclaudeaiplugins), где `false` из любого источника администратора отключает поведение. Каждый ключ может только запрещать:
+  * `false` в пользовательских или локальных настройках разработчика также отключает его
+  * Для `useAutoModeDuringPlan` значение `false` в пользовательском или локальном файле, который разработчик исключает с помощью параметра, такого как [`--setting-sources`](https://code.claude.com/docs/ru/cli-reference#cli-flags), не учитывается. Игнорирование исключённого файла требует Claude Code v2.1.314 или позже
+* [`enableArtifact`](https://code.claude.com/docs/ru/settings-reference#enableartifact), где `false` из любого источника администратора отключает [инструмент Artifact](https://code.claude.com/docs/ru/artifacts.md). `false` в пользовательских, проектных или локальных настройках разработчика также отключает его, и ни один источник не включает его обратно; см. [какие значения более низкого уровня всё ещё учитываются](https://code.claude.com/docs/ru/settings.md#exceptions-to-managed-settings-precedence). Требует Claude Code v2.1.242 или позже
+* [`maxEffortLevel`](https://code.claude.com/docs/ru/settings-reference#maxeffortlevel), где применяется наименьший лимит из любого источника администратора. Если разработчик устанавливает более низкий лимит в своих собственных настройках или с помощью `--settings`, Claude Code применяет этот; ни один источник не может повысить лимит. Требует Claude Code v2.1.267 или позже
+* Отказ от трейлера коммита в `attribution` или в устаревшем `includeCoAuthoredBy` из любого уровня
+* [`forceRemoteSettingsRefresh`](https://code.claude.com/docs/ru/server-managed-settings)
+* `env`, объединённый для каждой переменной из источников администратора: каждая переменная поступает из источника с наивысшим приоритетом, который её определяет, поэтому нижние источники заполняют переменные, которые оставляют неустановленными более высокие. Несколько переменных следуют своим собственным правилам; [Исключения для каждого ключа из управляемых источников](https://code.claude.com/docs/ru/server-managed-settings.md#per-key-exceptions-across-managed-sources) называет каждое. Требует Claude Code v2.1.223 или позже. До v2.1.223 Claude Code применял только весь блок `env` выбранного источника
+
+[`allowedProviders`](https://code.claude.com/docs/ru/settings-reference#allowedproviders) имеет своё собственное правило: примечание Scope его записи говорит, как список, установленный на машине, объединяется с управляемым сервером. Требует Claude Code v2.1.285 или позже.
+
+Когда источник администратора устанавливает `allowManagedMcpServersOnly` или список `allowedMcpServers` и это значение не является тем, которое действует, `/status` и `claude doctor` называют этот источник и ключ.
+
+#### Какой управляемый источник предоставляет ключи входа
+
+На машине с политикой MDM или файлом управляемых настроек Claude Code берёт ключи входа из этой политики или файла, даже для ключа, который также задают [удалённые настройки](#how-claude-code-combines-managed-sources). Настройки из консоли администратора claude.ai являются удалёнными настройками, поэтому задавайте ключи входа, такие как [`forceLoginOrgUUID`](https://code.claude.com/docs/ru/settings-reference#forceloginorguuid), в политике MDM или файле.
+
+Если на машине есть и политика MDM, и файл управляемых настроек, используйте политику MDM. Когда эта политика задаёт любой [ключ политики](#how-claude-code-combines-managed-sources), Claude Code игнорирует ключи входа в файле, [даже при `managedSourcesBehavior: &quot;merge&quot;`](#compose-every-managed-source).
+
+Ключи входа:
+
+* `forceLoginOrgUUID` и `forceLoginMethod`, установленный на `&quot;claudeai&quot;` или `&quot;console&quot;`: если политика или файл не задаёт какой-либо из этих ключей, применяется значение из удалённых настроек. Пока не все клиенты работают на v2.1.299 или позже, задавайте эти ключи также в [настройках, управляемых сервером](https://code.claude.com/docs/ru/server-managed-settings.md), на claude.ai
+* [Ключи входа в шлюз](#choose-a-delivery-mechanism): Claude Code не использует значение из удалённых настроек для входа в шлюз
+
+### Составьте каждый управляемый источник
+
+Чтобы Claude Code применял каждый источник администратора, который доставляет ваша организация, установите [`managedSourcesBehavior`](https://code.claude.com/docs/ru/settings-reference#managedsourcesbehavior) на `&quot;merge&quot;` в источнике с наивысшим рейтингом, который вы развёртываете. Claude Code читает ключ только из источника с наивысшим рейтингом, который несёт либо ключ, либо ключ политики, поэтому нижний источник не может выбрать себя для объединения с источником выше него, и машина, которая никогда не получает настройки, управляемые сервером, нуждается в ключе в своём профиле MDM тоже. Доступный для записи пользователем реестр HKCU никогда не объединяется с другим источником. Требует Claude Code v2.1.242 или позже.
+
+При `&quot;merge&quot;` Claude Code добавляет записи списка нижнего источника, такие как правила `permissions.allow` и хуки, к политике, поэтому включайте это только когда каждый источник, ранжированный ниже вашего наивысшего, находится под контролем администратора.
+
+Эта таблица показывает, как Claude Code объединяет каждый тип ключа при `&quot;merge&quot;`. Запись [`managedSourcesBehavior`](https://code.claude.com/docs/ru/settings-reference#managedsourcesbehavior) называет каждый ключ в трёх из строк: ограничивающие списки разрешённых значений, значения, взятые целиком, и ключи, читаемые только из источника с наивысшим рейтингом.
+
+| Тип ключа | Как Claude Code его объединяет | Примеры |
+| :- | :- | :- |
+| Списки | Объединяет записи из каждого источника | `permissions.allow`, `hooks`, `sandbox.network.allowedDomains`, `deniedMcpServers`, `deniedModels` |
+| Блокировки | Применяет наиболее строгое значение, которое устанавливает любой источник; более мягкое значение применяется только из источника с наивысшим рейтингом | `allowManagedHooksOnly`, `permissions.disableBypassPermissionsMode`, `crossSessionInbound`, `availableModelsMatch` |
+| Ограничивающие списки разрешённых значений | Берёт список целиком из источника с наивысшим рейтингом, который его устанавливает, без добавления записей из нижних источников | `availableModels`, `allowedMcpServers`, `strictKnownMarketplaces`, `allowedChannelPlugins` и цепь `fallbackModel` |
+| Значения, взятые целиком | Берёт значение целиком из источника с наивысшим рейтингом, который его устанавливает, без объединения записей или полей из нижних источников | `sandbox.credentials.awsPairs`, `sandbox.ripgrep` |
+| Предоставленные MCP-серверы | Объединяет имена серверов из каждого источника; когда два источника устанавливают одно имя, применяет всю запись источника с более высоким рейтингом | `managedMcpServers` |
+| Ключи, читаемые только из источника с наивысшим рейтингом | Игнорирует ключ в каждом нижнем источнике, даже когда источник с наивысшим рейтингом оставляет его неустановленным | `modelPicker`, `permissions.defaultMode` и помощники учётных данных, такие как `apiKeyHelper` |
+| `env` | Объединяет для каждой переменной из источников администратора при любом параметре, как описано в [Ключи, читаемые из каждого источника администратора](#keys-read-from-every-admin-source) | |
+| Ключи входа | При любом параметре берёт их из политики MDM или файла управляемых настроек — из того, который имеет более высокий рейтинг и несёт [ключ политики](#how-claude-code-combines-managed-sources), [с приоритетом над удалёнными настройками](#which-managed-source-supplies-login-keys) | `forceLoginOrgUUID`, `forceLoginMethod` и [ключи входа в шлюз](#choose-a-delivery-mechanism) |
+| Каждый другой ключ | Берёт значение из источника с наивысшим рейтингом, который его устанавливает | `model`, `cleanupPeriodDays` |
+
+Чтобы подтвердить, какие источники объединились на машине, [прочитайте строку `Setting sources` в `/status`](#read-the-source-in-/status); этот раздел говорит, что означает каждая метка.
+
+### Вычислите политику с помощью вспомогательной программы
+
+[`policyHelper`](https://code.claude.com/docs/ru/settings-reference#policyhelper) — это исполняемый файл, который называет ваша политика MDM или файл управляемых настроек, и Claude Code запускает его для вычисления управляемых настроек при запуске. Когда выбранный источник настраивает один и помощник выдаёт объект `managedSettings`, этот вывод изменяет то, что читает Claude Code:
+
+* **Выданный объект `managedSettings` — это единственные управляемые настройки для сессии**, включая [ключи, которые он иначе читает из каждого источника администратора](#keys-read-from-every-admin-source), кроме [`forceRemoteSettingsRefresh`, который имеет своё собственное правило запуска](https://code.claude.com/docs/ru/settings-reference#forceremotesettingsrefresh)
+
+Для того, какие запуски помощника не удаются и что Claude Code делает, когда это происходит, см. [Сбои помощника](https://code.claude.com/docs/ru/settings-reference.md#helper-failures).
+
+### Позвольте хосту встраивания добавить политику
+
+Когда другое приложение запускает Claude Code, такое как Claude Desktop, расширение IDE или приложение Agent SDK, этот хост может передать свои собственные управляемые настройки через опцию SDK `managedSettings`. Claude Code называет их родительскими настройками.
+
+По умолчанию Claude Code игнорирует родительские настройки всякий раз, когда присутствует источник администратора: настройки, управляемые сервером, политика MDM или уровня ОС, или файл управляемых настроек.
+
+Чтобы Claude Code объединял родительские настройки наряду с источником администратора, установите [`parentSettingsBehavior`](https://code.claude.com/docs/ru/settings-reference#parentsettingsbehavior) на `&quot;merge&quot;` в управляемом источнике с наивысшим приоритетом; Claude Code читает ключ только из этого источника.
+
+Claude Code затем сохраняет только значения хоста, которые ограничивают то, что может делать Claude, с одним пробелом, о котором нужно знать: если вы также не установите блокировки `allowManaged*Only`, разрешающие правила хоста и списки разрешённых значений песочницы всё ещё применяются. См. [Ограничьте родительские настройки](https://code.claude.com/docs/ru/claude-apps-gateway#restrict-parent-settings) для блокировок.
+
+[`policyHelper`](https://code.claude.com/docs/ru/settings-reference#policyhelper) может отключить объединение родительских настроек независимо от этого ключа; его запись говорит, когда.
+
+Claude Code также применяет эти проверки к значениям, предоставленным родителем, самостоятельно:
+
+* Когда любой источник администратора устанавливает `allowManagedPermissionRulesOnly`, Claude Code удаляет [предоставленные родителем](https://code.claude.com/docs/ru/claude-apps-gateway#restrict-parent-settings) разрешающие правила и `additionalDirectories` по мере их чтения, даже когда источник с более высоким приоритетом оставляет ключ неустановленным. Эффект ключа на ваши собственные правила разрешений исходит из управляемых настроек, которые применяет Claude Code, или из родительских настроек, которые вы выбрали для объединения
+* Claude Code применяет значение `forceLoginOrgUUID` или `allowedMcpServers` в управляемых настройках, которые он применяет, и блокирует предоставленное родителем. Если вы доставляете более одного управляемого источника, см. [какой источник предоставляет `forceLoginOrgUUID`](#which-managed-source-supplies-login-keys).
+
+  На Claude Code v2.1.273 или позже, пока `allowManagedMcpServersOnly` включена, список `allowedMcpServers` из источника администратора с наивысшим рейтингом, который его устанавливает, применяется и блокирует родителя, как [кросс-источниковый ключ](#keys-read-from-every-admin-source). Список родителя применяется только когда ни один источник администратора не устанавливает один. Запись [`managedSourcesBehavior`](https://code.claude.com/docs/ru/settings-reference#managedsourcesbehavior) говорит, какой источник предоставляет каждый ключ при `&quot;merge&quot;`. До v2.1.223 значение в любом источнике администратора блокировало родителя
+* Для `availableModels` Claude Code применяет значение в управляемых настройках, которые он применяет, и блокирует предоставленный родителем список
+* Для `strictKnownMarketplaces` Claude Code аналогично применяет список в управляемых настройках, которые он применяет, и блокирует предоставленный родителем. Список родителя применяется только когда ни один применённый управляемый источник не устанавливает один. Требует Claude Code v2.1.282 или позже
+* Для `allowedProviders` список в [выбранном управляемом источнике](#which-managed-source-claude-code-uses) блокирует предоставленный родителем, а при включённом значении `&quot;merge&quot;` для [`managedSourcesBehavior`](https://code.claude.com/docs/ru/settings-reference#managedsourcesbehavior) его блокирует список в любом источнике администратора. Требует Claude Code v2.1.285 или позже
+* Предоставленный родителем `blockedMarketplaces` применяется в дополнение к любому списку блокировок, который устанавливает управляемый источник. Требует Claude Code v2.1.282 или позже
+
+#### Сохраните доступ к папке Cowork, когда применяются только управляемые правила
+
+[Cowork](https://claude.com/docs/cowork/overview) в приложении Claude Desktop запускает свои сессии на Claude Code и предоставляет каждой сессии доступ к её рабочим папкам, таким как папка, которую подключает пользователь, через разрешающие правила, которые он предоставляет при запуске сессии. Когда ваша управляемая политика устанавливает [`allowManagedPermissionRulesOnly`](https://code.claude.com/docs/ru/settings-reference#allowmanagedpermissionrulesonly), Claude Code сохраняет только разрешающие правила в управляемой политике: он удаляет разрешающие правила, которые хост предоставляет как родительские настройки, как `--allowedTools` или в файле настроек, поэтому записи в эти папки теряют предварительное одобрение. В сессии Cowork, которая спрашивает перед редактированием, Cowork не может показать запрос разрешения, и Claude сообщает о каждой записи как заблокированной, потому что путь разрешается в защищённое место или путь вне подключённой папки.
+
+Чтобы восстановить записи, добавьте разрешающие правила для этих папок в управляемый источник, который Claude Code [выбирает](#precedence-within-the-managed-tier) на этих машинах: на управляемом MDM парке это политика MDM, а не отдельный файл управляемых настроек. Этот пример использует форму файла, и политика MDM принимает те же ключи. Она сохраняет `allowManagedPermissionRulesOnly` установленным и позволяет редактирование в папке `CoworkProjects` в домашнем каталоге каждого пользователя; замените путь на папки, которые подключают ваши пользователи:
+</code></pre>
+<p>{
+  &quot;allowManagedPermissionRulesOnly&quot;: true,
+  &quot;permissions&quot;: {
+    &quot;allow&quot;: [
+      &quot;Edit(~/CoworkProjects/**)&quot;
+    ]
+  }
+}</p>
+<pre><code>
+После развёртывания политики Claude может сохранять файлы в этой папке в новой сессии Cowork. [Правила Read и Edit](https://code.claude.com/docs/ru/permissions.md#read-and-edit) охватывают синтаксис пути, включая форму `//` для абсолютных путей.
+
+### Что может изменить разработчик
+
+Собственные файлы настроек разработчика, значения `--settings` и файлы проекта никогда не переопределяют управляемое значение; [исключения](https://code.claude.com/docs/ru/settings.md#exceptions-to-managed-settings-precedence) только позволяют учитывать более строгое значение более низкого уровня. Эти случаи находятся вне этого правила:
+
+* **Модель для сессии**: управляемая `model` — это значение по умолчанию, а не блокировка. `--model` и `ANTHROPIC_MODEL` всё ещё выбирают модель для этой сессии, поэтому развёртывайте [`availableModels`](https://code.claude.com/docs/ru/settings-reference#availablemodels) для ограничения выбора.
+* **Окно автосжатия для сессии**: управляемый [`autoCompactWindow`](https://code.claude.com/docs/ru/settings-reference#autocompactwindow) — тоже значение по умолчанию. Флаг `--autocompact` и переменная `CLAUDE_CODE_AUTO_COMPACT_WINDOW` всё ещё задают [окно автосжатия](https://code.claude.com/docs/ru/model-config.md#set-the-auto-compact-window) для этой сессии.
+* **Локальные права администратора**: разработчик, который является администратором на машине, может редактировать сам управляемый источник, поэтому инструменты MDM могут переразвёртывать профиль или файл по расписанию и почему существуют реестр HKLM и домен управляемых предпочтений macOS.
+* **Кэш, управляемый сервером**: настройки, управляемые сервером, поступают с серверов Anthropic, и редактирование локального кэша [длится только до следующей успешной выборки](https://code.claude.com/docs/ru/server-managed-settings.md#security-considerations).
+* **Другие инструменты**: управляемые настройки привязывают только Claude Code. Разработчик, который вызывает API из другого инструмента, не подчиняется им.
+
+## Проверьте, что политика действует
+
+Разработчик сообщает, что политика не применяется, или вы хотите подтвердить, что развёртывание прошло успешно перед развёртыванием на весь парк. Две команды на этой машине дают ответ: `/status` показывает, какой управляемый источник выбрал Claude Code, а `claude doctor` перечисляет то, что он отбросил.
+
+### Прочитайте источник в /status
+
+На машине разработчика запустите `/status` внутри Claude Code и прочитайте строку `Setting sources`. Когда управляемый источник действует, строка перечисляет `Enterprise managed settings` с источником, выбранным Claude Code, в скобках:
+
+* `(remote)`: управляемые сервером настройки из claude.ai или шлюза
+* `(plist)` или `(HKLM)`: политика MDM или ОС
+* `(file)`, `(drop-ins)` или `(file + drop-ins)`: `managed-settings.json`, каталог drop-in или оба
+* `(remote + file, merged)` или другой список, заканчивающийся на `, merged`: ваша организация [объединяет каждый управляемый источник](#compose-every-managed-source), и Claude Code объединил перечисленные источники в политику. Нижний источник всё ещё может предоставлять переменные `env` без появления в списке. Требуется Claude Code v2.1.242 или позже
+* `(HKCU)`: резервный вариант реестра, доступный для записи пользователем
+* `(parent process)`: [хост встраивания](#let-an-embedding-host-add-policy) предоставил ограничивающие настройки
+* `(helper)`: [`policyHelper`](https://code.claude.com/docs/ru/settings-reference#policyhelper), настроенный выбранным источником MDM или файла
+
+Когда Claude Code обнаружил управляемый источник на машине и не выбрал его, вторая строка, `Skipped sources`, называет каждый такой источник. Прочитайте её, чтобы отличить политику, которая никогда не достигла машины, от той, которая достигла её и которую переопределил источник с более высоким приоритетом. Требуется Claude Code v2.1.242 или позже.
+
+Когда политика не применяется, строка `Setting sources` говорит вам, какая из двух проблем у вас есть:
+
+* **Строка отсутствует**: Claude Code не нашёл управляемый источник, который доставляет ключ политики.
+
+  Если вы развернули файл управляемых настроек, проверьте, что он находится по пути для ОС и что он содержит [ключ политики](#how-claude-code-combines-managed-sources), а не только ключи управления. Файл, который не является допустимым JSON, не создаёт это состояние; вместо этого Claude Code [отказывается запускаться](#find-entries-claude-code-dropped).
+
+  Если вместо этого вы развернули через управляемые сервером настройки, запустите `claude doctor`, который сообщает [результат получения](https://code.claude.com/docs/ru/server-managed-settings.md#verify-settings-delivery).
+* **Строка называет источник, отличный от того, который вы развернули**: присутствует источник с более высоким приоритетом, и Claude Code проигнорировал ваш, а `Skipped sources` его перечисляет. [Как Claude Code объединяет управляемые источники](#how-claude-code-combines-managed-sources) описывает порядок.
+
+### Найдите записи, которые Claude Code отбросил
+
+Если ваш файл управляемых настроек, профиль MDM, значение реестра или данные, управляемые сервером, не проходят проверку схемы, Claude Code сначала пропускает каждую отдельную запись, которую он может исправить, например одно неправильное правило разрешений, и предупреждает о каждой. Затем Claude Code отбрасывает любое значение, которое всё ещё не проходит проверку, если только значение не принадлежит одному из ключей, которые вместо этого [не проходят закрыто](#keys-that-fail-closed).
+
+Claude Code более строг с `managedSettings`, которые выдаёт [`policyHelper`](https://code.claude.com/docs/ru/settings-reference#policyhelper): он делает те же исправления записей, но любое оставшееся нарушение схемы приводит к сбою всего запуска помощника, и при запуске Claude Code отказывается запускаться — так же, как и для помощника, который завершается с ненулевым кодом.
+
+Когда файл управляемых настроек, файл drop-in, plist MDM или значение реестра HKLM присутствуют, но не могут быть проанализированы как объект JSON, Claude Code отказывается запускаться и выводит [ошибку, называющую источник](https://code.claude.com/docs/ru/errors.md#managed-settings-document-could-not-be-parsed), даже когда другой источник администратора доставляет допустимую политику. Каждый источник не проходит таким образом, когда:
+
+* **Файл управляемых настроек или файл drop-in**: файл не является допустимым JSON или его верхний уровень не является объектом
+* **MDM plist**: `plutil` macOS сообщает, что plist неправильно сформирован, или его преобразованное содержимое не является объектом JSON
+* **Значение реестра HKLM**: значение `Settings` не является строкой, пусто или не содержит объект JSON
+
+Три состояния источника не вызывают этого отказа:
+
+* Отсутствующий файл, профиль или значение реестра не является сбоем; Claude Code работает без этого источника.
+* Пустой файл управляемых настроек считается `{}`.
+* Неправильное значение в доступном для записи пользователем ключе реестра HKCU никогда не блокирует запуск. Вместо этого Claude Code сообщает об этом как уведомление в `/status` и `claude doctor`.
+
+Когда файл управляемых настроек, файл drop-in, каталог `managed-settings.d/`, профиль MDM или значение реестра HKLM существуют, но не могут быть прочитаны, и ни один источник администратора не предоставляет политику, то, что происходит, зависит от причины сбоя чтения:
+
+* Если операционная система отказала в чтении, например для файла, доступного только root, каждая сессия запускается без политик этого источника. `/status` и `claude doctor` записывают сбой, а запуск с `-p` также выводит его в stderr.
+* При любом другом сбое чтения, например ошибке ввода-вывода, каждая сессия завершается при запуске с [сообщением о необходимости связаться с администратором](https://code.claude.com/docs/ru/errors.md#unable-to-read-managed-policy-settings).
+
+Чтобы найти отброшенную запись, посмотрите в одном из трёх мест:
+
+* Интерактивные сессии показывают диалоговое окно при запуске, в котором перечислены неправильные записи.
+* Неинтерактивные запуски с `-p` выводят сводку в stderr.
+* [`claude doctor`](https://code.claude.com/docs/ru/debug-your-config) перечисляет каждую неправильную запись с её источником и полем.
+
+#### Ключи, которые не проходят закрыто
+
+Когда управляемый источник устанавливает ключ верхнего уровня, который имеет одно ограничивающее значение, такой как `allowManagedPermissionRulesOnly`, `disableAutoMode` или `skipDangerousModePermissionPrompt`, в значение, которое Claude Code не может прочитать, ключ читается как это ограничивающее значение, пока вы его не исправите. Отчёт сообщает, что ключ `was present but invalid`, и называет значение, которым его считает Claude Code. Для ключа внутри `sandbox` см. [Неправильные значения внутри `sandbox`](#invalid-values-inside-sandbox).
+
+Эти случаи не проходят закрыто:
+
+* `null` удаляет ключ.
+* Неправильный `disableAllHooks`, даже логическое значение в кавычках, отбрасывается с предупреждением, потому что применение `true` также выгрузило бы хуки, которые развёртывают ваши собственные управляемые настройки.
+* Для каждого другого логического ключа, который охватывает правило, строка `&quot;true&quot;` или `&quot;false&quot;` читается как соответствующее логическое значение, с уведомлением в `/status`, предлагающим вам удалить кавычки.
+
+Claude Code исправляет блоки `permissions`, `autoMode`, `worktree` и `attribution` по полям вместо того, чтобы отбрасывать их целиком:
+
+* Блокировка внутри одного из них, такая как `permissions.disableBypassPermissionsMode`, читается как её ограничивающее значение.
+* Неправильный `permissions.defaultMode` читается как `default`.
+* Пока список `deny` или `ask` в `permissions` вообще не может быть прочитан, Claude Code удерживает `allow` и `additionalDirectories`, поэтому разрешения никогда не применяются без ограничений, записанных рядом с ними. Отчёт называет каждое удержанное разрешение и список, который не удалось прочитать.
+* В `autoMode` список `soft_deny` или `hard_deny`, который не может быть прочитан или потерял неправильную запись, таким же образом удерживает `allow` и `environment`.
+
+Правило «не проходят закрыто» для ключей с одним ограничивающим значением и исправления по полям требуют Claude Code v2.1.282 или позже.
+
+Эти ключи имеют свой собственный резервный вариант:
+
+| Поле | Поведение при наличии, но неправильном значении |
+| :- | :- |
+| `allowedMcpServers` | Применяется как пустой список разрешённых серверов до исправления значения, поэтому ни один MCP-сервер, который добавляют пользователи, не допускается. Серверы, которые ваша организация доставляет через [`managedMcpServers`](https://code.claude.com/docs/ru/settings-reference#managedmcpservers), всё ещё загружаются, а серверы `managed-mcp.json` загружаются в соответствии с разделом [Серверы, которые пропускают проверку списка разрешённых](https://code.claude.com/docs/ru/managed-mcp.md#servers-that-skip-the-allowlist-check). Неправильная отдельная запись удаляется, и применяется допустимое подмножество. |
+| [`allowedProviders`](https://code.claude.com/docs/ru/settings-reference#allowedproviders) | Применяется как пустой список разрешённых поставщиков до исправления значения, поэтому каждый поставщик API отклоняется и Claude Code не запускается на машине. Если только отдельная запись не является известным именем поставщика, Claude Code отбрасывает эту запись, сообщает о ней и применяет остальные. |
+| `allowedHttpHookUrls` | Claude Code применяет пустой управляемый [список разрешённых URL](https://code.claude.com/docs/ru/settings-reference.md#allowedhttphookurls) до исправления значения, поэтому HTTP-хук выполняется, только если другой файл настроек перечисляет его URL. Если неправильна только отдельная запись, Claude Code удаляет эту запись и применяет остальные. |
+| `httpHookAllowedEnvVars` | Claude Code применяет пустой управляемый [список разрешённых переменных](https://code.claude.com/docs/ru/settings-reference.md#httphookallowedenvvars) до исправления значения, поэтому переменная заголовка интерполируется, только если другой файл настроек её называет. Если неправильна только отдельная запись, Claude Code удаляет эту запись и применяет остальные. |
+| `allowedChannelPlugins` | Claude Code применяет пустой список разрешённых плагинов до исправления значения, поэтому ни один плагин канала, переданный в `--channels`, не допускается. Если неправильна только отдельная запись, он удаляет эту запись и применяет остальные. |
+| `strictKnownMarketplaces` | Применяется как пустой список разрешённых маркетплейсов до исправления значения, поэтому ни один [источник маркетплейса](https://code.claude.com/docs/ru/plugins/org.md#restrict-what-users-can-install) не допускается. Отдельная запись, которая неправильна или не может быть применена, например регулярное выражение `hostPattern`, которое не компилируется, удаляется, и применяется допустимое подмножество. |
+| `availableModels` | Применяется как пустой список разрешённых моделей до исправления, поэтому доступна только модель по умолчанию; запись, которая не является строкой, удаляется, и применяется допустимое подмножество. |
+| [`availableModelsMatch`](https://code.claude.com/docs/ru/settings-reference#availablemodelsmatch) | Рассматривается как `exact` до исправления значения. |
+| `forceLoginOrgUUID` | Ни одной организации не разрешается входить до исправления значения. |
+| `gatewayInternalNetworks` | Когда неправильное значение поступает от управляемого источника с наивысшим приоритетом на машине, `/login` отклоняет каждый новый вход через [облачный шлюз](https://code.claude.com/docs/ru/claude-apps-gateway#allow-a-gateway-on-public-address-space-you-own) на этой машине до исправления значения. |
+| `crossSessionInbound` | Рассматривается как `refuse`, наиболее ограничивающее значение, поэтому входящие [сообщения между сессиями](https://code.claude.com/docs/ru/cross-session-messaging.md#control-inbound-messages) отклоняются до исправления значения. Разработчик видит [предупреждение](https://code.claude.com/docs/ru/errors.md#crosssessioninbound-must-be-one-of-accept-hold-refuse). |
+| `deniedMcpServers` | Неправильная отдельная запись удаляется, и применяется допустимое подмножество. Полностью неправильное значение отбрасывается с предупреждением, так как запрет каждого сервера заблокировал бы серверы, которые политика никогда не называла. |
+| [`deniedModels`](https://code.claude.com/docs/ru/settings-reference#deniedmodels) | Запись, которая не является строкой, удаляется, и применяется остальная часть списка. Полностью неправильное значение отбрасывается с предупреждением и не блокирует никакие модели до исправления. |
+| `blockedMarketplaces` | Неправильная отдельная запись удаляется, и применяется допустимое подмножество. Запись, которая анализируется, но никогда не может совпасть, например регулярное выражение `hostPattern`, которое не компилируется, сохраняется с предупреждением. Она ничего не блокирует до исправления, но [ограничения маркетплейса](https://code.claude.com/docs/ru/plugins/org.md#restrict-what-users-can-install) остаются активными. Полностью неправильное значение отбрасывается с предупреждением, так как блокирование каждого маркетплейса заблокировало бы источники, которые политика никогда не называла. |
+| `sandbox` | Когда одно значение внутри блока неправильно, Claude Code не отбрасывает весь блок. О том, что происходит с каждым видом неправильного поля, см. [Неправильные значения внутри `sandbox`](#invalid-values-inside-sandbox). |
+| `sandbox.credentials` | Восстанавливаемая неправильная запись понижается до `mode: &quot;deny&quot;` с предупреждением; невосстанавливаемая удаляется; допустимые записи продолжают применяться. См. [неправильные записи учётных данных](https://code.claude.com/docs/ru/settings-reference.md#invalid-credential-entries-in-managed-settings). |
+| `strictPluginOnlyCustomization` | Рассматривается как `true`, блокирующее все четыре интерфейса, когда значение не является ни логическим, ни массивом. Запись массива, которую эта версия не распознаёт как интерфейс, ничего не блокирует; примечание статуса подсчитывает такие записи, чтобы вы могли проверить их на опечатки. |
+| `enabledPlugins` | Неправильная запись отбрасывается с предупреждением, и другие записи продолжают применяться. Значение, которое не является картой ID плагинов или каждая запись которого неправильна, отбрасывается целиком с предупреждением. |
+
+`allowedHttpHookUrls` и `httpHookAllowedEnvVars` объединяются между файлами настроек, поэтому записи в ваших пользовательских, проектных или локальных настройках всё ещё применяются, пока управляемый список пуст.
+
+Резервные варианты для этих двух ключей и для `allowedChannelPlugins` требуют Claude Code v2.1.267 или позже; более ранние версии отбрасывают весь ключ, когда его значение или любая запись неправильны. Резервные варианты `strictKnownMarketplaces` и `blockedMarketplaces` требуют Claude Code v2.1.277 или позже; более ранние версии отбрасывают весь ключ, когда его значение или любая запись неправильны. Резервные варианты `strictPluginOnlyCustomization` и `enabledPlugins` требуют Claude Code v2.1.282 или позже.
+
+`requiredMinimumVersion` и `requiredMaximumVersion` намеренно не проходят открыто: неправильное значение отбрасывается, а не применяется.
+
+Эта терпимость применяется только к управляемым настройкам. Файлы пользовательских, проектных и локальных настроек остаются строгими: файл, чей JSON или форма верхнего уровня не проходит проверку, отклоняется целиком с сообщением об этом, а отдельная запись, которая не проходит проверку, например неправильное правило разрешений, пропускается с предупреждением, тогда как остальная часть файла применяется.
+
+#### Неправильные значения внутри `sandbox`
+
+Когда одно значение в вашем управляемом блоке `sandbox` неправильно, Claude Code не отбрасывает весь блок, потому что он проверяет каждое поле отдельно. Эта обработка по полям требует Claude Code v2.1.283 или позже. В версиях до v2.1.283 Claude Code отбрасывает каждое поле `sandbox`, кроме [`credentials`](https://code.claude.com/docs/ru/settings-reference#invalid-credential-entries-in-managed-settings), когда значение вне `credentials` неправильно.
+
+Предупреждение, которое вы получаете для неправильного поля, называет поле и сообщает, что с ним происходит. Что происходит, зависит от того, что контролирует поле:
+
+* Если вы установите логический ключ в `&quot;true&quot;` или `&quot;false&quot;` в кавычках, значение считается соответствующим логическим значением. Вместо предупреждения `/status` показывает уведомление, предлагающее вам удалить кавычки.
+* Если `failIfUnavailable` неправилен, Claude Code отбрасывает значение, а не рассматривает его как `true`, поэтому нечитаемое значение никогда не мешает запуску сессий во всём вашем парке.
+* Каждое другое неправильное логическое значение Claude Code рассматривает как значение, которое сохраняет песочницу максимально строгой, пока вы его не исправите. Ключ, который включает песочницу или одно из её ограничений, например `enabled` или `network.allowManagedDomainsOnly`, считается `true`. Ключ, который ослабляет её, например `allowUnsandboxedCommands`, считается `false`.
+* В списке вне `credentials`, таком как `excludedCommands` или `network.allowedDomains`, Claude Code отбрасывает неправильную запись и сохраняет остальную часть списка. Список, который не является массивом или не имеет ни одной допустимой записи, вообще не применяется.
+* Пока `network.deniedDomains` или любая запись в нём неправильны, Claude Code также удерживает `network.allowedDomains`, поэтому управляемый список разрешённых доменов ничего не разрешает, пока вы не исправите список запрещённых.
+* Пока `filesystem.denyRead`, `filesystem.denyWrite` или любая запись в любом из них неправильны, Claude Code также удерживает и `filesystem.allowRead`, и `filesystem.allowWrite`, пока вы не исправите список запрещённых.
+
+## Ключи, которые может установить только управляемый источник
+
+Claude Code читает следующие ключи только из управляемого источника; размещение их в файлах параметров пользователя или проекта не имеет эффекта.
+
+Большинство из них — это блокировки: значение, которое блокировка управляет, такое как правила разрешения или `sandbox.network.allowedDomains`, — это обычный ключ, который может установить любой уровень, и блокировка говорит Claude Code чтить только управляемое значение.
+
+Таблица охватывает элементы управления разрешением, плагином и доставкой. Для любого ключа, не указанного здесь, столбец Scope [справочника параметров](https://code.claude.com/docs/ru/settings-reference.md#all-settings) говорит, является ли он только управляемым.
+
+| Параметр | Описание |
+| :- | :- |
+| [`allowAllClaudeAiMcps`](https://code.claude.com/docs/ru/settings-reference#allowallclaudeaimcps) | Загружайте соединители claude.ai, которые Claude Code получает сам, вместе с развернутым `managed-mcp.json`, вместо их подавления |
+| [`allowedChannelPlugins`](https://code.claude.com/docs/ru/settings-reference#allowedchannelplugins) | Список разрешений плагинов канала, которые могут отправлять сообщения. Заменяет список разрешений Anthropic по умолчанию, когда установлен. Требует `channelsEnabled: true`. См. [Ограничьте, какие плагины канала могут работать](https://code.claude.com/docs/ru/channels.md#restrict-which-channel-plugins-can-run) |
+| [`allowManagedHooksOnly`](https://code.claude.com/docs/ru/settings-reference#allowmanagedhooksonly) | Когда `true`, ограничивает, какие hooks работают; см. [что работает под `allowManagedHooksOnly`](https://code.claude.com/docs/ru/settings-reference#what-runs-under-allowmanagedhooksonly) для полного списка эффектов |
+| [`allowManagedMcpServersOnly`](https://code.claude.com/docs/ru/settings-reference#allowmanagedmcpserversonly) | Когда `true`, уважаются только `allowedMcpServers` из управляемых параметров. `deniedMcpServers` все еще объединяется из всех источников. См. [Ключи, читаемые из каждого источника администратора](#keys-read-from-every-admin-source) для того, какие управляемые источники могут его установить, и [Управляемая конфигурация MCP](https://code.claude.com/docs/ru/managed-mcp.md) |
+| [`allowManagedPermissionRulesOnly`](https://code.claude.com/docs/ru/settings-reference#allowmanagedpermissionrulesonly) | Делает управляемые параметры единственным источником параметров правил разрешения. Запись перечисляет каждый источник, который она игнорирует |
+| [`blockedMarketplaces`](https://code.claude.com/docs/ru/settings-reference#blockedmarketplaces) | Список блокировки источников маркетплейса. Заблокированные источники проверяются перед загрузкой, поэтому они никогда не касаются файловой системы. См. [управляемые ограничения маркетплейса](https://code.claude.com/docs/ru/plugins/org.md#restrict-what-users-can-install) |
+| [`channelsEnabled`](https://code.claude.com/docs/ru/settings-reference#channelsenabled) | Разрешить [каналы](https://code.claude.com/docs/ru/channels.md) для организации. См. [элементы управления предприятием](https://code.claude.com/docs/ru/channels.md#enterprise-controls) для значения по умолчанию на каждом плане |
+| [`disableCommandPluginSources`](https://code.claude.com/docs/ru/settings-reference#disablecommandpluginsources) | Когда `true`, полностью блокирует [`command` источники плагинов](https://code.claude.com/docs/ru/plugins/marketplace-reference#command-plugin-source), поэтому объявленная маркетплейсом команда никогда не работает. Также блокирует команды [`headersHelper`](https://code.claude.com/docs/ru/plugins/host-marketplace#authenticate-archive-downloads) маркетплейса, кроме маркетплейса, который сами управляемые параметры объявляют. Когда не установлено, следует `allowManagedHooksOnly`. Требует Claude Code v2.1.229 или позже, и блок `headersHelper` требует v2.1.238 или позже |
+| [`disableSideloadFlags`](https://code.claude.com/docs/ru/settings-reference#disablesideloadflags) | Отклоните флаги `--plugin-dir`, `--plugin-url`, `--agents` и `--mcp-config` при запуске. В облачных сеансах Claude Code вместо этого запускает сеанс и отбрасывает серверы `--mcp-config`, доставленные сервером, кроме исключений, которые перечисляет его [справочная запись](https://code.claude.com/docs/ru/settings-reference.md#disablesideloadflags). Требует Claude Code v2.1.193 или позже |
+| [`forceRemoteSettingsRefresh`](https://code.claude.com/docs/ru/settings-reference#forceremotesettingsrefresh) | Когда `true`, блокирует запуск CLI, пока управляемые параметры удаленного сервера не будут свежо получены, и выходит, если выборка не удается. См. [применение fail-closed](https://code.claude.com/docs/ru/server-managed-settings.md#enforce-fail-closed-startup) |
+| [`managedMcpServers`](https://code.claude.com/docs/ru/settings-reference#managedmcpservers) | Удаленные MCP серверы, предоставленные каждому пользователю вместе с их собственными. Он предоставляет серверы, а не блокирует что-либо. См. [Предоставьте серверы через управляемые параметры](https://code.claude.com/docs/ru/managed-mcp.md#provide-servers-through-managed-settings). Требует Claude Code v2.1.259 или позже |
+| [`managedSourcesBehavior`](https://code.claude.com/docs/ru/settings-reference#managedsourcesbehavior) | Применяет ли Claude Code только управляемый источник с наивысшим приоритетом или [составляет каждый из них](#compose-every-managed-source) |
+| [`parentSettingsBehavior`](https://code.claude.com/docs/ru/settings-reference#parentsettingsbehavior) | Объединяются ли параметры родителя, предоставленные хостом, под управляемой политикой |
+| [`pluginSuggestionMarketplaces`](https://code.claude.com/docs/ru/settings-reference#pluginsuggestionmarketplaces) | Маркетплейсы, плагины которых Claude Code может предлагать пользователям в терминале |
+| [`pluginTrustMessage`](https://code.claude.com/docs/ru/settings-reference#plugintrustmessage) | Пользовательское сообщение, добавленное к предупреждению о доверии плагина, показываемому перед установкой |
+| [`policyHelper`](https://code.claude.com/docs/ru/settings-reference#policyhelper) | Исполняемый файл, который вычисляет управляемые параметры при запуске; см. [Вычислите управляемые параметры с помощью помощника политики](https://code.claude.com/docs/ru/settings-reference.md#policyhelper) |
+| [`sandbox.filesystem.allowManagedReadPathsOnly`](https://code.claude.com/docs/ru/settings-reference#sandbox-filesystem-allowmanagedreadpathsonly) | Когда `true`, уважаются только пути `filesystem.allowRead` из управляемых параметров. `denyRead` все еще объединяется из всех источников |
+| [`sandbox.network.allowManagedDomainsOnly`](https://code.claude.com/docs/ru/settings-reference#sandbox-network-allowmanageddomainsonly) | Чтите только управляемые `allowedDomains` и правила разрешения `WebFetch(domain:...)`; блокируйте другие домены без подсказки |
+| [`strictKnownMarketplaces`](https://code.claude.com/docs/ru/settings-reference#strictknownmarketplaces) | Контролирует, какие источники маркетплейса плагинов пользователи могут добавлять и устанавливать плагины из. См. [управляемые ограничения маркетплейса](https://code.claude.com/docs/ru/plugins/org.md#restrict-what-users-can-install) |
+| [`strictPluginOnlyCustomization`](https://code.claude.com/docs/ru/settings-reference#strictpluginonlycustomization) | Блокируйте skills, agents, hooks и MCP серверы из источников пользователя и проекта; `true` блокирует все четыре, массив называет, какие |
+| [`wslInheritsWindowsSettings`](https://code.claude.com/docs/ru/settings-reference#wslinheritswindowssettings) | Когда установлено в реестре HKLM или файле под `C:\Program Files\ClaudeCode`, имейте WSL читать цепь политики Windows и читайте `/etc/claude-code` только когда [нет документа администратора Windows](#present-admin-documents); запись дает порядок |
+
+&gt; [!NOTE]
+&gt;
+&gt; На планах Team и Enterprise Owner включает или отключает [Remote Control](https://code.claude.com/docs/ru/remote-control.md) и [облачные сессии](https://code.claude.com/docs/ru/claude-code-on-the-web.md) для всей организации в [настройках администратора Claude Code](https://claude.ai/admin-settings/claude-code). Когда Owner отключает Remote Control, уже подключённые сессии, работающие на Claude Code v2.1.286 или позже, также отключаются. Каждая из них отключается при следующем обновлении политики вашей организации, что происходит примерно раз в час. О том, что происходит в этих сессиях, см. [`Remote Control was turned off by your organization&#x27;s policy`](https://code.claude.com/docs/ru/remote-control#remote-control-was-turned-off-by-your-organizations-policy).
+&gt;
+&gt; Remote Control также можно отключить для отдельного устройства с помощью настройки [`disableRemoteControl`](https://code.claude.com/docs/ru/settings-reference#disableremotecontrol). Для облачных сессий нет ключа управляемых настроек на уровне устройства.
+&gt;
+&gt; Чтобы проверить, достигли ли эти параметры организации данную машину, запустите `claude doctor` там и прочитайте строку `Organization policy`, которая говорит, откуда Claude Code загрузил политику или почему она не загрузилась. Требует Claude Code v2.1.261 или позже. В запущенном сеансе `/status` показывает ту же строку, когда политика не загрузилась.
+
+## Отключите телеметрию для вашей организации
+
+Claude Code отправляет Anthropic операционную [телеметрию](https://code.claude.com/docs/ru/data-usage.md#telemetry-services) по умолчанию на сеансы, которые используют API Anthropic, прямо, через шлюз LLM или через пользовательский `ANTHROPIC_BASE_URL`; [Поведения по умолчанию по поставщику API](https://code.claude.com/docs/ru/data-usage.md#default-behaviors-by-api-provider) говорит, какие поставщики отправляют ее. Чтобы отключить ее для каждого разработчика без опоры на каждого человека, доставьте `DISABLE_TELEMETRY` через блок `env` ваших управляемых параметров. Этот пример устанавливает `DISABLE_TELEMETRY` для всех, кого достигает политика:
+</code></pre>
+<p>{
+  &quot;env&quot;: {
+    &quot;DISABLE_TELEMETRY&quot;: &quot;1&quot;
+  }
+}</p>
+<pre><code>
+Claude Code применяет значение `1` без показа пользователю [диалога одобрения](https://code.claude.com/docs/ru/server-managed-settings.md#environment-variables-and-the-approval-dialog).
+
+Если вы отключите телеметрию, Claude Code прекратит отправку данных об использовании, которые питают [панель аналитики](https://code.claude.com/docs/ru/analytics.md) вашей организации для разработчиков, которых достигает политика. Переменная также отключает [получение флагов функций](https://code.claude.com/docs/ru/env-vars.md#features-that-need-feature-flag-fetching) для этих разработчиков. Для Remote Control см. [требования Remote Control](https://code.claude.com/docs/ru/remote-control.md#requirements).
+
+[Где и когда политика применяется](#where-and-when-a-policy-applies) говорит, какой механизм доставки достигает каждую поверхность, и [Доступность платформы](https://code.claude.com/docs/ru/server-managed-settings.md#platform-availability) говорит, какие сеансы пропускают выборку управляемых параметров сервера.
+
+Если ваша организация использует управляемые клиентом ключи шифрования и маршрутизирует Claude Code через шлюз, [Настройте прокси и шлюзы](https://code.claude.com/docs/ru/third-party-integrations.md#configure-proxies-and-gateways) говорит, почему этим сеансам нужна эта переменная.
+
+## Смотрите также
+
+* [Настройте Claude Code для вашей организации](https://code.claude.com/docs/ru/admin-setup.md): решите, что применять и как
+* [Управляемые параметры сервера](https://code.claude.com/docs/ru/server-managed-settings.md): доставляйте политику из консоли claude.ai или шлюза
+* [Управляемая конфигурация MCP](https://code.claude.com/docs/ru/managed-mcp.md): контролируйте, какие MCP серверы могут использовать разработчики
+* [Все параметры](https://code.claude.com/docs/ru/settings-reference.md): каждый ключ, с указанием, может ли управляемый источник его установить
+* [Примеры файлов параметров](https://code.claude.com/docs/ru/settings-example.md#an-organizations-managed-settings): полный `managed-settings.json`, показывающий форму управляемых ключей
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

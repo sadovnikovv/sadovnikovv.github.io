@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Agent Onboarding</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../../../materials/index.html">Материалы</a>
+    <a href="../../../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../../../materials/index.html">Материалы</a> / <a href="../../../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../../../materials/01-claude-code/community-guides/index.html">community-guides</a> / <a href="../../../../../../materials/01-claude-code/community-guides/edgelab-claude-md/index.html">edgelab-claude-md</a> / <a href="../../../../../../materials/01-claude-code/community-guides/edgelab-claude-md/skills/index.html">skills</a> / <a href="../../../../../../materials/01-claude-code/community-guides/edgelab-claude-md/skills/onboarding/index.html">onboarding</a></nav>
+<hr>
+<p>name: agent-onboarding
+description: Post-install onboarding flow. Agent greets the user, activates self-compiler, and guides them through configuring CLAUDE.md and workspace files through natural conversation. Use after fresh Claude Code install. Covers identity, goals, style, stack, and generates all config files. The whole flow takes 5-10 minutes.
+version: 1.0.0
+user-invocable: true</p>
+<hr>
+<h1 id="agent-onboarding">Agent Onboarding <a class="h-anchor" href="#agent-onboarding" aria-label="Ссылка на раздел">#</a></h1>
+<p>Post-install onboarding skill. Turns a blank Claude Code workspace into a fully
+configured agent through a short conversational flow.</p>
+<h3 id="when-to-activate">When to activate <a class="h-anchor" href="#when-to-activate" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Immediately after the installer finishes</li>
+<li>When the student runs their first <code>claude</code> session</li>
+<li>When <code>/onboarding</code> is invoked explicitly</li>
+</ul>
+<h3 id="prerequisites">Prerequisites <a class="h-anchor" href="#prerequisites" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li>Claude Code installed and authenticated</li>
+<li><code>~/.claude/</code> directory exists</li>
+<li>Self-compiler skill available (used internally for knowledge extraction)</li>
+</ul>
+<h3 id="flow">Flow <a class="h-anchor" href="#flow" aria-label="Ссылка на раздел">#</a></h3>
+<p>Seven phases, executed sequentially. Each phase collects information through
+natural conversation and generates one or more files.</p>
+<hr>
+<h4 id="phase-1-greeting-first-message">Phase 1: Greeting (first message) <a class="h-anchor" href="#phase-1-greeting-first-message" aria-label="Ссылка на раздел">#</a></h4>
+<p>Send exactly this (localized to detected language):</p>
+<blockquote>
+<p>Hi! I&#x27;m your AI agent, freshly installed and ready to work. But first -- I need
+to know who you are so I can be truly useful.</p>
+<p>Let&#x27;s spend 5 minutes setting me up. I&#x27;ll ask you questions, and from your
+answers I&#x27;ll create all the config files I need.</p>
+<p>Ready? Let&#x27;s start with the basics.</p>
+</blockquote>
+<p>No questions in this phase. Wait for any reply to proceed.</p>
+<hr>
+<h4 id="phase-2-identity-profile-md-user-md">Phase 2: Identity (profile.md + USER.md) <a class="h-anchor" href="#phase-2-identity-profile-md-user-md" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Goal:</strong> Establish who the operator is.</p>
+<p>Questions (ask ONE at a time, wait for answer before next):</p>
+<ol>
+<li>What&#x27;s your name? How should I address you?</li>
+<li>What&#x27;s your timezone? (e.g. UTC+3, PST, &quot;I&#x27;m in Berlin&quot;)</li>
+<li>What language do you prefer for communication?</li>
+<li>What do you do? (role, profession, area of expertise)</li>
+<li>What&#x27;s your experience level with AI agents? (beginner / intermediate / advanced)</li>
+</ol>
+<p><strong>Generate from answers:</strong></p>
+<ul>
+<li><code>~/.claude/core/USER.md</code> -- operator profile (use <code>templates/user-md-student.md</code>)</li>
+<li><code>~/knowledge/profile.md</code> -- extended profile with raw answers</li>
+</ul>
+<p><strong>Confirm:</strong> &quot;Got it, {{NAME}}. I&#x27;ll address you as {{ADDRESS}} and communicate
+in {{LANGUAGE}}. Moving on.&quot;</p>
+<hr>
+<h4 id="phase-3-goals-projects-goals-md">Phase 3: Goals &amp; Projects (goals.md) <a class="h-anchor" href="#phase-3-goals-projects-goals-md" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Goal:</strong> Understand what the agent will be used for.</p>
+<p>Questions:</p>
+<ol>
+<li>What are you working on right now?</li>
+<li>What&#x27;s your main goal for the next month?</li>
+<li>What kind of tasks will you give me? (code, research, writing, automation...)</li>
+</ol>
+<p><strong>Generate:</strong> <code>~/knowledge/goals.md</code></p>
+<p><strong>Confirm:</strong> &quot;Noted. Main focus: {{ONE_LINE_SUMMARY}}.&quot;</p>
+<hr>
+<h4 id="phase-4-style-rules-style-md-rules-md">Phase 4: Style &amp; Rules (style.md, rules.md) <a class="h-anchor" href="#phase-4-style-rules-style-md-rules-md" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Goal:</strong> Learn communication and behavioral preferences.</p>
+<p>Questions:</p>
+<ol>
+<li>How do you like to communicate? (brief answers / detailed explanations, formal / casual)</li>
+<li>Any things I should never do? (e.g. no emoji, no long explanations, never delete files without asking)</li>
+<li>Code style preferences? (language, framework, tabs vs spaces, naming)</li>
+</ol>
+<p><strong>Generate:</strong></p>
+<ul>
+<li><code>~/knowledge/style.md</code> -- communication style</li>
+<li><code>~/knowledge/rules.md</code> -- hard rules and boundaries</li>
+</ul>
+<p><strong>Confirm:</strong> &quot;Style set: {{BRIEF_STYLE_SUMMARY}}.&quot;</p>
+<hr>
+<h4 id="phase-5-stack-tools-stack-md">Phase 5: Stack &amp; Tools (stack.md) <a class="h-anchor" href="#phase-5-stack-tools-stack-md" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Goal:</strong> Map the technical environment.</p>
+<p>Questions:</p>
+<ol>
+<li>What programming languages do you use?</li>
+<li>What tools and services? (GitHub, Docker, cloud providers, databases)</li>
+<li>Any APIs or integrations I should know about?</li>
+</ol>
+<p><strong>Generate:</strong> <code>~/knowledge/stack.md</code></p>
+<p><strong>Confirm:</strong> &quot;Stack captured. Primary: {{LANGUAGES}}, {{KEY_TOOLS}}.&quot;</p>
+<hr>
+<h4 id="phase-6-claude-md-generation">Phase 6: CLAUDE.md Generation <a class="h-anchor" href="#phase-6-claude-md-generation" aria-label="Ссылка на раздел">#</a></h4>
+<p><strong>Goal:</strong> Produce the main agent configuration file.</p>
+<p>Steps:</p>
+<ol>
+<li>Load template from <code>templates/claude-md-student.md</code></li>
+<li>Fill placeholders with collected data:</li>
+<li><code>{{NAME}}</code>, <code>{{TIMEZONE}}</code>, <code>{{LANGUAGE}}</code> from Phase 2</li>
+<li><code>{{CODE_STYLE}}</code> from Phase 4</li>
+<li><code>{{COMMIT_LANGUAGE}}</code> from Phase 4 (default: English)</li>
+<li><code>{{STYLE_BRIEF_OR_DETAILED}}</code> from Phase 4 (default: &quot;Brief answers, code first&quot;)</li>
+<li>Present the draft to the student: &gt; &quot;Here&#x27;s your CLAUDE.md draft. Want me to adjust anything?&quot;</li>
+<li>Apply requested changes</li>
+<li>Write final version to <code>~/.claude/CLAUDE.md</code></li>
+</ol>
+<p>If the student says &quot;looks good&quot; or similar -- write immediately, no further
+questions.</p>
+<hr>
+<h4 id="phase-7-completion">Phase 7: Completion <a class="h-anchor" href="#phase-7-completion" aria-label="Ссылка на раздел">#</a></h4>
+<p>Send a completion message listing the actual files created with their full paths:</p>
+<blockquote>
+<p>Setup complete! Here&#x27;s what I created:</p>
+<ul>
+<li><code>~/.claude/CLAUDE.md</code> -- my operating rules</li>
+<li><code>~/.claude/core/USER.md</code> -- your profile</li>
+<li><code>~/knowledge/profile.md</code> -- extended identity</li>
+<li><code>~/knowledge/goals.md</code> -- your goals</li>
+<li><code>~/knowledge/style.md</code> -- communication preferences</li>
+<li><code>~/knowledge/rules.md</code> -- boundaries</li>
+<li><code>~/knowledge/stack.md</code> -- tech stack</li>
+</ul>
+<p>I&#x27;m ready to work. What&#x27;s our first task?</p>
+</blockquote>
+<p>Only list files that were actually created (skip phases that were skipped).</p>
+<hr>
+<h3 id="rules">Rules <a class="h-anchor" href="#rules" aria-label="Ссылка на раздел">#</a></h3>
+<ul>
+<li><strong>One question at a time.</strong> Never send a wall of questions. Ask, wait, process, ask next.</li>
+<li><strong>Confirm after each answer.</strong> One line showing what was captured. The student must see that the agent understood correctly.</li>
+<li><strong>&quot;Skip&quot; means defaults.</strong> If the student says &quot;skip&quot;, &quot;idk&quot;, or gives a minimal answer -- use sensible defaults and move on. Do not push.</li>
+<li><strong>Minimal answers are fine.</strong> If the student gives one-word answers -- work with what you have. The onboarding should never feel like an interrogation.</li>
+<li><strong>Files in English.</strong> All generated config files use English for token optimization, regardless of the student&#x27;s language preference.</li>
+<li><strong>Communicate in student&#x27;s language.</strong> After Phase 2, switch to the language the student chose.</li>
+<li><strong>5-10 minutes max.</strong> If the flow drags, compress remaining phases: combine questions, use defaults, finish fast.</li>
+<li><strong>Self-compiler internally.</strong> Use the self-compiler skill to extract structured knowledge from free-form answers. Do not mention self-compiler to the student.</li>
+<li><strong>Idempotent.</strong> If onboarding is run again, overwrite existing files after confirming with the student.</li>
+<li><strong>No sensitive data.</strong> Never ask for passwords, API keys, or tokens during onboarding. Those go into <code>.env</code> files separately.</li>
+</ul>
+<h3 id="defaults-when-student-skips">Defaults (when student skips) <a class="h-anchor" href="#defaults-when-student-skips" aria-label="Ссылка на раздел">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Field</th><th>Default</th></tr></thead><tbody><tr><td>Address</td><td>First name</td></tr><tr><td>Timezone</td><td>UTC</td></tr><tr><td>Language</td><td>English</td></tr><tr><td>Experience</td><td>Beginner</td></tr><tr><td>Code style</td><td>Standard conventions for detected language</td></tr><tr><td>Commit language</td><td>English</td></tr><tr><td>Autonomy</td><td>Green: code, tests, git branch. Red: delete, deploy, force push</td></tr></tbody></table></div>
+<h3 id="file-structure-created">File structure created <a class="h-anchor" href="#file-structure-created" aria-label="Ссылка на раздел">#</a></h3>
+<pre><code>~/.claude/
+  CLAUDE.md              # Main agent config
+  core/
+    USER.md              # Operator profile
+~/knowledge/
+  profile.md             # Extended identity
+  goals.md               # Current projects and goals
+  style.md               # Communication preferences
+  rules.md               # Hard rules and boundaries
+  stack.md               # Tech stack and tools</code></pre>
+<h3 id="integration-with-self-compiler">Integration with self-compiler <a class="h-anchor" href="#integration-with-self-compiler" aria-label="Ссылка на раздел">#</a></h3>
+<p>The self-compiler skill is activated during Phase 2-5 to:</p>
+<ol>
+<li>Parse free-form answers into structured key-value pairs</li>
+<li>Detect implicit preferences (e.g. student writes casually -&gt; set style=casual)</li>
+<li>Resolve conflicts (e.g. says &quot;brief&quot; but gives long answers -&gt; ask to clarify)</li>
+<li>Generate consistent markdown from heterogeneous input</li>
+</ol>
+<p>The agent calls self-compiler internally. The student sees only natural
+conversation, never the compilation process.</p>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>

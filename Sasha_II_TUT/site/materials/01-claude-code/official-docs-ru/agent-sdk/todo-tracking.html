@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Отслеживание задач</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../../../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к тексту</a>
+<header class="site-header">
+  <div class="bar">
+    <strong><a href="../../../../index.html">Claude Code для инженера</a></strong>
+    <a href="../../../../materials/index.html">Материалы</a>
+    <a href="../../../../about.html">О книге</a>
+  </div>
+</header>
+<main class="wrap mat" id="main">
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="../../../../materials/index.html">Материалы</a> / <a href="../../../../materials/01-claude-code/index.html">01-claude-code</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/index.html">official-docs-ru</a> / <a href="../../../../materials/01-claude-code/official-docs-ru/agent-sdk/index.html">agent-sdk</a></nav>
+<blockquote>
+<h3 id="documentation-index">Documentation Index <a class="h-anchor" href="#documentation-index" aria-label="Ссылка на раздел">#</a></h3>
+<p>Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
+Use this file to discover all available pages before exploring further.</p>
+</blockquote>
+<h1 id="h">Отслеживание задач <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h1>
+<blockquote>
+<p>Отслеживайте задачи в сессиях Agent SDK и отображайте прогресс Claude в вашем приложении с помощью структурированных вызовов инструментов</p>
+</blockquote>
+<p>Claude Code предоставляет <a href="https://code.claude.com/docs/ru/tools-reference.md#task-tool-availability">инструменты отслеживания задач</a> по умолчанию только на моделях, перечисленных в разделе <a href="#model-availability">Доступность моделей</a>. Более новые модели отслеживают многошаговую работу без письменного списка задач, поэтому на них вам не нужно ничего из этой страницы, чтобы Claude работал с многошаговыми задачами.</p>
+<p>В сессии, которая имеет инструменты отслеживания задач, Claude ведет письменный список задач, обновляя статус каждого элемента по мере работы. Вы видите каждое изменение в потоке сообщений как структурированный вызов инструмента. Включайте эти инструменты для сессии, только когда ваше приложение читает эти вызовы инструментов, будь то для логирования активности задач или для отображения собственного индикатора прогресса.</p>
+<h3 id="h-2">Доступность моделей <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Следующие инструменты доступны по умолчанию только на моделях Claude Opus 4.7, Claude Sonnet 4.6, Claude Haiku 4.5 и более ранних моделях. На всех остальных моделях, включая идентификаторы моделей, которые Claude Code не распознает, они недоступны, если вы не согласитесь на их использование:</p>
+<ul>
+<li><code>TodoWrite</code></li>
+<li><code>TaskCreate</code></li>
+<li><code>TaskGet</code></li>
+<li><code>TaskUpdate</code></li>
+<li><code>TaskList</code></li>
+</ul>
+<p>Везде, где доступны инструменты, Claude Code предоставляет четыре инструмента Task, или <code>TodoWrite</code> вместо них, когда вы устанавливаете <code>CLAUDE_CODE_ENABLE_TASKS=0</code>.</p>
+<p>Этот набор по умолчанию применяется в Claude Code v2.1.268 и более поздних версиях, которые TypeScript Agent SDK поставляет начиная с версии v0.3.268.</p>
+</blockquote>
+<p>На модели, которая не имеет инструментов по умолчанию, если вы не включите их для сессии, вы не увидите блоков <code>tool_use</code> для них в потоке сообщений. Agent SDK применяет эти значения по умолчанию через двоичный файл Claude Code, который он включает. Если вы указываете <code>pathToClaudeCodeExecutable</code> (TypeScript) или <code>cli_path</code> (Python) на вашу собственную установку Claude Code, вы получаете те инструменты, которые предоставляет эта установка, в соответствии с её собственными значениями по умолчанию. Чтобы увидеть точный набор в работающей сессии, <a href="https://code.claude.com/docs/ru/tools-reference.md#check-which-tools-are-available">проверьте, какие инструменты доступны</a>. Чтобы включить эти инструменты для сессии, выполните одно из следующих действий:</p>
+<ul>
+<li>Назовите один из инструментов в опции <a href="https://code.claude.com/docs/ru/agent-sdk/permissions#allow-and-deny-rules"><code>allowedTools</code></a> (TypeScript) или <code>allowed_tools</code> (Python)</li>
+<li>Перечислите инструменты в опции <code>tools</code>, которая ограничивает встроенные инструменты сессии только теми, которые она называет. Включите нужные вам инструменты вместе с другими встроенными инструментами, которые вы используете</li>
+<li>Установите <code>CLAUDE_CODE_ENABLE_TODO_TOOLS=1</code> в опции <code>env</code>, как это делают примеры на этой странице. В TypeScript <code>env</code> заменяет окружение подпроцесса, поэтому распределите <code>...process.env</code> для сохранения унаследованных переменных. В Python <code>env</code> объединяется с унаследованным окружением</li>
+</ul>
+<h3 id="h-3">Жизненный цикл задач <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Claude перемещает каждую задачу через предсказуемый жизненный цикл:</p>
+<ol>
+<li><strong>Созданы</strong>: Claude добавляет задачу как <code>pending</code> когда выявляет задачу</li>
+<li><strong>Активированы</strong>: Claude устанавливает задачу в <code>in_progress</code> когда начинает работу</li>
+<li><strong>Завершены</strong>: Claude отмечает её завершённой когда задача успешно завершается</li>
+<li><strong>Удалены</strong>: Claude удаляет задачу, которая ей больше не нужна, установив <code>status: &quot;deleted&quot;</code> в вызове <code>TaskUpdate</code></li>
+</ol>
+<h3 id="когда-claude-создает-задачи">Когда Claude создаёт задачи <a class="h-anchor" href="#когда-claude-создает-задачи" aria-label="Ссылка на раздел">#</a></h3>
+<p>В <a href="#model-availability">сессии, которая имеет инструменты отслеживания задач</a>, Claude создаёт задачи для большинства многошаговой работы, такой как:</p>
+<ul>
+<li><strong>Сложные многошаговые задачи</strong>, требующие трёх или более отдельных действий</li>
+<li><strong>Списки задач, предоставленные пользователем</strong>, когда упоминаются несколько элементов</li>
+<li><strong>Более длительные операции</strong>, которые выигрывают от отслеживания прогресса</li>
+<li><strong>Явные запросы</strong>, когда пользователи просят организовать задачи</li>
+</ul>
+<p>Claude может пропустить задачи для очень коротких или одношаговых запросов.</p>
+<h3 id="h-4">Примеры <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Перед запуском этих примеров установите Claude Agent SDK, следуя <a href="https://code.claude.com/docs/ru/agent-sdk/quickstart.md">краткому руководству</a>. Каждый пример на этой странице использует одну и ту же настройку разрешений и поведение выхода:</p>
+<ul>
+<li><strong>Режим разрешений</strong>: примеры подсказок просят Claude выполнить реальную работу над проектом, поэтому каждый пример устанавливает <code>permissionMode: &quot;acceptEdits&quot;</code> (TypeScript) или <code>permission_mode=&quot;acceptEdits&quot;</code> (Python) для автоматического одобрения редактирования файлов, которое производит работа. Смотрите <a href="https://code.claude.com/docs/ru/agent-sdk/permissions.md#permission-modes">Режимы разрешений</a> для альтернатив.</li>
+<li><strong>Лимит ходов</strong>: каждый пример работает до завершения агентом и выдачи его финального сообщения результата. Если сессия сначала достигает лимита ходов, то сообщение результата имеет подтип <code>error_max_turns</code>. Проверьте <code>subtype</code>, чтобы обнаружить это завершение.</li>
+<li><strong>Обработка ошибок</strong>: эти примеры используют однократные вызовы <code>query()</code>. После выдачи результата <code>error_max_turns</code>, <code>query()</code> выбрасывает ошибку, которая включает <code>Reached maximum number of turns</code>. Каждый пример оборачивает свой цикл в блок try для чистого выхода при возникновении этого события. Смотрите <a href="https://code.claude.com/docs/ru/agent-sdk/agent-loop.md#handle-the-result">Обработка результата</a> для подтипов результатов.</li>
+</ul>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Системные сообщения задач, <a href="https://code.claude.com/docs/ru/agent-sdk/typescript#sdktasknotificationmessage"><code>SDKTaskNotificationMessage</code></a> (TypeScript) или <a href="https://code.claude.com/docs/ru/agent-sdk/python#tasknotificationmessage"><code>TaskNotificationMessage</code></a> (Python) среди них, сообщают о фоновых задачах, таких как фоновые команды и подагенты. В потоке сообщений вы видите активность задач как блоки <code>tool_use</code> в сообщениях помощника.</p>
+</blockquote>
+<h4 id="h-5">Мониторинг изменений задач <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h4>
+<p>Следующий пример наблюдает за потоком помощника для блоков <code>tool_use</code> <code>TaskCreate</code> и <code>TaskUpdate</code> и выводит строку <code>+</code> с предметом каждой новой задачи и строку обновления с ID задачи каждого изменения статуса и новым статусом. Используйте эту форму когда вы хотите логирование активности задач вместо отображаемого дисплея. Строки <code>+</code> не включают назначенные ID, поэтому этот логирование не может сопоставить обновления обратно их созданиям. Чтобы сохранить это соответствие, захватите ID как это делает <a href="#display-progress-in-real-time">Отображение прогресса в реальном времени</a>.</p>
+<p>Потоковый ввод <code>tool_use</code> — это необработанная форма, которую выдала модель. Claude Code исправляет некоторые близкие, но неправильные имена ключей перед выполнением, сопоставляя <code>id</code> или <code>task_id</code> с <code>taskId</code> и <code>active_form</code> с <code>activeForm</code>, но это исправление не отражается в потоке. Читайте поля ввода <code>TaskUpdate</code> защитно, как это делают оба примера на этой странице, а не предполагайте, что каноническое имя всегда присутствует.</p>
+<p>```typescript TypeScript theme={null}
+import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>try {
+  for await (const message of query({
+    prompt: &quot;Create a static website with a home page, an about page, and a shared stylesheet, and track progress with todos&quot;,
+    // Keeps the Task tools on models where Claude Code otherwise doesn&#x27;t provide them.
+    options: { maxTurns: 15, permissionMode: &quot;acceptEdits&quot;, env: { ...process.env, CLAUDE_CODE_ENABLE_TODO_TOOLS: &quot;1&quot; } },
+  })) {
+    if (message.type !== &quot;assistant&quot;) continue;
+    for (const block of message.message.content) {
+      if (block.type !== &quot;tool_use&quot;) continue;
+      if (block.name === &quot;TaskCreate&quot;) {
+        const input = block.input as { subject: string };
+        console.log(<code>+ ${input.subject}</code>);
+      } else if (block.name === &quot;TaskUpdate&quot;) {
+        const input = block.input as {
+          taskId?: string;
+          id?: string;
+          task_id?: string;
+          status?: string;
+        };
+        const taskId = input.taskId ?? input.id ?? input.task_id;
+        if (taskId &amp;&amp; input.status) console.log(<code>  ${taskId} -&gt; ${input.status}</code>);
+      }
+    }
+  }
+} catch (error) {
+  // A single-shot query() throws after yielding an error result.
+  console.log(<code>Session ended with an error: ${error}</code>);
+}</p>
+<pre><code></code></pre>
+<p>import asyncio</p>
+<p>from claude_agent_sdk import query, ClaudeAgentOptions, AssistantMessage, ToolUseBlock</p>
+<p>async def main():
+    try:
+        async for message in query(
+            prompt=&quot;Create a static website with a home page, an about page, and a shared stylesheet, and track progress with todos&quot;,
+            # Keeps the Task tools on models where Claude Code otherwise doesn&#x27;t provide them.
+            options=ClaudeAgentOptions(max_turns=15, permission_mode=&quot;acceptEdits&quot;, env={&quot;CLAUDE_CODE_ENABLE_TODO_TOOLS&quot;: &quot;1&quot;}),
+        ):
+            if not isinstance(message, AssistantMessage):
+                continue
+            for block in message.content:
+                if not isinstance(block, ToolUseBlock):
+                    continue
+                if block.name == &quot;TaskCreate&quot;:
+                    print(f&quot;+ {block.input.get(&#x27;subject&#x27;, &#x27;&#x27;)}&quot;)
+                elif block.name == &quot;TaskUpdate&quot; and block.input.get(&quot;status&quot;):
+                    task_id = (
+                        block.input.get(&quot;taskId&quot;)
+                        or block.input.get(&quot;id&quot;)
+                        or block.input.get(&quot;task_id&quot;)
+                    )
+                    if task_id:
+                        print(f&quot;  {task_id} -&gt; {block.input[&#x27;status&#x27;]}&quot;)
+    except Exception as error:
+        # A single-shot query() raises after yielding an error result.
+        print(f&quot;Session ended with an error: {error}&quot;)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+### Отображение прогресса в реальном времени
+
+Следующий пример наблюдает за потоком помощника для блоков `tool_use` `TaskCreate` и `TaskUpdate` и ведёт карту задач, индексированную по ID задачи в классе `TaskTracker`, переотображая сводку прогресса при каждом изменении. Сводка подсчитывает завершённые и выполняемые задачи и показывает метку `activeForm` каждого активного элемента вместо его `subject`. Используйте эту форму когда ваше приложение ведёт дисплей прогресса вместо логирования каждого события.
+
+Назначенный ID задачи отсутствует во вводе `TaskCreate`. Claude Code доставляет структурированный вывод каждого инструмента в сообщение пользователя, которое несёт его блок `tool_result`, в поле `tool_use_result`. Для `TaskCreate`, этот объект задокументирован для TypeScript как `TaskCreateOutput` в разделе [Типы вывода инструментов](https://code.claude.com/docs/ru/agent-sdk/typescript.md#tool-output-types), и в Python поле является простым dict той же формы. Трекер сопоставляет каждый блок `tool_result` с его вызовом `tool_use` по `tool_use_id` и читает `task.id` из `tool_use_result` сопоставленного сообщения. Claude может прочитать список обратно с помощью `TaskList` и полные детали одной задачи с помощью `TaskGet`.
+</code></pre>
+<p>import { query } from &quot;@anthropic-ai/claude-agent-sdk&quot;;</p>
+<p>type Task = { subject: string; activeForm?: string; status: string };</p>
+<p>class TaskTracker {
+  private tasks = new Map&lt;string, Task&gt;();
+  private pendingCreates = new Map&lt;string, { subject: string; activeForm?: string }&gt;();</p>
+<p>displayProgress() {
+    if (this.tasks.size === 0) {
+      console.log(&quot;\nProgress: no open tasks\n&quot;);
+      return;
+    }</p>
+<p>const items = [...this.tasks.values()];
+    const completed = items.filter((t) =&gt; t.status === &quot;completed&quot;).length;
+    const inProgress = items.filter((t) =&gt; t.status === &quot;in_progress&quot;).length;</p>
+<p>console.log(<code>\nProgress: ${completed}/${this.tasks.size} completed</code>);
+    console.log(<code>Currently working on: ${inProgress} task(s)\n</code>);</p>
+<p>for (const [id, task] of this.tasks) {
+      const icon =
+        task.status === &quot;completed&quot; ? &quot;✅&quot; : task.status === &quot;in_progress&quot; ? &quot;🔧&quot; : &quot;❌&quot;;
+      const text = task.status === &quot;in_progress&quot; &amp;&amp; task.activeForm ? task.activeForm : task.subject;
+      console.log(<code>${id}. ${icon} ${text}</code>);
+    }
+  }</p>
+<p>handleToolUse(block: { id: string; name: string; input: unknown }) {
+    if (block.name === &quot;TaskCreate&quot;) {
+      const input = block.input as { subject: string; activeForm?: string; active_form?: string };
+      this.pendingCreates.set(block.id, {
+        subject: input.subject,
+        activeForm: input.activeForm ?? input.active_form,
+      });
+    } else if (block.name === &quot;TaskUpdate&quot;) {
+      const input = block.input as {
+        taskId?: string;
+        id?: string;
+        task_id?: string;
+        status?: string;
+        activeForm?: string;
+        active_form?: string;
+      };
+      const taskId = input.taskId ?? input.id ?? input.task_id;
+      if (!taskId) return;
+      if (input.status === &quot;deleted&quot;) {
+        this.tasks.delete(taskId);
+        this.displayProgress();
+        return;
+      }
+      const task = this.tasks.get(taskId);
+      if (!task) return;
+      if (input.status) task.status = input.status;
+      const active = input.activeForm ?? input.active_form;
+      if (active) task.activeForm = active;
+      this.displayProgress();
+    }
+  }</p>
+<p>handleToolResult(block: { tool_use_id: string; is_error?: boolean }, result: unknown) {
+    const create = this.pendingCreates.get(block.tool_use_id);
+    if (!create) return;
+    this.pendingCreates.delete(block.tool_use_id);
+    if (block.is_error) return;
+    // The result&#x27;s user message carries the tool&#x27;s structured output as
+    // tool_use_result; for TaskCreate that&#x27;s TaskCreateOutput,
+    // { task: { id, subject } }.
+    const out = result as { task?: { id: string } };
+    if (!out?.task?.id) return;
+    this.tasks.set(out.task.id, { ...create, status: &quot;pending&quot; });
+    this.displayProgress();
+  }</p>
+<p>async trackQuery(prompt: string) {
+    try {
+      for await (const message of query({
+        prompt,
+        options: { maxTurns: 20, permissionMode: &quot;acceptEdits&quot;, env: { ...process.env, CLAUDE_CODE_ENABLE_TODO_TOOLS: &quot;1&quot; } },
+      })) {
+        if (message.type === &quot;assistant&quot;) {
+          for (const block of message.message.content) {
+            if (block.type === &quot;tool_use&quot;) this.handleToolUse(block);
+          }
+        }
+        if (message.type === &quot;user&quot; &amp;&amp; Array.isArray(message.message.content)) {
+          for (const block of message.message.content) {
+            if (block.type === &quot;tool_result&quot;) this.handleToolResult(block, message.tool_use_result);
+          }
+        }
+      }
+    } catch (error) {
+      // A single-shot query() throws after yielding an error result,
+      // such as when the maxTurns limit is hit.
+      console.log(<code>Session ended with an error: ${error}</code>);
+    }
+  }
+}</p>
+<p>// Usage
+const tracker = new TaskTracker();
+await tracker.trackQuery(&quot;Build a complete authentication system with todos&quot;);</p>
+<pre><code></code></pre>
+<p>import asyncio</p>
+<p>from claude_agent_sdk import (
+    query,
+    ClaudeAgentOptions,
+    AssistantMessage,
+    UserMessage,
+    ToolUseBlock,
+    ToolResultBlock,
+)</p>
+<p>class TaskTracker:
+    def __init__(self):
+        self.tasks: dict[str, dict] = {}
+        self.pending_creates: dict[str, dict] = {}</p>
+<p>def display_progress(self):
+        if not self.tasks:
+            print(&quot;\nProgress: no open tasks\n&quot;)
+            return</p>
+<p>completed = len([t for t in self.tasks.values() if t[&quot;status&quot;] == &quot;completed&quot;])
+        in_progress = len([t for t in self.tasks.values() if t[&quot;status&quot;] == &quot;in_progress&quot;])</p>
+<p>print(f&quot;\nProgress: {completed}/{len(self.tasks)} completed&quot;)
+        print(f&quot;Currently working on: {in_progress} task(s)\n&quot;)</p>
+<p>for task_id, task in self.tasks.items():
+            icon = (
+                &quot;✅&quot;
+                if task[&quot;status&quot;] == &quot;completed&quot;
+                else &quot;🔧&quot;
+                if task[&quot;status&quot;] == &quot;in_progress&quot;
+                else &quot;❌&quot;
+            )
+            text = (
+                task[&quot;activeForm&quot;]
+                if task[&quot;status&quot;] == &quot;in_progress&quot; and task.get(&quot;activeForm&quot;)
+                else task[&quot;subject&quot;]
+            )
+            print(f&quot;{task_id}. {icon} {text}&quot;)</p>
+<p>def handle_tool_use(self, block: ToolUseBlock):
+        if block.name == &quot;TaskCreate&quot;:
+            self.pending_creates[block.id] = {
+                &quot;subject&quot;: block.input.get(&quot;subject&quot;, &quot;&quot;),
+                &quot;activeForm&quot;: block.input.get(&quot;activeForm&quot;) or block.input.get(&quot;active_form&quot;),
+            }
+        elif block.name == &quot;TaskUpdate&quot;:
+            task_id = (
+                block.input.get(&quot;taskId&quot;)
+                or block.input.get(&quot;id&quot;)
+                or block.input.get(&quot;task_id&quot;)
+            )
+            if not task_id:
+                return
+            if block.input.get(&quot;status&quot;) == &quot;deleted&quot;:
+                self.tasks.pop(task_id, None)
+                self.display_progress()
+                return
+            task = self.tasks.get(task_id)
+            if not task:
+                return
+            if block.input.get(&quot;status&quot;):
+                task[&quot;status&quot;] = block.input[&quot;status&quot;]
+            active = block.input.get(&quot;activeForm&quot;) or block.input.get(&quot;active_form&quot;)
+            if active:
+                task[&quot;activeForm&quot;] = active
+            self.display_progress()</p>
+<p>def handle_tool_result(self, block: ToolResultBlock, tool_use_result):
+        create = self.pending_creates.pop(block.tool_use_id, None)
+        if create is None or block.is_error:
+            return
+        # The result&#x27;s user message carries the tool&#x27;s structured output as
+        # tool_use_result; for TaskCreate that&#x27;s {&quot;task&quot;: {&quot;id&quot;: ..., &quot;subject&quot;: ...}}.
+        task = (tool_use_result or {}).get(&quot;task&quot;) or {}
+        if not task.get(&quot;id&quot;):
+            return
+        self.tasks[task[&quot;id&quot;]] = {**create, &quot;status&quot;: &quot;pending&quot;}
+        self.display_progress()</p>
+<p>async def track_query(self, prompt: str):
+        try:
+            async for message in query(
+                prompt=prompt,
+                options=ClaudeAgentOptions(
+                    max_turns=20,
+                    permission_mode=&quot;acceptEdits&quot;,
+                    env={&quot;CLAUDE_CODE_ENABLE_TODO_TOOLS&quot;: &quot;1&quot;},
+                ),
+            ):
+                if isinstance(message, AssistantMessage):
+                    for block in message.content:
+                        if isinstance(block, ToolUseBlock):
+                            self.handle_tool_use(block)
+                if isinstance(message, UserMessage) and isinstance(message.content, list):
+                    for block in message.content:
+                        if isinstance(block, ToolResultBlock):
+                            self.handle_tool_result(block, message.tool_use_result)
+        except Exception as error:
+            # A single-shot query() raises after yielding an error result,
+            # such as when the max_turns limit is hit.
+            print(f&quot;Session ended with an error: {error}&quot;)</p>
+<h1 id="usage">Usage <a class="h-anchor" href="#usage" aria-label="Ссылка на раздел">#</a></h1>
+<p>async def main():
+    tracker = TaskTracker()
+    await tracker.track_query(&quot;Build a complete authentication system with todos&quot;)</p>
+<p>asyncio.run(main())</p>
+<pre><code>
+## Связанная документация
+
+* [Справочник Agent SDK - TypeScript](https://code.claude.com/docs/ru/agent-sdk/typescript.md): опции, типы и схемы инструментов для TypeScript SDK, включая типы ввода и вывода инструмента Task
+* [Справочник Agent SDK - Python](https://code.claude.com/docs/ru/agent-sdk/python.md): опции, типы и документация инструментов для Python SDK
+* [Отправка сообщений работающему агенту](https://code.claude.com/docs/ru/agent-sdk/streaming-vs-single-mode.md): используйте потоковый ввод вместо однократных вызовов, которые используют эти примеры
+* [Предоставьте Claude пользовательские инструменты](https://code.claude.com/docs/ru/agent-sdk/custom-tools.md): определите свои собственные инструменты с помощью встроенного MCP сервера SDK
+</code></pre>
+</main>
+<footer class="site-footer">
+  <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
+</footer>
+</body>
+</html>
