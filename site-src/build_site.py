@@ -515,6 +515,23 @@ PAGE_TPL = """<!DOCTYPE html>
     <a href="{root}materials/index.html">Материалы</a>
     <a href="{root}about.html">О книге</a>
     <a href="{root}download/{book_epub}" download>EPUB</a>
+    <details class="bar__support">
+      <summary>Поддержать проект</summary>
+      <div class="bar__support-panel">
+        <p>Книга бесплатна. Поддержка добровольная - сумму выбираете вы.</p>
+        <iframe
+          src="https://yoomoney.ru/quickpay/fundraise/widget?billNumber=1LNFDBQH1ED.261122&"
+          title="ЮMoney - поддержать автора книги"
+          width="500"
+          height="480"
+          frameborder="0"
+          allowtransparency="true"
+          scrolling="no"
+          loading="lazy"
+        ></iframe>
+        <p><a href="https://yoomoney.ru/fundraise/1LNFDBQH1ED.261122" target="_blank" rel="noopener">Открыть форму поддержки на ЮMoney</a></p>
+      </div>
+    </details>
 </header>
 <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
 <aside class="side-toc" id="side-toc" aria-label="Оглавление книги"><div class="side-toc-title"><a href="{root}index.html">Оглавление</a></div></aside>
@@ -538,13 +555,13 @@ PAGE_TPL = """<!DOCTYPE html>
 <script src="{root}assets/tasks.js" defer></script>
 <script>
 document.addEventListener('click', function (e) {{
-  document.querySelectorAll('.header-support[open]').forEach(function (d) {{
+  document.querySelectorAll('.bar__support[open]').forEach(function (d) {{
     if (!d.contains(e.target)) d.open = false;
   }});
 }});
 document.addEventListener('keydown', function (e) {{
   if (e.key !== 'Escape') return;
-  document.querySelectorAll('.header-support[open]').forEach(function (d) {{
+  document.querySelectorAll('.bar__support[open]').forEach(function (d) {{
     d.open = false;
     var s = d.querySelector('summary');
     if (s) s.focus();
@@ -787,15 +804,21 @@ def build_book(raw):
     # «Поддержать автора»: в книге на одной странице - кнопка в боковой панели
     # рядом с настройками чтения (сверху в HTML нет шапки сайта).
     book_support = ("""
-    <details class="header-support">
-      <summary class="header-support__button">Поддержать автора</summary>
-      <div class="header-support__panel">
+    <details class="bar__support">
+      <summary>Поддержать проект</summary>
+      <div class="bar__support-panel">
         <p>Книга бесплатна. Поддержка добровольная - сумму выбираете вы.</p>
         <iframe
-          src="https://yoomoney.ru/quickpay/fundraise/widget?billNumber=1LNFDBQH1ED.261122"
+          src="https://yoomoney.ru/quickpay/fundraise/widget?billNumber=1LNFDBQH1ED.261122&"
           title="ЮMoney - поддержать автора книги"
+          width="500"
+          height="480"
+          frameborder="0"
+          allowtransparency="true"
+          scrolling="no"
           loading="lazy"
         ></iframe>
+        <p><a href="https://yoomoney.ru/fundraise/1LNFDBQH1ED.261122" target="_blank" rel="noopener">Открыть форму поддержки на ЮMoney</a></p>
       </div>
     </details>
     """)
@@ -881,6 +904,18 @@ MAT_TPL = """<!DOCTYPE html>
     <strong><a href="{site_root}index.html">{site}</a></strong>
     <a href="{site_root}materials/index.html">Материалы</a>
     <a href="{site_root}about.html">О книге</a>
+    <details class="bar__support">
+      <summary>Поддержать проект</summary>
+      <div class="bar__support-panel">
+        <p>Книга бесплатна. Поддержка добровольная - сумму выбираете вы.</p>
+        <iframe
+          src="https://yoomoney.ru/quickpay/fundraise/widget?billNumber=1LNFDBQH1ED.261122"
+          title="ЮMoney - поддержать автора книги"
+          loading="lazy"
+        ></iframe>
+        <p><a href="https://yoomoney.ru/fundraise/1LNFDBQH1ED.261122" target="_blank" rel="noopener">Открыть форму поддержки на ЮMoney ↗</a></p>
+      </div>
+    </details>
   </div>
 </header>
 <main class="wrap mat" id="main">
@@ -893,13 +928,13 @@ MAT_TPL = """<!DOCTYPE html>
 <script src="{root}assets/code-copy.js" defer></script>
 <script>
 document.addEventListener('click', function (e) {{
-  document.querySelectorAll('.header-support[open]').forEach(function (d) {{
+  document.querySelectorAll('.bar__support[open]').forEach(function (d) {{
     if (!d.contains(e.target)) d.open = false;
   }});
 }});
 document.addEventListener('keydown', function (e) {{
   if (e.key !== 'Escape') return;
-  document.querySelectorAll('.header-support[open]').forEach(function (d) {{
+  document.querySelectorAll('.bar__support[open]').forEach(function (d) {{
     d.open = false;
     var s = d.querySelector('summary');
     if (s) s.focus();

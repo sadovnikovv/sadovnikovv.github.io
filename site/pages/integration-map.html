@@ -31,6 +31,23 @@
     <a href="../materials/index.html">Материалы</a>
     <a href="../about.html">О книге</a>
     <a href="../download/Книга-Claude-Code.epub" download>EPUB</a>
+    <details class="bar__support">
+      <summary>Поддержать проект</summary>
+      <div class="bar__support-panel">
+        <p>Книга бесплатна. Поддержка добровольная - сумму выбираете вы.</p>
+        <iframe
+          src="https://yoomoney.ru/quickpay/fundraise/widget?billNumber=1LNFDBQH1ED.261122&"
+          title="ЮMoney - поддержать автора книги"
+          width="500"
+          height="480"
+          frameborder="0"
+          allowtransparency="true"
+          scrolling="no"
+          loading="lazy"
+        ></iframe>
+        <p><a href="https://yoomoney.ru/fundraise/1LNFDBQH1ED.261122" target="_blank" rel="noopener">Открыть форму поддержки на ЮMoney</a></p>
+      </div>
+    </details>
 </header>
 <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
 <aside class="side-toc" id="side-toc" aria-label="Оглавление книги"><div class="side-toc-title"><a href="../index.html">Оглавление</a></div></aside>
@@ -101,13 +118,13 @@
 <script src="../assets/tasks.js" defer></script>
 <script>
 document.addEventListener('click', function (e) {
-  document.querySelectorAll('.header-support[open]').forEach(function (d) {
+  document.querySelectorAll('.bar__support[open]').forEach(function (d) {
     if (!d.contains(e.target)) d.open = false;
   });
 });
 document.addEventListener('keydown', function (e) {
   if (e.key !== 'Escape') return;
-  document.querySelectorAll('.header-support[open]').forEach(function (d) {
+  document.querySelectorAll('.bar__support[open]').forEach(function (d) {
     d.open = false;
     var s = d.querySelector('summary');
     if (s) s.focus();
