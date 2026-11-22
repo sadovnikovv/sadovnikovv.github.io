@@ -481,6 +481,7 @@ PAGE_TPL = """<!DOCTYPE html>
 <script type="application/json" id="page-list">{pages}</script>
 <script type="application/json" id="quiz-data">{quiz}</script>
 <script src="{root}assets/app.js" defer></script>
+<script src="{root}assets/code-copy.js" defer></script>
 <script src="{root}assets/tasks.js" defer></script>
 </body>
 </html>
@@ -657,6 +658,7 @@ def build_pages():
 ACADEMY_H2_LONG = '<h2 id="academy"><span class="chapter">Глава 33</span> Курсы Anthropic Academy: полный разбор</h2>'
 ACADEMY_H2_SHORT = '<h2 id="academy"><span class="chapter">Глава 33</span> Курсы Anthropic Academy</h2>\n'
 TASK_SCRIPTS = ('<script src="assets/book-app.js" defer></script>\n'
+                '<script src="assets/code-copy.js" defer></script>\n'
                 '<script src="assets/tasks.js" defer></script>\n'
                 '<script type="application/json" id="quiz-data">%s</script>\n</body>')
 
@@ -969,6 +971,7 @@ def main():
     shutil.copy2(os.path.join(HERE, "js", "app.js"), os.path.join(assets, "app.js"))
     shutil.copy2(os.path.join(HERE, "js", "book-app.js"), os.path.join(assets, "book-app.js"))
     shutil.copy2(os.path.join(HERE, "js", "tasks.js"), os.path.join(assets, "tasks.js"))
+    shutil.copy2(os.path.join(HERE, "js", "code-copy.js"), os.path.join(assets, "code-copy.js"))
     shutil.copytree(os.path.join(HERE, "vendor", "fonts"), os.path.join(assets, "fonts"), dirs_exist_ok=True)
 
     dl = os.path.join(OUT, "download")

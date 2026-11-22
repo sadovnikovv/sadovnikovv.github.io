@@ -478,3 +478,99 @@ img { max-width: 100%; height: auto; }
 @media print {
   .task-tabs, .task-bar, .quiz-opts { display: none !important; }
 }
+
+/* ---------- Блоки кода: панель «Копировать / Скачать», как в чатах ---------- */
+.code-block {
+  margin: 0 0 1.2rem;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--code-bg);
+  overflow: hidden;
+}
+.code-block > pre {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  border-left: 0;
+  background: transparent;
+  padding: .8rem 1rem;
+}
+.code-block.wrap-lines > pre { white-space: pre-wrap; word-break: break-word; }
+.code-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  padding: .25rem .4rem .25rem .8rem;
+  background: color-mix(in srgb, var(--bg-alt) 70%, transparent);
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--font-sans);
+  font-size: .8rem;
+}
+.code-lang {
+  color: var(--fg-soft);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: .72rem;
+}
+.code-actions { display: flex; align-items: center; gap: .15rem; flex-wrap: wrap; }
+.code-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--fg-soft);
+  font-family: var(--font-sans);
+  font-size: .8rem;
+  padding: .22rem .55rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background .12s, color .12s, border-color .12s;
+}
+.code-btn:hover, .code-btn:focus-visible {
+  background: var(--card);
+  color: var(--link);
+  border-color: var(--rule);
+  outline: none;
+}
+.code-btn.is-ok { color: #2e7d4f; border-color: #2e7d4f; background: #e6f3ea; }
+.code-btn.is-fail { color: #b23a2f; border-color: #b23a2f; background: #fdf1ef; }
+.code-btn[aria-pressed="true"] { color: #fff; background: var(--accent); border-color: var(--accent); }
+.code-btn + .code-btn { border-left: 0; }
+.code-btn svg { flex: none; }
+
+/* Команды в тексте: легко выделить двойным кликом */
+:not(pre) > code {
+  cursor: copy;
+  transition: background .12s, box-shadow .12s;
+}
+:not(pre) > code:hover { box-shadow: 0 0 0 2px var(--accent-soft); }
+
+/* ---------- Внешние ссылки видны сразу ---------- */
+main a[href^="http"] {
+  color: var(--link);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .18em;
+  word-break: break-word;
+}
+main a[href^="http"]::after {
+  content: "↗";
+  display: inline-block;
+  margin-left: .15em;
+  font-size: .8em;
+  opacity: .65;
+  text-decoration: none;
+}
+main a[href^="http"]:hover { text-decoration-thickness: 2px; color: var(--accent); }
+main a[href^="http"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+
+/* Хлебные крошки и оглавление - без значка внешней ссылки */
+.mat .crumbs a::after { content: none; }
+
+@media print {
+  .code-bar { display: none; }
+  main a[href^="http"]::after { content: none; }
+}
