@@ -429,3 +429,52 @@ img { max-width: 100%; height: auto; }
   padding: 1rem 1.2rem;
   color: var(--fg-soft);
 }
+
+/* ---------- Глава: курсы Anthropic Academy ---------- */
+.callout.source-note { border-left-color: var(--accent); background: var(--accent-soft); }
+.academy-index { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 1rem; margin: 1rem 0 1.5rem; }
+.academy-course { background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius); padding: .8rem 1rem; font-size: .95rem; }
+.academy-course h4 { margin: 0 0 .4rem; font-size: 1.05rem; font-family: var(--font-sans); }
+.academy-course p { margin: 0 0 .5rem; }
+.academy-src, .academy-badge { font-family: var(--font-sans); font-size: .85rem; color: var(--fg-soft); }
+.academy-badge::before { content: "🎓 "; }
+.academy-lessons { margin: 0; padding-left: 1.1rem; }
+.academy-lessons li { margin: 0 0 .15rem; }
+.academy-course-block { border-top: 1px solid var(--rule); margin-top: 1.6rem; }
+.academy-lesson h5 { font-family: var(--font-serif); font-size: 1.1rem; margin: 1.3rem 0 .5rem; }
+.academy-lesson h5::before { content: ""; }
+
+.task { margin: 1rem 0 1.6rem; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--card); padding: .8rem 1rem; font-family: var(--font-sans); }
+.task.is-done { border-color: var(--accent); box-shadow: inset 4px 0 0 var(--accent); }
+.task-title { font-weight: 700; margin: 0 0 .5rem; }
+.task-tabs { display: flex; gap: .3rem; margin-bottom: .6rem; }
+.task-tab { font-family: var(--font-sans); font-size: .9rem; border: 1px solid var(--rule); background: var(--bg); padding: .3rem .8rem; border-radius: 999px; cursor: pointer; }
+.task-tab[aria-selected="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+.task-pane[hidden] { display: none; }
+.task-input { width: 100%; font-family: var(--font-sans); font-size: .95rem; line-height: 1.5; padding: .6rem .7rem; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--fg); resize: vertical; }
+.task-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.task-bar { display: flex; gap: .8rem; align-items: center; flex-wrap: wrap; margin-top: .5rem; font-size: .9rem; }
+.btn { font-family: var(--font-sans); font-size: .9rem; padding: .35rem .9rem; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
+.btn-link { background: none; color: var(--link); border-color: transparent; text-decoration: underline; }
+.task-done { display: inline-flex; gap: .3rem; align-items: center; }
+.task-status { color: var(--fg-soft); }
+.task-count { font-size: .85rem; color: var(--fg-soft); }
+.task-step-list { list-style: none; padding-left: 0; }
+.task-step-list label { display: block; margin: .25rem 0; }
+.task-brief { margin-top: .7rem; font-size: .92rem; }
+.task-brief > summary { cursor: pointer; color: var(--link); }
+
+.quiz { font-family: var(--font-sans); }
+.quiz-list { padding-left: 1.4rem; }
+.quiz-q { margin-bottom: 1.2rem; }
+.quiz-text { font-weight: 700; margin: 0 0 .4rem; }
+.quiz-opts { display: flex; flex-direction: column; gap: .2rem; }
+.quiz-opt { padding: .3rem .5rem; border-radius: 6px; border: 1px solid var(--rule); background: var(--card); cursor: pointer; }
+.quiz-opt.is-right { border-color: #2e7d4f; background: #e6f3ea; }
+.quiz-opt.is-wrong { border-color: #b23a2f; background: #fdf1ef; }
+.quiz-explain { font-size: .9rem; color: var(--fg-soft); margin: .3rem 0 0; }
+.quiz-result { font-weight: 700; }
+
+@media print {
+  .task-tabs, .task-bar, .quiz-opts { display: none !important; }
+}

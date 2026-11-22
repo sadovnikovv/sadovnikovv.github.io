@@ -29,6 +29,7 @@ import urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import fix_book  # site-src/fix_book.py
+import academy_build  # site-src/academy_build.py
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 # Два раскладки: локально комплект лежит в Sasha_II_TUT/Sasha_II_TUT (на уровень
@@ -388,6 +389,26 @@ def cover_title(s):
     return html.unescape(re.sub(r"<[^>]+>", "", m.group(1))).strip() if m else SITE_TITLE
 
 
+def replace_academy_chapters(chapters):
+    """Вместо короткой главы из исходника - разбор курсов академии из academy/ru. Сама книга
+    по-прежнему правится в одном HTML; разбор курсов собирается отдельно."""
+    ru = academy_build.render().strip()
+    block = ('<h2 id="academy"><span class="chapter">Глава 33</span> Курсы Anthropic Academy</h2>'
+             '<p>Подробный разбор в главе ниже, по уроку на каждую тему, с заданиями.</p>')
+    # вставляем прямо в текст главы, заголовок главы уже есть в шаблоне разбора
+    ru = ru.replace('<h2 id="academy"><span class="chapter">Глава 33</span> Курсы Anthropic Academy: полный разбор</h2>', "", 1)
+    for i, c in enumerate(chapters):
+        if c["id"] == "academy":
+            chapters[i]["html"] = block + ru
+            chapters[i]["title"] = "Глава 33 Курсы Anthropic Academy"
+            chapters[i]["short"] = "Глава 33"
+            return
+    # в исходнике главы нет - добавляем в конец
+    chapters.append({"id": "academy", "title": "Глава 33 Курсы Anthropic Academy", "short": "Глава 33",
+                     "raw_title": "", "html": block + ru})
+
+
+
 def split_chapters(main):
     starts = [m.start() for m in re.finditer(r"<h2\b", main)]
     chunks = []
@@ -458,7 +479,9 @@ PAGE_TPL = """<!DOCTYPE html>
   <a href="{root}download/{book_epub}">EPUB</a>.</p>
 </footer>
 <script type="application/json" id="page-list">{pages}</script>
+<script type="application/json" id="quiz-data">{quiz}</script>
 <script src="{root}assets/app.js" defer></script>
+<script src="{root}assets/tasks.js" defer></script>
 </body>
 </html>
 """
@@ -472,7 +495,7 @@ def shell(rel, title, body, pages_json, extra_head="", prev="", next=""):
         title=esc(title), desc=esc(SITE_DESC), site=SITE_TITLE, site_url=SITE_URL,
         canonical=esc(canonical), root=root, body=body, pages=pages_json,
         extra_head=extra_head, prev=prev, next=next,
-        book_epub=EPUB_NAME)
+        book_epub=EPUB_NAME, quiz=academy_build.quiz_json())
 
 
 def write(path, content):
@@ -562,6 +585,7 @@ def build_pages():
     main = extract_main(raw)
     title = cover_title(raw)
     chapters, cover = split_chapters(main)
+    replace_academy_chapters(chapters)
 
     all_files = lm_files()
     BIG_PDFS[0] = [x[len("materials/"):][:-5] for x in all_files if x.endswith(".pdf.html")]
@@ -588,8 +612,9 @@ def build_pages():
             prev = '<a data-rel="prev" href="../%s">← %s</a>' % (pages[k - 1]["url"], esc(pages[k - 1]["short"]))
         if k + 1 < len(chapters):
             nxt = '<a data-rel="next" href="../%s">%s →</a>' % (pages[k + 1]["url"], esc(pages[k + 1]["short"]))
-        head = ('<link rel="alternate" type="text/html" href="../book.html#%s">\n'
-                '<meta name="page-index" content="%d">' % (esc(c["id"]), k + 1))
+        root = "../" * pages[k]["url"].count("/")
+        head = ('<link rel="alternate" type="text/html" href="%sbook.html#%s">\n'
+                '<meta name="page-index" content="%d">') % (root, esc(c["id"]), k + 1)
         write(pages[k]["url"], shell(pages[k]["url"], "%s - %s" % (c["short"], title),
                                      body, pages_json, head, prev, nxt))
 
@@ -629,6 +654,13 @@ def build_pages():
     return pages
 
 
+ACADEMY_H2_LONG = '<h2 id="academy"><span class="chapter">Глава 33</span> Курсы Anthropic Academy: полный разбор</h2>'
+ACADEMY_H2_SHORT = '<h2 id="academy"><span class="chapter">Глава 33</span> Курсы Anthropic Academy</h2>\n'
+TASK_SCRIPTS = ('<script src="assets/book-app.js" defer></script>\n'
+                '<script src="assets/tasks.js" defer></script>\n'
+                '<script type="application/json" id="quiz-data">%s</script>\n</body>')
+
+
 def build_book(raw):
     """book.html - офлайн-издание; подключаем общие стили сайта."""
     head = ('<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">\n'
@@ -653,7 +685,16 @@ def build_book(raw):
         if m:
             s = s[:m.start()] + ('<h2 id="%s">Глава не публикуется</h2>\n%s\n'
                                  % (cid, REDACTED_CHAPTER)) + s[m.end():]
-    s = s.replace("</body>", '<script src="assets/book-app.js" defer></script>\n</body>', 1)
+    # Глава по курсам академии в книге на одной странице: разбор по урокам.
+    # В исходнике такой главы может не быть: добавляем блок перед закрытием <main>.
+    m = re.search(r'<h2 id="academy"[^>]*>.*?(?=<h2\\b|</main>)', s, re.S)
+    if not m:
+        m = re.search(r'</main>', s, re.S)
+        s = s[:m.start()] + ACADEMY_H2_SHORT + academy_build.render().strip().replace(ACADEMY_H2_LONG, "") + s[m.start():]
+    if m:
+        ru = academy_build.render().strip().replace(ACADEMY_H2_LONG, "")
+        s = s[:m.start()] + ACADEMY_H2_SHORT + ru + s[m.end():]
+    s = s.replace("</body>", TASK_SCRIPTS % academy_build.quiz_json(), 1)
     write("book.html", s)
 
 
@@ -927,6 +968,7 @@ def main():
     shutil.copy2(os.path.join(HERE, "css", "style.css"), os.path.join(assets, "style.css"))
     shutil.copy2(os.path.join(HERE, "js", "app.js"), os.path.join(assets, "app.js"))
     shutil.copy2(os.path.join(HERE, "js", "book-app.js"), os.path.join(assets, "book-app.js"))
+    shutil.copy2(os.path.join(HERE, "js", "tasks.js"), os.path.join(assets, "tasks.js"))
     shutil.copytree(os.path.join(HERE, "vendor", "fonts"), os.path.join(assets, "fonts"), dirs_exist_ok=True)
 
     dl = os.path.join(OUT, "download")
