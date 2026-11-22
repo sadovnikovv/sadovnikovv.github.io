@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
-<title>Глава 6J — Claude Code для инженера</title>
+<title>Глава 6J - Claude Code для инженера</title>
 <meta name="description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
 <link rel="canonical" href="https://sadovnikovv.github.io/pages/">
 <meta property="og:type" content="article">
 <meta property="og:locale" content="ru_RU">
 <meta property="og:site_name" content="Claude Code для инженера">
-<meta property="og:title" content="Глава 6J — Claude Code для инженера">
+<meta property="og:title" content="Глава 6J - Claude Code для инженера">
 <meta property="og:description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
 <meta property="og:url" content="https://sadovnikovv.github.io/pages/">
 <meta property="og:image" content="https://sadovnikovv.github.io/assets/favicon.svg">
@@ -34,10 +34,11 @@
   </div>
 </header>
 <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+<aside class="side-toc" id="side-toc" aria-label="Оглавление книги"><div class="side-toc-title"><a href="../index.html">Оглавление</a></div></aside>
 <main class="wrap" id="book">
-<section class="chapter"><h2 id="faq"><span class="chapter">Глава 6J</span>Вопросы и ответы</h2>
+<section class="chapter"><h2 id="faq"><span class="chapter">Глава 6J</span> Вопросы и ответы</h2>
 
-<p class="lead-in">Короткие ответы на вопросы, которые возникают чаще всего. Если нужен подробный — смотрите соответствующую главу.</p>
+<p class="lead-in">Короткие ответы на вопросы, которые возникают чаще всего. Если нужен подробный - смотрите соответствующую главу.</p>
 
 <h3>6J.1. Основы</h3>
 
@@ -53,7 +54,7 @@
     <tr><td>Что такое контекст?</td><td>Всё, что модель учитывает за один проход: инструкции, история, файлы.</td></tr>
     <tr><td>Почему ИИ врёт?</td><td>Он предсказывает правдоподобное продолжение, а не проверяет истину.</td></tr>
     <tr><td>ИИ сознателен?</td><td>Нет научных оснований считать его сознательным; это статистическая модель.</td></tr>
-    <tr><td>Он учится на моих запросах?</td><td>Обычно нет; память и дообучение — отдельные механизмы.</td></tr>
+    <tr><td>Он учится на моих запросах?</td><td>Обычно нет; память и дообучение - отдельные механизмы.</td></tr>
     <tr><td>Что такое AGI?</td><td>Гипотетический общий ИИ уровня человека; определения и сроки спорны.</td></tr>
   </tbody>
 </table>
@@ -90,7 +91,7 @@
     <tr><td>Что такое квантование?</td><td>Уменьшение точности весов для экономии памяти и ускорения.</td></tr>
     <tr><td>Что такое FP16, BF16, INT4?</td><td>Форматы хранения чисел с разным числом бит и точностью.</td></tr>
     <tr><td>Что такое параметры?</td><td>Общее число весов; влияет на память и возможности.</td></tr>
-    <tr><td>Обучение и инференс — разница?</td><td>Обучение меняет веса; инференс только использует их.</td></tr>
+    <tr><td>Обучение и инференс - разница?</td><td>Обучение меняет веса; инференс только использует их.</td></tr>
     <tr><td>Что такое SFT?</td><td>Дообучение на инструкциях и примерах ответов.</td></tr>
     <tr><td>Что такое RLHF/DPO?</td><td>Выравнивание поведения по человеческим предпочтениям.</td></tr>
     <tr><td>Что такое LoRA?</td><td>Дешёвое дообучение через малые адаптеры.</td></tr>
@@ -112,7 +113,7 @@
     <tr><td>Что такое DeepSeek V4?</td><td>Семейство моделей DeepSeek с вариантами pro/flash и уровнями рассуждений.</td></tr>
     <tr><td>Что такое flash-none?</td><td>Быстрый вариант без дополнительного бюджета рассуждений; дешевле и быстрее.</td></tr>
     <tr><td>Что такое reasoning-модель?</td><td>Модель, тратящая больше токенов на внутренние рассуждения.</td></tr>
-    <tr><td>Открытые веса — это что?</td><td>Модель можно скачать и запускать локально, но лицензии различаются.</td></tr>
+    <tr><td>Открытые веса - это что?</td><td>Модель можно скачать и запускать локально, но лицензии различаются.</td></tr>
     <tr><td>Локальная модель лучше?</td><td>Лучше для приватности и автономности, обычно хуже по качеству.</td></tr>
     <tr><td>Сколько GPU для 70B?</td><td>Ориентировочно 35–40 ГБ в INT4 и 140 ГБ в FP16, плюс KV-кэш.</td></tr>
     <tr><td>Что такое TTFT?</td><td>Время до первого токена; важно для интерактивности.</td></tr>
@@ -133,7 +134,7 @@
     <tr><td>Что такое prompt caching?</td><td>Повторное использование стабильного префикса промпта.</td></tr>
     <tr><td>Что такое сжатие контекста?</td><td>Суммаризация, RAG, обрезка, структурирование истории.</td></tr>
     <tr><td>Работает ли «пещерный» стиль?</td><td>Эффект скромный; основные расходы не в служебных словах.</td></tr>
-    <tr><td>Лайфхаки из Instagram реальны?</td><td>Часть — да (структура, примеры), часть — мифы и маркетинг.</td></tr>
+    <tr><td>Лайфхаки из Instagram реальны?</td><td>Часть - да (структура, примеры), часть - мифы и маркетинг.</td></tr>
     <tr><td>Что такое агент?</td><td>Модель с инструментами, памятью и циклом проверки.</td></tr>
     <tr><td>Чем агент отличается от чат-бота?</td><td>Агент выполняет действия и меняет файлы, а не только отвечает текстом.</td></tr>
     <tr><td>Что такое MCP?</td><td>Протокол подключения инструментов и данных к агенту.</td></tr>
@@ -155,7 +156,7 @@
     <a data-rel="toc" href="../index.html">Оглавление</a>
     <span><a data-rel="next" href="../pages/deepseek-billing.html">Глава 6K (не публикуется) →</a></span>
   </nav>
-  <p>Источник — <a href="../book.html">книга одним файлом</a>,
+  <p>Источник - <a href="../book.html">книга одним файлом</a>,
   <a href="../download/Книга-Claude-Code.epub">EPUB</a>.</p>
 </footer>
 <script type="application/json" id="page-list">[{"title":"Глава 0 История этой книги","short":"Глава 0","url":"pages/history.html"},{"title":"Глава 1 Как читать эту книгу","short":"Глава 1","url":"pages/how-to-read.html"},{"title":"Глава 2 Ваш стенд: Claude Code → OmniRoute → DeepSeek","short":"Глава 2","url":"pages/stand.html"},{"title":"Глава 3 Что такое ИИ","short":"Глава 3","url":"pages/what-is-ai.html"},{"title":"Глава 4 Как работает языковая модель","short":"Глава 4","url":"pages/how-llm-works.html"},{"title":"Глава 5 Промпт как техническое задание","short":"Глава 5","url":"pages/prompt.html"},{"title":"Глава 6 Что такое агент","short":"Глава 6","url":"pages/agent.html"},{"title":"Глава 6A История нейронных сетей","short":"Глава 6A","url":"pages/history-nn.html"},{"title":"Глава 6B Анатомия трансформера","short":"Глава 6B","url":"pages/transformer-anatomy.html"},{"title":"Глава 6C Веса, биты и точность","short":"Глава 6C","url":"pages/weights-bits.html"},{"title":"Глава 6D Ландшафт моделей 2026","short":"Глава 6D","url":"pages/model-landscape.html"},{"title":"Глава 6E Локальные модели","short":"Глава 6E","url":"pages/local-models.html"},{"title":"Глава 6F Токены, контекст и сжатие","short":"Глава 6F","url":"pages/tokens-compression.html"},{"title":"Глава 6G Железо и вычислительность","short":"Глава 6G","url":"pages/hardware.html"},{"title":"Глава 6H Агенты и их экосистема","short":"Глава 6H","url":"pages/agents-ecosystem.html"},{"title":"Глава 6I Оптимизация: что пишут на Хабре и Пикабу","short":"Глава 6I","url":"pages/optimization-posts.html"},{"title":"Глава 6J Вопросы и ответы","short":"Глава 6J","url":"pages/faq.html"},{"title":"Глава 6K (не публикуется)","short":"Глава 6K (не публикуется)","url":"pages/deepseek-billing.html"},{"title":"Глава 7 Установка и первый запуск","short":"Глава 7","url":"pages/install.html"},{"title":"Глава 7A (не публикуется)","short":"Глава 7A (не публикуется)","url":"pages/migration.html"},{"title":"Глава 7B (не публикуется)","short":"Глава 7B (не публикуется)","url":"pages/new-pc.html"},{"title":"Глава 8 Интерфейс и команды","short":"Глава 8","url":"pages/interface.html"},{"title":"Глава 9 Память и CLAUDE.md","short":"Глава 9","url":"pages/memory.html"},{"title":"Глава 9A Память, обучение и превращение в скилл","short":"Глава 9A","url":"pages/memory-training.html"},{"title":"Глава 10 Разрешения и безопасность","short":"Глава 10","url":"pages/permissions.html"},{"title":"Глава 11 Контекст, стоимость, сессии","short":"Глава 11","url":"pages/context-cost.html"},{"title":"Глава 12 Расширения: skills, субагенты, hooks, MCP","short":"Глава 12","url":"pages/extensions.html"},{"title":"Глава 13 Принцип интеграции","short":"Глава 13","url":"pages/integration-principle.html"},{"title":"Глава 14 Схемотехника и симуляция","short":"Глава 14","url":"pages/circuit.html"},{"title":"Глава 15 EDA и трассировка плат","short":"Глава 15","url":"pages/pcb.html"},{"title":"Глава 16 Микроконтроллеры","short":"Глава 16","url":"pages/mcu.html"},{"title":"Глава 17 Отладка и измерения","short":"Глава 17","url":"pages/debug.html"},{"title":"Глава 18 Машиностроение и CAD","short":"Глава 18","url":"pages/cad.html"},{"title":"Глава 19 Документация и traceability","short":"Глава 19","url":"pages/docs.html"},{"title":"Глава 20 Карта связок","short":"Глава 20","url":"pages/integration-map.html"},{"title":"Глава 21 Десять заданий","short":"Глава 21","url":"pages/labs.html"},{"title":"Глава 22 Итоговый проект: термостат лабораторной печи","short":"Глава 22","url":"pages/capstone.html"},{"title":"Глава 23 Как проверять ИИ","short":"Глава 23","url":"pages/verify.html"},{"title":"Глава 24 Команды и флаги","short":"Глава 24","url":"pages/commands.html"},{"title":"Глава 25 Переменные, файлы, настройки","short":"Глава 25","url":"pages/files-settings.html"},{"title":"Глава 26 Шаблоны промптов","short":"Глава 26","url":"pages/prompt-templates.html"},{"title":"Глава 27 Диагностика","short":"Глава 27","url":"pages/troubleshooting.html"},{"title":"Глава 28 Файлы и папки","short":"Глава 28","url":"pages/library.html"},{"title":"Глава 29 Литература","short":"Глава 29","url":"pages/literature.html"},{"title":"Глава 29A Открытая хрестоматия","short":"Глава 29A","url":"pages/open-books.html"},{"title":"Глава 30 План на восемь недель","short":"Глава 30","url":"pages/plan.html"},{"title":"Глава 31 Словарь","short":"Глава 31","url":"pages/glossary.html"},{"title":"Глава 32 Источники","short":"Глава 32","url":"pages/sources.html"}]</script>

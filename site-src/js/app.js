@@ -2,7 +2,7 @@
    Рендер книги на странице.
    Книга (book.html) по-прежнему работает сама по себе, без сети и без этого
    файла. Здесь страница забирает из неё титул (h1 в .cover) и текст
-   (main#content) — это единственный источник содержимого. Правки содержания
+   (main#content) - это единственный источник содержимого. Правки содержания
    делаются в Книга-Claude-Code.html и затем `python build_site.py`.
    ========================================================================== */
 (function () {
@@ -13,7 +13,7 @@
 
   var root = document.getElementById('book');
   // Пользователь уже был в книге: сразу живой рендер, без тёмного титула.
-  // file:// меняет document.referrer на путь к css — тогда это первый визит.
+  // file:// меняет document.referrer на путь к css - тогда это первый визит.
   var fromBook = history.state === 'book' || /book\.html/i.test(document.referrer);
   var skipIntro = false;
   try { skipIntro = fromBook || sessionStorage.getItem(DONE_KEY) === '1'; } catch (e) {}
@@ -37,7 +37,118 @@
       if (next) { a.dataset.href = next.url; a.textContent = next.title + ' →'; a.hidden = false; }
       else a.remove();
     });
-    if (pages[idx]) document.title = pages[idx].title + ' — ' + document.title.split(' — ').pop();
+    if (pages[idx]) document.title = pages[idx].title + ' - ' + document.title.split(' - ').pop();
+  }
+
+
+  // Боковая панель с оглавлением текущей главы (скрыта на узких экранах).
+  // Текст заголовка без знака # («Глава 7 Установка...»): номер и название разделены.
+  function text(h) {
+    var t = h.textContent.replace('#', '').trim().replace(/\s+/g, ' ');
+    var num = h.querySelector('.chapter');
+    if (num) {
+      var n = num.textContent.trim();
+      if (t.indexOf(n) === 0) {
+        var rest = t.slice(n.length);
+        if (rest.length && rest.charAt(0) !== '.' && rest.charAt(0) !== ':') t = n + '. ' + rest.trim();
+      }
+    }
+    return t;
+  }
+
+  function buildSideToc(main) {
+    var box = document.getElementById('side-toc');
+    if (!box) return;
+    var list = document.createElement('ol');
+    var chapters = [];
+    var current = null;
+    var used = {};
+
+    main.querySelectorAll('h2[id], h3[id], h4[id]').forEach(function (h) {
+      var level = +h.tagName.slice(1);
+      if (level === 2) {
+        current = [];
+        chapters.push(current);
+      }
+      if (!current) {
+        current = [];
+        chapters.push(current);
+      }
+      current.push(h);
+    });
+
+    if (!chapters.length) {
+      box.hidden = true;
+      return;
+    }
+
+    chapters.forEach(function (group, gi) {
+      var h2 = group[0];
+      var li = document.createElement('li');
+      li.className = gi ? 'chapter-start' : '';
+      var chapterLink = document.createElement('a');
+      chapterLink.href = '#' + h2.id;
+      chapterLink.textContent = text(h2);
+      chapterLink.dataset.id = h2.id;
+
+      if (group.length > 1) {
+        var det = document.createElement('details');
+        var sum = document.createElement('summary');
+        sum.appendChild(chapterLink);
+        det.appendChild(sum);
+        var sub = document.createElement('ol');
+        group.slice(1).forEach(function (h) {
+          var a = document.createElement('a');
+          a.className = 'sec';
+          a.href = '#' + h.id;
+          a.textContent = text(h);
+          a.dataset.id = h.id;
+          var item = document.createElement('li');
+          item.appendChild(a);
+          sub.appendChild(item);
+        });
+        det.appendChild(sub);
+        if (h2 === group[0] && group.length > 1) det.open = true;
+        li.appendChild(det);
+      } else {
+        li.appendChild(chapterLink);
+      }
+      list.appendChild(li);
+    });
+
+    box.appendChild(list);
+
+    // Подсветка текущего раздела.
+    var links = {};
+    box.querySelectorAll('a[data-id]').forEach(function (a) { links[a.dataset.id] = a; });
+    function setActive(id) {
+      var prev = box.querySelector('a.active');
+      if (prev) prev.classList.remove('active');
+      var a = links[id];
+      if (a) {
+        a.classList.add('active');
+        var d = a.closest('details');
+        if (d) d.open = true;
+      }
+    }
+
+    var targets = main.querySelectorAll('h2[id], h3[id], h4[id]');
+    if ('IntersectionObserver' in window) {
+      var visible = [];
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          var i = visible.indexOf(e);
+          if (e.isIntersecting && i < 0) visible.push(e);
+          if (!e.isIntersecting && i >= 0) visible.splice(i, 1);
+        });
+        if (visible.length) {
+          visible.sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top; });
+          setActive(visible[0].target.id);
+        }
+      }, { rootMargin: '-10% 0px -75% 0px', threshold: 0 });
+      targets.forEach(function (t) { observer.observe(t); });
+    }
+    if (location.hash.length > 1) setActive(decodeURIComponent(location.hash.slice(1)));
   }
 
   if (!root) return;
@@ -74,7 +185,7 @@
         return r.text();
       })
       .catch(function () {
-        // file:// в Chrome не даёт fetch — откатываемся на обычный запрос.
+        // file:// в Chrome не даёт fetch - откатываемся на обычный запрос.
         return new Promise(function (resolve, reject) {
           var x = new XMLHttpRequest();
           x.open('GET', url);
@@ -130,11 +241,12 @@
     document.body.classList.add('rendered');
     document.body.classList.remove('is-loading');
 
-    // #якорь пришёл раньше содержимого — довести до нужного раздела.
+    // #якорь пришёл раньше содержимого - довести до нужного раздела.
     if (location.hash.length > 1) {
       var t = document.getElementById(decodeURIComponent(location.hash.slice(1)));
       if (t) t.scrollIntoView();
     }
+    buildSideToc(main);
   }).catch(function (e) {
     showError(String(e && e.message ? e.message : e));
   });

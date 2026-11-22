@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Собрать статический сайт из книги и ru-materials/.
 
-Только стандартная библиотека Python 3. Источники (источник истины) —
+Только стандартная библиотека Python 3. Источники (источник истины) -
 ../Книга-Claude-Code.html и ../ru-materials/; скрипт их только читает.
 
     python build_site.py                 # страницы + папка с материалами
     python build_site.py --no-materials  # только страницы (быстро)
 
-Результат — содержимое ../site/ — публикуется на GitHub Pages
+Результат - содержимое ../site/ - публикуется на GitHub Pages
 workflow .github/workflows/pages.yml.
 """
 import os
@@ -27,10 +27,13 @@ import re
 import shutil
 import urllib.parse
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import fix_book  # site-src/fix_book.py
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 # Два раскладки: локально комплект лежит в Sasha_II_TUT/Sasha_II_TUT (на уровень
-# ниже), на GitHub site-src/ — в корне репозитория рядом с книгой.
-# Ищем корень по книге; конкретные имена — через ASCII-подстроки.
+# ниже), на GitHub site-src/ - в корне репозитория рядом с книгой.
+# Ищем корень по книге; конкретные имена - через ASCII-подстроки.
 def _find_opt(folder, needle):
     return any(needle in n for n in os.listdir(folder))
 
@@ -57,7 +60,7 @@ def _root_of(folder):
     return folder
 
 
-# На GitHub Pages собирается только папка site/ (artifact), поэтому выход —
+# На GitHub Pages собирается только папка site/ (artifact), поэтому выход -
 # всегда site/ рядом с site-src/; книга и материалы ищутся отдельно.
 OUT = os.path.join(_UP, "site")
 def _book_root(base):
@@ -99,8 +102,8 @@ REPO_URL = "https://github.com/sadovnikovv/sadovnikovv.github.io/raw/main"
 
 # ru-materials → site/materials: что копируем.
 COPY_EXT = (".md", ".pdf", ".svg", ".png", ".jpg", ".jpeg", ".gif", ".webp")
-# В git не кладём крупные PDF (папка site/ пересобирается, а история git — нет);
-# вместо них — ссылка на исходник в репозитории.
+# В git не кладём крупные PDF (папка site/ пересобирается, а история git - нет);
+# вместо них - ссылка на исходник в репозитории.
 NO_COPY_OVER = 3 * 1024 * 1024
 BIG_PDFS = [[]]   # заполняется в build_materials: какие PDF ушли в репозиторий
 FINAL = [set()]   # то же, что LinkMap.files: все адреса материалов на сайте
@@ -179,7 +182,7 @@ class LinkMap:
         target = posixpath.normpath(posixpath.join(posixpath.dirname(current_rel), path))
         full = "materials/" + target if target and target != "." else "materials"
         if not (full in self.files or full.rstrip("/") in self.dirs):
-            return url                                   # битая ссылка — оставляем как есть
+            return url                                   # битая ссылка - оставляем как есть
         page_dir = page_dir or "."
         out = posixpath.relpath(full, page_dir)
         if full in self.dirs or path.endswith("/"):
@@ -441,6 +444,7 @@ PAGE_TPL = """<!DOCTYPE html>
   </div>
 </header>
 <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+<aside class="side-toc" id="side-toc" aria-label="Оглавление книги"><div class="side-toc-title"><a href="{root}index.html">Оглавление</a></div></aside>
 <main class="wrap" id="book">
 {body}
 </main>
@@ -450,7 +454,7 @@ PAGE_TPL = """<!DOCTYPE html>
     <a data-rel="toc" href="{root}index.html">Оглавление</a>
     <span>{next}</span>
   </nav>
-  <p>Источник — <a href="{root}book.html">книга одним файлом</a>,
+  <p>Источник - <a href="{root}book.html">книга одним файлом</a>,
   <a href="{root}download/{book_epub}">EPUB</a>.</p>
 </footer>
 <script type="application/json" id="page-list">{pages}</script>
@@ -530,7 +534,7 @@ def lm_files():
 def rewrite_links(s, exists=None, big_pdfs=()):
     """Папка ru-materials из книги → папка сайта materials/. Абсолютные адреса
     (/materials/...) работают и со страниц pages/, и с главной. Крупные PDF
-    на сайте — страницы-переходы (*.pdf.html)."""
+    на сайте - страницы-переходы (*.pdf.html)."""
     def fix(m):
         tail = m.group(2) or ""
         url = urllib.parse.unquote(tail)          # убираем уже готовое %-кодирование
@@ -540,7 +544,7 @@ def rewrite_links(s, exists=None, big_pdfs=()):
             ok = (path.endswith("/") or rel in FINAL[0] or rel.lower().endswith(".md")
                   or _pdf_in_source(rel))
             if not ok:
-                return m.group(0)                 # битая ссылка — оставляем как есть
+                return m.group(0)                 # битая ссылка - оставляем как есть
             path = _md_url(path) if not path.endswith("/") else path + "index.html"
             if path.lstrip("/").removeprefix("materials/") in big_pdfs:
                 path += ".html"
@@ -552,6 +556,8 @@ def rewrite_links(s, exists=None, big_pdfs=()):
 def build_pages():
     with open(BOOK, encoding="utf-8") as f:
         raw = f.read()
+    # Те же правки, что и fix_book.py: работают, даже если его не запускали.
+    raw = fix_book.fix(raw)[0]
 
     main = extract_main(raw)
     title = cover_title(raw)
@@ -584,7 +590,7 @@ def build_pages():
             nxt = '<a data-rel="next" href="../%s">%s →</a>' % (pages[k + 1]["url"], esc(pages[k + 1]["short"]))
         head = ('<link rel="alternate" type="text/html" href="../book.html#%s">\n'
                 '<meta name="page-index" content="%d">' % (esc(c["id"]), k + 1))
-        write(pages[k]["url"], shell(pages[k]["url"], "%s — %s" % (c["short"], title),
+        write(pages[k]["url"], shell(pages[k]["url"], "%s - %s" % (c["short"], title),
                                      body, pages_json, head, prev, nxt))
 
     # Главная.
@@ -594,9 +600,9 @@ def build_pages():
             '<a href="book.html">Открыть всю книгу одним файлом</a>.</p>'
             '<div class="toc-grid"><ol>%s</ol></div></div>'
             '\n<section class="downloads"><h2 id="formats">Другие форматы</h2><ul>'
-            '<li><a href="download/%s" download>EPUB</a> — для читалки, крупный масштабируемый шрифт.</li>'
-            '<li><a href="book.html">HTML одним файлом</a> — сохранить и читать без сети.</li>'
-            '<li><a href="materials/index.html">Папка с материалами</a> — документация, гайды, открытые книги.</li>'
+            '<li><a href="download/%s" download>EPUB</a> - для читалки, крупный масштабируемый шрифт.</li>'
+            '<li><a href="book.html">HTML одним файлом</a> - сохранить и читать без сети.</li>'
+            '<li><a href="materials/index.html">Папка с материалами</a> - документация, гайды, открытые книги.</li>'
             '</ul></section>' % (toc_items, EPUB_NAME))
     # Якоря #глава на главной ведут на отдельные страницы глав.
     ids = {c["id"] for c in chapters}
@@ -624,7 +630,7 @@ def build_pages():
 
 
 def build_book(raw):
-    """book.html — офлайн-издание; подключаем общие стили сайта."""
+    """book.html - офлайн-издание; подключаем общие стили сайта."""
     head = ('<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">\n'
             '<link rel="stylesheet" href="assets/fonts/fonts.css">\n'
             '<link rel="stylesheet" href="assets/style.css">\n')
@@ -637,7 +643,7 @@ def build_book(raw):
             return m.group(1)[:-5] + ".md" + (m.group(2) or "")
         return m.group(0)
     s = re.sub(r'href="(materials/[^"#]*\.html)(#[^"]*)?"', back, s)
-    # Крупные PDF: в офлайн-файле — прямая ссылка на файл в репозитории.
+    # Крупные PDF: в офлайн-файле - прямая ссылка на файл в репозитории.
     for f in BIG_PDFS[0]:
         s = s.replace("/materials/%s.html" % f,
                       REPO_URL + urllib.parse.quote("/" + posixpath.join(MATERIALS_NAME, f), safe="/"))
@@ -653,16 +659,16 @@ def build_book(raw):
 
 def build_404():
     body = ("<section class='cover'><h1>Страница не найдена</h1>"
-            "<p class='lead'>Возможно, у главы изменился адрес. Откройте оглавление — там весь текст.</p>"
+            "<p class='lead'>Возможно, у главы изменился адрес. Откройте оглавление - там весь текст.</p>"
             "<p><a href='index.html'>← К оглавлению</a></p></section>")
-    s = shell("404.html", "404 — " + SITE_TITLE, body, "[]")
+    s = shell("404.html", "404 - " + SITE_TITLE, body, "[]")
     return s
 
 
 def build_about(n_chapters):
     body = """<section class="cover">
 <h1>О книге</h1>
-<p class="lead">«Claude Code для инженера» — практическое пособие о том, как устроены
+<p class="lead">«Claude Code для инженера» - практическое пособие о том, как устроены
 ИИ-агент, языковая модель и инструменты вокруг них, и как встроить их в инженерную
 работу: схемы, платы, контроллеры, CAD, документация. %d глав.</p>
 <h2 id="editions">Издания</h2>
@@ -675,14 +681,14 @@ def build_about(n_chapters):
 <tr><td>Материалы</td><td><a href="materials/index.html">папка с материалами</a></td><td>официальная документация, гайды, открытые книги</td></tr>
 </tbody></table></div>
 <h2 id="how">Как обновляется</h2>
-<p>Исходник книги — один файл в корне репозитория. После правки
+<p>Исходник книги - один файл в корне репозитория. После правки
 запускается <code>python build_site.py</code> из папки <code>site-src/</code>,
 и сайт публикуется заново.</p>
 <h2 id="rights">Права</h2>
 <p>Сторонние материалы в папке с материалами принадлежат их авторам и
 распространяются по лицензиям, указанным в самих материалах.</p>
 </section>""" % (n_chapters, EPUB_NAME, EPUB_NAME)
-    return shell("about.html", "О книге — " + SITE_TITLE, body, "[]")
+    return shell("about.html", "О книге - " + SITE_TITLE, body, "[]")
 
 
 HEADERS = r"""/\*
@@ -764,7 +770,7 @@ def collect_materials():
 
 
 def mat_shell(rel_dir, title, body, root, crumbs, site_root):
-    # root — от папки материалов до site/, site_root — от самой страницы; URL-ы
+    # root - от папки материалов до site/, site_root - от самой страницы; URL-ы
     # не должны содержать "../" (GitHub Pages такие пути не отдаёт).
     page = posixpath.join("materials", rel_dir, "index.html") if rel_dir else "materials/index.html"
     return MAT_TPL.format(title=esc(title), site=SITE_TITLE,
@@ -773,7 +779,7 @@ def mat_shell(rel_dir, title, body, root, crumbs, site_root):
 
 def build_materials():
     files, dirs = collect_materials()
-    # В пространстве site/ у Markdown-страниц расширение .html — регистрируем и его.
+    # В пространстве site/ у Markdown-страниц расширение .html - регистрируем и его.
     lm = LinkMap(files)
     linked = set()
     for f in files:
@@ -858,7 +864,7 @@ def build_materials():
             for f in pdfs:
                 name = posixpath.basename(f)
                 kb = os.path.getsize(os.path.join(MATERIALS, f.replace("/", os.sep))) // 1024
-                # Крупные PDF лежат в репозитории: *.pdf — страница-переход.
+                # Крупные PDF лежат в репозитории: *.pdf - страница-переход.
                 size = ("%d МБ, хранится в репозитории" % (kb // 1024)) if f in linked else ("%d КБ" % kb)
                 href = urllib.parse.quote(name) + (".html" if f in linked else "")
                 parts_out.append('<li><a href="%s" download>%s</a> <small>%s</small></li>'
@@ -896,7 +902,7 @@ REDIRECT_TPL = """<!DOCTYPE html>
 
 
 def write_pdf_redirects(linked):
-    """Крупные PDF физически не лежат на сайте — отдаём маленькую страницу-переход."""
+    """Крупные PDF физически не лежат на сайте - отдаём маленькую страницу-переход."""
     for f in linked:
         name = posixpath.basename(f)
         url = REPO_URL + urllib.parse.quote("/" + posixpath.join(MATERIALS_NAME, f), safe="/")
@@ -911,9 +917,9 @@ def main():
 
     for name in os.listdir(OUT) if os.path.isdir(OUT) else []:
         if os.path.join(OUT, name) in (SRC,):
-            raise SystemExit("site/ указывает на корень проекта — проверьте пути")
+            raise SystemExit("site/ указывает на корень проекта - проверьте пути")
         if name not in PROTECTED:
-            raise SystemExit("В site/ найден неожиданный файл %r — сайт собирается только здесь" % name)
+            raise SystemExit("В site/ найден неожиданный файл %r - сайт собирается только здесь" % name)
 
     os.makedirs(OUT, exist_ok=True)
     assets = os.path.join(OUT, "assets")
@@ -925,7 +931,7 @@ def main():
 
     dl = os.path.join(OUT, "download")
     os.makedirs(dl, exist_ok=True)
-    # HTML-издание целиком — это и есть book.html (сайт встраивает в него
+    # HTML-издание целиком - это и есть book.html (сайт встраивает в него
     # свои стили и скрипт). Отдельную копию не кладём: сайт должен быть лёгким.
     for f in (EPUB_NAME,):
         p = os.path.join(SRC, f)

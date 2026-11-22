@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
-<title>Глава 5 — Claude Code для инженера</title>
+<title>Глава 5 - Claude Code для инженера</title>
 <meta name="description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
 <link rel="canonical" href="https://sadovnikovv.github.io/pages/">
 <meta property="og:type" content="article">
 <meta property="og:locale" content="ru_RU">
 <meta property="og:site_name" content="Claude Code для инженера">
-<meta property="og:title" content="Глава 5 — Claude Code для инженера">
+<meta property="og:title" content="Глава 5 - Claude Code для инженера">
 <meta property="og:description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
 <meta property="og:url" content="https://sadovnikovv.github.io/pages/">
 <meta property="og:image" content="https://sadovnikovv.github.io/assets/favicon.svg">
@@ -34,10 +34,11 @@
   </div>
 </header>
 <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+<aside class="side-toc" id="side-toc" aria-label="Оглавление книги"><div class="side-toc-title"><a href="../index.html">Оглавление</a></div></aside>
 <main class="wrap" id="book">
-<section class="chapter"><h2 id="prompt"><span class="chapter">Глава 5</span>Промпт как техническое задание</h2>
+<section class="chapter"><h2 id="prompt"><span class="chapter">Глава 5</span> Промпт как техническое задание</h2>
 
-<p class="lead-in">Промпт — это не «вопрос», а постановка задачи. Чем ближе он к грамотному ТЗ, тем меньше итераций и сюрпризов.</p>
+<p class="lead-in">Промпт - это не «вопрос», а постановка задачи. Чем ближе он к грамотному ТЗ, тем меньше итераций и сюрпризов.</p>
 
 <h3>5.1. Шесть блоков хорошего промпта</h3>
 
@@ -45,12 +46,12 @@
 <table>
   <thead><tr><th>Блок</th><th>Что указать</th><th>Пример</th></tr></thead>
   <tbody>
-    <tr><td><strong>Роль</strong></td><td>Кто исполнитель и в каком качестве выступает</td><td>«Ты — инженер-схемотехник, проверяющий проект по даташиту»</td></tr>
+    <tr><td><strong>Роль</strong></td><td>Кто исполнитель и в каком качестве выступает</td><td>«Ты - инженер-схемотехник, проверяющий проект по даташиту»</td></tr>
     <tr><td><strong>Задача</strong></td><td>Одна ясная цель</td><td>«Проверь делитель напряжения и найди ошибки»</td></tr>
     <tr><td><strong>Контекст</strong></td><td>Файлы, ограничения, что уже известно</td><td>«Схема в <code>hardware/divider.kicad_sch</code>, даташит в <code>docs/…pdf</code>»</td></tr>
     <tr><td><strong>Ограничения</strong></td><td>Что нельзя делать, какие нормы учесть</td><td>«Не меняй номиналы без расчёта; допуск резисторов 1%»</td></tr>
     <tr><td><strong>Формат</strong></td><td>Как оформить результат</td><td>«Таблица: параметр, расчёт, проект, вердикт»</td></tr>
-    <tr><td><strong>Критерий приёмки</strong></td><td>Как проверить, что работа сделана</td><td>«Все расчёты с единицами; сомнения — отдельным списком»</td></tr>
+    <tr><td><strong>Критерий приёмки</strong></td><td>Как проверить, что работа сделана</td><td>«Все расчёты с единицами; сомнения - отдельным списком»</td></tr>
   </tbody>
 </table>
 </div>
@@ -61,7 +62,7 @@
 
 <p><strong>Хорошо:</strong></p>
 
-<pre><code>Ты — инженер-схемотехник. Проверь узел питания на LM2596 в файле
+<pre><code>Ты - инженер-схемотехник. Проверь узел питания на LM2596 в файле
 hardware/power.kicad_sch по даташиту docs/datasheets/LM2596.pdf.
 
 Что нужно:
@@ -70,7 +71,7 @@ hardware/power.kicad_sch по даташиту docs/datasheets/LM2596.pdf.
 3. Проверить тепловой режим при 12 В входе и 2 А нагрузке.
 4. Указать, какие параметры вызывают сомнение.
 
-Ограничения: номиналы не менять, только предложить; все расчёты — с единицами.
+Ограничения: номиналы не менять, только предложить; все расчёты - с единицами.
 Формат: таблица «параметр | даташит | проект | вердикт», затем список сомнений.
 Критерий: каждое утверждение должно ссылаться на страницу даташита.</code></pre>
 
@@ -78,11 +79,11 @@ hardware/power.kicad_sch по даташиту docs/datasheets/LM2596.pdf.
 
 <ul>
   <li><strong>Сначала план.</strong> «Составь план из шагов, ничего не меняй до моего „ок“». Это снижает риск неверных правок.</li>
-  <li><strong>Ссылки на файлы.</strong> В Claude Code наберите <code>@</code> и выберите файл — он попадёт в контекст. Можно указать путь текстом.</li>
-  <li><strong>Один вопрос — одна задача.</strong> Не смешивайте «проверь схему», «напиши прошивку» и «сделай документацию» в одном запросе.</li>
+  <li><strong>Ссылки на файлы.</strong> В Claude Code наберите <code>@</code> и выберите файл - он попадёт в контекст. Можно указать путь текстом.</li>
+  <li><strong>Один вопрос - одна задача.</strong> Не смешивайте «проверь схему», «напиши прошивку» и «сделай документацию» в одном запросе.</li>
   <li><strong>Промежуточные артефакты.</strong> Просите сохранять расчёты и отчёты в файлы, а не только в чат.</li>
   <li><strong>Явная проверка.</strong> «После изменений запусти сборку и тесты; покажи вывод».</li>
-  <li><strong>Ограничение объёма.</strong> «Не более 200 строк», «только изменённые фрагменты» — меньше лишнего.</li>
+  <li><strong>Ограничение объёма.</strong> «Не более 200 строк», «только изменённые фрагменты» - меньше лишнего.</li>
 </ul>
 
 <h3>5.4. Итерация вместо идеального промпта</h3>
@@ -111,7 +112,7 @@ hardware/power.kicad_sch по даташиту docs/datasheets/LM2596.pdf.
     <a data-rel="toc" href="../index.html">Оглавление</a>
     <span><a data-rel="next" href="../pages/agent.html">Глава 6 →</a></span>
   </nav>
-  <p>Источник — <a href="../book.html">книга одним файлом</a>,
+  <p>Источник - <a href="../book.html">книга одним файлом</a>,
   <a href="../download/Книга-Claude-Code.epub">EPUB</a>.</p>
 </footer>
 <script type="application/json" id="page-list">[{"title":"Глава 0 История этой книги","short":"Глава 0","url":"pages/history.html"},{"title":"Глава 1 Как читать эту книгу","short":"Глава 1","url":"pages/how-to-read.html"},{"title":"Глава 2 Ваш стенд: Claude Code → OmniRoute → DeepSeek","short":"Глава 2","url":"pages/stand.html"},{"title":"Глава 3 Что такое ИИ","short":"Глава 3","url":"pages/what-is-ai.html"},{"title":"Глава 4 Как работает языковая модель","short":"Глава 4","url":"pages/how-llm-works.html"},{"title":"Глава 5 Промпт как техническое задание","short":"Глава 5","url":"pages/prompt.html"},{"title":"Глава 6 Что такое агент","short":"Глава 6","url":"pages/agent.html"},{"title":"Глава 6A История нейронных сетей","short":"Глава 6A","url":"pages/history-nn.html"},{"title":"Глава 6B Анатомия трансформера","short":"Глава 6B","url":"pages/transformer-anatomy.html"},{"title":"Глава 6C Веса, биты и точность","short":"Глава 6C","url":"pages/weights-bits.html"},{"title":"Глава 6D Ландшафт моделей 2026","short":"Глава 6D","url":"pages/model-landscape.html"},{"title":"Глава 6E Локальные модели","short":"Глава 6E","url":"pages/local-models.html"},{"title":"Глава 6F Токены, контекст и сжатие","short":"Глава 6F","url":"pages/tokens-compression.html"},{"title":"Глава 6G Железо и вычислительность","short":"Глава 6G","url":"pages/hardware.html"},{"title":"Глава 6H Агенты и их экосистема","short":"Глава 6H","url":"pages/agents-ecosystem.html"},{"title":"Глава 6I Оптимизация: что пишут на Хабре и Пикабу","short":"Глава 6I","url":"pages/optimization-posts.html"},{"title":"Глава 6J Вопросы и ответы","short":"Глава 6J","url":"pages/faq.html"},{"title":"Глава 6K (не публикуется)","short":"Глава 6K (не публикуется)","url":"pages/deepseek-billing.html"},{"title":"Глава 7 Установка и первый запуск","short":"Глава 7","url":"pages/install.html"},{"title":"Глава 7A (не публикуется)","short":"Глава 7A (не публикуется)","url":"pages/migration.html"},{"title":"Глава 7B (не публикуется)","short":"Глава 7B (не публикуется)","url":"pages/new-pc.html"},{"title":"Глава 8 Интерфейс и команды","short":"Глава 8","url":"pages/interface.html"},{"title":"Глава 9 Память и CLAUDE.md","short":"Глава 9","url":"pages/memory.html"},{"title":"Глава 9A Память, обучение и превращение в скилл","short":"Глава 9A","url":"pages/memory-training.html"},{"title":"Глава 10 Разрешения и безопасность","short":"Глава 10","url":"pages/permissions.html"},{"title":"Глава 11 Контекст, стоимость, сессии","short":"Глава 11","url":"pages/context-cost.html"},{"title":"Глава 12 Расширения: skills, субагенты, hooks, MCP","short":"Глава 12","url":"pages/extensions.html"},{"title":"Глава 13 Принцип интеграции","short":"Глава 13","url":"pages/integration-principle.html"},{"title":"Глава 14 Схемотехника и симуляция","short":"Глава 14","url":"pages/circuit.html"},{"title":"Глава 15 EDA и трассировка плат","short":"Глава 15","url":"pages/pcb.html"},{"title":"Глава 16 Микроконтроллеры","short":"Глава 16","url":"pages/mcu.html"},{"title":"Глава 17 Отладка и измерения","short":"Глава 17","url":"pages/debug.html"},{"title":"Глава 18 Машиностроение и CAD","short":"Глава 18","url":"pages/cad.html"},{"title":"Глава 19 Документация и traceability","short":"Глава 19","url":"pages/docs.html"},{"title":"Глава 20 Карта связок","short":"Глава 20","url":"pages/integration-map.html"},{"title":"Глава 21 Десять заданий","short":"Глава 21","url":"pages/labs.html"},{"title":"Глава 22 Итоговый проект: термостат лабораторной печи","short":"Глава 22","url":"pages/capstone.html"},{"title":"Глава 23 Как проверять ИИ","short":"Глава 23","url":"pages/verify.html"},{"title":"Глава 24 Команды и флаги","short":"Глава 24","url":"pages/commands.html"},{"title":"Глава 25 Переменные, файлы, настройки","short":"Глава 25","url":"pages/files-settings.html"},{"title":"Глава 26 Шаблоны промптов","short":"Глава 26","url":"pages/prompt-templates.html"},{"title":"Глава 27 Диагностика","short":"Глава 27","url":"pages/troubleshooting.html"},{"title":"Глава 28 Файлы и папки","short":"Глава 28","url":"pages/library.html"},{"title":"Глава 29 Литература","short":"Глава 29","url":"pages/literature.html"},{"title":"Глава 29A Открытая хрестоматия","short":"Глава 29A","url":"pages/open-books.html"},{"title":"Глава 30 План на восемь недель","short":"Глава 30","url":"pages/plan.html"},{"title":"Глава 31 Словарь","short":"Глава 31","url":"pages/glossary.html"},{"title":"Глава 32 Источники","short":"Глава 32","url":"pages/sources.html"}]</script>

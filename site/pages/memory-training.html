@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
-<title>Глава 9A — Claude Code для инженера</title>
+<title>Глава 9A - Claude Code для инженера</title>
 <meta name="description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
 <link rel="canonical" href="https://sadovnikovv.github.io/pages/">
 <meta property="og:type" content="article">
 <meta property="og:locale" content="ru_RU">
 <meta property="og:site_name" content="Claude Code для инженера">
-<meta property="og:title" content="Глава 9A — Claude Code для инженера">
+<meta property="og:title" content="Глава 9A - Claude Code для инженера">
 <meta property="og:description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
 <meta property="og:url" content="https://sadovnikovv.github.io/pages/">
 <meta property="og:image" content="https://sadovnikovv.github.io/assets/favicon.svg">
@@ -34,10 +34,11 @@
   </div>
 </header>
 <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+<aside class="side-toc" id="side-toc" aria-label="Оглавление книги"><div class="side-toc-title"><a href="../index.html">Оглавление</a></div></aside>
 <main class="wrap" id="book">
-<section class="chapter"><h2 id="memory-training"><span class="chapter">Глава 9A</span>Память, обучение и превращение в скилл</h2>
+<section class="chapter"><h2 id="memory-training"><span class="chapter">Глава 9A</span> Память, обучение и превращение в скилл</h2>
 
-<p class="lead-in">Здесь — честная механика: что я помню о вас, где это лежит, что происходит при сжатии контекста, как вернуться в «тот самый» чат и как превратить накопленный опыт в повторяемый скилл.</p>
+<p class="lead-in">Здесь - честная механика: что я помню о вас, где это лежит, что происходит при сжатии контекста, как вернуться в «тот самый» чат и как превратить накопленный опыт в повторяемый скилл.</p>
 
 <h3>9A.1. Что я знаю о вас сейчас</h3>
 
@@ -54,7 +55,7 @@
   <tbody>
     <tr><td>Индекс памяти</td><td><code>C:\Users\SMDWORKS\.claude\projects\C--Users-SMDWORKS-Downloads-Sasha-II-TUT\memory\MEMORY.md</code></td></tr>
     <tr><td>Профиль пользователя</td><td><code>...\memory\user-profile.md</code></td></tr>
-    <tr><td>Тип записи</td><td><code>user</code> — кто вы, ваш опыт и предпочтения</td></tr>
+    <tr><td>Тип записи</td><td><code>user</code> - кто вы, ваш опыт и предпочтения</td></tr>
     <tr><td>Формат</td><td>Markdown с YAML-заголовком: <code>name</code>, <code>description</code>, <code>metadata.type</code></td></tr>
   </tbody>
 </table>
@@ -85,9 +86,9 @@
 <ul>
   <li>у каждого проекта свой каталог <code>~/.claude/projects/&lt;project&gt;/memory/</code>;</li>
   <li>в нём лежит индекс <code>MEMORY.md</code> и отдельные файлы по темам;</li>
-  <li>в начале сессии загружаются первые <strong>200 строк</strong> или <strong>25 КБ</strong> <code>MEMORY.md</code> — что наступит раньше;</li>
+  <li>в начале сессии загружаются первые <strong>200 строк</strong> или <strong>25 КБ</strong> <code>MEMORY.md</code> - что наступит раньше;</li>
   <li>файлы тем при запуске не загружаются: я читаю их по мере необходимости;</li>
-  <li>в каждой записи может быть поле <code>modified</code> с датой — чтобы понимать, насколько факт свежий;</li>
+  <li>в каждой записи может быть поле <code>modified</code> с датой - чтобы понимать, насколько факт свежий;</li>
   <li>память включена по умолчанию в локальных сессиях; отключается через <code>/memory</code>, <code>autoMemoryEnabled: false</code> или <code>CLAUDE_CODE_DISABLE_AUTO_MEMORY=1</code>;</li>
   <li>файлы памяти не удаляются вместе со старыми стенограммами; они остаются, пока вы или Claude их не измените.</li>
 </ul>
@@ -105,7 +106,7 @@
 <table>
   <thead><tr><th>Сохранять</th><th>Почему</th></tr></thead>
   <tbody>
-    <tr><td>Устойчивые предпочтения</td><td>«Объясняй по-русски, с инженерными аналогиями» — пригодится в каждой сессии</td></tr>
+    <tr><td>Устойчивые предпочтения</td><td>«Объясняй по-русски, с инженерными аналогиями» - пригодится в каждой сессии</td></tr>
     <tr><td>Обратную связь</td><td>«Не используй пиратские источники», «сначала план, потом правки»</td></tr>
     <tr><td>Факты о проекте</td><td>Ограничения, стандарты, особенности, которые не видны из кода</td></tr>
     <tr><td>Ссылки и источники</td><td>Где лежит документация, даташиты, стенды</td></tr>
@@ -118,8 +119,8 @@
 <table>
   <thead><tr><th>Не сохранять</th><th>Почему</th></tr></thead>
   <tbody>
-    <tr><td>Секреты, ключи, пароли</td><td>Память — открытый текст; утечка вероятна</td></tr>
-    <tr><td>Одноразовые детали</td><td>«Сегодня поправили строку 42» — мусор</td></tr>
+    <tr><td>Секреты, ключи, пароли</td><td>Память - открытый текст; утечка вероятна</td></tr>
+    <tr><td>Одноразовые детали</td><td>«Сегодня поправили строку 42» - мусор</td></tr>
     <tr><td>То, что уже есть в коде или git</td><td>Дублирование и устаревание</td></tr>
     <tr><td>Противоречивые факты</td><td>Модель может выбрать любой; противоречия надо удалять</td></tr>
     <tr><td>Персональные данные третьих лиц</td><td>Приватность и закон</td></tr>
@@ -127,7 +128,7 @@
 </table>
 </div>
 
-<p>Если хотите, чтобы я запомнил — скажите прямо: «Запомни: …». Если хотите, чтобы я забыл — «Удали из памяти …». Я могу отредактировать файл, но вы всегда можете сделать это сами через <code>/memory</code>.</p>
+<p>Если хотите, чтобы я запомнил - скажите прямо: «Запомни: …». Если хотите, чтобы я забыл - «Удали из памяти …». Я могу отредактировать файл, но вы всегда можете сделать это сами через <code>/memory</code>.</p>
 
 <h3>9A.5. Что происходит при сжатии контекста</h3>
 
@@ -188,7 +189,7 @@
 
 <div class="callout">
   <span class="label">Правило</span>
-  <p>Если факт важен — он должен быть в файле: <code>CLAUDE.md</code>, памяти, <code>docs/state.md</code> или skill. Всё, что сказано только в чате, может быть суммировано или потеряно.</p>
+  <p>Если факт важен - он должен быть в файле: <code>CLAUDE.md</code>, памяти, <code>docs/state.md</code> или skill. Всё, что сказано только в чате, может быть суммировано или потеряно.</p>
 </div>
 
 <h3>9A.7. Как вернуться в тот же чат</h3>
@@ -211,7 +212,7 @@
 </table>
 </div>
 
-<p>Если сессия уже сжималась, при возобновлении она откроется на строке <code>Conversation compacted</code>: я продолжу с последнего резюме и сообщений после него. Сообщения, вошедшие в резюме, повторно не загружаются. Поэтому «тот самый чат» — это не гарантия полной истории; гарантия — это файлы памяти, <code>CLAUDE.md</code> и <code>docs/state.md</code>.</p>
+<p>Если сессия уже сжималась, при возобновлении она откроется на строке <code>Conversation compacted</code>: я продолжу с последнего резюме и сообщений после него. Сообщения, вошедшие в резюме, повторно не загружаются. Поэтому «тот самый чат» - это не гарантия полной истории; гарантия - это файлы памяти, <code>CLAUDE.md</code> и <code>docs/state.md</code>.</p>
 
 <p>Модель и режим разрешений при возобновлении обычно восстанавливаются. Некоторые флаги нужно передать снова: <code>--mcp-config</code>, <code>--add-dir</code> и другие, указанные в документации.</p>
 
@@ -267,12 +268,12 @@
 
 <div class="callout warn">
   <span class="label">Приватность</span>
-  <p>Память и <code>CLAUDE.md</code> — открытый текст. Не храните там ключи, пароли и чужие персональные данные. Если данные конфиденциальны, используйте локальную модель или отдельный контур; при работе через DeepSeek данные уходят провайдеру.</p>
+  <p>Память и <code>CLAUDE.md</code> - открытый текст. Не храните там ключи, пароли и чужие персональные данные. Если данные конфиденциальны, используйте локальную модель или отдельный контур; при работе через DeepSeek данные уходят провайдеру.</p>
 </div>
 
 <h3>9A.11. Как превратить накопленное в скилл</h3>
 
-<p>Скилл — это папка с <code>SKILL.md</code>. Имя папки становится командой, а <code>description</code> объясняет, когда скилл применять.</p>
+<p>Скилл - это папка с <code>SKILL.md</code>. Имя папки становится командой, а <code>description</code> объясняет, когда скилл применять.</p>
 
 <ol>
   <li><strong>Соберите правила.</strong> Выпишите, что вы хотите повторять: стиль объяснений, формат отчёта, обязательные проверки, запреты.</li>
@@ -285,7 +286,7 @@ description: Работает в моём инженерном стиле: ру�
 ---</code></pre>
   </li>
   <li><strong>Добавьте инструкции.</strong> Чем конкретнее, тем лучше: шаги, критерии, шаблоны, примеры «плохо/хорошо».</li>
-  <li><strong>Вынесите детали.</strong> Большие справочники — в <code>references/</code>, скрипты — в <code>scripts/</code>.</li>
+  <li><strong>Вынесите детали.</strong> Большие справочники - в <code>references/</code>, скрипты - в <code>scripts/</code>.</li>
   <li><strong>Проверьте:</strong> вызовите <code>/my-engineering-style</code> и сравните результат с обычным запросом.</li>
   <li><strong>Закрепите:</strong> коммит в проект или перенос в <code>~/.claude/skills/</code> для всех проектов.</li>
   <li><strong>Упакуйте в плагин</strong> (по желанию): добавьте <code>.claude-plugin/plugin.json</code>, чтобы делиться с другими.</li>
@@ -296,8 +297,8 @@ description: Работает в моём инженерном стиле: ру�
 <pre><code>## Стиль
 - Отвечай по-русски, кратко и по делу.
 - Сложное объясняй через инженерные аналогии.
-- Числа — с единицами и источником.
-- Все сомнения — в раздел «Требует проверки».
+- Числа - с единицами и источником.
+- Все сомнения - в раздел «Требует проверки».
 
 ## Формат ревью
 1. Что проверено.
@@ -320,7 +321,7 @@ description: Работает в моём инженерном стиле: ру�
 <ol>
   <li><strong>5 минут.</strong> Запишите в <code>~/.claude/CLAUDE.md</code> пять правил: язык, стиль, формат, запреты, проверка.</li>
   <li><strong>5 минут.</strong> Запишите в проект <code>CLAUDE.md</code>: команды сборки, архитектуру, запреты.</li>
-  <li><strong>5 минут.</strong> Скажите: «Запомни: …» — и проверьте <code>/memory</code>.</li>
+  <li><strong>5 минут.</strong> Скажите: «Запомни: …» - и проверьте <code>/memory</code>.</li>
   <li><strong>10 минут.</strong> Создайте skill с вашим стилем и проверьте <code>/my-engineering-style</code>.</li>
   <li><strong>5 минут.</strong> Сделайте тестовую сессию, назовите её <code>claude -n "обучение"</code>, проверьте возврат через <code>--resume</code>.</li>
 </ol>
@@ -328,14 +329,14 @@ description: Работает в моём инженерном стиле: ру�
 <h3>9A.13. Что и как стирать</h3>
 
 <ul>
-  <li><strong>Устаревшее.</strong> Если факт изменился — удалите или обновите файл памяти.</li>
-  <li><strong>Противоречия.</strong> Две противоположные инструкции — источник случайного поведения.</li>
+  <li><strong>Устаревшее.</strong> Если факт изменился - удалите или обновите файл памяти.</li>
+  <li><strong>Противоречия.</strong> Две противоположные инструкции - источник случайного поведения.</li>
   <li><strong>Дубли.</strong> Один факт в трёх местах быстро расходится.</li>
   <li><strong>Секреты.</strong> Удалите и перевыпустите ключ.</li>
   <li><strong>Мусор.</strong> Одноразовые детали, которые не пригодятся.</li>
 </ul>
 
-<p>Как: <code>/memory</code> → открыть файл → удалить строку/файл. Или попросить меня: «Удали из памяти факт X». Если хотите отключить автоматическую память совсем — <code>autoMemoryEnabled: false</code> в настройках проекта или <code>CLAUDE_CODE_DISABLE_AUTO_MEMORY=1</code>.</p>
+<p>Как: <code>/memory</code> → открыть файл → удалить строку/файл. Или попросить меня: «Удали из памяти факт X». Если хотите отключить автоматическую память совсем - <code>autoMemoryEnabled: false</code> в настройках проекта или <code>CLAUDE_CODE_DISABLE_AUTO_MEMORY=1</code>.</p>
 
 <h3>9A.14. Ограничения</h3>
 
@@ -344,12 +345,12 @@ description: Работает в моём инженерном стиле: ру�
   <li>Сессии хранятся локально; на новом компьютере их нужно переносить отдельно или начинать заново.</li>
   <li>Память не является обучением модели и не гарантирует, что я «вспомню» всё без файлов.</li>
   <li>Память может содержать ошибочные или устаревшие факты; её нужно периодически ревизовать.</li>
-  <li>Чужой текст в памяти — потенциальный prompt injection; не сохраняйте недоверенные инструкции.</li>
+  <li>Чужой текст в памяти - потенциальный prompt injection; не сохраняйте недоверенные инструкции.</li>
 </ul>
 
 <div class="callout quote">
   <span class="label">Итог</span>
-  <p>Хотите, чтобы я «стал вашим» — не пытайтесь переобучить модель. Создайте три вещи: <code>CLAUDE.md</code> с правилами, память с устойчивыми фактами и skill с процедурой. Тогда любой новый чат будет начинаться не с нуля.</p>
+  <p>Хотите, чтобы я «стал вашим» - не пытайтесь переобучить модель. Создайте три вещи: <code>CLAUDE.md</code> с правилами, память с устойчивыми фактами и skill с процедурой. Тогда любой новый чат будет начинаться не с нуля.</p>
 </div>
 
 </section>
@@ -360,7 +361,7 @@ description: Работает в моём инженерном стиле: ру�
     <a data-rel="toc" href="../index.html">Оглавление</a>
     <span><a data-rel="next" href="../pages/permissions.html">Глава 10 →</a></span>
   </nav>
-  <p>Источник — <a href="../book.html">книга одним файлом</a>,
+  <p>Источник - <a href="../book.html">книга одним файлом</a>,
   <a href="../download/Книга-Claude-Code.epub">EPUB</a>.</p>
 </footer>
 <script type="application/json" id="page-list">[{"title":"Глава 0 История этой книги","short":"Глава 0","url":"pages/history.html"},{"title":"Глава 1 Как читать эту книгу","short":"Глава 1","url":"pages/how-to-read.html"},{"title":"Глава 2 Ваш стенд: Claude Code → OmniRoute → DeepSeek","short":"Глава 2","url":"pages/stand.html"},{"title":"Глава 3 Что такое ИИ","short":"Глава 3","url":"pages/what-is-ai.html"},{"title":"Глава 4 Как работает языковая модель","short":"Глава 4","url":"pages/how-llm-works.html"},{"title":"Глава 5 Промпт как техническое задание","short":"Глава 5","url":"pages/prompt.html"},{"title":"Глава 6 Что такое агент","short":"Глава 6","url":"pages/agent.html"},{"title":"Глава 6A История нейронных сетей","short":"Глава 6A","url":"pages/history-nn.html"},{"title":"Глава 6B Анатомия трансформера","short":"Глава 6B","url":"pages/transformer-anatomy.html"},{"title":"Глава 6C Веса, биты и точность","short":"Глава 6C","url":"pages/weights-bits.html"},{"title":"Глава 6D Ландшафт моделей 2026","short":"Глава 6D","url":"pages/model-landscape.html"},{"title":"Глава 6E Локальные модели","short":"Глава 6E","url":"pages/local-models.html"},{"title":"Глава 6F Токены, контекст и сжатие","short":"Глава 6F","url":"pages/tokens-compression.html"},{"title":"Глава 6G Железо и вычислительность","short":"Глава 6G","url":"pages/hardware.html"},{"title":"Глава 6H Агенты и их экосистема","short":"Глава 6H","url":"pages/agents-ecosystem.html"},{"title":"Глава 6I Оптимизация: что пишут на Хабре и Пикабу","short":"Глава 6I","url":"pages/optimization-posts.html"},{"title":"Глава 6J Вопросы и ответы","short":"Глава 6J","url":"pages/faq.html"},{"title":"Глава 6K (не публикуется)","short":"Глава 6K (не публикуется)","url":"pages/deepseek-billing.html"},{"title":"Глава 7 Установка и первый запуск","short":"Глава 7","url":"pages/install.html"},{"title":"Глава 7A (не публикуется)","short":"Глава 7A (не публикуется)","url":"pages/migration.html"},{"title":"Глава 7B (не публикуется)","short":"Глава 7B (не публикуется)","url":"pages/new-pc.html"},{"title":"Глава 8 Интерфейс и команды","short":"Глава 8","url":"pages/interface.html"},{"title":"Глава 9 Память и CLAUDE.md","short":"Глава 9","url":"pages/memory.html"},{"title":"Глава 9A Память, обучение и превращение в скилл","short":"Глава 9A","url":"pages/memory-training.html"},{"title":"Глава 10 Разрешения и безопасность","short":"Глава 10","url":"pages/permissions.html"},{"title":"Глава 11 Контекст, стоимость, сессии","short":"Глава 11","url":"pages/context-cost.html"},{"title":"Глава 12 Расширения: skills, субагенты, hooks, MCP","short":"Глава 12","url":"pages/extensions.html"},{"title":"Глава 13 Принцип интеграции","short":"Глава 13","url":"pages/integration-principle.html"},{"title":"Глава 14 Схемотехника и симуляция","short":"Глава 14","url":"pages/circuit.html"},{"title":"Глава 15 EDA и трассировка плат","short":"Глава 15","url":"pages/pcb.html"},{"title":"Глава 16 Микроконтроллеры","short":"Глава 16","url":"pages/mcu.html"},{"title":"Глава 17 Отладка и измерения","short":"Глава 17","url":"pages/debug.html"},{"title":"Глава 18 Машиностроение и CAD","short":"Глава 18","url":"pages/cad.html"},{"title":"Глава 19 Документация и traceability","short":"Глава 19","url":"pages/docs.html"},{"title":"Глава 20 Карта связок","short":"Глава 20","url":"pages/integration-map.html"},{"title":"Глава 21 Десять заданий","short":"Глава 21","url":"pages/labs.html"},{"title":"Глава 22 Итоговый проект: термостат лабораторной печи","short":"Глава 22","url":"pages/capstone.html"},{"title":"Глава 23 Как проверять ИИ","short":"Глава 23","url":"pages/verify.html"},{"title":"Глава 24 Команды и флаги","short":"Глава 24","url":"pages/commands.html"},{"title":"Глава 25 Переменные, файлы, настройки","short":"Глава 25","url":"pages/files-settings.html"},{"title":"Глава 26 Шаблоны промптов","short":"Глава 26","url":"pages/prompt-templates.html"},{"title":"Глава 27 Диагностика","short":"Глава 27","url":"pages/troubleshooting.html"},{"title":"Глава 28 Файлы и папки","short":"Глава 28","url":"pages/library.html"},{"title":"Глава 29 Литература","short":"Глава 29","url":"pages/literature.html"},{"title":"Глава 29A Открытая хрестоматия","short":"Глава 29A","url":"pages/open-books.html"},{"title":"Глава 30 План на восемь недель","short":"Глава 30","url":"pages/plan.html"},{"title":"Глава 31 Словарь","short":"Глава 31","url":"pages/glossary.html"},{"title":"Глава 32 Источники","short":"Глава 32","url":"pages/sources.html"}]</script>

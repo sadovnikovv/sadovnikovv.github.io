@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
-<title>Глава 6B — Claude Code для инженера</title>
+<title>Глава 6B - Claude Code для инженера</title>
 <meta name="description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
 <link rel="canonical" href="https://sadovnikovv.github.io/pages/">
 <meta property="og:type" content="article">
 <meta property="og:locale" content="ru_RU">
 <meta property="og:site_name" content="Claude Code для инженера">
-<meta property="og:title" content="Глава 6B — Claude Code для инженера">
+<meta property="og:title" content="Глава 6B - Claude Code для инженера">
 <meta property="og:description" content="Практическое пособие для инженера: Claude Code, OmniRoute, DeepSeek, основы ИИ, агенты.">
 <meta property="og:url" content="https://sadovnikovv.github.io/pages/">
 <meta property="og:image" content="https://sadovnikovv.github.io/assets/favicon.svg">
@@ -34,8 +34,9 @@
   </div>
 </header>
 <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+<aside class="side-toc" id="side-toc" aria-label="Оглавление книги"><div class="side-toc-title"><a href="../index.html">Оглавление</a></div></aside>
 <main class="wrap" id="book">
-<section class="chapter"><h2 id="transformer-anatomy"><span class="chapter">Глава 6B</span>Анатомия трансформера</h2>
+<section class="chapter"><h2 id="transformer-anatomy"><span class="chapter">Глава 6B</span> Анатомия трансформера</h2>
 
 <p class="lead-in">Разберём путь текста от вашего запроса до ответа. Без матриц на бумаге, но с пониманием каждого этапа.</p>
 
@@ -55,7 +56,7 @@
 
 <h3>6B.2. Токенизация</h3>
 
-<p>Текст режется на <strong>токены</strong> — частотные кусочки слов. Алгоритмы: BPE (Byte Pair Encoding), WordPiece, SentencePiece/Unigram. Словарь — обычно 50–200 тысяч токенов. Частые слова могут быть одним токеном, редкие — несколькими.</p>
+<p>Текст режется на <strong>токены</strong> - частотные кусочки слов. Алгоритмы: BPE (Byte Pair Encoding), WordPiece, SentencePiece/Unigram. Словарь - обычно 50–200 тысяч токенов. Частые слова могут быть одним токеном, редкие - несколькими.</p>
 
 <p>Для русского языка токенов обычно больше, чем для английского: кириллица хуже представлена в словарях, поэтому текст «дороже». Это одна из причин, почему русский запрос может стоить больше английского при том же смысле.</p>
 
@@ -64,7 +65,7 @@
 
 <h3>6B.3. Эмбеддинги и позиция</h3>
 
-<p>Каждый токен получает <strong>вектор</strong> — набор чисел (например, 4096 измерений). Векторы образуют пространство, где близкие по смыслу фрагменты оказываются рядом. Это не «понимание», а геометрия статистических связей.</p>
+<p>Каждый токен получает <strong>вектор</strong> - набор чисел (например, 4096 измерений). Векторы образуют пространство, где близкие по смыслу фрагменты оказываются рядом. Это не «понимание», а геометрия статистических связей.</p>
 
 <p>Порядок слов кодируется отдельно: позиционные эмбеддинги или вращательные кодировки (RoPE). Без них модель видела бы набор слов, но не их последовательность.</p>
 
@@ -73,9 +74,9 @@
 <p>Механизм <strong>self-attention</strong> можно объяснить как работу с библиотекой:</p>
 
 <ul>
-  <li><strong>Query (Q)</strong> — что я ищу.</li>
-  <li><strong>Key (K)</strong> — что я могу предложить.</li>
-  <li><strong>Value (V)</strong> — что я передам, если подойду.</li>
+  <li><strong>Query (Q)</strong> - что я ищу.</li>
+  <li><strong>Key (K)</strong> - что я могу предложить.</li>
+  <li><strong>Value (V)</strong> - что я передам, если подойду.</li>
 </ul>
 
 <p>Для каждого токена вычисляются Q, K, V. Затем считается совпадение Q с K всех токенов, нормируется через softmax и взвешивает V. Так токен собирает контекст от тех, кто ему релевантен.</p>
@@ -84,7 +85,7 @@
 
 softmax(z_i) = exp(z_i) / Σ exp(z_j)</code></pre>
 
-<p><strong>Multi-head attention</strong> — несколько параллельных «голов», каждая смотрит на свои отношения: синтаксис, местоимения, числа, код. Результаты объединяются.</p>
+<p><strong>Multi-head attention</strong> - несколько параллельных «голов», каждая смотрит на свои отношения: синтаксис, местоимения, числа, код. Результаты объединяются.</p>
 
 <p><strong>Причинная маска</strong> запрещает токену смотреть в будущее: при генерации он видит только предыдущий текст. Поэтому модель называется авторегрессионной.</p>
 
@@ -103,9 +104,9 @@ x = x + MLP(Norm(x))</code></pre>
 
 <h3>6B.7. Выход: от вектора к слову</h3>
 
-<p>Последний вектор преобразуется в <strong>логиты</strong> — числа для каждого токена словаря. Softmax превращает их в вероятности. Модель выбирает токен по этим вероятностям, добавляет его к тексту и повторяет процесс.</p>
+<p>Последний вектор преобразуется в <strong>логиты</strong> - числа для каждого токена словаря. Softmax превращает их в вероятности. Модель выбирает токен по этим вероятностям, добавляет его к тексту и повторяет процесс.</p>
 
-<p>Вероятности — не «уверенность в истине», а распределение следующего токена. Высокая вероятность означает частотность, а не правильность.</p>
+<p>Вероятности - не «уверенность в истине», а распределение следующего токена. Высокая вероятность означает частотность, а не правильность.</p>
 
 <h3>6B.8. Как выбирается слово</h3>
 
@@ -115,7 +116,7 @@ x = x + MLP(Norm(x))</code></pre>
   <tbody>
     <tr><td><strong>Greedy</strong></td><td>Всегда самый вероятный токен</td><td>Стабильно, но скучно и склонно к повторам</td></tr>
     <tr><td><strong>Beam search</strong></td><td>Держит несколько лучших вариантов</td><td>Хорошо для перевода, хуже для творчества</td></tr>
-    <tr><td><strong>Temperature</strong></td><td>Масштабирует логиты: ниже — увереннее, выше — разнообразнее</td><td>0 — почти детерминированно; 1 — разнообразно</td></tr>
+    <tr><td><strong>Temperature</strong></td><td>Масштабирует логиты: ниже - увереннее, выше - разнообразнее</td><td>0 - почти детерминированно; 1 - разнообразно</td></tr>
     <tr><td><strong>Top-k</strong></td><td>Выбирает из k самых вероятных</td><td>Отсекает маловероятный бред</td></tr>
     <tr><td><strong>Top-p (nucleus)</strong></td><td>Выбирает из минимального набора с суммарной вероятностью p</td><td>Гибче, чем top-k</td></tr>
     <tr><td><strong>Repetition penalty</strong></td><td>Штрафует повторы</td><td>Меньше зацикливаний</td></tr>
@@ -123,7 +124,7 @@ x = x + MLP(Norm(x))</code></pre>
 </table>
 </div>
 
-<p>Для инженерных задач часто нужен низкий temperature и строгий формат вывода. Для мозгового штурма — выше. Но «temperature 0» не гарантирует истину: модель всё равно выбирает наиболее вероятное, а не проверенное.</p>
+<p>Для инженерных задач часто нужен низкий temperature и строгий формат вывода. Для мозгового штурма - выше. Но «temperature 0» не гарантирует истину: модель всё равно выбирает наиболее вероятное, а не проверенное.</p>
 
 <h3>6B.9. Как выстраиваются связки</h3>
 
@@ -131,9 +132,9 @@ x = x + MLP(Norm(x))</code></pre>
 
 <ul>
   <li><strong>Статистические связи</strong> между токенами, выученные на корпусе.</li>
-  <li><strong>Внимание</strong> — взвешивание релевантных фрагментов контекста.</li>
-  <li><strong>In-context learning</strong> — способность использовать примеры и инструкции прямо в промпте.</li>
-  <li><strong>Промежуточные токены</strong> — «цепочка рассуждений» (chain-of-thought) как способ разложить задачу на шаги.</li>
+  <li><strong>Внимание</strong> - взвешивание релевантных фрагментов контекста.</li>
+  <li><strong>In-context learning</strong> - способность использовать примеры и инструкции прямо в промпте.</li>
+  <li><strong>Промежуточные токены</strong> - «цепочка рассуждений» (chain-of-thought) как способ разложить задачу на шаги.</li>
 </ul>
 
 <p>Отсюда практический вывод: примеры, структура и точные формулировки в промпте работают не «магически», а потому что меняют распределение следующих токенов.</p>
@@ -144,9 +145,9 @@ x = x + MLP(Norm(x))</code></pre>
 
 <h3>6B.11. MoE: смесь экспертов</h3>
 
-<p>В обычном трансформере каждый токен проходит через все параметры MLP. В <strong>MoE</strong> (Mixture of Experts) есть много «экспертов», а роутер выбирает 1–2 на каждый токен. Общее число параметров большое, активных — меньше. Это позволяет иметь модель на сотни миллиардов параметров при разумной стоимости инференса.</p>
+<p>В обычном трансформере каждый токен проходит через все параметры MLP. В <strong>MoE</strong> (Mixture of Experts) есть много «экспертов», а роутер выбирает 1–2 на каждый токен. Общее число параметров большое, активных - меньше. Это позволяет иметь модель на сотни миллиардов параметров при разумной стоимости инференса.</p>
 
-<p>Так устроены многие современные модели, включая DeepSeek, Qwen, GLM. Отсюда важно различать <strong>общее число параметров</strong> и <strong>активные параметры</strong>: первое определяет память, второе — вычисления на токен.</p>
+<p>Так устроены многие современные модели, включая DeepSeek, Qwen, GLM. Отсюда важно различать <strong>общее число параметров</strong> и <strong>активные параметры</strong>: первое определяет память, второе - вычисления на токен.</p>
 
 <!-- ============================================================ -->
 
@@ -158,7 +159,7 @@ x = x + MLP(Norm(x))</code></pre>
     <a data-rel="toc" href="../index.html">Оглавление</a>
     <span><a data-rel="next" href="../pages/weights-bits.html">Глава 6C →</a></span>
   </nav>
-  <p>Источник — <a href="../book.html">книга одним файлом</a>,
+  <p>Источник - <a href="../book.html">книга одним файлом</a>,
   <a href="../download/Книга-Claude-Code.epub">EPUB</a>.</p>
 </footer>
 <script type="application/json" id="page-list">[{"title":"Глава 0 История этой книги","short":"Глава 0","url":"pages/history.html"},{"title":"Глава 1 Как читать эту книгу","short":"Глава 1","url":"pages/how-to-read.html"},{"title":"Глава 2 Ваш стенд: Claude Code → OmniRoute → DeepSeek","short":"Глава 2","url":"pages/stand.html"},{"title":"Глава 3 Что такое ИИ","short":"Глава 3","url":"pages/what-is-ai.html"},{"title":"Глава 4 Как работает языковая модель","short":"Глава 4","url":"pages/how-llm-works.html"},{"title":"Глава 5 Промпт как техническое задание","short":"Глава 5","url":"pages/prompt.html"},{"title":"Глава 6 Что такое агент","short":"Глава 6","url":"pages/agent.html"},{"title":"Глава 6A История нейронных сетей","short":"Глава 6A","url":"pages/history-nn.html"},{"title":"Глава 6B Анатомия трансформера","short":"Глава 6B","url":"pages/transformer-anatomy.html"},{"title":"Глава 6C Веса, биты и точность","short":"Глава 6C","url":"pages/weights-bits.html"},{"title":"Глава 6D Ландшафт моделей 2026","short":"Глава 6D","url":"pages/model-landscape.html"},{"title":"Глава 6E Локальные модели","short":"Глава 6E","url":"pages/local-models.html"},{"title":"Глава 6F Токены, контекст и сжатие","short":"Глава 6F","url":"pages/tokens-compression.html"},{"title":"Глава 6G Железо и вычислительность","short":"Глава 6G","url":"pages/hardware.html"},{"title":"Глава 6H Агенты и их экосистема","short":"Глава 6H","url":"pages/agents-ecosystem.html"},{"title":"Глава 6I Оптимизация: что пишут на Хабре и Пикабу","short":"Глава 6I","url":"pages/optimization-posts.html"},{"title":"Глава 6J Вопросы и ответы","short":"Глава 6J","url":"pages/faq.html"},{"title":"Глава 6K (не публикуется)","short":"Глава 6K (не публикуется)","url":"pages/deepseek-billing.html"},{"title":"Глава 7 Установка и первый запуск","short":"Глава 7","url":"pages/install.html"},{"title":"Глава 7A (не публикуется)","short":"Глава 7A (не публикуется)","url":"pages/migration.html"},{"title":"Глава 7B (не публикуется)","short":"Глава 7B (не публикуется)","url":"pages/new-pc.html"},{"title":"Глава 8 Интерфейс и команды","short":"Глава 8","url":"pages/interface.html"},{"title":"Глава 9 Память и CLAUDE.md","short":"Глава 9","url":"pages/memory.html"},{"title":"Глава 9A Память, обучение и превращение в скилл","short":"Глава 9A","url":"pages/memory-training.html"},{"title":"Глава 10 Разрешения и безопасность","short":"Глава 10","url":"pages/permissions.html"},{"title":"Глава 11 Контекст, стоимость, сессии","short":"Глава 11","url":"pages/context-cost.html"},{"title":"Глава 12 Расширения: skills, субагенты, hooks, MCP","short":"Глава 12","url":"pages/extensions.html"},{"title":"Глава 13 Принцип интеграции","short":"Глава 13","url":"pages/integration-principle.html"},{"title":"Глава 14 Схемотехника и симуляция","short":"Глава 14","url":"pages/circuit.html"},{"title":"Глава 15 EDA и трассировка плат","short":"Глава 15","url":"pages/pcb.html"},{"title":"Глава 16 Микроконтроллеры","short":"Глава 16","url":"pages/mcu.html"},{"title":"Глава 17 Отладка и измерения","short":"Глава 17","url":"pages/debug.html"},{"title":"Глава 18 Машиностроение и CAD","short":"Глава 18","url":"pages/cad.html"},{"title":"Глава 19 Документация и traceability","short":"Глава 19","url":"pages/docs.html"},{"title":"Глава 20 Карта связок","short":"Глава 20","url":"pages/integration-map.html"},{"title":"Глава 21 Десять заданий","short":"Глава 21","url":"pages/labs.html"},{"title":"Глава 22 Итоговый проект: термостат лабораторной печи","short":"Глава 22","url":"pages/capstone.html"},{"title":"Глава 23 Как проверять ИИ","short":"Глава 23","url":"pages/verify.html"},{"title":"Глава 24 Команды и флаги","short":"Глава 24","url":"pages/commands.html"},{"title":"Глава 25 Переменные, файлы, настройки","short":"Глава 25","url":"pages/files-settings.html"},{"title":"Глава 26 Шаблоны промптов","short":"Глава 26","url":"pages/prompt-templates.html"},{"title":"Глава 27 Диагностика","short":"Глава 27","url":"pages/troubleshooting.html"},{"title":"Глава 28 Файлы и папки","short":"Глава 28","url":"pages/library.html"},{"title":"Глава 29 Литература","short":"Глава 29","url":"pages/literature.html"},{"title":"Глава 29A Открытая хрестоматия","short":"Глава 29A","url":"pages/open-books.html"},{"title":"Глава 30 План на восемь недель","short":"Глава 30","url":"pages/plan.html"},{"title":"Глава 31 Словарь","short":"Глава 31","url":"pages/glossary.html"},{"title":"Глава 32 Источники","short":"Глава 32","url":"pages/sources.html"}]</script>
