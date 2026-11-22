@@ -856,6 +856,7 @@ MAT_TPL = """<!DOCTYPE html>
 <footer class="site-footer">
   <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
 </footer>
+<script src="{root}assets/code-copy.js" defer></script>
 </body>
 </html>
 """

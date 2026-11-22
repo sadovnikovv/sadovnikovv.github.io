@@ -75,7 +75,7 @@
   }
 
   function decorate(pre) {
-    if (pre.closest('.code-block') || pre.parentNode.classList.contains('code-content')) return;
+    if (pre.parentNode && pre.parentNode.classList && pre.parentNode.classList.contains('code-block')) return;
     var code = pre.querySelector('code') || pre;
     var lang = guessLang(pre, code);
     var text = code.textContent.replace(/\n$/, '');
@@ -136,10 +136,13 @@
     if (isOneLiner(text) && !document.queryCommandSupported) cp.hidden = true;
   }
 
+  // Все блоки кода документа: и книга, и страницы глав, и папка материалов.
   function run() {
-    document.querySelectorAll('#book pre, main pre').forEach(decorate);
+    document.querySelectorAll('main pre, #book pre, pre:not(.code-block pre)').forEach(decorate);
   }
 
   document.addEventListener('DOMContentLoaded', run);
   window.addEventListener('book:rendered', run);
+  // Чужие скрипты (например, в materials) могут дорисовать код позже.
+  window.addEventListener('load', run);
 })();
