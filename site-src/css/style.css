@@ -575,49 +575,57 @@ main a[href^="http"]:focus-visible { outline: 2px solid var(--accent); outline-o
   main a[href^="http"]::after { content: none; }
 }
 
-/* ---------- Схемы из блоков «node/arrow»: читаются в любом размере ---------- */
-/* Это надстройка поверх авторских стилей: карточки шире, текст крупнее,
-   между строками и блоками больше воздуха. */
+/* ---------- Схемы из блоков «node/arrow» ---------- */
+/* Схема - компактная плашка по размеру своего содержимого в строках текста,
+   а не полоса на всю ширину колонки. Карточки не растягиваются (!important
+   снимает авторское flex: 1 1 130px), между ними - воздух. */
 .flow {
+  display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
   gap: .75rem !important;
-  padding: 1.4rem !important;
-  margin: 1.6rem 0 1.8rem !important;
-  border-radius: 12px !important;
-  font-size: 1rem !important;
-  row-gap: 1rem !important;
+  padding: 1rem 1.1rem !important;
+  margin: 1.6rem auto !important;
+  border-radius: 10px !important;
+  font-size: .95rem !important;
 }
 .flow .node {
-  flex: 1 1 12rem !important;
+  flex: 0 1 auto !important;
   min-width: 0;
-  padding: 1rem 1.1rem !important;
-  border-radius: 10px !important;
-  line-height: 1.5 !important;
+  max-width: 16rem;
+  padding: .8rem 1rem !important;
+  border-radius: 8px !important;
+  line-height: 1.45 !important;
   text-align: left !important;
-  box-shadow: 0 1px 0 var(--rule);
+  box-shadow: none;
 }
 .flow .node b {
   display: block !important;
   font-family: var(--font-sans);
-  font-size: 1rem !important;
+  font-size: .95rem !important;
   letter-spacing: -.005em;
-  margin: 0 0 .35rem !important;
+  margin: 0 0 .25rem !important;
 }
 .flow .node span {
   display: block !important;
   font-family: var(--font-sans);
-  font-size: .9rem !important;
-  line-height: 1.5 !important;
+  font-size: .84rem !important;
+  line-height: 1.45 !important;
   color: var(--fg-soft) !important;
 }
-.flow .arrow { font-size: 1.4rem !important; padding: 0 .15rem; }
-@media (min-width: 60rem) {
-  .flow:has(.node:nth-child(5)) { flex-wrap: nowrap; }
+.flow .arrow {
+  flex: 0 0 auto !important;
+  font-size: 1.25rem !important;
+  line-height: 1;
+  padding: 0 !important;
 }
+.flow p { margin: 0 !important; }
 @media (max-width: 46rem) {
-  .flow { flex-direction: column !important; align-items: stretch !important; }
-  .flow .arrow { text-align: center; transform: rotate(90deg); }
-  .flow .node { flex: 1 1 auto !important; }
+  .flow { width: auto; flex-direction: column !important; align-items: stretch !important; }
+  .flow .arrow { align-self: center; transform: rotate(90deg); }
+  .flow .node { flex: 0 1 auto !important; max-width: none; }
 }
 /* Владельцы страницы - карточки .cards и колонки .toc-inline: тоже воздух. */
 .cards { gap: 1rem !important; margin: 1.5rem 0 2rem !important; }
