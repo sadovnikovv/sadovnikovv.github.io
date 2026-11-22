@@ -185,7 +185,16 @@
   function readQuizData() {
     if (QUIZ_BUILTIN) return QUIZ_BUILTIN;
     var node = document.getElementById('quiz-data');
-    try { QUIZ_BUILTIN = JSON.parse(node.textContent); } catch (e) { QUIZ_BUILTIN = []; }
+    var practice = document.getElementById('practice-quiz-data');
+    var all = [];
+    [node, practice].forEach(function (n) {
+      if (!n) return;
+      try {
+        var arr = JSON.parse(n.textContent);
+        if (Array.isArray(arr)) all = all.concat(arr);
+      } catch (e) {}
+    });
+    QUIZ_BUILTIN = all;
     return QUIZ_BUILTIN;
   }
 

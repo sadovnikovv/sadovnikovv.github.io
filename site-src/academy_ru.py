@@ -25,7 +25,9 @@ def load():
             if name.endswith(".json"):
                 with open(os.path.join(RU, name), encoding="utf-8") as f:
                     data = json.load(f)
-                ru[data["slug"]] = data
+                # файлы без курса (например, текст практикума) сюда не относятся
+                if isinstance(data, dict) and "slug" in data and "lessons" in data:
+                    ru[data["slug"]] = data
     return index, ru
 
 

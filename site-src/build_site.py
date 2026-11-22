@@ -30,6 +30,7 @@ import urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import fix_book  # site-src/fix_book.py
 import academy_build  # site-src/academy_build.py
+import practice_build  # site-src/practice_build.py
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 # Два раскладки: локально комплект лежит в Sasha_II_TUT/Sasha_II_TUT (на уровень
@@ -234,6 +235,9 @@ def anchor_html(level, raw, lm, page_dir, anchors):
             % (level, hid, inline(raw, "", lm, page_dir), hid, level))
 
 
+# Порядок блоков кода в документе: practice_build.py ставит им подписи.
+CODE_ORDER = []
+
 def md_to_html(text, current_rel, lm, page_dir, anchors, base_level=2):
     text = text.replace("\r\n", "\n").replace("\r", "\n").lstrip("﻿")
     lines = text.split("\n")
@@ -264,6 +268,7 @@ def md_to_html(text, current_rel, lm, page_dir, anchors, base_level=2):
             i += 1
             cls = ' class="language-%s"' % esc(lang) if lang else ""
             out.append("<pre><code%s>%s</code></pre>" % (cls, esc("\n".join(body))))
+            CODE_ORDER.append(lang or "text")
             continue
 
         if DETAILS.match(line):
@@ -372,7 +377,7 @@ def first_heading(text, fallback):
 # --------------------------------------------------------------------------
 # Книга
 # --------------------------------------------------------------------------
-def extract_main(s):
+def extract_main(s, trim_practice=True):
     m = re.search(r'<main id="content"[^>]*>', s)
     if not m:
         raise SystemExit('В книге не найден <main id="content">')
@@ -380,7 +385,11 @@ def extract_main(s):
     for t in re.finditer(r"<(/?)main\b[^>]*>", s[pos:]):
         depth += -1 if t.group(1) else 1
         if depth == 0:
-            return s[pos:pos + t.start()]
+            body = s[pos:pos + t.start()]
+            if trim_practice:
+                # из исходника могла остаться старая версия практикума: берём главу заново
+                body = re.sub(r'<h2 id="practice"[^>]*>.*?(?=<h2\\b|</main>)', '', body, flags=re.S)
+            return body
     raise SystemExit('В книге не закрыт <main id="content">')
 
 
@@ -407,6 +416,50 @@ def replace_academy_chapters(chapters):
     chapters.append({"id": "academy", "title": "Глава 33 Курсы Anthropic Academy", "short": "Глава 33",
                      "raw_title": "", "html": block + ru})
 
+
+
+def add_practice_chapter(chapters):
+    """Глава 34: практикум по сбору данных в браузере (код и задания собираются отдельно)."""
+    chapter = {"id": "practice", "title": "Глава 34 Практикум: агент в браузере",
+               "short": "Глава 34", "raw_title": "", "html": practice_build.make_section(practice_inner_html())}
+    for i, c in enumerate(chapters):
+        if c["id"] == "practice":
+            chapters[i] = chapter
+            return chapters
+    chapters.append(chapter)
+    return chapters
+
+
+def practice_inner_html():
+    """HTML главы 34 с подписями у блоков кода (lang и заголовок программы)."""
+    del CODE_ORDER[:]
+    md = practice_build.markdown()
+    # Разметка заданий - сырой HTML: на время перевода Markdown->HTML он прячется
+    # за метками, иначе экранируется как текст.
+    blocks = []
+
+    def hide(m):
+        blocks.append(m.group(0))
+        return "@@PRACTICE_BLOCK_%d@@" % (len(blocks) - 1)
+
+    md = re.sub(r'<div class="task".*?</details></div>', hide, md, flags=re.S)
+    md = re.sub(r'<div class="callout warn">.*?</div>', hide, md, flags=re.S)
+    md = re.sub(r'<div class="quiz".*?</div>', hide, md, flags=re.S)
+    inner = md_to_html(md, "practice.md", LinkMap(set()), "", Anchorer(), base_level=2)
+    inner = re.sub(r"@@PRACTICE_BLOCK_(\d+)@@", lambda m: blocks[int(m.group(1))], inner)
+    labels = list(CODE_ORDER)
+    ordered = [c["title"] for c in practice_build.load()[0]["chapters_code"]]
+    n = [0]
+
+    def label(m):
+        i = n[0]
+        n[0] += 1
+        lang = labels[i] if i < len(labels) else "text"
+        title = ordered[i] if i < len(ordered) else "код"
+        return '<pre data-lang="%s" data-label="%s">' % (esc(lang), esc(title))
+
+    inner = re.sub(r"<pre>", label, inner)
+    return inner
 
 
 def split_chapters(main):
@@ -480,6 +533,7 @@ PAGE_TPL = """<!DOCTYPE html>
 </footer>
 <script type="application/json" id="page-list">{pages}</script>
 <script type="application/json" id="quiz-data">{quiz}</script>
+<script type="application/json" id="practice-quiz-data">{practice_quiz}</script>
 <script src="{root}assets/app.js" defer></script>
 <script src="{root}assets/code-copy.js" defer></script>
 <script src="{root}assets/tasks.js" defer></script>
@@ -496,7 +550,8 @@ def shell(rel, title, body, pages_json, extra_head="", prev="", next=""):
         title=esc(title), desc=esc(SITE_DESC), site=SITE_TITLE, site_url=SITE_URL,
         canonical=esc(canonical), root=root, body=body, pages=pages_json,
         extra_head=extra_head, prev=prev, next=next,
-        book_epub=EPUB_NAME, quiz=academy_build.quiz_json())
+        book_epub=EPUB_NAME, quiz=academy_build.quiz_json(),
+        practice_quiz=json.dumps(practice_build.questions(), ensure_ascii=False).replace("</", "<\\/"))
 
 
 def write(path, content):
@@ -583,10 +638,11 @@ def build_pages():
     # Те же правки, что и fix_book.py: работают, даже если его не запускали.
     raw = fix_book.fix(raw)[0]
 
-    main = extract_main(raw)
+    main = extract_main(raw, trim_practice=False)
     title = cover_title(raw)
     chapters, cover = split_chapters(main)
     replace_academy_chapters(chapters)
+    add_practice_chapter(chapters)
 
     all_files = lm_files()
     BIG_PDFS[0] = [x[len("materials/"):][:-5] for x in all_files if x.endswith(".pdf.html")]
@@ -660,7 +716,8 @@ ACADEMY_H2_SHORT = '<h2 id="academy"><span class="chapter">Глава 33</span> 
 TASK_SCRIPTS = ('<script src="assets/book-app.js" defer></script>\n'
                 '<script src="assets/code-copy.js" defer></script>\n'
                 '<script src="assets/tasks.js" defer></script>\n'
-                '<script type="application/json" id="quiz-data">%s</script>\n</body>')
+                '<script type="application/json" id="quiz-data">%s</script>\n'
+                '<script type="application/json" id="practice-quiz-data">%s</script>\n</body>')
 
 
 def build_book(raw):
@@ -687,16 +744,28 @@ def build_book(raw):
         if m:
             s = s[:m.start()] + ('<h2 id="%s">Глава не публикуется</h2>\n%s\n'
                                  % (cid, REDACTED_CHAPTER)) + s[m.end():]
-    # Глава по курсам академии в книге на одной странице: разбор по урокам.
-    # В исходнике такой главы может не быть: добавляем блок перед закрытием <main>.
-    m = re.search(r'<h2 id="academy"[^>]*>.*?(?=<h2\\b|</main>)', s, re.S)
-    if not m:
-        m = re.search(r'</main>', s, re.S)
-        s = s[:m.start()] + ACADEMY_H2_SHORT + academy_build.render().strip().replace(ACADEMY_H2_LONG, "") + s[m.start():]
-    if m:
-        ru = academy_build.render().strip().replace(ACADEMY_H2_LONG, "")
-        s = s[:m.start()] + ACADEMY_H2_SHORT + ru + s[m.end():]
-    s = s.replace("</body>", TASK_SCRIPTS % academy_build.quiz_json(), 1)
+    # Главы 33 и 34 офлайн-книги собираются заново: тело из сборщика, а не
+    # короткая версия из исходника. Новая версия идёт вместо старой.
+    body_html = ACADEMY_H2_SHORT + academy_build.render().strip().replace(ACADEMY_H2_LONG, "")
+    for ch in add_practice_chapter(list(split_chapters(extract_main(raw, trim_practice=False))[0])):
+        if ch["id"] == "practice":
+            body_html += ch["html"]
+    # сначала старые копии из исходника, потом новая версия перед </main>.
+    # Главы 33 и 34 собираются заново и идут в конец книги, как на сайте.
+    def cut(s, cid):
+        start = s.find('<h2 id="%s"' % cid)
+        if start < 0:
+            return s
+        end = s.find('<h2', start + 4)
+        if end < 0:
+            end = s.find('</main>', start)
+        if end < 0:
+            end = s.find('<footer', start)
+        return s[:start] + s[end:]
+    for cid in ('academy', 'practice'):
+        s = cut(s, cid)
+    main_end = s.find('</main>')
+    s = s[:main_end] + body_html + s[main_end:]
     write("book.html", s)
 
 
@@ -818,6 +887,7 @@ def mat_shell(rel_dir, title, body, root, crumbs, site_root):
     page = posixpath.join("materials", rel_dir, "index.html") if rel_dir else "materials/index.html"
     return MAT_TPL.format(title=esc(title), site=SITE_TITLE,
                           site_root=site_root, root=root, body=body, crumbs=crumbs)
+
 
 
 def build_materials():
