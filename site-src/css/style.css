@@ -715,7 +715,8 @@ p + ul, p + ol { margin-top: .2rem; }
   box-sizing: border-box;
   /* Ширина панели задаётся скриптом по ширине меню (от «Материалы» до кнопки). */
   width: min(33rem, calc(100vw - 1.25rem));
-  max-height: min(38rem, 82vh);
+  /* Длина - по содержимому, без лишнего пустого места; ограничение только на низкий экран. */
+  max-height: calc(100vh - 6rem);
   overflow: auto;
   overscroll-behavior: contain;
   padding: 1.1rem 1.15rem 1rem;
