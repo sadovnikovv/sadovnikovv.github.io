@@ -31,7 +31,6 @@
     <a href="../materials/index.html">Материалы</a>
     <a href="../about.html">О книге</a>
     <a href="../download/Книга-Claude-Code.epub" download>EPUB</a>
-  </div>
 </header>
 <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
 <aside class="side-toc" id="side-toc" aria-label="Оглавление книги"><div class="side-toc-title"><a href="../index.html">Оглавление</a></div></aside>
@@ -179,5 +178,20 @@
 <script src="../assets/app.js" defer></script>
 <script src="../assets/code-copy.js" defer></script>
 <script src="../assets/tasks.js" defer></script>
+<script>
+document.addEventListener('click', function (e) {
+  document.querySelectorAll('.header-support[open]').forEach(function (d) {
+    if (!d.contains(e.target)) d.open = false;
+  });
+});
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Escape') return;
+  document.querySelectorAll('.header-support[open]').forEach(function (d) {
+    d.open = false;
+    var s = d.querySelector('summary');
+    if (s) s.focus();
+  });
+});
+</script>
 </body>
 </html>

@@ -50,5 +50,19 @@ description: Create a git commit with context</p>
   <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
 </footer>
 <script src="../../../../../assets/code-copy.js" defer></script>
-</body>
+<script>
+document.addEventListener('click', function (e) {
+  document.querySelectorAll('.header-support[open]').forEach(function (d) {
+    if (!d.contains(e.target)) d.open = false;
+  });
+});
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Escape') return;
+  document.querySelectorAll('.header-support[open]').forEach(function (d) {
+    d.open = false;
+    var s = d.querySelector('summary');
+    if (s) s.focus();
+  });
+});
+</script>
 </html>

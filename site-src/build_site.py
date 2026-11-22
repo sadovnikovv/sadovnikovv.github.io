@@ -515,7 +515,6 @@ PAGE_TPL = """<!DOCTYPE html>
     <a href="{root}materials/index.html">Материалы</a>
     <a href="{root}about.html">О книге</a>
     <a href="{root}download/{book_epub}" download>EPUB</a>
-  </div>
 </header>
 <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
 <aside class="side-toc" id="side-toc" aria-label="Оглавление книги"><div class="side-toc-title"><a href="{root}index.html">Оглавление</a></div></aside>
@@ -537,6 +536,21 @@ PAGE_TPL = """<!DOCTYPE html>
 <script src="{root}assets/app.js" defer></script>
 <script src="{root}assets/code-copy.js" defer></script>
 <script src="{root}assets/tasks.js" defer></script>
+<script>
+document.addEventListener('click', function (e) {{
+  document.querySelectorAll('.header-support[open]').forEach(function (d) {{
+    if (!d.contains(e.target)) d.open = false;
+  }});
+}});
+document.addEventListener('keydown', function (e) {{
+  if (e.key !== 'Escape') return;
+  document.querySelectorAll('.header-support[open]').forEach(function (d) {{
+    d.open = false;
+    var s = d.querySelector('summary');
+    if (s) s.focus();
+  }});
+}});
+</script>
 </body>
 </html>
 """
@@ -768,6 +782,24 @@ def build_book(raw):
     s = s[:main_end] + body_html + s[main_end:]
     s = s.replace("</body>", TASK_SCRIPTS % (academy_build.quiz_json(),
                                              json.dumps(practice_build.questions(), ensure_ascii=False).replace("</", "<\\/")), 1)
+    # «Поддержать автора» в шапке книги: кнопка после EPUB.
+    # «Поддержать автора» в шапке книги: кнопка после EPUB.
+    # «Поддержать автора»: в книге на одной странице - кнопка в боковой панели
+    # рядом с настройками чтения (сверху в HTML нет шапки сайта).
+    book_support = ("""
+    <details class="header-support">
+      <summary class="header-support__button">Поддержать автора</summary>
+      <div class="header-support__panel">
+        <p>Книга бесплатна. Поддержка добровольная - сумму выбираете вы.</p>
+        <iframe
+          src="https://yoomoney.ru/quickpay/fundraise/widget?billNumber=1LNFDBQH1ED.261122"
+          title="ЮMoney - поддержать автора книги"
+          loading="lazy"
+        ></iframe>
+      </div>
+    </details>
+    """)
+    s = s.replace('<p class="nav-note">', book_support + '<p class="nav-note">', 1)
     write("book.html", s)
 
 
@@ -809,7 +841,7 @@ HEADERS = r"""/\*
   X-Frame-Options: SAMEORIGIN
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
-  Content-Security-Policy: default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self'; frame-ancestors 'self'
+  Content-Security-Policy: default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self'; frame-src https://yoomoney.ru; frame-ancestors 'self'
   Cache-Control: public, max-age=600
 
 /assets/\*
@@ -859,7 +891,21 @@ MAT_TPL = """<!DOCTYPE html>
   <p>Материалы собраны из открытых источников; права принадлежат их авторам.</p>
 </footer>
 <script src="{root}assets/code-copy.js" defer></script>
-</body>
+<script>
+document.addEventListener('click', function (e) {{
+  document.querySelectorAll('.header-support[open]').forEach(function (d) {{
+    if (!d.contains(e.target)) d.open = false;
+  }});
+}});
+document.addEventListener('keydown', function (e) {{
+  if (e.key !== 'Escape') return;
+  document.querySelectorAll('.header-support[open]').forEach(function (d) {{
+    d.open = false;
+    var s = d.querySelector('summary');
+    if (s) s.focus();
+  }});
+}});
+</script>
 </html>
 """
 
