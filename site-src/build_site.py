@@ -766,6 +766,8 @@ def build_book(raw):
         s = cut(s, cid)
     main_end = s.find('</main>')
     s = s[:main_end] + body_html + s[main_end:]
+    s = s.replace("</body>", TASK_SCRIPTS % (academy_build.quiz_json(),
+                                             json.dumps(practice_build.questions(), ensure_ascii=False).replace("</", "<\\/")), 1)
     write("book.html", s)
 
 
