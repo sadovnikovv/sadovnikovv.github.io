@@ -1,0 +1,131 @@
+<h2\1 data-chapter-id="mcu"><span class="chapter">Глава 16</span> Микроконтроллеры</h2>
+
+<p class="lead-in">Здесь отдача от агента наибольшая: рутины много, проверка автоматизируема, а ошибки видны на сборке и на стенде.</p>
+
+<h3>16.1. Тулчейны</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Платформа</th><th>Инструменты</th><th>Что делает агент</th></tr></thead>
+  <tbody>
+    <tr><td>Arduino (AVR, ESP32, RP2040)</td><td>Arduino CLI, PlatformIO</td><td>Проект, код, сборка, прошивка, монитор</td></tr>
+    <tr><td>ESP32 / ESP8266</td><td>ESP-IDF, PlatformIO</td><td>Компоненты, конфигурация, сборка, логи</td></tr>
+    <tr><td>STM32</td><td>STM32CubeMX, CubeCLT, CMake, OpenOCD, GDB</td><td>Инициализация, HAL/LL, сборка, отладка</td></tr>
+    <tr><td>AVR</td><td>avr-gcc, avrdude</td><td>Код, сборка, прошивка</td></tr>
+    <tr><td>Raspberry Pi Pico</td><td>Pico SDK, CMake</td><td>Код, сборка, прошивка</td></tr>
+    <tr><td>Zephyr</td><td>west, CMake</td><td>Конфигурация, драйверы, сборка</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Ключевое условие: тулчейн должен быть установлен и доступен в <code>PATH</code>. Агент не заменяет компилятор; он им пользуется.</p>
+
+<h3>16.2. PlatformIO: пример полного цикла</h3>
+
+<p>Структура проекта:</p>
+
+<pre><code>thermostat/
+├── platformio.ini
+├── src/
+│   └── main.cpp
+├── include/
+├── test/
+└── docs/</code></pre>
+
+<p><code>platformio.ini</code>:</p>
+
+<pre><code>[env:esp32dev]
+platform = espressif32
+board = esp32dev
+framework = arduino
+monitor_speed = 115200
+build_flags = -Wall -Wextra
+
+[env:native]
+platform = native
+test_framework = unity</code></pre>
+
+<p>Минимальная программа:</p>
+
+<pre><code>#include &lt;Arduino.h&gt;
+
+constexpr uint8_t LED_PIN = 2;
+
+void setup() {
+  pinMode(LED_PIN, OUTPUT);
+  Serial.begin(115200);
+}
+
+void loop() {
+  digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+  Serial.println("tick");
+  delay(1000);
+}</code></pre>
+
+<p>Команды:</p>
+
+<pre><code>pio run                    # сборка
+pio run -t upload          # прошивка
+pio device monitor         # последовательный порт
+pio test -e native         # тесты на компьютере
+pio run -t clean           # очистка</code></pre>
+
+<p>Попросите агента: собрать проект, объяснить ошибки, добавить тест, проверить предупреждения. Он видит вывод команд и может итеративно исправлять.</p>
+
+<h3>16.3. STM32: осторожный цикл</h3>
+
+<ol>
+  <li>Создайте проект в STM32CubeMX: тактирование, выводы, периферия.</li>
+  <li>Сгенерируйте код для CMake или Makefile.</li>
+  <li>Соберите: <code>cmake --build build</code>.</li>
+  <li>Прошейте через OpenOCD или STM32CubeProgrammer.</li>
+  <li>Проверьте на стенде: питание, тактирование, выводы.</li>
+</ol>
+
+<p>Пример прошивки через OpenOCD (файлы конфигурации зависят от платы):</p>
+
+<pre><code>openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c "program build/firmware.elf verify reset exit"</code></pre>
+
+<div class="callout warn">
+  <span class="label">Осторожно</span>
+  <p>Сгенерированный код инициализации нужно сверять с даташитом и платой. Ошибка в тактировании или в состоянии вывода может выглядеть как «прошивка не работает». Проверяйте часы, питание и pinout до того, как винить код.</p>
+</div>
+
+<h3>16.4. Что проверять в прошивке</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Область</th><th>Типичные ошибки</th><th>Проверка</th></tr></thead>
+  <tbody>
+    <tr><td>Тактирование</td><td>Неверная частота, не включён PLL</td><td>Осциллограф/логический анализатор, замер таймера</td></tr>
+    <tr><td>Выводы</td><td>Конфликт функций, неверный режим</td><td>Сверка с pinout, измерение уровней</td></tr>
+    <tr><td>Прерывания</td><td>Гонки, долгие обработчики, забытый флаг</td><td>Код-ревью, трассировка, счётчики</td></tr>
+    <tr><td>Память</td><td>Переполнение буфера, утечка стека</td><td>Статический анализ, карта памяти, канарейки</td></tr>
+    <tr><td>Тайминги</td><td>Блокирующие задержки, джиттер</td><td>Логический анализатор, таймеры</td></tr>
+    <tr><td>Отказы</td><td>Нет watchdog, нет обработки ошибок</td><td>Тест с отключением питания, инъекция ошибок</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>16.5. Пример: драйвер I2C-датчика</h3>
+
+<pre><code>Задача: написать драйвер датчика BME280 для ESP32 (Arduino framework).
+Требования:
+- I2C на SDA=21, SCL=22, 400 кГц;
+- чтение температуры, давления, влажности;
+- проверка presence и кодов ошибок;
+- без блокирующих delay в рабочем цикле;
+- тест на хосте с mock-шиной.
+Выведи: заголовочный файл, реализацию, тест, пример использования.
+Не выдумывай регистры: возьми их из docs/datasheets/BME280.pdf.</code></pre>
+
+<p>После ответа проверьте: адреса регистров, коэффициенты компенсации, порядок чтения, обработку ошибок. Скомпилируйте и измерьте на реальном датчике.</p>
+
+<h3>16.6. Задание 13</h3>
+
+<div class="callout task">
+  <span class="label">Задание</span>
+  <p>Соберите PlatformIO-проект для ESP32: мигание светодиодом и вывод строки в UART. Прошейте, откройте монитор порта. Затем попросите агента добавить кнопку с антидребезгом и объяснить решение. Проверьте на стенде.</p>
+</div>
+
+<!-- ============================================================ -->

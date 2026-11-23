@@ -15,3 +15,9 @@ Sasha_II_TUT/cc.ps1
 # Резервные копии книги (огромные html), если сделаны patch_book.py
 Sasha_II_TUT/*.before-*.html
 site-src/academy/raw/
+# Промежуточные сборки главы 33 и рабочие файлы агентов
+site-src/academy/epub_chapter*.html
+site-src/academy/glava.html
+site-src/academy/lesson_text/
+site-src/academy/media/site/
+site-src/academy/work/

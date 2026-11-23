@@ -7,6 +7,7 @@
 Запуск:
     python build_epub.py
 """
+import importlib.util
 import os
 import re
 import uuid
@@ -28,6 +29,7 @@ KEEP = {
     "figcaption", "a", "b", "strong", "i", "em", "u", "s", "sup", "sub",
     "kbd", "caption", "details", "summary", "span",
 }
+IMAGES = {}
 DROP = {"script", "style", "svg", "noscript", "iframe", "template", "head",
         "nav", "img", "link", "meta", "button", "input", "form", "object"}
 
@@ -55,6 +57,13 @@ class Conv(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         tag = tag.lower()
+        # Схемы Anthropic Academy: путь вида media/<имя>.webp или /assets/academy/<имя>.webp
+        if tag == "img":
+            src = dict(attrs).get("src", "")
+            m = re.match(r"^(?:/assets/academy/|media/)([0-9a-f]+[.]webp)$", src)
+            if m and m.group(1) in IMAGES:
+                self.parts.append(IMAGES[m.group(1)])
+            return
         if tag in DROP:
             if tag not in ("br", "hr", "img", "link", "meta", "input"):
                 self.drop_depth += 1
@@ -181,6 +190,9 @@ pre { font-family: Consolas, "Courier New", monospace; font-size: .9em;
       padding: .7em; white-space: pre-wrap; word-wrap: break-word;
       page-break-inside: avoid; }
 code { font-family: Consolas, "Courier New", monospace; font-size: .95em; }
+.fig-media { text-align: center; margin: 1em 0 .3em; page-break-inside: avoid; }
+.fig-media img { max-width: 100%; height: auto; }
+.fig-src { font-size: .8em; color: #555; text-align: center; margin: 0 0 1.2em; }
 table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: .9em; }
 th, td { border: 1px solid #999; padding: .35em .5em; vertical-align: top; text-align: left; }
 th { background: #eee; }
@@ -218,6 +230,21 @@ def build():
     body = m.group(1) if m else raw
     body = re.sub(r"(?is)<(script|style|svg|head)\b.*?</\1>", "", body)
 
+    # Глава 33 (Anthropic Academy) собирается отдельно из пересказов курсов:
+    # текст, задания и схемы берутся из файла, который готовит site-src/academy_build.py.
+    try:
+        ac_dir = os.path.join(HERE, "..", "site-src")
+        spec = importlib.util.spec_from_file_location("academy_build", os.path.join(ac_dir, "academy_build.py"))
+        ac = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(ac)
+        with open(ac.epub_path(), encoding="utf-8") as af:
+            academy = af.read()
+        body = re.sub(r'<h2 id="academy"[^>]*>.*?(?=<h2\b|</main>)', lambda m: academy, body, count=1, flags=re.S)
+        if 'id="academy"' not in body:
+            body = body.replace("</main>", academy + "</main>", 1)
+    except Exception as e:
+        print("warning: глава Academy в EPUB не добавлена:", e)
+
     book_title, chapters = split_chapters(body)
 
     items = []  # (имя_файла, xhtml)
@@ -233,6 +260,16 @@ def build():
     )
     items.append(("title.xhtml", page("Титул", title_body)))
     toc.append(("Титул", "title.xhtml"))
+
+    # Схемы Anthropic Academy (CC BY-NC-SA 4.0) из сайта: site/assets/academy/.
+    media_items = []
+    media_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "site", "assets", "academy")
+    if os.path.isdir(media_dir):
+        for name in sorted(os.listdir(media_dir)):
+            if name.endswith(".webp"):
+                with open(os.path.join(media_dir, name), "rb") as mf:
+                    media_items.append(("media/" + name, mf.read()))
+                IMAGES[name] = ('<span class="fig-media"><img src="media/{}" alt=""></span>'.format(name))
 
     for i, (ch_title, ch_seg) in enumerate(chapters, 1):
         fname = "ch%03d.xhtml" % i
@@ -260,9 +297,12 @@ def build():
     items.append(("toc.ncx", ncx.format(uid=book_id, title=esc(book_title), points=ncx_points)))
 
     content_files = [(n, d) for n, d in items if n not in ("nav.xhtml", "toc.ncx")]
+    image_manifest = ['<item id="img-%s" href="%s" media-type="image/webp"/>'
+                      % (path.rsplit("/", 1)[1].rsplit(".", 1)[0], path)
+                      for path, _ in media_items]
     manifest = ['<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>',
                 '<item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>',
-                '<item id="css" href="style.css" media-type="text/css"/>']
+                '<item id="css" href="style.css" media-type="text/css"/>'] + image_manifest
     spine = []
     for name, _ in content_files:
         stem = name.rsplit(".", 1)[0]
@@ -307,7 +347,8 @@ def build():
         entries = [("OEBPS/container.xml", None),
                    ("META-INF/container.xml", container),
                    ("OEBPS/content.opf", opf),
-                   ("OEBPS/style.css", STYLE)] + [("OEBPS/" + n, d) for n, d in items]
+                   ("OEBPS/style.css", STYLE)] + [("OEBPS/" + n, d) for n, d in items] + \
+                  [(path if path.startswith("OEBPS/") else "OEBPS/" + path, d) for path, d in media_items]
         for path, data in entries:
             if data is None:
                 continue

@@ -1,0 +1,110 @@
+<h2\1 data-chapter-id="commands"><span class="chapter">Глава 24</span> Команды и флаги</h2>
+
+<p class="lead-in">Краткий справочник. Полные списки - в официальной документации: <code>cli-reference.md</code>, <code>commands.md</code>, <code>interactive-mode.md</code>.</p>
+
+<h3>24.1. Запуск CLI</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Команда</th><th>Что делает</th></tr></thead>
+  <tbody>
+    <tr><td><code>claude</code></td><td>Интерактивная сессия</td></tr>
+    <tr><td><code>claude "запрос"</code></td><td>Сессия с начальным промптом</td></tr>
+    <tr><td><code>claude -p "запрос"</code></td><td>Неинтерактивный режим, ответ в stdout</td></tr>
+    <tr><td><code>claude -c</code></td><td>Продолжить последнюю сессию</td></tr>
+    <tr><td><code>claude -r "имя"</code></td><td>Возобновить сессию по имени или ID</td></tr>
+    <tr><td><code>claude update</code></td><td>Обновить</td></tr>
+    <tr><td><code>claude doctor</code></td><td>Диагностика установки</td></tr>
+    <tr><td><code>claude auth login</code></td><td>Вход в аккаунт Anthropic</td></tr>
+    <tr><td><code>claude auth status</code></td><td>Статус авторизации</td></tr>
+    <tr><td><code>claude mcp</code></td><td>Управление MCP-серверами</td></tr>
+    <tr><td><code>claude plugin</code></td><td>Управление плагинами</td></tr>
+    <tr><td><code>claude agents</code></td><td>Представление фоновых агентов</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>24.2. Полезные флаги</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Флаг</th><th>Назначение</th></tr></thead>
+  <tbody>
+    <tr><td><code>--model</code></td><td>Выбрать модель</td></tr>
+    <tr><td><code>--fallback-model</code></td><td>Цепочка резервных моделей</td></tr>
+    <tr><td><code>--effort</code></td><td>Уровень усилия: low … max</td></tr>
+    <tr><td><code>--permission-mode</code></td><td><code>default</code>, <code>acceptEdits</code>, <code>plan</code>, <code>auto</code>, <code>dontAsk</code>, <code>bypassPermissions</code></td></tr>
+    <tr><td><code>--add-dir</code></td><td>Добавить рабочие каталоги</td></tr>
+    <tr><td><code>--allowedTools</code></td><td>Инструменты без запроса разрешения</td></tr>
+    <tr><td><code>--disallowedTools</code></td><td>Запрещённые инструменты и правила</td></tr>
+    <tr><td><code>--mcp-config</code></td><td>Загрузить MCP-конфигурацию</td></tr>
+    <tr><td><code>--settings</code></td><td>Указать файл настроек</td></tr>
+    <tr><td><code>--max-turns</code></td><td>Ограничить число агентских ходов</td></tr>
+    <tr><td><code>--max-budget-usd</code></td><td>Ограничить бюджет (неинтерактивный режим)</td></tr>
+    <tr><td><code>--output-format</code></td><td>Формат вывода: text, json, stream-json</td></tr>
+    <tr><td><code>--resume</code>, <code>--continue</code></td><td>Возобновить сессию</td></tr>
+    <tr><td><code>--debug</code></td><td>Отладочный вывод</td></tr>
+    <tr><td><code>--ide</code></td><td>Подключиться к IDE</td></tr>
+    <tr><td><code>--name</code></td><td>Имя сессии</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout danger">
+  <span class="label">Опасно</span>
+  <p><code>--dangerously-skip-permissions</code> и <code>--permission-mode bypassPermissions</code> отключают проверки. Только изолированная среда.</p>
+</div>
+
+<h3>24.3. Команды в сессии</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Команда</th><th>Назначение</th></tr></thead>
+  <tbody>
+    <tr><td><code>/help</code></td><td>Справка</td></tr>
+    <tr><td><code>/status</code></td><td>Состояние сессии</td></tr>
+    <tr><td><code>/init</code></td><td>Создать <code>CLAUDE.md</code></td></tr>
+    <tr><td><code>/memory</code></td><td>Редактировать память</td></tr>
+    <tr><td><code>/clear</code></td><td>Очистить диалог</td></tr>
+    <tr><td><code>/compact</code></td><td>Сжать контекст</td></tr>
+    <tr><td><code>/context</code></td><td>Занятость контекста</td></tr>
+    <tr><td><code>/model</code></td><td>Выбор модели</td></tr>
+    <tr><td><code>/permissions</code></td><td>Правила разрешений</td></tr>
+    <tr><td><code>/config</code></td><td>Настройки</td></tr>
+    <tr><td><code>/cost</code>, <code>/usage</code></td><td>Расходы и лимиты</td></tr>
+    <tr><td><code>/doctor</code></td><td>Диагностика</td></tr>
+    <tr><td><code>/mcp</code></td><td>MCP-серверы</td></tr>
+    <tr><td><code>/agents</code></td><td>Субагенты</td></tr>
+    <tr><td><code>/hooks</code></td><td>Hooks</td></tr>
+    <tr><td><code>/skills</code></td><td>Skills</td></tr>
+    <tr><td><code>/plugin</code></td><td>Плагины</td></tr>
+    <tr><td><code>/resume</code></td><td>Возобновить сессию</td></tr>
+    <tr><td><code>/rewind</code></td><td>Откат к точке</td></tr>
+    <tr><td><code>/diff</code></td><td>Изменения</td></tr>
+    <tr><td><code>/review</code></td><td>Код-ревью</td></tr>
+    <tr><td><code>/security-review</code></td><td>Проверка безопасности</td></tr>
+    <tr><td><code>/exit</code></td><td>Выход</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>24.4. Клавиатура</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Клавиши</th><th>Действие</th></tr></thead>
+  <tbody>
+    <tr><td><code>Enter</code></td><td>Отправить</td></tr>
+    <tr><td><code>\</code> + <code>Enter</code>, <code>Ctrl+J</code></td><td>Новая строка</td></tr>
+    <tr><td><code>Esc</code></td><td>Прервать</td></tr>
+    <tr><td><code>Ctrl+C</code></td><td>Отменить ввод</td></tr>
+    <tr><td><code>Ctrl+D</code></td><td>Выйти</td></tr>
+    <tr><td><code>Shift+Tab</code></td><td>Режим разрешений</td></tr>
+    <tr><td><code>Ctrl+R</code></td><td>Поиск по истории</td></tr>
+    <tr><td><code>!</code></td><td>Команда оболочки</td></tr>
+    <tr><td><code>@</code></td><td>Файл в контекст</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============================================================ -->

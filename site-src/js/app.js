@@ -213,17 +213,32 @@
     return main;
   }
 
-  fetchBook(BOOK_URL).then(function (text) {
-    var parsed = new DOMParser().parseFromString(text, 'text/html');
+  // Весь текст книги лежит в book.html - для одной главы это мегабайты
+  // лишнего. build_site.py раскладывает каждую главу отдельным фрагментом
+  // pages/<id>.html; если он есть, берём его и не качаем книгу целиком.
+  var CHUNK_URL = /^pages\//.test(BOOK_URL) ? '../chapters/' + document.body.dataset.chapter + '.html' : null;
 
+  function parseMain(text, chunk) {
+    if (chunk) {
+      var box = document.createElement('div');
+      box.innerHTML = text;
+      var el = box.firstElementChild;
+      if (!el || !/^H2$/.test(el.tagName)) throw new Error('пустой фрагмент главы');
+      var h2 = el.querySelector('h2');
+      if (h2) h2.setAttribute('id', h2.getAttribute('data-chapter-id') || 'glava');
+      return el;
+    }
+    var parsed = new DOMParser().parseFromString(text, 'text/html');
     var cover = parsed.querySelector('.cover h1');
     var coverTitle = document.getElementById('cover-title');
     if (cover && coverTitle && !coverTitle.textContent.trim()) coverTitle.textContent = cover.textContent;
-
     var main = parsed.querySelector('main#content');
     if (!main) throw new Error('в book.html не найден блок <main id="content">');
-    main = prepare(document.adoptNode(main));
+    return main;
+  }
 
+  function finish(main, chunk) {
+    main = prepare(main);
     root.replaceChildren(main);
 
     // Соседние главы: ссылки и prefetch при наведении.
@@ -247,7 +262,18 @@
       if (t) t.scrollIntoView();
     }
     buildSideToc(main);
-  }).catch(function (e) {
-    showError(String(e && e.message ? e.message : e));
-  });
+  }
+
+  function start(text, chunk) {
+    finish(document.adoptNode(parseMain(text, chunk)), chunk);
+  }
+
+  // Сначала фрагмент главы; если его нет (старая сборка), загружаем книгу целиком.
+  var firstLoad = CHUNK_URL && document.body.dataset.chapter
+    ? fetchBook(CHUNK_URL) : Promise.reject(new Error('нет фрагмента'));
+  firstLoad.then(function (text) { start(text, true); })
+    .catch(function () {
+      fetchBook(BOOK_URL).then(function (text) { start(text, false); })
+        .catch(function (e) { showError(String(e && e.message ? e.message : e)); });
+    });
 })();

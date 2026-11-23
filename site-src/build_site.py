@@ -11,6 +11,7 @@
 workflow .github/workflows/pages.yml.
 """
 import os
+import subprocess
 import sys
 
 # Windows без -X utf8 кодирует пути в cp1251: имена с кириллицей при чтении
@@ -112,7 +113,8 @@ FINAL = [set()]   # то же, что LinkMap.files: все адреса мат�
 SKIP_DIRS = {".github", "__pycache__", "node_modules"}
 
 # Файлы сайта, которые нельзя затереть.
-PROTECTED = {"index.html", "pages", "book.html", "404.html", "about.html", "CNAME",
+_PAGE_CHAPTERS = []   # главы страниц сайта: на них строятся фрагменты
+PROTECTED = {"index.html", "pages", "chapters", "book.html", "404.html", "about.html", "CNAME",
              "robots.txt", "sitemap.xml", "download", "materials",
              "CLAUDE.md", "site-src", "ru-materials", "claude-code-handbook-ru",
              "assets", "_headers", ".nojekyll"}
@@ -398,12 +400,23 @@ def cover_title(s):
     return html.unescape(re.sub(r"<[^>]+>", "", m.group(1))).strip() if m else SITE_TITLE
 
 
+def academy_plain():
+    """Глава 33 с абсолютными путями картинок: путь готовит academy_build.py --file."""
+    path = academy_build.epub_path_plain()
+    if not os.path.exists(path):
+        subprocess.run([sys.executable, "-I", "-X", "utf8", os.path.join(HERE, "academy_build.py"), "--file"],
+                       check=True, capture_output=True)
+    with open(path, encoding="utf-8") as f:
+        return f.read()
+
+
 def replace_academy_chapters(chapters):
     """Вместо короткой главы из исходника - разбор курсов академии из academy/ru. Сама книга
     по-прежнему правится в одном HTML; разбор курсов собирается отдельно."""
-    ru = academy_build.render().strip()
-    block = ('<h2 id="academy"><span class="chapter">Глава 33</span> Курсы Anthropic Academy</h2>'
-             '<p>Подробный разбор в главе ниже, по уроку на каждую тему, с заданиями.</p>')
+    ru = academy_plain().strip()
+    # в шаблоне главы убираем только её заголовок, в книге он остаётся
+    ru = ru.replace(academy_build.H2, "", 1).strip()
+    block = ('<h2 id="academy"><span class="chapter">Глава 33</span> Курсы Anthropic Academy</h2>')
     # вставляем прямо в текст главы, заголовок главы уже есть в шаблоне разбора
     ru = ru.replace('<h2 id="academy"><span class="chapter">Глава 33</span> Курсы Anthropic Academy: полный разбор</h2>', "", 1)
     for i, c in enumerate(chapters):
@@ -507,7 +520,7 @@ PAGE_TPL = """<!DOCTYPE html>
 <link rel="stylesheet" href="{root}assets/style.css">
 {extra_head}
 </head>
-<body>
+<body data-chapter="{chapter}">
 <a class="skip-link" href="#book">Перейти к тексту</a>
 <header class="site-header">
   <div class="bar">
@@ -600,7 +613,7 @@ document.addEventListener('keydown', function (e) {{
 """
 
 
-def shell(rel, title, body, pages_json, extra_head="", prev="", next=""):
+def shell(rel, title, body, pages_json, extra_head="", prev="", next="", chapter=""):
     root = "../" * rel.count("/")
     base = "index.html" if rel in ("index.html", "pages/index.html") else posixpath.basename(rel)
     canonical = SITE_URL + "/" + ("" if base == "index.html" else posixpath.dirname(rel) + "/")
@@ -609,7 +622,8 @@ def shell(rel, title, body, pages_json, extra_head="", prev="", next=""):
         canonical=esc(canonical), root=root, body=body, pages=pages_json,
         extra_head=extra_head, prev=prev, next=next,
         book_epub=EPUB_NAME, quiz=academy_build.quiz_json(),
-        practice_quiz=json.dumps(practice_build.questions(), ensure_ascii=False).replace("</", "<\\/"))
+        practice_quiz=json.dumps(practice_build.questions(), ensure_ascii=False).replace("</", "<\\/"),
+        chapter=esc(chapter))
 
 
 def write(path, content):
@@ -685,8 +699,8 @@ def rewrite_links(s, exists=None, big_pdfs=()):
             path = _md_url(path) if not path.endswith("/") else path + "index.html"
             if path.lstrip("/").removeprefix("materials/") in big_pdfs:
                 path += ".html"
-        out = "materials" + path
-        return 'href="/%s%s"' % (urllib.parse.quote(out, safe="/"), ("#" + frag) if sep else "")
+        q = urllib.parse.quote("materials" + path, safe="/")
+        return 'href="/%s%s"' % (q, ("#" + frag) if sep else "")
     return MAT_LINK.sub(fix, s)
 
 
@@ -713,6 +727,7 @@ def build_pages():
             c["short"] = c["title"] = c["title"].split(" ")[0] + " " + c["title"].split(" ")[1] + " (не публикуется)"
     cover = rewrite_links(cover, None, big_set)
 
+    _PAGE_CHAPTERS[:] = chapters
     pages = [{"title": c["title"], "short": c["short"],
               "url": "pages/%s.html" % re.sub(r"[^A-Za-z0-9_-]", "-", c["id"])} for c in chapters]
     # Экранируем "</", чтобы строки с </h2> в заголовках не рвали <script>.
@@ -721,6 +736,7 @@ def build_pages():
     # Отдельные страницы глав.
     for k, c in enumerate(chapters):
         body = ('<section class="chapter">%s</section>' % c["html"])
+
         prev = ""
         nxt = ""
         if k > 0:
@@ -731,7 +747,7 @@ def build_pages():
         head = ('<link rel="alternate" type="text/html" href="%sbook.html#%s">\n'
                 '<meta name="page-index" content="%d">') % (root, esc(c["id"]), k + 1)
         write(pages[k]["url"], shell(pages[k]["url"], "%s - %s" % (c["short"], title),
-                                     body, pages_json, head, prev, nxt))
+                                     body, pages_json, head, prev, nxt, c["id"]))
 
     # Главная.
     toc_items = "".join('<li><a href="%s">%s</a></li>' % (p["url"], esc(p["title"])) for p in pages)
@@ -780,12 +796,38 @@ TASK_SCRIPTS = ('<script src="assets/book-app.js" defer></script>\n'
             '    </body>')
 
 
+def split_fragments(raw):
+    """Фрагменты глав для страниц сайта: chapters/<id>.html.
+
+    Вызывается после build_pages, когда ссылки на крупные PDF уже переведены
+    на страницы-переходы (*.pdf.html). Текст - те же главы, что и на страницах.
+    """
+    dst = os.path.join(OUT, "chapters")
+    os.makedirs(dst, exist_ok=True)
+    for name in os.listdir(dst):
+        if name.endswith(".html"):
+            os.remove(os.path.join(dst, name))
+    for c in _PAGE_CHAPTERS:
+        if c["id"] in PRIVATE:
+            # строже, чем на странице: только заглушка без ссылок
+            html_text = '<h2 id="%s">Глава не публикуется</h2> ' % c["id"] + REDACTED_CHAPTER
+        else:
+            html_text = c["html"]
+        html_text = re.sub(r'<h2([^>]*)>', r'<h2\\1 data-chapter-id="%s">' % esc(c["id"]),
+                           html_text.strip(), count=1)
+        with open(os.path.join(dst, c["id"] + ".html"), "w", encoding="utf-8", newline="\n") as f:
+            f.write(html_text + "\n")
+    print("Фрагменты глав: %d" % len(_PAGE_CHAPTERS))
+    return raw
+
+
 def build_book(raw):
     """book.html - офлайн-издание; подключаем общие стили сайта."""
     head = ('<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">\n'
             '<link rel="stylesheet" href="assets/fonts/fonts.css">\n'
             '<link rel="stylesheet" href="assets/style.css">\n')
     s = raw.replace("</head>", head + "</head>", 1)
+
     s = rewrite_links(s, None, {"materials/" + f for f in BIG_PDFS[0]} | set(BIG_PDFS[0]))
     # Офлайн-файл: ссылки на Markdown оставляем как есть, а не на .html.
     def back(m):
@@ -806,7 +848,7 @@ def build_book(raw):
                                  % (cid, REDACTED_CHAPTER)) + s[m.end():]
     # Главы 33 и 34 офлайн-книги собираются заново: тело из сборщика, а не
     # короткая версия из исходника. Новая версия идёт вместо старой.
-    body_html = ACADEMY_H2_SHORT + academy_build.render().strip().replace(ACADEMY_H2_LONG, "")
+    body_html = ACADEMY_H2_SHORT + academy_plain().strip().replace(ACADEMY_H2_LONG, "")
     for ch in add_practice_chapter(list(split_chapters(extract_main(raw, trim_practice=False))[0])):
         if ch["id"] == "practice":
             body_html += ch["html"]
@@ -1166,6 +1208,15 @@ def main():
     shutil.copy2(os.path.join(HERE, "js", "tasks.js"), os.path.join(assets, "tasks.js"))
     shutil.copy2(os.path.join(HERE, "js", "code-copy.js"), os.path.join(assets, "code-copy.js"))
     shutil.copytree(os.path.join(HERE, "vendor", "fonts"), os.path.join(assets, "fonts"), dirs_exist_ok=True)
+    # Схемы уроков Anthropic Academy (CC BY-NC-SA 4.0): сжатые копии из
+    # academy/media собирает academy_media.py, здесь только раскладка.
+    meta_src = os.path.join(HERE, "academy", "media", "site")
+    if os.path.isdir(meta_src):
+        dst_academy = os.path.join(assets, "academy")
+        if os.path.isdir(dst_academy):
+            shutil.rmtree(dst_academy)
+        shutil.copytree(meta_src, dst_academy,
+                        ignore=shutil.ignore_patterns("*.jpg", "*.png"))
 
     dl = os.path.join(OUT, "download")
     os.makedirs(dl, exist_ok=True)
@@ -1181,6 +1232,7 @@ def main():
     build_pages()
     if not args.no_materials:
         build_materials()
+    split_fragments(None)
     print("Готово:", OUT)
 
 

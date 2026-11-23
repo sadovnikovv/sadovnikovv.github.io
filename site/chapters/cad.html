@@ -1,0 +1,71 @@
+<h2\1 data-chapter-id="cad"><span class="chapter">Глава 18</span> Машиностроение и CAD</h2>
+
+<p class="lead-in">В CAD выигрыш даёт параметризация: агент пишет скрипты, которые строят деталь по размерам, а вы проверяете геометрию и технологичность.</p>
+
+<h3>18.1. Среда и автоматизация</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Среда</th><th>Автоматизация</th><th>Что реально делает агент</th></tr></thead>
+  <tbody>
+    <tr><td>FreeCAD</td><td>Python API, <code>freecadcmd</code>, макросы</td><td>Параметрические детали, экспорт STEP/STL/DXF, расчёты</td></tr>
+    <tr><td>OpenSCAD</td><td>CLI, текстовый язык</td><td>Генерация моделей, экспорт STL</td></tr>
+    <tr><td>Fusion 360</td><td>Python API, аддоны, GUI</td><td>Скрипты и параметры; headless-режим ограничен</td></tr>
+    <tr><td>SolidWorks</td><td>API, макросы, GUI</td><td>Генерация макросов, анализ свойств; требует установленной системы</td></tr>
+    <tr><td>CalculiX / FreeCAD FEM</td><td>CLI, решатель</td><td>Подготовка расчёта, разбор результатов; верификация - за инженером</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>18.2. FreeCAD: деталь по параметрам</h3>
+
+<pre><code>import FreeCAD as App
+import Part
+
+doc = App.newDocument("Bracket")
+
+L, W, T = 80.0, 40.0, 6.0
+d = 4.2  # отверстие под M4
+
+base = Part.makeBox(L, W, T)
+hole1 = Part.makeCylinder(d/2, T, App.Vector(10, 20, 0))
+hole2 = Part.makeCylinder(d/2, T, App.Vector(L-10, 20, 0))
+shape = base.cut(hole1).cut(hole2)
+
+obj = Part.show(shape)
+obj.Label = "Bracket"
+doc.recompute()
+
+Part.export([obj], "bracket.step")
+</code></pre>
+
+<p>Запуск:</p>
+
+<pre><code>freecadcmd bracket.py</code></pre>
+
+<p>Попросите агента: изменить размеры, добавить фаски, проверить массу и объём, экспортировать STL для печати. Но технологичность - литьё, фрезеровка, сварка - проверяйте сами.</p>
+
+<h3>18.3. Что проверять в модели</h3>
+
+<ul>
+  <li><strong>Размеры и допуски.</strong> Соответствие чертежу и стандартам.</li>
+  <li><strong>Сопряжения.</strong> Зазоры, посадки, собираемость.</li>
+  <li><strong>Технологичность.</strong> Радиусы, уклоны, доступ инструмента.</li>
+  <li><strong>Материал и масса.</strong> Плотность, центр масс, инерция.</li>
+  <li><strong>Прочность.</strong> Расчёт или FEA, коэффициенты запаса.</li>
+  <li><strong>Производство.</strong> Формат экспорта, точность, постобработка.</li>
+</ul>
+
+<div class="callout warn">
+  <span class="label">Осторожно</span>
+  <p>ИИ может уверенно «посчитать» прочность по неверной схеме нагружения. Любой расчёт несущих элементов проверяйте независимо: аналитически, в FEA или испытанием.</p>
+</div>
+
+<h3>18.4. Задание 15</h3>
+
+<div class="callout task">
+  <span class="label">Задание</span>
+  <p>Постройте в FreeCAD кронштейн по параметрам: длина 80, ширина 40, толщина 6, два отверстия M4. Экспортируйте STEP и STL. Попросите агента проверить массу при плотности стали 7,85 г/см³ и сравнить с ручным расчётом.</p>
+</div>
+
+<!-- ============================================================ -->

@@ -1,0 +1,114 @@
+<h2\1 data-chapter-id="interface"><span class="chapter">Глава 8</span> Интерфейс и команды</h2>
+
+<p class="lead-in">Claude Code - консольный инструмент. Но управление им ближе к диалогу с помощником, чем к командной строке Unix.</p>
+
+<h3>8.1. Три способа ввода</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Ввод</th><th>Что делает</th><th>Пример</th></tr></thead>
+  <tbody>
+    <tr><td><code>/</code> в начале строки</td><td>Команда или skill</td><td><code>/status</code>, <code>/compact</code></td></tr>
+    <tr><td><code>@</code></td><td>Упоминание файла или каталога</td><td><code>@hardware/power.kicad_sch</code></td></tr>
+    <tr><td><code>!</code> в начале строки</td><td>Выполнить команду оболочки напрямую</td><td><code>!git status</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Обычный текст - это промпт. Если строка начинается с <code>/</code>, <code>@</code> или <code>!</code>, интерпретация меняется. Это важно: случайно начатый слэшем текст будет воспринят как команда.</p>
+
+<h3>8.2. Клавиатура</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Действие</th><th>Клавиши</th><th>Примечание</th></tr></thead>
+  <tbody>
+    <tr><td>Отправить запрос</td><td><code>Enter</code></td><td>-</td></tr>
+    <tr><td>Новая строка без отправки</td><td><code>\</code> + <code>Enter</code></td><td>Работает в любом терминале; также <code>Ctrl+J</code></td></tr>
+    <tr><td>Прервать выполнение</td><td><code>Esc</code></td><td>Останавливает текущее действие</td></tr>
+    <tr><td>Отменить ввод</td><td><code>Ctrl+C</code></td><td>Сбрасывает строку</td></tr>
+    <tr><td>Выйти</td><td><code>Ctrl+D</code></td><td>Или <code>/exit</code></td></tr>
+    <tr><td>Переключить режим разрешений</td><td><code>Shift+Tab</code></td><td>Циклически переключает доступные режимы; порядок зависит от настроек</td></tr>
+    <tr><td>Поиск по истории</td><td><code>Ctrl+R</code></td><td>Обратный поиск</td></tr>
+    <tr><td>Команда оболочки</td><td><code>!</code></td><td>Например, <code>!pio run</code></td></tr>
+    <tr><td>Файл в контекст</td><td><code>@</code></td><td>Автодополнение по файлам</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>8.3. Основные команды</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Команда</th><th>Назначение</th><th>Когда использовать</th></tr></thead>
+  <tbody>
+    <tr><td><code>/help</code></td><td>Справка по командам</td><td>Первый запуск и забытые команды</td></tr>
+    <tr><td><code>/status</code></td><td>Состояние сессии: модель, каталог, авторизация</td><td>Проверка стенда</td></tr>
+    <tr><td><code>/init</code></td><td>Создать или улучшить <code>CLAUDE.md</code></td><td>Начало работы с проектом</td></tr>
+    <tr><td><code>/memory</code></td><td>Редактировать файлы памяти</td><td>Когда нужно закрепить правило</td></tr>
+    <tr><td><code>/clear</code></td><td>Очистить диалог и начать заново</td><td>Смена задачи, переполнение контекста</td></tr>
+    <tr><td><code>/compact</code></td><td>Сжать историю в краткое резюме</td><td>Долгий диалог, не хватает контекста</td></tr>
+    <tr><td><code>/context</code></td><td>Показать, сколько контекста занято</td><td>Диагностика «модель забыла»</td></tr>
+    <tr><td><code>/model</code></td><td>Выбрать модель</td><td>Переключение между быстрой и сильной</td></tr>
+    <tr><td><code>/permissions</code></td><td>Правила разрешений</td><td>Настройка allow/deny</td></tr>
+    <tr><td><code>/config</code></td><td>Настройки</td><td>Тема, редактор, поведение</td></tr>
+    <tr><td><code>/cost</code></td><td>Расходы текущей сессии</td><td>Контроль бюджета</td></tr>
+    <tr><td><code>/usage</code></td><td>Использование и лимиты</td><td>Планы и квоты</td></tr>
+    <tr><td><code>/doctor</code></td><td>Диагностика и исправления</td><td>Проблемы установки</td></tr>
+    <tr><td><code>/mcp</code></td><td>MCP-серверы</td><td>Подключение инструментов</td></tr>
+    <tr><td><code>/agents</code></td><td>Подсказка по субагентам</td><td>Создание и правка агентов</td></tr>
+    <tr><td><code>/hooks</code></td><td>Просмотр hooks</td><td>Автоматизация событий</td></tr>
+    <tr><td><code>/skills</code></td><td>Список skills</td><td>Проверка доступных навыков</td></tr>
+    <tr><td><code>/plugin</code></td><td>Управление плагинами</td><td>Установка наборов</td></tr>
+    <tr><td><code>/resume</code></td><td>Возобновить сессию</td><td>Продолжение работы</td></tr>
+    <tr><td><code>/rewind</code></td><td>Откат к контрольной точке</td><td>Агент ушёл не туда</td></tr>
+    <tr><td><code>/diff</code></td><td>Показать изменения</td><td>Перед коммитом</td></tr>
+    <tr><td><code>/review</code></td><td>Код-ревью</td><td>Проверка изменений</td></tr>
+    <tr><td><code>/security-review</code></td><td>Проверка безопасности</td><td>Перед выпуском</td></tr>
+    <tr><td><code>/vim</code></td><td>Режим редактирования Vim</td><td>Для привычных к Vim</td></tr>
+    <tr><td><code>/terminal-setup</code></td><td>Настройка терминала</td><td>Проблемы с клавишами</td></tr>
+    <tr><td><code>/exit</code></td><td>Выход</td><td>-</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Список команд зависит от версии и платформы. Полный актуальный список - в меню <code>/</code> и в файле <code>commands.md</code> официальной документации.</p>
+
+<h3>8.4. Режим планирования</h3>
+
+<p>Самый полезный режим для инженера - <code>plan</code>. В нём агент читает, анализирует и предлагает план, но не меняет файлы. Это аналог «эскизного проекта»: сначала согласование, потом работа.</p>
+
+<pre><code># Переключение: Shift+Tab до появления «plan mode on»
+# Или запуск сразу в плане:
+claude --permission-mode plan</code></pre>
+
+<p>Порядок работы: план → проверка → выполнение → проверка результата. Для сложных изменений это экономит больше времени, чем кажется.</p>
+
+<h3>8.5. Типичная сессия</h3>
+
+<pre><code>cd C:\Projects\thermostat
+claude
+
+&gt; Изучи проект и составь план: какие файлы отвечают за прошивку,
+  схему и документацию. Ничего не меняй.
+  [агент читает, выдаёт план]
+
+&gt; Хорошо. Теперь проверь, соответствует ли pinout в docs/pinout.md
+  конфигурации в src/main.cpp. Только отчёт, без правок.
+
+&gt; Исправь несоответствия в docs/pinout.md, затем запусти сборку.
+
+&gt; Покажи git diff и объясни изменения.
+
+&gt; Закоммить с сообщением "docs: align pinout with firmware".</code></pre>
+
+<p>Обратите внимание: каждый шаг имеет ясную границу и проверяемый результат. Это гораздо надёжнее, чем один запрос «сделай всё».</p>
+
+<h3>8.6. Задание 6</h3>
+
+<div class="callout task">
+  <span class="label">Задание</span>
+  <p>В песочнице создайте три файла: <code>README.md</code>, <code>main.c</code> и <code>notes.md</code>. Попросите агента в режиме <code>plan</code> предложить, как привести документацию в порядок. Утвердите план, выполните, затем посмотрите <code>/diff</code> и откатите изменения через <code>git checkout</code>. Отработайте полный цикл.</p>
+</div>
+
+<!-- ============================================================ -->

@@ -1,0 +1,97 @@
+<h2\1 data-chapter-id="files-settings"><span class="chapter">Глава 25</span> Переменные, файлы, настройки</h2>
+
+<p class="lead-in">Где что лежит и как это устроено. Инженеру важно знать расположение, чтобы диагностировать и делать резервные копии.</p>
+
+<h3>25.1. Каталоги</h3>
+
+<pre><code>%USERPROFILE%\.claude\
+├── settings.json          # пользовательские настройки
+├── CLAUDE.md              # личная память для всех проектов
+├── agents\                # личные субагенты
+├── skills\                # личные skills
+├── plugins\               # плагины
+├── projects\              # данные сессий
+└── ...
+
+проект\
+├── CLAUDE.md              # память проекта
+├── CLAUDE.local.md        # личная память проекта (в .gitignore)
+├── .mcp.json              # MCP-серверы проекта
+└── .claude\
+    ├── settings.json      # настройки проекта (можно коммитить)
+    ├── settings.local.json# личные переопределения
+    ├── agents\
+    ├── skills\
+    ├── rules\
+    └── hooks\</code></pre>
+
+<h3>25.2. Приоритет настроек</h3>
+
+<p>Настройки применяются слоями. Если значение задано в нескольких местах, побеждает более специфичный слой. Типичный порядок (от высшего к низшему): управляемая политика, аргументы командной строки, локальные настройки проекта, общие настройки проекта, пользовательские настройки.</p>
+
+<h3>25.3. Пример settings.json</h3>
+
+<pre><code>{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "model": "combo/DeepSeek",
+  "permissions": {
+    "defaultMode": "default",
+    "allow": [
+      "Read",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(pio run *)"
+    ],
+    "deny": [
+      "Bash(rm *)",
+      "Bash(Remove-Item *)",
+      "Read(./.env)",
+      "Read(./secrets/**)"
+    ]
+  }
+}</code></pre>
+
+<p>JSON строгий: комментарии и висячие запятые недопустимы. Ошибка в файле приводит к сообщению <code>Settings Error</code> при запуске.</p>
+
+<h3>25.4. Переменные окружения</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Переменная</th><th>Назначение</th></tr></thead>
+  <tbody>
+    <tr><td><code>ANTHROPIC_BASE_URL</code></td><td>Адрес API или шлюза</td></tr>
+    <tr><td><code>ANTHROPIC_AUTH_TOKEN</code></td><td>Ключ Bearer</td></tr>
+    <tr><td><code>ANTHROPIC_API_KEY</code></td><td>Ключ x-api-key</td></tr>
+    <tr><td><code>ANTHROPIC_MODEL</code></td><td>Основная модель</td></tr>
+    <tr><td><code>ANTHROPIC_SMALL_FAST_MODEL</code></td><td>Быстрая модель</td></tr>
+    <tr><td><code>CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY</code></td><td>Список моделей шлюза</td></tr>
+    <tr><td><code>CLAUDE_CODE_MAX_OUTPUT_TOKENS</code></td><td>Лимит вывода</td></tr>
+    <tr><td><code>CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC</code></td><td>Отключить необязательный трафик</td></tr>
+    <tr><td><code>CLAUDE_CODE_AUTO_COMPACT_WINDOW</code></td><td>Порог авто-сжатия</td></tr>
+    <tr><td><code>CLAUDE_CODE_USE_POWERSHELL_TOOL</code></td><td>Инструмент PowerShell</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>25.5. Где хранить ключ</h3>
+
+<p>Вариант без открытого ключа в файле:</p>
+
+<pre><code>[Environment]::SetEnvironmentVariable(
+  "ANTHROPIC_AUTH_TOKEN",
+  "sk-ВАШ_КЛЮЧ",
+  "User"
+)</code></pre>
+
+<p>После этого перезапустите терминал. Переменная будет доступна во всех новых сессиях. Минус: ключ хранится в профиле пользователя; на общей машине это надо учитывать.</p>
+
+<h3>25.6. Резервное копирование</h3>
+
+<ul>
+  <li>Проектные настройки и <code>CLAUDE.md</code> - в git.</li>
+  <li>Личные настройки - в защищённый архив.</li>
+  <li>Ключи - в менеджер секретов, не в архив с исходниками.</li>
+  <li>Перед экспериментами - коммит или копия папки.</li>
+</ul>
+
+<!-- ============================================================ -->

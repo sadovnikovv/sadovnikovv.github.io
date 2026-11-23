@@ -1,0 +1,125 @@
+<h2\1 data-chapter-id="model-landscape"><span class="chapter">Глава 6D</span> Ландшафт моделей 2026</h2>
+
+<p class="lead-in">«Какая модель лучшая?» - неправильный вопрос. Правильный: «какая модель лучше решает мою задачу при моих ограничениях по цене, скорости и приватности».</p>
+
+<h3>6D.1. Семейства и их сильные стороны</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Семейство</th><th>Разработчик</th><th>Сильные стороны</th><th>Ограничения</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Claude</strong></td><td>Anthropic</td><td>Длинный контекст, код, аккуратное следование инструкциям, инструменты</td><td>Закрытые веса; цена выше среднего</td></tr>
+    <tr><td><strong>GPT</strong></td><td>OpenAI</td><td>Широкая экосистема, мультимодальность, инструменты</td><td>Закрытые веса; версии меняются часто</td></tr>
+    <tr><td><strong>Gemini</strong></td><td>Google</td><td>Мультимодальность, длинный контекст, интеграция с Google</td><td>Закрытые веса; доступ зависит от региона</td></tr>
+    <tr><td><strong>DeepSeek</strong></td><td>DeepSeek (Китай)</td><td>Открытые веса, MoE, сильная математика и код, низкая цена</td><td>Юрисдикция данных; цензура; качество зависит от провайдера</td></tr>
+    <tr><td><strong>Llama</strong></td><td>Meta</td><td>Открытые веса, огромная экосистема, локальный запуск</td><td>Лицензия с ограничениями; не всегда лучшая в сложных задачах</td></tr>
+    <tr><td><strong>Qwen</strong></td><td>Alibaba</td><td>Открытые веса, мультиязычность, код, размеры от малых до больших</td><td>Качество зависит от версии; условия лицензий разные</td></tr>
+    <tr><td><strong>Mistral</strong></td><td>Mistral AI</td><td>Эффективные модели, открытые веса у части линейки</td><td>Топовые модели могут быть коммерческими</td></tr>
+    <tr><td><strong>GLM</strong></td><td>Zhipu / Z.AI</td><td>Двуязычность, агентные сценарии, цена</td><td>Меньше экосистема; данные в Китае</td></tr>
+    <tr><td><strong>Kimi</strong></td><td>Moonshot AI</td><td>Длинный контекст, агентные задачи, открытые веса K2</td><td>Зависимость от провайдера</td></tr>
+    <tr><td><strong>Gemma, Phi</strong></td><td>Google, Microsoft</td><td>Малые модели для локального запуска</td><td>Слабее больших на сложных задачах</td></tr>
+    <tr><td><strong>Grok</strong></td><td>xAI</td><td>Быстрые ответы, интеграция с X</td><td>Закрытые веса; специфическая политика</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>6D.2. Снимок каталога OmniRoute</h3>
+
+<p>В вашем экземпляре OmniRoute на 18.11.2026 видны, среди прочего, такие семейства и варианты (точные имена зависят от подключённых провайдеров):</p>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Семейство</th><th>Примеры идентификаторов в каталоге</th></tr></thead>
+  <tbody>
+    <tr><td>Claude</td><td><code>antigravity/claude-opus-5-5-high</code>, <code>claude-sonnet-5-5-high</code>, <code>claude-opus-4-7</code>, <code>claude-sonnet-4-6</code></td></tr>
+    <tr><td>GPT</td><td><code>cxa/gpt-5.5</code>, <code>cxa/gpt-5.6-luna</code>, <code>dva/gpt-5-6-sol-none</code>, <code>cfp/openai/gpt-oss-120b</code></td></tr>
+    <tr><td>Gemini</td><td><code>antigravity/gemini-3.8-flash-high</code>, <code>gemini-3.1-pro-low</code>, <code>gemini-4-argon-high</code></td></tr>
+    <tr><td>DeepSeek</td><td><code>deepseek/deepseek-v4-pro</code>, <code>deepseek-v4-flash</code>, <code>deepseek-flash-none</code>, <code>ds/...</code></td></tr>
+    <tr><td>Qwen</td><td><code>unc/turboderp/Qwen3.8-27B-exl3</code>, <code>cfp/qwen/qwen3-30b-a3b-fp8</code>, <code>qwen2.5-coder-32b-instruct</code></td></tr>
+    <tr><td>Llama</td><td><code>cfp/meta/llama-4-scout-17b-16e-instruct</code>, <code>llama-3.3-70b-instruct-fp8-fast</code></td></tr>
+    <tr><td>Kimi</td><td><code>dva/kimi-k3-high</code>, <code>cfp/moonshotai/kimi-k2.7-code</code></td></tr>
+    <tr><td>GLM</td><td><code>dva/glm-5-3-high</code>, <code>cfp/zai-org/glm-5.2</code>, <code>glm-4.7-flash</code></td></tr>
+    <tr><td>Mistral</td><td><code>cfp/mistralai/mistral-small-3.1-24b-instruct</code>, <code>ddgw/mistral-small-2603</code></td></tr>
+    <tr><td>Grok</td><td><code>dva/grok-4-6-high</code>, <code>grok-4-6-low</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout warn">
+  <span class="label">Осторожно</span>
+  <p>Это снимок каталога, а не официальный рейтинг. Названия могут быть алиасами, прокси-вариантами и зеркалами. Реальное качество зависит от провайдера, квоты и настроек. Проверяйте на своих задачах.</p>
+</div>
+
+<h3>6D.3. Как сравнивают модели</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Бенчмарк</th><th>Что измеряет</th><th>Ограничение</th></tr></thead>
+  <tbody>
+    <tr><td>MMLU / MMLU-Pro</td><td>Общие знания и рассуждения</td><td>Насыщается; возможна утечка данных</td></tr>
+    <tr><td>GPQA</td><td>Научные вопросы уровня эксперта</td><td>Малый набор; чувствителен к формулировке</td></tr>
+    <tr><td>HumanEval / MBPP</td><td>Простые задачи программирования</td><td>Не отражает реальные проекты</td></tr>
+    <tr><td>SWE-bench Verified</td><td>Исправление реальных GitHub-issue</td><td>Дорогой; зависит от агентной обвязки</td></tr>
+    <tr><td>LiveCodeBench</td><td>Свежие задачи по коду</td><td>Быстро устаревает</td></tr>
+    <tr><td>LMArena</td><td>Слепые предпочтения людей</td><td>Стиль может побеждать качество</td></tr>
+    <tr><td>Long-context (NIAH и др.)</td><td>Поиск факта в длинном тексте</td><td>Не равен пониманию длинного документа</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Правильная оценка - <strong>свой набор задач</strong>: 20–50 реальных примеров с эталонными ответами. Прогоняйте на них 2–3 модели и сравнивайте не только правильность, но и стоимость, задержку и удобство проверки.</p>
+
+<h3>6D.4. DeepSeek: что важно знать</h3>
+
+<p>DeepSeek - семейство моделей китайской компании. В каталоге OmniRoute представлены варианты <code>v4-pro</code> и <code>v4-flash</code>, а также <code>deepseek-flash</code>. Это модели с архитектурой MoE: общее число параметров большое, активных на токен - меньше. Они сильны в коде, математике и структурированных ответах, а цена обычно ниже топовых западных моделей.</p>
+
+<p>Суффиксы <code>-none</code>, <code>-low</code>, <code>-high</code>, <code>-max</code> - это <strong>уровни усилия рассуждения</strong> (reasoning effort), которые предоставляет маршрутизация OmniRoute. Они не являются отдельными «моделями» в смысле весов: это варианты одного маршрута с разным бюджетом на внутренние рассуждения.</p>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Вариант</th><th>Смысл</th><th>Когда выбирать</th></tr></thead>
+  <tbody>
+    <tr><td><code>...-none</code></td><td>Без дополнительного бюджета рассуждений; прямой ответ</td><td>Рутина, переименования, форматирование, простые вопросы, высокая нагрузка</td></tr>
+    <tr><td><code>...-low</code></td><td>Небольшой бюджет рассуждений</td><td>Несложные многошаговые задачи</td></tr>
+    <tr><td><code>...-high</code></td><td>Повышенный бюджет</td><td>Код, анализ, поиск ошибок</td></tr>
+    <tr><td><code>...-max</code></td><td>Максимальный бюджет</td><td>Сложная архитектура, редкие ошибки, важные решения</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>6D.5. Преимущества deepseek-flash-none</h3>
+
+<p>В каталоге OmniRoute запись <code>deepseek/deepseek-flash-none</code> указывает на контекст до <strong>1 000 000 токенов</strong>, выход до <strong>384 000 токенов</strong>, поддержку изображений, вызов инструментов и уровни усилия <code>none/low/high/max</code>. Практические плюсы варианта <code>none</code>:</p>
+
+<ul>
+  <li><strong>Минимальная задержка.</strong> Нет длинных внутренних рассуждений - ответ приходит быстрее.</li>
+  <li><strong>Минимальная цена за выход.</strong> Меньше «размышляющих» токенов - ниже счёт.</li>
+  <li><strong>Хорош для массовой рутины:</strong> классификация, извлечение полей, короткие правки, форматирование, простые ответы.</li>
+  <li><strong>Большой контекст.</strong> Можно подать крупный документ или фрагмент кода.</li>
+  <li><strong>Инструменты и зрение.</strong> Подходит для агентных сценариев, где не нужна глубокая логика.</li>
+</ul>
+
+<p><strong>Когда не выбирать:</strong> сложная отладка, проектирование архитектуры, многошаговые доказательства, тонкие компромиссы. Здесь включайте <code>high</code> или <code>max</code>, даже если дороже: стоимость ошибки выше экономии.</p>
+
+<div class="callout">
+  <span class="label">Практика</span>
+  <p>Сделайте два профиля в OmniRoute: «рутина» на <code>deepseek-flash-none</code> и «сложное» на <code>deepseek-v4-pro-high</code>. Переключайтесь по задаче. Это даёт больше экономии, чем попытка всё время работать на одной модели.</p>
+</div>
+
+<h3>6D.6. Как выбирать под инженерную задачу</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Задача</th><th>Что важно</th><th>Рекомендация</th></tr></thead>
+  <tbody>
+    <tr><td>Извлечение параметров из даташита</td><td>Контекст, точность, зрение</td><td>Модель с большим контекстом и поддержкой PDF/изображений; проверка вручную</td></tr>
+    <tr><td>Генерация кода</td><td>Код, инструменты, сборка</td><td>Сильная кодовая модель; локальные тесты</td></tr>
+    <tr><td>Ревью схемы/платы</td><td>Рассуждения, дисциплина</td><td>Модель high/max; отдельный субагент-ревьюер</td></tr>
+    <tr><td>Массовая рутина</td><td>Цена, скорость</td><td><code>flash-none</code> или малая локальная модель</td></tr>
+    <tr><td>Закрытый проект</td><td>Приватность</td><td>Локальная модель или частный шлюз</td></tr>
+    <tr><td>Русский текст</td><td>Язык</td><td>Проверять на своих примерах; не все модели одинаковы</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============================================================ -->

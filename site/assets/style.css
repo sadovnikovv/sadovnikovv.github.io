@@ -443,6 +443,16 @@ img { max-width: 100%; height: auto; }
 .academy-course-block { border-top: 1px solid var(--rule); margin-top: 1.6rem; }
 .academy-lesson h5 { font-family: var(--font-serif); font-size: 1.1rem; margin: 1.3rem 0 .5rem; }
 .academy-lesson h5::before { content: ""; }
+.academy-lesson-src { font-family: var(--font-sans); font-size: .8rem; color: var(--fg-soft); margin: -.2rem 0 .7rem; }
+.academy-points-title { font-family: var(--font-sans); font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-soft); margin: 1rem 0 .3rem; }
+/* Схемы из уроков: компактная плашка по ширине картинки, не на всю колонку */
+.academy-figure { display: block; width: fit-content; max-width: 100%; margin: 1.2rem auto; padding: .6rem .6rem .5rem; border: 1px solid var(--rule); border-radius: 8px; background: var(--card); }
+.academy-figure img { display: block; width: auto; max-width: 100%; height: auto; border-radius: 4px; }
+.academy-figure figcaption { font-family: var(--font-sans); font-size: .82rem; line-height: 1.5; color: var(--fg-soft); margin-top: .5rem; max-width: 44rem; }
+.academy-figure-alt { display: block; color: var(--fg); }
+.academy-figure-src { display: block; margin-top: .25rem; font-size: .76rem; }
+.academy-figure-src a { color: inherit; }
+.academy-overview { font-size: .92rem; }
 
 .task { margin: 1rem 0 1.6rem; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--card); padding: .8rem 1rem; font-family: var(--font-sans); }
 .task.is-done { border-color: var(--accent); box-shadow: inset 4px 0 0 var(--accent); }

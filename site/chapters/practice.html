@@ -1,0 +1,1211 @@
+<h2\1 data-chapter-id="practice"><span class="chapter">Глава 34</span> Практикум: агент в браузере, сбор данных с сайта</h2>
+<p><strong>Практикум.</strong> Разбор рабочего конвейера: браузер с отладочным портом, постраничный сбор выдачи, открытие карточек с разбором структурированных данных страницы, классификация по правилам, отчёт и сводка. Задача примера взята из жизни: найти на доске объявлений снаряжение для водного спорта (кайты) в заданном бюджете, отделив товар от аксессуаров и услуг. Та же схема подходит для даташитов на сайте производителя, каталога компонентов или списка вакансий: меняются адрес, селекторы и правила отбора.</p>
+<h3 id="h">Что умеет такой агент <a class="h-anchor" href="#h" aria-label="Ссылка на раздел">#</a></h3>
+<p>Агент открывает браузер не через API, а так, как это делает человек: страницы грузятся, выдаются куки и сессия, прокручивается выдача, раскрываются свёрнутые описания. Для сайтов без API это единственный рабочий путь. В коде ниже используются четыре механики: отладочный порт браузера, постраничный сбор, открытие карточек и обработка данных в файлах.</p>
+<ul>
+<li>Браузер, запущенный с флагом remote debugging, принимает команды Selenium по адресу 127.0.0.1 на порту 9223.</li>
+<li>Сбор выдачи: переход на страницы, прокрутка, сбор карточек по селекторам, дедупликация по ссылке.</li>
+<li>Открытие карточек: переход на объявление, ожидание, раскрытие описания, чтение видимого текста и структурированного объекта страницы.</li>
+<li>Классификация по правилам: регулярные выражения на заголовки и описания, чтобы отсеять аксессуары и услуги.</li>
+<li>Отчёт и сводка: CSV и Markdown с счётчиками ошибок и полнотой данных, плюс кэш для повторных запусков.</li>
+</ul>
+<h3 id="h-2">Как устроен конвейер <a class="h-anchor" href="#h-2" aria-label="Ссылка на раздел">#</a></h3>
+<p>Один запуск проходит семь шагов, каждый шаг - отдельный файл-модуль. Так части можно запускать и отлаживать поодиночке: сначала собрать список, потом посмотреть, что вышло, и только затем открывать карточки. Это тот же принцип «процесс, а не один огромный промпт» из главы о агентах и рабочих процессах.</p>
+<ul>
+<li>1. start_browser.ps1: закрыть старые окна браузера, запустить его с отладочным портом, дождаться ответа на /json/version.</li>
+<li>2. collect.py: подключиться к браузеру, пройти страницы выдачи, сохранять в JSON и CSV постранично (так можно прервать и продолжить).</li>
+<li>3. enrich.py: открыть карточки кандидатов, собрать описание, цену, дату, параметры, статус; каждая карточка дописывается в кэш.</li>
+<li>4. classify.py: разложить заголовки по «товар», «аксессуар», «услуга», «спорное».</li>
+<li>5. build_outputs.py: разобрать описания в предложения, сформировать итоговый CSV и список на ручную проверку.</li>
+<li>6. summary.py: сводка в Markdown с числами, чтобы видеть полноту сбора.</li>
+<li>7. collect_kites.py: оркестратор, который связывает шаги и передаёт каждому пути.</li>
+</ul>
+<h3 id="h-3">Меры против блокировок и ошибок <a class="h-anchor" href="#h-3" aria-label="Ссылка на раздел">#</a></h3>
+<p>Площадки распознают автоматический доступ. В образце применены четыре меры: естественный темп, проверка страницы на блокировку, повторная загрузка при недогрузе и постраничное сохранение. Ни одна из них не обходит защиту: при появлении капчи скрипт останавливается и сохраняет собранное.</p>
+<ul>
+<li>Паузы: случайные интервалы в несколько секунд между действиями и страницами.</li>
+<li>Прокрутка: окно прокручивается порциями по 400-900 пикселей, как при ручном чтении.</li>
+<li>Проверка блокировки: поиск в тексте страницы слов о капче и ограничении доступа; снимок экрана в файл.</li>
+<li>Повтор загрузки: если карточек меньше 45, страница перезагружается до трёх раз.</li>
+<li>Состояние: выгрузка дописывается после каждой страницы, повторный запуск продолжает с места сбоя.</li>
+</ul>
+<h3 id="h-4">Безопасность данных <a class="h-anchor" href="#h-4" aria-label="Ссылка на раздел">#</a></h3>
+<p>Это главная часть главы. В коде ниже все личные поля удалены, а в образце, из которого он взят, сбор контактов не нужен: автору требовались только товар, цена, дата, описание и параметры.</p>
+<ul>
+<li>Не поставляйте подержанные профили: соберите отдельный профиль для автоматизации, без паролей, истории и личных вкладок.</li>
+<li>Не копируйте в проект cookies, localStorage и профиль браузера: из них можно воспроизвести вашу сессию.</li>
+<li>Не сохраняйте телефоны, почты, ФИО, адреса и ссылки на профили; для отбора они не нужны.</li>
+<li>Папку с выгрузкой и кэшем держите вне git и не отправляйте ИИ-агенту без необходимости: в описах бывают ссылки и контакты.</li>
+<li>Не загружайте такие папки в облачные ИИ и не публикуйте. Если нет уверенности, что файл без личных данных, не отправляйте его целиком, а дайте агенту код и структуру.</li>
+<li>Соблюдайте условия площадки и закон о персональных данных: у товарных объявлений обычно нет персональных данных, но у профилей продавцов есть. Цель - технический сбор, а не база контактов.</li>
+<li>Ограничьте число запросов и объём выгрузки; не предавайте найденные списки третьим лицам.</li>
+</ul>
+<p><div class="callout warn"><span class="label">Перед запуском</span><p>Практикум собран из рабочего примера сбора товаров. Весь код с персональными полями вычищен: в примере нет телефонов, почт, имён, адресов и ссылок на профили. Если ваш сценарий требует таких данных, не собирайте их.</p></div></p>
+<h3 id="h-5">Код программ <a class="h-anchor" href="#h-5" aria-label="Ссылка на раздел">#</a></h3>
+<p>Можно скопировать целиком: у каждого блока вверху кнопка «Копировать» и, для одиночных команд, «Вставить в терминал». Перед запуском замените адрес выдачи и CSS-селекторы карточек на те, что есть на вашей странице.</p>
+<h4 id="h-6">Запуск браузера с отладочным портом <a class="h-anchor" href="#h-6" aria-label="Ссылка на раздел">#</a></h4>
+<p>Закрывает окна завершения (чтобы сохранилась сессия), запускает браузер с отладочным портом и ждёт, пока порт ответит. Порт - только для локальных подключений, адрес 127.0.0.1.</p>
+<pre data-lang="powershell" data-label="Запуск браузера с отладочным портом"><code class="language-powershell">$ErrorActionPreference = &quot;Stop&quot;
+
+$BrowserExe = &quot;C:\Program Files\Opera\opera.exe&quot;
+$Port = 9223
+$StartUrl = &quot;about:blank&quot;
+
+Get-Process opera -ErrorAction SilentlyContinue | ForEach-Object {
+    if ($_.MainWindowHandle -ne 0) { $null = $_.CloseMainWindow() }
+}
+$deadline = (Get-Date).AddSeconds(20)
+while ((Get-Process opera -ErrorAction SilentlyContinue) -and (Get-Date) -lt $deadline) {
+    Start-Sleep -Milliseconds 500
+}
+Get-Process opera -ErrorAction SilentlyContinue | Stop-Process -Force
+Start-Sleep -Seconds 2
+
+Start-Process -FilePath $BrowserExe -ArgumentList @(
+    &quot;--remote-debugging-port=$Port&quot;,
+    &quot;--remote-debugging-address=127.0.0.1&quot;,
+    &quot;--restore-last-session&quot;,
+$StartUrl = &quot;about:blank&quot;
+)
+
+$deadline = (Get-Date).AddSeconds(40)
+while ((Get-Date) -lt $deadline) {
+    try {
+        $r = Invoke-RestMethod -Uri &quot;http://127.0.0.1:$Port/json/version&quot; -TimeoutSec 1
+        Write-Host &quot;[BROWSER] Debuging ready:&quot; $r.Browser
+        return
+    } catch { Start-Sleep -Milliseconds 500 }
+}
+throw &quot;[BROWSER] Порт $Port не поднялся&quot;</code></pre>
+<h4 id="h-7">Сбор выдачи постранично <a class="h-anchor" href="#h-7" aria-label="Ссылка на раздел">#</a></h4>
+<p>Подключение к уже запущенному браузеру через debuggerAddress, сбор карточек по селекторам, паузы, прокрутка, проверка на капчу и постраничное сохранение.</p>
+<pre data-lang="python" data-label="Сбор выдачи постранично"><code class="language-python">import argparse
+import csv
+import json
+import random
+import re
+import sys
+import time
+from pathlib import Path
+
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.common.by import By
+
+HERE = Path(__file__).parent
+DEBUG_ADDR = &quot;127.0.0.1:9223&quot;
+
+OUT_DIR = HERE
+OUT_JSON = HERE / &quot;search.json&quot;
+OUT_CSV = HERE / &quot;search.csv&quot;
+BASE = &quot;https://example.com/search?q=...&amp;p={page}&quot;
+
+def human_sleep(a=1.5, b=3.5):
+    time.sleep(random.uniform(a, b))
+
+def connect():
+    opt = ChromeOptions()
+    opt.add_experimental_option(&quot;debuggerAddress&quot;, DEBUG_ADDR)
+    return webdriver.Chrome(options=opt)
+
+def collect(driver):
+    items = []
+    for card in driver.find_elements(By.CSS_SELECTOR, &#x27;[data-testid=&quot;listing-card&quot;]&#x27;):
+        def text(sel):
+            try:
+                return card.find_element(By.CSS_SELECTOR, sel).text.strip()
+            except Exception:
+                return &quot;&quot;
+
+        title = text(&#x27;[data-testid=&quot;listing-title&quot;]&#x27;)
+        if not title:
+            continue
+        price = text(&#x27;[data-testid=&quot;listing-price&quot;]&#x27;) or text(&#x27;[data-testid=&quot;listing-price&quot;]&#x27;)
+        try:
+            url = card.find_element(By.CSS_SELECTOR, &#x27;[data-testid=&quot;listing-title&quot;]&#x27;).get_attribute(&quot;href&quot;)
+        except Exception:
+            url = &quot;&quot;
+        items.append({
+            &quot;title&quot;: title,
+            &quot;price&quot;: re.sub(r&quot;\s+&quot;, &quot; &quot;, price),
+            &quot;url&quot;: url.split(&quot;?&quot;)[0],
+        })
+    return items
+
+def load_existing():
+    if OUT_JSON.exists():
+        try:
+            data = json.loads(OUT_JSON.read_text(encoding=&quot;utf-8&quot;))
+            return [{k: x.get(k, &quot;&quot;) for k in (&quot;title&quot;, &quot;price&quot;, &quot;url&quot;)} for x in data]
+        except json.JSONDecodeError:
+            pass
+    return []
+
+def save(items):
+    OUT_JSON.write_text(json.dumps(items, ensure_ascii=False, indent=2), encoding=&quot;utf-8&quot;)
+    with open(OUT_CSV, &quot;w&quot;, newline=&quot;&quot;, encoding=&quot;utf-8-sig&quot;) as f:
+        w = csv.DictWriter(f, fieldnames=[&quot;title&quot;, &quot;price&quot;, &quot;url&quot;])
+        w.writeheader()
+        w.writerows(items)
+
+def is_blocked(driver):
+    src = driver.page_source
+    return &quot;Подтвердите, что вы не робот&quot; in src or &quot;Доступ временно ограничен&quot; in src or &quot;firewall&quot; in src.lower()
+
+def main():
+    global OUT_JSON, OUT_CSV, OUT_DIR
+    ap = argparse.ArgumentParser()
+    ap.add_argument(&quot;--from-page&quot;, type=int, default=1)
+    ap.add_argument(&quot;--pages&quot;, type=int, default=23)
+    ap.add_argument(&quot;--out&quot;, default=None, help=&quot;папка для выгрузки; создаётся при необходимости&quot;)
+    ap.add_argument(&quot;--url&quot;, default=None, help=&quot;URL выдачи с фильтрами (без параметра p)&quot;)
+    ap.add_argument(&quot;--json-name&quot;, default=None)
+    ap.add_argument(&quot;--csv-name&quot;, default=None)
+    args = ap.parse_args()
+
+    base = BASE
+    if args.url:
+        base = args.url.split(&quot;&amp;p=&quot;)[0]
+        base = base.replace(&quot;&amp;p={page}&quot;, &quot;&quot;)
+    if args.out:
+        OUT_DIR = Path(args.out)
+        OUT_DIR.mkdir(parents=True, exist_ok=True)
+        OUT_JSON = OUT_DIR / (args.json_name or &quot;search.json&quot;)
+        OUT_CSV = OUT_DIR / (args.csv_name or &quot;search.csv&quot;)
+    sep = &quot;&amp;&quot; if &quot;?&quot; in base else &quot;?&quot;
+    url_tpl = base + sep + &quot;p={page}&quot;
+
+    driver = connect()
+    print(&quot;[BROWSER] Подключено к&quot;, driver.capabilities.get(&quot;browserVersion&quot;))
+
+    items = load_existing()
+    seen = {x[&quot;url&quot;] for x in items}
+    print(f&quot;[RESUME] в файле уже {len(items)} объявлений&quot;)
+
+    status = &quot;ok&quot;
+    for page in range(args.from_page, args.pages + 1):
+        print(f&quot;[NAV] Страница {page}&quot;)
+        page_items = []
+        for attempt in range(3):
+            driver.get(url_tpl.format(page=page))
+            human_sleep(3, 5)
+
+            for _ in range(random.randint(3, 6)):
+                driver.execute_script(f&quot;window.scrollBy(0, {random.randint(400, 900)});&quot;)
+                human_sleep(1.0, 2.5)
+
+            if is_blocked(driver):
+                driver.save_screenshot(str(OUT_DIR / f&quot;blocked_p{page}.png&quot;))
+                status = &quot;blocked&quot;
+                break
+
+            page_items = collect(driver)
+            if len(page_items) &gt;= 45:
+                break
+            print(f&quot;  недогруз ({len(page_items)}), перезагрузка…&quot;)
+            human_sleep(4, 8)
+
+        if status == &quot;blocked&quot;:
+            print(f&quot;[WARN] Блокировка/капча на странице {page}. Сохраняю собранное.&quot;)
+            break
+
+        new = [x for x in page_items if x[&quot;url&quot;] not in seen]
+        for x in new:
+            seen.add(x[&quot;url&quot;])
+        items.extend(new)
+        save(items)
+        print(f&quot;  найдено {len(page_items)}, новых {len(new)}, всего {len(items)}&quot;)
+
+        if not page_items:
+            print(&quot;[INFO] Пустая страница — конец списка.&quot;)
+            break
+        human_sleep(4, 9)
+
+    save(items)
+    print(f&quot;[DONE] status={status}, всего {len(items)} объявлений -&gt; {OUT_JSON.name} / {OUT_CSV.name}&quot;)
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</code></pre>
+<h4 id="h-8">Открытие карточек и разбор данных <a class="h-anchor" href="#h-8" aria-label="Ссылка на раздел">#</a></h4>
+<p>Переход по каждому кандидату, раскрытие описания, чтение структурированного объекта страницы, нормализация даты и статуса, запись в кэш по одной карточке.</p>
+<pre data-lang="python" data-label="Открытие карточек и разбор данных"><code class="language-python">import csv
+import json
+import random
+import re
+import time
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.common.by import By
+
+HERE = Path(__file__).parent
+OUT = HERE / &quot;enriched&quot;
+CACHE = OUT / &quot;page_cache.jsonl&quot;
+CLASSLOG_NAME = &quot;classification.csv&quot;
+MSK = timezone(timedelta(hours=3))
+MONTHS = {m: i for i, m in enumerate(
+    [&quot;января&quot;, &quot;февраля&quot;, &quot;марта&quot;, &quot;апреля&quot;, &quot;мая&quot;, &quot;июня&quot;, &quot;июля&quot;, &quot;августа&quot;, &quot;сентября&quot;, &quot;октября&quot;, &quot;ноября&quot;, &quot;декабря&quot;], 1)}
+
+def connect():
+    o = ChromeOptions()
+    o.add_experimental_option(&quot;debuggerAddress&quot;, &quot;127.0.0.1:9223&quot;)
+    o.page_load_strategy = &quot;eager&quot;  # не ждать все ресурсы: страница иначе может зависнуть
+    drv = webdriver.Chrome(options=o)
+    drv.set_page_load_timeout(40)
+    drv.implicitly_wait(5)
+    return drv
+
+def html_to_text(h):
+    if not h:
+        return &quot;&quot;
+    t = h.replace(&quot;\r\n&quot;, &quot;\n&quot;)
+    t = re.sub(r&quot;&lt;br\s*/?&gt;&quot;, &quot;\n&quot;, t, flags=re.I)
+    t = re.sub(r&quot;&lt;/p&gt;\s*&lt;p[^&gt;]*&gt;&quot;, &quot;\n\n&quot;, t, flags=re.I)
+    t = re.sub(r&quot;&lt;[^&gt;]+&gt;&quot;, &quot;&quot;, t)
+    import html as H
+    t = H.unescape(t)
+    t = t.replace(&quot;\xa0&quot;, &quot; &quot;)
+
+    t = t.replace(&quot;\r\n&quot;, &quot;\n&quot;).replace(&quot;\r&quot;, &quot;\n&quot;)
+    t = re.sub(r&quot;[\x00-\x08\x0b\x0c\x0e-\x1f\x7f  ]&quot;, &quot;&quot;, t)
+    return t.strip()
+
+def parse_date(raw, finish_ts, fetched_at):
+    if not raw:
+        return None, None, None
+    now = datetime.fromisoformat(fetched_at)
+    s = raw.strip().lower()
+    m = re.match(r&quot;(\d{1,2})\s+([а-яё]+)\s+в\s+(\d{1,2}):(\d{2})&quot;, s)
+    if m and m.group(2) in MONTHS:
+        day, mon, hh, mm = int(m.group(1)), MONTHS[m.group(2)], int(m.group(3)), int(m.group(4))
+        year = now.year
+        try:
+            dt = datetime(year, mon, day, hh, mm, tzinfo=MSK)
+
+            if dt &gt; now + timedelta(days=1):
+                dt = dt.replace(year=year - 1)
+            return raw, dt.isoformat(), &quot;seen_text&quot;
+        except ValueError:
+            pass
+    m = re.match(r&quot;(сегодня|вчера)\s+в\s+(\d{1,2}):(\d{2})&quot;, s)
+    if m:
+        d = now.date() - timedelta(days=1 if m.group(1) == &quot;вчера&quot; else 0)
+        try:
+            return raw, datetime(d.year, d.month, d.day, int(m.group(2)), int(m.group(3)), tzinfo=MSK).isoformat(), &quot;relative_to_fetch&quot;
+        except ValueError:
+            pass
+    if finish_ts:
+        try:
+            return raw, datetime.fromtimestamp(finish_ts, MSK).isoformat(), &quot;finish_time_unix&quot;
+        except (ValueError, OSError, OverflowError):
+            pass
+    return raw, None, None
+
+def extract(driver, cand, fetched_at):
+    url = cand[&quot;url&quot;]
+    rec = {
+        &quot;item_id&quot;: cand[&quot;item_id&quot;], &quot;url&quot;: url,
+        &quot;title_original&quot;: cand[&quot;title&quot;], &quot;price_original&quot;: cand[&quot;price&quot;],
+        &quot;fetched_at&quot;: fetched_at, &quot;fetch_status&quot;: None, &quot;fetch_error&quot;: None,
+        &quot;page_title&quot;: None, &quot;title_live&quot;: None, &quot;price_live_raw&quot;: None, &quot;price_live_rub&quot;: None,
+        &quot;description_raw&quot;: None, &quot;listing_text_raw&quot;: None,
+        &quot;published_at_raw&quot;: None, &quot;published_at_iso&quot;: None, &quot;published_at_basis&quot;: None,
+        &quot;updated_at_raw&quot;: None,
+        &quot;seller_is_company&quot;: None, &quot;listing_status&quot;: None,
+        &quot;params&quot;: None, &quot;item_flags&quot;: None, &quot;is_bot_session&quot;: None,
+    }
+    data = driver.execute_script(&quot;return window.__pageData || null&quot;)
+    if not data:
+        body = driver.find_element(By.TAG_NAME, &quot;body&quot;).text
+        rec[&quot;fetch_status&quot;] = &quot;unavailable&quot;
+        rec[&quot;fetch_error&quot;] = &quot;нет данных объявления на странице&quot;
+        rec[&quot;page_title&quot;] = driver.title
+        rec[&quot;listing_status&quot;] = &quot;closed&quot; if &quot;Объявление закрыто&quot; in body else &quot;unknown&quot;
+        return rec
+
+    rec[&quot;is_bot_session&quot;] = data[&quot;loaderData&quot;].get(&quot;listing-page&quot;, {}).get(&quot;isBot&quot;)
+    try:
+        bi = data[&quot;loaderData&quot;][&quot;listing-page&quot;][&quot;listing&quot;]
+        item = bi[&quot;item&quot;]
+    except (KeyError, TypeError):
+        rec[&quot;fetch_status&quot;] = &quot;error&quot;
+        rec[&quot;fetch_error&quot;] = &quot;нет listing в данных&quot;
+        return rec
+
+    rec[&quot;page_title&quot;] = driver.title
+    rec[&quot;title_live&quot;] = item.get(&quot;title&quot;)
+    fp = item.get(&quot;formattedPrice&quot;) or {}
+    rec[&quot;price_live_raw&quot;] = fp.get(&quot;formatedString&quot;, &quot;&quot;).replace(&quot;\xa0&quot;, &quot; &quot;) or None
+    rec[&quot;price_live_rub&quot;] = item.get(&quot;price&quot;)
+    rec[&quot;description_raw&quot;] = html_to_text(item.get(&quot;descriptionHtml&quot;) or item.get(&quot;description&quot;))
+    raw_date = item.get(&quot;sortFormatedDate&quot;)
+    rec[&quot;published_at_raw&quot;], rec[&quot;published_at_iso&quot;], rec[&quot;published_at_basis&quot;] = parse_date(
+        raw_date, item.get(&quot;finishTime&quot;), fetched_at)
+
+    expanded = False
+    for _ in range(2):
+        try:
+            btn = None
+            for e in driver.find_elements(By.XPATH, &quot;//*[contains(text(),&#x27;Читать полностью&#x27;) or contains(text(),&#x27;Читать далее&#x27;)]&quot;):
+                if e.is_displayed():
+                    btn = e
+            if not btn:
+                break
+            driver.execute_script(&quot;arguments[0].scrollIntoView({block:&#x27;center&#x27;});&quot;, btn)
+            time.sleep(0.5)
+            btn.click()
+            expanded = True
+            time.sleep(1.5)
+        except Exception:
+            break
+    rec[&quot;description_expanded&quot;] = expanded
+
+    try:
+        body = driver.find_element(By.TAG_NAME, &quot;body&quot;).text
+        s = body.find(&quot;Описание&quot;)
+        t = body.find(&quot;Местоположение&quot;)
+        dom_desc = body[s + len(&quot;Описание&quot;):t].strip() if s != -1 and t &gt; s else None
+    except Exception:
+        dom_desc = None
+    if dom_desc and len(dom_desc) &gt; len(rec[&quot;description_raw&quot;] or &quot;&quot;):
+        rec[&quot;description_raw&quot;] = dom_desc
+
+    try:
+        body = driver.find_element(By.TAG_NAME, &quot;body&quot;).text
+        title_live = rec[&quot;title_live&quot;] or rec[&quot;title_original&quot;]
+        start = body.find(title_live)
+        end = body.find(&quot;Рекомендации&quot;, start)
+        listing_text = body[start:end if end != -1 else len(body)].strip()
+    except Exception:
+        listing_text = None
+    rec[&quot;listing_text_raw&quot;] = listing_text
+
+    s = item.get(&quot;seller&quot;) or bi.get(&quot;seller&quot;) or {}
+    rec[&quot;seller_is_company&quot;] = s.get(&quot;isCompany&quot;)
+
+    rec[&quot;params&quot;] = {p.get(&quot;title&quot;): p.get(&quot;description&quot;) for p in (bi.get(&quot;paramsBlock&quot;) or {}).get(&quot;items&quot;, [])}
+    rec[&quot;item_flags&quot;] = {k: item.get(k) for k in (
+        &quot;isActive&quot;, &quot;isClosed&quot;, &quot;isArchived&quot;, &quot;isDeleted&quot;, &quot;isBlocked&quot;, &quot;isExpired&quot;, &quot;isFinished&quot;,
+        &quot;isInModeration&quot;, &quot;isRejected&quot;, &quot;statusId&quot;)}
+    flags = rec[&quot;item_flags&quot;]
+    if flags[&quot;isActive&quot;] and not (flags[&quot;isClosed&quot;] or flags[&quot;isArchived&quot;] or flags[&quot;isDeleted&quot;] or flags[&quot;isBlocked&quot;]):
+        rec[&quot;listing_status&quot;] = &quot;active&quot;
+    elif flags[&quot;isBlocked&quot;]:
+        rec[&quot;listing_status&quot;] = &quot;blocked&quot;
+    elif flags[&quot;isDeleted&quot;]:
+        rec[&quot;listing_status&quot;] = &quot;deleted&quot;
+    elif flags[&quot;isArchived&quot;]:
+        rec[&quot;listing_status&quot;] = &quot;archived&quot;
+    elif flags[&quot;isClosed&quot;] or flags[&quot;isFinished&quot;]:
+        rec[&quot;listing_status&quot;] = &quot;closed&quot;
+    else:
+        rec[&quot;listing_status&quot;] = &quot;unknown&quot;
+
+    if rec[&quot;description_raw&quot;] is None and not rec[&quot;title_live&quot;]:
+        rec[&quot;fetch_status&quot;] = &quot;partial&quot;
+    else:
+        rec[&quot;fetch_status&quot;] = &quot;ok&quot;
+    return rec
+
+def main():
+    OUT.mkdir(exist_ok=True)
+    cands = [r for r in csv.DictReader(open(OUT / CLASSLOG_NAME, encoding=&quot;utf-8-sig&quot;))
+             if r[&quot;decision&quot;] == &quot;yes&quot;]
+    done = set()
+    if CACHE.exists():
+        for line in CACHE.read_text(encoding=&quot;utf-8&quot;).splitlines():
+            if line.strip():
+                done.add(json.loads(line)[&quot;item_id&quot;])
+    todo = [c for c in cands if c[&quot;item_id&quot;] not in done]
+    print(f&quot;кандидатов: {len(cands)}, уже обработано: {len(done)}, осталось: {len(todo)}&quot;)
+
+    driver = connect()
+    with open(CACHE, &quot;a&quot;, encoding=&quot;utf-8&quot;) as f:
+        for i, c in enumerate(todo, 1):
+            fetched_at = datetime.now(MSK).replace(microsecond=0).isoformat()
+            try:
+                try:
+                    driver.get(c[&quot;url&quot;])
+                except Exception:
+                    driver.execute_script(&quot;window.stop();&quot;)
+                time.sleep(random.uniform(2.5, 4.0))
+                for _ in range(random.randint(1, 3)):
+                    driver.execute_script(f&quot;window.scrollBy(0, {random.randint(500, 900)});&quot;)
+                    time.sleep(random.uniform(0.6, 1.4))
+                rec = extract(driver, c, fetched_at)
+            except Exception as e:
+                rec = {&quot;item_id&quot;: c[&quot;item_id&quot;], &quot;url&quot;: c[&quot;url&quot;], &quot;title_original&quot;: c[&quot;title&quot;],
+                       &quot;price_original&quot;: c[&quot;price&quot;], &quot;fetched_at&quot;: fetched_at,
+                       &quot;fetch_status&quot;: &quot;error&quot;, &quot;fetch_error&quot;: f&quot;{type(e).__name__}: {e}&quot;[:300]}
+            line = json.dumps(rec, ensure_ascii=False)
+
+            line = line.replace(&quot;\r&quot;, &quot;\\r&quot;).replace(&quot;\n&quot;, &quot;\\n&quot;)
+            f.write(line + &quot;\n&quot;)
+            f.flush()
+            if i % 10 == 0 or i == len(todo):
+                print(f&quot;  {i}/{len(todo)} | {rec[&#x27;fetch_status&#x27;]} | {c[&#x27;title&#x27;][:50]}&quot;, flush=True)
+            time.sleep(random.uniform(1.5, 3.5))
+    print(&quot;готово&quot;)
+
+if __name__ == &quot;__main__&quot;:
+    main()</code></pre>
+<h4 id="h-9">Классификация по правилам <a class="h-anchor" href="#h-9" aria-label="Ссылка на раздел">#</a></h4>
+<p>Правила на регулярных выражениях: отсекаются услуги, аренда, сопутствующие товары и запчасти. Спорные случаи получают метку «unclear» и попадают в ручную проверку.</p>
+<pre data-lang="python" data-label="Классификация по правилам"><code class="language-python">import csv
+import json
+import re
+import unicodedata
+from pathlib import Path
+
+HERE = Path(__file__).parent
+OUT = HERE / &quot;enriched&quot;
+CLASSLOG_NAME = &quot;classification.csv&quot;
+INPUT_DIR = HERE  # откуда читать исходную выгрузку
+INPUT_JSON = None  # явный путь к JSON выгрузки
+INPUT_CSV = None   # явный путь к CSV выгрузки
+PRICE_LIMIT = 60000
+
+KITE = r&quot;(кайт|кеит|\bкite|kite|купол|kitesurf)&quot;
+BAR = r&quot;(планк|capmк|\bbar\b|\bбар\b)&quot;
+HAS_KITE = re.compile(KITE)
+
+SERVICE = re.compile(r&quot;(куплю|заберу|ищу\b|аренд|прокат|обуч|школ|курс|урок|инструкт|сервис\b|пошив)&quot;)
+WING_ONLY = re.compile(r&quot;вингфойл|(\bвинг\b|\bwing\b|крыло для винг)|(^|\s)o?zone\s+(fusion|liteforce)&quot;)
+FOIL_ONLY = re.compile(r&quot;гидрофойл|\bфойл|\bfoil\b|мачта|фюзеляж|стабилизатор&quot;)
+
+ACCESSORY_LEAD = re.compile(
+    r&quot;^(лиш\w*|лишь|лишsh|leash|насос|электронасос|электро\s*насос|ремкомплект|запчаст|запасн|шкотик|&quot;
+    r&quot;патч|стопор|стропо|строп\b|ст[c]?роп|парус\b|&quot;
+    r&quot;планк\w*|унiversal|универсальн\w* кайт планк|&quot;
+    r&quot;тра[\w ]{0,15}трапец\w*|та[\w ]{0,15}трапец&quot;
+    r&quot;)&quot;
+)
+ACCESSORY_ANY = re.compile(
+    r&quot;(стопор|рип-?стоп|ремкомплект|комплект для ремонта|ремонт\b|патч|&quot;
+    r&quot;насос|клапан|баллон|чехол|гольф.?бэг|геарбэг|gear\s*bag|gear\s*bag|&quot;
+    r&quot;доск|борд|board|гидрофойл|фойл|\bfoil\b|мачта|фюзеляж|&quot;
+    r&quot;ручка для|падс|петл|крюк|шлем|перчат|ботин|обувь|шорт|плавк|трус|&quot;
+    r&quot;ремень|ханес|harness|мешок|сумк|рюкзак|&quot;
+    r&quot;строп|шнур|планк|\bbar\b|баpa|&quot;
+    r&quot;трапец|&quot;
+    r&quot;камера|блю|пиропатрон|система безопасности|&quot;
+    r&quot;snow|снежн|параплан|парус)&quot;
+)
+
+BUNDLE_PHRASE = re.compile(
+    r&quot;(кайт\w*[^,]{0,25}(с|и|\+)[^,]{0,20}(планк|бар|насос|трапец|р[юу]кзак|борд|доск)|&quot;
+    r&quot;(планк|бар)\w*[^,]{0,15}(и|с|\+)[^,]{0,15}кайт)&quot;
+)
+TRAINER = re.compile(r&quot;пилотажн|trainer|трене?р|учебн|детск|воздушн\w* змей|змей\b|карманн&quot;)
+
+BRANDS = re.compile(
+    r&quot;duotone|дуотон|north|\bcore\b|\bроге|кайт\w* (xr|gts|nexus|sensor|air)|cabrinha|кабринь?а|&quot;
+    r&quot;eleveight|f-?one|\bfone\b|ozone|airush|naish|slingshot|sling\s*shot|peter lynn|flysurfer|&quot;
+    r&quot;\breed|reedin|gong|pansh|paradox|\bredd|harlem|rrd|takoon|crazy\s*fly|crazyfly|&quot;
+    r&quot;bandit|vegas|dice|rally|rebel|evo\b|neo\b|switchblade|fx\b|drifter|rally|apollo|&quot;
+    r&quot;paraa?avis|параа?вис|атман|atman|gvx|xtazy|спирит|phoenix|soul\b|sonic|chrono|&quot;
+    r&quot;paraavis|моторн|m\s*²|м2\b|\bм\s*\d|&quot;
+    r&quot;\b\d{1,2}(\.\d)?\s*м\b|\b\d{1,2}\s*m\b&quot;
+)
+
+def norm(t):
+    t = unicodedata.normalize(&quot;NFKC&quot;, t).lower().replace(&quot;\xa0&quot;, &quot; &quot;)
+
+    t = t.replace(&quot;о&quot;, &quot;о&quot;).replace(&quot;i&quot;, &quot;i&quot;)
+    return re.sub(r&quot;\s+&quot;, &quot; &quot;, t).strip()
+
+def describe_accessory(t):
+    m = ACCESSORY_ANY.search(t) or ACCESSORY_LEAD.search(t)
+    return m.group(1) if m else &quot;?&quot;
+
+def classify_title(title):
+    t = norm(title)
+    has_kite = bool(HAS_KITE.search(t))
+    has_bar = bool(re.search(BAR, t))
+
+    if SERVICE.search(t):
+        return &quot;other&quot;, &quot;услуга/куплю/аренда/обучение&quot;, &quot;not_a_kite&quot;
+    if WING_ONLY.search(t) and not has_kite:
+        return &quot;other&quot;, &quot;винг/крыло для вингфойла&quot;, &quot;not_a_kite&quot;
+    if FOIL_ONLY.search(t) and not has_kite:
+        return &quot;other&quot;, &quot;гидрофойл/детали фойла&quot;, &quot;not_a_kite&quot;
+
+    if not re.match(r&quot;(кайт|планк|кайтс)&quot;, t):
+        m = ACCESSORY_LEAD.match(t)
+        if m:
+            lead = m.group(1)
+            if re.search(r&quot;(планк|бар|лиш|трапец|насос|стопор|ремкомплект|запчаст|строп)&quot;, lead):
+                return &quot;other&quot;, f&quot;аксессуар в начале: {lead}&quot;, &quot;not_a_kite&quot;
+
+    if BUNDLE_PHRASE.search(t):
+        return &quot;kite&quot;, &quot;кайт в комплекте с аксессуаром&quot;, &quot;kite_bundle&quot;
+
+    if re.match(r&quot;(кайт|кайты|кайтс)&quot;, t):
+        acc = ACCESSORY_ANY.search(t)
+        if acc and re.search(r&quot;(планк|бар|насос|рюкзак|bag|борд|доск|трапец|строп)&quot;, acc.group(1)):
+            return &quot;kite&quot;, f&quot;кайт + {acc.group(1)} в комплекте&quot;, &quot;kite_bundle&quot;
+        return &quot;kite&quot;, &quot;кайт по заголовку&quot;, &quot;kite&quot;
+
+    acc = ACCESSORY_ANY.search(t)
+    if acc:
+
+        if re.search(r&quot;pad|падс|чехол|bag|ботин|крюк|стреп&quot;, acc.group(1)) and BRANDS.search(t):
+            return &quot;unclear&quot;, f&quot;название модели с аксессуаром ({acc.group(1)})&quot;, &quot;uncertain&quot;
+        if re.search(r&quot;фойл&quot;, acc.group(1)) and re.search(r&quot;парафойл&quot;, t):
+            acc = re.search(r&quot;(фойл)&quot;, t[re.search(r&quot;парафойл&quot;, t).end():]) or acc
+        return &quot;other&quot;, f&quot;аксессуар/запчасть: {acc.group(1)}&quot;, &quot;not_a_kite&quot;
+
+    if not has_kite:
+        if BRANDS.search(t):
+            return &quot;unclear&quot;, &quot;голое название модели/бренда&quot;, &quot;uncertain&quot;
+        return &quot;other&quot;, &quot;нет признака кайта в заголовке&quot;, &quot;not_a_kite&quot;
+
+    if TRAINER.search(t):
+        return &quot;kite&quot;, &quot;кайт (возможно учебный/пилотажный/воздушный змей)&quot;, &quot;uncertain&quot;
+
+    if re.search(r&quot;(кайт\w*\s*(и|,|\+)\s*\w+|\bкайты\b|компл|набор|парафойл|\d\s*(м|m)\b.*(и|,|\+))&quot;, t):
+        return &quot;kite&quot;, &quot;кайт/комплект/несколько кайтов&quot;, &quot;kite_bundle&quot;
+    return &quot;kite&quot;, &quot;кайт по заголовку&quot;, &quot;kite&quot;
+
+def norm_url(url):
+    return url.split(&quot;?&quot;)[0].rstrip(&quot;/&quot;)
+
+def item_id(url):
+    m = re.search(r&quot;_(\d{5,})(?:/)?$&quot;, norm_url(url))
+    return m.group(1) if m else None
+
+def load_inputs():
+    src = []
+    for r in json.loads((INPUT_JSON or INPUT_DIR / &quot;search.json&quot;).read_text(encoding=&quot;utf-8&quot;)):
+        src.append({&quot;source&quot;: &quot;json&quot;, &quot;title&quot;: r.get(&quot;title&quot;, &quot;&quot;), &quot;price&quot;: r.get(&quot;price&quot;, &quot;&quot;), &quot;url&quot;: r.get(&quot;url&quot;, &quot;&quot;)})
+    with open(INPUT_CSV or INPUT_DIR / &quot;search.csv&quot;, encoding=&quot;utf-8-sig&quot;) as f:
+        for r in csv.DictReader(f):
+            src.append({&quot;source&quot;: &quot;csv&quot;, &quot;title&quot;: r.get(&quot;title&quot;, &quot;&quot;), &quot;price&quot;: r.get(&quot;price&quot;, &quot;&quot;), &quot;url&quot;: r.get(&quot;url&quot;, &quot;&quot;)})
+    seen, uniq, dups = set(), [], 0
+    for r in src:
+        aid = item_id(r[&quot;url&quot;])
+        key = f&quot;id:{aid}&quot; if aid else f&quot;url:{norm_url(r[&#x27;url&#x27;])}&quot;
+        if key in seen:
+            dups += 1
+            continue
+        seen.add(key)
+        r.update(item_id=aid, key=key)
+        uniq.append(r)
+    return src, uniq, dups
+
+def parse_price(p):
+    digits = re.sub(r&quot;\D&quot;, &quot;&quot;, p or &quot;&quot;)
+    return int(digits) if digits else None
+
+def main():
+    OUT.mkdir(exist_ok=True)
+    src, uniq, dups = load_inputs()
+    for r in uniq:
+        cls, why, hint = classify_title(r[&quot;title&quot;])
+        price = parse_price(r[&quot;price&quot;])
+        r.update(title_class=cls, class_reason=why, equipment_hint=hint, price_rub=price)
+        if cls == &quot;other&quot;:
+            r[&quot;decision&quot;], r[&quot;decision_reason&quot;] = &quot;no&quot;, &quot;исключено по заголовку: &quot; + why
+        elif price is not None and price &gt; PRICE_LIMIT:
+            r[&quot;decision&quot;], r[&quot;decision_reason&quot;] = &quot;no&quot;, f&quot;цена {price} &gt; {PRICE_LIMIT}&quot;
+        else:
+            r[&quot;decision&quot;], r[&quot;decision_reason&quot;] = &quot;yes&quot;, &quot;кандидат: &quot; + why
+
+    with open(OUT / CLASSLOG_NAME, &quot;w&quot;, newline=&quot;&quot;, encoding=&quot;utf-8-sig&quot;) as f:
+        fields = [&quot;item_id&quot;, &quot;title&quot;, &quot;price&quot;, &quot;url&quot;, &quot;source&quot;, &quot;title_class&quot;, &quot;class_reason&quot;,
+                  &quot;equipment_hint&quot;, &quot;price_rub&quot;, &quot;decision&quot;, &quot;decision_reason&quot;]
+        w = csv.DictWriter(f, fieldnames=fields)
+        w.writeheader()
+        for r in uniq:
+            w.writerow({k: r[k] for k in fields})
+
+    from collections import Counter
+    print(f&quot;input rows: {len(src)}, unique: {len(uniq)}, duplicates removed: {dups}&quot;)
+    print(&quot;decision x class:&quot;, dict(Counter((r[&quot;decision&quot;], r[&quot;title_class&quot;]) for r in uniq)))
+    print(&quot;no-reasons:&quot;, dict(Counter(r[&quot;decision_reason&quot;] for r in uniq if r[&quot;decision&quot;] == &quot;no&quot; and &quot;цена&quot; not in r[&quot;decision_reason&quot;])))
+
+if __name__ == &quot;__main__&quot;:
+    main()</code></pre>
+<h4 id="h-10">Отчёт и ручная проверка <a class="h-anchor" href="#h-10" aria-label="Ссылка на раздел">#</a></h4>
+<p>Разбор описания на отдельные предложения и подсчёт предложений, итоговый CSV и CSV для ручной проверки. Личные поля продавца из отчёта убраны.</p>
+<pre data-lang="python" data-label="Отчёт и ручная проверка"><code class="language-python">import csv
+import io
+import json
+import sys
+import re
+from collections import Counter
+from pathlib import Path
+
+HERE = Path(__file__).parent
+OUT = HERE / &quot;enriched&quot;
+CACHE = OUT / &quot;page_cache.jsonl&quot;
+LIMIT = 60000
+LISTINGS_NAME = &quot;listings.jsonl&quot;
+KITES_NAME = &quot;found.csv&quot;
+REVIEW_NAME = &quot;needs_review.csv&quot;
+CLASSLOG_NAME = &quot;classification.csv&quot;
+
+KITE_NOUN = re.compile(r&quot;(?i)(кайт|купол|kite|крыл)&quot;)
+TRAINER = re.compile(r&quot;пилотажн|трениров|trainer|учебн|детск|воздушн\w* змей|карманн&quot;)
+ACCESSORY_NOUN = re.compile(
+    r&quot;(трапец|планк|\bbar\b|бары?\b|насос|чехол|рюкзак|доск|борд|гидрофойл|фойл|строп|лиш|leash|&quot;
+    r&quot;падс|петл\w|крюк|шлем|ботин|перчат|шорт|панам|трус|клапан|парус|мачта|в[еи]нг|винг|&quot;
+    r&quot;жилет|снаряд|сумк|ремкомплект|латка)&quot;)
+
+ACCESSORY_TITLE = re.compile(
+    r&quot;(трапец|планк|\bbar\b|бары?\b|насос|чехол|рюкзак|доск|борд|гидрофойл|фойл|строп|лиш|leash|&quot;
+    r&quot;падс|стреп|крюк|шлем|ботин|перчат|шорт|панам|трус|клапан|парус|мачта|в[еи]нг|винг|&quot;
+    r&quot;\bbag\b|жилет|сумк|ремкомплект|косичк)&quot;)
+
+def sentence_with(text, m):
+    start = max(text.rfind(&quot;.&quot;, 0, m.start()), text.rfind(&quot;\n&quot;, 0, m.start()), text.rfind(&quot;!&quot;, 0, m.start()))
+    end_cands = [i for i in (text.find(&quot;.&quot;, m.end()), text.find(&quot;\n&quot;, m.end()), text.find(&quot;!&quot;, m.end())) if i != -1]
+    end = min(end_cands) if end_cands else len(text)
+    return text[start + 1:end].strip()
+
+def split_clauses(text):
+    return [c.strip() for c in re.split(r&quot;(?&lt;=[.!])\s+|\n+|\s*;\s*|\s+\+\s+&quot;, text) if c.strip()]
+
+CYR_LOOKALIKE = {&quot;a&quot;: &quot;а&quot;, &quot;c&quot;: &quot;с&quot;, &quot;e&quot;: &quot;е&quot;, &quot;o&quot;: &quot;о&quot;, &quot;p&quot;: &quot;р&quot;, &quot;x&quot;: &quot;х&quot;, &quot;y&quot;: &quot;у&quot;, &quot;k&quot;: &quot;к&quot;, &quot;t&quot;: &quot;т&quot;, &quot;m&quot;: &quot;м&quot;, &quot;A&quot;: &quot;А&quot;, &quot;B&quot;: &quot;В&quot;, &quot;C&quot;: &quot;С&quot;, &quot;E&quot;: &quot;Е&quot;, &quot;H&quot;: &quot;Н&quot;, &quot;K&quot;: &quot;К&quot;, &quot;M&quot;: &quot;М&quot;, &quot;O&quot;: &quot;О&quot;, &quot;P&quot;: &quot;Р&quot;, &quot;T&quot;: &quot;Т&quot;, &quot;X&quot;: &quot;Х&quot;, &quot;Y&quot;: &quot;У&quot;}
+
+def canon_text(t):
+    def fix(m):
+        w = m.group(0)
+        if re.search(r&quot;[а-яё]&quot;, w):
+            for a, b in CYR_LOOKALIKE.items():
+                w = w.replace(a, b)
+        return w
+    return re.sub(r&quot;[A-Za-zА-Яа-яЁё]+&quot;, fix, t or &quot;&quot;)
+
+INCLUDED = re.compile(
+    r&quot;(отдам|отдаю|в кoмплeктe|в комплeктe|coставe|в наборе|бесплатн|подар|идущ\w* вкупе|&quot;
+    r&quot;вместе с кайт|с кайт[оа]м|к кайту|включ)&quot;, re.I)
+EXTRA_OFFER = re.compile(r&quot;(oтдeльнo|отдельно|также|тaкжe|дополнительн)&quot;, re.I)
+TRAINER_STRONG = re.compile(r&quot;(пилотажн|\btrainer\b|трениров|трене?р|учебн|детск|воздушн\w* змей|двухстроп|двуxстрoп|кайтинг-шко|для обуч)&quot;, re.I)
+
+def is_standalone_accessory(clause):
+    if not ACCESSORY_NOUN.search(clause):
+        return False
+
+    if KITE_NOUN.search(clause) and not re.search(r&quot;(без кайт|только планк|планк\w* без кайт)&quot;, clause, re.I):
+        return False
+    if INCLUDED.search(clause):
+        return False
+    return bool(EXTRA_OFFER.search(clause) or not KITE_NOUN.search(clause))
+
+NEGATED_KITE = re.compile(r&quot;(без кайт|планк\w* без кайт|только планк|только строп|купол\s+без планки\s+нет)&quot;, re.I)
+DEALS = re.compile(r&quot;(продам|продаю|продаётся|продается|в прoдаже|в продаже|на продажу|отдам|цена|цена за|стоимост)&quot;, re.I)
+
+KITE_SIGNAL = r&quot;(^[^\w]*(к|k)айт(?!\s*(планк|бар))\w*\s*(\d|[a-zа-я])|прода\w*\s+(к|k)айт\s|прода\w*\s+кайт\s|кайт\s+в\s+комплекте|купол\s*(и|,|\+)|^[^\w]*(к|k)айт\s+(без|в|на|с|со|нов|компл))&quot;
+
+def extract_offers(desc, title, price):
+    clauses = split_clauses(canon_text(desc or &quot;&quot;))
+    tcanon = canon_text(title)
+
+    acc_title = bool(ACCESSORY_TITLE.search(tcanon))
+    bar_title = bool(re.search(r&quot;кайт\s*(планк|бар)&quot;, tcanon)) or bool(re.match(r&quot;^\s*(планк|бар)&quot;, tcanon)) or bool(re.search(r&quot;планк\w*\s+управлени&quot;, tcanon))
+
+    bundle_title = bool(re.search(r&quot;кайт&quot;, tcanon, re.I)) and bool(re.search(r&quot;(\+|\sи\s|,|\sе\s|\sс\s(?=планк|бар|строп))&quot;, tcanon))
+    STRONG_KITE = re.compile(KITE_SIGNAL)
+
+    plana_title = bool(re.search(r&quot;планк\w*\s+управлени&quot;, tcanon, re.I))
+
+    acc_lead = bool(re.match(r&quot;^[^\w]*(планки|планка|бары|бар|чехол|планк|трапец|насос|стопор|крюк|падсы?|стрепы?|сумк|жилет|панама|плавник|косички|лиш|строп|шлем|комплект лиш|ремкомплект|запчаст)&quot;, tcanon, re.I)) or bool(re.search(r&quot;кайт\w*\s+(трапец|борд)&quot;, tcanon, re.I))
+
+    acc_or_deriv = re.search(r&quot;кайт\s*борд|кайтборд|кайт\s*(сёрф|серф|орда|инг|спорт)|(^|[а-яё\s,])борд([а-яё\s,]|$)|компресс|(^|\W)bag(\W|$)&quot;, tcanon, re.I)
+
+    acc_after_kite = bool(re.search(r&quot;^[^\w]*(к|k)айт\w*\s+(surf\s*борд|борд|bag|compressor|компресс|трапец|планк|бар|доск|жилет|плавник|падс)&quot;, tcanon, re.I))
+    acc_lead_now = bool(re.match(r&quot;^[^\w]*(планка|планки|бары|бар|чехол|планк|трапец|насос|стопор|крюк|падсы?|стрепы?|сумк|жилет|панама|плавник|косички|лиш|строп|шлем|ремкомплект|запчаст)&quot;, tcanon, re.I)) or acc_after_kite
+    accessory_only_title = bool(ACCESSORY_TITLE.search(tcanon)) or plana_title or bool(acc_or_deriv) or acc_lead_now
+
+    DESCR_ACC_EXPR = r&quot;^(предназначен|подходит|используется|назначение|для (транспортировки|хранения|защиты))&quot;
+    DESCR_ACC = re.compile(DESCR_ACC_EXPR, re.I)
+
+    kite_title = bool(re.search(r&quot;^[^\w]*(к|k)айт|, кайт&quot;, tcanon, re.I)) or bool(re.search(r&quot;(^|[^\w])kite&quot;, tcanon, re.I))
+
+    bundle_title = bool(re.search(r&quot;кайт&quot;, tcanon, re.I)) and bool(re.search(r&quot;(\+|\sи\s|,|\sе\s|\sс\s(?=планк|бар|строп))&quot;, tcanon))
+
+    ACC_DERIV_CLAUSE = re.compile(r&quot;кайт(борд|сёрф|серф|инг)|кайт\s+(серф|вейк|дoск|доск|борд)&quot;, re.I)
+    def clause_kite(c):
+        if not KITE_NOUN.search(c) or NEGATED_KITE.search(c):
+            return False
+        if bar_title:
+            return False
+        strong = bool(STRONG_KITE.search(c))
+        starts = re.match(r&quot;^[^\w]*(к|k)айт&quot;, c, re.I)
+        if ACC_DERIV_CLAUSE.search(c) and not re.search(r&quot;прода(м|ю|ется|ётся|жа)\w*\s+(к|k)айт\s&quot;, c, re.I):
+            return False
+        if DESCR_ACC.search(c) and not starts:
+            return False
+        if re.search(r&quot;чехол|сумк|косич|патч|панама|плавник|падс|стреп&quot;, c, re.I) and not starts:
+            return False
+        if accessory_only_title:
+
+            explicit = bool(re.search(
+                r&quot;прода(м|ю|ется|ётся|жа)\w*.{0,25}кайт|^[^\w]*(к|k)айт\w*\s*(\d|[a-zа-я])|купол|кайт\s+в\s+комплекте&quot;, c, re.I))
+            if plana_title:
+                return False
+            return bool((bundle_title and starts) or strong or explicit)
+        if ACCESSORY_NOUN.search(c) and not strong:
+
+            return bool(re.match(r&quot;^[^\w]*кайт\w*\s*(\d|без|в|на|с|со|нов|отл|хорош|прода|компл)&quot;, c, re.I))
+        return True
+
+    kite_clauses = []
+    for c in clauses:
+        strong = bool(STRONG_KITE.search(c))
+        if clause_kite(c) or strong:
+            key = re.sub(r&quot;\W+&quot;, &quot;&quot;, c.lower())[:40]
+            if any(key[:30] == re.sub(r&quot;\W+&quot;, &quot;&quot;, k.lower())[:30] for k in kite_clauses):
+                continue
+            kite_clauses.append(c)
+
+    if (bundle_title or (kite_title and not plana_title)) and not bar_title and not acc_after_kite:
+
+        if not acc_lead or re.match(r&quot;^[^\w]*(к|k)айт&quot;, tcanon, re.I):
+            kite_clauses.insert(0, tcanon)
+
+    if bar_title:
+        return [], &quot;not_a_kite&quot;
+
+    if acc_lead and not kite_clauses:
+        return [], &quot;not_a_kite&quot;
+    if accessory_only_title and not kite_clauses:
+
+        kt_start = bool(re.match(r&quot;^[^\w]*(к|k)айт&quot;, tcanon, re.I))
+        if kt_start and not acc_after_kite:
+            kite_clauses.append(tcanon)
+        elif kt_start and not acc_or_deriv and not acc_lead_now and not plana_title:
+
+            kite_clauses.append(tcanon)
+        else:
+            return [], &quot;not_a_kite&quot;
+
+    if not kite_clauses and re.search(r&quot;(кайт|купол|kite)&quot;, tcanon, re.I) and not re.search(
+            r&quot;(чехол|планк|трапец|насос|стопор|крюк|падсы?|стрепы?|сумк|жилет|панама|плавник|косички|лиш|строп|шлем|ремкомплект|запчаст|bag|компресс|борд|доск)&quot;, tcanon, re.I)             and not acc_after_kite:
+        kite_clauses.append(tcanon)
+    elif kite_clauses:
+
+        if re.search(r&quot;(\d\s*[,+\-]\s*\d|комплект|набор|пара кайт|два кайт|компл)&quot;, tcanon, re.I) and not re.search(r&quot;планк|бар&quot;, tcanon, re.I):
+            kite_clauses.insert(0, tcanon)
+
+    elif (kite_title or (bundle_title and re.match(r&quot;^[^\w]*(к|k)айт&quot;, tcanon, re.I))) and not bar_title:
+        kite_clauses.insert(0, tcanon)
+
+    offers = []
+    for s in kite_clauses[:8]:
+        is_trainer = bool(TRAINER_STRONG.search(s))
+        has_bar = bool(re.search(r&quot;планк|с\s+баром|\bbar\b|бары?\b|строп\w*\s+5|5-?строп&quot;, s, re.I))
+        has_pump = bool(re.search(r&quot;насос&quot;, s, re.I))
+        has_bag = bool(re.search(r&quot;рюкзак|рюгзак|чехол|bag|сумк&quot;, s, re.I))
+        has_board = bool(re.search(r&quot;доск|борд|board&quot;, s, re.I))
+        p = re.search(r&quot;(\d[\d\s]{2,7})\s*(тыс|т\.р|тр\b|руб|₽|p\b)|\b(\d{4,7})\b&quot;, s)
+        price_in = None
+        if p:
+            if p.group(1) and p.group(2):
+                price_in = int(re.sub(r&quot;\s&quot;, &quot;&quot;, p.group(1))) * (1000 if p.group(2) == &quot;тыс&quot; else 1)
+            elif p.group(3):
+                price_in = int(p.group(3))
+            if price_in and (price_in &lt; 1000 or 1990 &lt;= price_in &lt;= 1999 or 2000 &lt;= price_in &lt;= 2027 and not re.search(r&quot;(₽|руб|p\b|р\.)&quot;, p.group(0))):
+                price_in = None
+        sm = re.search(r&quot;(\d{1,2}(?:[.,]\d)?)\s*(?:м²|м2|м\b|m2\b|m\b|кв|кв\.?м)&quot;, s) or re.search(r&quot;\b(\d{1,2}(?:[.,]\d)?)\s*[&#x27;\&quot;“”]|\b(\d{1,2})\s+метров&quot;, s)
+        size = sm.group(1) if sm and sm.group(1) else (sm.group(2) if sm and sm.lastindex and sm.lastindex &gt;= 2 else None)
+        inc = [x for x, f in ((&quot;планка&quot;, has_bar), (&quot;насос&quot;, has_pump), (&quot;рюкзак&quot;, has_bag), (&quot;доска&quot;, has_board)) if f]
+        offers.append({
+            &quot;position&quot;: s,
+            &quot;size&quot;: size,
+            &quot;price_rub&quot;: price_in,
+            &quot;position_type&quot;: &quot;trainer_kite&quot; if is_trainer else &quot;kite_or_bundle&quot;,
+            &quot;includes_bar&quot;: has_bar,
+            &quot;included_items&quot;: inc,
+            &quot;price_uncertain&quot;: price_in is not None and len(kite_clauses) &gt; 1 and price_in == price,
+            &quot;quote&quot;: s,
+        })
+
+    if offers and all(o[&quot;position_type&quot;] == &quot;trainer_kite&quot; for o in offers) and not re.search(r&quot;(кайтсерф|тягов|на воду)&quot;, tcanon, re.I):
+        etype = &quot;trainer_kite&quot;
+    elif offers:
+        etype = &quot;kite_bundle&quot; if any(o[&quot;includes_bar&quot;] or o[&quot;included_items&quot;] for o in offers) or len(offers) &gt; 1 else &quot;kite&quot;
+    elif re.search(r&quot;кайт|купол|kite&quot;, tcanon, re.I):
+        etype = &quot;trainer_kite&quot; if re.search(r&quot;пилотажн|учебн|трениров|воздушн&quot;, tcanon, re.I) else &quot;kite&quot;
+    elif re.search(r&quot;кайт|купол&quot;, desc or &quot;&quot;, re.I) and DEALS.search(desc):
+        etype = &quot;kite&quot;
+    else:
+        etype = &quot;not_a_kite&quot;
+    return offers, etype
+
+def acc_after_kite_title(tcanon):
+    return bool(re.search(r&quot;^[^\w]*(к|k)айт\w*\s+(surf\s*борд|борд|bag|компресс|трапец|планк|бар|доск|жилет|плавник|падс)&quot;, tcanon, re.I))
+
+def decide(rec):
+    if rec.get(&quot;fetch_status&quot;) in (&quot;unavailable&quot;, &quot;error&quot;, &quot;partial&quot;):
+        return &quot;unconfirmed&quot;, f&quot;карточка недоступна: {rec.get(&#x27;fetch_error&#x27;) or rec.get(&#x27;fetch_status&#x27;)}&quot;, [], &quot;uncertain&quot;
+    if rec.get(&quot;listing_status&quot;) != &quot;active&quot;:
+        return &quot;excluded&quot;, f&quot;объявление не активно: {rec.get(&#x27;listing_status&#x27;)}&quot;, [], &quot;uncertain&quot;
+
+    desc = rec.get(&quot;description_raw&quot;) or &quot;&quot;
+    title = rec.get(&quot;title_live&quot;) or rec.get(&quot;title_original&quot;) or &quot;&quot;
+    price = rec.get(&quot;price_live_rub&quot;)
+    offers, etype = extract_offers(desc, title, price)
+
+    if etype == &quot;not_a_kite&quot;:
+
+        tcanon = canon_text(title)
+        acc_like = bool(re.match(
+            r&quot;^[^\w]*(чехол|планк|трапец|насос|стопор|крюк|падсы?|стрепы?|сумк|жилет|панама|плавник|косички|лиш|строп|шлем|ремкомплект|запчаст)&quot;,
+            tcanon, re.I)) or bool(re.search(r&quot;кайт(борд|сёрф|серф|инг| спорт)|кайт\s*борд&quot;, tcanon, re.I))
+        if acc_like or acc_after_kite_title(tcanon):
+            return &quot;excluded&quot;, &quot;заголовок и описание — аксессуар/кайтборд, не кайт&quot;, [], &quot;not_a_kite&quot;
+        if re.search(r&quot;(surf\s*борд)\s+борд|(^|\W)борд(\W|$)&quot;, tcanon, re.I):
+            return &quot;excluded&quot;, &quot;в заголовке доска/борд, не кайт&quot;, [], &quot;not_a_kite&quot;
+        if re.search(r&quot;(^|\W)борд(\W|$)|(^|\W)bag(\W|$)|компресс|(^|\W)(планк|барь?|планки)(\W|$)&quot;, tcanon, re.I) and not re.match(r&quot;^[^\w]*(к|k)айт\w*\s*\d&quot;, tcanon, re.I):
+            return &quot;excluded&quot;, &quot;заголовок — доска/сумка/компрессор, не кайт&quot;, [], &quot;not_a_kite&quot;
+        if re.search(r&quot;(кайт|купол|kite)&quot;, tcanon, re.I):
+            return &quot;unconfirmed&quot;, &quot;заголовок про кайт, но в описании не найдена продажа кайта&quot;, [], &quot;uncertain&quot;
+        return &quot;excluded&quot;, &quot;в описании нет продажи кайта/купола&quot;, [], etype
+    if etype == &quot;trainer_kite&quot;:
+        size_tr = [o[&quot;size&quot;] for o in offers if o.get(&quot;size&quot;)]
+        small = size_tr and all(float(str(s).replace(&quot;,&quot;, &quot;.&quot;)) &lt;= 3.5 for s in size_tr)
+        if small or re.search(r&quot;(воздушн\w* змей|карманн|детск)&quot;, canon_text(title), re.I):
+            return &quot;excluded&quot;, &quot;воздушный змей/детский — не кайт&quot;, offers, etype
+        return &quot;unconfirmed&quot;, &quot;учебный/пилотажный кайт — уточнить пригодность (не тяговый по умолчанию)&quot;, offers, etype
+
+    if not offers:
+
+        if re.search(r&quot;кайт|купол&quot;, desc, re.I):
+            m = re.search(r&quot;[^.]*(кайт|купол)[^.]*\.&quot;, desc, re.I)
+            quote = m.group(0).strip() if m else desc[:200]
+            has_bar = bool(re.search(r&quot;планк(а|и)?\s*(в комплекте|есть|входит|в наборе)|с планкой|комплект \w* ?планк&quot;, desc, re.I))
+            offer = {&quot;position&quot;: quote, &quot;size&quot;: None, &quot;price_rub&quot;: None,
+                     &quot;position_type&quot;: &quot;kite_or_bundle&quot;, &quot;includes_bar&quot;: has_bar,
+                     &quot;included_items&quot;: [&quot;планка&quot;] if has_bar else [], &quot;quote&quot;: quote}
+            if price is None:
+                return &quot;unconfirmed&quot;, &quot;кайт упомянут, цена не указана&quot;, [offer], etype
+            if price &gt; LIMIT:
+                return &quot;excluded&quot;, f&quot;цена объявления {price} &gt; {LIMIT}&quot;, [offer], etype
+            return &quot;confirmed&quot;, f&quot;кайт по цене объявления {price} ₽ (без явной цены в тексте)&quot;, [offer], etype
+        return &quot;excluded&quot;, &quot;нет кайта в описании&quot;, [], etype
+
+    for o in offers:
+        if o[&quot;price_rub&quot;] and price and o[&quot;price_rub&quot;] &gt; max(price * 2, price + 5000):
+            o[&quot;price_rub&quot;], o[&quot;price_uncertain&quot;] = None, True
+
+    for o in offers:
+        if not o[&quot;price_rub&quot;]:
+            o[&quot;price_rub&quot;] = price
+    explicit = [o for o in offers if o[&quot;price_rub&quot;]]
+    if explicit:
+        cheapest = min(o[&quot;price_rub&quot;] for o in explicit)
+        if cheapest &gt; LIMIT:
+            return &quot;excluded&quot;, f&quot;цена кайта {cheapest} &gt; {LIMIT}&quot;, offers, etype
+        if price is not None and price &lt; cheapest and any(o[&quot;price_rub&quot;] == cheapest and not o[&quot;includes_bar&quot;] for o in explicit):
+
+            if price &lt;= LIMIT:
+                return &quot;unconfirmed&quot;, (f&quot;цена объявления {price} ₽ ниже цены кайта в тексте {cheapest} ₽; &quot;
+                                       f&quot;что именно за {price} ₽ — неясно&quot;), offers, etype
+        if len(explicit) == 1 and explicit[0][&quot;price_rub&quot;] != price:
+            return &quot;confirmed&quot;, f&quot;кайт {cheapest} ₽ (в тексте), цена объявления {price} ₽&quot;, offers, etype
+        return &quot;confirmed&quot;, f&quot;кайт {cheapest} ₽&quot;, offers, etype
+    if price is not None:
+        if price &gt; LIMIT:
+            return &quot;excluded&quot;, f&quot;цена объявления {price} &gt; {LIMIT}&quot;, offers, etype
+        return &quot;confirmed&quot;, f&quot;кайт(ы) по цене объявления {price} ₽&quot;, offers, etype
+    return &quot;unconfirmed&quot;, &quot;цена не указана&quot;, offers, etype
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding=&quot;utf-8&quot;)
+
+def main():
+    recs = []
+    if CACHE.exists():
+        for line in CACHE.read_text(encoding=&quot;utf-8&quot;).splitlines():
+            if line.strip():
+                recs.append(json.loads(line))
+
+    listings = []
+    kites_rows = []
+    review_rows = []
+    for rec in recs:
+        status, reason, offers, etype = decide(rec)
+        rec[&quot;offers&quot;] = offers
+        rec[&quot;equipment_type&quot;] = etype
+        rec[&quot;final_status&quot;] = status
+        rec[&quot;decision_reason&quot;] = reason
+        listings.append(rec)
+
+        price = rec.get(&quot;price_live_rub&quot;)
+        if status == &quot;confirmed&quot; and price is not None and price &lt;= LIMIT:
+            kites_rows.append({
+                &quot;item_id&quot;: rec[&quot;item_id&quot;],
+                &quot;title&quot;: rec.get(&quot;title_live&quot;) or rec[&quot;title_original&quot;],
+                &quot;price_rub&quot;: price,
+                &quot;published_at_raw&quot;: rec.get(&quot;published_at_raw&quot;),
+                &quot;published_at_iso&quot;: rec.get(&quot;published_at_iso&quot;),
+                &quot;equipment_type&quot;: etype,
+                &quot;includes_bar&quot;: any(o[&quot;includes_bar&quot;] for o in offers) if offers else &quot;&quot;,
+                &quot;included_items&quot;: &quot;; &quot;.join(sorted({i for o in offers for i in o[&quot;included_items&quot;]})),
+                &quot;offers_count&quot;: len(offers),
+                &quot;offer_quote&quot;: offers[0][&quot;quote&quot;] if offers else rec.get(&quot;title_live&quot;),
+                &quot;description&quot;: rec.get(&quot;description_raw&quot;),
+                &quot;url&quot;: rec[&quot;url&quot;],
+            })
+        elif status != &quot;confirmed&quot;:
+            review_rows.append({
+                &quot;item_id&quot;: rec[&quot;item_id&quot;],
+                &quot;title&quot;: rec.get(&quot;title_live&quot;) or rec[&quot;title_original&quot;],
+                &quot;price_rub&quot;: price if price is not None else &quot;&quot;,
+                &quot;fetch_status&quot;: rec.get(&quot;fetch_status&quot;),
+                &quot;listing_status&quot;: rec.get(&quot;listing_status&quot;),
+                &quot;final_status&quot;: status,
+                &quot;equipment_type&quot;: etype,
+                &quot;reason&quot;: reason,
+                &quot;url&quot;: rec[&quot;url&quot;],
+            })
+
+    with open(OUT / LISTINGS_NAME, &quot;w&quot;, encoding=&quot;utf-8&quot;) as f:
+        for r in listings:
+            f.write(json.dumps(r, ensure_ascii=False) + &quot;\n&quot;)
+
+    kites_rows.sort(key=lambda r: r[&quot;price_rub&quot;])
+    with open(OUT / KITES_NAME, &quot;w&quot;, newline=&quot;&quot;, encoding=&quot;utf-8-sig&quot;) as f:
+        w = csv.DictWriter(f, fieldnames=list(kites_rows[0].keys()) if kites_rows else [&quot;item_id&quot;])
+        w.writeheader()
+        w.writerows(kites_rows)
+
+    with open(OUT / REVIEW_NAME, &quot;w&quot;, newline=&quot;&quot;, encoding=&quot;utf-8-sig&quot;) as f:
+        w = csv.DictWriter(f, fieldnames=list(review_rows[0].keys()) if review_rows else [&quot;item_id&quot;])
+        w.writeheader()
+        w.writerows(review_rows)
+
+    print(&quot;listings:&quot;, len(listings))
+    print(&quot;confirmed:&quot;, sum(1 for r in listings if r[&quot;final_status&quot;] == &quot;confirmed&quot;))
+    print(&quot;excluded:&quot;, sum(1 for r in listings if r[&quot;final_status&quot;] == &quot;excluded&quot;))
+    print(&quot;unconfirmed:&quot;, sum(1 for r in listings if r[&quot;final_status&quot;] == &quot;unconfirmed&quot;))
+    print(&quot;kites rows:&quot;, len(kites_rows), &quot;| review rows:&quot;, len(review_rows))
+    print(&quot;reasons:&quot;, dict(Counter(r[&quot;decision_reason&quot;].split(&quot;:&quot;)[0] for r in listings)))
+    print(&quot;missing date:&quot;, sum(1 for r in kites_rows if not r[&quot;published_at_iso&quot;]),
+          &quot;| missing rating:&quot;, sum(1 for r in kites_rows if r[&quot;seller_rating&quot;] is None))
+
+if __name__ == &quot;__main__&quot;:
+    main()</code></pre>
+<h4 id="сводка-в-markdown">Сводка в Markdown <a class="h-anchor" href="#сводка-в-markdown" aria-label="Ссылка на раздел">#</a></h4>
+<p>Числа, которые показывают полноту сбора: сколько исключено по заголовку, сколько открыто, сколько подтверждено, что не открыто.</p>
+<pre data-lang="python" data-label="Сводка в Markdown"><code class="language-python">import csv
+import io
+import json
+import sys
+from collections import Counter
+from pathlib import Path
+
+HERE = Path(__file__).parent
+OUT = HERE / &quot;enriched&quot;
+LISTINGS_NAME = &quot;listings.jsonl&quot;
+KITES_NAME = &quot;found.csv&quot;
+REVIEW_NAME = &quot;needs_review.csv&quot;
+CLASSLOG_NAME = &quot;classification.csv&quot;
+SUMMARY_NAME = &quot;summary.md&quot;
+TITLE = &quot;Итог обработки выгрузки объявлений&quot;
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding=&quot;utf-8&quot;)
+
+def main():
+    cls = list(csv.DictReader(open(OUT / CLASSLOG_NAME, encoding=&quot;utf-8-sig&quot;)))
+    listings = [json.loads(l) for l in (OUT / LISTINGS_NAME).read_text(encoding=&quot;utf-8&quot;).splitlines() if l.strip()]
+    kites = list(csv.DictReader(open(OUT / KITES_NAME, encoding=&quot;utf-8-sig&quot;)))
+    review = list(csv.DictReader(open(OUT / REVIEW_NAME, encoding=&quot;utf-8-sig&quot;)))
+
+    no = [r for r in cls if r[&quot;decision&quot;] == &quot;no&quot;]
+    yes = [r for r in cls if r[&quot;decision&quot;] == &quot;yes&quot;]
+    price_excl = [r for r in no if &quot;цена&quot; in r[&quot;decision_reason&quot;]]
+    title_excl = [r for r in no if &quot;цена&quot; not in r[&quot;decision_reason&quot;]]
+
+    status = Counter(r[&quot;final_status&quot;] for r in listings)
+    fetch = Counter(r.get(&quot;fetch_status&quot;) for r in listings)
+    missing_dates = sum(1 for r in kites if not r[&quot;published_at_iso&quot;])
+    missing_rating = sum(1 for r in kites if not r[&quot;seller_rating&quot;])
+    missing_reviews = sum(1 for r in kites if not r[&quot;seller_review_count&quot;])
+    missing_desc = sum(1 for r in kites if not r[&quot;description&quot;])
+
+    lines = [
+        f&quot;# {TITLE}&quot;,
+        &quot;&quot;,
+        &quot;## Входные данные&quot;,
+        f&quot;- Строк во входных файлах: {len(cls) * 2} (JSON + CSV)&quot;,
+        f&quot;- Уникальных объявлений после дедупликации по ID: {len(cls)}&quot;,
+        f&quot;- Дублей убрано: {len(cls) * 2 - len(cls)}&quot;,
+        &quot;&quot;,
+        &quot;## Фильтрация по заголовкам (classification.csv)&quot;,
+        f&quot;- Исключено по заголовку (аксессуар/услуга/винг/фойл): {len(title_excl)}&quot;,
+        f&quot;- Исключено по цене в выгрузке (&gt; 60 000 ₽): {len(price_excl)}&quot;,
+        f&quot;- Отобрано к открытию (kite + unclear, цена ≤ 60 000 ₽): {len(yes)}&quot;,
+        &quot;&quot;,
+        &quot;## Открытие карточек&quot;,
+        f&quot;- Попытались открыть: {len(listings)}&quot;,
+        f&quot;- Успешно извлечено: {fetch.get(&#x27;ok&#x27;, 0)}&quot;,
+        f&quot;- Недоступно/ошибка/частично: {fetch.get(&#x27;unavailable&#x27;, 0) + fetch.get(&#x27;error&#x27;, 0) + fetch.get(&#x27;partial&#x27;, 0)}&quot;,
+        f&quot;- Подтверждено (в карточке есть продажа кайта, цена ≤ 60 000 ₽): {status.get(&#x27;confirmed&#x27;, 0)}&quot;,
+        f&quot;- Отклонено после открытия (не кайт / неактивно / дороже): {status.get(&#x27;excluded&#x27;, 0)}&quot;,
+        f&quot;- Осталось на ручную проверку: {status.get(&#x27;unconfirmed&#x27;, 0)}&quot;,
+        &quot;&quot;,
+        &quot;## Результат&quot;,
+        f&quot;- Предложений кайтов/комплектов в kites.csv: {len(kites)}&quot;,
+        f&quot;- Строк в needs_review.csv: {len(review)}&quot;,
+        &quot;&quot;,
+        &quot;## Пропуски в итоговом CSV&quot;,
+        f&quot;- Без нормализованной даты публикации: {missing_dates}&quot;,
+        f&quot;- Без рейтинга продавца: {missing_rating}&quot;,
+        f&quot;- Без количества отзывов: {missing_reviews}&quot;,
+        f&quot;- Без описания: {missing_desc}&quot;,
+        &quot;&quot;,
+        &quot;## Причины в needs_review.csv&quot;,
+    ]
+    for k, v in Counter(r[&quot;reason&quot;].split(&quot;:&quot;)[0] for r in review).most_common():
+        lines.append(f&quot;- {k}: {v}&quot;)
+
+    opened_ids = {r[&quot;item_id&quot;] for r in listings}
+    not_opened = [r for r in cls if r[&quot;decision&quot;] == &quot;no&quot; and r[&quot;item_id&quot;] not in opened_ids]
+    missing_open = [r for r in cls if r[&quot;decision&quot;] == &quot;yes&quot; and r[&quot;item_id&quot;] not in opened_ids]
+    lines += [
+        &quot;&quot;,
+        &quot;## Сверка полноты&quot;,
+        f&quot;- Строк в журнале классификации: {len(cls)}&quot;,
+        f&quot;- Из них открыто: {len(listings)}&quot;,
+        f&quot;- Не открывались (исключены по заголовку/цене): {len(not_opened)}&quot;,
+        f&quot;- Отобраны, но не открыты: {len(missing_open)}&quot;,
+        f&quot;- Итого учтено: {len(listings) + len(not_opened) + len(missing_open)} из {len(cls)}&quot;,
+        &quot;&quot;,
+        &quot;Открытие — через Opera с remote debugging (start_opera_debug.ps1), описание&quot;,
+        &quot;раскрывается кнопкой «Читать полностью», данные берутся из DOM и структурного&quot;,
+        &quot;объекта страницы площадку.&quot;,
+    ]
+    (OUT / SUMMARY_NAME).write_text(&quot;\n&quot;.join(lines) + &quot;\n&quot;, encoding=&quot;utf-8&quot;)
+    print(&quot;\n&quot;.join(lines))
+
+if __name__ == &quot;__main__&quot;:
+    main()</code></pre>
+<h4 id="h-11">Оркестратор <a class="h-anchor" href="#h-11" aria-label="Ссылка на раздел">#</a></h4>
+<p>Связывает шаги: каждый модуль получает пути, а результат предыдущего становится входом следующего.</p>
+<pre data-lang="python" data-label="Оркестратор"><code class="language-python">import argparse
+import importlib.util
+import os
+import re
+import sys
+from datetime import datetime
+from pathlib import Path
+
+HERE = Path(__file__).parent
+
+def load_mod(name):
+    spec = importlib.util.spec_from_file_location(name, HERE / f&quot;{name}.py&quot;)
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument(&quot;--url&quot;, required=True, help=&quot;адрес выдачи с фильтрами (без параметра страницы)&quot;)
+    ap.add_argument(&quot;--slug&quot;, required=True, help=&quot;короткое имя поиска для папки выгрузки&quot;)
+    ap.add_argument(&quot;--pages&quot;, type=int, default=23)
+    ap.add_argument(&quot;--limit&quot;, type=int, default=60000, help=&quot;предел цены для отбора&quot;)
+    args = ap.parse_args()
+
+    ts = datetime.now().strftime(&quot;%Y-%m-%d_%H-%M&quot;)
+    slug = re.sub(r&quot;[^\w\-]+&quot;, &quot;_&quot;, args.slug, flags=re.UNICODE).strip(&quot;_&quot;)
+    out = HERE / &quot;enriched&quot; / f&quot;{ts}_{slug}&quot;
+    out.mkdir(parents=True, exist_ok=True)
+    print(f&quot;[OUT] {out}&quot;, flush=True)
+
+    # 1) сбор выдачи (повторный запуск продолжает с места остановки)
+    pa = load_mod(&quot;collect&quot;)
+    pa.OUT_DIR = out
+    pa.OUT_JSON = out / &quot;search.json&quot;
+    pa.OUT_CSV = out / &quot;search.csv&quot;
+    pa.BASE = args.url.split(&quot;&amp;p=&quot;)[0].replace(&quot;&amp;p={page}&quot;, &quot;&quot;)
+    sys.argv = [&quot;collect.py&quot;, &quot;--out&quot;, str(out),
+                &quot;--json-name&quot;, &quot;search.json&quot;, &quot;--csv-name&quot;, &quot;search.csv&quot;,
+                &quot;--url&quot;, args.url, &quot;--pages&quot;, str(args.pages)]
+    pa.main()
+
+    # 2) классификация: отбираем кандидатов для открытия карточек
+    cl = load_mod(&quot;classify&quot;)
+    g = cl.main.__globals__
+    g[&quot;OUT&quot;] = out
+    g[&quot;PRICE_LIMIT&quot;] = args.limit
+    cl.main()
+
+    # 3) открываем карточки кандидатов, каждая дописывается в кэш
+    en = load_mod(&quot;enrich&quot;)
+    g = en.main.__globals__
+    g[&quot;OUT&quot;] = out
+    g[&quot;CACHE&quot;] = out / &quot;page_cache.jsonl&quot;
+    en.main()
+
+    # 4) итоговые файлы по кэшу и сводка
+    bo = load_mod(&quot;build_report&quot;)
+    g = bo.main.__globals__
+    g[&quot;OUT&quot;] = out
+    g[&quot;CACHE&quot;] = out / &quot;page_cache.jsonl&quot;
+    g[&quot;LIMIT&quot;] = args.limit
+    bo.main()
+
+    su = load_mod(&quot;summary&quot;)
+    g = su.main.__globals__
+    g[&quot;OUT&quot;] = out
+    su.main()
+    print(f&quot;[FILES] {out}&quot;, flush=True)
+
+if __name__ == &quot;__main__&quot;:
+    main()</code></pre>
+<h3 id="h-12">Задания <a class="h-anchor" href="#h-12" aria-label="Ссылка на раздел">#</a></h3>
+<h4 id="задание-34-1-стенд-без-риска">Задание 34.1: стенд без риска <a class="h-anchor" href="#задание-34-1-стенд-без-риска" aria-label="Ссылка на раздел">#</a></h4>
+<p>Начните с учебного сайта, а не с рабочей площадки.</p>
+<p><div class="task" data-task="practice/task-practice-задание-34-1--стенд-без-риска" data-course="Практикум: агент в браузере" data-lesson="Задание 34.1: стенд без риска" id="task-practice-задание-34-1--стенд-без-риска"><p class="task-title">Задание 34.1: стенд без риска</p><div class="task-body" aria-live="polite"></div><details class="task-brief"><summary>Условие</summary><ol class="task-brief-steps">
+<li>Запустите start_browser.ps1, скопируйте порт в переменную DEBUG_ADDR.</li>
+<li>Откройте в запущенном браузере страницу, например каталог компонентов на сайте производителя.</li>
+<li>Подключитесь Selenium к порту и выведите номер версии браузера.</li>
+<li>Проверьте, что остановка скрипта закрывает соединение и не оставляет зависших процессов.</li>
+</ol><p><strong>Критерии проверки:</strong></p><ul>
+<li>Соединение к localhost:9223 установлено.</li>
+<li>Скрипт не выводит ни одной персональной строки.</li>
+<li>Порт не открыт наружу.</li>
+</ul></details></div></p>
+<h4 id="задание-34-2-сбор-одной-страницы">Задание 34.2: сбор одной страницы <a class="h-anchor" href="#задание-34-2-сбор-одной-страницы" aria-label="Ссылка на раздел">#</a></h4>
+<p>Ограничьтесь одной страницей выдачи.</p>
+<p><div class="task" data-task="practice/task-practice-задание-34-2--сбор-одной-страницы" data-course="Практикум: агент в браузере" data-lesson="Задание 34.2: сбор одной страницы" id="task-practice-задание-34-2--сбор-одной-страницы"><p class="task-title">Задание 34.2: сбор одной страницы</p><div class="task-body" aria-live="polite"></div><details class="task-brief"><summary>Условие</summary><ol class="task-brief-steps">
+<li>Задайте адрес выдачи с фильтрами, но без параметра страницы.</li>
+<li>Соберите карточки по селекторам, напишите результат в JSON и CSV.</li>
+<li>Проверьте дедупликацию: одна ссылка не должна встречаться дважды.</li>
+<li>Запустите скрипт повторно, убедитесь, что он продолжает с места остановки.</li>
+</ol><p><strong>Критерии проверки:</strong></p><ul>
+<li>CSS-селекторы соответствуют странице, а не позиции карточки.</li>
+<li>Повторный запуск не дублирует данные.</li>
+<li>В файлах нет полей, которых не было в задании.</li>
+</ul></details></div></p>
+<h4 id="задание-34-3-правила-вместо-ручного-отбора">Задание 34.3: правила вместо ручного отбора <a class="h-anchor" href="#задание-34-3-правила-вместо-ручного-отбора" aria-label="Ссылка на раздел">#</a></h4>
+<p>Классифицируйте заголовки по правилам и измерьте ошибки.</p>
+<p><div class="task" data-task="practice/task-practice-задание-34-3--правила-вместо-ручного-отбора" data-course="Практикум: агент в браузере" data-lesson="Задание 34.3: правила вместо ручного отбора" id="task-practice-задание-34-3--правила-вместо-ручного-отбора"><p class="task-title">Задание 34.3: правила вместо ручного отбора</p><div class="task-body" aria-live="polite"></div><details class="task-brief"><summary>Условие</summary><ol class="task-brief-steps">
+<li>Запишите по 5 примеров целевых и нецелевых объявлений.</li>
+<li>Сделайте правила на регулярных выражениях; спорные случаи помечайте отдельно.</li>
+<li>Прогоните на выборке из 30-50 карточек.</li>
+<li>Посчитайте точность и неполноту и добавьте одно правило по каждой группе ошибок.</li>
+</ol><p><strong>Критерии проверки:</strong></p><ul>
+<li>Спорные строки не теряются, а уходят на ручную проверку.</li>
+<li>Классификация воспроизводима: два запуска дают один результат.</li>
+<li>Точность после одной итерации выросла.</li>
+</ul></details></div></p>
+<h4 id="задание-34-4-проверка-на-личные-данные">Задание 34.4: проверка на личные данные <a class="h-anchor" href="#задание-34-4-проверка-на-личные-данные" aria-label="Ссылка на раздел">#</a></h4>
+<p>Перед публикацией любой выгрузки пройдитесь по ней.</p>
+<p><div class="task" data-task="practice/task-practice-задание-34-4--проверка-на-личные-данные" data-course="Практикум: агент в браузере" data-lesson="Задание 34.4: проверка на личные данные" id="task-practice-задание-34-4--проверка-на-личные-данные"><p class="task-title">Задание 34.4: проверка на личные данные</p><div class="task-body" aria-live="polite"></div><details class="task-brief"><summary>Условие</summary><ol class="task-brief-steps">
+<li>Откройте итоговый CSV и список на проверку.</li>
+<li>Поиском найдите телефоны, почты, ФИО, адреса и ссылки на профили.</li>
+<li>Все найденное удалите или замените заглушками.</li>
+<li>Проверьте, что кэш и профиль браузера не лежат рядом с кодом и не попадут в git.</li>
+</ol><p><strong>Критерии проверки:</strong></p><ul>
+<li>В выгрузке нет контактных данных.</li>
+<li>В .gitignore есть папка выгрузки, кэш и профиль.</li>
+<li>Вы можете объяснить, какой файл для чего нужен и почему его нет в репозитории.</li>
+</ul></details></div></p>
+<h3 id="h-13">Самопроверка <a class="h-anchor" href="#h-13" aria-label="Ссылка на раздел">#</a></h3>
+<p>Пять вопросов по инструментам, которые использованы в примере.</p>
+<p><div class="quiz" id="practice-quiz" data-quiz="practice"></div></p>

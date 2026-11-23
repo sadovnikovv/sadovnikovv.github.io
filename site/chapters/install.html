@@ -1,0 +1,88 @@
+<h2\1 data-chapter-id="install"><span class="chapter">Глава 7</span> Установка и первый запуск</h2>
+
+<p class="lead-in">Claude Code ставится одной командой. Сложность не в установке, а в правильной связке с OmniRoute и в понимании того, что происходит при первом запуске.</p>
+
+<h3>7.1. Требования</h3>
+
+<ul>
+  <li>Windows 10 версии 1809 или новее, Windows Server 2019+ либо Windows 11.</li>
+  <li>PowerShell или CMD. Права администратора не нужны.</li>
+  <li>Желательно Git for Windows: он даёт Bash и удобный контроль версий.</li>
+  <li>Стабильный интернет - для установки и для обращений к провайдеру.</li>
+</ul>
+
+<h3>7.2. Установка</h3>
+
+<p>Откройте PowerShell и выполните:</p>
+
+<pre><code>irm https://claude.ai/install.ps1 | iex</code></pre>
+
+<p>Альтернатива через WinGet:</p>
+
+<pre><code>winget install Anthropic.ClaudeCode</code></pre>
+
+<p>Проверьте установку:</p>
+
+<pre><code>claude --version
+claude doctor</code></pre>
+
+<p><code>claude doctor</code> выводит диагностику установки и настроек, не запуская сессию. Это первое, что стоит смотреть при проблемах.</p>
+
+<h3>7.3. Обновление</h3>
+
+<pre><code>claude update</code></pre>
+
+<p>Для WinGet автоматическое обновление отключено; используйте <code>winget upgrade Anthropic.ClaudeCode</code>. Если Claude Code запущен, обновление может не установиться, потому что Windows блокирует исполняемый файл - закройте сессии.</p>
+
+<h3>7.4. Первый запуск: обычный путь и ваш путь</h3>
+
+<p><strong>Обычный путь</strong> - вход в аккаунт Anthropic командой <code>claude auth login</code> или через подписку. <strong>Ваш путь</strong> - работа через OmniRoute: клиент не логинится в Anthropic, а получает адрес шлюза и токен через переменные окружения. Поэтому <code>cc.txt</code> и существует.</p>
+
+<div class="callout">
+  <span class="label">Опыт</span>
+  <p>Если вы случайно вошли в аккаунт Anthropic, а потом запускаете через шлюз, переменные <code>ANTHROPIC_BASE_URL</code> и <code>ANTHROPIC_AUTH_TOKEN</code> всё равно имеют приоритет для API-запросов. Но старый OAuth-токен может мешать - поэтому в <code>cc.txt</code> он удаляется.</p>
+</div>
+
+<h3>7.5. Подготовка рабочей папки</h3>
+
+<ol>
+  <li>Создайте отдельную папку проекта, например <code>C:\Projects\thermostat</code>.</li>
+  <li>Инициализируйте git: <code>git init</code>.</li>
+  <li>Сделайте первый коммит, даже если файлов мало.</li>
+  <li>Запустите Claude Code из этой папки.</li>
+</ol>
+
+<p>Git - ваша страховка. Агент может испортить файл; откат одного коммита занимает секунды. Без git откат может быть невозможен.</p>
+
+<h3>7.6. Первая сессия</h3>
+
+<pre><code>cd C:\Projects\thermostat
+claude</code></pre>
+
+<p>Внутри проверьте:</p>
+
+<pre><code>/status
+/help
+/init</code></pre>
+
+<p><code>/status</code> покажет модель, каталог, версию, состояние авторизации. <code>/help</code> - список доступных команд. <code>/init</code> создаст начальный <code>CLAUDE.md</code>, проанализировав проект.</p>
+
+<h3>7.7. Если вы работаете через cc.txt</h3>
+
+<pre><code>cd C:\Users\SMDWORKS\Downloads\Sasha_II_TUT
+.\cc.ps1</code></pre>
+
+<p>Файл в проекте называется <code>cc.txt</code>. Чтобы запускать его как сценарий, переименуйте в <code>cc.ps1</code> либо откройте и вставьте содержимое прямо в PowerShell. Если PowerShell блокирует запуск скриптов, выполните:</p>
+
+<pre><code>powershell -ExecutionPolicy Bypass -File .\cc.ps1</code></pre>
+
+<p>Но помните: <code>cc.txt</code> содержит ключ. Не передавайте файл третьим лицам и не выкладывайте в репозиторий.</p>
+
+<h3>7.8. Задание 5</h3>
+
+<div class="callout task">
+  <span class="label">Задание</span>
+  <p>Установите Claude Code, выполните <code>claude doctor</code> и запустите сессию через <code>cc.txt</code>. Добейтесь, чтобы <code>/status</code> показывал адрес шлюза и модель <code>combo/DeepSeek</code>. Сохраните вывод <code>/status</code> в файл - это будет ваш «паспорт стенда».</p>
+</div>
+
+<!-- ============================================================ -->
